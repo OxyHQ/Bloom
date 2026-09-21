@@ -26,11 +26,12 @@
  * not, so a full-width FAB wrapper never swallows a tap on the content behind
  * it.
  */
-import React, { memo, useContext } from 'react';
+import React, { memo, useCallback, useContext, useRef, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { WEB_POSITION_FIXED, WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
+import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { Z_INDEX } from '../styles/z-index';
 
 /** The safe-area insets, or zeros outside a `SafeAreaProvider`. */
@@ -75,11 +76,26 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
   testID,
 }) => {
   const insets = useShellInsets();
+  const [height, setHeight] = useState(0);
+  const measuredHeight = useRef(0);
+  // Layout already includes the safe-area padding. Publish, but never read,
+  // the registry here: using its result in this wrapper would feed back into
+  // the next measurement. Other edge claims combine with this one by max.
+  useClaimBottomEdge(height);
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    const rawHeight = event.nativeEvent.layout.height;
+    if (!Number.isFinite(rawHeight)) return;
+    const next = Math.max(0, Math.round(rawHeight));
+    if (measuredHeight.current === next) return;
+    measuredHeight.current = next;
+    setHeight(next);
+    onHeightChange(next);
+  }, [onHeightChange]);
   return (
     <View
       testID={testID}
       pointerEvents="box-none"
-      onLayout={(event: LayoutChangeEvent) => onHeightChange(Math.round(event.nativeEvent.layout.height))}
+      onLayout={onLayout}
       style={[anchorBottom(doc), { paddingBottom: insets.bottom }]}
     >
       {children}

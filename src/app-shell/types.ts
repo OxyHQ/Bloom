@@ -1,3 +1,4 @@
+import type { AppColorName } from '../theme/color-presets';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
@@ -185,11 +186,11 @@ export interface AppShellEngineProps {
    * `feed`: wrap the centre column in a `ContentPanel`, so the page background
    * reads as a gutter around a framed surface. The shell renders the panel —
    * a page that renders its own inside this one trips `ContentPanel`'s nesting
-   * guard. The panel's content is inset by `gutter`, so `contentWidth` stays
-   * the COLUMN's width and the reading measure inside it is that minus two
-   * gutters.
+   * guard. Screens own their content padding; the shell adds no horizontal inset.
    */
   panel?: boolean;
+  /** Theme only the central reading column; navigation, aside and framing retain the app theme. */
+  panelColorPreset?: AppColorName;
   /** Optional independent framing breakpoint. By default a shell with navigation
    * frames its panel exactly while the sidebar/rail is in flow. */
   framedFrom?: ContentPanelFramedBreakpoint;

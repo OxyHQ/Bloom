@@ -29,6 +29,7 @@ export function SidebarRail({
   logo,
   items = [],
   primaryAction,
+  footer,
   secondaryItems = [],
   selected,
   onNavigate,
@@ -49,6 +50,7 @@ export function SidebarRail({
         href={item.href}
         selected={isSelected}
         onPress={onPress}
+        onLongPress={item.onLongPress}
         testID={`sidebar-item-${item.key}`}
         badge={
           item.badge !== undefined ? (
@@ -115,6 +117,9 @@ export function SidebarRail({
           {secondaryItems.map(renderItem)}
         </View>
       ) : null}
+      {footer != null ? <View testID={testID ? `${testID}-footer` : 'sidebar-footer'} style={{ flexShrink: 0, width: '100%', paddingLeft: 8, paddingRight: 8, paddingBottom: 24 }}>
+        {typeof footer === 'function' ? footer({ collapsed: true }) : footer}
+      </View> : null}
     </View>
   );
 }

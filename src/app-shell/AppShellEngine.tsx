@@ -10,7 +10,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { ContentPanel } from '../content-panel';
+import type { ContentPanelProps } from '../content-panel/types';
+import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
@@ -96,6 +97,10 @@ function Scroller({
   );
 }
 
+export function createAppShellEngine(
+  ContentPanel: React.ComponentType<ContentPanelProps>,
+  BloomColorScope: React.ComponentType<Pick<BloomColorScopeProps, 'colorPreset' | 'asChild' | 'children'>>,
+) {
 const AppShellComponent: React.FC<AppShellEngineProps> = ({
   variant = 'dashboard',
   navigationAlign = 'edge',
@@ -118,6 +123,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   navFrom,
   navExpandedFrom,
   panel = false,
+  panelColorPreset,
   framedFrom,
   list,
   info,
@@ -543,7 +549,9 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           // the bottom and closes there, like the rail beside it — instead of
           // an open-ended column whose bottom edge is somewhere past the fold.
           // The header is pinned inside it and only the routed content moves.
+          <BloomColorScope colorPreset={panelColorPreset} asChild>
           <ContentPanel
+            maskColor={background}
             framed={panelFramed}
             framedFrom={framedFrom}
             fill
@@ -564,6 +572,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               </ScrollView>
             </View>
           </ContentPanel>
+          </BloomColorScope>
         ) : (
         <Scroller
           mode={mode}
@@ -571,8 +580,10 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           style={{}}
           contentStyle={{ paddingBottom: panel ? 0 : contentReserve }}
         >
+          <BloomColorScope colorPreset={panelColorPreset} asChild>
           {panel ? (
             <ContentPanel
+            maskColor={background}
               framed={feedRevealed || panelFramed}
               chrome={feedRevealed ? "none" : undefined}
               framedFrom={framedFrom}
@@ -601,6 +612,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               {children}
             </View>
           )}
+          </BloomColorScope>
           {asideStacked ? <View testID={testID ? `${testID}-aside` : undefined}>{aside}</View> : null}
         </Scroller>
         )}
@@ -825,5 +837,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   );
 };
 
-export const AppShellEngine = memo(AppShellComponent);
+const AppShellEngine = memo(AppShellComponent);
 AppShellEngine.displayName = 'AppShellEngine';
+
+return AppShellEngine;
+}

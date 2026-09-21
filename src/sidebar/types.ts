@@ -35,6 +35,8 @@ export interface SidebarNavItem {
    * `onNavigate` is not called for this row.
    */
   onPress?: () => void;
+  /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
+  onLongPress?: () => void;
 }
 
 /** One mode of a {@link SidebarModeSwitcherProps.modes} switcher. */
@@ -73,6 +75,8 @@ export interface SidebarItemProps {
   /** Icon-only 36px square (the collapsed rail). */
   collapsed?: boolean;
   onPress?: () => void;
+  /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
+  onLongPress?: () => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -87,6 +91,8 @@ export interface SidebarRailItemProps {
   badge?: ReactNode;
   selected?: boolean;
   onPress?: () => void;
+  /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
+  onLongPress?: () => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -226,6 +232,11 @@ export interface SidebarUserMenuProps {
 }
 
 export interface SidebarProps {
+  /** Additional persistent bottom content, outside destination scrolling.
+   * Receives the rendered state: true in a rail, false in a mobile panel.
+   * Existing account/theme/team controls remain; omit account when supplying your own account footer.
+   */
+  footer?: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
   /** Persistent primary action below destinations. Its label collapses to a named icon button. */
   primaryAction?: {
     label: string;

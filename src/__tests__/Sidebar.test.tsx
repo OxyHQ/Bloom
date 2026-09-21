@@ -26,6 +26,15 @@ function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 }
 
 describe('Sidebar', () => {
+  it.each(['panel', 'rail'] as const)('forwards secondary long press in the %s variant without navigating', variant => {
+    const onPress = jest.fn();
+    const onLongPress = jest.fn();
+    const screen = renderIn(<Sidebar variant={variant} items={[{ key: 'folder', label: 'Folder', icon: RiHomeLine, onPress, onLongPress }]} />);
+    fireEvent(screen.getByLabelText('Folder'), 'longPress');
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
   it('uses canonical surfaces and paired selected colours in every preset and mode', () => {
     const luminance = (color: string) => {
       const rgba = parseRgba(color)!;

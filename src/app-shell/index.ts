@@ -1,7 +1,9 @@
 import { createAppShell } from './AppShell';
 import { BottomBar } from '../bottom-bar';
 import { Fab } from '../fab';
-export const AppShell = createAppShell(BottomBar, Fab);
+import { ContentPanel } from '../content-panel';
+import { BloomColorScope } from '../theme/color-scope';
+export const AppShell = createAppShell(BottomBar, Fab, ContentPanel, BloomColorScope);
 export { AppShellHeader } from './AppShellHeader';
 export { AppShellMenuButton } from './AppShellMenuButton';
 export { APP_SHELL_DEFAULTS } from './constants';

@@ -43,6 +43,10 @@ export interface PersonSummary {
 export type ContactRowTrailing = 'none' | 'chevron' | 'checkbox' | 'action';
 
 export interface ContactRowProps extends PersonSummary {
+  /** Replaces AvatarPresence. Caller owns avatar size, badges and presence semantics. */
+  avatarSlot?: ReactNode;
+  /** Replaces the visible name/subtitle block; name and subtitle still name the row accessibly. */
+  identitySlot?: ReactNode;
   /** Defaults to `checkbox` with `onSelectedChange`, `action` with `onAction`, else `none`. */
   trailing?: ContactRowTrailing;
   /** Replaces the trailing slot entirely. */

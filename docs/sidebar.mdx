@@ -214,3 +214,21 @@ indicator timing; its position is calculated from the current animated row
 height so selection and collapse can happen together.
 
 The panel scroll viewport extends behind the bottom half of the last fixed header control (up to 20px). The top fade begins there, while compensating content padding preserves the initial row spacing. Fixed controls remain above the fade and available throughout scrolling.
+
+
+### Custom persistent footer
+
+`footer` adds content below the existing bottom controls, outside destination scrolling. Pass a node or `({ collapsed }) => ReactNode`. A rail reports `collapsed: true`; a mobile panel reports `false`, even when its controlled `collapsed` prop is true. Desktop panels report their current rendered state.
+
+```tsx
+<Sidebar
+  items={items}
+  footer={({ collapsed }) => (
+    <ProfileButton compact={collapsed} onPress={openAccount} />
+  )}
+/>
+```
+
+`ProfileButton` above is an application component: the app retains authentication, account selection and menu behavior. The slot adds no account behavior and does not replace `account`, theme, secondary navigation, team or plan controls. Omit `account` if your footer replaces the built-in account switcher. Footer content should fit the compact rail width and provide an accessible name when it hides its label.
+
+Navigation items accept `onLongPress` for secondary touch actions, in both panel and rail. Keep the same action available in a keyboard-accessible menu; long press alone is not discoverable or keyboard accessible.

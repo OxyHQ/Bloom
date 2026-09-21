@@ -37,6 +37,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   selected = false,
   collapsed = false,
   onPress,
+  onLongPress,
   style,
   testID,
 }) => {
@@ -92,6 +93,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
       accessibilityState={{ selected }}
       onHoverIn={onIn}
       onHoverOut={onOut}
+      onLongPress={onLongPress}
       onPress={(event: GestureResponderEvent) => {
         if (!onPress) return;
         // The host navigates (a router, or an action like opening Settings).

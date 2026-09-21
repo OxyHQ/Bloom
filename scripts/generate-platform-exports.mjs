@@ -631,7 +631,7 @@ const WEB_BARRELS = /** @type {const} */ ([
   { source: 'button/index.ts', children: ['Button'] },
   { source: 'fab/index.ts', children: ['Fab'] },
   { source: 'bottom-bar/index.ts', children: ['BottomBar'] },
-  { source: 'app-shell/index.ts', children: ['../bottom-bar', '../fab'] },
+  { source: 'app-shell/index.ts', children: ['../bottom-bar', '../fab', '../content-panel', '../theme/color-scope'] },
   {
     source: 'index.ts',
     // Every web-forked subpath except the root itself.
@@ -671,7 +671,7 @@ function buildWebBarrel(originalSource, sourceRelPath, children) {
   const transformed = originalSource
     .split('\n')
     .map((line) => {
-      const match = line.match(/from '((?:\.\.\/|\.\/)[A-Za-z-]+)'(\s*;?\s*)$/);
+      const match = line.match(/from '((?:\.\.\/|\.\/)[A-Za-z-]+(?:\/[A-Za-z-]+)*)'(\s*;?\s*)$/);
       if (!match) return line;
       const specifier = match[1];
       const folder = specifier.replace(/^\.\//, '');

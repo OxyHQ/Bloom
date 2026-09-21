@@ -141,6 +141,7 @@ function SearchField({
 const SidebarPanel: React.FC<SidebarProps> = ({
   items = [],
   primaryAction,
+  footer,
   secondaryItems = [],
   modes,
   mode,
@@ -338,6 +339,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         selected={isSelected}
         collapsed={collapsed}
         onPress={pressFor(item)}
+        onLongPress={item.onLongPress}
         testID={`sidebar-item-${item.key}`}
         badge={
           item.badge !== undefined ? (
@@ -705,6 +707,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
               testID="sidebar-team"
             />
           ) : null}
+          {footer != null ? <View testID={testID ? `${testID}-footer` : 'sidebar-footer'} style={{ width: '100%', flexShrink: 0 }}>
+            {typeof footer === 'function' ? footer({ collapsed }) : footer}
+          </View> : null}
         </View>
       </Animated.View>
     </CollapseProvider>

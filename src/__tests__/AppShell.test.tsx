@@ -9,6 +9,7 @@ import { AppShell, AppShellHeader, AppShellMenuButton, NotificationBell, ProOffe
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { ContentPanel } from '../content-panel';
+import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
 import { resolveScrollMode } from '../app-shell/layout';
 
@@ -873,5 +874,32 @@ describe('AppShell nav sizing', () => {
     setWidth(1440);
     const panel = renderIn(<AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />);
     expect(resolvedStyle(panel.getByTestId('sidebar-item-home').props.style).minHeight).toBeUndefined();
+  });
+});
+
+
+describe('AppShell panel theme', () => {
+  it.each([390, 1440])('at %ipx scopes only the reading column without remounting content', (width) => {
+    setWidth(width);
+    const mounted = jest.fn();
+    function Probe({ id }: { id: string }) {
+      const { colors } = useTheme();
+      React.useEffect(() => { mounted(id); }, []);
+      return <ReactNative.Text testID={id}>{colors.primary}</ReactNative.Text>;
+    }
+    function Frame({ preset }: { preset?: 'rose' | 'teal' }) {
+      return <BloomThemeProvider mode="light" colorPreset="teal">
+        <AppShell variant="feed" panel panelColorPreset={preset} aside={<Probe id="aside-color" />}>
+          <Probe id="panel-color" />
+        </AppShell>
+      </BloomThemeProvider>;
+    }
+    const screen = render(<Frame />);
+    const original = screen.getByTestId('aside-color').props.children;
+    expect(screen.getByTestId('panel-color').props.children).toBe(original);
+    screen.rerender(<Frame preset="rose" />);
+    expect(screen.getByTestId('aside-color').props.children).toBe(original);
+    expect(screen.getByTestId('panel-color').props.children).not.toBe(original);
+    expect(mounted.mock.calls.filter(([id]) => id === 'panel-color')).toHaveLength(1);
   });
 });

@@ -68,6 +68,10 @@ moves to the bottom, the reading column fills the compact layout. An explicit
 `framedFrom` overrides this coordination; a panel without navigation retains
 ContentPanel’s own responsive default.
 
+`panelColorPreset` scopes the central reading column to a Bloom color preset.
+Navigation and right-hand widgets retain the app theme, as does the panel’s outer
+mask. Changing the preset does not remount the routed content.
+
 This prevents a frameless panel beside a still-visible rail: the social template
 uses 700px for both, instead of independently changing the panel at 768px. Resizing
 keeps the same content node mounted and does not replace the document scroller.
@@ -557,3 +561,6 @@ owns the vertical gutter, which still supplies the panel mask and header inset.
 The social template uses an 8px gutter, matching the compact framed layout.
 
 A feed can use `drawer="reveal"` on compact screens: the page slides aside to reveal the same sidebar, as in AI Chat. Its document scroll and desktop column layout remain unchanged. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow.
+
+
+The `bottomBar` slot publishes its measured footprint through the shared bottom-edge registry. Measurement includes the slot’s safe-area padding; embedded bars must not add that inset again. Native feeds and separately positioned FABs can read `useBottomEdgeInset()` without importing the navigation component. Claims combine by maximum, not addition, and disappear when the slot unmounts. The slot never reads its own claim to size itself; repeated equal layout measurements do not trigger another height callback.

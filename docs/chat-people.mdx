@@ -276,3 +276,21 @@ and its refusal to jump to an absent letter, the role badges, and both pure
 functions. It cannot see whether the sticky headings actually stick, whether the
 rail is reachable with a thumb, or whether the story chrome stays legible over a
 bright photo. Those are browser and device checks.
+
+
+### Application identity in ContactRow
+
+`avatarSlot` replaces `AvatarPresence`; `identitySlot` replaces the visible name/subtitle block. Both accept React nodes, including `null` to intentionally omit that content. The row retains its flexible identity column, trailing action and selection behavior. Provide an appropriately sized avatar; the defaults are36px for `small` and44px for `medium`.
+
+```tsx
+<ContactRow
+  id={user.id}
+  name={user.displayName}
+  subtitle={user.handle}
+  avatarSlot={<VerifiedAvatar user={user} />}
+  identitySlot={<UserName user={user} showFederation />}
+  onPress={openProfile}
+/>
+```
+
+`VerifiedAvatar` and `UserName` are application components. Keep `name` as plain text: it still supplies the accessible name for selection and action buttons; pressable rows also include `subtitle`. Slots preserve application verification, federation and placeholder logic without duplicating those policies inside Bloom. Keep slot content non-interactive when the row itself is an interactive target.

@@ -9,7 +9,7 @@ import type { BottomBarProps } from '../bottom-bar/types';
 import type { FabProps } from '../fab/types';
 import { ResponsiveNavigation } from './ResponsiveNavigation';
 import type { AppShellProps, AppShellEngineProps } from './types';
-import { AppShellEngine } from './AppShellEngine';
+import { createAppShellEngine } from './AppShellEngine';
 import { resolveScrollMode } from './layout';
 import { AppShellMenuButton } from './AppShellMenuButton';
 import { breakpointPx } from './constants';
@@ -19,7 +19,8 @@ export function resolveNavigationPlacement(width: number, placement: AppShellPro
 }
 
 /** Platform factory keeps the shared shell free of native material peers. */
-export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: ComponentType<FabProps>) {
+export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: ComponentType<FabProps>, ...panelComponents: Parameters<typeof createAppShellEngine>) {
+  const AppShellEngine = createAppShellEngine(...panelComponents);
   function NavigationBottom({ navigation = [], value = '', onValueChange, primaryAction, navigationMaterial, bottomActionBehavior, testID }: AppShellProps) {
     const { collapseProgress } = useScreen();
     return <BottomBar actionBehavior={bottomActionBehavior} material={navigationMaterial} items={navigation.map(item => ({ name: item.value, label: item.label, icon: item.icon }))} value={value} onValueChange={onValueChange ?? (() => {})} minimizeProgress={collapseProgress} action={primaryAction ? <Fab {...primaryAction} /> : undefined} testID={testID ? `${testID}-navigation-bottom` : undefined} />;
@@ -150,7 +151,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
       || props.primaryAction !== undefined || props.scroll === 'auto' || props.scroll === 'external';
     if (!adaptive) return <AppShellEngine {...props as AppShellEngineProps} />;
     const scroll = props.scroll ?? (Platform.OS === 'web' ? 'document' : 'auto');
-    const usesLayout = props.variant !== undefined || props.aside !== undefined || props.list !== undefined || props.info !== undefined
+    const usesLayout = props.panel !== undefined || props.panelColorPreset !== undefined || props.variant !== undefined || props.aside !== undefined || props.list !== undefined || props.info !== undefined
       || props.contentWidth !== undefined || props.navigationAlign !== undefined || props.navigationGap !== undefined || props.drawer !== undefined
       || props.navFrom !== undefined || props.navExpandedFrom !== undefined || props.topBar !== undefined
       || props.bottomBar !== undefined || props.floatingAction !== undefined;

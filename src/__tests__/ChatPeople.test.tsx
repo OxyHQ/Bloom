@@ -115,6 +115,30 @@ const SECTIONS: ContactSection[] = [
 // ---------------------------------------------------------------------------
 
 describe('ContactRow', () => {
+  it('renders application identity slots while retaining row naming and selection behavior', () => {
+    const changes: boolean[] = [];
+    mount(<ContactRow id="a" name="Ana Restrepo" subtitle="@ana@example.social"
+      avatarSlot={<span data-testid="custom-avatar">Verified avatar</span>}
+      identitySlot={<span data-testid="custom-identity">Ana · verified · example.social</span>}
+      onSelectedChange={value => changes.push(value)} testID="r" />);
+    expect(text(byTestId('custom-avatar'))).toContain('Verified avatar');
+    expect(text(byTestId('custom-identity'))).toContain('example.social');
+    expect(maybe('r-name')).toBeNull();
+    expect(maybe('r-subtitle')).toBeNull();
+    expect(byTestId('r-select').getAttribute('aria-label')).toBe('Ana Restrepo');
+    press(byTestId('r-select'));
+    expect(changes).toEqual([true]);
+    expect(container.querySelectorAll('[role="checkbox"]').length).toBe(1);
+  });
+
+  it('supports intentionally empty slots without losing the accessible person name', () => {
+    mount(<ContactRow id="a" name="Ana" subtitle="@ana" avatarSlot={null} identitySlot={null} onPress={() => undefined} testID="r" />);
+    expect(maybe('r-name')).toBeNull();
+    expect(maybe('r-subtitle')).toBeNull();
+    expect(byTestId('r-open').getAttribute('aria-label')).toBe('Ana, @ana');
+    expect(container.querySelector('[data-testid="r"] [role="img"]')).toBeNull();
+  });
+
   it('derives the trailing affordance from the handlers it was given', () => {
     mount(<ContactRow id="a" name="Ana" onSelectedChange={() => undefined} testID="r" />);
     expect(maybe('r-checkbox')).not.toBeNull();

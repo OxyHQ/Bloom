@@ -422,6 +422,19 @@ describe('DownloadButton', () => {
 });
 
 describe('FollowButton', () => {
+  it('preserves toggle state and blocks interaction while loading', () => {
+    const onFollowChange = jest.fn();
+    mount(<FollowButton following loading size="large" textStyle={{ fontSize: 18 }} onFollowChange={onFollowChange} testID="f" />);
+    const el = byTestId('f');
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    expect(el.getAttribute('aria-pressed')).toBe('true');
+    act(() => el.click());
+    expect(onFollowChange).not.toHaveBeenCalled();
+    mount(<FollowButton following size="large" onFollowChange={onFollowChange} testID="f" />);
+    act(() => byTestId('f').click());
+    expect(onFollowChange).toHaveBeenCalledWith(false);
+  });
+
   it('keeps its name and toggle semantics in icon-only mode without activating a parent', () => {
     const parent = jest.fn();
     const onFollowChange = jest.fn();

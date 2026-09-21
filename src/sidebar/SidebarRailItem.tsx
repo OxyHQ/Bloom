@@ -38,6 +38,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   badge,
   selected = false,
   onPress,
+  onLongPress,
   style,
   testID,
 }) => {
@@ -71,6 +72,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
       accessibilityState={{ selected }}
       onHoverIn={onIn}
       onHoverOut={onOut}
+      onLongPress={onLongPress}
       onPress={(event: GestureResponderEvent) => {
         if (!onPress) return;
         if (IS_WEB && href) event.preventDefault();

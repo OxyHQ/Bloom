@@ -284,6 +284,8 @@ function FollowButtonComponent({
   iconOnly = false,
   size = 'small',
   disabled = false,
+  loading = false,
+  textStyle,
   style,
   testID,
 }: FollowButtonProps) {
@@ -300,24 +302,24 @@ function FollowButtonComponent({
     <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
       style={{ height: 20, overflow: 'hidden', ...(iconOnly ? { width: 20 } : {}), justifyContent: 'center' }}>
       {!iconOnly && <View style={{ height: 0, overflow: 'hidden' }}>
-        <Text variant="body-semibold">{label}</Text>
-        <Text variant="body-semibold">{followingLabel}</Text>
+        <Text variant="body-semibold" style={textStyle}>{label}</Text>
+        <Text variant="body-semibold" style={textStyle}>{followingLabel}</Text>
       </View>}
       <Animated.View testID={testID ? `${testID}-idle-label` : undefined}
         style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, idleLabelStyle]}>
         {iconOnly ? <RiUserAddLine width={20} height={20} fill={labelColor} />
-          : <Text variant="body-semibold" style={{ color: labelColor }} numberOfLines={1}>{label}</Text>}
+          : <Text variant="body-semibold" style={[{ color: labelColor }, textStyle]} numberOfLines={1}>{label}</Text>}
       </Animated.View>
       <Animated.View testID={testID ? `${testID}-following-label` : undefined}
         style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, followedLabelStyle]}>
         {iconOnly ? <RiUserFollowLine width={20} height={20} fill={labelColor} />
-          : <Text variant="body-semibold" style={{ color: labelColor }} numberOfLines={1}>{followingLabel}</Text>}
+          : <Text variant="body-semibold" style={[{ color: labelColor }, textStyle]} numberOfLines={1}>{followingLabel}</Text>}
       </Animated.View>
     </View>
   );
   return (
     <Button appearance="subtle" tone={tone} size={size} iconOnly={iconOnly}
-      pressed={following} stopPropagation accessibilityLabel={label} disabled={disabled}
+      pressed={following} stopPropagation accessibilityLabel={label} disabled={disabled} loading={loading}
       onPress={() => onFollowChange(!following)} trailing={visual}
       style={style} testID={testID} />
   );

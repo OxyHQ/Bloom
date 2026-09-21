@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { BloomTone } from '../appearance';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -162,8 +162,12 @@ export interface FollowButtonProps extends ToggleBase {
   followingLabel?: string;
   /** Draw on a band: the pill takes the band's text colour. */
   color?: string;
-  /** `small` 32 (default) or `medium` 36 high. */
-  size?: 'small' | 'medium';
+  /** Shared Button sizes; small by default. */
+  size?: 'small' | 'medium' | 'large';
+  /** Reserves label geometry while showing the shared Button spinner. */
+  loading?: boolean;
+  /** Applied to both labels and their width-measuring copies. */
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export interface MediaIconButtonProps extends ToggleBase {

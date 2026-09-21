@@ -46,6 +46,8 @@ function ContactRowComponent(props: ContactRowProps) {
   const {
     name,
     avatar,
+    avatarSlot,
+    identitySlot,
     avatarVariant,
     subtitle,
     status,
@@ -73,7 +75,7 @@ function ContactRowComponent(props: ContactRowProps) {
 
   const body = (
     <>
-      <AvatarPresence
+      {avatarSlot !== undefined ? avatarSlot : <AvatarPresence
         source={avatar}
         variant={avatarVariant}
         name={name}
@@ -81,8 +83,9 @@ function ContactRowComponent(props: ContactRowProps) {
         status={status}
         presenceRingColor={paint.surface}
         presenceLabel=""
-      />
+      />}
       <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
+        {identitySlot !== undefined ? identitySlot : <>
         <Text
           variant="body-medium"
           numberOfLines={1}
@@ -101,6 +104,7 @@ function ContactRowComponent(props: ContactRowProps) {
             {subtitle}
           </Text>
         )}
+        </>}
       </View>
       {trailingSlot !== undefined ? (
         trailingSlot
