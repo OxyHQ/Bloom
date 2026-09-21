@@ -1,0 +1,160 @@
+---
+title: LocationPuck
+description: Where you are, on a map Bloom does not own — the dot, the accuracy halo, the heading cone and the navigating chevron.
+order: 137
+---
+
+# LocationPuck
+
+`@oxy.so/bloom/location-puck`
+
+Everything else in Bloom's maps set is chrome AROUND a map: a place card, a
+route summary, the controls that float on top. This is the one thing drawn ON
+it, and it answers one question — where are you, how sure are we, and which way
+are you facing.
+
+```tsx
+import { LocationPuck } from '@oxy.so/bloom/location-puck';
+
+<LocationPuck
+  state="located"
+  heading={heading}
+  headingAccuracy={headingAccuracy}
+  accuracyRadius={metresToPixels(accuracy)}
+/>
+```
+
+## It positions nothing
+
+The same contract `map-marker` publishes, and for the same reason: Bloom has no
+projection, no tile source and no opinion about which map library you use. The
+puck draws ONE square box with every layer centred in it, and the app centres
+that box on the coordinate — the dot lands on the coordinate because it is at
+the centre of the box, not because of an offset.
+
+The box's size is whichever layer reaches furthest: `2 × accuracyRadius`,
+`2 × coneLength`, or the puck itself. It takes no presses
+(`pointerEvents="none"`), so a halo that happens to cover a third of the screen
+never eats a pan the map was meant to receive.
+
+`accuracyRadius` is in PIXELS, computed by the app from metres at this latitude
+and zoom, and re-passed on every zoom. Without it no halo is drawn at all: a
+halo of an invented size is a claim about precision nobody measured.
+
+## The layers
+
+| layer | what it is |
+| --- | --- |
+| halo | `MapAreaCircle` — literally the approximate-area circle `map-marker` publishes, at the radius the app gave |
+| cone | a wedge from the dot, fading along its length, as wide as the device is unsure |
+| puck | an 18 dot in the accent inside a 3 ring, `shadow-m`; a chevron while navigating |
+
+The halo is not a second implementation of a translucent accent circle. It IS
+the one `map-marker` already draws — the accent at 15% with a 1.5 edge — so a
+preset change moves the halo with every other circle on the map.
+
+## The cone is the uncertainty, drawn
+
+`headingAccuracy` is the platform's own ± reading in DEGREES and it is the
+cone's half-width, clamped into `[14°, 55°]`. Narrow means "this way"; wide
+means "roughly this way"; there is no third vocabulary and no separate
+confidence prop, because the device already reports the number.
+
+`headingUnknown` draws **no cone** and speaks no bearing. A cone at a default
+angle would be a confident claim about the one thing the device could not
+measure, and a reader who cannot see the screen would be told a heading that
+does not exist.
+
+### The gradient is the trap
+
+`react-native-svg` reads `stopColor` for its RGB and **discards any alpha inside
+it**. A stop written as `rgba(…, 0.45)` renders correctly in a browser and
+FULLY OPAQUE on a device — a hard-edged accent wedge lying over half the map —
+and a gate that pinned both platforms to the same colour token would stay green,
+because the two agree about every value and only the renderer's reading differs.
+That exact defect shipped once in `theme/glass-colors.ts`.
+
+So `LOCATION_PUCK_CONE_STOPS` holds an OFFSET and an OPACITY in separate fields,
+and the cone hands `color` to `stopColor` and `opacity` to `stopOpacity`, which
+are the two props SVG actually defines. `LocationPuck.test.tsx` asserts every
+rendered `<stop>` carries a `stop-opacity` and that no `stop-color` contains an
+alpha channel.
+
+The gradient is also `gradientUnits="userSpaceOnUse"`. The default,
+`objectBoundingBox`, resolves against the bounding box of the element that
+REFERENCES the gradient — the wedge, not the square — so `cx/cy = 0.5` lands
+somewhere out along the cone and moves as the angle widens. Measured in a
+browser before it was fixed: the fade started partway down the cone and was
+brightest off to one side of it.
+
+## `following`, `compass`, `navigating`
+
+The mode decides how much the puck turns, and the component owns that decision
+rather than making every caller repeat it:
+
+- **`following`** — the map is north-up, so the cone turns by `heading`.
+- **`compass`** — the app has already rotated the MAP so the heading is up, so
+  the cone turns by **nothing**. Passing the heading here as well would apply
+  the rotation twice; it is the mirror of the correction `MapCompass` makes for
+  its needle.
+- **`navigating`** — the dot becomes a chevron pointing along the route, and the
+  cone disappears with it. The chevron IS the direction; a cone beside it is a
+  second arrow saying the same thing.
+
+The chevron has no drop shadow, on purpose. A drop shadow is the shadow of a
+node's BOX, and the chevron's box is a square containing a wedge — so a shadow
+on it draws a rectangle floating under a triangle. It is separated from the map
+by its ring-coloured stroke, which traces the shape it actually has.
+
+## The ring is the dot's own on-colour
+
+A ring has one job: make the dot read as a deliberate object over tiles Bloom
+cannot see. Bloom cannot measure anything against those tiles, but every fill in
+the library already ships with the colour that reads ON it — so the live ring is
+the accent's solid `foreground` (white for most seeds, black for a light one
+like yellow or peach; the pair adapts, a hardcoded white ring does not), and the
+stale ring is the map-chrome surface, because the stale dot is a text rung
+floored against exactly that surface.
+
+Measured over a dark tile: the chrome surface as the LIVE ring disappeared
+entirely in dark mode — a dark ring on a dark map.
+
+## States, and what they say out loud
+
+| state | drawn | announced |
+| --- | --- | --- |
+| `locating` | the dot swells 18%, the halo breathes | "Finding your location" |
+| `located` | still | "Your location" |
+| `stale` | the accent gone, the halo at half | "Your last known location" |
+
+`stale` is the one that must be a sentence rather than a shade. A dimmer dot
+tells a sighted reader something is different and tells everybody else nothing,
+and "the map is showing where you were" is not recoverable by looking harder.
+
+Every state adds the bearing when there is one — "Your location, facing 41
+degrees" — and none of them adds it when there is not.
+
+## Motion
+
+Only `locating` moves, out of one shared driver: the dot swells and the halo
+breathes over 1600ms. A pulse that never stops is a battery cost and a
+distraction, so it stops the moment there is a fix, and `useReducedMotion()` —
+or the `reducedMotion` prop — stops it outright.
+
+The driver is written IMPERATIVELY from an effect and only READ in
+`useAnimatedStyle`, with every shared value in the deps array. Both halves are
+load-bearing on web: an animation returned from a mapper never ticks, and
+without the worklets Babel plugin a mapper re-runs on its deps array rather than
+on auto-tracked reads. See `docs/motion.mdx`.
+
+Jest cannot see the pulse at all — the reanimated mock resolves a sequence to
+its last value, so the driver reads 0 whether or not it was started. The suite
+pins what IS asymmetric (an animating halo sits at the trough of its breath, a
+still one at its resting opacity), and the motion itself is measured in a real
+browser by sampling the dot's box over ten frames.
+
+## What is not here
+
+No engine, no tiles, no projection, no geolocation. `LocationPuck` is given a
+state, a heading and a radius in pixels; it reads no sensor and subscribes to
+nothing.

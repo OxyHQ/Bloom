@@ -1273,6 +1273,68 @@ export type {
   MapOverlayOption,
 } from './map-controls';
 
+// Drawn ON the map rather than around it: where you are, the guidance while it
+// is happening, and the small print the data's licence requires. Built on the
+// two families above — the accuracy halo IS `map-marker`'s area circle, the
+// maneuver glyphs ARE `directions`' own, and the guidance rides on the same
+// glass island the map controls do.
+export { LocationPuck } from './location-puck';
+export {
+  LOCATION_PUCK_CONE_STOPS,
+  LOCATION_PUCK_GEOMETRY,
+  LOCATION_PUCK_PULSE_MS,
+  LOCATION_PUCK_STALE_OPACITY,
+  LOCATION_PUCK_STATE_LABELS,
+} from './location-puck';
+export { coneHalfAngle, describeLocationPuck, resolveLocationPuckPaint } from './location-puck';
+export type {
+  LocationPuckGeometry,
+  LocationPuckMode,
+  LocationPuckPaint,
+  LocationPuckProps,
+  LocationPuckState,
+} from './location-puck';
+export { ArrivalBar, LaneGuidance, NavigationBanner, SpeedLimitPill } from './navigation-banner';
+export {
+  NAVIGATION_BANNER_GEOMETRY,
+  NAVIGATION_STATE_ICON,
+  NAVIGATION_STATE_LABELS,
+  NAVIGATION_STATE_TONE,
+} from './navigation-banner';
+export {
+  describeArrival,
+  describeLanes,
+  describeNavigationBanner,
+  describeSpeedLimit,
+  maneuverWordFor,
+  resolveNavigationPaint,
+} from './navigation-banner';
+export type {
+  ArrivalBarLabels,
+  ArrivalBarProps,
+  LaneDirection,
+  LaneGuidanceLabels,
+  LaneGuidanceProps,
+  NavigationBannerGeometry,
+  NavigationBannerLabels,
+  NavigationBannerProps,
+  NavigationBannerState,
+  NavigationLane,
+  NavigationPaint,
+  SpeedLimitPillProps,
+} from './navigation-banner';
+export { MapAttribution, MapScaleBar } from './map-attribution';
+export { MAP_ATTRIBUTION_GEOMETRY } from './map-attribution';
+export { describeScale, resolveMapAttributionPaint } from './map-attribution';
+export type {
+  MapAttributionGeometry,
+  MapAttributionPaint,
+  MapAttributionProps,
+  MapAttributionVariant,
+  MapScale,
+  MapScaleBarProps,
+} from './map-attribution';
+
 // Commerce — what any app that moves a thing from A to B needs: where the
 // thing is, what it costs, where it is going, and the stops on the way. Shared
 // on purpose: a parcel, a food order and a booking are the same four questions.
