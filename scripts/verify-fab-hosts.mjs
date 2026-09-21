@@ -29,6 +29,14 @@ try {
     for (const key of ['glyphWidth', 'glyphHeight']) assert(Math.abs(state[key] - 26) < 1, JSON.stringify(state));
     for (const key of ['offsetX', 'offsetY']) assert(Math.abs(state[key]) < 1, JSON.stringify(state));
     assert.equal(state.glyphFill, state.foreground, 'The icon must follow the action foreground in every host');
+    if (story === 'navigation-bottombar--default' || width === 390) {
+      const offset = await page.$eval(selector, node => {
+        const action = node.getBoundingClientRect();
+        const navigation = node.parentElement.parentElement.parentElement.firstElementChild.getBoundingClientRect();
+        return action.y + action.height / 2 - navigation.y - navigation.height / 2;
+      });
+      assert(Math.abs(offset) < 1, `Bottom bar and FAB centers differ by ${offset}px`);
+    }
     console.log(`${story} ${width}px: ${JSON.stringify(state)}`);
   }
 } finally { await browser.close(); }
