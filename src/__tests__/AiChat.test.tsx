@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text } from 'react-native';
+import * as Native from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 jest.mock('react-native-reanimated', () => {
@@ -350,5 +351,20 @@ describe('AiChatContainer application header', () => {
     expect(screen.queryByLabelText('Share chat')).toBeNull();
     pressHost(screen.getByLabelText('More options'));
     expect(onMore).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AiChatShell sidebar width ownership', () => {
+  it.each([undefined, 72])('lets the sidebar own its collapsed width unless overridden (%s)', (width) => {
+    const dimensions = jest.spyOn(Native, 'useWindowDimensions').mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+    try {
+      const { getByTestId } = renderIn(<AiChatShell sidebarCollapsed collapsedSidebarWidth={width} sidebar={<View testID="sized-sidebar" style={{ width: 66 }} />}><Text>Chat</Text></AiChatShell>);
+      let column = getByTestId('sized-sidebar').parent;
+      while (column && StyleSheet.flatten(column.props.style)?.zIndex !== 10) column = column.parent;
+      expect(column).not.toBeNull();
+      const style = StyleSheet.flatten(column!.props.style);
+      expect(style.width).toBe(width);
+      expect(style.overflow).not.toBe('hidden');
+    } finally { dimensions.mockRestore(); }
   });
 });

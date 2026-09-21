@@ -64,7 +64,7 @@ Give the shell a sized parent — it fills it.
 
   It is armed only where there IS a drawer — below `lg`, and only with a `mobileSidebar`. An opening drag has to start within **24px of the left edge**, travel 12px, and be **twice as horizontal as vertical** before it is claimed: a vertical drag stays the thread's scroll and a horizontal drag anywhere but the edge stays the content's, so a carousel or a scrolling code block inside the chat keeps its gestures. Once the drawer is open the closing drag may start anywhere, because the veil is over all of it by then. On **web only a real touch** is claimed — a mouse drag from the edge is left alone so a selection that starts there survives — and nothing sets `touch-action`, which would have taken horizontal panning away from every scroller inside the workspace.
 - `navOpen` / `panelOpen` are controllable. Reduced motion snaps: the drag itself still tracks the finger 1:1 (it is direct manipulation, not an animation), and only the settle at the end of it jumps rather than travels.
-- **A collapsible rail** — `sidebarWidth` fixes the in-flow column's width, `sidebarCollapsed` narrows it to `collapsedSidebarWidth` (56: one 36px control and its gutters). Without either, the sidebar sizes itself exactly as before. The column snaps between the two widths; whatever animates inside it is the sidebar's own business.
+- **A collapsible rail** — `sidebarCollapsed` publishes the state while the sidebar owns its width and transition. `sidebarWidth` and `collapsedSidebarWidth` are explicit column overrides only; omit them for a Bloom `Sidebar` so its FAB, insets and collapse animation determine the actual width. The shell does not clip that sidebar into a fixed 56px lane.
 - **`background` and `surface`** — `background` is any node, drawn above the shell's own background-full and below the sidebar, workspace and drawers; it is never interactive. The workspace paints background-full too, so pass `surface={false}` with it (that drops both) or the layer is covered exactly where the chat sits. When the layer belongs to the chat rather than the page, put it on `AiChatContainer` instead, which is the nearer slot and needs no opt-out.
 - **What the shell publishes** — `useAiChatShell()` returns the shell's state to any descendant: `compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav` / `hasPanel`, `openNav` / `closeNav` / `openPanel`, and **`navPresented`**.
 
@@ -138,3 +138,14 @@ application's real actions. Omit `title` and `project` to omit its breadcrumb;
 without breadcrumb or action handlers no extra header row is reserved. Share
 and more controls render only when `onShare` and `onMore` are supplied. This
 keeps applications without public sharing from presenting a dead share action.
+
+### Panel keyboard ownership
+
+An open `AiChatShell` panel closes on Escape (web) or Android back. Controlled
+hosts keep `panelOpen` in sync through `onPanelOpenChange`; removing their
+`panel` closes the desktop rail. At compact widths the drawer moves web focus
+inside, cycles Tab/Shift+Tab, and returns focus to its opener when closed.
+Portaled menus/dialogs take priority over shell dismissal and focus containment.
+Native uses the shared accessibility-focus hook on entry; automatic native
+return to an arbitrary caller's opener is not available without a trigger ref.
+No device-runtime verification is implied by the Android back-handler tests.

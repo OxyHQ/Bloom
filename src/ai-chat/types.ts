@@ -397,9 +397,9 @@ export interface AiChatShellProps {
    * itself, as it always has.
    */
   sidebarWidth?: number;
-  /** Narrow the in-flow sidebar to `collapsedSidebarWidth` — a host's icon rail. Default `false`. */
+  /** Publish the in-flow sidebar's collapsed state. Default `false`; the sidebar owns its size. */
   sidebarCollapsed?: boolean;
-  /** The collapsed column's width. Default `56`. */
+  /** Optional collapsed column width override. Omit to let the sidebar size and animate itself. */
   collapsedSidebarWidth?: number;
   /** The flat sidebar revealed under the workspace below `lg`. Default: none (no nav drawer). */
   mobileSidebar?: ReactNode;

@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Button } from '../button';
+import { usePanelInteraction } from './use-panel-interaction';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
@@ -39,8 +40,6 @@ const REVEAL_MS = 325;
 const REVEAL_OFFSET = 272;
 const DRAWER_EASE = Easing.bezier(0.4, 0, 0.2, 1);
 const DRAWER_MS = 300;
-/** An icon-only rail: one 36px control plus its 10px gutters. */
-const COLLAPSED_SIDEBAR_WIDTH = 56;
 
 // --- Nav drawer swipe ------------------------------------------------------
 //
@@ -275,7 +274,7 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
  *
  *   lg and up   the floating `sidebar` in flow, 16 from the workspace, at
  *               `sidebarWidth` (or its own width) — `sidebarCollapsed` narrows
- *               the column to `collapsedSidebarWidth` (56) for an icon rail
+ *               the column only when `collapsedSidebarWidth` explicitly overrides the sidebar
  *   workspace   the chat container flexing, then (xl and up) the `panel` 12 to
  *               its right at `panelWidth`; the resize grip on the chat's right
  *               edge trades width between them, clamped 320–560
@@ -304,7 +303,7 @@ export function AiChatShell({
   sidebar,
   sidebarWidth,
   sidebarCollapsed = false,
-  collapsedSidebarWidth = COLLAPSED_SIDEBAR_WIDTH,
+  collapsedSidebarWidth,
   mobileSidebar,
   children,
   panel,
@@ -344,6 +343,8 @@ export function AiChatShell({
   });
   const navOpen = navOpenState && !navInFlow && !!mobileSidebar;
   const panelOpen = panelOpenState && !wide && !!panel;
+  const dismissPanel = useCallback(() => setPanelOpen(false), [setPanelOpen]);
+  const panelRef = usePanelInteraction(panelOpenState && !!panel, panelOpen, dismissPanel);
   // The swipe's handlers are built once and read the drawer's state from here.
   const navOpenRef = useRef(navOpen);
   navOpenRef.current = navOpen;
@@ -599,7 +600,7 @@ export function AiChatShell({
               // Untouched unless the host asked for a width: the sidebar has
               // always sized itself.
               ...(sidebarCollapsed
-                ? { width: collapsedSidebarWidth, flexShrink: 0, overflow: 'hidden' }
+                ? (collapsedSidebarWidth !== undefined ? { width: collapsedSidebarWidth, flexShrink: 0 } : null)
                 : sidebarWidth !== undefined
                   ? { width: sidebarWidth, flexShrink: 0 }
                   : null),
@@ -667,6 +668,11 @@ export function AiChatShell({
               />
             </Animated.View>
             <Animated.View
+              ref={panelRef}
+              role="dialog"
+              aria-modal={panelOpen}
+              accessibilityLabel={panelLabel}
+              accessibilityViewIsModal={panelOpen}
               style={[
                 {
                   position: 'absolute',

@@ -164,3 +164,8 @@ export function releaseOverlayRank(rank: number): void {
 export function resetOverlayStack(): void {
   globalThis.__oxy_so_bloom_overlay_stack__ = { sequence: 0, live: new Set() };
 }
+
+/** In-flow shell drawers yield interaction to any portaled surface above them. */
+export function hasActiveOverlays(): boolean {
+  return registry().live.size > 0;
+}
