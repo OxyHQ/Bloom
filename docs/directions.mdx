@@ -1,0 +1,109 @@
+---
+title: Directions
+description: Getting there — the chosen route as a figure with its alternates, the turn list grouped by leg with a maneuver glyph and a current step, and a transit line's own badge.
+order: 135
+---
+
+# Directions
+
+```tsx
+import { DirectionsSummary, DirectionsSteps } from '@oxy.so/bloom/directions';
+
+<DirectionsSummary
+  routes={routes}
+  selectedRouteId={chosen}
+  onSelectRoute={setChosen}
+  stops={stops}
+  onSwapStops={swap}
+  modes={['drive', 'transit', 'walk', 'cycle']}
+  mode={mode}
+  onModeChange={setMode}
+  onStart={navigate}
+/>
+<DirectionsSteps legs={legs} currentStepId={current} />
+```
+
+## What this family does NOT draw
+
+- **The origin and the destination.** They are [`RouteStops`](/docs/route-stops), which
+  already owns the marker column, the connector, the swap and the reached/current/pending
+  states. `DirectionsSummary` renders it from `stops` and draws no second header. Without
+  `stops` it draws no header at all, for an app whose screen already shows them.
+- **The mode switcher.** A switcher of views is `SegmentedControl`. The four modes are
+  data (`DIRECTIONS_MODE_LABELS`, `DIRECTIONS_MODE_ICON`), not four components.
+- **A row.** Every route alternate and every turn step is an
+  [`AddressRow`](/docs/address) — the row, the glyph tile, the press target, the density
+  rungs, the trailing `meta` and the disabled opacity are `Item`'s, through it. This
+  family adds a glyph table and the words.
+- **A map.** There is no engine, no projection and no tile here.
+
+## The duration is the figure
+
+Nobody leaves the house because a place is 8.2 km away. `DirectionsSummary` leads with the
+DURATION at `title-1`, tabular, under a quiet label — the figure block
+[`ai-profile-card`](/docs/ai-profile-card) uses — with the distance as a `Chip` and the
+traffic as a `Badge` on its tone beside it. The arrival time and the via line follow as two
+quiet readings, each a 16 glyph and a line of secondary text.
+
+`traffic: 'light'` is `success`, not `default`. A clear road is good news and the reader is
+scanning for it; a neutral pill beside a red one reads as "no information" rather than as
+"clear".
+
+## The chosen route is not in the alternates
+
+It is drawn in full above them, and a route shown twice is a reader wondering whether they
+are two. That is also why the alternates are a `list` of pressable rows and not a
+`radiogroup`: a radio group whose checked member is missing announces a choice with nothing
+chosen. A press on a row CHOOSES it, which swaps it into the figure.
+
+## The maneuver glyphs, and the two that are mirrored
+
+A maneuver set is symmetric — a right turn IS a left turn seen from the other side — and
+Bloom's icon set carries one side of each pair. `right` is `RiCornerUpLeftLine` mirrored
+about its own centre (`scaleX: -1`), and `slight-left` is `RiArrowRightUpLine` mirrored.
+
+**Mirroring is the correct answer here, not a shortcut.** The alternative is picking a
+different glyph that happens to point the right way, and it does not share the partner's
+stroke weight, arrowhead or corner radius — the pair then reads as coming from two icon
+sets. A mirror moves nothing and needs no offset.
+
+Each mirrored component is built ONCE at module scope. Built inside a render it would be a
+new component type on every frame, and React would unmount and remount the SVG each time.
+
+The table is `DIRECTIONS_MANEUVER_ICON`; the words are `DIRECTIONS_MANEUVER_LABELS`, and
+they are announced BEFORE the instruction because a glyph says nothing aloud. That is the
+same hole `RouteStops` fills for its marker shapes.
+
+## The current step
+
+It wears the accent's own `subtle` wash, painted through the row's `style` — **not through
+`selected`**. `Item` maps `selected` on a row with no role to `aria-pressed`, and a turn
+instruction is not a toggle: a screen reader would announce every step as "not pressed".
+
+The state a step carries is "this is where you are", which ARIA has no attribute for on a
+list row, so it travels in the NAME instead (`currentLabel`, default "Current step"),
+where it is certain to be heard.
+
+## Where a step's name goes
+
+Exactly as in `RouteStops`, and for the same reason: a pressable step is a button and
+carries its own name; a read-only one renders `role="none"`, which assistive technology is
+told to ignore, so the name goes on the `listitem` around it. Naming both would read every
+step twice.
+
+## Transit
+
+A leg header carries its mode glyph, its title at the section rung, its line badge and its
+reading. `TransitLineBadge` is Bloom's `Badge` with two colours overridden and nothing
+else — the same construction `listing-card`'s status pill uses, because an operator's line
+colour is DATA the app owns and only the fill and the label may come from outside the
+palette.
+
+**The label is measured, not derived.** `readableOn` picks whichever end of the theme's own
+reading pair clears more contrast against the operator's fill, in both modes — a derived
+label (lighten the fill until it clears AA) invents a colour that is in no palette, and on
+a saturated operator red it lands on pink. A line with no colour is the plain neutral
+badge, which is the right answer for an operator that publishes none.
+
+The badge shows two characters and says a sentence: `describeTransitLine` gives it
+"Line L4, towards Pla del Bosc".

@@ -1,0 +1,103 @@
+---
+title: Map controls
+description: The chrome that floats over a map — locate, compass, zoom, tilt and the layer picker — as a column of glass islands, with no map engine anywhere in it.
+order: 136
+---
+
+# Map controls
+
+```tsx
+import { MapControls, MapLayerPicker } from '@oxy.so/bloom/map-controls';
+
+<MapControls
+  onLocate={toggleFollow}
+  following={following}
+  heading={heading}
+  onResetNorth={resetNorth}
+  onZoomIn={zoomIn}
+  onZoomOut={zoomOut}
+  tilted={tilted}
+  onTiltChange={setTilted}
+>
+  <MapLayerPicker layers={LAYERS} layerId={layer} onLayerChange={setLayer} overlays={OVERLAYS} … />
+</MapControls>
+```
+
+## One material, and it is the island's
+
+Every group in the stack is a [`GlassIsland`](/docs/glass) and every control inside it is a
+`ButtonGroupItem`. That is not a preference:
+
+- the island paints rung 1 of the surface ladder at the chrome alpha, with the material's
+  own hairline and shadow, so the stack moves with a preset change like everything else;
+- the island mounts a `ControlSurface` with `material: 'glass'`, so the items inside paint
+  FLUSH with no `variant` written on any of them — the contract in
+  [composition](/docs/composition);
+- `ButtonGroupItem` is Bloom's island-aware control. It carries a toggle's `aria-pressed`
+  AND the native selected state in one `selected` prop, and it declares the trigger props
+  an anchored family's `asChild` hands it, which is what makes the layer picker's trigger
+  announce its own expanded state.
+
+**Why not `FrostedIconButton`.** It is one of the three glass materials Bloom grew
+independently, and `glass/` exists so there is not a fourth. Two glass recipes side by side
+in one stack is exactly the drift the island was written to end, so the whole stack is one
+material. A single frosted button over a photograph — where there is no island — is still
+the right control.
+
+**One capsule per GROUP.** Locate, compass and tilt each get their own; zoom in and zoom
+out share one, laid out in a column through the island's own `style`. That is what makes
+the stack read as separate controls rather than as one bar.
+
+## 44, not 34
+
+The button group's rungs are 34 and 30, sized for a toolbar standing beside other chrome
+where the row as a whole is what a finger aims at. A map control is a LONE circle over a
+moving map with a finger already on the glass, so `MAP_CONTROL_BOX` sets the item to 44
+square through the `style` override `ButtonGroupItem` publishes. Nothing about its fill,
+hover, press or focus ring changes.
+
+## The compass
+
+The needle turns by MINUS the heading, so it keeps pointing at north while the map turns
+under it. It **hides itself at north** by default (`hideAtNorth`, within
+`MAP_CONTROLS_GEOMETRY.northTolerance`): a compass on a map already pointing north is a
+control whose press changes nothing, and a reader has to press it to find that out.
+
+The heading reaches the needle through `MapHeadingContext`, not through a prop. That is
+worth knowing because it looks like over-engineering and is not: `ButtonGroupItem` takes
+its glyph as a COMPONENT, and a component built from the heading would be a new component
+TYPE on every degree — React would unmount and remount the SVG on every frame of a
+rotation. A module-scope component reading the context keeps one identity for the life of
+the control.
+
+A needle announces nothing, so the compass is named by prop: "Facing 34 degrees. Reset to
+north" by default, `accessibilityLabel` for a translated sentence.
+
+## The layer picker is two vocabularies
+
+`MapLayerPicker` answers two questions a reader asks in the same breath, and they answer
+differently:
+
+| | what | how |
+| --- | --- | --- |
+| map types | exactly one — standard, satellite, transit | `DropdownMenuRadioGroup`, so the chosen one carries `aria-checked` |
+| overlays | any number — traffic, bike lanes | `DropdownMenuCheckboxItem`s, each its own checkbox |
+
+The rows, indicators, keyboard handling, dismissal and anchoring are
+[`dropdown-menu`](/docs/dropdown-menu)'s. The trigger is a `ButtonGroupItem` composed
+through `asChild`, inside the same `GlassIsland` as everything else, so the picker lands in
+the stack as one more island rather than as a different kind of thing.
+
+It is placed in `children` rather than configured through a prop, so an app can put it
+above the stack, below it, or somewhere else entirely without this component growing a
+placement vocabulary.
+
+## It never touches a map
+
+Every control is a callback and every state is a prop. `MapControls` has no engine, no
+projection, no tiles and no opinion about where on the screen it sits — the app positions
+it, the app owns the map, and this tells the chrome what the map is doing.
+
+The markers, the cluster bubble, the approximate-area circle and the "search this area"
+pill are [`map-marker`](/docs/map-marker); the place they open is
+[`place-card`](/docs/place-card).
