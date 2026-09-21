@@ -1,7 +1,8 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import * as ts from 'typescript';
 
-import { WEB_POSITION_FIXED, WEB_POSITION_STICKY } from '../styles/web-view-style';
+import { WEB_POSITION_FIXED, WEB_POSITION_STICKY, WEB_SURFACE_STICKY_TOP } from '../styles/web-view-style';
 
 /**
  * `position: fixed` is web-only CSS that React Native's `ViewStyle` does not
@@ -16,10 +17,8 @@ import { WEB_POSITION_FIXED, WEB_POSITION_STICKY } from '../styles/web-view-styl
  *
  * `WEB_POSITION_STICKY` is the same gap for `'sticky'` (a surface that pins
  * itself within its own scroll container, e.g. `rail/Rail.tsx`, rather than to
- * the viewport). It lives in the same module for the same reason, so the "only
- * cast" count below is two now — one per constant — and stays an EQUALITY
- * rather than a widened threshold: a third inline cast anywhere else in `src/`
- * is still exactly what this file exists to catch.
+ * the viewport). Each documented crossing below is named and typed explicitly;
+ * an extra cast or a cast to the wrong RN property fails the census.
  */
 
 const SRC = join(__dirname, '..');
@@ -40,6 +39,7 @@ describe('web position: fixed', () => {
   it('resolves to the CSS value at runtime', () => {
     expect(WEB_POSITION_FIXED).toBe('fixed');
     expect(WEB_POSITION_STICKY).toBe('sticky');
+    expect(WEB_SURFACE_STICKY_TOP).toBe('var(--bloom-panel-sticky-top, 0px)');
   });
 
   it('finds source files to scan (guards against a broken walk)', () => {
@@ -62,13 +62,30 @@ describe('web position: fixed', () => {
   });
 
   it('keeps only the documented casts inside styles/web-view-style.ts', () => {
-    const module = readFileSync(join(SRC, 'styles/web-view-style.ts'), 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^\s*\/\/.*$/gm, '');
-    // One per crossing (`WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`,
-    // `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus`, `WEB_OVERFLOW_CLIP`) — an
-    // equality, not a floor, so one more inline cast anywhere is still caught.
-    expect(module.match(/ as /g)).toHaveLength(5);
+    const source = ts.createSourceFile('web-view-style.ts',
+      readFileSync(join(SRC, 'styles/web-view-style.ts'), 'utf8'), ts.ScriptTarget.Latest, true);
+    const crossings: { owner: string; type: string }[] = [];
+    function visit(node: ts.Node) {
+      if (ts.isAsExpression(node)) {
+        let owner: ts.Node | undefined = node.parent;
+        while (owner && !ts.isVariableDeclaration(owner) && !ts.isFunctionDeclaration(owner)) owner = owner.parent;
+        crossings.push({
+          owner: owner && (ts.isVariableDeclaration(owner) || ts.isFunctionDeclaration(owner))
+            ? owner.name?.getText(source) ?? '<anonymous>' : '<unknown>',
+          type: node.type.getText(source),
+        });
+      }
+      ts.forEachChild(node, visit);
+    }
+    visit(source);
+    expect(crossings).toEqual([
+      { owner: 'WEB_POSITION_FIXED', type: "ViewStyle['position']" },
+      { owner: 'WEB_POSITION_STICKY', type: "ViewStyle['position']" },
+      { owner: 'WEB_SURFACE_STICKY_TOP', type: "ViewStyle['top']" },
+      { owner: 'WEB_VIEWPORT_HEIGHT', type: "ViewStyle['height']" },
+      { owner: 'webViewportHeightMinus', type: "ViewStyle['height']" },
+      { owner: 'WEB_OVERFLOW_CLIP', type: "ViewStyle['overflow']" },
+    ]);
   });
 
   it('is imported by every fork that positions something fixed', () => {
