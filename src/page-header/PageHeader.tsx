@@ -201,7 +201,7 @@ function PageHeaderComponent({
   useAnimatedReaction(
     () => titleReveal === 'onScroll' && scrollY.value <= revealOffset,
     (hidden, previous) => { if (hidden !== previous) runOnJS(setTitleHidden)(hidden); },
-    [titleReveal, scrollY, revealOffset],
+    [titleReveal, scrollY, revealOffset, setTitleHidden],
   );
 
   const shadowStyle = useAnimatedStyle(() => ({

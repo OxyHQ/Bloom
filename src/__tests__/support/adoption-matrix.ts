@@ -443,11 +443,6 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'sizes a studio stat block — a presentation part, whose two sizes happen to be spelled with the same two words as the density pair.',
     },
-    'media-header': {
-      verdict: 'does-not-apply',
-      reason:
-        'sizes the media header\u2019s meta row, which is layout of a header rather than a control inside a container.',
-    },
     tenancy: {
       verdict: 'does-not-apply',
       reason:

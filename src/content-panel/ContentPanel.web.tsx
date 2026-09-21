@@ -85,7 +85,7 @@
  * (no dynamic concatenation of the arbitrary `web:[…]` / `rounded-radius-28` /
  * `md:` parts — whole class strings are selected per mode instead).
  */
-import React, { memo } from 'react';
+import React, { memo, useInsertionEffect } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -153,7 +153,7 @@ const RESPONSIVE_WEB: Record<
 // horizontal bleed to one CSS pixel to cover fractional device-pixel seams
 // without reaching adjacent controls. CSS owns
 // responsive framing, including the sticky inset inherited by PageHeader.
-adoptStyleSheet('bloom-content-panel-insets', `
+const PANEL_INSET_CSS = `
 [data-bloom-panel] { --bloom-panel-sticky-top: 0px; }
 [data-bloom-panel="framed"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); }
 @media (min-width: 500px) { [data-bloom-panel="500"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
@@ -163,7 +163,7 @@ adoptStyleSheet('bloom-content-panel-insets', `
 [data-bloom-panel-mask="viewport"] {
   clip-path: inset(calc(-1 * max(12px, var(--bloom-panel-inset-top))) -1px calc(-1 * max(12px, var(--bloom-panel-inset-bottom))) -1px);
 }
-`);
+`;
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   children,
@@ -182,6 +182,11 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   overlaySizing = 'viewport',
   overlayInset,
 }) => {
+  // Install only for a mounted panel. Insertion effects run before layout and
+  // paint on web, and never during SSR, so import remains side-effect free.
+  useInsertionEffect(() => {
+    adoptStyleSheet('bloom-content-panel-insets', PANEL_INSET_CSS);
+  }, []);
   // Dev-only invariant — must run unconditionally (before deriving any
   // mode-specific branch) so the hook order stays stable (rules of hooks).
   useContentPanelNestingGuard();

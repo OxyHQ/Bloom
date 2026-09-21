@@ -78,6 +78,18 @@ describe('web position: fixed', () => {
       ts.forEachChild(node, visit);
     }
     visit(source);
+    const runtimeExports = source.statements.flatMap(statement => {
+      const exported = ts.canHaveModifiers(statement)
+        && ts.getModifiers(statement)?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword);
+      if (!exported || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement)) return [];
+      if (ts.isVariableStatement(statement)) return statement.declarationList.declarations.map(declaration => declaration.name.getText(source));
+      if (ts.isFunctionDeclaration(statement)) return [statement.name?.getText(source) ?? '<anonymous>'];
+      return [statement.getText(source)];
+    });
+    expect(runtimeExports).toEqual([
+      'WEB_POSITION_FIXED', 'WEB_POSITION_STICKY', 'WEB_SURFACE_STICKY_TOP',
+      'WEB_VIEWPORT_HEIGHT', 'webViewportHeightMinus', 'WEB_OVERFLOW_CLIP',
+    ]);
     expect(crossings).toEqual([
       { owner: 'WEB_POSITION_FIXED', type: "ViewStyle['position']" },
       { owner: 'WEB_POSITION_STICKY', type: "ViewStyle['position']" },

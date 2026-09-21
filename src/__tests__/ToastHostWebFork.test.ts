@@ -79,19 +79,11 @@ describe('ToastHost platform split', () => {
     expect(styleModule).toMatch(
       /export const WEB_POSITION_FIXED = 'fixed' as ViewStyle\['position'\]/,
     );
-    // `WEB_POSITION_STICKY` is the same gap for `'sticky'` (a surface pinned
-    // within its own scroll container, e.g. `rail/Rail.tsx`, rather than to the
-    // viewport) — same module, same cast shape. Exactly one cast PER crossing:
-    // the two positions plus the viewport height (a constant and a `calc()`
-    // helper) and `overflow: clip`, which the document-scrolling `AppShell`
-    // needs. Those are the only RUNTIME exports. (Counted
-    // against code — the doc comment discusses casts in prose.) The module's
-    // other export is the `WebCssStyle` interface, which covers the other half
-    // of the same RN/RNW gap and emits nothing — see `web-css-style.test.ts`.
-    expect(code('styles/web-view-style.ts').match(/ as /g)).toHaveLength(5);
-    expect(styleModule.match(/^export const /gm)).toHaveLength(4);
-    expect(styleModule.match(/^export function /gm)).toHaveLength(1);
-    expect(styleModule.match(/^export (?!const |function |interface )/gm)).toBeNull();
+    // The complete named + typed crossing census belongs to
+    // web-position-fixed.test.ts. This toast gate owns the consumer boundary,
+    // not a second count of unrelated sticky/viewport constants.
+    expect(code('toast/ToastHost.tsx')).toContain('WEB_POSITION_FIXED');
+    expect(code('toast/ToastHost.tsx')).not.toMatch(/position:\s*'fixed'\s+as/);
   });
 
   it('no engine file other than the host reaches for a platform overlay', () => {
