@@ -1341,6 +1341,84 @@ export type {
   TransitLineColors,
 } from './directions';
 
+// Freight — asking a marketplace to carry something: describing the load and
+// the route, the offers that come back, and the vehicle the job needs. Built
+// on the commerce block above: the route IS `route-stops`, the itemisation IS
+// `price-breakdown`, and the tracking IS `order-status`.
+export { ShipmentLoadPicker, ShipmentOptionsList, ShipmentRequestForm } from './shipment-request';
+export {
+  SHIPMENT_ACCESS_OPTIONS,
+  SHIPMENT_LOAD_KINDS,
+  SHIPMENT_LOAD_LABELS,
+  SHIPMENT_LOAD_SIZES,
+  SHIPMENT_OPTIONS_LABELS,
+  SHIPMENT_REQUEST_GEOMETRY,
+  SHIPMENT_REQUEST_LABELS,
+  isShipmentLoadComplete,
+  joinShipmentName,
+  sanitizeWeight,
+  toggleShipmentExtra,
+} from './shipment-request';
+export type {
+  ShipmentAccess,
+  ShipmentAccessOption,
+  ShipmentExtra,
+  ShipmentLoad,
+  ShipmentLoadErrors,
+  ShipmentLoadKind,
+  ShipmentLoadKindOption,
+  ShipmentLoadPickerLabels,
+  ShipmentLoadPickerProps,
+  ShipmentLoadSize,
+  ShipmentLoadSizeOption,
+  ShipmentOptionsLabels,
+  ShipmentOptionsListProps,
+  ShipmentRequestFormLabels,
+  ShipmentRequestFormProps,
+  ShipmentRequestGeometry,
+  ShipmentTimeWindow,
+} from './shipment-request';
+export { CarrierQuoteCard, CarrierQuoteList } from './carrier-quote';
+export {
+  CARRIER_QUOTE_GEOMETRY,
+  CARRIER_QUOTE_LABELS,
+  CARRIER_QUOTE_MARK_ORDER,
+  CARRIER_QUOTE_MARK_TONE,
+  CARRIER_QUOTE_SORTS,
+  carrierActionsAreLabelled,
+  markCarrierQuotes,
+  orderCarrierMarks,
+  resolveCarrierQuotePaint,
+  sortCarrierQuotes,
+} from './carrier-quote';
+export type {
+  CarrierQuote,
+  CarrierQuoteCardProps,
+  CarrierQuoteCarrier,
+  CarrierQuoteDensity,
+  CarrierQuoteGeometry,
+  CarrierQuoteLabels,
+  CarrierQuoteListProps,
+  CarrierQuoteMark,
+  CarrierQuotePaint,
+  CarrierQuoteSort,
+} from './carrier-quote';
+export { VehiclePicker } from './vehicle-picker';
+export {
+  VEHICLE_ICON,
+  VEHICLE_OPTIONS,
+  VEHICLE_PICKER_GEOMETRY,
+  VEHICLE_PICKER_LABELS,
+  vehicleOptionName,
+} from './vehicle-picker';
+export type {
+  VehicleKind,
+  VehicleOption,
+  VehiclePickerGeometry,
+  VehiclePickerLabels,
+  VehiclePickerProps,
+} from './vehicle-picker';
+
 export { WizardFooter, WizardProgress } from './wizard';
 export type { WizardFooterProps, WizardProgressProps, WizardStep } from './wizard';
 export { SortablePhotoGrid } from './sortable-media';

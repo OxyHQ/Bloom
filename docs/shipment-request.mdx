@@ -1,0 +1,139 @@
+---
+title: Shipment request
+description: Describing a job for a carrier — what is being moved, how big and how heavy, the photos, and the options that change the price — as one column of sections built from the families that already own each part.
+order: 134
+---
+
+# Shipment request
+
+```tsx
+import {
+  ShipmentRequestForm,
+  ShipmentLoadPicker,
+  ShipmentOptionsList,
+} from '@oxy.so/bloom/shipment-request';
+
+<ShipmentRequestForm
+  route={{ stops, onSwap, onAddStop, onRemoveStop }}
+  load={load}
+  onLoadChange={setLoad}
+  loadProps={{ notes: true }}
+  photos={{ photos, onReorder, onRemove, onAdd }}
+  options={{ extras, selectedExtras, onExtrasChange, accessOptions, access, onAccessChange }}
+  price={{ lines, total }}
+  footer={<Button variant="primary" size="large" fullWidth onPress={submit}>Ask for quotes</Button>}
+/>
+```
+
+Three components: the **form** is the register and the order, the **load picker**
+and the **options list** are the two halves of it that are this family's own.
+Either half works on its own — a sheet that only asks for the load does not have
+to mount a form.
+
+## What the form draws, and what it does not
+
+`ShipmentRequestForm` draws **nothing of its own**. Every section is an existing
+Bloom family handed its props unchanged:
+
+| section | component | subpath |
+| --- | --- | --- |
+| Where it goes | `RouteStops` | `@oxy.so/bloom/route-stops` |
+| The load | `ShipmentLoadPicker` | this family |
+| Photos | `SortablePhotoGrid` | `@oxy.so/bloom/sortable-media` |
+| Options | `ShipmentOptionsList` | this family |
+| Price | `PriceSummary` | `@oxy.so/bloom/price-breakdown` |
+
+The sections are drawn with `FilterSection`, so the inset, the heading rhythm and
+the rule between two sections are the ones a Bloom filter sheet already uses —
+there is one set of numbers, not two.
+
+The one decision the form makes is the **order**, and it is the order a carrier
+needs the questions answered in: where, what, what it looks like, what changes
+the price, what the price currently is. The price is last on purpose — the
+options that move the number and the number itself end up on one screen.
+
+**A section whose props are absent is not drawn.** `photos`, `options` and
+`price` are each optional, and a job that needs no photograph should not be asked
+for one. The route and the load are not optional: a shipment with neither is not
+a request.
+
+**The last section has no rule under it**, and the `footer` sits below it with
+none either. A divider separates two things; there is nothing after the last one.
+
+## The load picker
+
+Four questions and an optional fifth, each drawn in the control that fits the
+shape of its answer:
+
+- **kind** — one answer out of five, each with a sentence explaining what it
+  covers, so it is a column of selectable cards (the same card the listing editor
+  builds its pickers from). Not chips: a chip has no room for the sentence, and
+  the sentence is what stops someone filing a mattress under "parcel".
+- **size** — a `SegmentedControl` of single letters, with the **chosen** rung's
+  sentence under the control. Four sentences never fit in one control at phone
+  width; a control whose every option carries its own sentence is a list.
+- **weight** — a `TextField` whose unit is a `TextFieldSuffix`.
+- **quantity** — a `StepperRow` from 1.
+- **notes** — an auto-resizing `Textarea`, only when `notes` is set.
+
+### The value arrives whole
+
+`onValueChange` is called with the next `ShipmentLoad`, never with a patch. A
+form that merges patches in five places has five chances to drop a field; this
+one has none. It costs the caller a spread and buys a value that cannot be
+half-applied.
+
+### The unit is not part of the value
+
+`weight` holds digits and at most one dot. `sanitizeWeight` accepts a comma and
+emits a dot (half of Europe types one, and no app wants to parse both), strips
+the unit, and turns a leading separator into `0.`. The "kg" beside the field is
+drawn and announced; it is never stored. An app parses a number, not a sentence.
+
+`isShipmentLoadComplete(load)` is the same decision the picker makes about
+whether every control has been answered, exported so a submit button can be
+disabled from it rather than from a second copy of it. It is **not** validation:
+an app that prices a job has its own rules, and `errors` is where their messages
+go.
+
+## The options list
+
+Three groups, and the control is the difference between them:
+
+- **extras** are independent of one another, so each is a settings row with a
+  `Switch` and its own price at the end. "And also this" is a switch.
+- **access** — one of ground floor, stairs and lift is true, so they are a
+  `radiogroup` of chips and choosing one unchooses the rest.
+- **windows** — the same, over collection times.
+
+**The interactive chips are `size="xl"`** — 32 drawn, 44 under a thumb through
+`Chip`'s own `hitSlop`. The smaller rungs are for labels; a single-choice control
+at phone width is not one.
+
+**The row is not the control.** A pressable row wrapping a switch is two targets
+for one answer, and on web the outer one is a button containing a checkbox. The
+switch is the only thing that toggles.
+
+**A switch draws no text**, so each one is named with its row's title, its
+description and its price. A caption beside a switch is a sibling on both
+platforms — neither associates the two — so a screen reader reading only the
+control announces "switch, off" without this.
+
+## Money
+
+Every amount in this family is a **pre-formatted string**: `"+€12.00"`,
+`"Included"`, `"−€3.00"`. Nothing here parses, sums, converts or rounds. The
+running total is `PriceSummary`'s job, and the app computes it.
+
+## Traps
+
+- **`SHIPMENT_REQUEST_GEOMETRY` has no section numbers.** They belong to
+  `FilterSection`, which draws them. A second copy here would drift from the one
+  on screen.
+- **The form measures nothing itself.** The load picker measures its own width
+  (480) to decide whether the weight field sits beside the quantity; the form
+  does not, because every section it draws already decides its own layout.
+- **`kinds` is a prop, and the five defaults are opinions.** They are the five
+  that change how a job is priced and carried, not a taxonomy of objects. There
+  is deliberately no "Other": a marketplace that cannot name what it is carrying
+  cannot quote it, and `notes` is where an unusual load is described.
