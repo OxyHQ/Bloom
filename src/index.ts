@@ -1226,6 +1226,35 @@ export {
   MapSearchAreaButton,
 } from './map-marker';
 
+// Maps — the chrome an app draws OVER a map it supplies. No engine, no tiles:
+// a place, the way there, and the controls that float on top.
+export { PlaceActions, PlaceCard } from './place-card';
+export { PLACE_CARD_GEOMETRY, PLACE_OPEN_LABELS, PLACE_OPEN_TONE } from './place-card';
+export { composePlaceName, openLabelFor, resolvePlaceCardPaint } from './place-card';
+export type {
+  PlaceAction,
+  PlaceActionsProps,
+  PlaceCardDensity,
+  PlaceCardGeometry,
+  PlaceCardPaint,
+  PlaceCardProps,
+  PlaceOpenState,
+  PlaceStat,
+} from './place-card';
+export { MapCompass, MapControls, MapLayerPicker } from './map-controls';
+export { MAP_CONTROL_BOX, MAP_CONTROLS_GEOMETRY } from './map-controls';
+export type {
+  MapCompassProps,
+  MapControlsAlign,
+  MapControlsGeometry,
+  MapControlsLabels,
+  MapControlsProps,
+  MapLayerOption,
+  MapLayerPickerLabels,
+  MapLayerPickerProps,
+  MapOverlayOption,
+} from './map-controls';
+
 // Commerce — what any app that moves a thing from A to B needs: where the
 // thing is, what it costs, where it is going, and the stops on the way. Shared
 // on purpose: a parcel, a food order and a booking are the same four questions.
@@ -1277,6 +1306,40 @@ export type {
   RouteStopsLabels,
   RouteStopsProps,
 } from './route-stops';
+export { DirectionsSteps, DirectionsSummary, TransitLineBadge } from './directions';
+export {
+  DIRECTIONS_LEG_GLYPH,
+  DIRECTIONS_MANEUVER_ICON,
+  DIRECTIONS_MANEUVER_LABELS,
+  DIRECTIONS_MODE_ICON,
+  DIRECTIONS_MODE_LABELS,
+  DIRECTIONS_TRAFFIC_LABELS,
+  DIRECTIONS_TRAFFIC_TONE,
+} from './directions';
+export {
+  describeRoute,
+  describeStep,
+  describeTransitLine,
+  modeLabelFor,
+  resolveDirectionsPaint,
+  resolveTransitLineColors,
+  trafficLabelFor,
+} from './directions';
+export type {
+  DirectionsLeg,
+  DirectionsManeuver,
+  DirectionsMode,
+  DirectionsPaint,
+  DirectionsRoute,
+  DirectionsStep,
+  DirectionsStepsProps,
+  DirectionsSummaryLabels,
+  DirectionsSummaryProps,
+  DirectionsTraffic,
+  TransitLine,
+  TransitLineBadgeProps,
+  TransitLineColors,
+} from './directions';
 
 export { WizardFooter, WizardProgress } from './wizard';
 export type { WizardFooterProps, WizardProgressProps, WizardStep } from './wizard';

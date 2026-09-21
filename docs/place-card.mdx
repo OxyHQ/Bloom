@@ -1,0 +1,121 @@
+---
+title: Place card
+description: A place on a map — the result row in a list and the detail header of the sheet it opens, as one component, with the name, category, rating, open/closed state, hours, distance, photo and the four actions.
+order: 134
+---
+
+# Place card
+
+```tsx
+import { PlaceCard, PlaceActions } from '@oxy.so/bloom/place-card';
+
+<PlaceCard
+  name="Forner de la Plaça"
+  category="Bakery · €€"
+  photo={photo}
+  rating={4.6}
+  reviewCount={318}
+  openState="open"
+  hours="Open until 20:00"
+  address="Plaça de les Bruixes 4"
+  facts={[{ icon: RiWalkLine, label: '6 min' }, { label: '450 m' }]}
+  onPress={open}
+/>
+```
+
+## Two densities, one component
+
+`density="row"` is the result in a list over the map. `density="detail"` is the header of
+the sheet that opens when the result is picked. They are ONE component because they carry
+the same facts in the same order — a name, what the place is, how well it is thought of,
+whether it is open, how far away it is and what you can do with it. A second component
+would be a second place for "open until eight" to be spelled, and two spellings drift.
+
+Only the arrangement differs:
+
+| | row | detail |
+| --- | --- | --- |
+| photo | 112 square thumbnail, radius 12 | a 165 cover across the top |
+| name | `body-semibold` | `title-2-medium` |
+| rating | `Rating` at `small`, beside the name | `Rating` at `medium`, beside the name |
+| figure | — | a quiet label over a tabular `title-1` reading |
+| tiles | — | `stats`, one row from 640 wide, two columns below |
+| actions | under the row | under the figure block |
+
+## Nothing here is drawn twice
+
+Every part of this card already existed, and this family composes them rather than
+redrawing them:
+
+- the stars are **`Rating`**, exactly as `ListingCard` uses it — beside the title, never
+  pushing it out;
+- the open/closed pill is **`Badge`** on a tone (`success` / `warning` / `error`), which is
+  the library's one labelled status pill;
+- the distance chip on the detail header is **`Chip`**;
+- the address line and the facts row are **`listing-card`'s own parts**
+  (`ListingLocationLine`, `ListingFacts`), imported, so a pin and a clipped fact row look
+  the same in a place card and in a listing card because they are the same code;
+- the row's 112 thumbnail is `listing-card`'s `COMPACT_PHOTO_SIZE` and
+  `COMPACT_PHOTO_RADIUS`, not a second pair of numbers;
+- the heart is **`FavoriteButton`**;
+- the actions are Bloom **`Button`s** through `PlaceActions`;
+- every colour is read off the surface the card was dropped on
+  (`styles/surface-levels.ts`), so the card is right on the page, in a sheet and inside a
+  `ContentPanel` without being told which.
+
+The REVIEWS are not here either. [`place-reviews`](/docs/place-reviews) already draws the
+summary, the review cards and the write-a-review prompt; a sheet renders
+`PlaceReviewSummary` under this header rather than this header growing a second one.
+
+## The detail header is `ai-profile-card`'s register
+
+A cover band, a name at title weight, a quiet label over a figure, tiles, and labelled
+`secondary` actions. That is deliberate: a place sheet and a profile card are the same
+shape of object — a picture, a name, one number that matters and a row of things to do —
+and Bloom should not have two registers for it.
+
+The one thing it does NOT copy is the avatar. A profile has a face over the cover; a place
+has only its photograph, so the cover IS the photo and the content starts under it.
+
+## Open, closing soon, closed, opens soon
+
+Four states rather than a boolean, because "closes in fifteen minutes" is a different
+answer from "open" and an app that can only say `true` says the reassuring one. The word
+comes from `PLACE_OPEN_LABELS` (or `openLabel`), the tone from `PLACE_OPEN_TONE`.
+
+**The pill and the hours are separate lines.** The pill is a WORD ("Open") and the hours
+are a SENTENCE ("Open until 20:00"). Pushed onto one line the sentence truncates first and
+leaves the pill saying half of what the app knows.
+
+## The row is a link and the controls are its siblings
+
+The thumbnail and the text sit inside ONE pressable — a real `<a href>` on web when `href`
+is set. The heart is laid over its corner and the actions sit under it, both from OUTSIDE
+that pressable. A button inside an anchor is invalid HTML, and on web a click on the heart
+would ALSO open the place.
+
+The row is one press target, so it carries one composed name — `composePlaceName` puts the
+name, the badge, the category, the rating as a sentence, the state, the hours, the address
+and the facts in reading order. Without it a screen reader reads "Forner de la Plaça Bakery
+€€ Open Open until twenty hundred" as one run, with the rating announced as "star four
+point six paren three one eight".
+
+## Known gap: an action has no pressed state
+
+"Save" is a toggle in every maps app, and Bloom's `Button` declares no `aria-pressed` and no
+`accessibilityState` — a component with a closed prop list drops what it does not name. So a
+saved place is expressed by the action's own WORDS and glyph ("Save" → "Saved",
+`RiBookmarkLine` → `RiBookmarkFill`), which is the one spelling that reaches both platforms
+today.
+
+That is a real shortfall and it is recorded rather than worked around: `PlaceActions` does
+not hand-roll a second labelled button to get the attribute. The fix belongs on `Button`
+(`pressed?: boolean`, emitting both spellings, exactly as `GlyphButton` already does).
+
+The heart is not affected — `FavoriteButton` carries both spellings itself.
+
+## Geometry
+
+`PLACE_CARD_GEOMETRY` holds the detail side: the 165 cover, the 24 radius, 16 of padding,
+15 between blocks, 10 for a tile's corner and padding, 10 between actions. The row side has
+no geometry of its own on purpose — it is `listing-card`'s compact row, part for part.
