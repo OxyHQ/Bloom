@@ -1284,6 +1284,79 @@ export type {
   PriceSummaryProps,
   PriceTotal,
 } from './price-breakdown';
+
+// Ordering food: who is cooking, what they cook, and what is in the basket.
+// Three families on top of the commerce four above — the vendor card is
+// `listing-card`'s card with a vendor's data in it, the basket's totals are
+// `PriceSummary`, and order tracking is `order-status`.
+export { VendorCard } from './vendor-card';
+export {
+  VENDOR_AVAILABILITY_LABELS,
+  VENDOR_FACT_ICON,
+  VENDOR_FACT_LABELS,
+  VENDOR_FACT_ORDER,
+  VENDOR_PHOTO_ASPECT_RATIO,
+  availabilityLabelFor,
+  composeVendorName,
+  vendorCuisines,
+  vendorFacts,
+} from './vendor-card';
+export type {
+  VendorAvailability,
+  VendorCardDensity,
+  VendorCardProps,
+  VendorFactKey,
+} from './vendor-card';
+export { MenuItemOptions, MenuItemRow } from './menu-item';
+export {
+  MENU_ITEM_DIETS,
+  MENU_ITEM_DIET_LABELS,
+  MENU_ITEM_GEOMETRY,
+  MENU_ITEM_SPICE_MAX,
+  composeMenuItemName,
+  describeOptionRule,
+  describeSpice,
+  optionDisabled,
+  optionGroupRule,
+  optionSubtitle,
+  resolveMenuItemPaint,
+  spiceLevel,
+  toggleOptionSelection,
+} from './menu-item';
+export type {
+  MenuItemDensity,
+  MenuItemDiet,
+  MenuItemGeometry,
+  MenuItemOption,
+  MenuItemOptionGroup,
+  MenuItemOptionRule,
+  MenuItemOptionsProps,
+  MenuItemPaint,
+  MenuItemRowProps,
+} from './menu-item';
+export { CartLine, CartPanel, CartPromoField, CartTipPicker } from './cart-panel';
+export {
+  CART_BLOCK_GAP,
+  CART_GEOMETRY,
+  CART_LINE_GAP,
+  CART_WASH_OPACITY,
+  composeCartLineName,
+  optionsLine,
+  resolveCartPaint,
+} from './cart-panel';
+export type {
+  CartDensity,
+  CartGeometry,
+  CartLineEntry,
+  CartLineProps,
+  CartMinimumOrder,
+  CartPaint,
+  CartPanelProps,
+  CartPromoFieldProps,
+  CartSummary,
+  CartTipOption,
+  CartTipPickerProps,
+} from './cart-panel';
 export { AddressList, AddressRow } from './address';
 export { ADDRESS_GEOMETRY, ADDRESS_KIND_ICON, resolveAddressPaint } from './address';
 export type {

@@ -2263,6 +2263,48 @@
         "default": "./lib/commonjs/price-breakdown/index.js"
       }
     },
+    "./vendor-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/vendor-card/index.d.ts",
+        "default": "./src/vendor-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/vendor-card/index.d.ts",
+        "default": "./lib/module/vendor-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/vendor-card/index.d.ts",
+        "default": "./lib/commonjs/vendor-card/index.js"
+      }
+    },
+    "./menu-item": {
+      "react-native": {
+        "types": "./lib/typescript/module/menu-item/index.d.ts",
+        "default": "./src/menu-item/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/menu-item/index.d.ts",
+        "default": "./lib/module/menu-item/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/menu-item/index.d.ts",
+        "default": "./lib/commonjs/menu-item/index.js"
+      }
+    },
+    "./cart-panel": {
+      "react-native": {
+        "types": "./lib/typescript/module/cart-panel/index.d.ts",
+        "default": "./src/cart-panel/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/cart-panel/index.d.ts",
+        "default": "./lib/module/cart-panel/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/cart-panel/index.d.ts",
+        "default": "./lib/commonjs/cart-panel/index.js"
+      }
+    },
     "./address": {
       "react-native": {
         "types": "./lib/typescript/module/address/index.d.ts",
@@ -3606,6 +3648,15 @@
       ],
       "price-breakdown": [
         "./lib/typescript/module/price-breakdown/index.d.ts"
+      ],
+      "vendor-card": [
+        "./lib/typescript/module/vendor-card/index.d.ts"
+      ],
+      "menu-item": [
+        "./lib/typescript/module/menu-item/index.d.ts"
+      ],
+      "cart-panel": [
+        "./lib/typescript/module/cart-panel/index.d.ts"
       ],
       "address": [
         "./lib/typescript/module/address/index.d.ts"

@@ -1,0 +1,83 @@
+---
+title: Vendor Card
+description: A restaurant or a shop in a list — one cover, the cuisines as pills, the rating, the delivery readings, a promo mark and the paused/closed states, as a wide shelf card or a dense search row.
+order: 134
+---
+
+# Vendor Card
+
+`@oxy.so/bloom/vendor-card`
+
+A place you can order from, in a list of places you can order from.
+
+```tsx
+import { VendorCard } from '@oxy.so/bloom/vendor-card';
+
+<VendorCard
+  name="Fig & Ember"
+  photo="fig-ember-cover"
+  cuisines={['Wood-fired', 'Flatbread', 'Small plates']}
+  rating={4.8}
+  reviewCount={214}
+  deliveryTime="25–35 min"
+  deliveryFee="€1.90"
+  distance="1.2 km"
+  promo="2 for 1 on flatbreads"
+  favorite={saved}
+  onFavoriteChange={setSaved}
+  onPress={open}
+/>
+```
+
+## It is the housing card with a vendor's data in it
+
+That is a decision, not a coincidence. A food app and a housing app put the same object on a screen: a photograph with a wash over it, a status pill in its top-left corner, a heart in its top-right, a title with a rating beside it, and a row of small readings under it. `vendor-card` therefore draws itself with `listing-card`'s own parts — the wash, the status pill, the fact row, the heart, the photo placeholder and every colour in `resolveListingCardPaint` — and owns only the four things that differ:
+
+| this family | why it is not `listing-card`'s |
+| --- | --- |
+| the cover is **16:9** | a shelf is scanned sideways, and `listing-card`'s near-square 20:19 pushes the name off the first screen at shelf width |
+| the **cuisines** | a home has offerings (a closed set of four); a vendor has words the app supplies |
+| the **four readings** | delivery time, fee, distance, minimum order — a home's facts are bedrooms and square metres |
+| the **promo mark** | a home has no price promotion that is a pill |
+
+A second copy of the other eleven colours is how two cards that are meant to be the same hand drift apart.
+
+## Two densities, one component
+
+`comfortable` is the wide card that sits in a shelf: cover, then 12 below it the text. `compact` is the search-result row: a 112 square thumbnail — `listing-card`'s own `COMPACT_PHOTO_SIZE` — with the text beside it and the marks *above* the name, because a 112 thumbnail has no room for pills over it.
+
+They are one component because the data is identical. A results screen that switches at a breakpoint must not switch components: a card and a row that are two components are two places for the promo to go missing.
+
+## The cover is one picture
+
+There is no pager, no dots and no arrows. A shelf scrolls sideways through *vendors*, not through one vendor's photos, and a card that paged would put two horizontal gestures on the same row. A vendor's gallery belongs on its own screen.
+
+## Availability
+
+`open` draws nothing at all. `paused` (open, but not taking orders for a while) and `closed` (outside its hours) both wash the cover 50% toward the page and draw the status pill — because what a reader acts on is "not now", and the word is what says which kind.
+
+`opensAt` is a sentence the app wrote — "Opens at 07:30", "Taking orders again at 19:00". It is drawn **only while the vendor is not open**: a line telling you when an open shop opens is noise. The component never reads a clock and never formats a time.
+
+## The readings are drawn one way and announced another
+
+"25–35 min" beside a clock is unambiguous to an eye and meaningless to a screen reader, which is not told about the glyph. So each reading carries a **word**, and `factLabels` is the one prop that translates all four:
+
+```tsx
+<VendorCard
+  factLabels={{ deliveryTime: 'Tiempo de entrega', deliveryFee: 'Envío' }}
+  …
+/>
+```
+
+The card's accessible name is the whole card as one sentence, in reading order — including **every** cuisine, not only the ones that fit. The pill row clips because it ran out of width; that is not a reason to withhold a word from somebody who is listening.
+
+## The pill row clips, it does not truncate
+
+Cuisines wrap inside a box exactly one pill tall and the overflow is hidden, so a pill that does not fit drops out **whole** rather than being cut to "Flatbr…". `VENDOR_CUISINE_LIMIT` caps it before that — four in the comfortable density, three in the compact — because past a handful the row is a list rather than a mark.
+
+## Traps
+
+- **The heart is a sibling of the link, not its child.** A button inside an anchor is invalid HTML and makes the heart's press open the vendor. The card keeps `listing-card`'s arrangement: the photo and the text inside one pressable, the heart in an overlay laid over the cover from outside it.
+- **The card adopts two stylesheets.** Its own, for the link's focus ring, and `listing-card`'s, because `FavoriteButton`'s `:focus-visible` rule lives there and the heart does not adopt it itself. Both are replaced by id, so a page of cards adopts each once.
+- **Every amount and duration is a string the app formatted.** Nothing here parses "25–35 min", converts a currency or compares a fee.
+- `promoTone` defaults to `success` — the tone `price-breakdown` gives money coming back — and takes any `AccentTone` for an app whose promotions mean something else.

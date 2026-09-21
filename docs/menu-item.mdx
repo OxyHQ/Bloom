@@ -1,0 +1,117 @@
+---
+title: Menu Item
+description: A dish in a menu — photo, clamped description, price, dietary pills and a heat level, a basket quantity and an add control — and the grouped choice that customises it, built on Radio, Checkbox and Field.
+order: 135
+---
+
+# Menu Item
+
+`@oxy.so/bloom/menu-item`
+
+Two components: the dish as a row, and choosing it.
+
+```tsx
+import { MenuItemRow, MenuItemOptions } from '@oxy.so/bloom/menu-item';
+```
+
+## `MenuItemRow`
+
+```tsx
+<MenuItemRow
+  name="Ember flatbread"
+  description="Wood-fired base, slow-roasted tomato, torn basil."
+  price="€12.50"
+  photo="ember-flatbread"
+  diets={['vegetarian']}
+  spice={2}
+  quantity={inBasket}
+  onQuantityChange={setInBasket}
+  onAdd={add}
+  onPress={openOptions}
+/>
+```
+
+It is `Item` with a dish's slots filled in. The row, the press target, the hover wash, the density rungs and the a11y role translation are `Item`'s; the price line is `listing-card`'s `ListingPriceLines`, which already draws a struck original beside a current price. This family owns the photo's rung, the marks and the add control.
+
+### The quantity is drawn once
+
+With `onQuantityChange` it lives in the `Stepper`, which is where a reader would change it. Without, it is a count over the photo. A badge beside a stepper showing the same number is two controls that mean one thing, and a reader has to work out which is the real one.
+
+### A pressable row and its control are siblings
+
+`Item`'s pressable form is a real `<button>` on web. A button inside a button is invalid HTML, and on web — unlike native, which does not bubble a press — a click on the inner control **also opens the row**. So a row that both opens the dish and adds it splits into the row and the control side by side, which is the same answer `address/AddressRow` reaches. A row with no `onPress` keeps its control in `Item`'s trailing slot, where there is nothing to nest inside.
+
+This is a web-only failure. A native run cannot find it.
+
+### The name owns its line
+
+The flames used to sit beside the name. At 390 — where a 72 thumbnail and a stepper leave the text column about 50 wide — a one-line `Text` is `nowrap` on web, so the fixed 44px glyph run took what it needed and the name collapsed to **zero**: three flames and no dish. The marks are a row of their own now, under the description, which is also where they belong: the flames and the diet pills are the same kind of thing.
+
+That row is ONE wrapping row, not a row nested in a row. A nested wrapping row is a single flex item that will not shrink below its content, and its pills ran off the card's right edge instead of wrapping — which is why `MenuItemDiets` takes the flames through a `leading` slot rather than as a sibling.
+
+Neither failure has a jest spelling: jsdom has no layout. What the suite holds is the arrangement that made them possible.
+
+### Marks: pills for diets, flames for heat
+
+`diets` is a **closed** list (`vegetarian`, `vegan`, `gluten-free`, `dairy-free`, `halal`, `kosher`), because each member has a word Bloom draws and a spoken form a screen reader gets; an open `string[]` would be a row of untranslated, unannounced pills. Only the two that are about what the dish is *made of* carry a glyph — inventing a symbol for a certification would be Bloom asking an app's customers to learn one.
+
+**An allergen is not one of these.** "Contains nuts" is a legal statement about a recipe, it belongs in the dish's own copy where it can be read in full, and a two-word pill is the wrong instrument for it.
+
+`spice` is a **level**, 1–3, drawn as that many flames and announced as one element with one name ("Spicy 2 of 3"). A pill saying "Spicy" cannot tell a reader whether one is enough; a run of three identical glyphs announces nothing at all.
+
+### The description is clamped, and is not in the name
+
+Two lines on screen, and deliberately absent from the row's accessible name. Read in full it turns a scannable list into a recipe book; the whole text belongs on the dish's own screen.
+
+## `MenuItemOptions`
+
+```tsx
+<MenuItemOptions
+  groups={[
+    { id: 'size', title: 'Size', min: 1, max: 1, options: [...] },
+    { id: 'extras', title: 'Extras', max: 3, options: [...] },
+  ]}
+  value={chosen}
+  onValueChange={(groupId, ids) => setChosen((c) => ({ ...c, [groupId]: ids }))}
+  quantity={quantity}
+  onQuantityChange={setQuantity}
+  total="€16.40"
+  onSubmit={addToBasket}
+/>
+```
+
+### It is content, not a surface
+
+On a phone it is what a `BottomSheet` holds; on a desktop what a `Dialog` holds. It paints no backdrop, claims no edge and owns no open state, so the same tree works in either — and building a sheet in here would be a third one beside the two Bloom already ships. `ScreenScope` comes with `DialogBody` and `BottomSheetBase`, so the form inside it is already scoped (see [Composition](/docs/composition)).
+
+### The rule is derived from `min` and `max`
+
+| `min` / `max` | drawn |
+| --- | --- |
+| `1` / `1` | Choose 1 |
+| `2` / `2` | Choose 2 |
+| `0` / `3` | Up to 3 |
+| `2` / `4` | Choose 2 to 4 |
+| `0` / `1` | Optional — "Up to 1" is not a sentence anybody says |
+
+`ruleLabel` replaces it for a language that is not English. `min >= 1` also makes the group `required`, which is the asterisk on the label.
+
+`max === 1` renders a `RadioGroup`; anything above renders a column of `Checkbox`. Both go through the `Field` contract — `docs/composition.mdx` names hand-rolled `role="radiogroup"` as debt and keeps a list of the three families that carry it, and this is not a fourth.
+
+### The cap disables, it does not evict
+
+At a group's `max`, the options that are not already chosen go `disabled`. A reader who presses a fourth extra and watches the first one disappear has been told nothing about the rule. `toggleOptionSelection` is the pure function behind it and refuses the same press, so the two cannot disagree.
+
+### An option's price shares its text column
+
+`RadioOption` and `Checkbox` draw a label and a description and nothing else, so `optionSubtitle()` joins the description and the price into the one line they have. **A right-aligned price column would mean hand-rolling the grouped-choice semantics**, and that is the debt above. If `Radio`/`Checkbox` ever grow a trailing slot, this is the call site that wants it.
+
+### The running price rides on the button
+
+`total` is a string the app formatted; nothing here adds anything up. With `onSubmit` it is appended to the button's label ("Add to basket · €16.40"), because the number a reader is agreeing to belongs on the control they press. Without `onSubmit` it is drawn as a plain row instead.
+
+## Traps
+
+- **Both components are fully controlled.** `value` is a map of group id to chosen option ids, and the component keeps no copy of it.
+- **`unavailable` removes the controls.** A sold-out dish has no stepper and no add button — dimming a control that still fires is worse than not drawing it.
+- **The thumbnail's geometry is props, not a density.** `cart-panel` draws the same square at its own rung; two implementations of one square is how the wash ends up at two different opacities.
