@@ -1,0 +1,185 @@
+---
+title: Card form
+description: Entering a card — six boxes, grouping that never moves the caret, a scheme detected from the caller's own table, and a loud statement of what Bloom does not do with the value.
+order: 138
+---
+
+# Card form
+
+**Read this part first.**
+
+`card-form` is an INPUT SURFACE. It draws boxes, groups digits, keeps the caret where the
+person put it, and shows a message under a box. It does not:
+
+- **validate a live card.** The only two checks it offers are arithmetic: an accepted
+  digit count, and the Luhn check digit. Neither says a card exists, has funds or will be
+  accepted — only a processor can say that.
+- **store anything.** No cache, no ref that outlives the render, no `AsyncStorage`, no
+  `localStorage`.
+- **log anything.** There is no `console` call in this family.
+- **open a connection.** There is no network code in this family, and no prop that takes a
+  URL, a key or a token.
+- **ship a table of schemes.** No names, no prefixes, no ranges, no artwork.
+
+The value is the app's, and it goes to the app's own payment SDK. If you are building a
+screen that sends a card number somewhere, the sending is yours: put this in front of it
+and nothing else.
+
+```tsx
+import { CardForm } from '@oxy.so/bloom/card-form';
+
+<CardForm
+  value={value}
+  onValueChange={setValue}
+  schemes={MY_PROCESSORS_SCHEMES}
+  errors={{ number: 'That is one digit short.' }}
+  fields={{ name: true, postcode: true }}
+  accessibilityLabel="Card details"
+/>
+```
+
+## The caret rule
+
+Re-grouping a string while someone is editing the MIDDLE of it is what makes a card field
+feel broken: the value changes ahead of the caret, the platform puts the caret back at the
+end, and the next keystroke lands in the wrong place. Both platforms do it, and **no test
+of a controlled input can see it** — the value is right, and only the selection is wrong.
+
+So grouping is applied only to an edit at the END, which is the case where the caret
+belongs at the end anyway:
+
+```
+typing on, backspacing off the tail   → re-grouped
+an edit anywhere else                 → handed back exactly as typed
+leaving the box                       → re-grouped once
+```
+
+Two consequences worth knowing:
+
+- **no trailing separator, ever.** A group that ended in a space would need two backspaces
+  to lose one digit, because the first would delete a separator the formatter immediately
+  puts back.
+- **an edit past the accepted length is refused outright**, not truncated. Returning a
+  truncated value would move the caret too.
+
+`applyCardNumberEdit`, `applyCardExpiryEdit`, `normaliseCardNumber` and
+`normaliseCardExpiry` are exported and pure, so an app that draws its own box can keep the
+same behaviour.
+
+## The scheme table is the app's
+
+```tsx
+const SCHEMES = [
+  { id: 'x', name: 'Aurora', prefixes: ['7'], lengths: [16], groups: [4, 4, 4, 4] },
+  { id: 'y', name: 'Meridian', prefixes: [['81', '85']], lengths: [15], groups: [4, 6, 5],
+    securityCodeLength: 4, securityCodeLabel: 'Card code' },
+];
+```
+
+A prefix is a string, or a `[from, to]` pair of equal-length strings for a range. Matching
+is over the SHORTER of the typed digits and the prefix, so a scheme is recognised from the
+first digit — the point being that the mark appears while the number is still going in.
+
+The **first** match in the caller's array wins, so an app that wants a house scheme to beat
+a general one puts it first.
+
+Given no table, the form groups in fours, accepts sixteen digits and asks for a
+three-digit code. That is a neutral default, not a claim about any real scheme.
+
+The detected scheme drives the grouping, the accepted lengths, the security code's length
+and what the security code is CALLED, and it is reported through `onSchemeChange` — by id,
+so a caller that rebuilds its array each render does not get a change that did not happen.
+
+## The mark above the box
+
+The detected scheme is drawn with `payment-method`'s `PaymentMethodMark`, at the end of the
+number box's label row. That means the same rule applies here: **a neutral glyph and the
+scheme's name as text, never a logo**, unless the app supplies `image` on the scheme
+because it has the rights. `docs/payment-method.mdx` argues it at length.
+
+## The expiry is never checked against a clock
+
+`cardExpiryIsWellFormed` means four digits and a month between 01 and 12. It does **not**
+mean the card is still in date: this family never reads a clock, the same rule
+`price-breakdown` holds for money. The app knows what "now" means for its own billing, and
+a component that decided would be wrong for every app in a different timezone.
+
+On blur a lone month of 2–9 gets its leading zero, because nobody means September when
+they type "9" and tab away. A lone `1` is left alone — it is as likely to be the start of
+October.
+
+## Every box is a `Field` member on its own
+
+`CardFormNumber`, `CardFormExpiry`, `CardFormSecurityCode`, `CardFormName`,
+`CardFormPostcode` and `CardFormCountry` each read `useFieldMembership()`, so any one of
+them can go in a `Field` and take its label, id, description, error, required and disabled
+state.
+
+```tsx
+<Field label="Card number" error={numberError}>
+  <CardFormNumber value={number} onValueChange={setNumber} />
+</Field>
+```
+
+**A `Field` around the WHOLE form must be `multiple`.** A single-control field publishes
+one control id, and six inputs carrying one id is invalid HTML with an error announced six
+times. `multiple` makes the field a labelled `group`, publishes no id, and each box keeps
+its own — which is the shape this form is.
+
+A box also takes its own `error`, drawn under it and JOINED into `aria-describedby` rather
+than replacing the field's, because that attribute is an id list.
+
+### Why the primitive is handed a re-published context
+
+`TextFieldInput` and `SelectTrigger` read the enclosing `Field` themselves, and
+`TextFieldInput` resolves its name as `field.labelText ?? label` — a chain with no step for
+a name the CALLER wrote. Left alone, a box's `accessibilityLabel` would be outranked by the
+container's label, which is the one direction the composition contract says must never be
+reversed, and the rule would be resolved twice on two different inputs.
+
+So a box resolves membership once, through `useCardFormPart`, and re-publishes the answer
+to the primitive inside it: the same id, the same described ids with its own message
+already joined, the same invalid, required and disabled state — and no `labelText`, because
+the name has been decided and the primitive must not decide it again.
+
+It is a re-publication, not a shadow. Everything the field said still reaches the control,
+and the state that RESTRICTS has already been combined with `||`, so nothing inside can
+re-enable itself.
+
+## The layout
+
+```
+number               full width; the detected mark at the end of its label row
+expiry · code        one line, equal halves, 12 apart
+name                 full width, when fields.name (default on)
+country · postcode   one line, when either is asked for
+```
+
+The pair rows are `flexBasis: 0` rather than a minimum width, so a narrow container shrinks
+them evenly instead of overflowing: a card form is drawn in a sheet as often as on a page.
+
+`fields.postcode` and `fields.country` default OFF. Ask for a billing address only where it
+is actually asked for — most of the world does not use one, and a required postcode box is
+a wall for anyone whose country has no postcodes.
+
+## Small decisions worth naming
+
+- **The number box has no placeholder.** A placeholder in a card number box is a string of
+  digits that looks like a card number, which is the one thing a box holding card numbers
+  should not draw.
+- **The security code is not masked by default.** It is three or four characters, typed
+  once, from a card the person is holding; masking it hides typos without hiding anything
+  from anyone else. `secureSecurityCode` turns it on for the apps whose rules require it.
+- **The postcode is not tidied.** Not uppercased, not stripped of spaces, not validated:
+  postcodes are alphanumeric in most of the world and spaced differently in all of it.
+- **The name is never reformatted.** A name is not a number.
+- **`autoComplete`/`textContentType` are set**, so the platform's own card filler works.
+  That is the OS filling a box, and no different from typing.
+
+## Known gap
+
+`CardFormCountry` is Bloom's `Select`. Inside a `Field`, its trigger takes the field's
+wiring the way every select trigger does — but the country box's own `error` cannot be added
+to that trigger's `aria-describedby`, because `SelectTrigger` takes no such prop. The
+message is drawn; it is not announced as part of the control. Put a country message on the
+enclosing `Field` instead. This is a gap in `select`, not one this family can close.

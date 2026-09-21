@@ -1,0 +1,66 @@
+---
+title: Order confirmation
+description: It is placed — the mark, the reference, the tracking strip from order-status, where it goes, what was charged, what was ordered, and the two things you do next.
+order: 139
+---
+
+# Order confirmation
+
+```tsx
+import { OrderConfirmation } from '@oxy.so/bloom/order-confirmation';
+
+<OrderConfirmation
+  description="We have sent the receipt to your inbox."
+  reference="A-4821"
+  status={{ status: 'Being prepared', eta: 'Arrives 17:35', icon: RiBikeLine, progress }}
+  address={{ title: 'Home', subtitle: 'Carrer de l’Om 14, 2nd floor', kind: 'saved' }}
+  facts={[
+    { label: 'Arrives', value: 'Friday 24, 17:00 – 19:00' },
+    { label: 'Paid with', value: 'Card ending 4417' },
+    { label: 'Total', value: '€49.62' },
+  ]}
+  items={<OrderLines lines={lines} />}
+  action={{ label: 'Track order', onPress: track }}
+  secondaryAction={{ label: 'Get help', onPress: help }}
+/>;
+```
+
+## It IS an `EmptyState`
+
+Not "looks like one". A mark, a heading, a line of explanation, a block of content and up
+to two actions is exactly that family's shape, and a "done" screen is the same object as a
+"nothing here" screen with a different reason for existing. Building it a second time is
+how two centred columns with different paddings ship inside one library.
+
+That also means `variant="compact"` works here for the same reason it works there: the
+panel rung, for a confirmation inside a card rather than as the whole screen.
+
+## The mark is static, and that is a decision
+
+`AnimatedCheck` draws its ring and its check on only when a caller kicks it through its
+ref — at rest it is invisible. A mark nobody can see until a method runs is not a mark,
+and a user with reduce-motion would never see it at all. So the default is a check on a
+success-tinted disc: `IconCircle` with its own primary pair overridden TOGETHER (the one
+way its docs allow), from `resolveAccentColors(colors, 'success', 'subtle')` — a resolved
+pair, never a token with alpha appended.
+
+An app that wants the draw-on passes `<AnimatedCheck>` as `mark` and plays it itself.
+`mark={null}` draws none, for a surface that already carries a brand header.
+
+## The tracking strip is `order-status`'s
+
+`status` is `OrderStatusBarProps`, passed straight through. "Where it is right now" has
+one component in this library; this is a place that shows it, not a second one. The
+address row is `address`'s `AddressRow` and the fact box is the label/value box Bloom's
+action cards already draw.
+
+## `items` is a slot
+
+A line of an order is a dish, a parcel or a seat depending on the app, and each already
+has a row family of its own. The family draws the caption above whatever comes and stays
+out of the way.
+
+## It computes nothing
+
+Every amount, every time and every reading is a string the app formatted — including the
+reference, prefix and all.

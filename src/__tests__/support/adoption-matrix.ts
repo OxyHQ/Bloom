@@ -388,8 +388,31 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'the raw `TextInput` is a DOCUMENT TITLE — it draws no box, no label and no hint, because the words are the document rather than a value being collected. A `Field` around it would put a form label above a heading.',
     },
+    'vehicle-picker': {
+      verdict: 'adaptation',
+      reason:
+        'a hand-written `radiogroup` over `listing-editor`\u2019s selectable cards \u2014 it REUSES that family\u2019s card rather than writing a third one, so it inherits the same gap for the same reason: a `Field` can neither name nor disable the group.',
+    },
+    'shipment-request': {
+      verdict: 'adaptation',
+      reason:
+        'the load KIND is the same hand-written `radiogroup` over `listing-editor`\u2019s cards. The rest of the form is worse than that, not better: its `TextField`, `Textarea`, `Switch` and `SegmentedControl` all read the contract, so one form has two association models.',
+    },
+    'carrier-quote': {
+      verdict: 'does-not-apply',
+      reason: SELECTION_ROW,
+    },
+    'job-board': {
+      verdict: 'does-not-apply',
+      reason: SELECTION_ROW,
+    },
   },
   'control-surface': {
+    'place-card': {
+      verdict: 'does-not-apply',
+      reason:
+        'its `density` is the CARD\u2019s \u2014 a result row against a detail header \u2014 not a control\u2019s size, and the only controls it draws are `Button`s, which read nothing by design (`docs/composition.mdx`).',
+    },
     'note-editor': {
       verdict: 'delegated',
       reason:
@@ -444,6 +467,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     },
   },
   'controlled-state': {
+    'map-controls': {
+      verdict: 'delegated',
+      reason:
+        'the layer picker declares `open`/`defaultOpen` and hands both straight to `DropdownMenu`, which reconciles them with the shared hook \u2014 so a controlled caller is honoured without this family reconciling anything itself.',
+    },
     textarea: {
       verdict: 'does-not-apply',
       reason:

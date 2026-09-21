@@ -169,6 +169,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./motion', 'motion/index.ts'],
   ['./animated-check', 'animated-check/index.ts'],
   ['./icon-circle', 'icon-circle/index.ts'],
+  // Nothing to show, said once — the base block a dozen families hand-rolled.
+  ['./empty-state', 'empty-state/index.ts'],
   ['./connection-dots', 'connection-dots/index.ts'],
   ['./composition-bar', 'composition-bar/index.ts'],
   ['./dot-grid-meter', 'dot-grid-meter/index.ts'],
@@ -231,11 +233,42 @@ const SUBPATHS = /** @type {const} */ ([
   ['./offering-badge', 'offering-badge/index.ts'],
   ['./category-bar', 'category-bar/index.ts'],
   ['./map-marker', 'map-marker/index.ts'],
+  ['./place-card', 'place-card/index.ts'],
+  ['./place-details', 'place-details/index.ts'],
+  ['./place-list', 'place-list/index.ts'],
+  ['./map-controls', 'map-controls/index.ts'],
+  // Drawn ON the map: the blue dot and its heading cone, the guidance while it
+  // is happening, and the credit and scale the data's licence requires.
+  ['./location-puck', 'location-puck/index.ts'],
+  ['./navigation-banner', 'navigation-banner/index.ts'],
+  ['./map-attribution', 'map-attribution/index.ts'],
   // Commerce: the four things a maps, a courier and a food app all need.
   ['./order-status', 'order-status/index.ts'],
   ['./price-breakdown', 'price-breakdown/index.ts'],
+  // Checkout: review and confirm, the delivery window, and the screen that
+  // says it is placed.
+  ['./checkout-summary', 'checkout-summary/index.ts'],
+  ['./delivery-slot', 'delivery-slot/index.ts'],
+  ['./order-confirmation', 'order-confirmation/index.ts'],
+  // Ordering food: the vendor, the dish and the basket.
+  ['./vendor-card', 'vendor-card/index.ts'],
+  ['./menu-item', 'menu-item/index.ts'],
+  ['./cart-panel', 'cart-panel/index.ts'],
   ['./address', 'address/index.ts'],
   ['./route-stops', 'route-stops/index.ts'],
+  ['./directions', 'directions/index.ts'],
+  ['./shipment-request', 'shipment-request/index.ts'],
+  ['./carrier-quote', 'carrier-quote/index.ts'],
+  ['./vehicle-picker', 'vehicle-picker/index.ts'],
+  // Taking the money: the saved method, entering a new card, and the verdict.
+  ['./payment-method', 'payment-method/index.ts'],
+  ['./card-form', 'card-form/index.ts'],
+  ['./payment-status', 'payment-status/index.ts'],
+  // Fulfilment: the same marketplace from the side of the person who does the
+  // work — the board of jobs, what the work paid, and the proof it happened.
+  ['./job-board', 'job-board/index.ts'],
+  ['./earnings', 'earnings/index.ts'],
+  ['./proof-of-delivery', 'proof-of-delivery/index.ts'],
   ['./mail-list', 'mail-list/index.ts'],
   ['./mail-thread', 'mail-thread/index.ts'],
   ['./mail-compose', 'mail-compose/index.ts'],

@@ -1284,6 +1284,20 @@
         "default": "./lib/commonjs/icon-circle/index.js"
       }
     },
+    "./empty-state": {
+      "react-native": {
+        "types": "./lib/typescript/module/empty-state/index.d.ts",
+        "default": "./src/empty-state/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/empty-state/index.d.ts",
+        "default": "./lib/module/empty-state/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/empty-state/index.d.ts",
+        "default": "./lib/commonjs/empty-state/index.js"
+      }
+    },
     "./connection-dots": {
       "react-native": {
         "types": "./lib/typescript/module/connection-dots/index.d.ts",
@@ -2207,6 +2221,104 @@
         "default": "./lib/commonjs/map-marker/index.js"
       }
     },
+    "./place-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/place-card/index.d.ts",
+        "default": "./src/place-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/place-card/index.d.ts",
+        "default": "./lib/module/place-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/place-card/index.d.ts",
+        "default": "./lib/commonjs/place-card/index.js"
+      }
+    },
+    "./place-details": {
+      "react-native": {
+        "types": "./lib/typescript/module/place-details/index.d.ts",
+        "default": "./src/place-details/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/place-details/index.d.ts",
+        "default": "./lib/module/place-details/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/place-details/index.d.ts",
+        "default": "./lib/commonjs/place-details/index.js"
+      }
+    },
+    "./place-list": {
+      "react-native": {
+        "types": "./lib/typescript/module/place-list/index.d.ts",
+        "default": "./src/place-list/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/place-list/index.d.ts",
+        "default": "./lib/module/place-list/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/place-list/index.d.ts",
+        "default": "./lib/commonjs/place-list/index.js"
+      }
+    },
+    "./map-controls": {
+      "react-native": {
+        "types": "./lib/typescript/module/map-controls/index.d.ts",
+        "default": "./src/map-controls/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/map-controls/index.d.ts",
+        "default": "./lib/module/map-controls/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/map-controls/index.d.ts",
+        "default": "./lib/commonjs/map-controls/index.js"
+      }
+    },
+    "./location-puck": {
+      "react-native": {
+        "types": "./lib/typescript/module/location-puck/index.d.ts",
+        "default": "./src/location-puck/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/location-puck/index.d.ts",
+        "default": "./lib/module/location-puck/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/location-puck/index.d.ts",
+        "default": "./lib/commonjs/location-puck/index.js"
+      }
+    },
+    "./navigation-banner": {
+      "react-native": {
+        "types": "./lib/typescript/module/navigation-banner/index.d.ts",
+        "default": "./src/navigation-banner/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/navigation-banner/index.d.ts",
+        "default": "./lib/module/navigation-banner/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/navigation-banner/index.d.ts",
+        "default": "./lib/commonjs/navigation-banner/index.js"
+      }
+    },
+    "./map-attribution": {
+      "react-native": {
+        "types": "./lib/typescript/module/map-attribution/index.d.ts",
+        "default": "./src/map-attribution/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/map-attribution/index.d.ts",
+        "default": "./lib/module/map-attribution/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/map-attribution/index.d.ts",
+        "default": "./lib/commonjs/map-attribution/index.js"
+      }
+    },
     "./order-status": {
       "react-native": {
         "types": "./lib/typescript/module/order-status/index.d.ts",
@@ -2235,6 +2347,90 @@
         "default": "./lib/commonjs/price-breakdown/index.js"
       }
     },
+    "./checkout-summary": {
+      "react-native": {
+        "types": "./lib/typescript/module/checkout-summary/index.d.ts",
+        "default": "./src/checkout-summary/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/checkout-summary/index.d.ts",
+        "default": "./lib/module/checkout-summary/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/checkout-summary/index.d.ts",
+        "default": "./lib/commonjs/checkout-summary/index.js"
+      }
+    },
+    "./delivery-slot": {
+      "react-native": {
+        "types": "./lib/typescript/module/delivery-slot/index.d.ts",
+        "default": "./src/delivery-slot/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/delivery-slot/index.d.ts",
+        "default": "./lib/module/delivery-slot/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/delivery-slot/index.d.ts",
+        "default": "./lib/commonjs/delivery-slot/index.js"
+      }
+    },
+    "./order-confirmation": {
+      "react-native": {
+        "types": "./lib/typescript/module/order-confirmation/index.d.ts",
+        "default": "./src/order-confirmation/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/order-confirmation/index.d.ts",
+        "default": "./lib/module/order-confirmation/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/order-confirmation/index.d.ts",
+        "default": "./lib/commonjs/order-confirmation/index.js"
+      }
+    },
+    "./vendor-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/vendor-card/index.d.ts",
+        "default": "./src/vendor-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/vendor-card/index.d.ts",
+        "default": "./lib/module/vendor-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/vendor-card/index.d.ts",
+        "default": "./lib/commonjs/vendor-card/index.js"
+      }
+    },
+    "./menu-item": {
+      "react-native": {
+        "types": "./lib/typescript/module/menu-item/index.d.ts",
+        "default": "./src/menu-item/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/menu-item/index.d.ts",
+        "default": "./lib/module/menu-item/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/menu-item/index.d.ts",
+        "default": "./lib/commonjs/menu-item/index.js"
+      }
+    },
+    "./cart-panel": {
+      "react-native": {
+        "types": "./lib/typescript/module/cart-panel/index.d.ts",
+        "default": "./src/cart-panel/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/cart-panel/index.d.ts",
+        "default": "./lib/module/cart-panel/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/cart-panel/index.d.ts",
+        "default": "./lib/commonjs/cart-panel/index.js"
+      }
+    },
     "./address": {
       "react-native": {
         "types": "./lib/typescript/module/address/index.d.ts",
@@ -2261,6 +2457,146 @@
       "require": {
         "types": "./lib/typescript/commonjs/route-stops/index.d.ts",
         "default": "./lib/commonjs/route-stops/index.js"
+      }
+    },
+    "./directions": {
+      "react-native": {
+        "types": "./lib/typescript/module/directions/index.d.ts",
+        "default": "./src/directions/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/directions/index.d.ts",
+        "default": "./lib/module/directions/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/directions/index.d.ts",
+        "default": "./lib/commonjs/directions/index.js"
+      }
+    },
+    "./shipment-request": {
+      "react-native": {
+        "types": "./lib/typescript/module/shipment-request/index.d.ts",
+        "default": "./src/shipment-request/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/shipment-request/index.d.ts",
+        "default": "./lib/module/shipment-request/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/shipment-request/index.d.ts",
+        "default": "./lib/commonjs/shipment-request/index.js"
+      }
+    },
+    "./carrier-quote": {
+      "react-native": {
+        "types": "./lib/typescript/module/carrier-quote/index.d.ts",
+        "default": "./src/carrier-quote/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/carrier-quote/index.d.ts",
+        "default": "./lib/module/carrier-quote/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/carrier-quote/index.d.ts",
+        "default": "./lib/commonjs/carrier-quote/index.js"
+      }
+    },
+    "./vehicle-picker": {
+      "react-native": {
+        "types": "./lib/typescript/module/vehicle-picker/index.d.ts",
+        "default": "./src/vehicle-picker/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/vehicle-picker/index.d.ts",
+        "default": "./lib/module/vehicle-picker/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/vehicle-picker/index.d.ts",
+        "default": "./lib/commonjs/vehicle-picker/index.js"
+      }
+    },
+    "./payment-method": {
+      "react-native": {
+        "types": "./lib/typescript/module/payment-method/index.d.ts",
+        "default": "./src/payment-method/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/payment-method/index.d.ts",
+        "default": "./lib/module/payment-method/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/payment-method/index.d.ts",
+        "default": "./lib/commonjs/payment-method/index.js"
+      }
+    },
+    "./card-form": {
+      "react-native": {
+        "types": "./lib/typescript/module/card-form/index.d.ts",
+        "default": "./src/card-form/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/card-form/index.d.ts",
+        "default": "./lib/module/card-form/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/card-form/index.d.ts",
+        "default": "./lib/commonjs/card-form/index.js"
+      }
+    },
+    "./payment-status": {
+      "react-native": {
+        "types": "./lib/typescript/module/payment-status/index.d.ts",
+        "default": "./src/payment-status/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/payment-status/index.d.ts",
+        "default": "./lib/module/payment-status/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/payment-status/index.d.ts",
+        "default": "./lib/commonjs/payment-status/index.js"
+      }
+    },
+    "./job-board": {
+      "react-native": {
+        "types": "./lib/typescript/module/job-board/index.d.ts",
+        "default": "./src/job-board/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/job-board/index.d.ts",
+        "default": "./lib/module/job-board/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/job-board/index.d.ts",
+        "default": "./lib/commonjs/job-board/index.js"
+      }
+    },
+    "./earnings": {
+      "react-native": {
+        "types": "./lib/typescript/module/earnings/index.d.ts",
+        "default": "./src/earnings/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/earnings/index.d.ts",
+        "default": "./lib/module/earnings/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/earnings/index.d.ts",
+        "default": "./lib/commonjs/earnings/index.js"
+      }
+    },
+    "./proof-of-delivery": {
+      "react-native": {
+        "types": "./lib/typescript/module/proof-of-delivery/index.d.ts",
+        "default": "./src/proof-of-delivery/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/proof-of-delivery/index.d.ts",
+        "default": "./lib/module/proof-of-delivery/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/proof-of-delivery/index.d.ts",
+        "default": "./lib/commonjs/proof-of-delivery/index.js"
       }
     },
     "./mail-list": {
@@ -3325,6 +3661,9 @@
       "icon-circle": [
         "./lib/typescript/module/icon-circle/index.d.ts"
       ],
+      "empty-state": [
+        "./lib/typescript/module/empty-state/index.d.ts"
+      ],
       "connection-dots": [
         "./lib/typescript/module/connection-dots/index.d.ts"
       ],
@@ -3511,17 +3850,86 @@
       "map-marker": [
         "./lib/typescript/module/map-marker/index.d.ts"
       ],
+      "place-card": [
+        "./lib/typescript/module/place-card/index.d.ts"
+      ],
+      "place-details": [
+        "./lib/typescript/module/place-details/index.d.ts"
+      ],
+      "place-list": [
+        "./lib/typescript/module/place-list/index.d.ts"
+      ],
+      "map-controls": [
+        "./lib/typescript/module/map-controls/index.d.ts"
+      ],
+      "location-puck": [
+        "./lib/typescript/module/location-puck/index.d.ts"
+      ],
+      "navigation-banner": [
+        "./lib/typescript/module/navigation-banner/index.d.ts"
+      ],
+      "map-attribution": [
+        "./lib/typescript/module/map-attribution/index.d.ts"
+      ],
       "order-status": [
         "./lib/typescript/module/order-status/index.d.ts"
       ],
       "price-breakdown": [
         "./lib/typescript/module/price-breakdown/index.d.ts"
       ],
+      "checkout-summary": [
+        "./lib/typescript/module/checkout-summary/index.d.ts"
+      ],
+      "delivery-slot": [
+        "./lib/typescript/module/delivery-slot/index.d.ts"
+      ],
+      "order-confirmation": [
+        "./lib/typescript/module/order-confirmation/index.d.ts"
+      ],
+      "vendor-card": [
+        "./lib/typescript/module/vendor-card/index.d.ts"
+      ],
+      "menu-item": [
+        "./lib/typescript/module/menu-item/index.d.ts"
+      ],
+      "cart-panel": [
+        "./lib/typescript/module/cart-panel/index.d.ts"
+      ],
       "address": [
         "./lib/typescript/module/address/index.d.ts"
       ],
       "route-stops": [
         "./lib/typescript/module/route-stops/index.d.ts"
+      ],
+      "directions": [
+        "./lib/typescript/module/directions/index.d.ts"
+      ],
+      "shipment-request": [
+        "./lib/typescript/module/shipment-request/index.d.ts"
+      ],
+      "carrier-quote": [
+        "./lib/typescript/module/carrier-quote/index.d.ts"
+      ],
+      "vehicle-picker": [
+        "./lib/typescript/module/vehicle-picker/index.d.ts"
+      ],
+      "payment-method": [
+        "./lib/typescript/module/payment-method/index.d.ts"
+      ],
+      "card-form": [
+        "./lib/typescript/module/card-form/index.d.ts"
+      ],
+      "payment-status": [
+        "./lib/typescript/module/payment-status/index.d.ts"
+      ],
+      "job-board": [
+        "./lib/typescript/module/job-board/index.d.ts"
+      ],
+      "earnings": [
+        "./lib/typescript/module/earnings/index.d.ts"
+      ],
+      "proof-of-delivery": [
+        "./lib/typescript/module/proof-of-delivery/index.d.ts"
       ],
       "mail-list": [
         "./lib/typescript/module/mail-list/index.d.ts"

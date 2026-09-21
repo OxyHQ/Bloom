@@ -1,0 +1,92 @@
+---
+title: Vehicle picker
+description: Which vehicle a job needs — a column of selectable cards carrying each body's capacity, what fits in it and what it starts at, with the ones that cannot take the load disabled and saying why.
+order: 136
+---
+
+# Vehicle picker
+
+```tsx
+import { VehiclePicker, VEHICLE_OPTIONS } from '@oxy.so/bloom/vehicle-picker';
+
+<VehiclePicker
+  value={vehicle}
+  onValueChange={setVehicle}
+  title="Which vehicle?"
+  description="Pick the smallest one that can take the load."
+  options={optionsForThisLoad}
+/>
+```
+
+## Shape
+
+A heading in the register a search panel's pickers use — `body-semibold` over
+`body-2-regular`, 16 above the control — then a `radiogroup` of selectable cards,
+12 apart. Omit `title` and `description` and the picker starts at its first
+option, which is what a form section with its own heading wants.
+
+Each card is the selectable card the listing editor's own pickers are built from:
+a 44 icon tile, the vehicle's name at `headline-semibold`, its capacity under it,
+and the radio indicator on the right. Under the card's hairline: the `fits` nouns
+as outlined chips, then a `From · amount` line in tabular figures.
+
+## One answer
+
+A job goes in one vehicle, so the group is a `radiogroup` and each card a
+`radio`. `value={null}` is a job that has not chosen yet — not an error, and not
+a default guess.
+
+## The detail is not a disclosure
+
+Every card shows its capacity, its chips and its price **at rest**. The question
+a vehicle picker answers is a comparison, and a card that reveals its numbers
+only once chosen makes someone select four vehicles to choose one.
+
+## Saying why
+
+`disabled` dims a card and stops it. On its own that is a dead end: the row
+someone wanted is greyed out and the screen does not say what to change. So a
+disabled option draws `unavailableReason` on a warning-toned line under its
+detail — and the same reason goes into the card's own **accessible name**, because
+a reason drawn in a sibling line is never announced with the control.
+
+Without a reason the picker falls back to `labels.unavailable`, which says only
+*that* it is unavailable. That is the half that was already visible; write the
+reason.
+
+`disabled` on the picker itself dims every card, whatever each one says — it is a
+constraint, and a card cannot re-enable itself.
+
+## The ladder, and the one that breaks it
+
+The five built-in vehicles are a ladder of capacity, smallest first: each takes
+everything the one before it takes and more. That is what makes "the smallest one
+that can carry this" a question the caller can answer.
+
+`refrigerated` breaks the ladder on purpose. It is a van that holds a
+temperature, so it is chosen for what the load **is** rather than for how big it
+is, and it sits last rather than in weight order.
+
+## Money
+
+`priceFrom` is a **pre-formatted string** and is drawn exactly as given. Nothing
+here adds, converts or rounds an amount. `VEHICLE_OPTIONS` carries no prices at
+all — a price-from belongs to a marketplace and a moment, and a picker showing
+invented amounts is worse than one showing the capacities alone. Spread an option
+and add `priceFrom` where the app knows it.
+
+## Traps
+
+- **The picker measures itself, not the window.** Under 400 of its own width each
+  card takes its compact inset — the same component is a phone column and a panel
+  beside a map, and the window cannot tell those apart.
+- **Two glyphs are borrowed.** Bloom's icon set has no truck and no van, so the
+  van takes the bus glyph and the box truck takes a crate; the refrigerated van
+  takes a snowflake rather than a second van outline, because what distinguishes
+  it is the temperature and two near-identical van glyphs read as a drawing
+  mistake. Pass `icon` per option to override any of them.
+- **`onValueChange` is never called with the value already chosen.** Pressing the
+  chosen card is a no-op, not a deselect: a required single choice that can be
+  emptied by pressing it again is a control that loses answers.
+- **`fits` is a chip row, not a list of features.** Three or four short nouns. A
+  card carrying eight wraps into a paragraph and stops being scannable.

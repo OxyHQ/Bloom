@@ -80,6 +80,29 @@ describe('SettingsListItem', () => {
     const content = getByTestId('settings-list-item-content');
     expect(content.props['data-left-inset']).toBe(32);
   });
+
+  /**
+   * The title is clamped to ONE line by default, which is right for a setting
+   * — the title is a noun ("Language") and the value sits on the right. It is
+   * wrong for a row whose title IS the content: `place-details`' address row
+   * lost the postcode and the town at 390 wide, silently, because the part
+   * that gets cut is the part that identifies the place.
+   *
+   * Both directions are asserted, because the prop only earns its place if the
+   * default is unchanged.
+   */
+  it('clamps the title to one line by default and to whatever it is told', () => {
+    const lines = (ui: React.ReactElement): number | undefined => {
+      const { getByText } = renderWithTheme(ui);
+      return getByText('Carrer del Forn 12, 08002').props.numberOfLines as number | undefined;
+    };
+
+    expect(lines(<SettingsListItem title="Carrer del Forn 12, 08002" />)).toBe(1);
+    expect(lines(<SettingsListItem title="Carrer del Forn 12, 08002" titleNumberOfLines={2} />)).toBe(2);
+    expect(
+      lines(<SettingsListItem title="Carrer del Forn 12, 08002" titleNumberOfLines={0} />),
+    ).toBeUndefined();
+  });
 });
 
 describe('SettingsListGroup', () => {

@@ -1,0 +1,91 @@
+---
+title: Delivery slot
+description: When — the days across the top, the windows of the chosen day with their surcharge, capacity and tier, the sold-out ones, and the ASAP option that belongs to no day. A radio group through Field, not pressables that look selected.
+order: 138
+---
+
+# Delivery slot
+
+```tsx
+import { DeliverySlotPicker } from '@oxy.so/bloom/delivery-slot';
+
+<DeliverySlotPicker
+  days={days}
+  day={day}
+  onDayChange={(id) => { setDay(id); loadWindows(id); }}
+  windows={windows}
+  value={slot}
+  onValueChange={setSlot}
+  asap={{ id: 'asap', eta: '25 – 40 min', price: '+€4.90' }}
+  error={touched && !slot ? 'Pick a delivery window to continue.' : null}
+/>;
+```
+
+## It is a selection, so it is a radio group
+
+Not a set of pressables that happen to look selected. The difference is what a screen
+reader says: a `radiogroup` announces the name of the choice and "3 of 7", and each row
+announces whether it is the chosen one. Seven pressables announce seven unrelated buttons,
+one of which is drawn differently — which is exactly as usable as it sounds, and looks
+identical.
+
+There are TWO groups, because there are two choices: the DAYS (which day's windows are
+listed) and the WINDOWS. One group a reader has to infer the halves of would be worse than
+either.
+
+Each option is `Item` with `role="radio"` — the press target, the hover and press paint,
+the disabled opacity and the `aria-checked` that ARIA scopes to that role are all `Item`'s.
+A sold-out window is `disabled`, so it announces as unavailable rather than merely being
+drawn pale.
+
+## The field, and the one clever bit
+
+Standalone, the picker IS a `Field` (`multiple`): one `label` names the choice, one
+`error` puts it in its invalid state, one `description` explains it, and one `disabled`
+reaches the strip and every option and cannot be opted out of from inside.
+
+Dropped inside somebody else's `Field`, it renders no second one — two fields means two
+labels above one control and an error the outer field describes and the inner one does
+not. It reads the enclosing field's context instead, through `useFieldMembership()`, which
+is why `label` is deliberately UNDEFAULTED: a default here would outrank the one string
+the user can actually read.
+
+## The parts are the library's
+
+- The day tile is `SelectChip shape="day"` — the same 56-wide, radius-12, weekday-over-date
+  tile Bloom already draws for scheduling a viewing. A day picked out of a strip is one
+  thing, not one per app.
+- The strip is `ChipRow`, which supplies the sideways scroll, the fade at whichever edge
+  has more behind it, and the room a focus ring needs so the outline is not clipped by its
+  own scroller. **The fade resolves into the surface BEHIND the row**, which the row
+  cannot know: on a card, pass `fadeColor`.
+- The dot is `RadioIndicator` at 20 — `Radio`'s `lg` rung, because the row it marks is two
+  lines tall and the 16 `md` dot read as a bullet beside it rather than as the control.
+- The empty day is `EmptyState` at the panel rung.
+
+## Capacity is a string, and sold out says only that
+
+`capacity` is `"2 left"` or `"Almost full"` or `"Last one"` — a string, because those are
+the same fact said three ways and only the app knows which one its couriers mean.
+
+A SOLD-OUT window's detail line says "Sold out" and nothing else. The tier and the
+capacity of a window nobody can take are facts about a thing that is not on offer, and
+reading them out after "Sold out" is how a reader ends up tapping it.
+
+## ASAP is at the head of the options, not beside them
+
+It belongs to no day, so it stays where it is while the days change — but it is in the
+SAME radio group as the windows, because it is the same choice. A button labelled "ASAP"
+next to a group of windows is how a reader ends up with both chosen, or neither.
+
+## Loading is not empty
+
+The windows are RELOADED when the day changes. Pass `loading` during that reload: an empty
+list drawn in the gap reads as "nothing left on this day", which is a different and wrong
+answer. The placeholder rows are announced `aria-busy`, so a reader is told to wait rather
+than told nothing.
+
+## It computes nothing
+
+Every window, every price, every reading is a string the app formatted. The only ordering
+this family does is the order it was handed.

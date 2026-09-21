@@ -95,13 +95,16 @@ describe('the field contract', () => {
     // Named rather than counted: a count moves for the wrong reasons, and this
     // list is the deliverable of the adoption work.
     expect(READERS).toEqual([
+      'card-form',
       'checkbox',
       'date-picker',
+      'delivery-slot',
       'field',
       'file-upload',
       'input-group',
       'input-otp',
       'mail-compose',
+      'payment-method',
       'phone-input',
       'radio',
       'rating',

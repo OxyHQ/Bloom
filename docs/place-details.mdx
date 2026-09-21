@@ -1,0 +1,202 @@
+---
+title: Place details
+description: The body of a place's screen — the rows you act on, the hours by day, what the place has, how busy it is by the hour, and the transit around it, under PlaceCard's detail header.
+order: 137
+---
+
+# Place details
+
+```tsx
+import {
+  PlaceAmenities,
+  PlaceHours,
+  PlaceInfoList,
+  PlacePopularTimes,
+  PlaceTransit,
+} from '@oxy.so/bloom/place-details';
+```
+
+[`PlaceCard`](/docs/place-card) at `density="detail"` draws the HEADER of a place — the
+photo, the name, the rating, the figure and the four actions. This family is everything
+under it. Together they are the screen a maps app opens when a result is picked; neither
+half is a screen on its own.
+
+## What composes the screen
+
+| the part | what draws it |
+| --- | --- |
+| the header | `PlaceCard density="detail"` |
+| the hours | `PlaceHours` |
+| the photos | [`ListingPhotoGrid`](/docs/listing-details) + [`ZoomableMediaGallery`](/docs/zoomable-media-gallery) |
+| the address, phone, website | `PlaceInfoList` |
+| how busy it is | `PlacePopularTimes` |
+| what it has | `PlaceAmenities` |
+| the stops around it | `PlaceTransit` |
+| the reviews | [`place-reviews`](/docs/place-reviews) |
+| the section frames | [`ListingSection`](/docs/listing-details) |
+
+The sections are `ListingSection` and not a `PlaceSection`: a home's detail page and a
+place's detail screen stack sections the same way — a hairline, 32 above and below, a
+title at `title-3-semibold` — and a second component for that is a second set of numbers
+to keep equal.
+
+```tsx
+<ScrollView>
+  <PlaceCard density="detail" {...place} actions={actions} />
+  <PlaceHours state="open" summary="Open until 20:00" days={week} />
+
+  <ListingSection title="About">
+    <PlaceInfoList items={info} />
+  </ListingSection>
+
+  <ListingSection title="Popular times">
+    <PlacePopularTimes days={popular} />
+  </ListingSection>
+</ScrollView>
+```
+
+On a phone that goes inside a `BottomSheet` over the map; on a desktop inside a
+`ContentPanel` beside it. Nothing in this family knows which — every block reads the
+surface it was dropped on (`styles/surface-levels.ts`), so a sheet that publishes its own
+fill gets a settings card, a chart track and hairlines resolved against the sheet rather
+than against the page:
+
+```tsx
+<SurfaceLevelProvider level={1} fill={colors.card}>
+  <View style={[{ backgroundColor: colors.card }, surfaceFillVars(colors.card)]}>
+    …
+  </View>
+</SurfaceLevelProvider>
+```
+
+## `PlaceInfoList` is `settings-list`, row for row
+
+A place's contact block and a settings screen are the same object: a short card of rows,
+each carrying one value and one thing that happens when you press it. So this is
+`SettingsListGroup` and `SettingsListItem` — the glyph well, the 44 minimum height, the
+hairline between rows, and the surface the group resolves from whatever is behind it.
+
+Two decisions of its own:
+
+- **The VALUE is the first line and the kind is the second.** A reader scanning a place
+  sheet is looking for the address, not for the word "Address". The announcement inverts
+  that — "Address: Plaça de les Bruixes 4" — because a list of five rows is *listened* to
+  by kind, and five values with no labels cannot be told apart.
+- **The trailing glyph is not a button.** `action` picks it (a copy sheet, a handset, an
+  arrow out of the box) so the press is legible before it is made, and the row stays ONE
+  press target with ONE announcement. A second control inside a pressable row is a second
+  tab stop saying the same word, and on web it is a button inside a button.
+- **The action's WORD is in the name, not in a hint.** The first version put it on
+  `accessibilityHint`, and react-native-web drops that prop entirely — no `title`, no
+  `aria-description`, no `aria-describedby` — so on web the row announced a fact and never
+  said it could be pressed, while native read it correctly. Same class as
+  `accessibilityState`, same fix: the name is the one spelling that reaches both. It goes
+  last ("Address: Plaça de les Bruixes 4, Copy"), because the fact is what the reader came
+  for. `PLACE_INFO_ACTION_LABELS` holds the English words; `actionLabels` replaces them.
+
+`action` is a closed list rather than a slot for the same reason: one row, one action.
+Nothing here touches the clipboard, the dialler or the browser — `onPress` is handed the
+row's id and the app does the rest.
+
+`numberOfLines` defaults to **2**, because a postal address does not fit on one across a
+phone and the tail that would be cut is the part that identifies it. A settings row's
+title is a noun and fits on one; this one's title is the row's content.
+
+## `PlaceHours` says what the app tells it
+
+**Nothing here reads a clock.** `summary` is the app's whole sentence ("Open until 20:00",
+"Closes soon", "Closed — opens 07:30 tomorrow") and `today` is the app's flag. A place's
+hours are in the place's timezone, the reader is in another, and whether a Tuesday is open
+also depends on a holiday calendar Bloom has never heard of. A component that guessed would
+be wrong twice a year, quietly.
+
+The state pill and the state word are `PlaceCard`'s own — `PLACE_OPEN_TONE` and
+`openLabelFor` — so a place cannot be "Open" on the header of a sheet and "Closing soon" in
+the body of it.
+
+The disclosure is Bloom's `Accordion`: it owns the chevron, the `aria-expanded` and the
+reveal. One trap comes with it — `AccordionContent` keeps its children mounted while shut
+(it animates `maxHeight` to 0), so the week would still be read out under a trigger that
+says it is collapsed. `PlaceHours` hides its week from assistive tech while shut; nothing
+in there takes focus, so it costs nothing.
+
+**A split day stays on one line** (`07:30 – 14:00, 17:00 – 20:00`). The week is read as a
+column of days, and a day that takes two rows breaks the alignment that makes the column
+scannable. Both stretches are short, and the pair fits where one does.
+
+A day with no `intervals` is CLOSED — that is the whole encoding, so an app cannot say
+"closed" and list hours at the same time. `exception` puts a `warning` badge on the row
+("Public holiday", "Market day") and adds it to the row's announcement, because a badge is
+silent.
+
+## `PlaceAmenities` is the listing amenity block, called
+
+`layout="list"` **is** [`AmenityList`](/docs/listing-details), handed the same items — not
+a copy of it and not a port. Icon, label, an optional second line, a struck-through label
+for what the place does not have, the two-column split from 560 wide and the "Show all"
+button are all that component's. The only difference between a home's amenities and a
+place's was the noun, and a noun is not a component.
+
+`layout="chips"` is the one thing a listing page does not have: a wrapping strip of `Chip`s
+for the top of a sheet, where four attributes have to read at a glance. Same items, same
+unavailable treatment, different density.
+
+The name sits on the strip's `listitem` and not on the chip, because a non-pressable `Chip`
+is a plain `View` — and on web a `div` carrying an `aria-label` and no role is not
+announced at all.
+
+## `PlacePopularTimes` is a chart
+
+A meter answers "how full is this one thing". Every reading here only means something
+against the twenty-three beside it, so it is a chart, drawn the way Bloom draws charts:
+`react-native-svg` bars on `chart-cards`' own bar geometry (`singleBarSlot`,
+`roundedBarPath`) in one of its nine series hues, over its chart track colour.
+
+**Which chart card this is not.** `StepsCard` draws exactly these bars — inside the medical
+card's fixed height, under its own headline, its week pill and its count-up, with seven
+labelled bands. A place sheet already has a section header and needs twenty-four bands with
+a day switch, so reusing that card would have meant suppressing four of its five parts. The
+bar maths is what was worth sharing, and that is what is imported.
+
+Three decisions:
+
+- **The domain is a fixed 0–100.** A per-day maximum would make Tuesday's quiet peak as
+  tall as Saturday's queue, which is the one comparison the chart exists to allow.
+- **The track is drawn behind every hour**, so a quiet hour is still a shape and a CLOSED
+  hour reads as a gap rather than as a missing one.
+- **`currentHourIndex` belongs to a DAY.** Switching to Tuesday drops the "now" marker and
+  the live line with it, because Tuesday has no now.
+
+The chart is ONE image with one name ("Wednesday, busiest at 9, now 18, busier than usual").
+Twenty-four bars two pixels wide would be twenty-four tab stops saying a number each, which
+is not a reading of anything. The axis labels every hour that fits and every second or third
+below that — twenty-four labels across a phone is sixteen pixels each — and the current
+hour keeps its label whatever the step.
+
+`PLACE_BUSY_LABELS` holds the three English trend sentences; `trendLabel` replaces one.
+
+## `PlaceTransit` reuses the line badge
+
+The line pills are `directions`' own [`TransitLineBadge`](/docs/directions), imported. An
+operator's line colour is data the app owns, and that badge already knows how to *measure* a
+readable label against an arbitrary fill in both modes. A second badge here would be a second
+answer to that question, and they would drift.
+
+A departure is ONE utterance — "Line L4 to Pla del Bosc, 4 min, live" — because read part by
+part, a column of three badges and three times is six announcements the listener has to pair
+up themselves.
+
+**`realtime` is a colour AND a word.** The dot and the green time are what a sighted reader
+sees; `live` is in the row's name for everyone else. Green alone says nothing to a reader who
+cannot see it, and it is the first thing a high-contrast mode takes away.
+
+The stop header is pressable only when `onPressStop` is given (an app pans its map to the
+stop). It takes the library's one hover wash and one focus ring, built by
+`interactiveWebCss` rather than hand-written.
+
+## Geometry
+
+`PLACE_DETAILS_GEOMETRY` holds the numbers: 16 between blocks, 12 between rows, a 20 glyph,
+a 120 plot with a 22 axis under it, a 4 bar radius. The gaps are `listing-details`' own
+rungs, so a place's section and a home's section stack identically; only the chart has
+measurements of its own, because nothing else in Bloom draws a day of hours.

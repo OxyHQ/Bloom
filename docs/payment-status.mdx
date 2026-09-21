@@ -1,0 +1,108 @@
+---
+title: Payment status
+description: What happened to the money — five states, a compact strip that IS OrderStatusBar, and a block for the screen a reader arrives at.
+order: 139
+---
+
+# Payment status
+
+```tsx
+import { PaymentStatusBar, PaymentStatusBlock } from '@oxy.so/bloom/payment-status';
+
+<PaymentStatusBar state="failed" amount="€48.00" detail="Your bank turned this one down."
+  action={<Button size="sm" variant="outline" onPress={retry}>Retry</Button>} />
+
+<PaymentStatusBlock state="paid" amount="€48.00" detail="Aurora •••• 4417"
+  reference="8F2K-41QD-7T" actions={<Button variant="outline" onPress={open}>View receipt</Button>} />
+```
+
+## Five states, and they are the five you DRAW
+
+`authorising | paid | failed | refunded | pending`.
+
+Not the five a processor reports — a processor has twenty, and which of them counts as
+"done" is a fact about that processor's contract. An app maps its own onto these five, and
+this family does no mapping, because a component that guessed would be wrong for the next
+acquirer.
+
+`pending` is the state that is easy to leave out and the one apps need most: waiting on a
+bank window, a queued retry, a device with no connection.
+
+## The strip IS `OrderStatusBar`
+
+`PaymentStatusBar` renders `order-status`'s `OrderStatusBar`. It is not a second strip that
+looks like it.
+
+`order-status` already owns this library's answer to "where is this right now": the 40 tile
+in the tone's tint, the one-line status with a short trailing reading in tabular figures, a
+quiet second line, a `Meter` for progress, surface-relative chrome, and a `plain` variant
+for a strip already inside a card that paints. A payment is the same question with
+different data, and shipping a second strip would mean two components drifting apart on
+every one of those decisions — the tile size first, the truncation rule second.
+
+What `PaymentStatusBar` adds is the mapping a payment needs and an order does not: five
+states to five sets of words, five tones and five glyphs, in one place so a status row and
+a confirmation screen cannot disagree about what "pending" is called or what colour it is.
+
+**The amount rides the trailing reading.** That slot is a short reading in tabular figures,
+capped so it cannot crush the status beside it, which is exactly what an amount is. Its
+prop is spelled `eta` because an order was the first thing that needed it; the slot is
+general and this is the second use of it. The name is worth fixing in `order-status`, and
+it is that family's to fix.
+
+## The block is not a bigger strip
+
+`PaymentStatusBar` is what a list, a header or a sticky footer carries while something is in
+flight. `PaymentStatusBlock` is what a reader ARRIVES at — so the glyph is the page's
+subject rather than a row's ornament, the amount is the largest thing on it, and the
+failure's words get an `Admonition` of their own instead of a second line.
+
+```
+tile     56 round in the state's tint, 28 glyph in the tone's own accent
+status   title-2-semibold, centred
+amount   title-1-semibold, TABULAR — the number a reader checks
+detail   body-regular, secondary
+ref      a caption label over a body-medium tabular value, so a reference can be
+         read out one character at a time
+reason   Admonition — error for a failure, warning for a pending one
+surface  one rung above whatever it was dropped on, 16 radius, a hairline;
+         `plain` draws the content and no chrome
+```
+
+56 is the size at which a glyph reads as the page's subject rather than a row's ornament,
+and it is the tile an empty state uses two families over.
+
+## `refunded` is neutral, on purpose
+
+`PAYMENT_STATUS_TONE` maps `refunded` to the `default` tone rather than to success. Money
+coming back is neither good news nor bad: painting it green congratulates a reader on a
+cancelled order, and painting it red alarms one who asked for the refund.
+
+## The reason is only for the states that have one
+
+`reason` is drawn for `failed` and `pending` and ignored for the other three, whatever the
+caller passes. A reason under a success is a reader hunting for a problem that is not
+there. Which admonition a state uses is `PAYMENT_STATUS_ADMONITION`.
+
+## Nothing here computes anything
+
+`amount` is a string the app formatted, sign and currency included. `progress` is a value it
+measured. The component never parses a number, never formats one, never adds two, and never
+reads a clock.
+
+## The retry is the caller's
+
+There is no `onRetry`. A retry is a `Button` in `action` (strip) or `actions` (block),
+because only the app knows whether retrying means the same method, another one, or a
+different screen entirely — and because a component that owned the button would also own
+its label, its variant and whether it is disabled while a second attempt is in flight.
+
+## Names and words
+
+`status` replaces one call's words outright. `labels` replaces a state's default everywhere
+the app translates once — `PAYMENT_STATUS_LABELS` holds those defaults, and `"Payment
+failed"` rather than `"Failed"` is deliberate: the strip is read in a row of other rows,
+where "Failed" is a word with no subject.
+
+The block names itself from its words, amount and detail joined, so a reader landing on it
+hears the answer before the glyph.

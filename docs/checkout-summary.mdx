@@ -1,0 +1,90 @@
+---
+title: Checkout summary
+description: Review and confirm — the rows a buyer checks before paying, each showing its chosen value and opening the thing that changes it, the totals from price-breakdown, and one confirm control that cannot place two orders.
+order: 137
+---
+
+# Checkout summary
+
+Between "I want this" and "it is ordered" there is one screen: where it goes, when, how
+it is paid, what it costs, and the note to the seller. This family is that screen's body.
+
+```tsx
+import { CheckoutSummary } from '@oxy.so/bloom/checkout-summary';
+
+<CheckoutSummary
+  address={{ title: 'Home', subtitle: 'Carrer de l’Om 14, 2nd floor', kind: 'saved', onPress: pickAddress }}
+  delivery={{ label: 'Delivery window', value: 'Friday 24, 17:00 – 19:00', onPress: pickWindow }}
+  payment={<PaymentMethodRow onPress={pickCard} />}
+  note={{ label: 'Note for the shop', placeholder: 'Add a note', onPress: editNote }}
+  price={{ lines, total: { label: 'Total', amount: '€49.62' } }}
+  confirm={{ amount: '€49.62', terms: 'By placing this order you agree to the shop’s terms.', busy, onConfirm: place }}
+/>;
+```
+
+## The row is the summary AND the trigger
+
+A label with a "Change" button beside it is two targets for one decision, and two screen
+reader stops that do not mention each other. Here the whole row is the button: its name is
+`"<label>: <value>"`, its hint is what pressing it opens, and the chevron is decoration.
+A row with no `onPress` draws no chevron and is a static receipt line — which is what the
+same component is after the order is placed.
+
+**Known gap: the hint is NATIVE ONLY.** react-native-web has no `accessibilityHint` — not
+a wrong mapping, no mapping at all — so on web the affordance is the `button` role and the
+chevron, and the row says nothing about what pressing it opens. It is pinned in the suite
+rather than hidden, and it is not swapped for an `aria-describedby` because native would
+then announce the same sentence twice.
+
+The row reads label-first and value-below (`caption-2-bold` uppercase over `body-medium`),
+which is the other way round from `SettingsListItem`'s title-with-a-value-on-the-right.
+The difference is length: a settings value is a word, and a checkout value is an address,
+a two-hour window and a masked card number — none of which fits in the right half of a
+390 row without truncating the thing the reader came to check.
+
+## What this family does not own
+
+- **The totals are `price-breakdown`'s `PriceSummary`**, passed straight through as
+  `price`. There is no second breakdown here and no arithmetic anywhere: every amount is
+  a string the app formatted, including the one on the confirm button.
+- **The address row is `address`'s `AddressRow`.** It goes inside the summary row's value
+  column with `leading={null}` — the row already drew the gutter, which is the case
+  `AddressRow` documents — and with `Item`'s padding reset in the LONGHANDS `Item` itself
+  writes, so there is one row's chrome rather than two. (Overriding `paddingVertical`
+  with `paddingTop`/`paddingBottom` would have worked on native and been silently
+  dropped on web, where the atomic sheet ranks the shorthand higher whatever the array's
+  order.)
+- **`payment` is a SLOT**, not data. The payment-method row is its own family; a
+  placeholder drawn here would be a second spelling of it. An app that has no such family
+  yet renders a `CheckoutSummaryRow` in the same register, which is what the stories do.
+- **Tracking, afterwards, is `order-status`**, and the screen that says it worked is
+  `order-confirmation`.
+
+## The group publishes its surface
+
+The rows sit in a group one rung above whatever the summary was dropped on, and that rung
+is PUBLISHED with `SurfaceLevelProvider`. Without it every row's glyph tile resolves one
+step off the PAGE rather than one step off the group, and the tiles disappear into the
+group on exactly the surfaces where a summary is most often put — a sheet, a panel, a
+card.
+
+## Two guards against a double order
+
+`busy` is the app's: while the order is in flight the button spins, is renamed to
+`busyLabel`, and drops every press. That is not enough on its own. A press calls
+`onConfirm`, the app sets its state, and `busy` only arrives on the NEXT commit — the
+second tap of a double-tap lands inside that window and places a second order. So
+`CheckoutConfirm` also latches on its own press, synchronously, in a ref: React state
+would not do, because two presses in one tick read the same render's value.
+
+The latch clears on the first commit where `busy` is false again. An app that never sets
+`busy` — a confirm that navigates away, a story — therefore gets exactly one press per
+tick and is never wedged; an app that does sets the button inert for the whole flight.
+
+## The amount is on the button
+
+The number a press commits to and the press are one decision. A total elsewhere on the
+screen and a button reading "Place order" are two, and the gap between them is where a
+reader confirms a figure they last saw before a tip picker changed it. The separator is a
+middle dot: "Place order - €49.62" reads as a subtraction at a glance in a row that is
+otherwise full of money.

@@ -1,0 +1,101 @@
+---
+title: Place list
+description: A saved list of places — the list as a card with its cover strip, count, collaborators and visibility, and the places inside it as PlaceCard rows with a note each, reorderable and removable.
+order: 138
+---
+
+# Place list
+
+```tsx
+import { PlaceList, PlaceListCard } from '@oxy.so/bloom/place-list';
+```
+
+"Want to go", "Favourites", "Coffee, ranked". `PlaceListCard` is the list seen from
+outside; `PlaceList` is what is inside it.
+
+## `PlaceListCard`
+
+```tsx
+<PlaceListCard
+  name="Want to go"
+  count={12}
+  photos={[a, b, c, d]}
+  icon={RiFlagLine}
+  visibility="shared"
+  collaborators={people}
+  onPress={open}
+/>
+```
+
+- **The cover is a STRIP, not a square.** 112 tall — `listing-card`'s compact thumbnail
+  height, which is the height of the place rows the list is made of, so a list's cover and
+  the first place under it agree. The first tile takes two shares of the row and the rest
+  one each, with 2px seams.
+- **The count and the sharing are ONE line.** A saved list is scanned in a grid of them,
+  and the only questions asked of a card in that grid are "which list is this" and "how
+  much is in it".
+- **`color` is the person's, not a token.** A list's colour is a choice, and Bloom has no
+  ramp for it. It paints the glyph and tints the empty strip; nothing derives anything from
+  it.
+- **The card is one press target, so it announces one sentence** — "Want to go, 12 places,
+  Shared with 3, Shared". Left to ARIA's contents algorithm it is four runs with no commas.
+- **`AvatarGroup` takes no `onPressItem` here.** A button inside the card's own press target
+  is the nested control this library refuses everywhere else; a collaborator's profile
+  belongs on the list's own screen.
+
+It is deliberately NOT `listing-card`'s `WishlistCard`. That card is a square 2×2 mosaic
+with its text underneath, built for a grid of wishlists; this one is a wide card with a body
+that has to carry a count, three faces and a visibility badge. They share the idea and none
+of the geometry, so sharing the component would have meant a second layout inside it.
+
+## `PlaceList`
+
+The places inside are `PlaceCard` at `density="row"`, untouched — a saved place and a search
+result are the same object, so this list draws no row of its own and inherits the thumbnail,
+the rating, the open state and the composed announcement with it.
+
+**The note is a sibling of the place, not part of it.** The place is the place; the note is
+what someone said about it. It is announced as "Note: get the sourdough before noon", after
+the row.
+
+### Reordering is buttons, and the buttons are the accessible path
+
+`moveItem` (`hooks/list-reorder`) is the same list maths the track list, the queue and the
+photo grid use, so "move" means one thing in this package.
+
+There is no pointer drag. `SortablePhotoGrid`'s drag is GRID geometry — a point resolved to
+a cell in a fixed row of columns — and a column of rows of different heights is a different
+problem, not a smaller one. Buttons are also what a keyboard and a screen reader get out of
+a drag surface anyway, so the list is fully operable with the half that exists. If you want
+a swipe to delete on touch, wrap a row in [`SwipeRow`](/docs/swipe-row) — that is the app's
+call, not this component's.
+
+Two properties that are easy to lose:
+
+- **Every row is keyed by its id**, so on web the button that was just pressed keeps focus
+  and travels with its row. A reader can press "move later" three times without hunting for
+  the control again.
+- **The ends are DISABLED, not absent.** The first row's "move earlier" and the last row's
+  "move later" stay in place; a control that disappears at the end of its travel moves the
+  two beside it under the pointer.
+
+Every move is announced politely through a visually hidden live region, because a reorder
+draws nothing new — the rows just swap, and a screen reader would otherwise hear nothing at
+all.
+
+### Controls are 44
+
+The move and remove controls are `GlyphButton`s at 44 with a 20 glyph, right-aligned under
+the row rather than stacked beside it: three 44 boxes do not fit in the 112 a place row is
+tall, and a column of controls narrower than that is not a thumb target.
+
+## Geometry
+
+`PLACE_LIST_GEOMETRY`: a 112 cover at radius 12 with 2px seams and at most four photos, 12
+between blocks, 44 controls with a 20 glyph.
+
+## Labels
+
+Every word `PlaceList` speaks that is not in the data is in `PlaceListLabels`, with
+`DEFAULT_PLACE_LIST_LABELS` as the English set. `PLACE_LIST_VISIBILITY_LABELS` and
+`PLACE_LIST_VISIBILITY_ICON` carry the three visibility words and their glyphs.

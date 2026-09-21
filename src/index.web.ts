@@ -243,6 +243,19 @@ export { Fill } from './fill';
 export { MediaInsetBorder } from './media-inset-border';
 export type { MediaInsetBorderProps } from './media-inset-border';
 export { IconCircle } from './icon-circle';
+// Nothing to show, said once: a glyph or an illustration, a title, a line, and
+// up to two actions. A base family — twelve components had each drawn their own
+// version of this block, at five paddings and under six different prop names.
+export { EmptyState } from './empty-state';
+export { EMPTY_STATE_ACTION_GAP, EMPTY_STATE_GEOMETRY, joinEmptyStateName, resolveEmptyStatePaint } from './empty-state';
+export type {
+  EmptyStateAction,
+  EmptyStateGeometry,
+  EmptyStateMedia,
+  EmptyStatePaint,
+  EmptyStateProps,
+  EmptyStateVariant,
+} from './empty-state';
 export { ConnectionDots } from './connection-dots/index.web';
 export type { ConnectionDotsProps } from './connection-dots/index.web';
 export {
@@ -1231,6 +1244,165 @@ export {
   MapSearchAreaButton,
 } from './map-marker';
 
+// Maps — the chrome an app draws OVER a map it supplies. No engine, no tiles:
+// a place, the way there, and the controls that float on top.
+export { PlaceActions, PlaceCard } from './place-card';
+export { PLACE_CARD_GEOMETRY, PLACE_OPEN_LABELS, PLACE_OPEN_TONE } from './place-card';
+export { composePlaceName, openLabelFor, resolvePlaceCardPaint } from './place-card';
+export type {
+  PlaceAction,
+  PlaceActionsProps,
+  PlaceCardDensity,
+  PlaceCardGeometry,
+  PlaceCardPaint,
+  PlaceCardProps,
+  PlaceOpenState,
+  PlaceStat,
+} from './place-card';
+export {
+  PlaceAmenities,
+  PlaceHours,
+  PlaceInfoList,
+  PlacePopularTimes,
+  PlaceTransit,
+} from './place-details';
+export {
+  PLACE_BUSY_LABELS,
+  PLACE_DETAILS_GEOMETRY,
+  PLACE_INFO_ACTION_LABELS,
+  PLACE_INFO_ACTION_ICON,
+  PLACE_TRANSIT_MODE_ICON,
+  PLACE_TRANSIT_MODE_LABELS,
+} from './place-details';
+export {
+  busyTrendLabel,
+  describeBusyChart,
+  describeDeparture,
+  describeHoursDay,
+  describeInfoItem,
+  describeTransitStop,
+  formatHoursDay,
+  infoActionWord,
+  resolvePlaceDetailsPaint,
+} from './place-details';
+export type {
+  HoursFormat,
+  PlaceAmenitiesLayout,
+  PlaceAmenitiesProps,
+  PlaceAmenity,
+  PlaceBusyHour,
+  PlaceBusyTrend,
+  PlaceDetailsGeometry,
+  PlaceDetailsPaint,
+  PlaceHoursDay,
+  PlaceHoursInterval,
+  PlaceHoursProps,
+  PlaceInfoAction,
+  PlaceInfoItem,
+  PlaceInfoListProps,
+  PlacePopularTimesDay,
+  PlacePopularTimesProps,
+  PlaceTransitDeparture,
+  PlaceTransitMode,
+  PlaceTransitProps,
+  PlaceTransitStop,
+} from './place-details';
+export { PlaceList, PlaceListCard } from './place-list';
+export {
+  DEFAULT_PLACE_LIST_LABELS,
+  PLACE_LIST_GEOMETRY,
+  PLACE_LIST_VISIBILITY_ICON,
+  PLACE_LIST_VISIBILITY_LABELS,
+  composePlaceListName,
+  placeListCountLabel,
+  placeListSharedWithLabel,
+  resolvePlaceListPaint,
+} from './place-list';
+export type {
+  PlaceListCardProps,
+  PlaceListGeometry,
+  PlaceListLabels,
+  PlaceListPaint,
+  PlaceListPlace,
+  PlaceListProps,
+  PlaceListVisibility,
+} from './place-list';
+export { MapCompass, MapControls, MapLayerPicker } from './map-controls';
+export { MAP_CONTROL_BOX, MAP_CONTROLS_GEOMETRY } from './map-controls';
+export type {
+  MapCompassProps,
+  MapControlsAlign,
+  MapControlsGeometry,
+  MapControlsLabels,
+  MapControlsProps,
+  MapLayerOption,
+  MapLayerPickerLabels,
+  MapLayerPickerProps,
+  MapOverlayOption,
+} from './map-controls';
+
+// Drawn ON the map rather than around it: where you are, the guidance while it
+// is happening, and the small print the data's licence requires. Built on the
+// two families above — the accuracy halo IS `map-marker`'s area circle, the
+// maneuver glyphs ARE `directions`' own, and the guidance rides on the same
+// glass island the map controls do.
+export { LocationPuck } from './location-puck';
+export {
+  LOCATION_PUCK_CONE_STOPS,
+  LOCATION_PUCK_GEOMETRY,
+  LOCATION_PUCK_PULSE_MS,
+  LOCATION_PUCK_STALE_OPACITY,
+  LOCATION_PUCK_STATE_LABELS,
+} from './location-puck';
+export { coneHalfAngle, describeLocationPuck, resolveLocationPuckPaint } from './location-puck';
+export type {
+  LocationPuckGeometry,
+  LocationPuckMode,
+  LocationPuckPaint,
+  LocationPuckProps,
+  LocationPuckState,
+} from './location-puck';
+export { ArrivalBar, LaneGuidance, NavigationBanner, SpeedLimitPill } from './navigation-banner';
+export {
+  NAVIGATION_BANNER_GEOMETRY,
+  NAVIGATION_STATE_ICON,
+  NAVIGATION_STATE_LABELS,
+  NAVIGATION_STATE_TONE,
+} from './navigation-banner';
+export {
+  describeArrival,
+  describeLanes,
+  describeNavigationBanner,
+  describeSpeedLimit,
+  maneuverWordFor,
+  resolveNavigationPaint,
+} from './navigation-banner';
+export type {
+  ArrivalBarLabels,
+  ArrivalBarProps,
+  LaneDirection,
+  LaneGuidanceLabels,
+  LaneGuidanceProps,
+  NavigationBannerGeometry,
+  NavigationBannerLabels,
+  NavigationBannerProps,
+  NavigationBannerState,
+  NavigationLane,
+  NavigationPaint,
+  SpeedLimitPillProps,
+} from './navigation-banner';
+export { MapAttribution, MapScaleBar } from './map-attribution';
+export { MAP_ATTRIBUTION_GEOMETRY } from './map-attribution';
+export { describeScale, resolveMapAttributionPaint } from './map-attribution';
+export type {
+  MapAttributionGeometry,
+  MapAttributionPaint,
+  MapAttributionProps,
+  MapAttributionVariant,
+  MapScale,
+  MapScaleBarProps,
+} from './map-attribution';
+
 // Commerce — what any app that moves a thing from A to B needs: where the
 // thing is, what it costs, where it is going, and the stops on the way. Shared
 // on purpose: a parcel, a food order and a booking are the same four questions.
@@ -1260,6 +1432,79 @@ export type {
   PriceSummaryProps,
   PriceTotal,
 } from './price-breakdown';
+
+// Ordering food: who is cooking, what they cook, and what is in the basket.
+// Three families on top of the commerce four above — the vendor card is
+// `listing-card`'s card with a vendor's data in it, the basket's totals are
+// `PriceSummary`, and order tracking is `order-status`.
+export { VendorCard } from './vendor-card';
+export {
+  VENDOR_AVAILABILITY_LABELS,
+  VENDOR_FACT_ICON,
+  VENDOR_FACT_LABELS,
+  VENDOR_FACT_ORDER,
+  VENDOR_PHOTO_ASPECT_RATIO,
+  availabilityLabelFor,
+  composeVendorName,
+  vendorCuisines,
+  vendorFacts,
+} from './vendor-card';
+export type {
+  VendorAvailability,
+  VendorCardDensity,
+  VendorCardProps,
+  VendorFactKey,
+} from './vendor-card';
+export { MenuItemOptions, MenuItemRow } from './menu-item';
+export {
+  MENU_ITEM_DIETS,
+  MENU_ITEM_DIET_LABELS,
+  MENU_ITEM_GEOMETRY,
+  MENU_ITEM_SPICE_MAX,
+  composeMenuItemName,
+  describeOptionRule,
+  describeSpice,
+  optionDisabled,
+  optionGroupRule,
+  optionSubtitle,
+  resolveMenuItemPaint,
+  spiceLevel,
+  toggleOptionSelection,
+} from './menu-item';
+export type {
+  MenuItemDensity,
+  MenuItemDiet,
+  MenuItemGeometry,
+  MenuItemOption,
+  MenuItemOptionGroup,
+  MenuItemOptionRule,
+  MenuItemOptionsProps,
+  MenuItemPaint,
+  MenuItemRowProps,
+} from './menu-item';
+export { CartLine, CartPanel, CartPromoField, CartTipPicker } from './cart-panel';
+export {
+  CART_BLOCK_GAP,
+  CART_GEOMETRY,
+  CART_LINE_GAP,
+  CART_WASH_OPACITY,
+  composeCartLineName,
+  optionsLine,
+  resolveCartPaint,
+} from './cart-panel';
+export type {
+  CartDensity,
+  CartGeometry,
+  CartLineEntry,
+  CartLineProps,
+  CartMinimumOrder,
+  CartPaint,
+  CartPanelProps,
+  CartPromoFieldProps,
+  CartSummary,
+  CartTipOption,
+  CartTipPickerProps,
+} from './cart-panel';
 export { AddressList, AddressRow } from './address';
 export { ADDRESS_GEOMETRY, ADDRESS_KIND_ICON, resolveAddressPaint } from './address';
 export type {
@@ -1282,6 +1527,374 @@ export type {
   RouteStopsLabels,
   RouteStopsProps,
 } from './route-stops';
+export { DirectionsSteps, DirectionsSummary, TransitLineBadge } from './directions';
+export {
+  DIRECTIONS_LEG_GLYPH,
+  DIRECTIONS_MANEUVER_ICON,
+  DIRECTIONS_MANEUVER_LABELS,
+  DIRECTIONS_MODE_ICON,
+  DIRECTIONS_MODE_LABELS,
+  DIRECTIONS_TRAFFIC_LABELS,
+  DIRECTIONS_TRAFFIC_TONE,
+} from './directions';
+export {
+  describeRoute,
+  describeStep,
+  describeTransitLine,
+  modeLabelFor,
+  resolveDirectionsPaint,
+  resolveTransitLineColors,
+  trafficLabelFor,
+} from './directions';
+export type {
+  DirectionsLeg,
+  DirectionsManeuver,
+  DirectionsMode,
+  DirectionsPaint,
+  DirectionsRoute,
+  DirectionsStep,
+  DirectionsStepsProps,
+  DirectionsSummaryLabels,
+  DirectionsSummaryProps,
+  DirectionsTraffic,
+  TransitLine,
+  TransitLineBadgeProps,
+  TransitLineColors,
+} from './directions';
+
+// Checkout — the distance between "I want this" and "it is ordered": the
+// review a buyer confirms, the window they pick, and the screen that says it
+// happened. Built on the commerce block above — the totals ARE `PriceSummary`,
+// the address row IS `AddressRow`, and the tracking strip IS `OrderStatusBar`.
+export { CheckoutConfirm, CheckoutSummary, CheckoutSummaryRow } from './checkout-summary';
+export {
+  CHECKOUT_AMOUNT_SEPARATOR,
+  CHECKOUT_CONFIRM_BUSY_LABEL,
+  CHECKOUT_CONFIRM_LABEL,
+  CHECKOUT_GROUP_RADIUS,
+  CHECKOUT_ROW_HINT,
+  CHECKOUT_ROW_ICON,
+  CHECKOUT_ROW_PLACEHOLDER,
+  CHECKOUT_ROW_TILE,
+  checkoutConfirmLabel,
+  checkoutRowName,
+  resolveCheckoutPaint,
+} from './checkout-summary';
+export type {
+  CheckoutAddressSummary,
+  CheckoutConfirmProps,
+  CheckoutSummaryLine,
+  CheckoutSummaryPaint,
+  CheckoutSummaryProps,
+  CheckoutSummaryRowProps,
+} from './checkout-summary';
+export { DeliverySlotDays, DeliverySlotOption, DeliverySlotPicker } from './delivery-slot';
+export {
+  DELIVERY_ASAP_LABEL,
+  DELIVERY_DAY_LABEL,
+  DELIVERY_EMPTY_DESCRIPTION,
+  DELIVERY_EMPTY_TITLE,
+  DELIVERY_FIELD_LABEL,
+  DELIVERY_OPTION_RADIUS,
+  DELIVERY_SOLD_OUT_LABEL,
+  DELIVERY_TIER_LABELS,
+  joinDeliveryParts,
+  resolveDeliverySlotPaint,
+  windowDetail,
+  windowName,
+} from './delivery-slot';
+export type {
+  DeliveryAsapOption,
+  DeliveryDay,
+  DeliverySlotDaysProps,
+  DeliverySlotOptionProps,
+  DeliverySlotPaint,
+  DeliverySlotPickerProps,
+  DeliveryTier,
+  DeliveryWindow,
+} from './delivery-slot';
+export { OrderConfirmation } from './order-confirmation';
+export {
+  ORDER_CONFIRMATION_ITEMS_LABEL,
+  ORDER_CONFIRMATION_MARK,
+  ORDER_CONFIRMATION_REFERENCE_LABEL,
+  ORDER_CONFIRMATION_TITLE,
+} from './order-confirmation';
+export type {
+  OrderConfirmationAddress,
+  OrderConfirmationFact,
+  OrderConfirmationProps,
+} from './order-confirmation';
+
+// Freight — asking a marketplace to carry something: describing the load and
+// the route, the offers that come back, and the vehicle the job needs. Built
+// on the commerce block above: the route IS `route-stops`, the itemisation IS
+// `price-breakdown`, and the tracking IS `order-status`.
+export { ShipmentLoadPicker, ShipmentOptionsList, ShipmentRequestForm } from './shipment-request';
+export {
+  SHIPMENT_ACCESS_OPTIONS,
+  SHIPMENT_LOAD_KINDS,
+  SHIPMENT_LOAD_LABELS,
+  SHIPMENT_LOAD_SIZES,
+  SHIPMENT_OPTIONS_LABELS,
+  SHIPMENT_REQUEST_GEOMETRY,
+  SHIPMENT_REQUEST_LABELS,
+  isShipmentLoadComplete,
+  joinShipmentName,
+  sanitizeWeight,
+  toggleShipmentExtra,
+} from './shipment-request';
+export type {
+  ShipmentAccess,
+  ShipmentAccessOption,
+  ShipmentExtra,
+  ShipmentLoad,
+  ShipmentLoadErrors,
+  ShipmentLoadKind,
+  ShipmentLoadKindOption,
+  ShipmentLoadPickerLabels,
+  ShipmentLoadPickerProps,
+  ShipmentLoadSize,
+  ShipmentLoadSizeOption,
+  ShipmentOptionsLabels,
+  ShipmentOptionsListProps,
+  ShipmentRequestFormLabels,
+  ShipmentRequestFormProps,
+  ShipmentRequestGeometry,
+  ShipmentTimeWindow,
+} from './shipment-request';
+export { CarrierQuoteCard, CarrierQuoteList } from './carrier-quote';
+export {
+  CARRIER_QUOTE_GEOMETRY,
+  CARRIER_QUOTE_LABELS,
+  CARRIER_QUOTE_MARK_ORDER,
+  CARRIER_QUOTE_MARK_TONE,
+  CARRIER_QUOTE_SORTS,
+  carrierActionsAreLabelled,
+  markCarrierQuotes,
+  orderCarrierMarks,
+  resolveCarrierQuotePaint,
+  sortCarrierQuotes,
+} from './carrier-quote';
+export type {
+  CarrierQuote,
+  CarrierQuoteCardProps,
+  CarrierQuoteCarrier,
+  CarrierQuoteDensity,
+  CarrierQuoteGeometry,
+  CarrierQuoteLabels,
+  CarrierQuoteListProps,
+  CarrierQuoteMark,
+  CarrierQuotePaint,
+  CarrierQuoteSort,
+} from './carrier-quote';
+export { VehiclePicker } from './vehicle-picker';
+export {
+  VEHICLE_ICON,
+  VEHICLE_OPTIONS,
+  VEHICLE_PICKER_GEOMETRY,
+  VEHICLE_PICKER_LABELS,
+  vehicleOptionName,
+} from './vehicle-picker';
+export type {
+  VehicleKind,
+  VehicleOption,
+  VehiclePickerGeometry,
+  VehiclePickerLabels,
+  VehiclePickerProps,
+} from './vehicle-picker';
+
+// TAKING THE MONEY. `payment-method` is the saved way to pay, `card-form` is
+// entering a new one, and `payment-status` is what happened afterwards. None of
+// the three holds card data: the masked string, the value and the processor's
+// verdict all belong to the app.
+export { PaymentMethodList, PaymentMethodMark, PaymentMethodRow } from './payment-method';
+export {
+  PAYMENT_METHOD_GEOMETRY,
+  PAYMENT_METHOD_KIND_ICON,
+  PAYMENT_METHOD_LIST_GAP,
+  PAYMENT_METHOD_MARK_GAP,
+  PAYMENT_METHOD_STATE_LABELS,
+  PAYMENT_METHOD_STATE_TONE,
+  composePaymentMethodName,
+  paymentMethodStateMessage,
+  resolvePaymentMethodPaint,
+} from './payment-method';
+export type {
+  PaymentMethodDensity,
+  PaymentMethodEntry,
+  PaymentMethodGeometry,
+  PaymentMethodKind,
+  PaymentMethodListProps,
+  PaymentMethodListVariant,
+  PaymentMethodMarkProps,
+  PaymentMethodPaint,
+  PaymentMethodRowProps,
+  PaymentMethodState,
+} from './payment-method';
+export {
+  CardForm,
+  CardFormCountry,
+  CardFormExpiry,
+  CardFormName,
+  CardFormNumber,
+  CardFormPostcode,
+  CardFormSecurityCode,
+} from './card-form';
+export {
+  CARD_FORM_EMPTY_VALUE,
+  CARD_FORM_GAP,
+  CARD_FORM_LABELS,
+  CARD_FORM_PLACEHOLDERS,
+  DEFAULT_CARD_GROUPS,
+  DEFAULT_CARD_LENGTHS,
+  DEFAULT_SECURITY_CODE_LENGTH,
+  applyCardExpiryEdit,
+  applyCardNumberEdit,
+  cardDigits,
+  cardExpiryIsWellFormed,
+  cardNumberIsWellFormed,
+  cardSecurityCodeIsWellFormed,
+  groupCardDigits,
+  luhnCheck,
+  matchCardScheme,
+  normaliseCardExpiry,
+  normaliseCardNumber,
+  schemeGroups,
+  schemeLengths,
+  schemeMaxDigits,
+  schemeSecurityCodeLength,
+  useCardFormPart,
+} from './card-form';
+export type {
+  CardFormCountryOption,
+  CardFormCountryProps,
+  CardFormErrors,
+  CardFormExpiryProps,
+  CardFormFieldName,
+  CardFormFields,
+  CardFormLabels,
+  CardFormNameProps,
+  CardFormNumberProps,
+  CardFormPartInput,
+  CardFormPartMembership,
+  CardFormPostcodeProps,
+  CardFormProps,
+  CardFormSecurityCodeProps,
+  CardFormValue,
+  CardScheme,
+} from './card-form';
+export { PaymentStatusBar, PaymentStatusBlock } from './payment-status';
+export {
+  PAYMENT_STATUS_ADMONITION,
+  PAYMENT_STATUS_GEOMETRY,
+  PAYMENT_STATUS_ICON,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUS_TONE,
+  resolvePaymentStatus,
+  resolvePaymentStatusPaint,
+} from './payment-status';
+export type {
+  PaymentStatusBarProps,
+  PaymentStatusBlockProps,
+  PaymentStatusGeometry,
+  PaymentStatusLabels,
+  PaymentStatusPaint,
+  PaymentStatusPresentation,
+  PaymentStatusState,
+} from './payment-status';
+// Fulfilment — the same marketplace from the side of the person who does the
+// work: the board of jobs to take, what the work paid, and the proof that a
+// delivery happened. Built on the same block as the customer's side: a job's
+// route IS `route-stops`, its pay IS `price-breakdown`, its chart IS
+// `chart-cards`, and its code IS `input-otp`.
+export { JobBoard, JobCard } from './job-board';
+export {
+  JOB_BOARD_GEOMETRY,
+  JOB_BOARD_LABELS,
+  JOB_BOARD_SORTS,
+  JOB_DISTANCE_BANDS,
+  JOB_STATE_TONE,
+  JOB_VEHICLE_KINDS,
+  JOB_WHEN_BANDS,
+  countActiveJobFilters,
+  filterJobOffers,
+  jobActionsAreLabelled,
+  joinJobName,
+  resolveJobPaint,
+  sortJobOffers,
+  toggleJobVehicle,
+} from './job-board';
+export type {
+  JobBoardBand,
+  JobBoardFilter,
+  JobBoardGeometry,
+  JobBoardLabels,
+  JobBoardProps,
+  JobBoardSort,
+  JobCardDensity,
+  JobCardProps,
+  JobOffer,
+  JobOfferState,
+  JobPaint,
+  JobPlace,
+} from './job-board';
+
+export { EarningsBreakdown, EarningsPayoutRow, EarningsSummary } from './earnings';
+export {
+  EARNINGS_GEOMETRY,
+  EARNINGS_LABELS,
+  EARNINGS_PAYOUT_TONE,
+  earningsHeadline,
+  earningsHeadlineLabel,
+  joinEarningsName,
+  resolveEarningsPaint,
+  resolveEarningsPeriod,
+} from './earnings';
+export type {
+  EarningsBar,
+  EarningsBreakdownProps,
+  EarningsGeometry,
+  EarningsLabels,
+  EarningsPaint,
+  EarningsPayout,
+  EarningsPayoutRowProps,
+  EarningsPayoutState,
+  EarningsPeriod,
+  EarningsStat,
+  EarningsSummaryProps,
+} from './earnings';
+
+export { ProofOfDelivery, SignaturePad } from './proof-of-delivery';
+export {
+  EMPTY_PROOF,
+  EMPTY_SIGNATURE,
+  PROOF_GEOMETRY,
+  PROOF_LABELS,
+  PROOF_ORDER,
+  completeProofValue,
+  hasSignatureInk,
+  isProofGiven,
+  isSignatureGiven,
+  missingProofs,
+  orderProofs,
+  resolveProofPaint,
+  shouldKeepSignaturePoint,
+  signaturePath,
+} from './proof-of-delivery';
+export type {
+  ProofGeometry,
+  ProofKind,
+  ProofOfDeliveryLabels,
+  ProofOfDeliveryProps,
+  ProofOfDeliveryResult,
+  ProofOfDeliveryValue,
+  ProofPaint,
+  SignaturePadProps,
+  SignaturePoint,
+  SignatureStroke,
+  SignatureValue,
+} from './proof-of-delivery';
 
 export { WizardFooter, WizardProgress } from './wizard';
 export type { WizardFooterProps, WizardProgressProps, WizardStep } from './wizard';

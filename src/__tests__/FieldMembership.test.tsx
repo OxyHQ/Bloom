@@ -47,11 +47,14 @@ jest.mock('react-native', () => {
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
+import { CardFormNumber } from '../card-form';
 import { Checkbox } from '../checkbox';
+import { DeliverySlotPicker } from '../delivery-slot';
 import { FileUpload } from '../file-upload';
 import { InputGroup } from '../input-group';
 import { InputOtp } from '../input-otp';
 import { MailRecipientField } from '../mail-compose';
+import { PaymentMethodList } from '../payment-method';
 import { Radio, RadioGroup } from '../radio';
 import { RatingInput } from '../rating';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
@@ -219,6 +222,42 @@ const SUBJECTS: Subject[] = [
     id: true,
   },
   {
+    // Six boxes, each a member in its own right; the number is the one the
+    // caller reaches for first. It resolves membership ONCE and re-publishes
+    // the answer to `TextFieldInput`, so the caller's own name cannot be
+    // outranked by the field's label — the direction that is silently wrong.
+    name: 'card-form',
+    render: (p) => <CardFormNumber testID={TID} {...p} />,
+    ownNameProp: 'accessibilityLabel',
+    isInert: inputInert,
+    node: 'textInput',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'Card number',
+  },
+  {
+    // The picker is a `radiogroup` the way `RadioGroup` is one: the GROUP is
+    // the member, each row keeps its own `aria-checked`, and a `Field` can name
+    // it, describe it, mark it invalid and freeze every row in it.
+    name: 'payment-method',
+    render: (p) => (
+      <PaymentMethodList
+        testID={TID}
+        variant="picker"
+        methods={[{ id: 'a', scheme: 'Aurora', masked: '•••• 4417' }]}
+        selectedId="a"
+        onSelect={() => {}}
+        {...p}
+      />
+    ),
+    ownNameProp: 'accessibilityLabel',
+    isInert: viewInert,
+    describedBy: true,
+    invalid: true,
+    lastResortName: 'Payment methods',
+  },
+  {
     name: 'textarea',
     render: (p) => <Textarea testID="shell" {...p} />,
     ownNameProp: 'accessibilityLabel',
@@ -246,6 +285,28 @@ const SUBJECTS: Subject[] = [
     describedBy: true,
     invalid: true,
     id: true,
+  },
+  {
+    // The picker is TWO radio groups inside one field (the days, and the
+    // windows). The windows group is the one the contract lands on; it carries
+    // the name, so it is found by that rather than by a testID one node up.
+    // Dropped inside a `Field` the picker renders no second field of its own.
+    name: 'delivery-slot',
+    render: (p) => (
+      <DeliverySlotPicker
+        days={[{ id: 'fri', weekday: 'Fri', day: '24' }]}
+        day="fri"
+        windows={[{ id: 'w1', label: '17:00 - 19:00' }]}
+        value="w1"
+        onValueChange={() => {}}
+        {...p}
+      />
+    ),
+    ownNameProp: 'label',
+    isInert: viewInert,
+    node: 'byName',
+    describedBy: true,
+    invalid: true,
   },
   {
     name: 'select',
@@ -436,6 +497,24 @@ describe('a disabled field reaches the controls INSIDE a composite', () => {
     );
     const trigger = screen.getByLabelText('Country');
     expect(trigger.props.disabled ?? trigger.props['aria-disabled']).toBe(true);
+  });
+
+  it('freezes every row of a PaymentMethodList picker', () => {
+    // The group reads the field; the rows read nothing, so the group has to
+    // hand the constraint down — the same gap `PhoneInput`'s picker had.
+    const screen = wrap(
+      <Field label="Pay with" multiple disabled>
+        <PaymentMethodList
+          variant="picker"
+          methods={[{ id: 'a', scheme: 'Aurora', masked: '•••• 4417' }]}
+          selectedId="a"
+          onSelect={() => {}}
+        />
+      </Field>,
+    );
+    // `Item` puts the testID on the row's content view, so the control itself
+    // is found by the name it announces.
+    expect(screen.getByLabelText('Aurora, •••• 4417').props.disabled).toBe(true);
   });
 
   it("freezes an InputGroup's addon button as well as its input", () => {
