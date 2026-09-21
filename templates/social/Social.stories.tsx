@@ -87,7 +87,7 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
       </View> : undefined}
     >
       <View testID="social-main" role="main" accessibilityLabel={`${title} layout`} style={{ gap: 32 }}>
-        <View testID="social-heading" onLayout={event => setHeadingHeight(event.nativeEvent.layout.height)} style={{ gap: 8 }}>
+        <View testID="social-heading" onLayout={event => setHeadingHeight(event.nativeEvent.layout.height)} style={{ gap: 8, paddingLeft: Math.max(0, 24 - gutter), paddingRight: Math.max(0, 24 - gutter) }}>
           <Text variant="title-2-semibold" role="heading" aria-level={1}>{title}</Text>
           <Text style={{ color: colors.textSecondary }}>{subtitle}</Text>
         </View>

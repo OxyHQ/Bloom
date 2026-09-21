@@ -228,7 +228,10 @@ genuinely separate objects.
 ## Shared document insets
 
 The viewport mask covers the complete `overlayInset`, including asymmetric top
-and bottom values. It clips flush to the horizontal panel bounds. The former
+and bottom values. A 1 CSS pixel horizontal overlap covers device-pixel rounding:
+at 125% display scaling, a flush clip left a bright physical-pixel seam at the
+right edge. `scripts/verify-content-panel-pixel-seam.mjs` probes both edges in
+light/dark at 100%, 125%, 150% and 200% scaling and even/odd viewport widths. The former
 12px horizontal halo painted over 5px of the adjacent 50px sidebar Fab when
 `navigationGap={0}`: the Fab’s measured bounds were correct, but its right edge
 was hidden under the mask. `scripts/verify-sidebar-fab-visibility.mjs` checks
