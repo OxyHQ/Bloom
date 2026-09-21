@@ -226,6 +226,13 @@ export interface SidebarUserMenuProps {
 }
 
 export interface SidebarProps {
+  /** Persistent primary action below destinations. Its label collapses to a named icon button. */
+  primaryAction?: {
+    label: string;
+    icon: SidebarIcon;
+    onPress: () => void;
+    disabled?: boolean;
+  };
   /** Defaults to `panel`. */
   variant?: SidebarVariant;
   /** Primary navigation rows. */

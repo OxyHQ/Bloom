@@ -35,6 +35,7 @@ import { SidebarFolder } from './SidebarFolder';
 import { SidebarItem } from './SidebarItem';
 import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
+import { SidebarPrimaryAction } from './SidebarPrimaryAction';
 import { SidebarRail } from './SidebarRail';
 import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarTeamMenu } from './SidebarTeamMenu';
@@ -138,6 +139,7 @@ function SearchField({
 
 const SidebarPanel: React.FC<SidebarProps> = ({
   items = [],
+  primaryAction,
   secondaryItems = [],
   modes,
   mode,
@@ -654,6 +656,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
               <Text variant="body-regular" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}>{noResultsLabel}</Text>
             ) : null}
           </SidebarScrollArea>
+          {primaryAction ? <SidebarPrimaryAction action={primaryAction} collapsed={collapsed} testID={testID ? `${testID}-primary-action` : undefined} /> : null}
         </View>
 
         <View style={{ width: '100%', flexShrink: 0, gap: 12, paddingTop: hasTree ? 12 : 0 }}>

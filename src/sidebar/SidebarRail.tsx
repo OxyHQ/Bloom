@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Badge } from '../badge';
 import { useSidebarPalette } from './palette';
 import { IS_WEB } from './parts';
+import { SidebarPrimaryAction } from './SidebarPrimaryAction';
 import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarRailItem } from './SidebarRailItem';
@@ -27,6 +28,7 @@ export const SIDEBAR_RAIL_WIDTH = 80;
 export function SidebarRail({
   logo,
   items = [],
+  primaryAction,
   secondaryItems = [],
   selected,
   onNavigate,
@@ -102,6 +104,9 @@ export function SidebarRail({
           {items.map(renderItem)}
         </View>
       </SidebarScrollArea>
+      {primaryAction ? <View style={{ flexShrink: 0, paddingLeft: 8, paddingRight: 8, paddingBottom: 24 }}>
+        <SidebarPrimaryAction action={primaryAction} rail testID={testID ? `${testID}-primary-action` : undefined} />
+      </View> : null}
       {secondaryItems.length > 0 ? (
         <View
           role="navigation"

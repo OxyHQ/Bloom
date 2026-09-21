@@ -16,7 +16,11 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', error => failures.push(error.message));
   for (const id of stories) for (const width of [1440, 390]) {
-    await page.setViewport({ width, height: 700 });
+    // The full social navigation needs enough height to fit before a wheel
+    // over it can be expected to reach the document. Short windows deliberately
+    // scroll the destinations while keeping the primary action visible.
+    const height = id.startsWith('templates-social') && width === 1440 ? 900 : 700;
+    await page.setViewport({ width, height });
     const url = new URL('iframe.html', process.env.STORYBOOK_URL ?? 'http://localhost:6014');
     url.searchParams.set('id', id); url.searchParams.set('viewMode', 'story');
     await page.goto(url.href, { waitUntil: 'networkidle0' });

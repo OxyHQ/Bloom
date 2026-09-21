@@ -24,6 +24,28 @@ import { RiHomeLine, RiSettings4Line } from '@oxy.so/bloom/icons';
 
 Give it a height (it fills `100%`); its width is its own.
 
+## Primary action
+
+Use `primaryAction` for the sidebar's main command. Bloom renders a solid action-tone
+`Button`, full-width when expanded and a named icon button when collapsed or in
+`variant="rail"`. It stays outside the scrolling destinations so long navigation
+lists do not push it out of reach. The expanded label follows the sidebar's existing
+collapse animation and reduced-motion setting; the button keeps one focus target.
+
+```tsx
+import { Sidebar } from '@oxy.so/bloom/sidebar';
+import { RiAddLine } from '@oxy.so/bloom/icons/RiAddLine';
+
+<Sidebar
+  items={navigation}
+  primaryAction={{ label: 'New post', icon: RiAddLine, onPress: openComposer, disabled: saving }}
+/>
+```
+
+`label` supplies the accessible name in every layout; `icon` is a Bloom icon
+component. `onPress` owns the command and is never called while `disabled` is true.
+The sidebar does not create a composer or any other application-specific UI.
+
 ## Parts
 
 | export | |

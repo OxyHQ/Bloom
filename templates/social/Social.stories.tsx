@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
+import { fn } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { AppShell } from '../../src/app-shell/index.web';
@@ -7,15 +8,30 @@ import { PageHeader } from '../../src/page-header';
 import { Text } from '../../src/typography';
 import { useTheme } from '../../src/theme/use-theme';
 import { RiHome5Line } from '../../src/icons/remix/RiHome5Line';
-import { RiCompass3Line } from '../../src/icons/remix/RiCompass3Line';
 import { RiBookmarkLine } from '../../src/icons/remix/RiBookmarkLine';
-import { RiLayoutGridLine } from '../../src/icons/remix/RiLayoutGridLine';
+import { RiUserLine } from '../../src/icons/remix/RiUserLine';
+import { RiSearchLine } from '../../src/icons/remix/RiSearchLine';
+import { RiNotification3Line } from '../../src/icons/remix/RiNotification3Line';
+import { RiBroadcastLine } from '../../src/icons/remix/RiBroadcastLine';
+import { RiChat4Line } from '../../src/icons/remix/RiChat4Line';
+import { RiHashtag } from '../../src/icons/remix/RiHashtag';
+import { RiListUnordered } from '../../src/icons/remix/RiListUnordered';
+import { RiVideoLine } from '../../src/icons/remix/RiVideoLine';
+import { RiSettings3Line } from '../../src/icons/remix/RiSettings3Line';
+import { RiQuillPenLine } from '../../src/icons/remix/RiQuillPenLine';
 
 const destinations = [
   { value: 'home', label: 'Home', icon: <RiHome5Line /> },
-  { value: 'explore', label: 'Explore', icon: <RiCompass3Line /> },
+  { value: 'profile', label: 'Profile', icon: <RiUserLine /> },
+  { value: 'explore', label: 'Explore', icon: <RiSearchLine /> },
+  { value: 'notifications', label: 'Notifications', icon: <RiNotification3Line /> },
+  { value: 'live-rooms', label: 'Live rooms', icon: <RiBroadcastLine /> },
+  { value: 'channels', label: 'Channels', icon: <RiChat4Line /> },
   { value: 'saved', label: 'Saved', icon: <RiBookmarkLine /> },
-  { value: 'collections', label: 'Collections', icon: <RiLayoutGridLine /> },
+  { value: 'feeds', label: 'Feeds', icon: <RiHashtag /> },
+  { value: 'lists', label: 'Lists', icon: <RiListUnordered /> },
+  { value: 'videos', label: 'Videos', icon: <RiVideoLine /> },
+  { value: 'settings', label: 'Settings', icon: <RiSettings3Line /> },
 ];
 
 /** Neutral space markers, not a loading request or a post component. */
@@ -24,10 +40,12 @@ function Placeholder({ compact = false }: { compact?: boolean }) {
   return <View accessible={false} aria-hidden style={{ height: compact ? 104 : 260, borderRadius: 16, backgroundColor: colors.backgroundSecondary }} />;
 }
 
-function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWidth = 350, framedContent = true, tallContext = false, gutter = 16 }: {
-  showRightColumn?: boolean; centerWidth?: number; rightColumnWidth?: number; framedContent?: boolean; tallContext?: boolean; gutter?: number;
+function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWidth = 350, framedContent = true, tallContext = false, gutter = 16, onNewPost }: {
+  showRightColumn?: boolean; centerWidth?: number; rightColumnWidth?: number; framedContent?: boolean; tallContext?: boolean; gutter?: number; onNewPost: () => void;
 }) {
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const compact = width < 700;
   const [selected, setSelected] = useState('home');
   const title = destinations.find(item => item.value === selected)?.label ?? 'Home';
   return (
@@ -36,12 +54,13 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
       variant="feed"
       scroll="document"
       navigationAlign="content"
-      navigation={destinations}
+      navigation={compact ? destinations.filter(item => ['home', 'explore', 'notifications', 'saved', 'profile'].includes(item.value)) : destinations}
+      primaryAction={compact ? { accessibilityLabel: 'New post', icon: <RiQuillPenLine />, onPress: onNewPost } : undefined}
       value={selected}
       onValueChange={setSelected}
       navFrom={700}
       navExpandedFrom={1100}
-      sidebar={{ surface: 'plain', size: 'lg', style: { justifyContent: 'center' }, searchShortcut: false, logo: { wordmark: 'Social', accessibilityLabel: 'Social home', onPress: () => setSelected('home') } }}
+      sidebar={{ primaryAction: { label: 'New post', icon: RiQuillPenLine, onPress: onNewPost }, surface: 'plain', size: 'lg', style: { justifyContent: 'center' }, searchShortcut: false, logo: { wordmark: 'Social', accessibilityLabel: 'Social home', onPress: () => setSelected('home') } }}
       contentWidth={centerWidth}
       gutter={gutter}
       panel={framedContent}
@@ -73,8 +92,9 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
 const meta = {
   title: 'Templates/Social', component: SocialLayout,
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  args: { showRightColumn: true, centerWidth: 620, rightColumnWidth: 350, framedContent: true, tallContext: false, gutter: 16 },
+  args: { onNewPost: fn(), showRightColumn: true, centerWidth: 620, rightColumnWidth: 350, framedContent: true, tallContext: false, gutter: 16 },
   argTypes: {
+    onNewPost: { control: false, description: 'Primary sidebar action; opens the app composer. Logged in this layout-only story.' },
     gutter: { control: { type: 'range', min: 8, max: 40, step: 4 }, description: 'Shared gutter for the panel frame, mask and sticky header.' },
     framedContent: { control: 'boolean', description: 'Wrap the reading column in Bloom’s tonal ContentPanel.' },
     showRightColumn: { control: 'boolean', description: 'Show the contextual column from 1180px.' },
