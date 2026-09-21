@@ -1,5 +1,5 @@
 import React, { cloneElement, isValidElement, useMemo, useState, type ComponentType } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { Platform, View, useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { Screen, ScreenScrollView, useScreen } from '../screen';
 import { Sidebar } from '../sidebar';
@@ -10,6 +10,9 @@ import type { FabProps } from '../fab/types';
 import { ResponsiveNavigation } from './ResponsiveNavigation';
 import type { AppShellProps, AppShellEngineProps } from './types';
 import { AppShellEngine } from './AppShellEngine';
+import { resolveScrollMode } from './layout';
+import { AppShellMenuButton } from './AppShellMenuButton';
+import { breakpointPx } from './constants';
 
 export function resolveNavigationPlacement(width: number, placement: AppShellProps['navigationPlacement'] = 'auto') {
   return placement === 'auto' ? width < BREAKPOINTS.md ? 'bottom' : width < BREAKPOINTS.lg ? 'rail' : 'sidebar' : placement;
@@ -86,11 +89,74 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
       </Screen>
     </View>;
   }
+  /** Translate navigation convenience props into the one document/layout engine. */
+  function EngineNavigationShell(props: AppShellProps) {
+    const { navigation, navigationPlacement = 'auto', value, onValueChange, sidebar, primaryAction,
+      navigationMaterial, bottomActionBehavior, active = true, scroll = 'document', testID } = props;
+    const window = useWindowDimensions();
+    const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
+    const width = measuredWidth ?? window.width;
+    const navFrom = props.navFrom ?? (navigationPlacement === 'bottom' ? Number.MAX_SAFE_INTEGER : navigationPlacement === 'auto' ? 'md' : 0);
+    const navExpandedFrom = props.navExpandedFrom ?? (navigationPlacement === 'auto' ? 'lg' : undefined);
+    const placement = width < breakpointPx(navFrom) ? 'bottom'
+      : navExpandedFrom !== undefined ? width < breakpointPx(navExpandedFrom) ? 'rail' : 'sidebar'
+        : navigationPlacement === 'rail' ? 'rail' : 'sidebar';
+    const items = navigation ?? sidebar?.items?.map(item => ({ value: item.key, label: item.label, icon: <item.icon /> })) ?? [];
+    const select = (next: string) => {
+      if (onValueChange) onValueChange(next);
+      else {
+        const item = sidebar?.items?.find(candidate => candidate.key === next);
+        if (item?.onPress) item.onPress();
+        else if (item && sidebar?.onNavigate) sidebar.onNavigate(item);
+        else if (item?.href && typeof globalThis.window !== 'undefined') globalThis.window.location.assign(item.href);
+      }
+    };
+    const mappedItems = useMemo(() => navigation?.map(item => ({
+      key: item.value, label: item.label, onPress: () => onValueChange?.(item.value),
+      icon: (iconProps: { width?: number; height?: number; fill?: string }) =>
+        isValidElement<{ width?: number; height?: number; fill?: string }>(item.icon)
+          ? cloneElement(item.icon, iconProps) : <>{item.icon}</>,
+    })), [navigation, onValueChange]);
+    const hasNavigation = items.length > 0 && props.variant !== 'focus';
+    const compact = placement === 'bottom';
+    const engineScroll = scroll === 'auto' ? 'container' : scroll === 'external' ? 'fixed' : scroll;
+    const document = resolveScrollMode(props.variant ?? 'dashboard', engineScroll) === 'document';
+    const bottom = compact && hasNavigation ? <NavigationBottom navigation={items} value={value ?? sidebar?.selected}
+      onValueChange={select} primaryAction={primaryAction} navigationMaterial={navigationMaterial}
+      bottomActionBehavior={bottomActionBehavior} testID={testID} /> : undefined;
+    const mappedSidebar = props.variant !== 'focus' && (sidebar || navigation) ? { ...(navigation ? { showSearch: false, showThemeToggle: false } : {}), ...sidebar, items: mappedItems ?? sidebar?.items,
+      selected: value ?? sidebar?.selected,
+      onNavigate: (item: NonNullable<NonNullable<AppShellProps['sidebar']>['items']>[number]) => select(item.key),
+      variant: placement === 'rail' ? 'rail' as const : sidebar?.variant,
+    } : undefined;
+    return <Screen active={active} navigationScope="shared" documentScroll={document}
+      testID={testID ? `${testID}-screen` : undefined}
+      onLayout={event => setMeasuredWidth(event.nativeEvent.layout.width)}>
+      <AppShellEngine {...props as AppShellEngineProps} scroll={engineScroll}
+        sidebar={mappedSidebar}
+        navFrom={navFrom}
+        navExpandedFrom={navExpandedFrom}
+        header={props.header !== undefined ? props.header : props.title ? <PageHeader title={props.title}
+          subtitle={props.breadcrumb} actions={props.actions} leading={<AppShellMenuButton />} /> : undefined}
+        bottomBar={props.bottomBar !== undefined ? props.bottomBar : bottom}
+        bottomBarVisibility={props.bottomBarVisibility ?? 'compact'}
+        floatingAction={props.floatingAction !== undefined ? props.floatingAction : (primaryAction && (!compact || !hasNavigation || props.bottomBar !== undefined) ? <Fab {...primaryAction} /> : undefined)}
+      />
+    </Screen>;
+  }
   const AdaptiveAppShell = AppShell;
   function ComposedAppShell(props: AppShellProps) {
     const adaptive = props.navigation !== undefined || props.navigationPlacement !== undefined
       || props.primaryAction !== undefined || props.scroll === 'auto' || props.scroll === 'external';
-    return adaptive ? <AdaptiveAppShell {...props} /> : <AppShellEngine {...props as AppShellEngineProps} />;
+    if (!adaptive) return <AppShellEngine {...props as AppShellEngineProps} />;
+    const scroll = props.scroll ?? (Platform.OS === 'web' ? 'document' : 'auto');
+    const usesLayout = props.variant !== undefined || props.aside !== undefined || props.list !== undefined || props.info !== undefined
+      || props.contentWidth !== undefined || props.navigationAlign !== undefined || props.drawer !== undefined
+      || props.navFrom !== undefined || props.navExpandedFrom !== undefined || props.topBar !== undefined
+      || props.bottomBar !== undefined || props.floatingAction !== undefined;
+    return (scroll === 'auto' || scroll === 'external') && !usesLayout
+      ? <AdaptiveAppShell {...props} scroll={scroll} />
+      : <EngineNavigationShell {...props} scroll={scroll} />;
   }
   ComposedAppShell.displayName = 'AppShell';
   return ComposedAppShell;

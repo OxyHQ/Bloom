@@ -43,10 +43,30 @@ defaults match Bloom's 56-point header and 58-point bottom bar plus safe area.
 Measured heights replace those estimates. Custom chrome should declare its height
 to prevent the first layout changing the content's padding.
 
-`documentScroll` enables web sticky chrome for a document virtualizer.
-`VirtualList screen={{ active, restoration }}` connects both platforms to the
-screen without a surrounding ScrollView. Use `useScreenWindowScroll` for another
-window virtualizer; `useScreenScroll` remains the animated native/container binding.
+On web, `documentScroll` makes the document the scroller: Screen grows with its
+children and automatically observes `window.scrollY`. Do not wrap ordinary
+content in a ScrollView or constrain Screen to a fixed-height flex slot.
+
+```tsx
+<Screen documentScroll header={<PageHeader title="Home" />} bottomBar={<Navigation />}>
+  <LongContent />
+</Screen>
+```
+
+Header and bottom chrome stay sticky within the Screen column's width. Screen
+reserves their measured footprints in document flow, including bottom clearance;
+content can scroll fully above the bottom bar. The initial declared heights still
+apply before measurement. Without chrome slots Screen adds no content padding,
+so a composed shell can own those slots and their spacing itself.
+
+`VirtualList screen={{ active, restoration }}` connects both platforms without a
+surrounding ScrollView. Use `useScreenWindowScroll` for another window virtualizer;
+its explicit writer takes priority over Screen's automatic listener. During a
+pending restoration it updates the offset without collapsing navigation. When
+that binding unmounts, automatic window tracking resumes. Returned `contentInsets`
+are zero in document mode because Screen already reserves the spacing; applying
+them does not add a second footprint. `useScreenScroll` remains the animated
+native/container binding. Only one explicit scroller should be active per scope.
 
 When navigation retains whole screens, set `Screen active={focused}` (or
 `AppShell active={focused}`). That boundary disables every descendant scroll
@@ -59,3 +79,12 @@ AppShell establishes `navigationScope="shared"`. Route Screens use the default
 `inherit`: their local header offset is independent, while the focused list owns
 the shared navigation progress. Set every retained route's `active` explicitly;
 use `navigationScope="isolated"` for modal screens that cover the shell navigation.
+
+
+### Storybook document hosts
+
+Full-screen stories that demonstrate document scrolling declare
+`parameters: { layout: 'fullscreen', bloomScroll: 'document' }`. The preview then
+uses a minimum viewport height, allowing the document to grow. Contained demos
+keep a bounded height. This is a preview host choice, not an application prop;
+consumer roots must likewise allow the document to grow.

@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, View } from 'react-native';
+import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -14,7 +14,7 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Sidebar } from '../sidebar';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import { WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
+import { WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { AppShellBottomBar, AppShellFloatingAction, AppShellTopBar, useShellInsets } from './AppShellBars';
 import { AppShellHeader } from './AppShellHeader';
@@ -96,6 +96,7 @@ function Scroller({
 
 const AppShellComponent: React.FC<AppShellEngineProps> = ({
   variant = 'dashboard',
+  navigationAlign = 'edge',
   sidebar,
   drawer = 'overlay',
   title,
@@ -141,6 +142,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const { height: viewportHeight } = useWindowDimensions();
+  const [asideHeight, setAsideHeight] = useState(0);
   const { width, onLayout } = useShellWidth();
   const insets = useShellInsets();
   const mode = resolveScrollMode(variant, scroll);
@@ -329,21 +332,23 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     </View>
   );
 
-  // Beside the content: sticky and self-scrolling with document scroll, a
-  // full-height scroller otherwise.
+  // Document asides grow naturally. A tall aside first travels with the page
+  // until its bottom is visible, then sticks; wheel events keep scrolling the
+  // document rather than getting trapped in a second scroll container.
   const asideColumn = (inset: WebCssStyle) =>
     asideBeside ? (
       <View
         testID={testID ? `${testID}-aside` : undefined}
+        onLayout={event => setAsideHeight(event.nativeEvent.layout.height)}
         style={[
           { width: asideWidth, flexShrink: 0 },
-          doc ? { ...stickyRail(gutter), width: asideWidth } : { alignSelf: 'stretch' },
+          doc ? { position: WEB_POSITION_STICKY, top: Math.min(gutter, viewportHeight - asideHeight - gutter), alignSelf: 'flex-start' } : { alignSelf: 'stretch' },
           inset,
         ]}
       >
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        {doc ? aside : <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
           {aside}
-        </ScrollView>
+        </ScrollView>}
       </View>
     ) : null;
 
@@ -465,6 +470,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
 
   // ---- the page region, per variant ---------------------------------------
   /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
+  const contentAligned = navigationAlign === 'content' && centred;
+  const readingGroupWidth = contentWidth + (asideBeside ? asideWidth + columnGap : 0);
   const centredBody = (
     <View
       style={[
@@ -479,6 +486,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           // Document scroll: each column carries its own height (the centre
           // grows the page, the aside is sticky). Bounded: they stretch.
           alignItems: doc ? 'flex-start' : 'stretch',
+          ...(contentAligned ? { flexGrow: 0, flexBasis: readingGroupWidth, maxWidth: readingGroupWidth } : {}),
         },
         fill,
       ]}
@@ -661,7 +669,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const navRegion =
     navInFlow && flowSidebar ? (
       doc ? (
-        <View style={stickyRail(dockedNav ? 0 : gutter)}>
+        <View testID={testID ? `${testID}-navigation` : undefined} style={stickyRail(dockedNav ? 0 : gutter)}>
           <Sidebar {...flowSidebar} />
         </View>
       ) : canvas && !dockedNav ? (
@@ -698,6 +706,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
+    ...(contentAligned ? { justifyContent: 'center' } : {}),
     gap: dockedNav || canvas ? 0 : columnGap,
     // A canvas runs to the window's edge, so the row keeps no padding at all
     // and each region carries its own (the nav below, the aside in `canvasBody`).

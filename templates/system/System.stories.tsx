@@ -75,6 +75,7 @@ function DocumentListDemo({ width, count, size, action, material, bottomActionBe
   </Screen></View></BloomScope>;
 }
 export const ExternalList: Story = {
+  parameters: { bloomScroll: 'document' },
   args: { count: 40 },
   argTypes: {
     scenario: { table: { disable: true } },

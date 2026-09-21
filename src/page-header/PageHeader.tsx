@@ -23,7 +23,7 @@ import { GlassIsland } from '../glass';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
+import { WEB_POSITION_STICKY, WEB_SURFACE_STICKY_TOP, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -320,7 +320,7 @@ function PageHeaderComponent({
 
   const containerWeb: WebCssStyle | null =
     isWeb && sticky && !overlay
-      ? { position: WEB_POSITION_STICKY, top: 0, zIndex: Z_INDEX.floating }
+      ? { position: WEB_POSITION_STICKY, top: WEB_SURFACE_STICKY_TOP, zIndex: Z_INDEX.floating }
       : null;
 
   const chrome = floating ? (

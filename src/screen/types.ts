@@ -9,7 +9,7 @@ export interface ScreenProps extends ViewProps {
   active?: boolean;
   /** inherit shell navigation motion; shared establishes a shell; isolated resets it for a modal. */
   navigationScope?: 'inherit' | 'shared' | 'isolated';
-  /** Web document scroller: keep chrome sticky inside this column. */
+  /** Web document flow: bind window scrolling automatically, reserve chrome clearance, and keep chrome sticky within this column. Explicit list bindings take priority. */
   documentScroll?: boolean;
   bottomBar?: ReactNode;
   /** Standalone action; with navigation use BottomBar.action instead. */

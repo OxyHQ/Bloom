@@ -113,13 +113,13 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     expect(border).toContain('border-border');
   });
 
-  it('keeps the deliberate 12px bleed halo in viewport mode', () => {
+  it('selects the viewport mask rule, which covers the declared insets', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed overlaySizing="viewport">
         <Text>content</Text>
       </ContentPanel>,
     );
-    expect(classesFor(toJSON(), 'content-panel-bleed-mask')).toContain('web:[clip-path:inset(-12px)]');
+    expect(findHost(toJSON(), 'content-panel-bleed-mask')?.props.dataSet).toMatchObject({ bloomPanelMask: 'viewport' });
   });
 
   it('still respects showStickyFrame={false} to omit only the border overlay', () => {
@@ -190,6 +190,9 @@ describe('ContentPanel.web overlayInset', () => {
     );
     const mask = resolvedStyle(findHost(toJSON(), 'content-panel-bleed-mask')?.props.style);
     expect(mask.top).toBe(72);
+    expect(mask.boxShadow).toContain('0 0 0 72px');
+    const surface = resolvedStyle(findHost(toJSON(), 'content-panel-surface')?.props.style);
+    expect(surface['--bloom-panel-inset-top']).toBe('72px');
     expect(mask.height).toBe('calc(100dvh - 80px)');
   });
 

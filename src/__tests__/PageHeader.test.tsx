@@ -258,7 +258,7 @@ describe('PageHeader', () => {
     setWidth(1024);
     (ReactNative.Platform as { OS: string }).OS = 'web';
     const sticky = renderBar({ title: 'A' });
-    expect(resolvedStyle(sticky.getByTestId('h').props.style)).toMatchObject({ position: 'sticky', top: 0, paddingTop: 0 });
+    expect(resolvedStyle(sticky.getByTestId('h').props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)', paddingTop: 0 });
     sticky.unmount();
     const flow = renderBar({ title: 'A', sticky: false });
     expect(resolvedStyle(flow.getByTestId('h').props.style).position).toBe('relative');

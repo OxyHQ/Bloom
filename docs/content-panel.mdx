@@ -223,3 +223,23 @@ They are both surfaces. A card filling a framed panel is two borders with a few
 pixels between them. Use the panel's frame, and reach for
 [`Card`](/docs/bloom/main/card) for things *within* the column that are
 genuinely separate objects.
+
+
+## Shared document insets
+
+The viewport mask covers the complete `overlayInset`, including asymmetric top
+and bottom values. Its horizontal halo stays 12px so it does not cover adjacent
+columns. The previous fixed 12px vertical clip exposed a 4px strip of scrolling
+content with a 16px gutter; increasing only the shadow could not repair that clip.
+
+`ContentPanel` also publishes its framed top edge through
+`--bloom-panel-sticky-top`. `PageHeader` inherits that sticky position rather than
+pinning behind the mask at viewport zero. Below `framedFrom`, for `framed={false}`,
+and in panel-sized overlays, this inset is zero. The responsive decision stays
+in CSS, matching the panel’s existing breakpoints.
+
+Run `scripts/verify-content-panel-mask.mjs` against Storybook to measure painted
+top/bottom gutter pixels and header bounds in both modes, at 8/16/40/72px insets
+and multiple scroll positions. `scripts/verify-storybook-document-scroll.mjs`
+checks real wheel gestures over each column, sticky navigation and reachable
+last content without nested vertical scroll containers.

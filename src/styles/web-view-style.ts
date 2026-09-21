@@ -30,6 +30,9 @@ export const WEB_POSITION_FIXED = 'fixed' as ViewStyle['position'];
  */
 export const WEB_POSITION_STICKY = 'sticky' as ViewStyle['position'];
 
+/** A framed document surface publishes its top edge; ordinary pages use zero. */
+export const WEB_SURFACE_STICKY_TOP = 'var(--bloom-panel-sticky-top, 0px)' as ViewStyle['top'];
+
 /**
  * One viewport of height (`100dvh`), and one viewport minus a vertical inset,
  * typed for React Native's `ViewStyle`. Same kind of gap as

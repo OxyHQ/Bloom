@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../../src/button';
@@ -27,7 +27,7 @@ function Workspace({ compactMail = false, showLeadScore = true }: { compactMail?
   const [selectedId, setSelectedId] = useState<string>();
   const [notes, setNotes] = useState(['A little space to think', 'Next steps']);
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ padding: narrow ? 16 : 32, gap: 28, alignItems: 'center' }}>
+    <View style={{ backgroundColor: colors.background, padding: narrow ? 16 : 32, gap: 28, alignItems: 'center' }}>
       <View style={{ width: '100%', maxWidth: 1280, gap: 28 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <View style={{ gap: 6 }}>
@@ -77,14 +77,14 @@ function Workspace({ compactMail = false, showLeadScore = true }: { compactMail?
           </View>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const meta = {
   title: 'Templates/Workspace',
   component: Workspace,
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'fullscreen', bloomScroll: 'document' },
   args: { compactMail: false, showLeadScore: true },
   argTypes: { compactMail: { control: 'boolean' }, showLeadScore: { control: 'boolean' } },
 } satisfies Meta<typeof Workspace>;

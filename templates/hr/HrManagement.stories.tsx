@@ -12,7 +12,7 @@ import { HrTemplate } from './HrTemplate';
 const meta: Meta<typeof HrTemplate> = {
   component: HrTemplate,
   title: 'Templates/HR Management',
-  parameters: { layout: 'fullscreen', controls: { disable: true } },
+  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
 };
 
 export default meta;

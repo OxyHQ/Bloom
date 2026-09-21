@@ -149,3 +149,91 @@ it('keeps Pro Offer copy readable across its painted dark gradient', () => {
     }
   }
 });
+
+
+describe('navigation convenience with document layout on web', () => {
+  const originalPlatform = ReactNative.Platform.OS;
+  const navigation = [{ value: 'home', label: 'Home', icon: <RiHomeLine /> }];
+  beforeEach(() => Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true }));
+  afterEach(() => Object.defineProperty(ReactNative.Platform, 'OS', { value: originalPlatform, configurable: true, writable: true }));
+
+  it.each([undefined, 'document'] as const)('preserves feed and aside without a page ScrollView (%s)', scroll => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="document-shell" navigation={navigation} scroll={scroll}
+      variant="feed" contentWidth={560} asideWidth={280} asideFrom={1180}
+      aside={<ReactNative.View testID="document-aside-content" />}>
+      <ReactNative.View testID="document-content" />
+    </AppShell>);
+    expect(resolvedStyle(screen.getByTestId('document-shell').props.style).minHeight).toBe('100dvh');
+    expect(resolvedStyle(screen.getByTestId('document-shell-aside').props.style).width).toBe(280);
+    for (const testID of ['document-content', 'document-aside-content']) {
+      for (let node = screen.getByTestId(testID).parent; node; node = node.parent) {
+        expect(node.type).not.toBe(ReactNative.ScrollView);
+      }
+    }
+  });
+
+  it('keeps the primary action above a custom bottom bar', () => {
+    setWidth(390);
+    const onPress = jest.fn();
+    const screen = renderIn(<AppShell testID="custom-bottom" navigation={navigation}
+      bottomBar={<ReactNative.View testID="custom-slot" />}
+      primaryAction={{ icon: RiHomeLine, accessibilityLabel: 'Create', onPress }} />);
+    expect(screen.getByTestId('custom-slot')).toBeTruthy();
+    expect(screen.queryByTestId('custom-bottom-navigation-bottom')).toBeNull();
+    fireEvent.press(within(screen.getByTestId('custom-bottom-floating-action')).getByLabelText('Create'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('honors explicit null chrome slots', () => {
+    setWidth(390);
+    const screen = renderIn(<AppShell testID="null-slots" navigation={navigation} bottomBar={null} floatingAction={null}
+      primaryAction={{ icon: RiHomeLine, accessibilityLabel: 'Create' }} />);
+    expect(screen.queryByTestId('null-slots-navigation-bottom')).toBeNull();
+    expect(screen.queryByLabelText('Create')).toBeNull();
+  });
+
+  it('focus generates no sidebar or bottom navigation', () => {
+    setWidth(390);
+    const screen = renderIn(<AppShell testID="focus" variant="focus" navigation={navigation}
+      primaryAction={{ icon: RiHomeLine, accessibilityLabel: 'Create' }} />);
+    expect(screen.queryByTestId('focus-navigation-bottom')).toBeNull();
+    expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
+    expect(screen.getByLabelText('Create')).toBeTruthy();
+  });
+
+  it('honors numeric navigation breakpoints and puts the compact action in the bottom bar', () => {
+    setWidth(750);
+    const onPress = jest.fn();
+    const screen = renderIn(<AppShell testID="responsive-document" navigation={navigation} scroll="document"
+      navFrom={700} navExpandedFrom={1100} primaryAction={{ icon: RiHomeLine, accessibilityLabel: 'Create', onPress }} />);
+    expect(screen.queryByTestId('responsive-document-navigation-bottom')).toBeNull();
+    fireEvent.press(screen.getByLabelText('Create'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+    fireEvent(screen.getByTestId('responsive-document-screen'), 'layout', { nativeEvent: { layout: { width: 390, height: 900 } } });
+    fireEvent(screen.getByTestId('responsive-document'), 'layout', { nativeEvent: { layout: { width: 390, height: 900 } } });
+    expect(screen.getByTestId('responsive-document-navigation-bottom')).toBeTruthy();
+    expect(screen.queryByTestId('responsive-document-floating-action')).toBeNull();
+  });
+});
+
+
+describe('native navigation with layout props', () => {
+  const navigation = [{ value: 'home', label: 'Home', icon: <RiHomeLine /> }];
+  it('keeps the aside and owns container scrolling with default auto', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="native-feed" navigation={navigation} variant="feed"
+      aside={<ReactNative.View testID="native-aside-content" />} asideFrom={1000} />);
+    expect(screen.getByTestId('native-aside-content')).toBeTruthy();
+    expect(screen.UNSAFE_queryAllByType(ReactNative.ScrollView).length).toBeGreaterThan(0);
+  });
+  it('external layout delegates page scrolling to its child', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="native-external" navigation={navigation} variant="feed" scroll="external">
+      <ReactNative.View testID="owned-list" />
+    </AppShell>);
+    for (let node = screen.getByTestId('owned-list').parent; node; node = node.parent) {
+      expect(node.type).not.toBe(ReactNative.ScrollView);
+    }
+  });
+});

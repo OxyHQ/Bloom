@@ -34,5 +34,5 @@ export function useScreenScroll({ active: requestedActive = true, handler = null
     }
   } }, [screen, active, id, previousY, reducedMotion, hasRestoration, record, restoring]);
   const onScroll = useComposedEventHandler([ownHandler, handler]);
-  return { onScroll, contentInsets: { top: screen.topInset, bottom: screen.bottomInset }, scrollY: screen.scrollY, collapseProgress: screen.collapseProgress };
+  return { onScroll, scrollerId: id, contentInsets: { top: screen.contentInsetsHandled ? 0 : screen.topInset, bottom: screen.contentInsetsHandled ? 0 : screen.bottomInset }, scrollY: screen.scrollY, collapseProgress: screen.collapseProgress };
 }

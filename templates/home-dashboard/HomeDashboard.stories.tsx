@@ -12,7 +12,7 @@ import { HomeDashboardTemplate } from './HomeDashboardTemplate';
 const meta: Meta<typeof HomeDashboardTemplate> = {
   component: HomeDashboardTemplate,
   title: 'Templates/Home Dashboard',
-  parameters: { layout: 'fullscreen', controls: { disable: true } },
+  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
 };
 
 export default meta;

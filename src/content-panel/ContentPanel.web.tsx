@@ -8,10 +8,10 @@
  *
  *  1. BLEED-MASK overlay (`z-30`): a `box-shadow` ring in the GUTTER color
  *     (Bloom `background` token) drawn OVER content that bleeds into the thin
- *     lateral gutter / rounded corners. `clip-path: inset(-12px)` keeps that
- *     ring off the side columns. It sits below opaque chrome (headers/banners),
+ *     lateral gutter / rounded corners. The clip keeps a 12px horizontal halo
+ *     off the side columns and covers the full declared vertical insets. It sits below opaque chrome (headers/banners),
  *     so it only masks the content's bleed, never the chrome. No border.
- *     (`clip-path` MUST be the arbitrary class — RN-web drops it from `style`.)
+ *     (`clip-path` lives in the adopted sheet — RN-web drops it from `style`.)
  *
  *  2. BORDER-FRAME overlay (`z-[120]`): a single 1px rounded `border-border`
  *     outline with a transparent interior, ABOVE all content. Being one element
@@ -44,9 +44,10 @@
  * "100% of my own height" at all).
  *
  * The bleed-mask's `clip-path` also changes with the mode, not just its box
- * size: `inset(-12px)` (viewport mode) is a deliberate small halo — the
- * `box-shadow`'s `GUTTER_MASK_SPREAD` is 40px, and the clip-path caps how much
- * of that is actually allowed to paint past the box edge. A document-scroll
+ * size: viewport mode retains a 12px horizontal halo, while the vertical
+ * halo and shadow expand to cover overlayInset. The old fixed inset(-12px)
+ * leaked a 4px strip with a 16px gutter and could not cover a 72px header
+ * inset. GUTTER_MASK_SPREAD (40px) remains the minimum shadow spread. A document-scroll
  * consumer has nothing else positioned right above/below the panel for that
  * halo to land on. A bounded-shell consumer might — the whole reason for
  * `overlaySizing="panel"` is that something IS placed right outside the panel
@@ -85,6 +86,8 @@
 import React, { memo } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import type { WebCssStyle } from '../styles/web-view-style';
 import { StyledView } from '../styles/styled-primitives';
 
 import { useOptionalPanelChrome } from '../styles/panel-chrome';
@@ -143,6 +146,21 @@ const RESPONSIVE_WEB: Record<
     overlayHidden: 'max-lg:hidden',
   },
 };
+
+// The mask must reach the viewport edges for arbitrary shell gutters. Keep
+// horizontal bleed narrow so adjacent columns are never painted over. CSS owns
+// responsive framing, including the sticky inset inherited by PageHeader.
+adoptStyleSheet('bloom-content-panel-insets', `
+[data-bloom-panel] { --bloom-panel-sticky-top: 0px; }
+[data-bloom-panel="framed"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); }
+@media (min-width: 500px) { [data-bloom-panel="500"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
+@media (min-width: 640px) { [data-bloom-panel="640"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
+@media (min-width: 768px) { [data-bloom-panel="768"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
+@media (min-width: 1024px) { [data-bloom-panel="1024"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
+[data-bloom-panel-mask="viewport"] {
+  clip-path: inset(calc(-1 * max(12px, var(--bloom-panel-inset-top))) -12px calc(-1 * max(12px, var(--bloom-panel-inset-bottom))) -12px);
+}
+`);
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   children,
@@ -247,16 +265,24 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
       } as unknown as ViewStyle)
     : undefined;
 
+  const insetVars: WebCssStyle = {
+    '--bloom-panel-inset-top': `${insetTop}px`,
+    '--bloom-panel-inset-bottom': `${insetBottom}px`,
+  };
+  const maskSpread = boundToPanel ? GUTTER_MASK_SPREAD : Math.max(GUTTER_MASK_SPREAD, insetTop, insetBottom);
+
   return (
     <ContentPanelNestingContext.Provider value={true}>
       <StyledView
         testID="content-panel-surface"
+        {...{ dataSet: { bloomPanel: boundToPanel || framed === false ? 'none' : responsive ? String(framedFrom) : 'framed' } }}
         className={surfaceClass}
         style={[
           // `--bloom-surface` rides the element that carries the fill, so CSS
           // below the panel and `useSurfaceFill()` below the panel cannot
           // disagree about what the panel painted.
           surfaceFillVars(publishedFill),
+          insetVars,
           surfaceStyle,
         ]}
       >
@@ -267,15 +293,16 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           <StyledView
             key="bleed-mask"
             testID="content-panel-bleed-mask"
+            {...{ dataSet: { bloomPanelMask: boundToPanel ? 'panel' : 'viewport' } }}
             pointerEvents="none"
             className={
               boundToPanel
                 ? `web:[grid-area:1/1] z-30 h-full w-full rounded-radius-28 ${responsive ? bp.overlayHidden : ''} web:[clip-path:inset(0)]`
                 : responsive
-                  ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]`
-                  : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
+                  ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)]`
+                  : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)]'
             }
-            style={{ ...insetStyle, boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
+            style={{ ...insetStyle, boxShadow: `0 0 0 ${maskSpread}px ${maskColor ?? colors.background}` }}
           />
         )}
         {/* (2) Border-frame overlay — one continuous rounded border, above all.

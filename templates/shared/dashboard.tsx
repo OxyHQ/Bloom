@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Image, View, useWindowDimensions, type ViewStyle } from 'react-native';
 
-import { AppShell, NotificationBell } from '../../src/app-shell';
+import { AppShell, AppShellMenuButton, NotificationBell } from '../../src/app-shell';
+import { PageHeader } from '../../src/page-header';
 import { Avatar } from '../../src/avatar';
 import { Breadcrumb, BreadcrumbItem } from '../../src/breadcrumb';
 import { Button } from '../../src/button';
@@ -310,7 +311,7 @@ export interface DashboardShellProps {
 }
 
 /**
- * The adaptive navigation (bottom, rail, then sidebar), the
+ * Document-scrolling content, a sticky rail/sidebar and mobile drawer, the
  * Design team › Maya › page trail, the title with the notification bell,
  * Filters and the primary action, and the 1300px content column.
  */
@@ -325,10 +326,12 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [selected, setSelected] = useState(initialSelected);
   return (
-    <View style={TEMPLATE_FRAME}>
+    <View style={[TEMPLATE_FRAME, { flexBasis: 'auto', flexShrink: 0 }]}>
       <AppShell
         testID={testID}
-        navigationPlacement="auto"
+        scroll="document"
+        navFrom="md"
+        navExpandedFrom="lg"
         sidebar={{
           items: NAV_ITEMS,
           secondaryItems: SECONDARY_ITEMS,
@@ -337,30 +340,35 @@ export function DashboardShell({
           account: ACCOUNT,
           team: TEAM,
         }}
-        title={title}
-        breadcrumb={
-          <Breadcrumb>
-            <BreadcrumbItem href="#dashboard" leading={<Avatar size="xs" color="blue" initials="B" />}>
-              Design team
-            </BreadcrumbItem>
-            <BreadcrumbItem href="#dashboard" leading={<Avatar size="xs" color="neutral" initials="M" />}>
-              Maya
-            </BreadcrumbItem>
-            <BreadcrumbItem current icon={crumbIcon}>
-              {crumb}
-            </BreadcrumbItem>
-          </Breadcrumb>
-        }
-        actions={
-          <>
-            <NotificationBell notifications={NOTIFICATIONS} unreadCount={5} width={430} />
-            <Button size="md" leadingIcon={RiFilter3Fill} appearance="subtle" tone="neutral">
-              Filters
-            </Button>
-            <Button size="md" leadingIcon={RiAddFill} appearance="solid" tone="action">
-              {primaryAction}
-            </Button>
-          </>
+        header={
+          <PageHeader
+            title={title}
+            leading={<AppShellMenuButton />}
+            subtitle={
+              <Breadcrumb>
+                <BreadcrumbItem href="#dashboard" leading={<Avatar size="xs" color="blue" initials="B" />}>
+                  Design team
+                </BreadcrumbItem>
+                <BreadcrumbItem href="#dashboard" leading={<Avatar size="xs" color="neutral" initials="M" />}>
+                  Maya
+                </BreadcrumbItem>
+                <BreadcrumbItem current icon={crumbIcon}>
+                  {crumb}
+                </BreadcrumbItem>
+              </Breadcrumb>
+            }
+            actions={
+              <>
+                <NotificationBell notifications={NOTIFICATIONS} unreadCount={5} width={430} />
+                <Button size="md" leadingIcon={RiFilter3Fill} appearance="subtle" tone="neutral">
+                  Filters
+                </Button>
+                <Button size="md" leadingIcon={RiAddFill} appearance="solid" tone="action">
+                  {primaryAction}
+                </Button>
+              </>
+            }
+          />
         }
       >
         {children}

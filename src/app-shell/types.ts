@@ -107,7 +107,8 @@ export interface AppShellEngineProps {
    * A second column on the right of the page (a detail panel, activity, a
    * chat). In flow from `asideFrom`; below it, stacked under the content or
    * hidden (`asideCollapse`). Pinned like the sidebar — with document scroll
-   * it is sticky and scrolls its own overflow.
+   * it stays in document flow and sticks after tall content reaches its lower edge.
+   * Container/fixed modes retain an independently scrolling aside.
    */
   aside?: ReactNode;
   /** The aside column's width. Defaults to 320. */
@@ -152,6 +153,8 @@ export interface AppShellEngineProps {
    * screen: the column shrinks to the space it has rather than overflowing.
    */
   contentWidth?: number;
+  /** edge keeps navigation at the shell edge; content centers it with the reading column and aside. */
+  navigationAlign?: 'edge' | 'content';
   /**
    * The space between the shell's edge and its regions. Default 12 for
    * `dashboard` (which also keeps its historical 16 column gap, so existing
@@ -329,7 +332,8 @@ export interface AppShellNavigationProps {
   navigationMaterial?: 'solid' | 'translucent';
   /** Bottom action follows scroll collapse by hiding (default), or remains visible. */
   bottomActionBehavior?: 'hide' | 'visible';
-  /** external: the child list owns scrolling; avoids nested virtualized lists. */
+  /** Web defaults to document; native to auto. Explicit auto owns a ScrollView.
+   * external: the child list owns scrolling; avoids nested virtualized lists. */
   scroll?: AppShellScroll | 'auto' | 'external';
   /** Sidebar configuration, including card (detached, default) or docked surface. Also applies with navigation. */
   sidebar?: Omit<SidebarProps, 'mobile' | 'onClose'>;

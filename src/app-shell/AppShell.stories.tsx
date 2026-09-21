@@ -24,8 +24,9 @@ const meta: Meta<typeof AppShell> = {
     "navigationPlacement": { control: 'select', options: ["auto","bottom","rail","sidebar"] },
     "navigationMaterial": { control: 'select', options: ["solid","translucent"] },
     "bottomActionBehavior": { control: 'select', options: ["visible","hide"] },
-    "scroll": { control: 'select', options: ["auto","external"] },
+    "scroll": { control: 'select', options: ["document","container","fixed","auto","external"] },
     "title": { control: 'text' },
+    "navigationAlign": { control: 'select', options: ["edge", "content"] },
     "contentMaxWidth": { control: 'number' }
   },
   title: 'Blocks/App Shell',

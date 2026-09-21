@@ -13,7 +13,7 @@ import { MarketingDashboardTemplate } from './MarketingDashboardTemplate';
 const meta: Meta<typeof MarketingDashboardTemplate> = {
   component: MarketingDashboardTemplate,
   title: 'Templates/Marketing Dashboard',
-  parameters: { layout: 'fullscreen', controls: { disable: true } },
+  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
 };
 
 export default meta;

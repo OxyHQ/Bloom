@@ -7,6 +7,8 @@ export interface ScreenContextValue {
   collapseProgress: SharedValue<number>;
   collapseTarget: SharedValue<number>;
   activeScrollerId: SharedValue<string | null>;
+  /** Document-flow Screen has already reserved its content clearance. */
+  contentInsetsHandled?: boolean;
   topInset: number;
   bottomInset: number;
 }

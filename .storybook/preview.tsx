@@ -44,9 +44,12 @@ import { PortalProvider, PortalOutlet } from '../src/portal';
  * there is no render cost to pay for the coverage.
  *
  * Storybook owns canvas padding through `parameters.layout`. Fullscreen
- * templates receive a bounded viewport; docs and component stories stay in flow.
+ * templates declare their scroll owner: document stories grow naturally, while
+ * contained app demos receive a bounded viewport.
  */
 const withProviders: Decorator = (Story, context) => {
+  const documentScroll = context.parameters.bloomScroll === 'document';
+  const viewportHeight = context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh';
   const mode = (context.globals.theme as 'light' | 'dark' | 'system') ?? 'light';
   const requestedPreset = context.globals.colorPreset as AppColorName;
   const colorPreset = Object.prototype.hasOwnProperty.call(APP_COLOR_PRESETS, requestedPreset) ? requestedPreset : 'oxy';
@@ -59,15 +62,16 @@ const withProviders: Decorator = (Story, context) => {
             <div
               data-bloom-story-layout={context.parameters.layout ?? 'padded'}
               data-bloom-story-view={context.viewMode}
+              data-bloom-story-scroll={documentScroll ? 'document' : 'contained'}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: context.parameters.layout === 'fullscreen' ? 'stretch' : 'flex-start',
                 width: '100%',
                 minWidth: 0,
-                minHeight: 0,
-                ...(context.parameters.layout === 'fullscreen'
-                  ? { height: context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh' }
+                minHeight: documentScroll && context.parameters.layout === 'fullscreen' ? viewportHeight : 0,
+                ...(context.parameters.layout === 'fullscreen' && !documentScroll
+                  ? { height: viewportHeight }
                   : {}),
               }}
             >

@@ -136,6 +136,17 @@ describe('AppShell scroll on web', () => {
     });
   });
 
+  it('document asides use the page scroll and reveal their bottom when taller than the viewport', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" aside={<ReactNative.Text>Long context</ReactNative.Text>} />);
+    const aside = screen.getByTestId('shell-aside');
+    expect(screen.UNSAFE_queryAllByType(ReactNative.ScrollView)).toHaveLength(0);
+    expect(resolvedStyle(aside.props.style)).toMatchObject({ position: 'sticky', top: 12 });
+    expect(resolvedStyle(aside.props.style).height).toBeUndefined();
+    fireEvent(aside, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 320, height: 1200 } } });
+    expect(resolvedStyle(aside.props.style).top).toBe(-312);
+  });
+
   it('reveal + document: the page column shrinks to the screen instead of growing to its longest line', () => {
     setWidth(390);
     const screen = renderIn(
@@ -469,6 +480,14 @@ describe('AppShell variant="feed"', () => {
     expect(hostParent(aside)).toBe(row);
     expect(resolvedStyle(row?.props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'center' });
     expect(resolvedStyle(aside.props.style)).toMatchObject({ width: 320 });
+  });
+
+  it('can center navigation together with the reading column and contextual column', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" variant="feed" navigationAlign="content" contentWidth={600} asideWidth={280} gutter={16} sidebar={{ items: NAV }} aside={<ReactNative.Text>Context</ReactNative.Text>} />);
+    expect(resolvedStyle(screen.getByTestId('shell').props.style).justifyContent).toBe('center');
+    const group = hostParent(screen.getByTestId('shell-content'));
+    expect(resolvedStyle(group?.props.style)).toMatchObject({ flexGrow: 0, flexBasis: 896, maxWidth: 896 });
   });
 
   it('below asideFrom the side column stacks under the content instead', () => {

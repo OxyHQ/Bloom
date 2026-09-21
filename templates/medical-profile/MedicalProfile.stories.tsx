@@ -13,7 +13,7 @@ import { MedicalProfileTemplate } from './MedicalProfileTemplate';
 const meta: Meta<typeof MedicalProfileTemplate> = {
   component: MedicalProfileTemplate,
   title: 'Templates/Medical Profile',
-  parameters: { layout: 'fullscreen', controls: { disable: true } },
+  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
 };
 
 export default meta;

@@ -313,7 +313,7 @@ overlapping another, and no console error.
 ```
 
 A second column on the right of the page (`dashboard` and `feed`; `split` has
-its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it is sticky and scrolls its own overflow, so give it `flex: 1` content if it should fill the height. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
+its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it stays in natural document flow. A tall aside scrolls with the page until its lower edge is visible, then sticks; it does not capture wheel gestures in a nested ScrollView. Container and fixed modes retain bounded aside scrolling. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
 
 ## Eight shells, one component
 
@@ -515,4 +515,8 @@ transition the animated width resets explicitly to `auto`: returning an empty
 style or an undefined width retained the old width in the browser, leaving a
 260px space after the sidebar itself collapsed to 52px.
 
-The adaptive entry point is selected when `navigation`, `navigationPlacement`, `primaryAction`, or `scroll="auto" | "external"` is supplied. Existing layout calls keep their `dashboard`, `feed`, `split`, `focus`, and `canvas` engine, document/container/fixed scrolling, slots and drawer behavior. Both paths render the same Sidebar, PageHeader and themed surfaces.
+The navigation convenience entry point is selected when `navigation`, `navigationPlacement`, `primaryAction`, or `scroll="auto" | "external"` is supplied. On web it defaults to `scroll="document"` and adapts navigation/actions into the same layout engine used by `dashboard`, `feed`, `split`, `focus`, and `canvas`: aside, width, drawer and slot props remain effective. Native defaults to `scroll="auto"`. Explicit `auto` keeps the animated adaptive container for navigation-only shells. Supplying a layout variant, aside, list or info pane uses the layout engine instead: `auto` becomes container scrolling, and `external` a fixed frame whose child owns scrolling. Document scrolling shares Screen navigation motion with the bottom bar and FAB. Explicit slots override the generated bottom bar or floating action, including `null` to suppress one. A primary action remains a separate floating action when a custom bottom bar replaces the generated bar. The focus variant never generates navigation.
+
+For a centered feed whose navigation belongs beside the reading column, use
+`navigationAlign="content"`. The shell centers navigation, content and the visible
+aside as one group; `"edge"` preserves the existing edge-aligned layout.

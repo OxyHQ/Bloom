@@ -12,7 +12,7 @@ import { FinanceDashboardTemplate } from './FinanceDashboardTemplate';
 const meta: Meta<typeof FinanceDashboardTemplate> = {
   component: FinanceDashboardTemplate,
   title: 'Templates/Finance Dashboard',
-  parameters: { layout: 'fullscreen', controls: { disable: true } },
+  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
 };
 
 export default meta;
