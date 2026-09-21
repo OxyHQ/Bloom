@@ -32,15 +32,15 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **183 families** in `src/`, **181** published (a subpath, the root barrel, or both). **35** carry a web fork.
+- **186 families** in `src/`, **184** published (a subpath, the root barrel, or both). **35** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 42 | 18 | 0 | 19 | 5 |
-| Control presentation | 16 | 8 | 2 | 6 | 0 |
+| Control presentation | 17 | 8 | 2 | 7 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
-| Controlled / uncontrolled state | 43 | 35 | 0 | 1 | 7 |
+| Controlled / uncontrolled state | 44 | 35 | 1 | 1 | 7 |
 
 ## What remains — the named adaptations
 
@@ -95,6 +95,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 - `media-header` (does-not-apply) — sizes the media header’s meta row, which is layout of a header rather than a control inside a container.
 - `note-editor` (delegated) — the toolbar passes `size` straight to `ButtonGroup`, which reads the contract — so a `ControlSurface` reaches the formatting row without this family reading anything.
 - `phone-input` (delegated) — passes `size` straight through to `TextField`, which inherits density — so a `ControlSurface` reaches the phone field without this family reading anything.
+- `place-card` (does-not-apply) — its `density` is the CARD’s — a result row against a detail header — not a control’s size, and the only controls it draws are `Button`s, which read nothing by design (`docs/composition.mdx`).
 - `tenancy` (does-not-apply) — sizes a tenancy summary row: a presentation part, for the same reason as `creator-studio` and `chat-people`.
 
 ### Trigger composition
@@ -104,6 +105,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ### Controlled / uncontrolled state
 
+- `map-controls` (delegated) — the layer picker declares `open`/`defaultOpen` and hands both straight to `DropdownMenu`, which reconciles them with the shared hook — so a controlled caller is honoured without this family reconciling anything itself.
 - `textarea` (does-not-apply) — the VALUE belongs to React Native’s `TextInput`, which reconciles `value`/`defaultValue` itself; the only local state is the character count, which is why it is kept for the uncontrolled case alone.
 
 ## Every family
@@ -168,6 +170,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `date-picker` | `@oxy.so/bloom/date-picker` + barrel | universal | `date-picker.mdx` | yes | 4 | reads | reads |  | reads |
 | `design-tokens` | `@oxy.so/bloom/design-tokens` + barrel | universal | `design-tokens.mdx` | yes | 3 |  |  |  |  |
 | `dialog` | `@oxy.so/bloom/dialog` + barrel | web fork | `dialog.mdx` | yes | 13 |  |  |  |  |
+| `directions` | `@oxy.so/bloom/directions` + barrel | universal | `directions.mdx` | yes | 1 |  |  |  |  |
 | `divider` | `@oxy.so/bloom/divider` + barrel | universal | `divider.mdx` | yes | 1 |  |  |  |  |
 | `dot-grid-meter` | `@oxy.so/bloom/dot-grid-meter` + barrel | universal | `dot-grid-meter.mdx` | yes | 2 |  |  |  |  |
 | `dropdown-menu` | `@oxy.so/bloom/dropdown-menu` + barrel | web fork | `dropdown-menu.mdx` | yes | 4 |  |  | reads | reads |
@@ -208,6 +211,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `mail-compose` | `@oxy.so/bloom/mail-compose` + barrel | universal | `mail-compose.mdx` | yes | 2 | reads |  |  | reads |
 | `mail-list` | `@oxy.so/bloom/mail-list` + barrel | universal | `mail-list.mdx` | yes | 2 |  |  |  |  |
 | `mail-thread` | `@oxy.so/bloom/mail-thread` + barrel | universal | `mail-thread.mdx` | yes | 1 |  |  |  | reads |
+| `map-controls` | `@oxy.so/bloom/map-controls` + barrel | universal | `map-controls.mdx` | yes | 1 |  |  |  | delegated |
 | `map-marker` | `@oxy.so/bloom/map-marker` + barrel | universal | `map-marker.mdx` | yes | 2 | n/a¹ |  |  |  |
 | `media-card` | `@oxy.so/bloom/media-card` + barrel | universal | `media-card.mdx` | yes | 4 |  |  |  |  |
 | `media-controls` | `@oxy.so/bloom/media-controls` + barrel | universal | `media-controls.mdx` | yes | 3 | n/a¹ |  |  |  |
@@ -234,6 +238,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `patient-info-card` | `@oxy.so/bloom/patient-info-card` + barrel | universal | `patient-info-card.mdx` | yes | 1 |  |  |  |  |
 | `phone-input` | `@oxy.so/bloom/phone-input` | universal | `phone-input.mdx` | yes | 2 | reads | delegated |  | reads |
 | `pipeline` | `@oxy.so/bloom/pipeline` + barrel | universal | `pipeline.mdx` | yes | 1 |  |  |  | reads |
+| `place-card` | `@oxy.so/bloom/place-card` + barrel | universal | `place-card.mdx` | yes | 1 |  | n/a¹ |  |  |
 | `place-reviews` | `@oxy.so/bloom/place-reviews` + barrel | universal | `place-reviews.mdx` | yes | 1 |  |  |  | reads |
 | `popover` | `@oxy.so/bloom/popover` + barrel | web fork | `popover.mdx` | yes | 7 |  |  | reads | reads |
 | `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 15 |  |  |  |  |
@@ -268,7 +273,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `stay-filters` | `@oxy.so/bloom/stay-filters` + barrel | universal | `stay-filters.mdx` | yes | 4 | n/a¹ |  |  |  |
 | `stay-search` | `@oxy.so/bloom/stay-search` + barrel | universal | `stay-search.mdx` | yes | 4 |  |  |  |  |
 | `stepper` | `@oxy.so/bloom/stepper` + barrel | universal | `stepper.mdx` | yes | 3 | reads |  |  |  |
-| `styles` | `@oxy.so/bloom/styles` + barrel | universal | `styles.mdx` | yes | 58 |  |  |  |  |
+| `styles` | `@oxy.so/bloom/styles` + barrel | universal | `styles.mdx` | yes | 59 |  |  |  |  |
 | `subtle-hover` | `@oxy.so/bloom/subtle-hover` + barrel | universal | `subtle-hover.mdx` | yes | 1 |  |  |  |  |
 | `surfaces` | `@oxy.so/bloom/surfaces` + barrel | web fork | `alert.mdx` | yes | 2 |  |  |  |  |
 | `swipe-row` | `@oxy.so/bloom/swipe-row` + barrel | universal | `swipe-row.mdx` | yes | 1 |  |  |  |  |
@@ -282,7 +287,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 3 |  | n/a¹ |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 13 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 4 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 276 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 277 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 1 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 17 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 1 |  |  |  |  |

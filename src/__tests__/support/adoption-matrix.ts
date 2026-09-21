@@ -404,6 +404,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     },
   },
   'control-surface': {
+    'place-card': {
+      verdict: 'does-not-apply',
+      reason:
+        'its `density` is the CARD\u2019s \u2014 a result row against a detail header \u2014 not a control\u2019s size, and the only controls it draws are `Button`s, which read nothing by design (`docs/composition.mdx`).',
+    },
     'note-editor': {
       verdict: 'delegated',
       reason:
@@ -458,6 +463,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     },
   },
   'controlled-state': {
+    'map-controls': {
+      verdict: 'delegated',
+      reason:
+        'the layer picker declares `open`/`defaultOpen` and hands both straight to `DropdownMenu`, which reconciles them with the shared hook \u2014 so a controlled caller is honoured without this family reconciling anything itself.',
+    },
     textarea: {
       verdict: 'does-not-apply',
       reason:
