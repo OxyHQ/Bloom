@@ -222,6 +222,10 @@ a bar that is part of the app at every width.
 
 ## Breakpoints an app can name itself
 
+For centred feed layouts, `navigationGap` and `asideGap` control the gaps on
+either side of the reading column independently of the panel's `gutter`.
+Set both to the same value for symmetric columns.
+
 Every `*From` prop takes a named tier (`sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280) **or a width in pixels**, because a real app's layout rarely lands on the tiers. A feed whose side column earns its place at 990 and whose rail goes in flow at 500 says so:
 
 ```tsx

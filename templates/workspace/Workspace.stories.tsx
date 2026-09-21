@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from '../../src/button';
+import { Button } from '../../src/button/index.web';
+import { Screen } from '../../src/screen';
+import { PageHeader } from '../../src/page-header';
 import { Card, CardBody } from '../../src/card';
 import { ContactProfileCard } from '../../src/contact-card';
 import { LeadScoreCard } from '../../src/lead-score';
@@ -20,21 +22,25 @@ const messages: MailSummary[] = [
   { id: 'team', sender: { name: 'Marc Soler' }, subject: 'See you on Thursday', snippet: 'I have added the notes from our last conversation.', time: 'Yesterday' },
 ];
 
-function Workspace({ compactMail = false, showLeadScore = true }: { compactMail?: boolean; showLeadScore?: boolean }) {
+function Workspace({ compactMail = false, showLeadScore = true, revealTitle = true }: { compactMail?: boolean; showLeadScore?: boolean; revealTitle?: boolean }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const narrow = width < 800;
+  const padding = narrow ? 16 : 32;
+  const [headingHeight, setHeadingHeight] = useState(0);
   const [selectedId, setSelectedId] = useState<string>();
   const [notes, setNotes] = useState(['A little space to think', 'Next steps']);
   return (
-    <View style={{ backgroundColor: colors.background, padding: narrow ? 16 : 32, gap: 28, alignItems: 'center' }}>
+    <Screen documentScroll header={<PageHeader testID="workspace-header" title="Your workspace" subtitle="Good things start with a conversation."
+      titleReveal={revealTitle ? 'onScroll' : 'always'} titleRevealOffset={padding + headingHeight}
+      actions={<Button tone="action" onPress={() => setNotes((items) => [...items, `New note ${items.length - 1}`])}>New note</Button>} />}>
+    <View style={{ backgroundColor: colors.background, padding, gap: 28, alignItems: 'center' }}>
       <View style={{ width: '100%', maxWidth: 1280, gap: 28 }}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <View testID="workspace-heading" onLayout={event => setHeadingHeight(event.nativeEvent.layout.height)} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <View style={{ gap: 6 }}>
-            <Text variant="title-1-bold">Your workspace</Text>
+            <Text variant="title-1-bold" role="heading" aria-level={1}>Your workspace</Text>
             <Text style={{ color: colors.textSecondary }}>Good things start with a conversation.</Text>
           </View>
-          <Button tone="action" onPress={() => setNotes((items) => [...items, `New note ${items.length - 1}`])}>New note</Button>
         </View>
         <View style={{ flexDirection: narrow ? 'column' : 'row', alignItems: 'flex-start', gap: 24 }}>
           <View style={{ width: narrow ? '100%' : 340, gap: 24 }}>
@@ -78,6 +84,7 @@ function Workspace({ compactMail = false, showLeadScore = true }: { compactMail?
         </View>
       </View>
     </View>
+    </Screen>
   );
 }
 
@@ -85,8 +92,8 @@ const meta = {
   title: 'Templates/Workspace',
   component: Workspace,
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  args: { compactMail: false, showLeadScore: true },
-  argTypes: { compactMail: { control: 'boolean' }, showLeadScore: { control: 'boolean' } },
+  args: { compactMail: false, showLeadScore: true, revealTitle: true },
+  argTypes: { revealTitle: { control: 'boolean' }, compactMail: { control: 'boolean' }, showLeadScore: { control: 'boolean' } },
 } satisfies Meta<typeof Workspace>;
 export default meta;
 type Story = StoryObj<typeof meta>;

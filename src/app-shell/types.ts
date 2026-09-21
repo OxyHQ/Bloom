@@ -157,6 +157,8 @@ export interface AppShellEngineProps {
   navigationAlign?: 'edge' | 'content';
   /** Gap between the in-flow navigation and content. Defaults to the column gap. */
   navigationGap?: number;
+  /** feed/focus: gap between the reading column and aside. Defaults to the column gap. */
+  asideGap?: number;
   /**
    * The space between the shell's edge and its regions. Default 12 for
    * `dashboard` (which also keeps its historical 16 column gap, so existing

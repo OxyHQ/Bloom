@@ -99,6 +99,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   variant = 'dashboard',
   navigationAlign = 'edge',
   navigationGap,
+  asideGap,
   sidebar,
   drawer = 'overlay',
   title,
@@ -480,7 +481,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const contentAligned = navigationAlign === 'content' && centred;
   // Plain navigation belongs to the viewport; only the reading surfaces are inset.
   const plainDocumentFrame = doc && contentAligned && flowSidebar?.surface === 'plain' && !topBarNode;
-  const readingGroupWidth = contentWidth + (asideBeside ? asideWidth + columnGap : 0);
+  const readingGap = Math.max(0, asideGap ?? columnGap);
+  const readingGroupWidth = contentWidth + (asideBeside ? asideWidth + readingGap : 0);
   const centredBody = (
     <View
       style={[
@@ -491,7 +493,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           minWidth: 0,
           flexDirection: 'row',
           justifyContent: 'center',
-          gap: columnGap,
+          gap: readingGap,
           // Document scroll: each column carries its own height (the centre
           // grows the page, the aside is sticky). Bounded: they stretch.
           alignItems: doc ? 'flex-start' : 'stretch',

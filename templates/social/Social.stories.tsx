@@ -40,13 +40,15 @@ function Placeholder({ compact = false }: { compact?: boolean }) {
   return <View accessible={false} aria-hidden style={{ height: compact ? 104 : 260, borderRadius: 16, backgroundColor: colors.backgroundSecondary }} />;
 }
 
-function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWidth = 350, framedContent = true, tallContext = false, gutter = 8, onNewPost }: {
-  showRightColumn?: boolean; centerWidth?: number; rightColumnWidth?: number; framedContent?: boolean; tallContext?: boolean; gutter?: number; onNewPost: () => void;
+function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWidth = 350, framedContent = true, tallContext = false, gutter = 8, revealTitle = true, onNewPost }: {
+  showRightColumn?: boolean; centerWidth?: number; rightColumnWidth?: number; framedContent?: boolean; tallContext?: boolean; gutter?: number; revealTitle?: boolean; onNewPost: () => void;
 }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const compact = width < 700;
   const [selected, setSelected] = useState('home');
+  const [headingHeight, setHeadingHeight] = useState(0);
+  const subtitle = 'Espacio reservado para el contenido.';
   const title = destinations.find(item => item.value === selected)?.label ?? 'Home';
   return (
     <AppShell
@@ -55,6 +57,7 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
       scroll="document"
       navigationAlign="content"
       navigationGap={0}
+      asideGap={0}
       navigation={compact ? destinations.filter(item => ['home', 'explore', 'notifications', 'saved', 'profile'].includes(item.value)) : destinations}
       primaryAction={compact ? { accessibilityLabel: 'New post', icon: <RiQuillPenLine />, onPress: onNewPost } : undefined}
       value={selected}
@@ -65,23 +68,28 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
       contentWidth={centerWidth}
       gutter={gutter}
       panel={framedContent}
-      header={<PageHeader title={title} presentation="floating" />}
+      header={<PageHeader testID="social-header" title={title} subtitle={subtitle} titleReveal={revealTitle ? "onScroll" : "always"} titleRevealOffset={gutter + headingHeight} presentation="floating" />}
       asideFrom={1180}
       asideWidth={rightColumnWidth}
       asideCollapse="hidden"
-      aside={showRightColumn ? <View role="complementary" accessibilityLabel="Context column" style={{ paddingTop: 24, paddingBottom: 24, gap: 32 }}>
-        <Text variant="headline-semibold">Contexto</Text>
-        <Placeholder compact />
-        <Placeholder compact />
-        <Text variant="headline-semibold">Información adicional</Text>
-        {Array.from({ length: tallContext ? 8 : 1 }, (_, index) => <Placeholder compact key={index} />)}
+      aside={showRightColumn ? <View role="complementary" accessibilityLabel="Context column" style={{ paddingTop: 16, paddingBottom: 12, paddingLeft: 14, paddingRight: 14 }}>
+        <View style={{ gap: 8, marginBottom: 16 }}>
+          <Text variant="headline-semibold">Contexto</Text>
+          <Placeholder compact />
+        </View>
+        <View style={{ marginBottom: 16 }}><Placeholder compact /></View>
+        <View style={{ gap: 8, marginBottom: 16 }}>
+          <Text variant="headline-semibold">Información adicional</Text>
+          <Placeholder compact />
+        </View>
+        {tallContext && Array.from({ length: 7 }, (_, index) => <View key={index} style={{ marginBottom: 16 }}><Placeholder compact /></View>)}
         <Text variant="caption-1-medium" style={{ color: colors.textSecondary }}>Final del contexto.</Text>
       </View> : undefined}
     >
       <View testID="social-main" role="main" accessibilityLabel={`${title} layout`} style={{ gap: 32 }}>
-        <View style={{ gap: 8 }}>
-          <Text variant="title-2-semibold">Contenido principal</Text>
-          <Text style={{ color: colors.textSecondary }}>Espacio reservado para el contenido.</Text>
+        <View testID="social-heading" onLayout={event => setHeadingHeight(event.nativeEvent.layout.height)} style={{ gap: 8 }}>
+          <Text variant="title-2-semibold" role="heading" aria-level={1}>{title}</Text>
+          <Text style={{ color: colors.textSecondary }}>{subtitle}</Text>
         </View>
         {Array.from({ length: 5 }, (_, index) => <Placeholder key={index} />)}
         <Text style={{ color: colors.textSecondary }}>Final del contenido.</Text>
@@ -93,8 +101,9 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
 const meta = {
   title: 'Templates/Social', component: SocialLayout,
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  args: { onNewPost: fn(), showRightColumn: true, centerWidth: 620, rightColumnWidth: 350, framedContent: true, tallContext: false, gutter: 8 },
+  args: { revealTitle: true, onNewPost: fn(), showRightColumn: true, centerWidth: 620, rightColumnWidth: 350, framedContent: true, tallContext: false, gutter: 8 },
   argTypes: {
+    revealTitle: { control: 'boolean', description: 'Reveal the header title and subtitle after the content heading scrolls underneath it.' },
     onNewPost: { control: false, description: 'Primary sidebar action; opens the app composer. Logged in this layout-only story.' },
     gutter: { control: { type: 'range', min: 8, max: 40, step: 4 }, description: 'Shared gutter for the panel frame, mask and sticky header.' },
     framedContent: { control: 'boolean', description: 'Wrap the reading column in Bloom’s tonal ContentPanel.' },
