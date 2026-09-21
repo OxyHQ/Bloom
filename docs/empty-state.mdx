@@ -1,0 +1,89 @@
+---
+title: Empty state
+description: Nothing to show, said once — a glyph or an illustration, a title, a line of explanation and up to two actions, at a screen rung and a panel rung.
+order: 48
+---
+
+# Empty state
+
+A list with nothing in it still has to say something, and until this family existed every
+list in Bloom said it differently. Twelve components had each drawn their own block: five
+of them the same glyph-over-headline-over-line, at five paddings and four maximum widths,
+under six spellings of the same two strings — `emptyTitle`/`emptyDescription`,
+`emptyMessage`, `emptyQueueHint`, `emptyLabel`, `emptyText`, `noResultsLabel`.
+
+```tsx
+import { EmptyState } from '@oxy.so/bloom/empty-state';
+import { RiInbox2Line } from '@oxy.so/bloom/icons/RiInbox2Line';
+
+<EmptyState
+  icon={RiInbox2Line}
+  title="Nothing in this folder"
+  description="Mail you file here will show up in this list."
+  action={{ label: 'Write a message', onPress: compose }}
+/>;
+```
+
+## The two rungs are about WHERE, not about how much there is to say
+
+`comfortable` is the screen: a 32 glyph, a headline, 48 of air above and below, and the
+text capped at 360. `compact` is the panel — a side panel, a popover, a card that is
+already inside something: a 24 glyph, a body title, 24 of air, capped at 280. Nothing
+else changes, so a list that moves from a screen into a panel changes a prop and not a
+component.
+
+The 360 is the number worth defending. The five hand-rolled blocks this family replaces
+used 280, 260, 360, 340 and none, and the one with none is the reason: a centred line of
+explanation that runs the full width of a 1440 page needs a second fixation per line, and
+every author who noticed picked a different cap. 360 is roughly sixty characters at
+`body-regular`.
+
+## The mark: three ways, and when each is right
+
+- **`icon` + `media="glyph"`** (the default) is the bare mark in the GRAPHICAL rung —
+  `textGraphical`, the ladder stop sized for a line rather than for text, so it clears
+  3:1 on whatever surface the block was dropped on. It is the quiet answer, right when
+  the empty state is REPORTING (a filter matched nothing, a folder is empty).
+- **`icon` + `media="circle"`** is `IconCircle`, the tinted disc. Louder; right when the
+  block is the whole screen, or when it is INVITING rather than reporting.
+- **`illustration`** is an arbitrary node and wins over `icon`, drawn exactly as it comes
+  with no tile of its own. It is read for PRESENCE, so `illustration={null}` draws no
+  mark at all even when an `icon` arrived from a default two levels up.
+
+There is no fourth. A neutral "well" and a tinted disc side by side were two answers to
+one question, and both shipped in this repo.
+
+## The actions are DATA, and there are at most two
+
+A node would have worked — the six blocks this replaces each passed one, which is how
+three of them ended up with three different button sizes for the same button. As
+`EmptyStateAction` the family owns the size (medium, or small at the panel rung), the
+order and the wrap; the caller owns the words and the handler. Anything that is not a
+button — a row of suggestion pills, a link, a note — goes in `footer`, under them.
+
+`children` is the third slot, between the explanation and the actions. It is stretched to
+the block's full width and left to lay itself out, because what goes there is a strip, a
+fact box or a list rather than centred text. `order-confirmation` is built on exactly
+that: a "done" screen is the same object as a "nothing here" screen with a different
+reason for existing.
+
+## It is ONE named group
+
+The whole block carries `role="group"` named by the title and the description joined. A
+screen reader that reaches an empty list should be told the situation; a heading, a
+paragraph and a button with nothing joining them are three stops that each say a third of
+it. The glyph is hidden from assistive technology — it repeats what the title says, and
+an unnamed image between a heading and its paragraph is a stop that announces nothing.
+
+## `minHeight` is for holding a band open
+
+A table body, a panel that must not collapse. The content centres in it. Without it the
+block is exactly as tall as what it contains, which is what a list wants.
+
+## Migrating a hand-rolled one
+
+Not done yet, and deliberately: this family is designed to cover the existing call sites
+as they stand, and moving them is a separate change with its own screenshots. The ones it
+was measured against are `cart-panel`'s `EmptyBasket`, `carrier-quote`'s empty offers
+list, `mail-list`, `chat-list`, `address`'s `AddressList` and `data-table`'s empty band —
+six shapes between them, from a 32-glyph column to a text-only 160-tall band.

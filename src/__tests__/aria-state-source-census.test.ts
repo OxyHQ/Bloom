@@ -186,9 +186,12 @@ const RN_HOSTS = new Set([
  * plus `aria-expanded` for a sub-trigger). The runtime suite pins every one of
  * those cases against the real DOM.
  */
-// `Item` also translates a role it is handed (`option` → `aria-selected`, a
-// `button` toggle → `aria-pressed`), but no caller hands it one since `Combobox`
-// and the old `Command` rows were removed — add it back here with the first.
+// `item/Item.tsx` translates a role it is handed (`option` → `aria-selected`,
+// `radio`/`checkbox` → `aria-checked`, a `button` toggle → `aria-pressed`), and
+// spells the native `accessibilityState` beside each. It had no role-passing
+// caller for a while; `delivery-slot/DeliverySlotOption.tsx` is the first one
+// back, handing it `role="radio"` for a delivery window. `Item.test.tsx` and
+// `DeliverySlot.test.tsx` pin the translation against the real DOM.
 //
 // `chip/Chip.tsx` is the second: it takes `role` as `'button' | 'radio' | 'tab'`
 // and picks the state attribute the ROLE defines — `aria-pressed`,
@@ -196,7 +199,7 @@ const RN_HOSTS = new Set([
 // spelling of the same thing. It is a claim its own file makes and
 // `Chip.test.tsx` pins against the real DOM, role by role, including that the
 // other two attributes are ABSENT (`aria-pressed` on a tab is invalid ARIA).
-const DELEGATING_TAGS = ['Chip', 'MenuRowShell'];
+const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -224,7 +227,13 @@ const DELEGATING_TAGS = ['Chip', 'MenuRowShell'];
 // `Chip` forwards `accessibilityLabel` to the `Pressable` that carries the
 // role, on the pressable branch only — the non-pressable branch has no role to
 // name. Its string child names it otherwise.
-const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'MediaPressable', 'MenuRowShell'];
+//
+// `Item` is the fourth: the pressable branch carries the role AND
+// `accessibilityLabel`, defaulting to its own string title when the caller
+// writes none. `DeliverySlotOption` always passes one — the window, what is
+// left of it and its surcharge, as one utterance — because a row built from
+// three separate Texts is three stops otherwise.
+const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'Item', 'MediaPressable', 'MenuRowShell'];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the
