@@ -1636,6 +1636,106 @@ export type {
   VehiclePickerProps,
 } from './vehicle-picker';
 
+// TAKING THE MONEY. `payment-method` is the saved way to pay, `card-form` is
+// entering a new one, and `payment-status` is what happened afterwards. None of
+// the three holds card data: the masked string, the value and the processor's
+// verdict all belong to the app.
+export { PaymentMethodList, PaymentMethodMark, PaymentMethodRow } from './payment-method';
+export {
+  PAYMENT_METHOD_GEOMETRY,
+  PAYMENT_METHOD_KIND_ICON,
+  PAYMENT_METHOD_LIST_GAP,
+  PAYMENT_METHOD_MARK_GAP,
+  PAYMENT_METHOD_STATE_LABELS,
+  PAYMENT_METHOD_STATE_TONE,
+  composePaymentMethodName,
+  paymentMethodStateMessage,
+  resolvePaymentMethodPaint,
+} from './payment-method';
+export type {
+  PaymentMethodDensity,
+  PaymentMethodEntry,
+  PaymentMethodGeometry,
+  PaymentMethodKind,
+  PaymentMethodListProps,
+  PaymentMethodListVariant,
+  PaymentMethodMarkProps,
+  PaymentMethodPaint,
+  PaymentMethodRowProps,
+  PaymentMethodState,
+} from './payment-method';
+export {
+  CardForm,
+  CardFormCountry,
+  CardFormExpiry,
+  CardFormName,
+  CardFormNumber,
+  CardFormPostcode,
+  CardFormSecurityCode,
+} from './card-form';
+export {
+  CARD_FORM_EMPTY_VALUE,
+  CARD_FORM_GAP,
+  CARD_FORM_LABELS,
+  CARD_FORM_PLACEHOLDERS,
+  DEFAULT_CARD_GROUPS,
+  DEFAULT_CARD_LENGTHS,
+  DEFAULT_SECURITY_CODE_LENGTH,
+  applyCardExpiryEdit,
+  applyCardNumberEdit,
+  cardDigits,
+  cardExpiryIsWellFormed,
+  cardNumberIsWellFormed,
+  cardSecurityCodeIsWellFormed,
+  groupCardDigits,
+  luhnCheck,
+  matchCardScheme,
+  normaliseCardExpiry,
+  normaliseCardNumber,
+  schemeGroups,
+  schemeLengths,
+  schemeMaxDigits,
+  schemeSecurityCodeLength,
+  useCardFormPart,
+} from './card-form';
+export type {
+  CardFormCountryOption,
+  CardFormCountryProps,
+  CardFormErrors,
+  CardFormExpiryProps,
+  CardFormFieldName,
+  CardFormFields,
+  CardFormLabels,
+  CardFormNameProps,
+  CardFormNumberProps,
+  CardFormPartInput,
+  CardFormPartMembership,
+  CardFormPostcodeProps,
+  CardFormProps,
+  CardFormSecurityCodeProps,
+  CardFormValue,
+  CardScheme,
+} from './card-form';
+export { PaymentStatusBar, PaymentStatusBlock } from './payment-status';
+export {
+  PAYMENT_STATUS_ADMONITION,
+  PAYMENT_STATUS_GEOMETRY,
+  PAYMENT_STATUS_ICON,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUS_TONE,
+  resolvePaymentStatus,
+  resolvePaymentStatusPaint,
+} from './payment-status';
+export type {
+  PaymentStatusBarProps,
+  PaymentStatusBlockProps,
+  PaymentStatusGeometry,
+  PaymentStatusLabels,
+  PaymentStatusPaint,
+  PaymentStatusPresentation,
+  PaymentStatusState,
+} from './payment-status';
+
 export { WizardFooter, WizardProgress } from './wizard';
 export type { WizardFooterProps, WizardProgressProps, WizardStep } from './wizard';
 export { SortablePhotoGrid } from './sortable-media';
