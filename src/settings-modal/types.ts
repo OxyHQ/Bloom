@@ -66,6 +66,9 @@ export interface SettingsModalProps {
    * Imperative mode: the modal finished closing.
    */
   onClose?: () => void;
+  /** Veto an internal leave intention before it changes or unmounts content.
+   * External controlled open/page changes remain the caller's authority. */
+  onBeforeLeave?: (reason: 'close' | 'navigation' | 'page') => boolean;
   groups: SettingsNavGroup[];
   pages: Record<string, SettingsModalPage>;
   /** Controlled current page. */

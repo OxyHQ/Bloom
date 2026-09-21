@@ -232,3 +232,14 @@ The panel scroll viewport extends behind the bottom half of the last fixed heade
 `ProfileButton` above is an application component: the app retains authentication, account selection and menu behavior. The slot adds no account behavior and does not replace `account`, theme, secondary navigation, team or plan controls. Omit `account` if your footer replaces the built-in account switcher. Footer content should fit the compact rail width and provide an accessible name when it hides its label.
 
 Navigation items accept `onLongPress` for secondary touch actions, in both panel and rail. Keep the same action available in a keyboard-accessible menu; long press alone is not discoverable or keyboard accessible.
+
+## App-owned history
+
+Use `content` for conversation history or other application-owned rows. It follows
+items/tree inside Sidebar's existing scroll viewport; `onScroll` observes that
+viewport after its edge fades update. Compose `SidebarItem`/`SidebarFolder` here,
+not another scroller. Header, primary action and footer stay fixed. Content remains
+mounted while collapsed, but is hidden from focus, pointers and accessibility and
+contracts with the panel's animation. `variant="rail"` omits this expanded content.
+Quick search only filters built-in rows/tree; use `showSearch={false}` when the
+application supplies its own search destination.

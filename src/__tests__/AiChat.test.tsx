@@ -331,3 +331,24 @@ describe('palette', () => {
     }
   });
 });
+
+
+describe('AiChatContainer application header', () => {
+  it('supports a header without a duplicate breadcrumb or dead actions', () => {
+    const screen = renderIn(<AiChatContainer header={<Text>Application header</Text>} composer={<Text>Compose</Text>}><Text>Thread</Text></AiChatContainer>);
+    expect(screen.getByText('Application header')).toBeTruthy();
+    expect(screen.queryByLabelText('Chat location')).toBeNull();
+    expect(screen.queryByLabelText('Share chat')).toBeNull();
+    expect(screen.queryByLabelText('More options')).toBeNull();
+    expect(screen.getByText('Thread')).toBeTruthy();
+    expect(screen.getByText('Compose')).toBeTruthy();
+  });
+  it('keeps a supplied breadcrumb and renders only available actions', () => {
+    const onMore = jest.fn();
+    const screen = renderIn(<AiChatContainer title="A conversation" onMore={onMore}><Text>Thread</Text></AiChatContainer>);
+    expect(screen.getByText('A conversation')).toBeTruthy();
+    expect(screen.queryByLabelText('Share chat')).toBeNull();
+    pressHost(screen.getByLabelText('More options'));
+    expect(onMore).toHaveBeenCalledTimes(1);
+  });
+});

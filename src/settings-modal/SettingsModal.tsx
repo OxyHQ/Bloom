@@ -6,19 +6,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  BackHandler,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import { BackHandler, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
+  useAnimatedScrollHandler,
+  type SharedValue,
   useReducedMotion,
   useSharedValue,
   withTiming,
@@ -31,7 +24,6 @@ import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { PageHeader } from '../page-header';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
-import { VerticalFade } from './SettingsArt';
 import { Backdrop, OverlayRoot } from '../overlay';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -59,8 +51,8 @@ import { IS_WEB, useSettingsWebCss } from './web-css';
  *             20px icon (icon/secondary) + 8 + body-medium label
  *             (selected: background/secondary/hover + text/primary;
  *             hover: background/secondary/hover @ 60%)
- *   content   shared inline PageHeader and close ButtonGroup island; the page scrolls under a 40px top fade that eases
- *             in (200ms) once it is scrolled; px 32 pb 32
+ *   content   one viewport with a sticky PageHeader and its scroll-linked edge;
+ *             content insets belong to the page body, never the viewport
  *   toast     "Saved" pill straddling the panel's bottom edge: 1px
  *             border/button, background/primary, py 4 pr 10 pl 6, gap 4,
  *             16px lime check + body-2-medium, shadow-dropdown. Rises 12px in,
@@ -87,7 +79,11 @@ const RAIL_WIDTH = 274;
 /** `medium` layout: the rail narrows so the page keeps a readable measure. */
 const RAIL_WIDTH_MEDIUM = 220;
 /** Content inset per layout — 32 at regular, stepping down with the room. */
-const CONTENT_INSET: Record<SettingsModalLayout, number> = { regular: 32, medium: 24, compact: 16 };
+const CONTENT_INSET: Record<SettingsModalLayout, number> = {
+  regular: 32,
+  medium: 24,
+  compact: 16,
+};
 const VIEWPORT_GUTTER = 16;
 const MOTION_MS = 300;
 const UNMOUNT_MS = 320;
@@ -127,6 +123,7 @@ export function SettingsModal({
   control,
   open: controlledOpen,
   onClose,
+  onBeforeLeave,
   groups,
   pages,
   page: controlledPage,
@@ -159,6 +156,11 @@ export function SettingsModal({
   const [compactPageOpen, setCompactPageOpen] = useState(initialView === 'page');
   const initialViewRef = useRef(initialView);
   initialViewRef.current = initialView;
+
+  const beforeLeaveRef = useRef(onBeforeLeave);
+  beforeLeaveRef.current = onBeforeLeave;
+  const mayLeave = useCallback((reason: 'close' | 'navigation' | 'page') =>
+    beforeLeaveRef.current?.(reason) !== false, []);
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -212,30 +214,36 @@ export function SettingsModal({
   }, [isControlled, controlledOpen, show, hide]);
 
   const requestClose = useCallback(() => {
+    if (!mayLeave('close')) return false;
     if (isControlledRef.current) onCloseRef.current?.();
     else hide();
-  }, [hide]);
+    return true;
+  }, [hide, mayLeave]);
 
   useImperativeHandle(
     control?.ref,
     () => ({
       open: show,
       close: (cb?: () => void) => {
-        hide();
-        if (cb) setTimeout(cb, UNMOUNT_MS);
+        if (requestClose() && cb) setTimeout(cb, UNMOUNT_MS);
       },
     }),
-    [show, hide],
+    [show, requestClose],
   );
 
   const selectPage = useCallback(
     (next: string) => {
+      if (next !== currentPage && !mayLeave('page')) return;
       if (controlledPage === undefined) setInternalPage(next);
       setCompactPageOpen(true);
       onPageChange?.(next);
     },
-    [controlledPage, onPageChange],
+    [controlledPage, currentPage, onPageChange, mayLeave],
   );
+
+  const requestNavigation = useCallback(() => {
+    if (mayLeave('navigation')) setCompactPageOpen(false);
+  }, [mayLeave]);
 
   // Escape closes (web). On `window`, not `document`: a menu or popover opened
   // inside the modal handles Escape on `document` and stops propagation there,
@@ -261,12 +269,12 @@ export function SettingsModal({
     if (!mounted || IS_WEB || typeof BackHandler?.addEventListener !== 'function') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       // On a pushed page (compact), back returns to the section list first.
-      if (compactPageOpenRef.current) setCompactPageOpen(false);
+      if (compactPageOpenRef.current) requestNavigation();
       else requestClose();
       return true;
     });
     return () => sub.remove();
-  }, [mounted, requestClose]);
+  }, [mounted, requestClose, requestNavigation]);
 
   // ----- saved toast -------------------------------------------------------
   const [savedPhase, setSavedPhase] = useState<SavedPhase>('hidden');
@@ -328,9 +336,7 @@ export function SettingsModal({
   // Full screen, a .85 scale reads as the page shrinking away; compact rises 16px instead.
   const webPanelMotion: WebCssStyle = {
     opacity: visible ? 1 : 0,
-    transform: isCompact
-      ? [{ translateY: visible ? 0 : 16 }]
-      : [{ scale: visible ? 1 : 0.85 }],
+    transform: isCompact ? [{ translateY: visible ? 0 : 16 }] : [{ scale: visible ? 1 : 0.85 }],
     filter: visible ? 'blur(0px)' : 'blur(4px)',
     transitionProperty: 'opacity, transform, filter',
     transitionDuration: reducedMotion ? '0ms' : `${MOTION_MS}ms`,
@@ -400,16 +406,14 @@ export function SettingsModal({
                   {layout === 'compact' ? (
                     compactPageOpen && pageConfig ? (
                       <View style={styles.content}>
-                        <SettingsHeader
-                          title={pageConfig.title}
-                          onBack={() => setCompactPageOpen(false)}
-                          backLabel={labels?.back ?? 'Back'}
-                          closeLabel={closeLabel}
-                          onClose={requestClose}
-                          palette={palette}
-                          testID={testID}
-                        />
                         <PageScroller
+                          header={{
+                            title: pageConfig.title,
+                            onBack: requestNavigation,
+                            backLabel: labels?.back ?? 'Back',
+                            closeLabel,
+                            onClose: requestClose,
+                          }}
                           key={currentPage}
                           palette={palette}
                           inset={CONTENT_INSET.compact}
@@ -421,14 +425,12 @@ export function SettingsModal({
                       </View>
                     ) : (
                       <View style={styles.content}>
-                        <SettingsHeader
-                          title={labels?.dialog ?? 'Settings'}
-                          closeLabel={closeLabel}
-                          onClose={requestClose}
-                          palette={palette}
-                          testID={testID}
-                        />
                         <SettingsRail
+                          header={{
+                            title: labels?.dialog ?? 'Settings',
+                            closeLabel,
+                            onClose: requestClose,
+                          }}
                           groups={groups}
                           page={currentPage}
                           onSelect={selectPage}
@@ -451,14 +453,12 @@ export function SettingsModal({
                         testID={testID}
                       />
                       <View style={styles.content}>
-                        <SettingsHeader
-                          title={pageConfig?.title ?? ''}
-                          closeLabel={closeLabel}
-                          onClose={requestClose}
-                          palette={palette}
-                          testID={testID}
-                        />
                         <PageScroller
+                          header={{
+                            title: pageConfig?.title ?? '',
+                            closeLabel,
+                            onClose: requestClose,
+                          }}
                           key={currentPage}
                           palette={palette}
                           inset={CONTENT_INSET[layout]}
@@ -489,7 +489,10 @@ export function SettingsModal({
 
 function ringVars(palette: SettingsPalette): WebCssStyle | null {
   return IS_WEB
-    ? { '--bloom-settings-ring': palette.ring, '--bloom-settings-ring-offset': palette.full }
+    ? {
+        '--bloom-settings-ring': palette.ring,
+        '--bloom-settings-ring-offset': palette.full,
+      }
     : null;
 }
 
@@ -498,6 +501,7 @@ function ringVars(palette: SettingsPalette): WebCssStyle | null {
 // ---------------------------------------------------------------------------
 
 function SettingsRail({
+  header,
   groups,
   page,
   onSelect,
@@ -506,6 +510,7 @@ function SettingsRail({
   layout,
   testID,
 }: {
+  header?: SettingsHeaderProps;
   groups: SettingsNavGroup[];
   page: string | undefined;
   onSelect: (page: string) => void;
@@ -515,42 +520,68 @@ function SettingsRail({
   testID?: string;
 }) {
   const compact = layout === 'compact';
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = Math.max(0, event.contentOffset.y);
+  }, [scrollY]);
   return (
-    <ScrollView
+    <Animated.ScrollView
       role="navigation"
       aria-label={label}
       style={[
         compact
           ? styles.railCompact
           : [styles.rail, { width: layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH }],
-        { backgroundColor: palette.secondary, borderRightColor: palette.separator },
+        {
+          backgroundColor: palette.secondary,
+          borderRightColor: palette.separator,
+        },
       ]}
-      contentContainerStyle={[styles.railContent, compact ? styles.railContentCompact : null]}
+      contentContainerStyle={header ? undefined : styles.railContent}
+      stickyHeaderIndices={header && !IS_WEB ? [0] : undefined}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
+      contentInsetAdjustmentBehavior="never"
+      automaticallyAdjustContentInsets={false}
       showsVerticalScrollIndicator={false}
       testID={testID ? `${testID}-rail` : undefined}
     >
-      {groups.map((group) => (
-        <View key={group.key ?? group.label} style={styles.group}>
-          <Text variant="body-medium" style={[styles.groupLabel, { color: palette.textSecondary }]}>
-            {group.label}
-          </Text>
-          <View style={styles.groupRows}>
-            {group.items.map((item) => (
-              <RailRow
-                key={item.key}
-                item={item}
-                // A list, not a selection, when the rows ARE the navigation.
-                selected={!compact && item.page !== undefined && item.page === page}
-                showChevron={compact && item.page !== undefined}
-                onSelect={onSelect}
-                palette={palette}
-                testID={testID ? `${testID}-nav-${item.key}` : undefined}
-              />
-            ))}
+      {header ? (
+        <SettingsHeader
+          {...header}
+          palette={palette}
+          scrimColor={palette.secondary}
+          scrollY={scrollY}
+          testID={testID}
+        />
+      ) : null}
+      <View style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}>
+        {groups.map((group) => (
+          <View key={group.key ?? group.label} style={styles.group}>
+            <Text
+              variant="body-medium"
+              style={[styles.groupLabel, { color: palette.textSecondary }]}
+            >
+              {group.label}
+            </Text>
+            <View style={styles.groupRows}>
+              {group.items.map((item) => (
+                <RailRow
+                  key={item.key}
+                  item={item}
+                  // A list, not a selection, when the rows ARE the navigation.
+                  selected={!compact && item.page !== undefined && item.page === page}
+                  showChevron={compact && item.page !== undefined}
+                  onSelect={onSelect}
+                  palette={palette}
+                  testID={testID ? `${testID}-nav-${item.key}` : undefined}
+                />
+              ))}
+            </View>
           </View>
-        </View>
-      ))}
-    </ScrollView>
+        ))}
+      </View>
+    </Animated.ScrollView>
   );
 }
 
@@ -571,9 +602,7 @@ function RailRow({
 }) {
   const [hovered, setHovered] = useState(false);
   const Icon = item.icon;
-  const onPress = item.page
-    ? () => onSelect(item.page as string)
-    : item.onPress;
+  const onPress = item.page ? () => onSelect(item.page as string) : item.onPress;
   return (
     <Pressable
       role="button"
@@ -604,7 +633,9 @@ function RailRow({
         numberOfLines={1}
         style={[
           styles.railLabel,
-          { color: selected || showChevron ? palette.text : palette.textSecondary },
+          {
+            color: selected || showChevron ? palette.text : palette.textSecondary,
+          },
         ]}
       >
         {item.label}
@@ -623,6 +654,14 @@ function RailRow({
 // ---------------------------------------------------------------------------
 
 /** Shared header on every layout; the modal already owns safe-area insets. */
+type SettingsHeaderProps = {
+  title: string;
+  onBack?: () => void;
+  backLabel?: string;
+  closeLabel: string;
+  onClose: () => void;
+};
+
 function SettingsHeader({
   title,
   onBack,
@@ -630,19 +669,15 @@ function SettingsHeader({
   closeLabel,
   onClose,
   palette,
+  scrollY,
+  scrimColor = palette.full,
   testID,
-}: {
-  title: string;
-  onBack?: () => void;
-  backLabel?: string;
-  closeLabel: string;
-  onClose: () => void;
+}: SettingsHeaderProps & {
   palette: SettingsPalette;
+  scrollY: SharedValue<number>;
+  scrimColor?: string;
   testID?: string;
 }) {
-  // Inline chrome does not reveal with scroll. An explicit local offset keeps
-  // the page behind the modal from influencing this header's paint or title.
-  const scrollY = useSharedValue(0);
   return (
     <PageHeader
       title={title}
@@ -650,10 +685,10 @@ function SettingsHeader({
       onBack={onBack}
       backLabel={backLabel}
       safeArea={false}
-      sticky={false}
+      sticky={IS_WEB}
       placement="inline"
-      scrim="none"
-      scrimColor={palette.full}
+      scrim="auto"
+      scrimColor={scrimColor}
       scrollY={scrollY}
       actions={
         <ButtonGroup accessibilityLabel={closeLabel}>
@@ -671,54 +706,49 @@ function SettingsHeader({
   );
 }
 
+/** Each page owns one full-height viewport, including its header. */
 function PageScroller({
   children,
+  header,
   palette,
   inset,
   insetTop = 0,
   testID,
 }: {
   children: React.ReactNode;
+  header: SettingsHeaderProps;
   palette: SettingsPalette;
   inset: number;
-  /** Content gap below PageHeader; desktop Storage uses the compact 6px gap. */
+  /** Body spacing below the header; compact-title pages keep their smaller gap. */
   insetTop?: number;
   testID?: string;
 }) {
-  const [scrolled, setScrolled] = useState(false);
-  const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const next = event.nativeEvent.contentOffset.y > 0;
-    setScrolled((prev) => (prev === next ? prev : next));
-  }, []);
-  const fade: WebCssStyle = {
-    opacity: scrolled ? 1 : 0,
-    ...(IS_WEB
-      ? { transitionProperty: 'opacity', transitionDuration: '200ms', transitionTimingFunction: 'ease-out' }
-      : null),
-  };
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = Math.max(0, event.contentOffset.y);
+  }, [scrollY]);
   return (
-    <View style={styles.scrollHost}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingLeft: inset, paddingRight: inset, paddingBottom: inset, paddingTop: insetTop },
-        ]}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        testID={testID ? `${testID}-page` : undefined}
+    <Animated.ScrollView
+      style={styles.scroll}
+      stickyHeaderIndices={IS_WEB ? undefined : [0]}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
+      contentInsetAdjustmentBehavior="never"
+      automaticallyAdjustContentInsets={false}
+      testID={testID ? `${testID}-page` : undefined}
+    >
+      <SettingsHeader {...header} palette={palette} scrollY={scrollY} testID={testID} />
+      <View
+        style={{
+          paddingLeft: inset,
+          paddingRight: inset,
+          paddingBottom: inset,
+          paddingTop: insetTop,
+        }}
       >
         {children}
-      </ScrollView>
-      {/* Progressive top fade — `from-background-primary-default`. */}
-      <View
-        pointerEvents="none"
-        style={[styles.fade, fade]}
-        testID={testID ? `${testID}-fade` : undefined}
-      >
-        <VerticalFade color={palette.primary} />
       </View>
-    </View>
+    </Animated.ScrollView>
   );
 }
 
@@ -848,21 +878,9 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
-  scrollHost: {
-    flex: 1,
-    minHeight: 0,
-    position: 'relative',
-  },
   scroll: {
     flex: 1,
-  },
-  scrollContent: {},
-  fade: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    height: 40,
+    minHeight: 0,
   },
   toast: {
     position: 'absolute',

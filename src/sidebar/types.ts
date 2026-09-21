@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle, ScrollViewProps } from 'react-native';
 
 /** A Remix-style icon: `width` / `height` / `fill`. */
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
@@ -232,6 +232,17 @@ export interface SidebarUserMenuProps {
 }
 
 export interface SidebarProps {
+  /** App-owned destination content after the built-in rows/tree, inside the same
+   * scroll viewport. Hidden and noninteractive while collapsed; remains mounted
+   * so pagination and disclosure state survive. Not rendered in variant="rail".
+   * Compose rows here, never another ScrollView. Quick search filters only the
+   * built-in items/tree; disable it when your content owns search.
+   */
+  content?: ReactNode;
+  /** Observes the destination viewport after Bloom updates its edge fades.
+   * Useful for loading another page of history. No separate scroll owner.
+   */
+  onScroll?: ScrollViewProps['onScroll'];
   /** Additional persistent bottom content, outside destination scrolling.
    * Receives the rendered state: true in a rail, false in a mobile panel.
    * Existing account/theme/team controls remain; omit account when supplying your own account footer.

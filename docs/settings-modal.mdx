@@ -77,7 +77,7 @@ In `compact`, `SettingsRow` lets its control wrap under the label when both do n
 
 ## Shared header
 
-Every layout uses `PageHeader` with its floating islands. A `ButtonGroupItem` supplies the close action; compact pages use its native back action to return to sections. The modal owns safe-area padding once, so the header uses `safeArea={false}`. It sits inline above the scrolling content (`sticky={false}`, `scrim="none"`); a local zero scroll offset prevents the document behind it from changing its paint. `PageHeader` owns header sizing and horizontal insets, and the modal owns only content spacing. The content's existing fade remains inside its scroll viewport.
+Every layout uses `PageHeader` with its floating islands. A `ButtonGroupItem` supplies the close action; compact pages use its native back action to return to sections. The modal owns safe-area padding once, so the header uses `safeArea={false}`. The page viewport fills the entire content panel: its first child is the sticky header, followed by the padded page body. Native uses `stickyHeaderIndices`; web uses the header’s CSS sticky positioning. The viewport’s own Reanimated scroll offset drives `PageHeader`’s automatic scrim in the modal surface color, independently of the document beneath it. There is no second body viewport or separate fade. Compact section navigation uses the same structure in its rail viewport. Changing pages remounts the page viewport and resets its scroll offset. `PageHeader` owns header metrics; only the page body owns content padding.
 
 ## Why it is not a `Dialog`
 
@@ -119,3 +119,9 @@ All surfaces come from the theme ramps (`button/shared`): background/secondary i
 - Bespoke file-type illustrations aren't included; the default is the Remix document / spreadsheet / video glyph. Pass `renderFileIcon` for artwork.
 - The Storage search uses `TextField`'s own tertiary fill — `TextField` owns its shell paint.
 - The panel's 4px blur during open/close is web-only; native fades and scales.
+
+### Preventing unfinished work from being discarded
+
+`onBeforeLeave(reason)` synchronously returns `false` to keep the current content mounted, with no exit animation. Reasons are `close` (close action, backdrop, Escape, Android back from navigation, or `control.close()`), `navigation` (compact back to sections, including Android back), and `page` (selecting a different page). It runs once per intention with the latest callback; selecting the same page does not invoke it. An imperative close callback runs only if the close was accepted.
+
+Use the imperative control for guarded flows. External changes to controlled `open` or `page`, and parent unmounts, remain the caller's authority and are not vetoed. Preserve the application's router leave guard as well when navigation can unmount the modal. The guard should read the application's completion state; the modal never stores recovery phrases or other sensitive content.

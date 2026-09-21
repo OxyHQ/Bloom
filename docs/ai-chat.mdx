@@ -130,3 +130,11 @@ Semantic tokens resolved onto Bloom's ramps (`ai-chat/shared.ts`): background-fu
 - **The glass chips** are frost + tint + sheen + rim; the SVG refraction layer of the reference material is not reproduced.
 - **Effort at Max** has no flame / starfield flourish (see `composer-panel`).
 - The gallery re-baselines rather than animating when the panel's own width changes during a resize drag.
+
+### Custom chat header
+
+`AiChatContainer` can receive a `header` such as Bloom's `PageHeader` with the
+application's real actions. Omit `title` and `project` to omit its breadcrumb;
+without breadcrumb or action handlers no extra header row is reserved. Share
+and more controls render only when `onShare` and `onMore` are supplied. This
+keeps applications without public sharing from presenting a dead share action.

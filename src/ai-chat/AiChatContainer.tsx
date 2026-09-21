@@ -82,7 +82,7 @@ export function AiChatContainer({
         </View>
       ) : null}
       {header}
-      <View
+      {title != null || project != null || onShare || onMore ? <View
         style={{
           width: '100%',
           flexDirection: 'row',
@@ -94,20 +94,20 @@ export function AiChatContainer({
           paddingTop: 16,
         }}>
         <View style={{ minWidth: 0, flex: 1 }}>
-          <Breadcrumb accessibilityLabel={l.breadcrumb}>
+          {title != null || project != null ? <Breadcrumb accessibilityLabel={l.breadcrumb}>
             {project === undefined ? null : (
               <BreadcrumbItem icon={projectIcon} onPress={onProjectPress}>
                 {project}
               </BreadcrumbItem>
             )}
-            <BreadcrumbItem current>{title}</BreadcrumbItem>
-          </Breadcrumb>
+            {title == null ? null : <BreadcrumbItem current>{title}</BreadcrumbItem>}
+          </Breadcrumb> : null}
         </View>
         <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <GlyphAction icon={RiShare2Line} label={l.share} onPress={onShare} palette={palette} />
-          <GlyphAction icon={RiMoreFill} label={l.more} onPress={onMore} palette={palette} />
+          {onShare ? <GlyphAction icon={RiShare2Line} label={l.share} onPress={onShare} palette={palette} /> : null}
+          {onMore ? <GlyphAction icon={RiMoreFill} label={l.more} onPress={onMore} palette={palette} /> : null}
         </View>
-      </View>
+      </View> : null}
 
       {children}
 

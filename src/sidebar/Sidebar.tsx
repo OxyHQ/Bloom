@@ -141,6 +141,8 @@ function SearchField({
 const SidebarPanel: React.FC<SidebarProps> = ({
   items = [],
   primaryAction,
+  content,
+  onScroll,
   footer,
   secondaryItems = [],
   modes,
@@ -210,7 +212,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   // `fluid` fills its container while expanded; the morph needs a number, so
   // the last expanded width is measured. The collapsed end is the size's own.
-  const geometry = useMemo(() => resolveSidebarGeometry(metrics, surface, Boolean(primaryAction), Boolean(tree)), [metrics, surface, primaryAction, tree]);
+  const geometry = useMemo(() => resolveSidebarGeometry(metrics, surface, Boolean(primaryAction), Boolean(tree) || content != null), [metrics, surface, primaryAction, tree, content]);
   const { collapsedWidth, collapsedLane, expandedInset } = geometry;
   const expandedWidth = useSharedValue(metrics.expanded);
   useEffect(() => {
@@ -232,6 +234,13 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       paddingLeft: padding, paddingRight: padding,
     };
   }, [progress, expandedWidth, fluid, collapsedWidth, expandedPadding, collapsedPadding]);
+  const [contentHeight, setContentHeight] = useState(0);
+  const contentMorph = useAnimatedStyle(() => ({
+    height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
+    opacity: 1 - progress.value,
+    marginTop: tree ? 0 : 24 * (1 - progress.value),
+  }), [contentHeight, collapsed, progress, tree]);
+  const contentWidth = useAnimatedStyle(() => ({ width: expandedWidth.value - expandedPadding * 2 }), [expandedWidth, expandedPadding]);
   const navInset = useAnimatedStyle(() => {
     const inset = expandedInset * (1 - progress.value);
     return { paddingLeft: inset, paddingRight: inset };
@@ -534,8 +543,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     [tree, normalized],
   );
   const nothingMatches =
-    shownItems.length === 0 && shownSecondary.length === 0 && shownFolders.length === 0 && !collapsed;
-  const hasTree = !!tree;
+    shownItems.length === 0 && shownSecondary.length === 0 && shownFolders.length === 0 && content == null && !collapsed;
+  const hasTree = !!tree || content != null;
 
   // A fresh closure here would re-render the memoised switcher on every
   // keystroke in the quick-search field.
@@ -642,8 +651,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             testID={`${testID ?? 'sidebar'}-scroll`}
             {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
             style={{ marginTop: -headerOverlap, marginBottom: -8, marginLeft: -8, marginRight: -8, flexGrow: 0, flexShrink: 1, minHeight: 0 }}
-            contentContainerStyle={{ paddingTop: headerOverlap + 12, paddingBottom: 8, paddingLeft: 8, paddingRight: 8, gap: hasTree ? 24 : 0 }}
+            contentContainerStyle={{ paddingTop: headerOverlap + 12, paddingBottom: 8, paddingLeft: 8, paddingRight: 8, gap: tree ? 24 : 0 }}
             showsVerticalScrollIndicator={false}
+            onScroll={onScroll}
           >
             {shownItems.length > 0 || !hasTree ? (
               <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}>
@@ -664,6 +674,17 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                   ))}
                 </View>
               </View>
+            ) : null}
+            {content != null ? (
+              <Animated.View testID={`${testID ?? 'sidebar'}-content`} pointerEvents={collapsed ? 'none' : 'auto'}
+                aria-hidden={collapsed} accessibilityElementsHidden={collapsed}
+                importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
+                {...(IS_WEB && collapsed ? { inert: true } : {})}
+                style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph]}>
+                <Animated.View onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)} style={contentWidth}>
+                  {content}
+                </Animated.View>
+              </Animated.View>
             ) : null}
             {nothingMatches && hasTree ? (
               <Text variant="body-regular" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}>{noResultsLabel}</Text>

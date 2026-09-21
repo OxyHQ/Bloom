@@ -113,7 +113,7 @@ describe('SettingsModal shell', () => {
     expect(getByTestId('settings-header')).toBeTruthy();
   });
 
-  it('renders the shared header title and action island without extra safe-area padding or scrim', () => {
+  it('renders the shared header inside the page viewport with no separate fade', () => {
     const { getByTestId, queryByTestId } = renderWithTheme(<Controlled />);
     flush();
     expect(resolvedStyle(getByTestId('settings-header').props.style).paddingTop).toBe(0);
@@ -121,6 +121,11 @@ describe('SettingsModal shell', () => {
     expect(getByTestId('settings-header-actions')).toBeTruthy();
     expect(resolvedStyle(getByTestId('settings-header-scrim').props.style).opacity).toBe(0);
     expect(queryByTestId('settings-title-row')).toBeNull();
+    expect(queryByTestId('settings-fade')).toBeNull();
+    const page = getByTestId('settings-page');
+    expect(page.findByProps({ testID: 'settings-header' })).toBeTruthy();
+    expect(page.props.contentContainerStyle).toBeUndefined();
+    expect(page.props.automaticallyAdjustContentInsets).toBe(false);
   });
 
   it('names the dialog and its controls, and marks the selected rail row', () => {
@@ -207,6 +212,8 @@ describe('SettingsModal responsive layout', () => {
     expect(getByTestId('settings-nav-general').props.accessibilityState).toMatchObject({ selected: false });
     expect(queryByText('general body')).toBeNull();
     expect(queryByTestId('settings-header-back')).toBeNull();
+    expect(getByTestId('settings-rail').findByProps({ testID: 'settings-header' })).toBeTruthy();
+    expect(getByTestId('settings-rail').props.contentContainerStyle).toBeUndefined();
 
     pressHost(getByTestId('settings-nav-general'));
     expect(getByText('general body')).toBeTruthy();

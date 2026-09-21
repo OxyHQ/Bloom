@@ -283,8 +283,8 @@ export interface AiChatContainerProps {
    * and no folder glyph.
    */
   project?: string;
-  /** The current chat crumb. */
-  title: string;
+  /** The optional current chat crumb. Omit with project to use only your header slot. */
+  title?: string;
   /** The project crumb's glyph. Default `RiFolderLine`. */
   projectIcon?: BloomIconComponent;
   onProjectPress?: () => void;
