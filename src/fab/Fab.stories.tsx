@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Button } from '../button/index.web';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -36,6 +37,7 @@ const meta: Meta<typeof Fab> = {
       control: 'select',
       options: ['xs', 'sm', 'md', 'lg'],
     },
+    collapsed: { control: 'boolean' },
     disabled: { control: 'boolean' },
   },
 };
@@ -81,4 +83,17 @@ export const InContainerColumn: Story = {
       <Fab {...args} />
     </View>
   ),
+};
+
+/** The same action remains mounted while its extended label contracts. */
+export const ControlledCollapse: Story = {
+  args: { label: 'Create something', size: 'sm' },
+  render: function ControlledCollapse(args) {
+    const [collapsed, setCollapsed] = useState(Boolean(args.collapsed));
+    useEffect(() => setCollapsed(Boolean(args.collapsed)), [args.collapsed]);
+    return <View style={{ alignItems: 'flex-start', gap: 24, padding: 24 }}>
+      <Button onPress={() => setCollapsed(value => !value)}>Toggle label</Button>
+      <Fab {...args} collapsed={collapsed} testID="controlled-fab" />
+    </View>;
+  },
 };

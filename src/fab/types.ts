@@ -11,6 +11,8 @@ export type FabMinimizeBehavior = 'none' | 'hide' | 'collapse';
 /** A prominent action. Screen/BottomBar own placement unless explicitly supplied. */
 export interface FabProps extends Omit<ButtonProps, 'children' | 'leadingIcon' | 'trailingIcon' | 'leading' | 'trailing' | 'size' | 'variant'> {
   label?: string;
+  /** Animate the extended label away while retaining the action and accessible name. */
+  collapsed?: boolean;
   children?: ReactNode;
   size?: BloomSize | FabSize | number;
   /** Existing color preset. Explicit tone takes precedence. */

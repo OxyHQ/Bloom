@@ -1,5 +1,6 @@
 import React from 'react';
 import { act, render } from '@testing-library/react-native';
+import { Fab } from '../fab';
 import { Sidebar } from '../sidebar';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiHome5Line } from '../icons/remix/RiHome5Line';
@@ -19,6 +20,8 @@ it.each([
 ])('keeps one named, operable action outside the scrolling destinations: %j', (mode) => {
   const onPress = jest.fn();
   const tree = mount({ ...mode, testID: 'nav', items, primaryAction: { label: 'New post', icon: RiAddLine, onPress } });
+  const fab = tree.UNSAFE_root.findByType((Fab as unknown as { type: React.ComponentType }).type);
+  expect(fab.props.label).toBe('New post');
   const button = tree.getByLabelText('New post');
   expect(tree.getAllByLabelText('New post')).toHaveLength(1);
   expect(button.props.accessibilityRole).toBe('button');

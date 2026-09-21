@@ -1,4 +1,6 @@
 import React from 'react';
+import * as Reanimated from 'react-native-reanimated';
+import * as minimize from '../fab/use-fab-minimized';
 import { Text } from 'react-native';
 import { Stop } from 'react-native-svg';
 import { render } from '@testing-library/react-native';
@@ -71,4 +73,43 @@ describe('Fab action primitive', () => {
     expect(view.getByTestId('fab').props.onPress).toBeUndefined();
     expect(onPress).not.toHaveBeenCalled();
   });
+});
+
+it.each([['native', Fab], ['web', WebFab]] as const)('%s keeps the labeled control mounted and named when collapsed', (platform, Action) => {
+  const ui = (collapsed: boolean) => <BloomThemeProvider mode="light"><Action icon={Icon} label="Compose" collapsed={collapsed} size="sm" testID="collapse-fab" style={{ width: '100%' }} /></BloomThemeProvider>;
+  const tree = render(ui(true));
+  const host = () => platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'collapse-fab' }) : tree.getByTestId('collapse-fab');
+  const first = host();
+  expect(first.props[platform === 'web' ? 'aria-label' : 'accessibilityLabel']).toBe('Compose');
+  expect(resolvedStyle(first.props.style).width).toBe('100%');
+  const label = tree.getByTestId('collapse-fab-label', { includeHiddenElements: true });
+  expect(resolvedStyle(label.props.style)).toMatchObject({ width: 0, opacity: 0 });
+  tree.rerender(ui(false));
+  expect(host()).toBe(first);
+  expect(tree.getByText('Compose')).toBeTruthy();
+  tree.rerender(ui(true));
+  expect(host()).toBe(first);
+  expect(host().props[platform === 'web' ? 'aria-label' : 'accessibilityLabel']).toBe('Compose');
+});
+
+it('uses the same mounted label transition for legacy minimizeBehavior collapse', () => {
+  const minimized = jest.spyOn(minimize, 'useFabMinimized').mockReturnValue(true);
+  try {
+    const tree = themed(<Fab icon={Icon} label="Compose" minimizeBehavior="collapse" testID="minimized-fab" />);
+    expect(tree.getByTestId('minimized-fab').props.accessibilityLabel).toBe('Compose');
+    expect(resolvedStyle(tree.getByTestId('minimized-fab-label', { includeHiddenElements: true }).props.style)).toMatchObject({ width: 0, opacity: 0 });
+    tree.unmount();
+  } finally { minimized.mockRestore(); }
+});
+
+it('honors reduced motion without starting a label timing animation', () => {
+  const reduced = jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
+  const timing = jest.spyOn(Reanimated, 'withTiming');
+  try {
+    const ui = (collapsed: boolean) => <BloomThemeProvider><Fab icon={Icon} label="Compose" collapsed={collapsed} /></BloomThemeProvider>;
+    const tree = render(ui(false));
+    tree.rerender(ui(true));
+    expect(timing).not.toHaveBeenCalled();
+    tree.unmount();
+  } finally { reduced.mockRestore(); timing.mockRestore(); }
 });

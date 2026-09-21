@@ -26,8 +26,8 @@ Give it a height (it fills `100%`); its width is its own.
 
 ## Primary action
 
-Use `primaryAction` for the sidebar's main command. Bloom renders a solid action-tone
-`Button`, full-width when expanded and a named icon button when collapsed or in
+Use `primaryAction` for the sidebar's main command. Bloom reuses `Fab` with its action tone and controlled `collapsed` state,
+full-width when expanded and icon-only when collapsed or in
 `variant="rail"`. It stays outside the scrolling destinations so long navigation
 lists do not push it out of reach. The expanded label follows the sidebar's existing
 collapse animation and reduced-motion setting; the button keeps one focus target.

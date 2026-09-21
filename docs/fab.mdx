@@ -23,6 +23,23 @@ Use `AppShell.primaryAction` to coordinate a screen action with navigation, or
 `BottomBar.action` for a custom bottom composition. A standalone Fab stays in
 normal flow and accepts the usual `style` and `className` layout overrides.
 
+## Controlled collapse
+
+```tsx
+<Fab icon={Icons.RiAddLine} label="New post" collapsed={compact} onPress={createPost} />
+```
+
+`collapsed` defaults to `false`. It contracts the measured label width and opacity
+with Bloom's 300ms motion timing, reverses from the current position, and respects
+reduced motion. The same Button stays mounted: focus, accessible name, loading
+and disabled behavior remain available when only the icon is visible. Parent
+`style` widths remain authoritative, so an extended full-width action can follow
+a collapsing sidebar without another animated button or duplicated label.
+
+The existing `minimizeBehavior="collapse"` compatibility prop uses the same label
+transition when its minimization context requests it. Explicit `collapsed` also
+works independently, without a navigation or Sidebar provider.
+
 ## Migration
 
 Remove `placement`, `offset`, `zIndex`, and `minimizeBehavior`. Position the action
