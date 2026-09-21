@@ -181,7 +181,7 @@ describe('Sidebar', () => {
     const screen = renderIn(<Sidebar collapsed={collapsed} account={{ name: 'Alex' }} />);
     expect(resolvedStyle(screen.getByTestId('sidebar-header').props.style).height).toBe(collapsed ? 62 : 32);
     expect(resolvedStyle(screen.getByTestId('sidebar-header-control').props.style)).toMatchObject({
-      top: collapsed ? 0 : 6, width: collapsed ? 36 : 20,
+      top: collapsed ? 0 : 6, width: collapsed ? 40 : 20,
     });
     expect(resolvedStyle(screen.getByTestId('sidebar-theme-morph').props.style).height).toBe(collapsed ? 36 : 40);
   });
@@ -249,7 +249,7 @@ describe('SidebarModeSwitcher', () => {
     });
   });
 
-  it.each([['sm', 30], ['md', 36], ['lg', 44]] as const)('keeps collapsed %s modes square and inside the panel', (size, square) => {
+  it.each([['sm', 30], ['md', 40], ['lg', 44]] as const)('keeps collapsed %s modes square and inside the panel', (size, square) => {
     const onModeChange = jest.fn();
     const screen = renderIn(<Sidebar testID="sb" size={size} collapsed modes={MODES} mode="computer" onModeChange={onModeChange} />);
     const track = resolvedStyle(screen.getByTestId('sb-modes').props.style);

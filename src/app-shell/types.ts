@@ -247,6 +247,11 @@ export interface AppShellEngineProps {
    * last item is never hidden behind it.
    */
   bottomBar?: ReactNode;
+  /** Reserve the measured bar height in document/container content (default true).
+   * False keeps the bar over fullscreen content whose own scroller accounts for
+   * the occupied bottom edge. The bar still publishes its real edge occupancy.
+   * Fixed mode always leaves clearance to its child navigator/list. */
+  reserveBottomBarSpace?: boolean;
   /** `compact` (default): only while the nav is a drawer. */
   bottomBarVisibility?: AppShellBarVisibility;
   /** The compose/FAB corner — above the bottom bar when there is one. */

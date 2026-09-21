@@ -72,7 +72,7 @@ export interface SidebarItemProps {
   href?: string;
   badge?: ReactNode;
   selected?: boolean;
-  /** Icon-only 36px square (the collapsed rail). */
+  /** Icon-only square matching the sidebar size (40px for md). */
   collapsed?: boolean;
   onPress?: () => void;
   /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
@@ -126,7 +126,7 @@ export type SidebarSurface = 'card' | 'plain' | 'docked';
  * measurement in `SIDEBAR_METRICS`:
  *
  * - `sm`  a 30px square, an 18px glyph, `body-2-medium`; 232 expanded, 46 collapsed
- * - `md` (default) 36 / 20 / `body-medium`; 260 expanded, 52 collapsed
+ * - `md` (default) 40 / 22 / `headline-medium`; 260 expanded, 56 collapsed
  * - `lg`  44 / 24 / `title-3-medium`; 300 expanded, 60 collapsed — the
  *   destination-first rail a social app reads with at arm's length
  */

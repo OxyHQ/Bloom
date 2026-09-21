@@ -376,7 +376,7 @@ describe('AppShell panel fill', () => {
     expect(parentStyle.paddingLeft ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
     expect(parentStyle.paddingRight ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
     const bodyStyle = scroll === 'fixed'
-      ? resolvedStyle(screen.getByTestId('shell-page').props.contentContainerStyle)
+      ? resolvedStyle(screen.getByTestId('shell-page').props.style)
       : resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style);
     expect(bodyStyle.paddingLeft ?? 0).toBe(0);
     expect(bodyStyle.paddingRight ?? 0).toBe(0);
@@ -384,17 +384,33 @@ describe('AppShell panel fill', () => {
     expect(bodyStyle.paddingBottom ?? 0).toBe(0);
   });
 
-  it('a panel in a BOUNDED shell pins the header and scrolls only the content under it', () => {
+  it.each([true, false])('document panel reserves bar space only when requested (%s)', (reserve) => {
+    setWidth(390);
+    const screen = renderIn(<AppShell testID="shell" variant="feed" panel scroll="document"
+      reserveBottomBarSpace={reserve} bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>}>
+      <ReactNative.Text testID="body">Body</ReactNative.Text>
+    </AppShell>);
+    fireEvent(screen.getByTestId('shell-bottom-bar'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 80 } },
+    });
+    expect(resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style).paddingBottom)
+      .toBe(reserve ? 80 : 0);
+  });
+
+  it.each(['fixed', 'container'] as const)('%s panel preserves the scroll owner', (scroll) => {
     setWidth(1440);
     const screen = renderIn(
-      <AppShell testID="shell" variant="feed" panel scroll="fixed" title="Home" sidebar={{ items: NAV }}>
-        <ReactNative.Text testID="post">post</ReactNative.Text>
+      <AppShell testID="shell" variant="feed" panel scroll={scroll} title="Home" sidebar={{ items: NAV }}>
+        <ReactNative.View testID="native-navigator"><ReactNative.Text testID="post">post</ReactNative.Text></ReactNative.View>
       </AppShell>,
     );
-    // The scroller is the panel's own, with the header outside it: the frame
-    // holds the screen and only the feed moves.
     expect(insidePage(screen, 'post')).toBe(true);
     expect(insidePage(screen, 'shell-header')).toBe(false);
+    const pageScrollers = screen.UNSAFE_queryAllByType(ReactNative.ScrollView)
+      .filter(node => node.props.testID === 'shell-page');
+    expect(pageScrollers).toHaveLength(scroll === 'container' ? 1 : 0);
+    if (scroll === 'fixed') expect(resolvedStyle(screen.getByTestId('shell-page').props.style))
+      .toMatchObject({ flex: 1, minHeight: 0 });
   });
 
   it('a panel in a DOCUMENT-scrolled shell keeps growing with the page, header and all', () => {

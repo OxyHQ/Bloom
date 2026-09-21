@@ -142,6 +142,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   topBarVisibility = 'compact',
   bottomBar,
   bottomBarVisibility = 'compact',
+  reserveBottomBarSpace = true,
   floatingAction,
   floatingActionPlacement = 'end',
   overlay,
@@ -277,7 +278,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const bottomEdge = showBottomBar ? bottomBarHeight : insets.bottom;
   const contentReserve =
     showBottomBar || showFloatingAction
-      ? bottomEdge + (showFloatingAction ? floatingActionHeight + gutter : 0)
+      ? (reserveBottomBarSpace ? bottomEdge : 0) + (showFloatingAction ? floatingActionHeight + gutter : 0)
       : 0;
 
   const bars = (
@@ -544,11 +545,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
         ]}
       >
         {panelFills ? (
-          // A panel in a BOUNDED shell is the height of the screen and scrolls
-          // its own content: that is what makes it read as a panel — it reaches
-          // the bottom and closes there, like the rail beside it — instead of
-          // an open-ended column whose bottom edge is somewhere past the fold.
-          // The header is pinned inside it and only the routed content moves.
+          // A bounded panel fills the screen. Container mode scrolls its body;
+          // fixed mode leaves scrolling to the child navigator/list.
           <BloomColorScope colorPreset={panelColorPreset} asChild>
           <ContentPanel
             maskColor={background}
@@ -563,13 +561,16 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           >
             <View style={{ flex: 1, minHeight: 0 }}>
               {headerNode}
-              <ScrollView
+              <Scroller
+                mode={mode}
                 testID={testID ? `${testID}-page` : undefined}
                 style={{ flex: 1, minHeight: 0 }}
-                contentContainerStyle={{ paddingBottom: contentReserve }}
+                // A fixed page owns its list and edge clearance. Padding its
+                // navigator here would charge the same occupied edge twice.
+                contentStyle={mode === 'fixed' ? {} : { paddingBottom: contentReserve }}
               >
                 {children}
-              </ScrollView>
+              </Scroller>
             </View>
           </ContentPanel>
           </BloomColorScope>

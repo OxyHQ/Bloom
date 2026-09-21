@@ -86,10 +86,8 @@ keeps the same content node mounted and does not replace the document scroller.
   content behind it travels from 16 to −830. (The inset is what makes that
   true: at the 8px default the frame would sit above the panel's real top edge
   and snap down on the first scroll.)
-- `scroll="fixed"` / `"container"`: the shell bounds the panel, so the panel IS
-  the box — it closes at the bottom like the rail beside it, the header is
-  pinned inside it, and only the routed content scrolls, under the frame. The
-  document never moves at all.
+- `scroll="container"`: the panel fills the frame and owns a `ScrollView` below its pinned header.
+- `scroll="fixed"`: the panel fills the frame with a plain flex view. The child navigator, virtualized list or canvas owns scrolling and reads the shared occupied bottom edge for its own clearance. The shell never nests a `ScrollView` around it or pads its navigator a second time.
 
 Both are right; they are different apps. A feed with the address bar collapsing
 on a phone and real anchor links wants `document`; a workspace whose regions
@@ -564,3 +562,8 @@ A feed can use `drawer="reveal"` on compact screens: the page slides aside to re
 
 
 The `bottomBar` slot publishes its measured footprint through the shared bottom-edge registry. Measurement includes the slot’s safe-area padding; embedded bars must not add that inset again. Native feeds and separately positioned FABs can read `useBottomEdgeInset()` without importing the navigation component. Claims combine by maximum, not addition, and disappear when the slot unmounts. The slot never reads its own claim to size itself; repeated equal layout measurements do not trigger another height callback.
+
+For fullscreen video or a child scroller that accounts for the occupied bottom edge itself,
+set `reserveBottomBarSpace={false}`. The visible bar still publishes its measured height
+through the shared edge registry; document/container content receives no duplicate bar padding.
+`scroll="fixed"` always leaves scrolling and clearance to the child navigator or list.
