@@ -1,0 +1,82 @@
+---
+title: Proof of delivery
+description: The proofs an app asks for at the door — a signature drawn with a finger or typed, a photo of where it was left, a code the recipient reads out, who took it and a note — each optional, all of them one result.
+order: 139
+---
+
+# Proof of delivery
+
+```tsx
+import { ProofOfDelivery, SignaturePad } from '@oxy.so/bloom/proof-of-delivery';
+
+<ProofOfDelivery
+  proofs={['recipient', 'signature', 'photo']}
+  required={['recipient', 'signature']}
+  onAddPhoto={openCamera}
+  onSubmit={(result) => result.missing.length === 0 && record(result)}
+/>
+```
+
+## Five proofs, five existing controls, one new surface
+
+| proof | control |
+| --- | --- |
+| `recipient` | `TextFieldInput` |
+| `signature` | `SignaturePad` — the one thing this family adds |
+| `code` | `InputOtp`, which already cleans, pads and reports completion |
+| `photo` | `SortablePhotoGrid` |
+| `note` | `Textarea` |
+
+Every one is a `Field`, so the label, the hint, the required mark, the error and the association with the control are said once (`docs/composition.mdx`). Two of the five draw SEVERAL controls — the signature is a pad and a name, the photo is a grid — so those fields are `multiple`: one id on three inputs is invalid HTML, and one error described by three inputs is announced three times.
+
+### Why the photo is not `FileUpload`
+
+`FileUpload` is a DROP ZONE with an upload lifecycle of its own. That is right for a document on a desktop and wrong at a door: the photo comes from a camera the app opens, and what has to be on screen afterwards is the picture, its upload state and a way to take another. `SortablePhotoGrid` is that — the app owns the picker, the grid owns the order, the per-photo progress and the retry.
+
+## The order is the door's, not the caller's
+
+`PROOF_ORDER` is recipient, signature, code, photo, note, and `proofs` is filtered through it whatever order it arrives in. Recipient first because it is the question the courier asks out loud and the answer decides the rest; then the two proofs the RECIPIENT takes part in; then the photo, taken after they have gone; then the note, written about everything above it.
+
+## The confirm control is never disabled
+
+It fires `onSubmit` on every press, with `missing` filled in. Pressing with something outstanding puts the error on each missing field AND an `error` `Admonition` in a `role="alert"` at the bottom naming them, so the answer arrives in the same gesture that asked the question.
+
+A disabled confirm is the failure mode this avoids: the reader presses, nothing happens, and nothing on screen says why — least of all to a screen reader, which is told only that a button is dimmed.
+
+The errors appear only after the first press. A form that is red before it has been filled in is a form that is wrong about the reader.
+
+`submitting` is the one thing that does stop the press, because a second confirm would record the same delivery twice.
+
+**A proof that is required but not DRAWN cannot be missing.** `missingProofs` intersects `required` with `proofs`, so an app that requires a control it never showed cannot refuse a delivery over it.
+
+## `SignaturePad`
+
+- **The pad** is a filled surface at the next level up, radius 12, with a baseline hairline at 72% of its height. A signature is written ON a line; without one a finger starts wherever it lands and the capture reads as a doodle.
+- **The ink** is one `<Path>` per stroke, quadratic through the MIDPOINTS of the samples, round caps and joins, painted in the TEXT colour — a signature is writing, not a brand mark.
+- **The pointer** is one `PanResponder`, which react-native-web routes from real mouse, touch and pen events through its own responder system. The same file draws on both platforms and there is no `.web` fork to keep in step. Points arrive in the pad's own coordinates (`locationX` / `locationY`, measured against the responder node), so a scrolled or transformed page needs no correction.
+- **The pad KEEPS the gesture** (`onPanResponderTerminationRequest: () => false`). A signature crosses a scroller, and an ancestor that stole the gesture mid-word would break the stroke in half and leave the second half unrecorded.
+- Samples closer together than 2px are dropped. A resting finger reports the same coordinate many times a second, and every repeat is a zero-length curve the smoothing then has to average out.
+- **A single tap lays down a DOT.** `signaturePath` emits `M… l0 0` for one point, which a round cap paints as a dot — a full stop in a signature is exactly that. Without it a tap draws nothing and the reader taps harder.
+
+### The typed field is the other half of the control, not a fallback
+
+A pad is a pointer affordance: there is no keyboard gesture for it, a screen reader has nothing to announce but an empty box, and a motor impairment makes it unusable. So both paths are drawn AT ONCE rather than behind a mode switch — a mode a reader has to find is a mode most readers never find — and `isSignatureGiven` treats ink and a typed name as the same answer.
+
+`typed={false}` removes it. That is a deliberate escape hatch for an app collecting the name in a field of its own on the same screen, and it is the only way to ship this control with no accessible path at all.
+
+The pad itself announces as `role="img"` named "Signature" (and "Signature, Signed" once there is ink). The drawn signature IS an image: not operable by keyboard, holding no state ARIA can read.
+
+## What jest cannot see, and where it is checked instead
+
+**A jest test cannot see a canvas.** react-native-svg renders to a native view on one platform and to a `<path>` on the other, and jsdom paints neither.
+
+So the split is deliberate:
+
+- `signaturePath`, `shouldKeepSignaturePoint`, `isProofGiven` and `missingProofs` are PURE, and `src/__tests__/ProofOfDelivery.test.tsx` walks their boundaries — no points, one point, two, a code half entered, a required proof that was never drawn.
+- That ink actually lands under a real pointer is `scripts/verify-signature-pad.mjs`: a real Chrome, `page.mouse.down/move/up` through the browser's own hit testing, reading the emitted `<path d>`. It also runs the negative control — a press with no movement, which must still leave a dot, and a press on a `disabled` pad, which must leave nothing.
+
+## Traps
+
+- **The code counts only once it is FULL.** `InputOtp` reports every keystroke, and "2 of 4 digits" is not a code the recipient read out, so `codeLength` is part of the question rather than something the caller checks after.
+- **`value` is partial and `onChange` is not.** A caller may control one field; the component fills the rest from `EMPTY_PROOF` and always reports the whole thing.
+- **`onAddPhoto` is the app's picker.** Without it the grid draws no add tile — the component opens no camera of its own on either platform.

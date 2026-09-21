@@ -32,15 +32,15 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **201 families** in `src/`, **199** published (a subpath, the root barrel, or both). **35** carry a web fork.
+- **204 families** in `src/`, **202** published (a subpath, the root barrel, or both). **35** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
-| Field membership | 45 | 21 | 0 | 19 | 5 |
+| Field membership | 46 | 21 | 0 | 20 | 5 |
 | Control presentation | 17 | 8 | 2 | 7 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
-| Controlled / uncontrolled state | 46 | 37 | 1 | 1 | 7 |
+| Controlled / uncontrolled state | 49 | 40 | 1 | 1 | 7 |
 
 ## What remains — the named adaptations
 
@@ -76,6 +76,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 - `composer-panel` (does-not-apply) — its pills and effort slider are a toolbar of a composer, named by the group they sit in; the panel is never a field.
 - `floating` (does-not-apply) — a MENU row. `checkbox`/`radio` inside a menu is the menu-item semantic, and the menu owns its own name, state and keyboard model (`floating/menu-rows.tsx`).
 - `home-search` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
+- `job-board` (does-not-apply) — writes a selection role on a ROW or a chip rather than on a form control — a list the user picks from, inside its own container, never inside a `Field`.
 - `map-marker` (does-not-apply) — writes a selection role on a ROW or a chip rather than on a form control — a list the user picks from, inside its own container, never inside a `Field`.
 - `media-controls` (does-not-apply) — a transport SCRUBBER (`adjustable`): it is named by the track it plays and lives in a player, not in a field.
 - `message-media` (does-not-apply) — a voice message’s scrubber — same as `media-controls`.
@@ -178,6 +179,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `divider` | `@oxy.so/bloom/divider` + barrel | universal | `divider.mdx` | yes | 1 |  |  |  |  |
 | `dot-grid-meter` | `@oxy.so/bloom/dot-grid-meter` + barrel | universal | `dot-grid-meter.mdx` | yes | 2 |  |  |  |  |
 | `dropdown-menu` | `@oxy.so/bloom/dropdown-menu` + barrel | web fork | `dropdown-menu.mdx` | yes | 4 |  |  | reads | reads |
+| `earnings` | `@oxy.so/bloom/earnings` + barrel | universal | `earnings.mdx` | yes | 1 |  |  |  | reads |
 | `empty-state` | `@oxy.so/bloom/empty-state` + barrel | universal | `empty-state.mdx` | yes | 1 |  |  |  |  |
 | `error-boundary` | `@oxy.so/bloom/error-boundary` + barrel | universal | `error-boundary.mdx` | yes | 1 |  |  |  |  |
 | `eviction` | `@oxy.so/bloom/eviction` + barrel | universal | `eviction.mdx` | yes | 1 |  |  |  |  |
@@ -201,6 +203,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `input-group` | `@oxy.so/bloom/input-group` + barrel | universal | `input-group.mdx` | yes | 3 | reads |  |  |  |
 | `input-otp` | `@oxy.so/bloom/input-otp` + barrel | universal | `input-otp.mdx` | yes | 2 | reads |  |  | **adaptation** |
 | `item` | `@oxy.so/bloom/item` + barrel | universal | `item.mdx` | yes | 2 |  |  |  |  |
+| `job-board` | `@oxy.so/bloom/job-board` + barrel | universal | `job-board.mdx` | yes | 1 | n/a¹ |  |  | reads |
 | `kbd` | `@oxy.so/bloom/kbd` + barrel | universal | `kbd.mdx` | yes | 1 |  |  |  |  |
 | `label` | `@oxy.so/bloom/label` + barrel | universal | `label.mdx` | yes | 1 |  |  |  |  |
 | `layout` | `@oxy.so/bloom/layout` + barrel | universal | `layout.mdx` | yes | 5 |  |  |  |  |
@@ -259,6 +262,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `pressable-scale` | `@oxy.so/bloom/pressable-scale` + barrel | universal | `pressable-scale.mdx` | yes | 1 |  |  |  |  |
 | `price-breakdown` | `@oxy.so/bloom/price-breakdown` + barrel | universal | `price-breakdown.mdx` | yes | 3 |  |  |  | reads |
 | `progressive-blur` | `@oxy.so/bloom/progressive-blur` + barrel | web fork | `progressive-blur.mdx` | yes | 1 |  |  |  |  |
+| `proof-of-delivery` | `@oxy.so/bloom/proof-of-delivery` + barrel | universal | `proof-of-delivery.mdx` | yes | 1 |  |  |  | reads |
 | `property-insights` | `@oxy.so/bloom/property-insights` + barrel | universal | `property-insights.mdx` | yes | 4 |  |  |  | reads |
 | `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | 1 |  |  |  |  |
 | `questionnaire` | `@oxy.so/bloom/questionnaire` + barrel | universal | `questionnaire.mdx` | yes | 1 | **adaptation** |  |  | **adaptation** |
@@ -287,7 +291,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `stay-filters` | `@oxy.so/bloom/stay-filters` + barrel | universal | `stay-filters.mdx` | yes | 4 | n/a¹ |  |  |  |
 | `stay-search` | `@oxy.so/bloom/stay-search` + barrel | universal | `stay-search.mdx` | yes | 4 |  |  |  |  |
 | `stepper` | `@oxy.so/bloom/stepper` + barrel | universal | `stepper.mdx` | yes | 3 | reads |  |  |  |
-| `styles` | `@oxy.so/bloom/styles` + barrel | universal | `styles.mdx` | yes | 61 |  |  |  |  |
+| `styles` | `@oxy.so/bloom/styles` + barrel | universal | `styles.mdx` | yes | 62 |  |  |  |  |
 | `subtle-hover` | `@oxy.so/bloom/subtle-hover` + barrel | universal | `subtle-hover.mdx` | yes | 1 |  |  |  |  |
 | `surfaces` | `@oxy.so/bloom/surfaces` + barrel | web fork | `alert.mdx` | yes | 2 |  |  |  |  |
 | `swipe-row` | `@oxy.so/bloom/swipe-row` + barrel | universal | `swipe-row.mdx` | yes | 1 |  |  |  |  |

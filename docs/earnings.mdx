@@ -1,0 +1,87 @@
+---
+title: Earnings
+description: What the work paid — the period's figure and its bars through the earnings chart card, the readings under it, the breakdown by kind, and the next payout with its date and state.
+order: 138
+---
+
+# Earnings
+
+```tsx
+import { EarningsSummary } from '@oxy.so/bloom/earnings';
+
+<EarningsSummary periods={[day, week, month]} defaultPeriod="week" formatAxisValue={euros} />
+```
+
+`EarningsSummary` is the whole panel. `EarningsBreakdown` and `EarningsPayoutRow` are two of its four parts, published because a screen often wants one of them alone.
+
+## It is built AROUND the chart card, not beside it
+
+`chart-cards`' `EarningsChartCard` is already four of the five things a courier's earnings screen needs: the period's figure, the change on the period before, the Day / Week / Month switch and the bars of the last weeks. Drawing a second figure and a second switch above it would have put two of everything on one panel and left the reader to work out which one was authoritative.
+
+So this family draws none of that. It hands the chart card the selected period's data and adds the three things the chart card has no opinion about:
+
+```
+EarningsChartCard    the switch, the figure, the delta chip, the bars
+tiles                the period's other readings
+EarningsBreakdown    where the money came from
+EarningsPayoutRow    when it reaches the bank
+```
+
+The tiles are `ai-profile-card`'s stat tile exactly — radius 10, padding 10, the reading over its label, one row from 640 and two columns below. A courier's "68 jobs done" and a profile's "9B lifetime tokens" are the same object, and a second tile geometry would be a second answer to one question.
+
+The breakdown is `price-breakdown`'s `PriceSummary` under a heading, for the same reason. A courier's earnings are an ITEMISATION — jobs, tips, bonuses, adjustments, each a label and an amount the app formatted — which is a fare's itemisation seen from the other side. Writing a second list of label-and-amount rows here would give Bloom two of those, and only one of them would know about `estimated`, `pending`, the discount tone and the info popover.
+
+## No total under the breakdown
+
+Inside `EarningsSummary` the figure above the chart already IS the total, so `EarningsBreakdown` is given no `total` and draws the kinds with no rule. Pass `total` when you use the breakdown on its own.
+
+## The money is never computed, and the headline is the proof
+
+A bar carries BOTH a number and an amount, and they are not the same fact:
+
+```tsx
+{ label: 'Fri', value: 132.4, amount: '€132.40' }
+```
+
+`value` is GEOMETRY — how tall the bar is — and is never drawn. `amount` is what the reader sees.
+
+`EarningsChartCard` formats its headline from a number, which is exactly what this family must not do. So the headline is CHOSEN rather than produced: the panel owns the chart's active bar, and `format` returns the period's own `total` at rest and the hovered bar's own `amount` over a bar. `earningsHeadline` is that choice, and it is a pure function so its boundaries — no bars, an index past the end, an index that outlived its data — are reachable by a test.
+
+Two consequences, both deliberate:
+
+- **The headline does not roll.** `ChartHeadline` counts a number up over 320ms; a pre-formatted amount has nothing to count. The 220ms fade still plays, so the change is still visible.
+- **The Y axis prints a number.** A tick is a position on a scale the chart chose, not a sum the app made, so no string exists for it to have formatted. The default prints the rounded number with nobody's currency on it; **`formatAxisValue` is where an app puts its own**, and an app that forgets it gets a bare axis rather than a wrong currency.
+
+## What jest cannot see, and where it is checked instead
+
+`earningsHeadline` is pure, so the CHOICE is pinned in `src/__tests__/Earnings.test.tsx` at every boundary. The other half — that the panel actually owns the chart's active bar and re-reads the headline from it — is driven by pointer events on a plot surface that only exists after `onLayout`, and jsdom fires no layout. Measured: gutting `setActiveIndex` to a no-op left that whole suite green.
+
+So it is `scripts/verify-earnings-headline.mjs`: a real Chrome, `page.mouse.move` over three bars of different value, reading the emitted headline. It also runs the case the pure test cannot reach — that no reading is ever the raw number the bar was SIZED by, which is what a `format` falling back to its argument would produce and what would still look plausible on screen. The axis words are checked the same way, and for the same reason.
+
+## The period is controlled here, and the chart is remounted to follow it
+
+`useChartRange` inside `chart-cards` is uncontrolled: it takes a `defaultRange` and there is no `range`. A period changed from outside the panel therefore cannot reach the chart card's own segmented control, and the switch and the panel would disagree with nothing to say so.
+
+The chart is keyed on the period id, which remounts it with the new default. The cost is that the bars grow in again instead of morphing across the switch. **This is a gap in `chart-cards`, recorded rather than worked around silently** — the fix is a controlled `range` prop on `useChartRange`, and it is not made here.
+
+## Payout states
+
+Five, because "not in the account yet" is four different situations and a courier acts differently on each.
+
+| state | tone | means |
+| --- | --- | --- |
+| `scheduled` | default | waiting; nothing to do |
+| `processing` | info | already moving; nothing to do |
+| `paid` | success | done |
+| `held` | warning | the reader has to do something, and the money is still coming |
+| `failed` | error | the reader has to fix something |
+
+**The state is said in words, not only in colour.** The badge carries the word and the tone is a second channel on top of it. `note` is drawn only for `held` and `failed` — a sentence on a scheduled payout is one nobody has to read.
+
+The row is an `item`, not a card: `item` already owns the press target, the density, the slots and the disabled wash, and what this component decides is what goes in them.
+
+## Traps
+
+- **A period carries everything it says.** `total`, `bars`, `lines`, `stats` and `payout` are all the period's own, so switching the segment replaces the whole panel. A payout that does not change with the period is written once, at the panel level.
+- **`deltaRatio` is a RATIO, not money.** `0.148` is up 14.8%. A percentage is not somebody's currency, so it is the one number here that is allowed to be formatted downstream.
+- **A period id that names nothing falls back to the FIRST period**, never to nothing. An empty figure reads as "you earned nothing" rather than as "this app asked for a period that is not on the list".

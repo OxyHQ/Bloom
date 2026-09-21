@@ -402,6 +402,10 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       verdict: 'does-not-apply',
       reason: SELECTION_ROW,
     },
+    'job-board': {
+      verdict: 'does-not-apply',
+      reason: SELECTION_ROW,
+    },
   },
   'control-surface': {
     'place-card': {

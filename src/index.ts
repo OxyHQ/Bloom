@@ -1798,6 +1798,98 @@ export type {
   PaymentStatusPresentation,
   PaymentStatusState,
 } from './payment-status';
+// Fulfilment — the same marketplace from the side of the person who does the
+// work: the board of jobs to take, what the work paid, and the proof that a
+// delivery happened. Built on the same block as the customer's side: a job's
+// route IS `route-stops`, its pay IS `price-breakdown`, its chart IS
+// `chart-cards`, and its code IS `input-otp`.
+export { JobBoard, JobCard } from './job-board';
+export {
+  JOB_BOARD_GEOMETRY,
+  JOB_BOARD_LABELS,
+  JOB_BOARD_SORTS,
+  JOB_DISTANCE_BANDS,
+  JOB_STATE_TONE,
+  JOB_VEHICLE_KINDS,
+  JOB_WHEN_BANDS,
+  countActiveJobFilters,
+  filterJobOffers,
+  jobActionsAreLabelled,
+  joinJobName,
+  resolveJobPaint,
+  sortJobOffers,
+  toggleJobVehicle,
+} from './job-board';
+export type {
+  JobBoardBand,
+  JobBoardFilter,
+  JobBoardGeometry,
+  JobBoardLabels,
+  JobBoardProps,
+  JobBoardSort,
+  JobCardDensity,
+  JobCardProps,
+  JobOffer,
+  JobOfferState,
+  JobPaint,
+  JobPlace,
+} from './job-board';
+
+export { EarningsBreakdown, EarningsPayoutRow, EarningsSummary } from './earnings';
+export {
+  EARNINGS_GEOMETRY,
+  EARNINGS_LABELS,
+  EARNINGS_PAYOUT_TONE,
+  earningsHeadline,
+  earningsHeadlineLabel,
+  joinEarningsName,
+  resolveEarningsPaint,
+  resolveEarningsPeriod,
+} from './earnings';
+export type {
+  EarningsBar,
+  EarningsBreakdownProps,
+  EarningsGeometry,
+  EarningsLabels,
+  EarningsPaint,
+  EarningsPayout,
+  EarningsPayoutRowProps,
+  EarningsPayoutState,
+  EarningsPeriod,
+  EarningsStat,
+  EarningsSummaryProps,
+} from './earnings';
+
+export { ProofOfDelivery, SignaturePad } from './proof-of-delivery';
+export {
+  EMPTY_PROOF,
+  EMPTY_SIGNATURE,
+  PROOF_GEOMETRY,
+  PROOF_LABELS,
+  PROOF_ORDER,
+  completeProofValue,
+  hasSignatureInk,
+  isProofGiven,
+  isSignatureGiven,
+  missingProofs,
+  orderProofs,
+  resolveProofPaint,
+  shouldKeepSignaturePoint,
+  signaturePath,
+} from './proof-of-delivery';
+export type {
+  ProofGeometry,
+  ProofKind,
+  ProofOfDeliveryLabels,
+  ProofOfDeliveryProps,
+  ProofOfDeliveryResult,
+  ProofOfDeliveryValue,
+  ProofPaint,
+  SignaturePadProps,
+  SignaturePoint,
+  SignatureStroke,
+  SignatureValue,
+} from './proof-of-delivery';
 
 export { WizardFooter, WizardProgress } from './wizard';
 export type { WizardFooterProps, WizardProgressProps, WizardStep } from './wizard';
