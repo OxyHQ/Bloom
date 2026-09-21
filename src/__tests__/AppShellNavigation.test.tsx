@@ -4,6 +4,7 @@ import React from 'react';
 import * as ReactNative from 'react-native';
 import { fireEvent, render, within } from '@testing-library/react-native';
 
+import { ContentPanel } from '../content-panel';
 import { ScreenScrollView } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
@@ -171,6 +172,29 @@ describe('navigation convenience with document layout on web', () => {
         expect(node.type).not.toBe(ReactNative.ScrollView);
       }
     }
+  });
+
+  it.each([390, 1440])('paints the full document frame for short content at width %s', width => {
+    setWidth(width);
+    const screen = renderIn(<AppShell testID="short" variant="feed" panel scroll="document" gutter={8}
+      navigationAlign="content" sidebar={{ items: NAV, surface: 'plain' }} navFrom={700}>
+      <ReactNative.Text>Short</ReactNative.Text>
+    </AppShell>);
+    const panel = screen.UNSAFE_root.findByType((ContentPanel as unknown as { type: React.ComponentType }).type);
+    expect(panel.props.surfaceStyle.minHeight).toBe(width < 700 ? 'calc(100dvh - 0px)' : 'calc(100dvh - 16px)');
+    expect(panel.props.surfaceStyle.height).toBeUndefined();
+  });
+  it('subtracts a measured external header once, but keeps an internal header inside the minimum', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="external" variant="feed" panel scroll="document" gutter={8}
+      topBarVisibility="always" topBar={<ReactNative.Text>External</ReactNative.Text>}
+      header={<ReactNative.Text>Internal</ReactNative.Text>} sidebar={{ items: NAV }}>
+      <ReactNative.Text>Short</ReactNative.Text>
+    </AppShell>);
+    fireEvent(screen.getByTestId('external-top-bar'), 'layout', { nativeEvent: { layout: { height: 60 } } });
+    const panel = screen.UNSAFE_root.findByType((ContentPanel as unknown as { type: React.ComponentType }).type);
+    expect(panel.props.surfaceStyle.minHeight).toBe('calc(100dvh - 76px)');
+    expect(panel.props.overlayInset).toEqual({ top: 68, bottom: 8 });
   });
 
   it('keeps the primary action above a custom bottom bar', () => {

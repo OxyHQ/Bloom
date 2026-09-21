@@ -72,7 +72,7 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
     {blur && material === 'translucent' && <Blur direction="bottom" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottom + footprint + BLUR_BLEED }} />}
     <Animated.View testID={testID ? `${testID}-row` : undefined} onLayout={event => setRowWidth(event.nativeEvent.layout.width)} pointerEvents="box-none" style={[{ justifyContent: items.length ? 'center' : 'flex-end', alignSelf: 'center', width: '100%', maxWidth, paddingLeft: 12, paddingRight: 12, marginBottom: bottom, flexDirection: 'row', alignItems: 'center' }, rowStyle]}>
       {items.length > 0 && <View testID={testID ? `${testID}-navigation` : undefined} style={{ width: navigationWidth, minWidth: 0 }}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minWidth: '100%' }}><View style={{ width: Math.max(navigationWidth, items.length * 44 + 8) }}><Navigation scrollable={navigationWidth > 0 && navigationWidth < items.length * 44 + 8} embedded blur={false} material={material} minimizeProgress={progress}
-        activeProgress={activeProgress} onIndexLongPress={index => { if (items[index]) onValueLongPress?.(items[index].name); }}
+        activeProgress={activeProgress} onIndexLongPress={onValueLongPress ? index => { if (items[index]) onValueLongPress(items[index].name); } : undefined}
         activeIndex={items.findIndex(item => item.name === value)} onIndexChange={index => { if (items[index]) onValueChange(items[index].name); }}>
         {items.map((item, index) => <Item key={item.name} item={item} index={index} />)}
       </Navigation></View></ScrollView></View>}

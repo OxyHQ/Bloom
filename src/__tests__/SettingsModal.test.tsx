@@ -110,9 +110,17 @@ describe('SettingsModal shell', () => {
     expect(rail).toMatchObject({ width: 274, borderRightWidth: 1 });
     const railContent = resolvedStyle(getByTestId('settings-rail').props.contentContainerStyle);
     expect(railContent).toMatchObject({ padding: 10, gap: 20 });
-    const titleRow = resolvedStyle(getByTestId('settings-title-row').props.style);
-    expect(titleRow).toMatchObject({ paddingLeft: 32, paddingRight: 32, paddingTop: 32, paddingBottom: 12 });
-    expect(titleRow.paddingHorizontal).toBeUndefined();
+    expect(getByTestId('settings-header')).toBeTruthy();
+  });
+
+  it('renders the shared header title and action island without extra safe-area padding or scrim', () => {
+    const { getByTestId, queryByTestId } = renderWithTheme(<Controlled />);
+    flush();
+    expect(resolvedStyle(getByTestId('settings-header').props.style).paddingTop).toBe(0);
+    expect(getByTestId('settings-header-title').props['aria-level']).toBe(2);
+    expect(getByTestId('settings-header-actions')).toBeTruthy();
+    expect(resolvedStyle(getByTestId('settings-header-scrim').props.style).opacity).toBe(0);
+    expect(queryByTestId('settings-title-row')).toBeNull();
   });
 
   it('names the dialog and its controls, and marks the selected rail row', () => {
@@ -184,10 +192,7 @@ describe('SettingsModal responsive layout', () => {
     const { getByTestId } = renderWithTheme(<Controlled />);
     flush();
     expect(resolvedStyle(getByTestId('settings-rail').props.style)).toMatchObject({ width: 220 });
-    expect(resolvedStyle(getByTestId('settings-title-row').props.style)).toMatchObject({
-      paddingLeft: 24,
-      paddingTop: 24,
-    });
+    expect(getByTestId('settings-header')).toBeTruthy();
     // Still a floating panel with the viewport gutter.
     expect(resolvedStyle(getByTestId('settings').props.style)).toMatchObject({ width: 736, borderRadius: 24 });
   });
@@ -201,13 +206,13 @@ describe('SettingsModal responsive layout', () => {
     // The list: every section, nothing selected, no page body yet, no back button.
     expect(getByTestId('settings-nav-general').props.accessibilityState).toMatchObject({ selected: false });
     expect(queryByText('general body')).toBeNull();
-    expect(queryByTestId('settings-back')).toBeNull();
+    expect(queryByTestId('settings-header-back')).toBeNull();
 
     pressHost(getByTestId('settings-nav-general'));
     expect(getByText('general body')).toBeTruthy();
     expect(queryByTestId('settings-rail')).toBeNull();
 
-    pressHost(getByTestId('settings-back'));
+    pressHost(getByTestId('settings-header-back'));
     expect(queryByText('general body')).toBeNull();
     expect(getByTestId('settings-rail')).toBeTruthy();
   });
@@ -220,7 +225,7 @@ describe('SettingsModal responsive layout', () => {
     );
     flush();
     expect(queryByText('general body')).toBeTruthy();
-    pressHost(getByTestId('settings-back'));
+    pressHost(getByTestId('settings-header-back'));
     expect(queryByText('general body')).toBeNull();
     const renderModal = (open: boolean, initialView: 'navigation' | 'page') => (
       <BloomThemeProvider mode="light" colorPreset="teal">

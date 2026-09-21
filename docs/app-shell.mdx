@@ -78,6 +78,13 @@ keeps the same content node mounted and does not replace the document scroller.
 
 **The panel occupies the screen either way — what differs is what scrolls.**
 
+In document mode the painted surface has a viewport minimum height, subtracting
+the shell insets and any measured external top bar. Short pages fill the frame;
+long pages keep growing with the document. Header and bottom-bar clearance inside
+the surface count toward that minimum, so empty pages do not gain extra scroll.
+Reveal drawers move the bottom-bar and FAB slots with the page in both document
+and fixed modes; the shell remains their sole safe-area and measurement owner.
+
 - `scroll="document"` (the default): the page scrolls, and the panel's frame is
   a screen-tall sticky rectangle pinned at the shell's own `gutter`, so the
   panel reads as a surface filling the window while the content moves inside

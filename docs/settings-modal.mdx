@@ -6,7 +6,7 @@ order: 97
 
 # SettingsModal
 
-An 871×614 panel with a 274px navigation rail on the left and a titled, scrolling page on the right, plus the row chrome and the four pages it ships (General, Profile, Tools, Storage). Everything the demo hardcodes — rail groups, plan, servers, files — comes in as props.
+An 871×614 panel with a 274px navigation rail on the left and a titled, scrolling page on the right, using the shared floating `PageHeader` for its title, back and close controls, plus the row chrome and the four pages it ships (General, Profile, Tools, Storage). Everything the demo hardcodes — rail groups, plan, servers, files — comes in as props.
 
 ```tsx
 import { useDialogControl } from '@oxy.so/bloom/dialog';
@@ -61,7 +61,7 @@ const control = useDialogControl();
 
 Drive it like `Dialog`: **`control` from `useDialogControl()`** is the preferred path (`control.open()` / `control.close()`), and `open` + `onClose` is the controlled alternative (in controlled mode `onClose` is a close *request* — backdrop, close button, Escape, Android back — and you flip `open`). On compact screens, `initialView="page"` opens the selected page directly (useful for deep links); the default `"navigation"` opens the section list. Back returns to the list in either case. The choice resets on each open and leaves desktop navigation unchanged. The page shown on every open is `defaultPage` (or the first rail row with a `page`); `page` + `onPageChange` control it.
 
-Rail rows with a `page` navigate; rows without one call their `onPress` (or are static). The Storage page sets `compactTitle` — its page already reserves headroom for the upload badge, so the title row's bottom padding drops from 12 to 6.
+Rail rows with a `page` navigate; rows without one call their `onPress` (or are static). The Storage page sets `compactTitle` — its page already reserves headroom for the upload badge, so the content's gap below the shared header drops from 12 to 6.
 
 ## Responsive layout
 
@@ -71,9 +71,13 @@ The modal's base size is a fixed 871×614 panel. Bloom adapts it to the window w
 |---|---|---|
 | `regular` | ≥ 900px | The base panel: 274px rail, 32px insets, radius 24. |
 | `medium` | 640–899px | Same panel inside a 16px gutter; rail 220px, insets 24px. |
-| `compact` | < 640px | Full screen (no radius or gutter, content inside the safe area). Two levels: the section list with chevrons, then the page pushed over it with a back button in a 56px title bar. Android's back button returns to the list before it closes. The panel rises 16px instead of scaling from .85. |
+| `compact` | < 640px | Full screen (no radius or gutter, content inside the safe area). Two levels: the section list with chevrons, then the page pushed over it with the shared `PageHeader` back island. Android's back button returns to the list before it closes. The panel rises 16px instead of scaling from .85. |
 
 In `compact`, `SettingsRow` lets its control wrap under the label when both do not fit (a switch stays beside it, a `SettingsValueField` drops below and fills the row), and the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`).
+
+## Shared header
+
+Every layout uses `PageHeader` with its floating islands. A `ButtonGroupItem` supplies the close action; compact pages use its native back action to return to sections. The modal owns safe-area padding once, so the header uses `safeArea={false}`. It sits inline above the scrolling content (`sticky={false}`, `scrim="none"`); a local zero scroll offset prevents the document behind it from changing its paint. `PageHeader` owns header sizing and horizontal insets, and the modal owns only content spacing. The content's existing fade remains inside its scroll viewport.
 
 ## Why it is not a `Dialog`
 

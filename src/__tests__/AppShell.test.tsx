@@ -97,6 +97,19 @@ describe('AppShell', () => {
     expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it.each(['fixed', 'document'] as const)('dashboard %s reveal moves its bottom slot with the page', (scroll) => {
+    setWidth(390);
+    const screen = renderIn(
+      <AppShell testID="shell" drawer="reveal" scroll={scroll} drawerOpen sidebar={{ items: NAV }}
+        bottomBar={<ReactNative.Text>Navigation</ReactNative.Text>} />,
+    );
+    const host = screen.getByTestId('shell-reveal-bars');
+    expect(resolvedStyle(host.props.style)).toMatchObject({ transform: [{ translateX: 272 }], top: 0, bottom: 0 });
+    expect(host.props.pointerEvents).toBe('none');
+    expect(resolvedStyle(screen.getByTestId('shell-bottom-bar').props.style).position).toBe('absolute');
+    fireEvent.press(screen.getByTestId('shell-veil'));
+  });
+
   it('narrow reveal: the rail is mounted flat beneath and the veil closes it', () => {
     setWidth(700);
     const onDrawerOpenChange = jest.fn();

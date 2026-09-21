@@ -33,11 +33,11 @@ export interface SettingsNavGroup {
 
 /** One page of the content pane. */
 export interface SettingsModalPage {
-  /** Heading of the fixed title row. */
+  /** Heading of the shared PageHeader. */
   title: string;
   content: ReactNode;
   /**
-   * Used on the Storage page: a 6px title gap instead of 12px, because the page
+   * Used on the Storage page: a 6px gap below PageHeader instead of 12px, because the page
    * already carries 10px of headroom for the dropzone's progress badge.
    */
   compactTitle?: boolean;

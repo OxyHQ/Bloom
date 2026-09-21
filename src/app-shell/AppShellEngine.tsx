@@ -17,7 +17,7 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Sidebar } from '../sidebar';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import { WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
+import { webViewportHeightMinus, WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { AppShellBottomBar, AppShellFloatingAction, AppShellTopBar, useShellInsets } from './AppShellBars';
 import { AppShellHeader } from './AppShellHeader';
@@ -221,7 +221,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     return () => document.removeEventListener('keydown', dismiss);
   }, [isOpen, drawerStyle, setOpen]);
 
-  const feedRevealAvailable = variant === 'feed' && drawerStyle === 'reveal' && drawerAvailable;
+  const revealAvailable = drawerStyle === 'reveal' && drawerAvailable;
+  const feedRevealAvailable = variant === 'feed' && revealAvailable;
   const feedRevealed = feedRevealAvailable && isOpen;
 
   const shell = useMemo(
@@ -271,6 +272,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const showTopBar = topBar != null && barActive(topBarVisibility);
   const showBottomBar = bottomBar != null && barActive(bottomBarVisibility);
   const showFloatingAction = floatingAction != null;
+  const [topBarHeight, setTopBarHeight] = useState(0);
   const [bottomBarHeight, setBottomBarHeight] = useState(0);
   const [floatingActionHeight, setFloatingActionHeight] = useState(0);
   // Both slots are MEASURED rather than assumed: a bar's height is its
@@ -285,7 +287,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     <SurfaceLevelProvider level={compactPanel ? 1 : 0} fill={compactPanel ? theme.colors.card : background}>
       {showBottomBar ? (
         <AppShellBottomBar
-          doc={doc && !feedRevealAvailable}
+          doc={doc && !revealAvailable}
           onHeightChange={setBottomBarHeight}
           testID={testID ? `${testID}-bottom-bar` : undefined}
         >
@@ -294,7 +296,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
       ) : null}
       {showFloatingAction ? (
         <AppShellFloatingAction
-          doc={doc && !feedRevealAvailable}
+          doc={doc && !revealAvailable}
           offset={bottomEdge + gutter}
           gutter={gutter}
           placement={floatingActionPlacement}
@@ -308,7 +310,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   );
 
   const topBarNode = showTopBar ? (
-    <AppShellTopBar doc={doc} testID={testID ? `${testID}-top-bar` : undefined}>
+    <AppShellTopBar doc={doc} onHeightChange={setTopBarHeight} testID={testID ? `${testID}-top-bar` : undefined}>
       {topBar}
     </AppShellTopBar>
   ) : null;
@@ -492,7 +494,15 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
             ) : null}
           </Animated.View>
           {overlay}
-          {bars}
+          {drawerAvailable ? (
+            <Animated.View
+              testID={testID ? `${testID}-reveal-bars` : undefined}
+              pointerEvents={isOpen ? 'none' : 'box-none'}
+              style={[{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, left: 0, right: 0, overflow: 'hidden' }, pageStyle]}
+            >
+              {bars}
+            </Animated.View>
+          ) : bars}
         </View>
       </AppShellProvider>
     );
@@ -512,6 +522,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
   const contentAligned = navigationAlign === 'content' && centred;
   // Plain navigation belongs to the viewport; only the reading surfaces are inset.
+  const documentPanelInset = feedRevealed ? 12 : compactPanel ? 0 : gutter;
+  const externalTopHeight = showTopBar ? topBarHeight : 0;
   const plainDocumentFrame = doc && contentAligned && flowSidebar?.surface === 'plain' && !topBarNode;
   const readingGap = Math.max(0, asideGap ?? columnGap);
   const readingGroupWidth = contentWidth + (asideBeside ? asideWidth + readingGap : 0);
@@ -592,10 +604,13 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               // exactly where the panel starts. Left at the 8px default it
               // would sit 8px above the panel's real top edge and snap down on
               // the first scroll — the panel appearing to breathe.
-              overlayInset={feedRevealed ? 12 : gutter}
+              overlayInset={{ top: externalTopHeight + documentPanelInset, bottom: documentPanelInset }}
               // The panel's own `flex-1` (basis 0) would collapse to nothing in
               // a document-flow column, which has no free space to distribute.
-              surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
+              surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto',
+                // The viewport frame must have a painted surface even when the
+                // page is short. A minimum still lets long documents grow.
+                minHeight: webViewportHeightMinus(externalTopHeight + documentPanelInset * 2) }}
               contentStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
             >
               {/* Header chrome spans the panel. Its own title/action insets

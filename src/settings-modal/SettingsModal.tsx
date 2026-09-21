@@ -26,9 +26,10 @@ import Animated, {
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
+import { PageHeader } from '../page-header';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { VerticalFade } from './SettingsArt';
 import { Backdrop, OverlayRoot } from '../overlay';
@@ -58,9 +59,7 @@ import { IS_WEB, useSettingsWebCss } from './web-css';
  *             20px icon (icon/secondary) + 8 + body-medium label
  *             (selected: background/secondary/hover + text/primary;
  *             hover: background/secondary/hover @ 60%)
- *   content   title row px 32 pt 32 pb 12 (Storage 6), title-3-medium +
- *             24px round close (background/tertiary, hover tertiary/hover,
- *             16px glyph); the page scrolls under a 40px top fade that eases
+ *   content   shared inline PageHeader and close ButtonGroup island; the page scrolls under a 40px top fade that eases
  *             in (200ms) once it is scrolled; px 32 pb 32
  *   toast     "Saved" pill straddling the panel's bottom edge: 1px
  *             border/button, background/primary, py 4 pr 10 pl 6, gap 4,
@@ -401,7 +400,7 @@ export function SettingsModal({
                   {layout === 'compact' ? (
                     compactPageOpen && pageConfig ? (
                       <View style={styles.content}>
-                        <CompactHeader
+                        <SettingsHeader
                           title={pageConfig.title}
                           onBack={() => setCompactPageOpen(false)}
                           backLabel={labels?.back ?? 'Back'}
@@ -422,7 +421,7 @@ export function SettingsModal({
                       </View>
                     ) : (
                       <View style={styles.content}>
-                        <CompactHeader
+                        <SettingsHeader
                           title={labels?.dialog ?? 'Settings'}
                           closeLabel={closeLabel}
                           onClose={requestClose}
@@ -452,36 +451,18 @@ export function SettingsModal({
                         testID={testID}
                       />
                       <View style={styles.content}>
-                        <View
-                          style={[
-                            styles.titleRow,
-                            {
-                              paddingLeft: CONTENT_INSET[layout],
-                              paddingRight: CONTENT_INSET[layout],
-                              paddingTop: CONTENT_INSET[layout],
-                              paddingBottom: pageConfig?.compactTitle ? 6 : 12,
-                            },
-                          ]}
-                          testID={testID ? `${testID}-title-row` : undefined}
-                        >
-                          <Text
-                            variant="title-3-medium"
-                            role="heading"
-                            style={{ color: palette.text }}
-                          >
-                            {pageConfig?.title ?? ''}
-                          </Text>
-                          <SettingsCloseButton
-                            label={closeLabel}
-                            onPress={requestClose}
-                            palette={palette}
-                            testID={testID ? `${testID}-close` : undefined}
-                          />
-                        </View>
+                        <SettingsHeader
+                          title={pageConfig?.title ?? ''}
+                          closeLabel={closeLabel}
+                          onClose={requestClose}
+                          palette={palette}
+                          testID={testID}
+                        />
                         <PageScroller
                           key={currentPage}
                           palette={palette}
                           inset={CONTENT_INSET[layout]}
+                          insetTop={pageConfig?.compactTitle ? 6 : 12}
                           testID={testID}
                         >
                           {pageConfig?.content}
@@ -641,42 +622,8 @@ function RailRow({
 //  Close button, scroller, toast
 // ---------------------------------------------------------------------------
 
-function SettingsCloseButton({
-  label,
-  onPress,
-  palette,
-  testID,
-}: {
-  label: string;
-  onPress: () => void;
-  palette: SettingsPalette;
-  testID?: string;
-}) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <Pressable
-      role="button"
-      accessibilityLabel={label}
-      {...webDataSet({ bloomSettingsPress: '' })}
-      onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      testID={testID}
-      style={[
-        styles.close,
-        { backgroundColor: hovered ? palette.tertiaryHover : palette.tertiary },
-      ]}
-    >
-      <RiCloseLine width={16} height={16} fill={palette.iconSecondary} />
-    </Pressable>
-  );
-}
-
-/**
- * The `compact` title bar: optional back chevron, the title, the close button —
- * 56px, the page's 16px inset, hairline under it.
- */
-function CompactHeader({
+/** Shared header on every layout; the modal already owns safe-area insets. */
+function SettingsHeader({
   title,
   onBack,
   backLabel,
@@ -693,39 +640,34 @@ function CompactHeader({
   palette: SettingsPalette;
   testID?: string;
 }) {
+  // Inline chrome does not reveal with scroll. An explicit local offset keeps
+  // the page behind the modal from influencing this header's paint or title.
+  const scrollY = useSharedValue(0);
   return (
-    <View
-      style={[styles.compactHeader, { borderBottomColor: palette.separator }]}
-      testID={testID ? `${testID}-title-row` : undefined}
-    >
-      {onBack ? (
-        <Pressable
-          role="button"
-          accessibilityLabel={backLabel}
-          {...webDataSet({ bloomSettingsPress: '' })}
-          onPress={onBack}
-          hitSlop={8}
-          testID={testID ? `${testID}-back` : undefined}
-          style={styles.compactBack}
-        >
-          <RiArrowLeftSLine width={24} height={24} fill={palette.text} />
-        </Pressable>
-      ) : null}
-      <Text
-        variant="headline-medium"
-        role="heading"
-        numberOfLines={1}
-        style={[styles.compactTitle, { color: palette.text }]}
-      >
-        {title}
-      </Text>
-      <SettingsCloseButton
-        label={closeLabel}
-        onPress={onClose}
-        palette={palette}
-        testID={testID ? `${testID}-close` : undefined}
-      />
-    </View>
+    <PageHeader
+      title={title}
+      headingLevel={2}
+      onBack={onBack}
+      backLabel={backLabel}
+      safeArea={false}
+      sticky={false}
+      placement="inline"
+      scrim="none"
+      scrimColor={palette.full}
+      scrollY={scrollY}
+      actions={
+        <ButtonGroup accessibilityLabel={closeLabel}>
+          <ButtonGroupItem
+            iconOnly
+            leadingIcon={RiCloseLine}
+            accessibilityLabel={closeLabel}
+            onPress={onClose}
+            testID={testID ? `${testID}-close` : undefined}
+          />
+        </ButtonGroup>
+      }
+      testID={testID ? `${testID}-header` : undefined}
+    />
   );
 }
 
@@ -739,7 +681,7 @@ function PageScroller({
   children: React.ReactNode;
   palette: SettingsPalette;
   inset: number;
-  /** Top inset — only the compact page, which has no title row above its content. */
+  /** Content gap below PageHeader; desktop Storage uses the compact 6px gap. */
   insetTop?: number;
   testID?: string;
 }) {
@@ -868,27 +810,6 @@ const styles = StyleSheet.create({
   railChevron: {
     marginLeft: 'auto',
   },
-  compactHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    height: 56,
-    paddingLeft: 16,
-    paddingRight: 16,
-    borderBottomWidth: 1,
-  },
-  compactBack: {
-    width: 32,
-    height: 32,
-    marginLeft: -8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 9999,
-  },
-  compactTitle: {
-    flex: 1,
-    minWidth: 0,
-  },
   panel: {
     flexDirection: 'row',
     borderRadius: 24,
@@ -926,18 +847,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     minWidth: 0,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  close: {
-    width: 24,
-    height: 24,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   scrollHost: {
     flex: 1,

@@ -153,6 +153,7 @@ AppShellFloatingAction.displayName = 'AppShellFloatingAction';
 
 export interface AppShellTopBarProps {
   children: React.ReactNode;
+  onHeightChange?: (height: number) => void;
   doc: boolean;
   testID?: string;
 }
@@ -166,11 +167,11 @@ export interface AppShellTopBarProps {
  * only as far as `top: 0`); in `container`/`fixed` and on native it is simply
  * outside the scroller, which pins it by construction.
  */
-const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({ children, doc, testID }) => {
+const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({ children, doc, testID, onHeightChange }) => {
   const insets = useShellInsets();
   const pinned: WebCssStyle = doc ? { position: WEB_POSITION_STICKY, top: 0 } : {};
   return (
-    <View testID={testID} style={[{ zIndex: Z_INDEX.floating, paddingTop: insets.top }, pinned]}>
+    <View testID={testID} onLayout={event => onHeightChange?.(event.nativeEvent.layout.height)} style={[{ zIndex: Z_INDEX.floating, paddingTop: insets.top }, pinned]}>
       {children}
     </View>
   );
