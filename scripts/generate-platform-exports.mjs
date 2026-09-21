@@ -235,6 +235,11 @@ const SUBPATHS = /** @type {const} */ ([
   ['./map-marker', 'map-marker/index.ts'],
   ['./place-card', 'place-card/index.ts'],
   ['./map-controls', 'map-controls/index.ts'],
+  // Drawn ON the map: the blue dot and its heading cone, the guidance while it
+  // is happening, and the credit and scale the data's licence requires.
+  ['./location-puck', 'location-puck/index.ts'],
+  ['./navigation-banner', 'navigation-banner/index.ts'],
+  ['./map-attribution', 'map-attribution/index.ts'],
   // Commerce: the four things a maps, a courier and a food app all need.
   ['./order-status', 'order-status/index.ts'],
   ['./price-breakdown', 'price-breakdown/index.ts'],

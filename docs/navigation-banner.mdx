@@ -1,0 +1,184 @@
+---
+title: NavigationBanner
+description: Guidance while it is happening — the next maneuver, the lanes, the posted limit, and the strip that ends it.
+order: 138
+---
+
+# NavigationBanner
+
+`@oxy.so/bloom/navigation-banner`
+
+`directions` is the route BEFORE you set off: the alternatives, the summary, the
+step list. This is the route while you are on it — one maneuver at a time, over
+a map, at arm's length.
+
+```tsx
+import {
+  ArrivalBar,
+  LaneGuidance,
+  NavigationBanner,
+  SpeedLimitPill,
+} from '@oxy.so/bloom/navigation-banner';
+
+<NavigationBanner
+  maneuver="right"
+  distance="400 m"
+  instruction="Carrer del Roure"
+  thenManeuver="left"
+  then="onto Passatge de l'Om"
+>
+  <LaneGuidance lanes={lanes} />
+</NavigationBanner>
+```
+
+## It reuses `directions`' maneuvers, it does not restate them
+
+`maneuver` is `DirectionsManeuver` and the glyph comes from
+`DIRECTIONS_MANEUVER_ICON`. A banner with its own arrow set would be a second
+opinion about what "slight right" looks like, drawn next to a step list that
+already had one — and the two would drift at the first icon change. The
+announcement uses `DIRECTIONS_MANEUVER_LABELS` for the same reason.
+
+`LaneDirection` is a SUBSET of the same vocabulary: a lane arrow is a maneuver
+drawn small, with the members that make no sense painted on tarmac (`depart`,
+`arrive`, `board`, …) left out.
+
+## The pane is a `GlassIsland`, at a surface radius
+
+Guidance is drawn over tiles Bloom does not own, and the island is the one
+material in the library priced for that — a translucent pane that takes its fill
+from a surface Bloom DOES own, so the text on it is legible whether the map
+underneath is a night satellite tile or a white street map.
+
+It is asked for `radius: 16` rather than its default capsule. A banner is a
+surface; the pill rung belongs to button-like controls.
+
+The island also mounts the `ControlSurface` the controls inside it read, which
+is why nothing here writes `variant="glass"` on anything.
+
+## The row
+
+| part | rung |
+| --- | --- |
+| tile | 56 square, 12 radius, the state's tone as a tint, the glyph at 40 in that tone's accent |
+| headline | `title-2-semibold`, TABULAR — the distance |
+| instruction | `headline-medium`, up to two lines — the street |
+| then | `body-2-medium` behind a full-bleed rule |
+| children | behind a second rule |
+
+The distance is the figure and the street is under it, because a driver reads
+"how far" first and "onto what" second. Without a distance the street is
+promoted to the figure rung rather than sitting small under an empty line —
+which is what an arrival banner ("Arriving at Plaça de les Bruixes") looks like.
+
+Tabular numerals matter more here than anywhere else in Bloom: the distance
+counts down continuously, and proportional digits make the street name under it
+shuffle sideways several times a second.
+
+## `off-route` and `rerouting` are this component
+
+Not a second surface. They take the same strip, in the same place, at the same
+moment — a different pane appearing where this one was is a jump, and the driver
+has to re-find the thing they were already reading.
+
+What the state changes:
+
+| state | glyph | tone | headline |
+| --- | --- | --- | --- |
+| `guiding` | the maneuver | `primary` | the distance |
+| `off-route` | a warning | `error` | "Off route" |
+| `rerouting` | a loop | `warning` | "Finding a new route" |
+
+`rerouting` is deliberately NOT the error tone. Nothing is wrong yet, the app is
+working, and a red banner at that moment tells a driver to act when the only
+correct action is to keep driving.
+
+In both states the maneuver stops being announced. A reader told to turn right
+while the car is off the route has been told the one thing that is no longer
+true.
+
+## It is one utterance
+
+The glyph is the only thing on screen that says which way to turn, and a glyph
+says nothing aloud. So the maneuver row is a single `img` named by
+`describeNavigationBanner` — "400 m, Turn right, Carrer del Roure, then turn
+left onto Passatge de l'Om" — with its drawn text hidden from assistive
+technology so the distance is not read twice.
+
+`children` sit OUTSIDE that name. A lane row and a speed sign each announce
+themselves, and folding them into the banner's sentence would make one
+four-clause utterance that changes every few seconds.
+
+## LaneGuidance
+
+Lanes left to right as the driver sees them, numbered from 1 in the
+announcement, because that is how you count them through a windscreen.
+
+- A lane you may use takes the accent's tint; one you may not takes no fill at
+  all. Two levels, not three: the question is binary.
+- `preferred` picks the one arrow to take from an allowed lane and leaves its
+  siblings at the quiet rung — a lane that also goes straight on is still the
+  lane you want.
+- A quiet arrow sits at the GRAPHICAL contrast rung (3:1), not a text one. It is
+  a glyph, and flooring it at text contrast would make the lanes shout over the
+  maneuver above them.
+- A lane with several arrows grows sideways rather than stacking them. A cell
+  taller than its neighbours breaks the count.
+
+The row announces "Lane guidance, 4 lanes, use lane 3 and lane 4", and still
+announces the count when none of them is yours.
+
+## SpeedLimitPill
+
+A 48 circle with a 4 ring, on the same chrome surface every floating map piece
+paints, with `shadow-s`. It is a CIRCLE because it is a sign, not a capsule of
+text.
+
+`exceeded` FILLS the sign with its tone and takes that fill's own on-colour for
+the number. A sign that merely got brighter is a sign a driver reads as the same
+sign; the change has to survive a glance, in daylight, at an angle. Nothing
+animates: a warning that flashes in a car asks for attention the road needs.
+
+`tone` defaults to `error` and exists because not every jurisdiction posts a red
+ring.
+
+## ArrivalBar
+
+The bottom strip: when you get there, how long is left, how far is left, and the
+way out.
+
+Three readings of EQUAL weight, each `title-3-semibold` and tabular over its own
+caption. Peers because the driver is asking a different question of each one and
+none of them is the answer to the other two.
+
+The ending action is `Button` in `destructive` **at the 44 rung** — larger than
+looks right in a screenshot, because it is pressed by a thumb, in a moving car,
+at the bottom of the screen. It keeps its own chrome inside the island on
+purpose: a control painted flush with the pane would be the quietest thing on a
+strip whose only action stops the navigation.
+
+### Why this is not `OrderStatusBar`
+
+They look alike and they answer differently shaped questions, and the shape is
+the whole component.
+
+`OrderStatusBar` has ONE headline with an arrival reading beside it, a glyph
+tile, a quiet second line and a progress meter. It says "here is what is
+happening, and here is how far along it is" — it is for a journey you are
+WAITING for. `ArrivalBar` has three readings of equal weight, no state and no
+meter: the journey is happening, you are on it, and you pick whichever of the
+three you wanted.
+
+Giving `OrderStatusBar` a three-figure mode would be a second layout behind a
+prop; giving `ArrivalBar` a status line and a meter would be a tracker for a
+trip the user is driving.
+
+What they do share is written down rather than duplicated: the same surface
+rung, the same tabular figures, and the same refusal to compute anything —
+neither reads a clock, formats a duration or knows what a kilometre is.
+
+## Nothing here computes
+
+Every string is pre-formatted by the app: the distance, the ETA, the remaining
+time, the limit. There is no clock, no unit conversion and no route state
+machine in this family.

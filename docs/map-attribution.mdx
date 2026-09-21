@@ -1,0 +1,88 @@
+---
+title: MapAttribution
+description: The small print a map's licence requires — the data credit, a scale bar, and when the tiles were last refreshed.
+order: 139
+---
+
+# MapAttribution
+
+`@oxy.so/bloom/map-attribution`
+
+The quietest thing on the map, and the one part of it that is not optional. Tile
+providers require a credit; a map without a scale cannot be read as a
+measurement; and a reader deciding whether to trust what they are looking at
+wants to know when it was last refreshed.
+
+```tsx
+import { MapAttribution } from '@oxy.so/bloom/map-attribution';
+
+<MapAttribution
+  credit="Map data © Open Map Project contributors"
+  scales={[{ width: 88, label: '500 m' }, { width: 108, label: '2000 ft' }]}
+  updated="Updated 12 March"
+  onPressCredit={openLicence}
+/>
+```
+
+## The credit is required and never defaulted
+
+Every other string in this family has a sensible English default. This one does
+not, and that is the point: a component that invented a credit would put a
+WRONG attribution on a map, which is a licence problem rather than a visual one.
+The app passes what its provider's licence says, verbatim.
+
+It also never truncates. The row wraps instead — a credit that silently lost its
+second half on a narrow phone is the same failure as not drawing it.
+
+With `onPressCredit` the credit becomes `Button`'s `link` variant at the same
+type step: running text with the library's own focus ring and hover underline,
+rather than a second pressable with a ring of its own. Give it a `creditLabel`
+when the drawn words are not a sentence ("© OMP").
+
+## Legibility over content Bloom cannot see
+
+The map can be a night satellite tile, a white street map or a photograph, so no
+text rung can be floored against it. The strip sits on a `GlassIsland` instead —
+a translucent pane whose fill is rung 1 of the surface ladder, a surface Bloom
+DOES own — and every rung here is measured against THAT.
+
+`variant="inline"` drops the pane and draws the words and nothing else, with no
+padding at all, for a strip already inside a surface the app painted. That is
+also how `MapScaleBar` is mounted inside `MapAttribution`: one pane for the whole
+strip, never a pane inside a pane.
+
+The rungs:
+
+| part | rung | why |
+| --- | --- | --- |
+| credit | `textSecondary` (7:1) | 11px, and a licence requirement |
+| updated | `textTertiary` (4.5:1) | quieter, still AA |
+| scale rule | `textGraphical` (3:1) | a LINE, not text |
+
+Flooring the rule at text contrast would make the quietest thing on the map the
+loudest thing on the strip.
+
+## MapScaleBar
+
+A measured span with a tick at each END, and what that span is worth. The ticks
+are what make it read as a measurement between two marks rather than as an
+underline.
+
+Two bars — metric over imperial — share a left edge and stack, so the eye
+compares them as one instrument rather than reading two.
+
+**It converts nothing.** Both the width in pixels and the formatted words come
+from the app, because only the app knows its projection: which round number of
+metres a given number of pixels is worth at this latitude and this zoom. A scale
+bar that guessed its own units would be a measuring instrument that measures the
+component rather than the map.
+
+The whole bar is one `img` named `"Scale, 500 m, 2000 ft"`. A bar and two ticks
+say nothing aloud, and "500 m" on its own is as likely to be a distance to
+somewhere as a scale.
+
+## What is not here
+
+No clock. `updated` is a string the app formatted — this component does not know
+what "3 days ago" means, and a component that computed it would be wrong for
+every locale it was not written in.
