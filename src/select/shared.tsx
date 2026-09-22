@@ -2,11 +2,13 @@
  * The parts of `Select` that are the SAME on both platforms, plus the contexts
  * the two forks publish.
  *
- * `SelectGroup`, `SelectLabel` and the two scroll buttons live here rather than
- * being written twice because nothing in them is platform-specific: a group is a
- * `role="group"` box, a label is a line of muted text, and the scroll buttons ask
+ * `SelectGroup`, `SelectLabel`, the two scroll buttons, the option's own text,
+ * its selection mark and the rule between groups live here rather than being
+ * written twice, because nothing in them is platform-specific: a group is a
+ * `role="group"` box, a label is a line of muted text, the scroll buttons ask
  * one context whether there is anything to scroll — a question native answers
- * "no" by never publishing the context at all.
+ * "no" by never publishing the context at all — and the last three read only
+ * the palette and the per-ITEM context, which both forks provide.
  *
  * The barrels export them from here directly, so each part still has exactly one
  * owner and neither fork re-exports the other's work.
@@ -14,10 +16,17 @@
 import React, { createContext, useContext } from 'react';
 import Svg, { Path } from 'react-native-svg';
 
-import { ROW_ICON_SIZE, ROW_LABEL_CLASS } from '../floating/constants';
+import {
+  ROW_ICON_SIZE,
+  ROW_INDICATOR_END_CLASS,
+  ROW_LABEL_CLASS,
+  SELECT_ITEM_TEXT_CLASS,
+  SELECT_SEPARATOR_CLASS,
+} from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
 import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
+import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { RiArrowDownSLine as ChevronDownIcon } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine as ChevronUpIcon } from '../icons/remix/RiArrowUpSLine';
 import {
@@ -28,6 +37,8 @@ import {
 import type {
   SelectGroupProps,
   SelectItemContextValue,
+  SelectItemIndicatorProps,
+  SelectItemTextProps,
   SelectLabelProps,
   SelectScrollButtonProps,
   SelectSize,
@@ -141,6 +152,7 @@ export function defaultItemValueExtractor(item: unknown): string {
 export const ItemContext = createContext<SelectItemContextValue>({
   selected: false,
   disabled: false,
+  size: 'md',
 });
 ItemContext.displayName = 'SelectItemContext';
 
@@ -261,3 +273,93 @@ export function SelectScrollDownButton({
   return <SelectScrollButton direction="down" className={className} style={style} />;
 }
 SelectScrollDownButton.displayName = 'SelectScrollDownButton';
+
+// ---------------------------------------------------------------------------
+// The option's own parts
+// ---------------------------------------------------------------------------
+
+/** The type ramp an option's label takes, per list size. */
+export const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
+
+/**
+ * An option's label. The selected option is marked by the check and the row
+ * highlight, so its text stays at the same weight as every other row's.
+ *
+ * The colour is inline ONLY without a caller `className`: an inline colour
+ * outranks a class on native, so a `text-*` utility would be silently dead.
+ */
+export function SelectItemText({ children, className, style }: SelectItemTextProps) {
+  const { disabled, size } = useSelectItemContext();
+  const palette = useMenuPalette();
+  return (
+    <StyledText
+      numberOfLines={1}
+      className={cx(
+        SELECT_ITEM_TEXT_CLASS[size],
+        menuTypeClass(VALUE_TYPE[size], className),
+        className && 'text-foreground',
+        className,
+      )}
+      style={[
+        menuType(VALUE_TYPE[size], className),
+        className ? null : { color: disabled ? palette.textDisabled : palette.text },
+        style,
+      ]}>
+      {children}
+    </StyledText>
+  );
+}
+SelectItemText.displayName = 'SelectItemText';
+
+/**
+ * The selection mark: `absolute right-2 flex size-3.5 items-center
+ * justify-center` holding a `size-4` check.
+ *
+ * A select's tick sits on the RIGHT — the opposite side from a menu's — which
+ * is what leaves the option's own text starting flush at `pl-2` like every
+ * other line in the panel. Bloom once drew a `RadioIndicator` in a left gutter
+ * in the row's FLOW, so a select and a dropdown menu disagreed about both the
+ * mark and the edge it belongs on, and native and web disagreed with each
+ * other on top of that.
+ */
+export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
+  const palette = useMenuPalette();
+  const { selected } = useSelectItemContext();
+
+  if (!selected) return null;
+
+  return (
+    <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
+      <IconComponent
+        width={ROW_ICON_SIZE}
+        height={ROW_ICON_SIZE}
+        fill={palette.textSecondary}
+      />
+    </StyledView>
+  );
+}
+SelectItemIndicator.displayName = 'SelectItemIndicator';
+
+/**
+ * The rule between groups: `-mx-2 my-1.5 h-px bg-border-button-default`,
+ * bleeding back through the listbox's `p-2`. A FILLED 1px box, not a bottom
+ * border on a stretched one.
+ */
+export function SelectSeparator() {
+  const palette = useMenuPalette();
+  return (
+    <StyledView className={SELECT_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
+  );
+}
+SelectSeparator.displayName = 'SelectSeparator';
+
+/**
+ * The label a `SelectValue` shows for an item when the caller gave no
+ * `extractLabel`. Pure, and identical on both platforms.
+ */
+export function defaultExtractLabel(item: unknown): React.ReactNode {
+  if (item != null && typeof item === 'object' && 'label' in item) {
+    return (item as { label: React.ReactNode }).label;
+  }
+  return String(item);
+}

@@ -64,10 +64,18 @@ function Themed({ mode = 'light', children }: { mode?: 'light' | 'dark'; childre
 
 describe('classChromeOverrides', () => {
   it('reads the chrome properties a caller names, through variants and modifiers', () => {
-    expect([...classChromeOverrides('w-[200px] p-2')].sort()).toEqual(['padding', 'width']);
+    expect([...classChromeOverrides('w-[200px] p-2')].sort()).toEqual([
+      'paddingBottom',
+      'paddingLeft',
+      'paddingRight',
+      'paddingTop',
+      'width',
+    ]);
+    // `px-0` claims the SIDES only — the top and bottom defaults stay.
     expect([...classChromeOverrides('md:!px-0 dark:bg-red-500 rounded-xl shadow-none')].sort()).toEqual([
       'background',
-      'padding',
+      'paddingLeft',
+      'paddingRight',
       'radius',
       'shadow',
     ]);
@@ -85,8 +93,29 @@ describe('classChromeOverrides', () => {
     expect([...classChromeOverrides('border-red-500')]).toEqual(['borderColor']);
   });
 
-  it('ignores layout utilities the panel sets no default for', () => {
-    expect(classChromeOverrides('gap-2 flex-row items-center mt-1 min-h-10').size).toBe(0);
+  it('names the layout properties the panel PARTS set defaults for', () => {
+    // The panel itself sets no default for any of these, so
+    // `resolvePopoverSurfaceStyle` still ignores them (asserted below). The
+    // PARTS do — header/footer padding and gap, the separator's rule — so the
+    // scan has to see them or an inline default silently outranks the class.
+    expect([...classChromeOverrides('gap-2')]).toEqual(['gap']);
+    expect([...classChromeOverrides('flex-row')]).toEqual(['flexDirection']);
+    expect([...classChromeOverrides('items-center')]).toEqual(['alignItems']);
+    expect([...classChromeOverrides('mt-1')]).toEqual(['marginTop']);
+    // Per SIDE, because the utilities are: `px-4` says nothing about the top.
+    expect([...classChromeOverrides('px-4')]).toEqual(['paddingLeft', 'paddingRight']);
+    // `ps`/`pe` are the LOGICAL start and end — ONE side each, not the pair.
+    expect([...classChromeOverrides('ps-4')]).toEqual(['paddingLeft']);
+    expect([...classChromeOverrides('me-2')]).toEqual(['marginRight']);
+    expect([...classChromeOverrides('p-2')]).toEqual([
+      'paddingTop',
+      'paddingBottom',
+      'paddingLeft',
+      'paddingRight',
+    ]);
+    expect([...classChromeOverrides('h-px')]).toEqual(['height']);
+    expect([...classChromeOverrides('text-red-500')]).toEqual(['color']);
+    expect(classChromeOverrides('min-h-10').size).toBe(0);
     expect(classChromeOverrides(undefined).size).toBe(0);
   });
 });
@@ -237,6 +266,38 @@ describe('panel parts', () => {
     const description = resolvedStyle(screen.getByTestId('description').props.style);
     expect(description.color).toBe(p.textSecondary);
     expect(resolvedStyle(screen.getByTestId('label').props.style).color).toBe(p.textSecondary);
+  });
+
+  it('keeps a part default the caller did not name, and drops the one it did', () => {
+    const p = palette();
+    const screen = render(
+      <Themed>
+        <PopoverHeader testID="header" className="px-4">
+          <PopoverTitle testID="title" className="mt-1">Title</PopoverTitle>
+        </PopoverHeader>
+        <PopoverSeparator testID="separator" className="bg-red-500" />
+      </Themed>,
+    );
+
+    // `px-4` names the padding, so the 8px inline default steps aside — and
+    // the header's own row layout, which no utility here names, stays.
+    const header = resolvedStyle(screen.getByTestId('header').props.style);
+    expect(header.paddingLeft).toBeUndefined();
+    expect(header.paddingRight).toBeUndefined();
+    expect(header.paddingTop).toBe(4);
+    expect(header.flexDirection).toBe('row');
+
+    // `bg-*` names the fill: an inline `backgroundColor` would outrank it on
+    // web and the rule would be the palette colour whatever the caller wrote.
+    const separator = resolvedStyle(
+      screen.getByTestId('separator', { includeHiddenElements: true }).props.style,
+    );
+    expect(separator.backgroundColor).toBeUndefined();
+    expect(separator.height).toBe(1);
+
+    // And the other direction: `mt-1` is not a colour, so the title KEEPS it.
+    // The all-or-nothing guard this replaced dropped the colour for any class.
+    expect(resolvedStyle(screen.getByTestId('title').props.style).color).toBe(p.text);
   });
 
   it('applies no text colour default under a caller className', () => {

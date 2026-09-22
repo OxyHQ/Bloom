@@ -18,7 +18,7 @@ import {
   Collapsible,
   IS_WEB,
   MenuDivider,
-  menuPanelStyle,
+  SIDEBAR_MENU_PANEL,
   SidebarAvatarView,
   useSidebarWebCss,
   useSidebarCollapseProgress,
@@ -223,7 +223,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
         align="start"
         sideOffset={8}
         maxWidth={width - 32}
-        style={menuPanelStyle(palette)}
+        style={SIDEBAR_MENU_PANEL}
         testID={testID ? `${testID}-menu` : undefined}
       >
         <SidebarAccountMenuContent account={account} onSelect={() => setOpen(false)} />

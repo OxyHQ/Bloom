@@ -43,7 +43,7 @@ import { Button } from '@oxy.so/bloom/button';
 
 ## The panel
 
-`PopoverContent` is Bloom's floating surface — the one every menu, picker and account panel shares (`MENU_POPOVER_SURFACE`):
+`PopoverContent` is Bloom's floating surface — the one every menu, picker and account panel shares:
 
 | | |
 | --- | --- |
@@ -82,7 +82,9 @@ Every default is resolved INLINE, before the caller's `style`, so `style` overri
 <PopoverContent label="Event details" side="right" style={{ width: 302, borderRadius: 20 }}>
 ```
 
-`className` works too, and this is the part worth knowing. On web an inline style outranks every class, so an inline default would silently beat a caller's `w-[200px]`. `PopoverContent` reads which chrome properties the caller's utilities name — width (`w-*`, `size-*`), `max-w-*`, padding (`p-*`, `px-*`, …), `rounded-*`, border width (`border`, `border-0`, `border-x-2`), border colour (`border-red-500`), `bg-*`, `shadow-*`, `overflow-*`, through `md:`/`dark:` variants and `!` — and leaves THAT default out, so the class is the only rule for it:
+`className` works too, and this is the part worth knowing. On web an inline style outranks every class, so an inline default would silently beat a caller's `w-[200px]`. `PopoverContent` reads which chrome properties the caller's utilities name — width (`w-*`, `size-*`), `max-w-*`, padding (`p-*`, `px-*`, …), `rounded-*`, border width (`border`, `border-0`, `border-x-2`), border colour (`border-red-500`), `bg-*`, `shadow-*`, `overflow-*`, through `md:`/`dark:` variants and `!` — and leaves THAT default out, so the class is the only rule for it.
+
+Padding and margin are read PER SIDE, because the utilities are: `px-4` claims the left and right and says nothing about the top, so a `pt-*` default stays. The **panel parts** (`PopoverHeader`, `PopoverTitle`, `PopoverDescription`, `PopoverFooter`, `PopoverSeparator`) use the same scan, so `<PopoverSeparator className="bg-red-500" />` paints red and `<PopoverTitle className="mt-1">` keeps its colour.
 
 ```tsx
 <PopoverContent label="More actions" className="w-[200px] p-2">

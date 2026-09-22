@@ -1,16 +1,16 @@
 export {
-  useSelectItemContext,
   Select,
   SelectTrigger,
   SelectValue,
   SelectIcon,
   SelectContent,
   SelectItem,
+} from './Select';
+export {
+  useSelectItemContext,
   SelectItemText,
   SelectItemIndicator,
   SelectSeparator,
-} from './Select';
-export {
   SelectGroup,
   SelectLabel,
   SelectScrollProvider,

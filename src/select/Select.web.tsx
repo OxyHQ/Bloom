@@ -42,12 +42,14 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import {
+  defaultExtractLabel,
   defaultItemValueExtractor,
   ItemContext,
   SelectChevron,
   SelectTriggerStateContext,
   SelectValueRow,
   useSelectItemContext,
+  VALUE_TYPE,
 } from './shared';
 import type {
   SelectContentProps,
@@ -338,15 +340,6 @@ export function SelectValue({
 }
 
 /** `text-body-medium` on `md`, `text-body-2-medium` on `sm` — trigger value and option label alike. */
-const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
-
-function defaultExtractLabel(item: unknown): React.ReactNode {
-  if (item != null && typeof item === 'object' && 'label' in item) {
-    return (item as { label: React.ReactNode }).label;
-  }
-  return String(item);
-}
-
 // ---------------------------------------------------------------------------
 // SelectIcon
 // ---------------------------------------------------------------------------
@@ -477,6 +470,7 @@ export function SelectItem({
   style,
 }: SelectItemProps) {
   const ctx = useSelectContext();
+  const { size } = ctx;
   const palette = useMenuPalette();
   const {
     state: hovered,
@@ -491,8 +485,8 @@ export function SelectItem({
   // background below, but they are no longer PUBLISHED — nothing ever read
   // them, and `pressed` was published as a literal `false`.
   const itemCtx = useMemo<SelectItemContextValue>(
-    () => ({ selected: isSelected, disabled }),
-    [isSelected, disabled],
+    () => ({ selected: isSelected, disabled, size }),
+    [isSelected, disabled, size],
   );
   // `(isFocused || isSelected) && MENU_ITEM_ACTIVE`: hover, keyboard
   // focus and the chosen option share one `dropdown-item-hover-background`.
@@ -549,69 +543,13 @@ export function SelectItem({
 // SelectItemText
 // ---------------------------------------------------------------------------
 
-export function SelectItemText({ children, className, style }: SelectItemTextProps) {
-  const { size } = useSelectContext();
-  const { disabled } = useSelectItemContext();
-  const palette = useMenuPalette();
-  // `text-text-primary`, or `text-text-disabled` on a disabled option. Inline
-  // only without a caller `className` (see `SelectValue`).
-  return (
-    <StyledText
-      numberOfLines={1}
-      className={cx(
-        SELECT_ITEM_TEXT_CLASS[size],
-        menuTypeClass(VALUE_TYPE[size], className),
-        className && 'text-foreground',
-        className,
-      )}
-      style={[
-        menuType(VALUE_TYPE[size], className),
-        className ? null : { color: disabled ? palette.textDisabled : palette.text },
-        style,
-      ]}>
-      {children}
-    </StyledText>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // SelectItemIndicator
 // ---------------------------------------------------------------------------
 
-export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
-  const palette = useMenuPalette();
-  const { selected } = useSelectItemContext();
-
-  // `absolute right-2 flex size-3.5 items-center justify-center` holding
-  // a `size-4 text-text-secondary` check. A select's tick sits on the RIGHT — the
-  // opposite side from a menu's — which is what leaves the option's own text
-  // starting flush at `pl-2` like every other line in the panel. Bloom drew it in
-  // a 30px LEFT gutter, so a select and a dropdown menu disagreed about which
-  // edge a selection mark belongs on.
-  if (!selected) return null;
-
-  return (
-    <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
-      <IconComponent
-        width={ROW_ICON_SIZE}
-        height={ROW_ICON_SIZE}
-        fill={palette.textSecondary}
-      />
-    </StyledView>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // SelectSeparator
 // ---------------------------------------------------------------------------
-
-export function SelectSeparator() {
-  const palette = useMenuPalette();
-  // `-mx-2 my-1.5 h-px bg-border-button-default`, bleeding through the listbox's `p-2`.
-  return (
-    <StyledView className={SELECT_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
-  );
-}
 
 const styles = StyleSheet.create({
   // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
