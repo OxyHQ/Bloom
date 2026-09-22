@@ -79,7 +79,7 @@ Use `checked` with `onCheckedChange` for a controlled boolean toggle. `onPress` 
 | padding-x | 12 | 10 |
 | icon | 20 | 18 |
 
-Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a bare React Native `Text` falls back to the system font. Pass icon components to `leadingIcon` / `trailingIcon`; `iconOnly` makes a square item that needs `accessibilityLabel`.
+Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a bare React Native `Text` falls back to the system font. Pass icon components to `leadingIcon` / `trailingIcon`; `iconOnly` makes a square item that needs `accessibilityLabel`. An app whose own icons take `size`/`color` rather than `width`/`height`/`fill` uses `renderLeadingIcon={({ size, color }) => …}` instead — see [Icons](/docs/icons).
 
 ## Props
 
@@ -94,6 +94,7 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 | `ButtonGroupItem.disabled?` | `boolean` | `false` | Disabled paint, blocks presses. |
 | `ButtonGroupItem.iconOnly?` | `boolean` | `false` | Square icon-only item. |
 | `ButtonGroupItem.leadingIcon?` / `trailingIcon?` | `BloomIconComponent` | — | Icon components. |
+| `ButtonGroupItem.renderLeadingIcon?` / `renderTrailingIcon?` | `BloomIconRenderer` | — | Draw the glyph yourself, handed `{ size, color }` for the current state — for an app's own icon set. Wins over the icon component. [Icons](/docs/icons). |
 | `ButtonGroupItem.size?` | `'md' \| 'sm'` | group size | Per-item override. |
 | `ButtonGroupItem.material?` | `'solid' \| 'glass'` | group material | Per-item override. Rarely needed — the group owns it. |
 | `ButtonGroupItem.hitSlop?` | `number \| {top,bottom,left,right}` | — | Extra touch area. NOT defaulted: items in a group are adjacent, so slop on one overlaps its neighbour. Use it for an item that stands alone in its own island. |

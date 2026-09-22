@@ -1,4 +1,5 @@
 import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
+import type { BloomIconRenderer } from '../icons/render-icon';
 import type { ComponentType, ReactNode } from 'react';
 import type { GestureResponderEvent, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
@@ -173,6 +174,15 @@ export interface ButtonProps {
   leadingIcon?: ButtonIconComponent;
   /** Same as {@link ButtonProps.leadingIcon}, after the label. Ignored when `iconOnly`. */
   trailingIcon?: ButtonIconComponent;
+  /**
+   * Draw the leading glyph yourself, handed the button's icon size and the
+   * foreground for the CURRENT state — for an app's own icon set, whose props
+   * Bloom's icon slot cannot name. Wins over `leadingIcon`, and is used for the
+   * glyph when `iconOnly`. See `icons/render-icon.tsx`.
+   */
+  renderLeadingIcon?: BloomIconRenderer;
+  /** Same as {@link ButtonProps.renderLeadingIcon}, after the label. Ignored when `iconOnly`. */
+  renderTrailingIcon?: BloomIconRenderer;
   /**
    * Render a square icon-only button (24 / 32 / 36 / 44) from `leadingIcon` or
    * `icon`. Name it with `accessibilityLabel` — there is no text to read.

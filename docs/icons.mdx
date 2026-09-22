@@ -131,6 +131,59 @@ the chat parts label their glyphs for tests.
 Those are deliberate and stay. Reaching for `Props` when you only set
 width/height/fill is not: it refuses a caller's own glyph for no benefit.
 
+### Your OWN icon set: `renderLeadingIcon`
+
+`BloomIconComponent` is the widest *component* a slot can take, but it is still
+a shape: `width`, `height`, `fill`. An app icon set usually spells the same idea
+`size` and `color`, and those two prop sets have **nothing in common** — so the
+icon does not typecheck against the slot, and casting it does not help either.
+Bloom tints by passing `fill`; an icon that paints from `color` renders fine and
+never takes the tint, with nothing thrown. `frosted-icon-button/shared.ts` and
+`tab-bar/types.ts` both record that hazard.
+
+Passing `color` alongside `fill` is not the answer, for the reason
+`applyIconColor` gives: the prop is not Bloom's to claim, because components use
+it for semantic variants (`color="danger"`).
+
+So the slot families expose a second prop that hands the drawing back to you,
+with the box and the foreground for the CURRENT state:
+
+```tsx
+import { RiSearchLine } from '@oxy.so/bloom/icons/RiSearchLine';
+
+// Bloom's own glyph: the component, sized and tinted for you.
+<ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
+
+// Your app's glyph, whose props are `size` and `color`.
+<ButtonGroupItem
+  iconOnly
+  renderLeadingIcon={({ size, color }) => <AppSearchGlyph size={size} color={color} />}
+  accessibilityLabel="Search"
+/>
+```
+
+```ts
+type BloomIconPaint = { size: number; color: string };
+type BloomIconRenderer = (paint: BloomIconPaint) => ReactNode;
+```
+
+Where a family offers both, the renderer WINS, which is the rule `GlyphButton`
+already uses for a caller-painted `children` over `icon`.
+
+**On web `color` is `currentColor`.** Bloom paints web glyphs that way so they
+follow the state colours the stylesheet sets without a re-render; native has no
+cascade and gets the resolved value. Either way, passing it straight to your
+icon's `color` is correct.
+
+**Why a separate prop and not a wider `leadingIcon`.** The adapter a caller
+writes today — `({ width, fill }) => <Glyph size={width} color={fill} />` — is a
+function, and so is a paint callback. One prop taking both could not tell them
+apart, and would silently re-interpret every existing adapter. Both forms are
+pinned in `src/__tests__/icon-render-slot.test.tsx`.
+
+Today this is on `Button` and `ButtonGroupItem`. The other icon slots still take
+the component only.
+
 ### The per-family names still work
 
 Twenty-five families had declared this same type under their own name

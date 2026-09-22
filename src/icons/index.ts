@@ -4,5 +4,7 @@
 // rewrites an app's imports.
 export type { IconStyle, Props } from './shared';
 export type { BloomIconComponent } from './icon-component';
+export type { BloomIconPaint, BloomIconRenderer } from './render-icon';
+export { resolveIconSlot } from './render-icon';
 export { sizes, useCommonSVGProps } from './shared';
 export * from './remix';

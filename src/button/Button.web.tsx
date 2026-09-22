@@ -9,6 +9,7 @@ import React, {
   type ReactElement,
 } from 'react';
 
+import { resolveIconSlot } from '../icons/render-icon';
 import { useBloomAppearance } from '../appearance/context';
 import { useTheme } from '../theme/use-theme';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
@@ -182,6 +183,8 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   trailing,
   leadingIcon: LeadingIcon,
   trailingIcon: TrailingIcon,
+  renderLeadingIcon,
+  renderTrailingIcon,
   iconOnly = false,
   linkTone = 'primary',
   underline,
@@ -339,11 +342,29 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const iconNode =
     icon == null ? null : isIconComponent(icon) ? renderIcon(icon) : (icon as React.ReactNode);
 
+  // A caller-drawn glyph is handed `currentColor` rather than the resolved
+  // foreground, for the same reason the icon components above are: on web the
+  // state colours come from the stylesheet, so a glyph that inherits them needs
+  // no re-render when hover or press changes them. Native has no cascade and
+  // passes the resolved value.
+  const renderSlot = (render: typeof renderLeadingIcon, fallback: () => React.ReactNode) => (
+    <span
+      aria-hidden="true"
+      style={{ display: 'inline-flex', flexShrink: 0, width: iconSize, height: iconSize }}
+    >
+      {resolveIconSlot(render, iconSize, 'currentColor', fallback)}
+    </span>
+  );
+
   const labelPadding = isLink ? 0 : geometry.labelPaddingHorizontal;
   const hasLabel = !isSquare && children != null && children !== false;
   const content = (
     <>
-      {LeadingIcon ? renderIcon(LeadingIcon) : null}
+      {renderLeadingIcon
+        ? renderSlot(renderLeadingIcon, () => null)
+        : LeadingIcon
+          ? renderIcon(LeadingIcon)
+          : null}
       {leading}
       {iconNode}
       {hasLabel &&
@@ -367,9 +388,15 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
         ) : (
           children
         ))}
-      {isSquare && !LeadingIcon && !iconNode && children != null ? children : null}
+      {isSquare && !renderLeadingIcon && !LeadingIcon && !iconNode && children != null
+        ? children
+        : null}
       {trailing}
-      {!isSquare && TrailingIcon ? renderIcon(TrailingIcon) : null}
+      {!isSquare && renderTrailingIcon
+        ? renderSlot(renderTrailingIcon, () => null)
+        : !isSquare && TrailingIcon
+          ? renderIcon(TrailingIcon)
+          : null}
     </>
   );
 

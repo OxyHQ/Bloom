@@ -32,6 +32,30 @@ The pressable is the parent's layout child: `className` and `style` are applied 
 
 See [Component contract](./appearance.mdx) for inheritance and [Migration](./coherent-system-migration.mdx) for the clean API cut.
 
+## An app's own icon set
+
+`leadingIcon` and `trailingIcon` take a `BloomIconComponent` — `width`, `height`,
+`fill` — and an app icon set usually spells that `size` and `color`. The two have
+no property in common, so the icon does not typecheck against the slot, and
+casting only moves the failure: Bloom tints by passing `fill`, so a glyph that
+paints from `color` renders at its default colour with nothing thrown.
+
+`renderLeadingIcon` / `renderTrailingIcon` hand the drawing back, with the box
+and the foreground for the current state. They win over the icon component, and
+supply the glyph for `iconOnly`.
+
+```tsx
+<Button
+  iconOnly
+  accessibilityLabel="Search"
+  renderLeadingIcon={({ size, color }) => <AppSearchGlyph size={size} color={color} />}
+/>
+```
+
+On web `color` is `currentColor`, so the glyph follows the stylesheet's state
+colours without a re-render; native gets the resolved value. Full rationale, and
+why this is a separate prop rather than a wider `leadingIcon`: [Icons](/docs/icons).
+
 ## Compatibility
 
 The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.
