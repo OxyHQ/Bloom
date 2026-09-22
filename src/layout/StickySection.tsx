@@ -21,9 +21,11 @@ export function StickySection({children, offset, style, onLayout, ...props}: Sti
   const owner = useRef({});
   const measure = useCallback(() => {
     if (!dock) return;
-    dock.owner.current = owner.current;
     if (Platform.OS !== 'web') {
-      if (offset !== undefined) dock.sectionOffset.value = offset;
+      if (offset !== undefined) {
+        dock.targets.current.set(owner.current, offset);
+        dock.sectionOffset.value = offset;
+      }
       return;
     }
     const anchor = marker.current as unknown as HTMLElement | null;
@@ -39,7 +41,9 @@ export function StickySection({children, offset, style, onLayout, ...props}: Sti
       }
     }
     const stickyTop = Number.parseFloat(getComputedStyle(sticky).top) || top;
-    dock.sectionOffset.value = anchor.getBoundingClientRect().top - viewportTop + dock.scrollY.value - stickyTop + top;
+    const measuredOffset = anchor.getBoundingClientRect().top - viewportTop + dock.scrollY.value - stickyTop + top;
+    dock.targets.current.set(owner.current, measuredOffset);
+    dock.sectionOffset.value = measuredOffset;
   }, [dock, offset, top]);
   useEffect(() => {
     measure();
@@ -52,10 +56,13 @@ export function StickySection({children, offset, style, onLayout, ...props}: Sti
     return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
   }, [measure]);
   useEffect(() => () => {
-    if (dock?.owner.current === owner.current) {
-      dock.owner.current = null;
-      dock.sectionOffset.value = Number.POSITIVE_INFINITY;
-    }
+    if (!dock) return;
+    dock.targets.current.delete(owner.current);
+    // Virtualized lists may mount a sticky clone alongside the original cell.
+    // Removing that clone must restore the still-mounted original's target.
+    let remaining = Number.POSITIVE_INFINITY;
+    for (const target of dock.targets.current.values()) remaining = target;
+    dock.sectionOffset.value = remaining;
   }, [dock]);
   const stickyStyle: WebCssStyle = Platform.OS === 'web'
     ? {position:WEB_POSITION_STICKY, top:webSurfaceStickyTopPlus(top), zIndex:Z_INDEX.raised}

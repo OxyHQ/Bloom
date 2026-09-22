@@ -13,7 +13,7 @@ interface HeaderDockState {
   setOverlaps: React.Dispatch<React.SetStateAction<boolean>>;
   sectionOffset: SharedValue<number>;
   progress: SharedValue<number>;
-  owner: React.MutableRefObject<object | null>;
+  targets: React.MutableRefObject<Map<object, number>>;
 }
 const HeaderDockContext = createContext<HeaderDockState | null>(null);
 export function useHeaderDockContext() { return useContext(HeaderDockContext); }
@@ -35,8 +35,8 @@ export function HeaderDockProvider({ children, scrollY: supplied }: PropsWithChi
   const overlay = useSharedValue(false);
   const [overlaps, setOverlaps] = useState(false);
   const sectionOffset = useSharedValue(Number.POSITIVE_INFINITY);
-  const owner = useRef<object | null>(null);
+  const targets = useRef(new Map<object, number>());
   const progress = useDerivedValue(() => Math.min(1, Math.max(0, (scrollY.value - sectionOffset.value + (Platform.OS === 'web' || overlay.value ? headerHeight.value : 0) + 12) / 12)), [scrollY, sectionOffset, headerHeight, overlay]);
-  const value = useMemo(() => ({scrollY,headerHeight,sectionOffset,progress,owner,overlay,overlaps,setOverlaps}), [scrollY,headerHeight,sectionOffset,progress,overlay,overlaps]);
+  const value = useMemo(() => ({scrollY,headerHeight,sectionOffset,progress,targets,overlay,overlaps,setOverlaps}), [scrollY,headerHeight,sectionOffset,progress,overlay,overlaps]);
   return <TopEdgeProvider><HeaderDockContext.Provider value={value}>{children}</HeaderDockContext.Provider></TopEdgeProvider>;
 }

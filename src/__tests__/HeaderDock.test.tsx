@@ -74,3 +74,21 @@ it('updates native list clearance when placement changes without a height change
   tree.rerender(frame('inline'));
   expect(tree.getByTestId('list-inset').props.children).toBe(0);
 });
+
+it('restores the mounted original when a native list removes its sticky clone', () => {
+  const clones = (clone: boolean) => <BloomThemeProvider fonts={false}><HeaderDockProvider scrollY={position}>
+    <StickySection offset={300}><Text>Original</Text></StickySection>
+    {clone && <StickySection offset={300}><Text>Sticky clone</Text></StickySection>}
+    <Probe />
+  </HeaderDockProvider></BloomThemeProvider>;
+  position.value = 400;
+  const tree = render(clones(true));
+  tree.rerender(clones(true));
+  expect(tree.getByTestId('progress').props.children).toBe(1);
+  tree.rerender(clones(false));
+  tree.rerender(clones(false));
+  expect(tree.getByTestId('progress').props.children).toBe(1);
+  position.value = 0;
+  tree.rerender(clones(false));
+  expect(tree.getByTestId('progress').props.children).toBe(0);
+});
