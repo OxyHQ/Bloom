@@ -13,6 +13,8 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PageHeader } from '../page-header';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import type { PageHeaderProps } from '../page-header';
 import { resolvedStyle } from './support/rendered-style';
@@ -306,4 +308,20 @@ it.each(['android', 'ios', 'web'] as const)('layers an overlay above its native 
   expect(style.marginBottom).toBeUndefined();
   expect(header.props.pointerEvents).toBe('box-none');
   expect(screen.getByLabelText('Back')).toBeTruthy();
+});
+
+it('keeps Android floating back and action controls mounted and operable while its title is hidden', () => {
+  (ReactNative.Platform as { OS: string }).OS = 'android';
+  const onBack = jest.fn();
+  const onAction = jest.fn();
+  const screen = renderHeader({
+    placement: 'overlay', presentation: 'floating', title: 'Profile', titleReveal: 'onDock', onBack,
+    actions: <ButtonGroup><ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search profile" onPress={onAction} /></ButtonGroup>,
+  });
+  expect(screen.getByTestId('h-title-block', { includeHiddenElements: true }).props['aria-hidden']).toBe(true);
+  expect(screen.getByTestId('h-back-island')).toBeTruthy();
+  fireEvent.press(screen.getByLabelText('Back'));
+  fireEvent.press(screen.getByLabelText('Search profile'));
+  expect(onBack).toHaveBeenCalledTimes(1);
+  expect(onAction).toHaveBeenCalledTimes(1);
 });
