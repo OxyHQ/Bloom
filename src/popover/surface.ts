@@ -70,19 +70,22 @@ export type PopoverChromeKey =
 const BORDER_WIDTH = /^border(-[xytrblse])?(-\d+(\.\d+)?|-\[[^\]]+px\])?$/;
 
 /**
- * The sides a spacing utility's axis letter claims. `p-4` has none and claims
- * all four; `px` is the horizontal pair, `ps`/`pe` the logical ones, which
- * react-native-web resolves to left/right in an LTR document.
+ * The sides a spacing utility's axis letter claims. `p-4` has no letter and
+ * claims all four; `px`/`py` are the pairs; `pt`/`pb`/`pl`/`pr` are single
+ * sides. `ps`/`pe` are the LOGICAL start and end — one side each, not the
+ * pair — which react-native-web resolves to left and right in an LTR
+ * document. Treating them as the pair would drop a default the caller never
+ * asked to own.
  */
 function sidesOf(letter: string | undefined, property: 'padding' | 'margin'): PopoverChromeKey[] {
   const sides =
     letter === undefined ? ['Top', 'Bottom', 'Left', 'Right']
-    : letter === 'x' || letter === 's' || letter === 'e' ? ['Left', 'Right']
+    : letter === 'x' ? ['Left', 'Right']
     : letter === 'y' ? ['Top', 'Bottom']
     : letter === 't' ? ['Top']
     : letter === 'b' ? ['Bottom']
-    : letter === 'l' ? ['Left']
-    : letter === 'r' ? ['Right']
+    : letter === 'l' || letter === 's' ? ['Left']
+    : letter === 'r' || letter === 'e' ? ['Right']
     : [];
   return sides.map((side) => `${property}${side}` as PopoverChromeKey);
 }

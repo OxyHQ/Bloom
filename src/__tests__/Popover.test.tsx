@@ -104,6 +104,9 @@ describe('classChromeOverrides', () => {
     expect([...classChromeOverrides('mt-1')]).toEqual(['marginTop']);
     // Per SIDE, because the utilities are: `px-4` says nothing about the top.
     expect([...classChromeOverrides('px-4')]).toEqual(['paddingLeft', 'paddingRight']);
+    // `ps`/`pe` are the LOGICAL start and end — ONE side each, not the pair.
+    expect([...classChromeOverrides('ps-4')]).toEqual(['paddingLeft']);
+    expect([...classChromeOverrides('me-2')]).toEqual(['marginRight']);
     expect([...classChromeOverrides('p-2')]).toEqual([
       'paddingTop',
       'paddingBottom',
