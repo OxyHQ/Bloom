@@ -163,6 +163,7 @@ function PageHeaderComponent({
   // line, an enlarged font or a notch all move it, and every one of those is a
   // case a constant was written to survive and does not.
   const dock = useHeaderDockContext();
+  const dockProgress = dock?.progress;
   useClaimTopEdge(overlay || placement === 'overlap' || dock ? height : 0);
   useEffect(() => {
     if (!dock) return;
@@ -205,12 +206,12 @@ function PageHeaderComponent({
 
   const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : DEFAULT_THRESHOLD);
   const revealOffset = Math.max(0, Number.isFinite(titleRevealOffset) ? titleRevealOffset : 0);
-  const [titleHidden, setTitleHidden] = useState(() => (titleReveal === 'onDock' ? (dock?.progress.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset));
-  useEffect(() => { setTitleHidden((titleReveal === 'onDock' ? (dock?.progress.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset)); }, [titleReveal, scrollY, revealOffset, dock]);
+  const [titleHidden, setTitleHidden] = useState(() => (titleReveal === 'onDock' ? (dockProgress?.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset));
+  useEffect(() => { setTitleHidden((titleReveal === 'onDock' ? (dockProgress?.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset)); }, [titleReveal, scrollY, revealOffset, dockProgress]);
   useAnimatedReaction(
-    () => (titleReveal === 'onDock' ? (dock?.progress.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset),
+    () => (titleReveal === 'onDock' ? (dockProgress?.value ?? 0) <= 0 : titleReveal === 'onScroll' && scrollY.value <= revealOffset),
     (hidden, previous) => { if (hidden !== previous) runOnJS(setTitleHidden)(hidden); },
-    [titleReveal, scrollY, revealOffset, setTitleHidden, dock],
+    [titleReveal, scrollY, revealOffset, setTitleHidden, dockProgress],
   );
 
   const shadowStyle = useAnimatedStyle(() => ({
@@ -224,13 +225,13 @@ function PageHeaderComponent({
   }), [scrollY, threshold, transparent]);
 
   const scrimStyle = useAnimatedStyle(() => ({
-    opacity: (1 - (dock?.progress.value ?? 0)) * (
+    opacity: (1 - (dockProgress?.value ?? 0)) * (
       scrim === 'always'
         ? 1
         : scrim === 'none'
           ? 0
           : interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP)),
-  }), [scrollY, threshold, scrim, dock]);
+  }), [scrollY, threshold, scrim, dockProgress]);
 
   // Separate from the background's: a header can be transparent and still name
   // its screen, and one over a hero photo can do the opposite.
@@ -238,8 +239,8 @@ function PageHeaderComponent({
     opacity:
       titleReveal === 'always'
         ? 1
-        : titleReveal === 'onDock' ? (dock?.progress.value ?? 0) : Math.min(1, Math.max(0, (scrollY.value - revealOffset) / threshold)),
-  }), [scrollY, threshold, titleReveal, revealOffset, dock]);
+        : titleReveal === 'onDock' ? (dockProgress?.value ?? 0) : Math.min(1, Math.max(0, (scrollY.value - revealOffset) / threshold)),
+  }), [scrollY, threshold, titleReveal, revealOffset, dockProgress]);
 
   const borderStyle = useAnimatedStyle(() => ({
     opacity:
@@ -351,7 +352,7 @@ function PageHeaderComponent({
           transitionProperty: 'top', transitionDuration: 'var(--bloom-panel-inset-duration, 0ms)', transitionTimingFunction: 'ease-in-out' }
       : null;
 
-  const dockFillStyle = useAnimatedStyle(() => ({ opacity: dock?.progress.value ?? 0 }), [dock]);
+  const dockFillStyle = useAnimatedStyle(() => ({ opacity: dockProgress?.value ?? 0 }), [dockProgress]);
   const chrome = floating ? (
     <Animated.View
       // A PROP: react-native-web resolves `none` from the prop path only, and
