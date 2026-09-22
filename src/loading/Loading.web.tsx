@@ -1,76 +1,24 @@
 /**
- * `Loading` — WEB: the same three variants on CSS keyframes and transitions,
- * with no native dependency in the graph.
+ * `Loading` — WEB: the `top` variant's motion on CSS transitions.
  *
- * The native fork statically imports react-native-reanimated and
- * react-native-svg. Reanimated's worklets Babel plugin is native-only, so a
- * static import of it breaks every web bundler — Vite, webpack and Metro-web
- * alike. That is the whole reason this family forks: the contract and the
- * variants are identical, only the motion mechanism differs. Types are
- * platform-agnostic and come straight from `./types`.
+ * The native fork statically imports react-native-reanimated, whose worklets
+ * Babel plugin is native-only — importing it statically breaks every web
+ * bundler, Vite, webpack and Metro-web alike. That is the whole reason this
+ * family forks. Everything else is shared (`LoadingBase`): the `spinner` and
+ * `inline` variants, the size table and the stylesheet.
  */
+import React from 'react';
+import { View } from 'react-native';
+
 import { normalizeBloomSize } from '../appearance/legacy';
 import { resolveBloomColors } from '../appearance/colors';
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useMemo } from 'react';
-import { View, Text, StyleSheet, type DimensionValue } from 'react-native';
-
-import type { WebCssStyle } from '../styles/web-view-style';
-
-import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
+import type { WebCssStyle } from '../styles/web-view-style';
+import { useTheme } from '../theme/use-theme';
+import { bindLoading, SIZE_CONFIG, styles } from './LoadingBase';
 import { SpinnerIcon } from './SpinnerIcon.web';
-import type {
-  LoadingProps,
-  SpinnerLoadingProps,
-  TopLoadingProps,
-  InlineLoadingProps,
-} from './types';
-
-const SIZE_CONFIG = {
-  xs: { spinner: 16, text: 12 },
-  sm: { spinner: 20, text: 13 },
-  md: { spinner: 24, text: 15 },
-  lg: { spinner: 44, text: 16 },
-} as const;
-
-const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
-  size: sizeProp,
-  color,
-  tone: toneProp,
-  className,
-  text,
-  textStyle,
-  style,
-  showText = true,
-  iconSize,
-  spinnerIcon,
-  testID,
-}) => {
-  const theme = useTheme();
-  const {size, tone} = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
-  const sizeConfig = SIZE_CONFIG[size];
-  const effectiveIconSize = iconSize ?? sizeConfig.spinner;
-  const spinnerColor = className ? 'currentColor' : (color ?? resolveBloomColors(theme.colors, tone, 'solid').background);
-  const textColor = color ?? theme.colors.textSecondary;
-
-  return (
-    <View style={[styles.container, style]} testID={testID}>
-      {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} className={className} />}
-      {showText && text && (
-        <Text
-          style={[
-            styles.text,
-            { color: textColor, fontSize: sizeConfig.text, marginTop: 8 },
-            textStyle,
-          ]}
-        >
-          {text}
-        </Text>
-      )}
-    </View>
-  );
-};
+import type { TopLoadingProps } from './types';
 
 /**
  * Web fork of the `top` variant.
@@ -142,81 +90,4 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   );
 };
 
-const InlineLoading: React.FC<InlineLoadingProps> = ({
-  size: sizeProp,
-  color,
-  tone: toneProp,
-  text,
-  style,
-  textStyle,
-  spinnerIcon,
-  testID,
-}) => {
-  const theme = useTheme();
-  const {size, tone} = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
-  const sizeConfig = SIZE_CONFIG[size];
-  const spinnerColor = color ?? resolveBloomColors(theme.colors, tone, 'solid').background;
-  const textColor = theme.colors.textSecondary;
-
-  return (
-    <View style={[styles.inlineContainer, style]} testID={testID}>
-      {spinnerIcon ?? <SpinnerIcon size={sizeConfig.spinner} color={spinnerColor} />}
-      {text && (
-        <Text
-          style={[
-            { color: textColor, fontSize: sizeConfig.text, marginLeft: 8 },
-            textStyle,
-          ]}
-        >
-          {text}
-        </Text>
-      )}
-    </View>
-  );
-};
-
-const LoadingComponent: React.FC<LoadingProps> = (props) => {
-  const variant = props.variant ?? 'spinner';
-
-  switch (variant) {
-    case 'top':
-      return <TopLoading {...(props as TopLoadingProps)} />;
-    case 'inline':
-      return <InlineLoading {...(props as InlineLoadingProps)} />;
-    case 'spinner':
-    default:
-      return <SpinnerLoading {...(props as SpinnerLoadingProps)} />;
-  }
-};
-
-export const Loading = memo(LoadingComponent);
-Loading.displayName = 'Loading';
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  text: {
-    textAlign: 'center',
-  },
-  topContainer: {
-    width: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  topLoadingView: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-  },
-  inlineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export const { Loading } = bindLoading({ SpinnerIcon, TopLoading });
