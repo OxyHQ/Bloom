@@ -38,7 +38,7 @@ export default meta;
 type Story = StoryObj;
 
 /**
- * A menu row as BoardUI's panels draw it: `flex items-center gap-2 rounded-2lg
+ * A menu row as the floating panels draw it: `flex items-center gap-2 rounded-2lg
  * p-2`, a 20px secondary icon and a `text-body-medium` label, washed with the
  * dropdown hover colour. Story-local — a popover whose body is ONLY rows wants
  * `DropdownMenu`, which ships them with keyboard state and ARIA roles.
@@ -75,7 +75,7 @@ function PanelRow({
 }
 
 /**
- * The default panel: BoardUI's floating surface — 266px, `rounded-2xl`, 1px
+ * The default panel: Bloom's floating surface — 266px, `rounded-2xl`, 1px
  * `border-button-default`, `bg-background-primary-default`, `p-2.5`,
  * `shadow-dropdown` — holding a titled explanation.
  */
@@ -103,7 +103,7 @@ export const Basic: Story = {
 };
 
 /**
- * Header, grouped rows, separator and footer — the dashboard team menu's
+ * Header, grouped rows, separator and footer — the sidebar team menu's
  * anatomy: a `px-2 pt-1` header (avatar + title + description) 7px above the
  * rows, a full-bleed `-mx-2.5` rule, and a `px-2 pb-2` footer.
  */
@@ -112,14 +112,14 @@ export const WithHeaderAndFooter: Story = {
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
-        <PopoverTrigger asChild label="Board team">
-          <Button appearance="outline" tone="neutral">Board team</Button>
+        <PopoverTrigger asChild label="Design team">
+          <Button appearance="outline" tone="neutral">Design team</Button>
         </PopoverTrigger>
-        <PopoverContent label="Board team menu" align="start" testID="popover-header-footer">
+        <PopoverContent label="Design team menu" align="start" testID="popover-header-footer">
           <View style={{ gap: 7 }}>
-            <PopoverHeader leading={<Avatar name="Board team" size={32} />}>
-              <PopoverTitle>Board team</PopoverTitle>
-              <PopoverDescription>hi@boardui.com</PopoverDescription>
+            <PopoverHeader leading={<Avatar name="Design team" size={32} />}>
+              <PopoverTitle>Design team</PopoverTitle>
+              <PopoverDescription>hi@example.com</PopoverDescription>
             </PopoverHeader>
             <View style={{ gap: 4 }}>
               <PanelRow icon={RiUserLine} label="Profile" />
@@ -130,7 +130,7 @@ export const WithHeaderAndFooter: Story = {
           <PanelRow icon={RiLogoutBoxRLine} label="Sign out" />
           <PopoverSeparator />
           <PopoverFooter style={{ justifyContent: 'space-between', paddingTop: 4 }}>
-            <PopoverTitle tone="secondary">BoardUI</PopoverTitle>
+            <PopoverTitle tone="secondary">Bloom</PopoverTitle>
             <PopoverDescription>v1.0.1</PopoverDescription>
           </PopoverFooter>
         </PopoverContent>
@@ -254,8 +254,9 @@ export const Placements: Story = {
 
 /**
  * A caller's `className` still reaches the panel: every chrome property its
- * utilities name drops the matching inline default (`w-[200px] p-2` here, the
- * BoardUI `DropdownPopover` call-site shape).
+ * utilities name drops the matching inline default — `w-[200px] p-2` here,
+ * which is the shape a row-list popover asks for: a narrower panel and a
+ * tighter inset than a panel holding prose.
  */
 export const ClassNameOverride: Story = {
   parameters: { controls: { disable: true } },

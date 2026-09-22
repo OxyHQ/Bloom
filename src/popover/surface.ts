@@ -1,9 +1,8 @@
 /**
  * The popover PANEL — Bloom's one floating surface, resolved to inline style.
  *
- * Every floating panel (`dropdown/menu-styles.ts`'s `MENU_POPOVER_SURFACE`, the
- * dashboard team/user menus, the calendar inbox menu, the ai-chat menus) spells
- * the same class string:
+ * Every floating panel in the fleet — the sidebar team and user menus, the
+ * calendar inbox menu, the ai-chat menus — spells the same class string:
  *
  *   w-[266px] max-w-[calc(100vw-32px)] overflow-y-auto
  *   rounded-2xl border border-border-button-default
@@ -32,7 +31,7 @@
 import type { MenuPalette } from '../floating/menu-palette';
 import type { WebCssStyle } from '../styles/web-view-style';
 
-/** `w-[266px]` — `MENU_POPOVER_WIDTH`. */
+/** `w-[266px]` — the one panel width every floating surface shares. */
 export const POPOVER_WIDTH = 266;
 /** `rounded-2xl`. */
 export const POPOVER_RADIUS = 16;

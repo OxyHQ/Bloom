@@ -6,10 +6,10 @@
  * header/footer `px-2` is measured against — 18px from the panel edge on every
  * side ("panel p-2.5 + row px-2").
  *
- *   PopoverHeader       flex items-center gap-2 px-2 pt-1         (dashboard team menu)
+ *   PopoverHeader       flex items-center gap-2 px-2 pt-1         (sidebar team menu)
  *   PopoverTitle        text-body-medium text-text-primary        (secondary: group label)
  *   PopoverDescription  text-body-regular text-text-secondary
- *   PopoverFooter       flex items-center gap-3 px-2 pb-2         (user menu actions)
+ *   PopoverFooter       flex items-center gap-3 px-2 pb-2         (sidebar user menu actions)
  *   PopoverSeparator    -mx-2.5 my-2.5 h-px bg-border-button-default
  *
  * Popovers have no close button and no arrow, so neither is a part.
