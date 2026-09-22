@@ -40,12 +40,14 @@ import {
 } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
 import {
+  defaultExtractLabel,
   defaultItemValueExtractor,
   ItemContext,
   SelectChevron,
   SelectTriggerStateContext,
   SelectValueRow,
   useSelectItemContext,
+  VALUE_TYPE,
 } from './shared';
 import type {
   SelectContentProps,
@@ -244,15 +246,6 @@ export function SelectValue({
 }
 
 /** `text-body-medium` on `md`, `text-body-2-medium` on `sm` — trigger value and option label alike. */
-const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
-
-function defaultExtractLabel(item: unknown): React.ReactNode {
-  if (item != null && typeof item === 'object' && 'label' in item) {
-    return (item as { label: React.ReactNode }).label;
-  }
-  return String(item);
-}
-
 // ---------------------------------------------------------------------------
 // SelectIcon
 // ---------------------------------------------------------------------------
@@ -399,8 +392,8 @@ export function SelectItem({
   }, [close, onValueChange, value]);
 
   const itemCtx = useMemo<SelectItemContextValue>(
-    () => ({ selected: isSelected, disabled }),
-    [isSelected, disabled],
+    () => ({ selected: isSelected, disabled, size }),
+    [isSelected, disabled, size],
   );
   // Press, focus and the chosen option share the row highlight.
   const highlighted = !disabled && (focused || pressed || isSelected);
@@ -434,69 +427,13 @@ export function SelectItem({
 // SelectItemText
 // ---------------------------------------------------------------------------
 
-export function SelectItemText({ children, className, style }: SelectItemTextProps) {
-  const { size } = useSelectContext();
-  const { disabled } = useSelectItemContext();
-  const palette = useMenuPalette();
-  // The selected option is marked with the check and the row highlight: its
-  // label stays at the same weight as every other row's, which is what the
-  // target does.
-  return (
-    <StyledText
-      numberOfLines={1}
-      className={cx(
-        SELECT_ITEM_TEXT_CLASS[size],
-        menuTypeClass(VALUE_TYPE[size], className),
-        className && 'text-foreground',
-        className,
-      )}
-      style={[
-        menuType(VALUE_TYPE[size], className),
-        className ? null : { color: disabled ? palette.textDisabled : palette.text },
-        style,
-      ]}>
-      {children}
-    </StyledText>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // SelectItemIndicator
 // ---------------------------------------------------------------------------
 
-export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
-  const palette = useMenuPalette();
-  const { selected } = useSelectItemContext();
-
-  // The same right-hand gutter the web fork draws: `absolute right-2 size-3.5`
-  // holding a `text-muted-foreground size-4` check. It used to default to
-  // `RadioIndicator` in the row's FLOW on the left, so a select on native and
-  // the same select on web disagreed about both the mark and the side it is on.
-  if (!selected) return null;
-
-  return (
-    <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
-      <IconComponent
-        width={ROW_ICON_SIZE}
-        height={ROW_ICON_SIZE}
-        fill={palette.textSecondary}
-      />
-    </StyledView>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // SelectSeparator
 // ---------------------------------------------------------------------------
-
-export function SelectSeparator() {
-  const palette = useMenuPalette();
-  // `-mx-2 my-1.5 h-px bg-border-button-default` — a filled 1px rule, not a
-  // bottom border on a stretched box.
-  return (
-    <StyledView className={SELECT_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Styles

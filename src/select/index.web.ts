@@ -4,18 +4,18 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export {
-  useSelectItemContext,
   Select,
   SelectTrigger,
   SelectValue,
   SelectIcon,
   SelectContent,
   SelectItem,
+} from './Select.web';
+export {
+  useSelectItemContext,
   SelectItemText,
   SelectItemIndicator,
   SelectSeparator,
-} from './Select.web';
-export {
   SelectGroup,
   SelectLabel,
   SelectScrollProvider,
