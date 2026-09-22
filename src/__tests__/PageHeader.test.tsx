@@ -295,3 +295,15 @@ describe('PageHeader', () => {
     expect(resolvedStyle(flow.getByTestId('h').props.style).position).toBe('relative');
   });
 });
+
+it.each(['android', 'ios', 'web'] as const)('layers an overlay above its native list without reserving flow space (%s)', (platform) => {
+  (ReactNative.Platform as { OS: string }).OS = platform;
+  const screen = renderHeader({ placement: 'overlay', title: 'Profile', onBack: jest.fn() });
+  const header = screen.getByTestId('h');
+  const style = resolvedStyle(header.props.style);
+  expect(style).toMatchObject({ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 });
+  expect(style.elevation).toBe(platform === 'web' ? undefined : 10);
+  expect(style.marginBottom).toBeUndefined();
+  expect(header.props.pointerEvents).toBe('box-none');
+  expect(screen.getByLabelText('Back')).toBeTruthy();
+});
