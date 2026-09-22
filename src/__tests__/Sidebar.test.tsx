@@ -455,3 +455,13 @@ describe('Sidebar application tree', () => {
     pressHost(screen.getByLabelText('Project')); expect(expand).toHaveBeenCalledWith(false);
   });
 });
+
+it.each(['panel', 'rail'] as const)('centers only the %s main group, keeping its footer outside the flexible region', (variant) => {
+  const tree = renderIn(<Sidebar variant={variant} testID="aligned" contentAlignment="center" items={ITEMS} footer={<Text>Account</Text>} />);
+  const region = tree.getByTestId('aligned-main-region');
+  const footer = tree.getByTestId('aligned-footer');
+  expect(resolvedStyle(region.props.style)).toMatchObject({ flex: 1, minHeight: 0, justifyContent: 'center' });
+  expect(resolvedStyle(footer.props.style).flexShrink).toBe(0);
+  let parent = footer.parent;
+  while (parent) { expect(parent).not.toBe(region); parent = parent.parent; }
+});

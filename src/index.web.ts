@@ -172,7 +172,11 @@ export {
   ScrollOffsetProvider,
   useScrollOffset,
   ScreenScope,
+  HeaderDockProvider,
+  useHeaderDockInset,
+  StickySection,
 } from './layout';
+export type { StickySectionProps } from './layout';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabVariant, FabSize, FabPlacement, FabMinimizeBehavior } from './fab/index.web';
 export { FrostedIconButton } from './frosted-icon-button/index.web';

@@ -141,6 +141,7 @@ function SearchField({
 const SidebarPanel: React.FC<SidebarProps> = ({
   items = [],
   primaryAction,
+  contentAlignment = 'start',
   content,
   onScroll,
   footer,
@@ -634,6 +635,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           style,
         ]}
       >
+        <View testID={`${testID ?? 'sidebar'}-main-region`} style={{ width: '100%', minHeight: 0, flexShrink: 1, ...(contentAlignment === 'center' ? { flex: 1, justifyContent: 'center' as const } : {}) }}>
         <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
           {/* Fixed chrome shares the panel's morph, never the destination scroll.
               The viewport reaches half a control behind it, so rows dissolve
@@ -696,6 +698,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             ) : null}
           </SidebarScrollArea>
           {primaryAction ? <SidebarPrimaryAction action={primaryAction} collapsed={collapsed} testID={testID ? `${testID}-primary-action` : undefined} /> : null}
+        </View>
         </View>
 
         <View style={{ width: '100%', flexShrink: 0, gap: 12, paddingTop: hasTree ? 12 : 0 }}>

@@ -30,11 +30,14 @@ export type PageHeaderPresentation = 'floating' | 'bar';
  * at the top of the container and scrolls under the islands. The header then
  * CLAIMS its measured height on `layout/top-edge`, and the content reads it
  * with `useTopEdgeInset()` so its first item is not born underneath. This is
- * the placement the floating presentation was designed for; the two are
- * separate props because a floating header above a fixed panel is also a real
- * arrangement.
+ * placement the floating presentation was designed for.
+ *
+ * `overlap` keeps document stickiness while allowing the following hero to
+ * start behind the measured header; native places it before the list.
+ * Placement and presentation remain independent: a floating header above a
+ * fixed panel is also a supported arrangement.
  */
-export type PageHeaderPlacement = 'inline' | 'overlay';
+export type PageHeaderPlacement = 'inline' | 'overlay' | 'overlap';
 
 /**
  * The bottom separator: `auto` fades it in once the page has scrolled past
@@ -60,13 +63,14 @@ export type PageHeaderScrim = 'auto' | 'always' | 'none';
  *
  * `always` (default) is the ordinary screen header. `onScroll` holds the title
  * back and fades it in with the scrim — the shape a header over a hero photo
- * wants, where the photo already names the screen.
+ * wants, where the photo already names the screen. `onDock` uses the paired
+ * StickySection arrival instead, inside HeaderDockProvider.
  *
  * It is a prop of its own rather than a side effect of the background, because
  * the two are different questions and conflating them is how every header that
  * turned transparent also lost its title.
  */
-export type PageHeaderTitleReveal = 'always' | 'onScroll';
+export type PageHeaderTitleReveal = 'always' | 'onScroll' | 'onDock';
 
 export interface PageHeaderProps {
   /** A string renders as the heading; a node renders as-is (and owns its own semantics). */

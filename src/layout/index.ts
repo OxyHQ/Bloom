@@ -14,3 +14,7 @@ export { BottomEdgeProvider, useBottomEdgeInset, useClaimBottomEdge } from './bo
 export { TopEdgeProvider, useClaimTopEdge, useTopEdgeInset } from './top-edge';
 export { ScrollOffsetProvider, useScrollOffset } from './scroll-offset';
 export { ScreenScope } from './screen-scope';
+
+export { HeaderDockProvider, useHeaderDockInset } from './header-dock';
+export { StickySection } from './StickySection';
+export type { StickySectionProps } from './StickySection';

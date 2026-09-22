@@ -29,6 +29,7 @@ export function SidebarRail({
   logo,
   items = [],
   primaryAction,
+  contentAlignment = 'start',
   footer,
   secondaryItems = [],
   selected,
@@ -81,6 +82,8 @@ export function SidebarRail({
         style,
       ]}
     >
+      <View testID={`${testID ?? 'sidebar'}-main-region`} style={{ flex: 1, minHeight: 0, justifyContent: contentAlignment === 'center' ? 'center' : undefined }}>
+      <View style={{ minHeight: 0, flexShrink: 1, ...(contentAlignment === 'start' ? { flex: 1 } : {}) }}>
       {logo ? (
         <View style={{ flexShrink: 0, alignItems: 'center', paddingTop: 24 }}>
           <SidebarLogoView logo={logo} showWordmark={false} testID="sidebar-logo" />
@@ -90,7 +93,7 @@ export function SidebarRail({
         fadeColor={palette.flat}
         testID={testID ? `${testID}-scroll` : 'sidebar-rail-scroll'}
         {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
-        style={{ flex: 1 }}
+        style={contentAlignment === 'center' ? { flexGrow: 0, flexShrink: 1, minHeight: 0 } : { flex: 1 }}
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: 'center',
@@ -109,6 +112,8 @@ export function SidebarRail({
       {primaryAction ? <View style={{ flexShrink: 0, paddingLeft: 8, paddingRight: 8, paddingBottom: 24 }}>
         <SidebarPrimaryAction action={primaryAction} rail testID={testID ? `${testID}-primary-action` : undefined} />
       </View> : null}
+      </View>
+      </View>
       {secondaryItems.length > 0 ? (
         <View
           role="navigation"

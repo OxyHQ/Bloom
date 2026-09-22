@@ -253,3 +253,9 @@ item `actions` render beside their press targets, so menus never navigate or
 toggle the containing row. Items expose `onPrefetch` (pointer/touch entry and
 selection) and `onLongPress`; retain a keyboard-accessible menu for touch actions.
 Collapsed folders remove both rows and action slots from interaction.
+
+`contentAlignment="center"` centers the logo, destinations, and primary action
+as a group in the space **above** the persistent footer, in both panel and rail.
+The destination region can still shrink and scroll on short screens. Keep an
+account control in `footer`; avoid centering the whole sidebar with `style`,
+which also moves its footer. The default `start` preserves existing placement.

@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { ContentPanel } from '../content-panel/index.web';
+import { HeaderDockProvider, StickySection } from '../layout';
+import { Tabs, TabsTrigger } from '../tabs';
 import { Screen } from '../screen';
 import { Image, ScrollView, View } from 'react-native';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
@@ -483,5 +486,22 @@ export const RevealAfterContentHeading: Story = {
         </View>
       </Screen>
     </View>;
+  },
+};
+
+
+export const ProfileDocking: Story = {
+  parameters: { bloomScroll: 'document', controls: { disable: true } },
+  render: function ProfileDocking() {
+    const [selected, setSelected] = useState('posts');
+    return <Screen documentScroll><ContentPanel>
+      <HeaderDockProvider>
+        <PageHeader testID="profile-header" placement="overlap" titleReveal="onDock" title="Alex Morgan" onBack={back} actions={<PageActions />} />
+        <View testID="profile-banner" style={{height:240,backgroundColor:'#46705b'}} />
+        <View style={{padding:24,gap:12}}><Text variant="title-1-bold">Alex Morgan</Text><Text>Design, reading and everyday discoveries.</Text></View>
+        <StickySection testID="profile-tabs"><Tabs value={selected} onValueChange={setSelected}><TabsTrigger value="posts" label="Posts"/><TabsTrigger value="media" label="Media"/></Tabs></StickySection>
+        <Rows count={35}/>
+      </HeaderDockProvider>
+    </ContentPanel></Screen>;
   },
 };
