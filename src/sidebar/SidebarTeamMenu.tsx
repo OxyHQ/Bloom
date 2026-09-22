@@ -22,7 +22,7 @@ import {
   Collapsible,
   IS_WEB,
   MenuDivider,
-  menuPanelStyle,
+  SIDEBAR_MENU_PANEL,
   SidebarAvatarView,
   useSidebarWebCss,
   useSidebarCollapseProgress,
@@ -246,7 +246,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
         align={narrow ? 'start' : 'end'}
         sideOffset={8}
         maxWidth={width - 32}
-        style={menuPanelStyle(palette)}
+        style={SIDEBAR_MENU_PANEL}
         testID={testID ? `${testID}-menu` : undefined}
       >
         <View style={{ gap: 7 }}>

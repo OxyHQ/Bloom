@@ -105,36 +105,31 @@ const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
 const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
 
 /**
- * The per-surface chrome and motion. All three share the one popover motion;
- * `menu` and `listbox` use the menu recipe (`menu-styles.ts`) with colours from
- * `menu-palette.ts`, while `popover` leaves the whole panel to its caller's
- * resolved `style` (`popover/surface.ts`).
+ * The ONE motion every anchored surface runs: 150ms `ease-out`, fade +
+ * `scale-95` + 2px blur, no slide, scaling from the corner nearest the
+ * trigger, and the same shape reversed on the way out. It was written out
+ * three times, once per surface, with only the chrome differing — three
+ * spellings of one decision, any of which could be edited alone.
+ */
+const MENU_MOTION = {
+  duration: MENU_MOTION_DURATION,
+  easing: MENU_EASING,
+  scaleFrom: MENU_MOTION_SCALE_FROM,
+  slide: 0,
+  blur: MENU_MOTION_BLUR,
+} as const;
+
+/**
+ * The per-surface chrome. `menu` and `listbox` use the menu recipe
+ * (`constants.ts`'s `MENU_PANEL_CLASS` / `LISTBOX_PANEL_CLASS`) with colours
+ * from `menu-palette.ts`; `popover` carries NO chrome of its own here, because
+ * `popover/surface.ts` resolves the whole panel inline and hands it over as
+ * `style` so a caller's `className` can still override any one piece of it.
  */
 const SURFACE = {
-  popover: {
-    className: '',
-    duration: MENU_MOTION_DURATION,
-    easing: MENU_EASING,
-    scaleFrom: MENU_MOTION_SCALE_FROM,
-    slide: 0,
-    blur: MENU_MOTION_BLUR,
-  },
-  menu: {
-    className: MENU_PANEL_CLASS,
-    duration: MENU_MOTION_DURATION,
-    easing: MENU_EASING,
-    scaleFrom: MENU_MOTION_SCALE_FROM,
-    slide: 0,
-    blur: MENU_MOTION_BLUR,
-  },
-  listbox: {
-    className: LISTBOX_PANEL_CLASS,
-    duration: MENU_MOTION_DURATION,
-    easing: MENU_EASING,
-    scaleFrom: MENU_MOTION_SCALE_FROM,
-    slide: 0,
-    blur: MENU_MOTION_BLUR,
-  },
+  popover: { ...MENU_MOTION, className: '' },
+  menu: { ...MENU_MOTION, className: MENU_PANEL_CLASS },
+  listbox: { ...MENU_MOTION, className: LISTBOX_PANEL_CLASS },
 } as const;
 
 /**

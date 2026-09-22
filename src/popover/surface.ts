@@ -46,36 +46,88 @@ export const POPOVER_SIDE_OFFSET = 8;
 export type PopoverChromeKey =
   | 'width'
   | 'maxWidth'
-  | 'padding'
+  | 'paddingTop'
+  | 'paddingBottom'
+  | 'paddingLeft'
+  | 'paddingRight'
   | 'radius'
   | 'borderWidth'
   | 'borderColor'
   | 'background'
   | 'shadow'
-  | 'overflow';
+  | 'overflow'
+  // The rest are the PANEL PARTS' chrome (`parts.tsx`). The panel itself sets
+  // no default for any of them, so `resolvePopoverSurfaceStyle` ignores them.
+  | 'color'
+  | 'gap'
+  | 'marginTop'
+  | 'marginBottom'
+  | 'marginLeft'
+  | 'marginRight'
+  | 'height'
+  | 'flexDirection'
+  | 'alignItems';
 
 const BORDER_WIDTH = /^border(-[xytrblse])?(-\d+(\.\d+)?|-\[[^\]]+px\])?$/;
+
+/**
+ * The sides a spacing utility's axis letter claims. `p-4` has none and claims
+ * all four; `px` is the horizontal pair, `ps`/`pe` the logical ones, which
+ * react-native-web resolves to left/right in an LTR document.
+ */
+function sidesOf(letter: string | undefined, property: 'padding' | 'margin'): PopoverChromeKey[] {
+  const sides =
+    letter === undefined ? ['Top', 'Bottom', 'Left', 'Right']
+    : letter === 'x' || letter === 's' || letter === 'e' ? ['Left', 'Right']
+    : letter === 'y' ? ['Top', 'Bottom']
+    : letter === 't' ? ['Top']
+    : letter === 'b' ? ['Bottom']
+    : letter === 'l' ? ['Left']
+    : letter === 'r' ? ['Right']
+    : [];
+  return sides.map((side) => `${property}${side}` as PopoverChromeKey);
+}
 
 /**
  * Which chrome properties a caller's utility classes set. Variants (`dark:`,
  * `md:`, `hover:`), the important `!` and a negative `-` are stripped first, so
  * `md:!p-0` counts as padding.
+ *
+ * Padding and margin are claimed PER SIDE, because the utilities are: `px-4`
+ * names left and right and says nothing about the top, so a part that also
+ * sets `paddingTop` must keep it. Treating them as one key dropped a header's
+ * `pt-1` for a caller who only asked for wider sides.
+ *
+ * `text-*` is counted as a COLOUR, including the size steps (`text-sm`). That
+ * is deliberately imprecise: telling `text-sm` from `text-red-500` means
+ * knowing the consumer's palette, and the alternative the parts used before
+ * this — drop the colour default whenever ANY `className` is passed — is
+ * strictly worse, since it loses the colour to an unrelated `mt-1`.
  */
 export function classChromeOverrides(className?: string): ReadonlySet<PopoverChromeKey> {
   const keys = new Set<PopoverChromeKey>();
   if (!className) return keys;
+  let spacing: RegExpExecArray | null;
   for (const raw of className.split(/\s+/)) {
     if (!raw) continue;
     const token = raw.slice(raw.lastIndexOf(':') + 1).replace(/^!/, '').replace(/^-/, '');
     if (/^(w|size)-/.test(token)) keys.add('width');
     else if (/^max-w-/.test(token)) keys.add('maxWidth');
-    else if (/^p[xytrblse]?-/.test(token)) keys.add('padding');
+    else if ((spacing = /^([pm])([xytrbles])?-/.exec(token))) {
+      const property = spacing[1] === 'p' ? 'padding' : 'margin';
+      for (const key of sidesOf(spacing[2], property)) keys.add(key);
+    }
     else if (/^rounded(-|$)/.test(token)) keys.add('radius');
     else if (BORDER_WIDTH.test(token)) keys.add('borderWidth');
     else if (/^border-/.test(token)) keys.add('borderColor');
     else if (/^bg-/.test(token)) keys.add('background');
     else if (/^shadow(-|$)/.test(token)) keys.add('shadow');
     else if (/^overflow-/.test(token)) keys.add('overflow');
+    else if (/^text-/.test(token)) keys.add('color');
+    else if (/^gap(-|$)/.test(token)) keys.add('gap');
+    else if (/^h-/.test(token)) keys.add('height');
+    else if (/^flex-(row|col)/.test(token)) keys.add('flexDirection');
+    else if (/^items-/.test(token)) keys.add('alignItems');
   }
   return keys;
 }
@@ -96,14 +148,13 @@ export function resolvePopoverSurfaceStyle(
   if (!overridden.has('maxWidth') && viewportWidth !== undefined) {
     style.maxWidth = Math.max(0, viewportWidth - POPOVER_VIEWPORT_INSET);
   }
-  if (!overridden.has('padding')) {
-    // Longhands: a caller's `style` override of one side must not lose to a
-    // shorthand react-native-web ranks above it (AGENTS.md, "Style").
-    style.paddingTop = POPOVER_PADDING;
-    style.paddingBottom = POPOVER_PADDING;
-    style.paddingLeft = POPOVER_PADDING;
-    style.paddingRight = POPOVER_PADDING;
-  }
+  // Longhands, one side at a time: a caller's `style` override of one side must
+  // not lose to a shorthand react-native-web ranks above it (AGENTS.md,
+  // "Style"), and a caller who writes `px-4` is claiming the sides, not the top.
+  if (!overridden.has('paddingTop')) style.paddingTop = POPOVER_PADDING;
+  if (!overridden.has('paddingBottom')) style.paddingBottom = POPOVER_PADDING;
+  if (!overridden.has('paddingLeft')) style.paddingLeft = POPOVER_PADDING;
+  if (!overridden.has('paddingRight')) style.paddingRight = POPOVER_PADDING;
   if (!overridden.has('radius')) style.borderRadius = POPOVER_RADIUS;
   if (!overridden.has('borderWidth')) style.borderWidth = 1;
   if (!overridden.has('borderColor')) style.borderColor = palette.border;
