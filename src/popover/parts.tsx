@@ -59,12 +59,14 @@ import type {
  */
 function kept(base: ViewStyle, owned: ReadonlySet<PopoverChromeKey>): ViewStyle {
   if (owned.size === 0) return base;
-  const out: Record<string, unknown> = {};
+  const out: ViewStyle = {};
   for (const [property, value] of Object.entries(base)) {
     const key = PROPERTY_KEY[property];
-    if (key === undefined || !owned.has(key)) out[property] = value;
+    if (key === undefined || !owned.has(key)) {
+      Object.assign(out, { [property]: value });
+    }
   }
-  return out as ViewStyle;
+  return out;
 }
 
 /** Which chrome key each style property belongs to. */
@@ -87,7 +89,7 @@ const PROPERTY_KEY: Record<string, PopoverChromeKey | undefined> = {
 export function PopoverHeader({ leading, children, className, style, testID }: PopoverHeaderProps) {
   const owned = classChromeOverrides(className);
   return (
-    <StyledView className={className} style={[kept(styles.header as ViewStyle, owned), style]} testID={testID}>
+    <StyledView className={className} style={[kept(styles.header, owned), style]} testID={testID}>
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <View style={styles.headerText}>{children}</View>
     </StyledView>
@@ -144,7 +146,7 @@ export function PopoverDescription({
 export function PopoverFooter({ children, className, style, testID }: PopoverFooterProps) {
   const owned = classChromeOverrides(className);
   return (
-    <StyledView className={className} style={[kept(styles.footer as ViewStyle, owned), style]} testID={testID}>
+    <StyledView className={className} style={[kept(styles.footer, owned), style]} testID={testID}>
       {children}
     </StyledView>
   );
@@ -159,7 +161,7 @@ export function PopoverSeparator({ className, style, testID }: PopoverSeparatorP
       aria-hidden
       className={className}
       style={[
-        kept({ ...(styles.separator as ViewStyle), backgroundColor: palette.border }, owned),
+        kept({ ...styles.separator, backgroundColor: palette.border }, owned),
         style,
       ]}
       testID={testID}
