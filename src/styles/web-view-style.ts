@@ -118,3 +118,8 @@ export interface WebCssStyle extends ViewStyle {
    */
   [customProperty: `--${string}`]: string | undefined;
 }
+
+/** Position a secondary sticky row below measured chrome, retaining panel inset. */
+export function webSurfaceStickyTopPlus(px: number): ViewStyle['top'] {
+  return `calc(var(--bloom-panel-sticky-top, 0px) + ${px}px)` as ViewStyle['top'];
+}

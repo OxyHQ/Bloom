@@ -232,6 +232,8 @@ export interface SidebarUserMenuProps {
 }
 
 export interface SidebarProps {
+  /** Center the main navigation group in space above the persistent footer. */
+  contentAlignment?: 'start' | 'center';
   /** App-owned destination content after the built-in rows/tree, inside the same
    * scroll viewport. Hidden and noninteractive while collapsed; remains mounted
    * so pagination and disclosure state survive. Not rendered in variant="rail".

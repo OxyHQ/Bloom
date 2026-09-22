@@ -49,9 +49,9 @@ const files = sourceFiles(SRC);
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
   'styles/web-view-style.ts': {
-    count: 6,
+    count: 7,
     reason:
-      "`WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
+      "`WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `webSurfaceStickyTopPlus` (measured header clearance plus the inherited panel inset), `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
   },
   'skeleton/Skeleton.tsx': {
     count: 1,

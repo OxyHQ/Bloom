@@ -270,3 +270,19 @@ provides the interior spacing.
 `titleReveal="onScroll" titleRevealOffset={headingHeight}` holds both title and subtitle until that scroll distance, then fades them in across `scrollThreshold` (default20px). The scrim remains independent. Hidden header titles leave the accessibility tree until they start appearing; back and action islands remain available.
 
 Measure the in-content heading block with its `onLayout` and pass its height as `titleRevealOffset` when it is the first block below the header. For later headings include the preceding content height. `Screen` and `ScreenScrollView` supply the shared offset; no consumer scroll listener is needed. See **Blocks / Page Header / Reveal After Content Heading** for the complete live composition. The default offset0 preserves existing reveal timing.
+
+### Banner and docked tabs
+
+Use `placement="overlap"` inside `HeaderDockProvider` when a banner should flow
+behind the header. Unlike `overlay`, it retains document stickiness on web.
+Pair it with `StickySection` from `@oxy.so/bloom/layout`: the section docks below
+the measured header and both converge to the inherited opaque surface fill.
+`titleReveal="onDock"` reveals the title and subtitle with this shared docking
+progress, without an application scroll threshold. At rest the hidden title is
+also excluded from accessibility and hit testing. It requires a docking provider
+and section; without a target the title remains hidden.
+
+The provider accepts the existing `scrollY` shared value or inherits `Screen`'s.
+Native lists retain sticky ownership and consume `useHeaderDockInset()` as their
+supported sticky-header offset; see [layout](./layout.mdx). Storybook's
+**Profile Docking** demonstrates the document-scroll composition.

@@ -207,3 +207,39 @@ hiding would float it off the bottom of the screen for nothing.
 so a reader mounted in the same commit as its claimant reads `0` on the first
 commit. These are layout offsets rather than measurements, so nothing here waits
 on a real layout pass.
+
+### Header and sticky section docking
+
+`HeaderDockProvider` pairs one `PageHeader` with one `StickySection`. Give it the
+existing scroll owner's `SharedValue`, or place it inside `Screen`; it adds no
+scroll listener. The provider scopes measured top-edge claims to this screen.
+
+```tsx
+import { HeaderDockProvider, StickySection, useHeaderDockInset } from '@oxy.so/bloom/layout';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+
+<HeaderDockProvider scrollY={scrollPosition}>
+  <PageHeader placement="overlap" title="Profile" titleReveal="onDock" />
+  <ProfileSummary />
+  <StickySection><ProfileTabs /></StickySection>
+  <ProfileContent />
+</HeaderDockProvider>
+```
+
+On web, `overlap` keeps the measured header sticky while allowing the following
+banner to begin behind it. `StickySection` measures its normal-flow position and
+docks below that header, including `ContentPanel`'s viewport inset. Both paint
+the inherited surface fill; the header's scrim becomes an opaque matching fill
+as the section reaches it. No application `top`, `zIndex`, or negative margin is
+needed. A section must be in the same scroll owner as its provider's scroll value.
+
+On native, the **list owns stickiness**. `StickySection` stays in normal flow;
+pass its list-content Y as `offset` (usually the measured list header height).
+Inside the provider, `useHeaderDockInset()` returns the measured header height
+for an overlapping header, or zero for an inline header already above the list.
+Pass that number to a list's supported sticky-header offset, for example
+FlashList's `stickyHeaderConfig.offset`. Keep `stickyHeaderIndices` on the list.
+This requires a list version supporting that offset; Bloom does not translate
+sticky children outside their native cell bounds. On web the hook always
+returns the header's measured occupancy. Font scaling and safe-area changes
+update it through header layout measurement.
