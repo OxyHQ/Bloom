@@ -1,3 +1,11 @@
+/**
+ * `ComposerLoader` — WEB: the light band laps on CSS keyframes over a DOM
+ * `<svg>`, where the native fork drives a react-native-svg frame clock.
+ *
+ * The lap geometry both forks draw is shared (`./shared`); what differs is only
+ * what advances it. Keeping the geometry in one module is what stops the two
+ * bands from drifting apart while still looking like one component.
+ */
 import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 

@@ -1,3 +1,14 @@
+/**
+ * `Loading` — WEB: the same three variants on CSS keyframes and transitions,
+ * with no native dependency in the graph.
+ *
+ * The native fork statically imports react-native-reanimated and
+ * react-native-svg. Reanimated's worklets Babel plugin is native-only, so a
+ * static import of it breaks every web bundler — Vite, webpack and Metro-web
+ * alike. That is the whole reason this family forks: the contract and the
+ * variants are identical, only the motion mechanism differs. Types are
+ * platform-agnostic and come straight from `./types`.
+ */
 import { normalizeBloomSize } from '../appearance/legacy';
 import { resolveBloomColors } from '../appearance/colors';
 import { useBloomAppearance } from '../appearance';
