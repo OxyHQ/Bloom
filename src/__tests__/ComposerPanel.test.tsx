@@ -535,3 +535,33 @@ it.each(['light', 'dark'] as const)('composer reads canonical foreground and sur
   rerender(<BloomThemeProvider mode="light" colorPreset="teal"><SendButton disabled onPress={() => {}} label="Send" palette={palette} /></BloomThemeProvider>);
   expect(arrow()).toBe(palette.send.disabled.foreground);
 });
+
+describe('emptyAction', () => {
+  const call = <SendButton disabled={false} onPress={() => {}} label="Voice mode" palette={resolveComposerPalette(buildTheme('teal', 'light'))} />;
+
+  it("draws the host's empty action in place of send while there is nothing to send", () => {
+    const { queryByLabelText } = renderIn(<ComposerPanel emptyAction={call} />);
+    expect(queryByLabelText('Voice mode')).not.toBeNull();
+    expect(queryByLabelText('Send message')).toBeNull();
+  });
+
+  it('gives the slot back to send once there is a draft', () => {
+    const { queryByLabelText } = renderIn(<ComposerPanel defaultValue="hi" emptyAction={call} />);
+    expect(queryByLabelText('Voice mode')).toBeNull();
+    expect(queryByLabelText('Send message')).not.toBeNull();
+  });
+
+  it('gives the slot back to send for a lone attachment', () => {
+    const { queryByLabelText } = renderIn(
+      <ComposerPanel attachments={[{ id: 'a', name: 'a.png', kind: 'image' }]} emptyAction={call} />,
+    );
+    expect(queryByLabelText('Voice mode')).toBeNull();
+    expect(queryByLabelText('Send message')).not.toBeNull();
+  });
+
+  it('lets a stop win over the empty action', () => {
+    const { queryByLabelText } = renderIn(<ComposerPanel busy onStop={() => {}} emptyAction={call} />);
+    expect(queryByLabelText('Voice mode')).toBeNull();
+    expect(queryByLabelText('Stop generating')).not.toBeNull();
+  });
+});

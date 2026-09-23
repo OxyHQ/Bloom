@@ -144,6 +144,7 @@ export function ComposerPanelBase({
   attachments,
   onRemoveAttachment,
   status,
+  emptyAction,
   inputRef,
   labels: labelOverrides,
   style,
@@ -314,8 +315,12 @@ export function ComposerPanelBase({
                   label={labels.voice}
                   palette={palette}
                 />
+                {/* Stop wins; then the host's empty action while there is
+                    nothing to send; otherwise send. */}
                 {busy && onStop ? (
                   <StopButton onPress={onStop} label={labels.stop} palette={palette} />
+                ) : emptyAction !== undefined && text.trim() === '' && !attachments?.length ? (
+                  emptyAction
                 ) : (
                   <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
                 )}
