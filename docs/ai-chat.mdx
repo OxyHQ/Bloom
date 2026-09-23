@@ -95,6 +95,27 @@ The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is 
 
 **Hazard (web):** react-native-web gives every view `min-height: 0`, so the usual `flexGrow: 1` + `justifyContent: 'flex-end'` content container stays the viewport's height and its children overflow it instead of scrolling — and `onContentSizeChange` never sees the growth. The thread floors its container at `minHeight: '100%'` on web instead.
 
+### Floating chrome
+
+`<AiChatContainer floatingChrome>` keeps every part and changes the geometry: the conversation fills the **whole card** and scrolls **behind** the header and **behind** the composer. Use it when the transcript is the screen — a full-height chat where two opaque bands would each take a strip of it, or where a `background` layer should run edge to edge under everything. Leave it off (the default, and what the AI Chat template uses) for the stacked layout above.
+
+| Layer | Geometry |
+|---|---|
+| card | unchanged: radius 24, background-secondary (or `surface={false}`), clipped; `background` still fills it under everything |
+| `children` | fill the card's full height — nothing is in flow above or below them |
+| header block | the `header` slot (`AiChatMobileHeader`) + the breadcrumb row, absolute at the top, transparent — no band of its own |
+| footer block | `AgentThinking` + `composer`, absolute at the bottom; pt **24** (instead of 12), px 10 / pb 10, gap 10 |
+| top fade | the page-header edge scrim in the card surface, opaque at the top edge, ending 55% of the header block's height below it; fades in over the first **16px** scrolled (the gap it closes) |
+| bottom fade | a 24px scrim ramp across the footer's top padding, then solid surface behind the composer; fades in over the first **24px** of transcript below the fold |
+
+Both blocks are `pointerEvents="box-none"`, so the transcript under their empty space still scrolls and takes clicks. Both fades are decorative (hidden from assistive tech) and exist **only while turns are actually under that edge** — at rest, with the thread followed to the end, the bottom is clear and a `background` layer shows untinted.
+
+**Insets.** The container measures both blocks (`onLayout`) and hands the heights to its children through context. An `AiChatThread` pads its **content** by them — pt = header block + 16, pb = footer block — and sets matching iOS `scrollIndicatorInsets`, so at rest the first and last turns sit exactly where the stacked layout puts them relative to the chrome, and in motion pass under it. The `ScrollView` stays the only scroller; `autoFollow`, `followThreshold`, `onStartReached`, `maintainStartPosition` and the ref work unchanged. A resize that is **exactly** the chrome's (the composer growing, `AgentThinking` appearing, the header measuring in on mount) is not a new turn: a reader at the end stays at the end without an animated follow, and a reader mid-thread keeps their turn in place. Any other child reads the same numbers from `useAiChatChromeInsets()` (`{ top, bottom }`, or `null` outside a floating container) to keep an empty state or a scroller of its own clear of the chrome.
+
+**Why a fade, not a frost.** `AgentChat` frosts its overlaid header (white/black 20%, a 20px backdrop blur on web) once the transcript reaches it. Here the chrome has no band, and a frosted rectangle is one: it ends at its own bottom edge, and that edge is a line across the transcript. A one-colour opacity ramp is identical on native and web and needs no blur.
+
+**Limits.** The fades are background-secondary. With `surface={false}` there is no known colour to fade to, so the chrome floats **without** fades — the composer's own surface is then what covers the text under it. Over an opaque `background` layer the fades are the card surface, not the layer.
+
 ## Turns
 
 - **User** — pushed right with a 6px bleed past the column, as wide as its text up to half the column + 6; radius 16, background-primary, px 12 / py 11, shadow-card.

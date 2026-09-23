@@ -317,6 +317,23 @@ export interface AiChatContainerProps {
    * `false` leaves the root transparent.
    */
   surface?: boolean;
+  /**
+   * Float the header and the composer OVER the transcript instead of stacking
+   * them around it. Default `false`: header row, thread, footer, as siblings.
+   *
+   * With it, `children` fill the whole card and scroll BEHIND both: the header
+   * slot and breadcrumb row are pinned to the top with no band of their own,
+   * the footer (`AgentThinking` + `composer`) to the bottom. Each edge paints a
+   * fade of the card's surface only while the transcript actually runs under
+   * it, ramping in over the first px of overlap. An `AiChatThread` inside pads
+   * its content by the measured heights of both, so the first and last turns
+   * rest clear of them; a custom child reads the same numbers from
+   * `useAiChatChromeInsets()`.
+   *
+   * The fades are background-secondary; with `surface={false}` there is no
+   * known colour to fade to, so the chrome floats without them.
+   */
+  floatingChrome?: boolean;
   labels?: AiChatContainerLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
