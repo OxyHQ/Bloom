@@ -33,7 +33,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ComposerPill } from '../composer-panel';
+import { ComposerPanel, ComposerPill } from '../composer-panel';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -174,5 +174,38 @@ describe('ComposerPill — host slots', () => {
 
     expect(container.querySelector('[data-testid="call"]')).toBeNull();
     expect(container.querySelector('[aria-label="Stop generating"]')).not.toBeNull();
+  });
+});
+
+describe('ComposerPanel — host keys', () => {
+  /** The panel keeps the pill's contract, so a suggestion list works over either. */
+  it('lets the host take a key before the Enter rule', () => {
+    const onSubmit = jest.fn();
+    const seen: string[] = [];
+    mount(
+      <ComposerPanel
+        defaultValue="hi"
+        onSubmit={onSubmit}
+        onKeyPress={(event) => {
+          seen.push(event.nativeEvent.key);
+          if (event.nativeEvent.key === 'Enter') event.preventDefault();
+        }}
+      />,
+    );
+
+    keyDown(field(), 'ArrowDown');
+    keyDown(field(), 'Enter');
+
+    expect(seen).toEqual(['ArrowDown', 'Enter']);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('still sends when the host looks and does not take', () => {
+    const onSubmit = jest.fn();
+    mount(<ComposerPanel defaultValue="hi" onSubmit={onSubmit} onKeyPress={() => {}} />);
+
+    keyDown(field(), 'Enter');
+
+    expect(onSubmit).toHaveBeenCalledWith('hi');
   });
 });

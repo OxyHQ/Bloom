@@ -215,7 +215,7 @@ in the slot the thumb is already over. A stop always wins over it.
 `ComposerPanel` takes the same prop; there "nothing to send" also means no
 attachment, since a picture with no caption is a turn.
 
-`onKeyPress` sees the field's keys BEFORE the composer's own Enter rule;
+`onKeyPress` (on both the pill and the panel) sees the field's keys BEFORE the composer's own Enter rule;
 calling `preventDefault()` takes the key. That is what a suggestion list over
 the composer needs, so the arrows, Enter and Escape drive the list rather than
 the field.

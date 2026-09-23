@@ -145,6 +145,7 @@ export function ComposerPanelBase({
   onRemoveAttachment,
   status,
   emptyAction,
+  onKeyPress: onKeyPressProp,
   inputRef,
   labels: labelOverrides,
   style,
@@ -200,12 +201,15 @@ export function ComposerPanelBase({
 
   const onKeyPress = useCallback(
     (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+      // The host sees the key first and may take it (a suggestion list).
+      onKeyPressProp?.(event);
+      if (event.defaultPrevented) return;
       const native: TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean } = event.nativeEvent;
       if (!IS_WEB || native.key !== 'Enter' || native.shiftKey || native.isComposing) return;
       event.preventDefault();
       submit();
     },
-    [submit],
+    [submit, onKeyPressProp],
   );
 
   const hasAttachments = !!attachments && attachments.length > 0;
