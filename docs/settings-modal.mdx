@@ -108,7 +108,7 @@ Menus, selects, tooltips and the date popover opened inside a page stack above i
 - **`SettingsGeneralPage`** — `plan` (`SettingsPlanCard`) then `sections`. The plan card's artwork is `SettingsPlanArt`: on web, a WebGL "burning flag" shader over `artworkSource` (or Bloom's generated accent/success/warning discs), eased toward the pointer; native, reduced motion and a failed WebGL context get the static discs. A radial fade melts it into the card.
 - **`SettingsProfilePage`** — cards of rows.
 - **`SettingsToolsPage`** — scope pills (sliding thumb), the authentication switch, the scope's servers (`SettingsServerList`), Team servers (empty state when none) and plugin servers. Server tiles take a theme `tone`; the "…" menu's actions and callbacks are props.
-- **`SettingsStoragePage`** — Bloom's `FileUpload` dropzone (`upload` props) over the file table: type/order selects, search, sortable columns, row selection, delete (rows collapse out before `onDeleteFile`), the "⋮" menu and pagination. Files that appear in `files` grow in from under the header.
+- **`SettingsStoragePage`** — Bloom's `FileUpload` dropzone (`upload` props; `upload={false}` for a read-only store) over the file table: type/order selects, search, sortable columns, row selection, delete (rows collapse out before `onDeleteFile`), the "⋮" menu and pagination. Files that appear in `files` grow in from under the header.
 
 ## Colours
 
