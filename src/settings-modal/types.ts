@@ -320,8 +320,9 @@ export interface SettingsStoragePageProps {
    * The dropzone's props — Bloom's `FileUpload`. Omitted, it runs a
    * self-simulating demo; pass `file`/`progress`/`onFileSelected` for a real
    * upload, and add the finished file to `files` from `onUploadComplete`.
+   * `false` drops the dropzone: a read-only store of what already exists.
    */
-  upload?: Omit<FileUploadProps, 'style' | 'testID'>;
+  upload?: Omit<FileUploadProps, 'style' | 'testID'> | false;
   kinds?: SettingsFileKind[];
   selectedIds?: string[];
   defaultSelectedIds?: string[];

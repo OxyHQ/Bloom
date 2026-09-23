@@ -446,10 +446,12 @@ export function SettingsStoragePage({
 
   return (
     <View testID={testID} style={[styles.page, settingsRingVars(palette), style]}>
-      <FileUpload
-        {...upload}
-        testID={testID ? `${testID}-dropzone` : undefined}
-      />
+      {upload === false ? null : (
+        <FileUpload
+          {...upload}
+          testID={testID ? `${testID}-dropzone` : undefined}
+        />
+      )}
 
       <View style={[styles.table, { borderColor: palette.separator }]} testID={testID ? `${testID}-table` : undefined}>
         <View style={styles.toolbar}>
