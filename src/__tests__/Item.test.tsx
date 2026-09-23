@@ -5,6 +5,8 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Item } from '../item';
 import { pressHost } from './support/press-host';
+import { resolvedStyle } from './support/rendered-style';
+import { buildTheme } from '../theme/build-theme';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -78,5 +80,33 @@ describe('Item', () => {
     );
     expect(getByText('L')).toBeTruthy();
     expect(getByText('R')).toBeTruthy();
+  });
+
+  describe('row washes', () => {
+    const { colors } = buildTheme('teal', 'light');
+    /** Every background painted anywhere in the rendered row. */
+    function washes(ui: React.ReactElement): unknown[] {
+      const { UNSAFE_root } = renderWithTheme(ui);
+      return UNSAFE_root.findAll((node) => typeof node.type === 'string')
+        .map((node) => resolvedStyle(node.props.style).backgroundColor)
+        .filter((color) => color !== undefined);
+    }
+
+    it('paints the keyboard cursor with the hover wash, which reads on a tinted surface', () => {
+      expect(washes(<Item title="Row" highlighted />)).toContain(colors.contrast50);
+    });
+
+    it('keeps the "you are here" wash over the keyboard cursor', () => {
+      const painted = washes(<Item title="Row" active highlighted />);
+      expect(painted).toContain(colors.primaryLight);
+      expect(painted).not.toContain(colors.contrast50);
+    });
+
+    it('announces nothing for the cursor: the row is neither chosen nor current', () => {
+      const { getByLabelText } = renderWithTheme(<Item title="Row" onPress={() => {}} highlighted />);
+      const row = getByLabelText('Row');
+      expect(row.props['aria-pressed']).toBeUndefined();
+      expect(row.props.accessibilityState.selected).toBeUndefined();
+    });
   });
 });
