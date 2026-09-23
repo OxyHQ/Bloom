@@ -19,6 +19,7 @@
  */
 import type { GestureResponderEvent, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
+import type { MenuFocusIntent } from './menu-keyboard';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
 /**
@@ -32,6 +33,11 @@ export interface OverlayShellContextValue {
   setOpen: (next: boolean) => void;
   /** The trigger wrapper. Measured by the web forks, unused on native. */
   anchorRef: React.RefObject<View | null>;
+  /**
+   * Web menus only: where a keyboard open lands focus, handed from the trigger
+   * to the panel (`menu-keyboard.ts`). Absent on native and on `Popover`.
+   */
+  focusIntent?: MenuFocusIntent;
 }
 
 /**
@@ -129,6 +135,11 @@ export interface FloatingPanelProps extends FloatingPositionProps {
    * panel inline (`popover/surface.ts`) and passes it as `style`.
    */
   surface?: 'popover' | 'menu' | 'listbox';
+  /**
+   * Receives the panel's own node as it mounts and unmounts — for a family that
+   * attaches keyboard handling to the rows inside it (`menu-keyboard.ts`).
+   */
+  panelRef?: (node: View | null) => void;
 }
 
 /**

@@ -51,8 +51,10 @@ import {
   MENU_SUB_SIDE_OFFSET,
   ROW_ICON_SIZE,
 } from './constants';
+import { useMenuSurface } from './context';
 import { pushFloatingEscape } from './escape-stack';
 import { FloatingPanel } from './FloatingPanel';
+import { hostElement, MENU_ROW_SELECTOR, useMenuPanelKeys } from './menu-keyboard';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
 import type {
   FloatingAnchor,
@@ -120,8 +122,7 @@ function isHoverPointer(event: Event): boolean {
 }
 
 /** Every role a menu ROW can carry — the rows a pointer can actually land on. */
-const MENU_ITEM_SELECTOR =
-  '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="checkbox"], [role="radio"]';
+const MENU_ITEM_SELECTOR = MENU_ROW_SELECTOR;
 
 /**
  * Did the pointer leave for another ROW, rather than for the gap this sub's
@@ -560,6 +561,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       if (!subOpen || typeof document === 'undefined') return undefined;
       return pushFloatingEscape(() => closeRef.current());
     }, [subOpen]);
+
+    // Arrows (wrapping), Home/End, Space and Tab among the flyout's own rows —
+    // the same keys as the menu it flew out of (`menu-keyboard.ts`). Tab closes
+    // the WHOLE menu, not just this flyout: the menu is not in the tab order.
+    const surface = useMenuSurface();
+    useMenuPanelKeys(hostElement(node), { open: sub.open, onTab: surface.close });
 
     // Move focus onto the panel once it has been placed, so Right genuinely
     // ENTERS the submenu rather than only opening it.

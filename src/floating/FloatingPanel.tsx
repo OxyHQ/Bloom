@@ -199,6 +199,7 @@ export function FloatingPanel({
   testID,
   children,
   surface = 'popover',
+  panelRef,
 }: FloatingPanelProps) {
   const chrome = SURFACE[surface];
   const isMenuSurface = surface !== 'popover';
@@ -220,8 +221,11 @@ export function FloatingPanel({
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(0);
 
+  const panelRefRef = useRef(panelRef);
+  panelRefRef.current = panelRef;
   const attach = useCallback((node: View | null) => {
     setPanelNode(node);
+    panelRefRef.current?.(node);
   }, []);
 
   const store = useCallback((next: DropdownPlacement | null) => {
