@@ -51,7 +51,10 @@ import {
   MENU_SUB_SIDE_OFFSET,
   ROW_ICON_SIZE,
 } from './constants';
+import { useMenuSurface } from './context';
+import { pushFloatingEscape } from './escape-stack';
 import { FloatingPanel } from './FloatingPanel';
+import { hostElement, MENU_ROW_SELECTOR, useMenuPanelKeys } from './menu-keyboard';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
 import type {
   FloatingAnchor,
@@ -119,8 +122,7 @@ function isHoverPointer(event: Event): boolean {
 }
 
 /** Every role a menu ROW can carry — the rows a pointer can actually land on. */
-const MENU_ITEM_SELECTOR =
-  '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="checkbox"], [role="radio"]';
+const MENU_ITEM_SELECTOR = MENU_ROW_SELECTOR;
 
 /**
  * Did the pointer leave for another ROW, rather than for the gap this sub's
@@ -546,22 +548,25 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       };
     }, [node, sub]);
 
-    // Escape, in the CAPTURE phase with `stopImmediatePropagation`. Every open
-    // `FloatingPanel` has a bubble-phase `keydown` listener on `document`, and
-    // `stopPropagation` does not stop a sibling listener on the same node — so
-    // without this the sub and its parent menu would both close on one press.
-    // Capture runs before bubble whatever the registration order, which is what
-    // makes "innermost first" hold rather than "whichever mounted first".
+    // Escape closes this flyout and leaves the menu open. The flyout's panel is
+    // `dismissible={false}` (a press outside it is the parent's business), so it
+    // takes its own entry on the escape stack — pushed after the parent's, so it
+    // is the one Escape reaches first (`escape-stack.ts`). This used to be a
+    // document CAPTURE listener with `stopImmediatePropagation`, which also took
+    // Escape away from any field inside the flyout.
+    const { open: subOpen, closeAndRefocus } = sub;
+    const closeRef = useRef(closeAndRefocus);
+    closeRef.current = closeAndRefocus;
     useEffect(() => {
-      if (!sub.open || typeof document === 'undefined') return;
-      const onKeyDown = (event: KeyboardEvent) => {
-        if (event.key !== 'Escape') return;
-        event.stopImmediatePropagation();
-        sub.closeAndRefocus();
-      };
-      document.addEventListener('keydown', onKeyDown, true);
-      return () => document.removeEventListener('keydown', onKeyDown, true);
-    }, [sub]);
+      if (!subOpen || typeof document === 'undefined') return undefined;
+      return pushFloatingEscape(() => closeRef.current());
+    }, [subOpen]);
+
+    // Arrows (wrapping), Home/End, Space and Tab among the flyout's own rows —
+    // the same keys as the menu it flew out of (`menu-keyboard.ts`). Tab closes
+    // the WHOLE menu, not just this flyout: the menu is not in the tab order.
+    const surface = useMenuSurface();
+    useMenuPanelKeys(hostElement(node), { open: sub.open, onTab: surface.close });
 
     // Move focus onto the panel once it has been placed, so Right genuinely
     // ENTERS the submenu rather than only opening it.

@@ -14,7 +14,7 @@
  * fails the sibling case (and testing it for a `[role="menu"]` ancestor instead
  * of a ROW fails the diagonal one), `pointermove` → `mouseenter`
  * fails the layout-intent case, removing pointer movement fails its positive
- * control, and dropping `stopImmediatePropagation` fails the innermost-Escape
+ * control, and dropping the flyout's own escape-stack entry fails the innermost-Escape
  * case. Each mutation is caught by exactly the case that measures it.
  *
  * Usage: start Storybook, then

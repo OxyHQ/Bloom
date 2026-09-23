@@ -9,6 +9,7 @@
  */
 import { createContext, useContext } from 'react';
 
+import type { MenuFocusIntent } from '../floating/menu-keyboard';
 import type { FloatingAnchor } from '../floating/types';
 
 export interface ContextMenuContextValue {
@@ -21,6 +22,8 @@ export interface ContextMenuContextValue {
   close: () => void;
   /** Where the surface anchors. `null` on native and while closed. */
   anchor: FloatingAnchor | null;
+  /** Web only: the row focus lands on when the menu opens (`menu-keyboard.ts`). */
+  focusIntent?: MenuFocusIntent;
 }
 
 const ContextMenuContext = createContext<ContextMenuContextValue | null>(null);

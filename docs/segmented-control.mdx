@@ -50,6 +50,18 @@ emits `aria-selected` for tabs and `aria-checked` for radios, and neither uses
 `accessibilityState` — react-native-web drops that entirely, so a control
 relying on it would announce no state at all on web.
 
+## Keyboard (web)
+
+The group is ONE tab stop — the chosen segment — and the rest are reached with the arrows, per the ARIA pattern its `type` names:
+
+| `type` | keys | does |
+| --- | --- | --- |
+| `radio` | <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> | move to the previous / next segment and check it, wrapping at the ends |
+| `tabs` | <kbd>←</kbd> <kbd>→</kbd> · <kbd>Home</kbd> <kbd>End</kbd> | move to the previous / next (or first / last) segment and select it, wrapping |
+| both | <kbd>Space</kbd> · <kbd>Enter</kbd> | choose the focused segment |
+
+Disabled segments are skipped, and a disabled group offers no tab stop at all. Selection follows focus in both modes — the control is a value, not a navigation. <kbd>Space</kbd> is Bloom's own: react-native-web presses a `radio` or `tab` on <kbd>Enter</kbd> only. Keys also clear the drag gesture's click suppression, so a key press is never swallowed as the tail of a drag. Native is unchanged.
+
 ## `label` names the group, and something has to
 
 "Light / Dark / System" without a group name announces as three unrelated radios;

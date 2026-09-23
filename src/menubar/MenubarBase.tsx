@@ -28,6 +28,7 @@ import { useMenuPalette } from '../floating/menu-palette';
 import { menuType } from '../floating/menu-type';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
+import { useMenuFocusIntent, useMenuTriggerKeys } from '../floating/menu-keyboard';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { StyledText, StyledView } from '../styles/styled-primitives';
 import {
@@ -86,14 +87,16 @@ export function MenubarMenu({ children, value }: MenubarMenuProps) {
   const bar = useMenubar();
   const anchorRef = useRef<RNView | null>(null);
   const { setValue } = bar;
+  const focusIntent = useMenuFocusIntent();
 
   const context = useMemo(
     () => ({
       open: bar.value === value,
       setOpen: (next: boolean) => setValue(next ? value : undefined),
       anchorRef,
+      focusIntent,
     }),
-    [bar.value, value, setValue],
+    [bar.value, value, setValue, focusIntent],
   );
 
   return <MenubarMenuProvider value={context}>{children}</MenubarMenuProvider>;
@@ -110,6 +113,15 @@ export function MenubarTrigger({
 }: MenubarTriggerProps) {
   const menu = useMenubarMenu();
   const palette = useMenuPalette();
+  // Web: Enter/Space/ArrowDown open into the first row, ArrowUp into the last,
+  // and focus returns here on close (`floating/menu-keyboard.ts`). Inert on
+  // native, where there is no DOM node to listen on.
+  useMenuTriggerKeys(menu.anchorRef, {
+    open: menu.open,
+    setOpen: menu.setOpen,
+    disabled,
+    intent: menu.focusIntent,
+  });
 
   // `flex items-center rounded-md px-2 py-1.5`, plus `bg-accent` while its menu
   // is open, and `text-sm font-medium` for the label. A menubar trigger is a

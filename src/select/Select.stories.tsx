@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
+import { Dialog } from '../dialog';
 import { RiHomeHeartLine, RiHotelBedLine, RiWalkLine } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -163,6 +164,30 @@ export const OpenList: Story = {
       <StateSelect testID="select-open" initial="banana" disabledOption="cherry" />
     </View>
   ),
+};
+
+/**
+ * A select inside a `Dialog`. Open the list and press Escape: the LIST closes
+ * and the dialog stays — the innermost open surface takes the key. A second
+ * Escape then closes the dialog. (It used to close both at once.)
+ */
+export const InDialog: Story = {
+  parameters: { controls: { disable: true } },
+  render: function InDialogStory() {
+    const [open, setOpen] = useState(true);
+    return (
+      <View style={{ gap: 12 }}>
+        <Text testID="dialog-state">{open ? 'Dialog open' : 'Dialog closed'}</Text>
+        {open ? (
+          <Dialog startOpen placement="center" title="Edit order" onClose={() => setOpen(false)}>
+            <View style={{ width: 280, paddingBottom: 8 }}>
+              <StateSelect testID="dialog-select" initial="banana" />
+            </View>
+          </Dialog>
+        ) : null}
+      </View>
+    );
+  },
 };
 
 /** The `sm` density: 13px type and `px-2 py-1.5` option rows. */

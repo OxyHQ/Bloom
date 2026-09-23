@@ -38,8 +38,20 @@ an ancestor of what it switches.
 | `hasSelection`  | whether **any** tab is selected — see below                    |
 | `variant`       | `underline` · `pill` · `filled` · `outlined` — see below       |
 | `fullWidth`     | spread the triggers across the container instead of hugging    |
+| `label`         | the strip's accessible name — the `tablist`'s `aria-label` (web) |
 | `count`         | a count badge beside a trigger's label                         |
 | `leadingIcon`   | an icon component, sized and tinted by the trigger             |
+
+## Keyboard (web)
+
+On web the strip is a `role="tablist"` — named by `label` — and follows the ARIA tabs pattern:
+
+- **One tab stop.** <kbd>Tab</kbd> lands on the selected tab (the first enabled one when none is selected) and the next <kbd>Tab</kbd> leaves the strip. The other tabs are reached with the arrows.
+- <kbd>←</kbd> · <kbd>→</kbd> move between tabs and wrap at the ends; <kbd>Home</kbd> · <kbd>End</kbd> jump to the first and last. Disabled tabs are skipped. The strip is horizontal, so <kbd>↑</kbd> · <kbd>↓</kbd> are left to the page.
+- **Activation follows the path.** With `value` (the controlled path) activation is **automatic**: the tab an arrow lands on is selected, and `onValueChange` fires. On the focus-driven path (`isFocused` per trigger, as `tabs/expo-router` uses) selecting a tab is a NAVIGATION, so activation is **manual**: the arrows move focus only, and <kbd>Enter</kbd> or <kbd>Space</kbd> selects.
+- <kbd>Space</kbd> selects the focused tab. react-native-web presses a `role="tab"` on <kbd>Enter</kbd> only, so Bloom supplies it.
+
+Before this every tab was its own tab stop, the arrows did nothing, and there was no `tablist` at all — correct `role="tab"` and `aria-selected` on each trigger, which is why nothing flagged it. Native is unchanged: the strip stays a plain container there, since naming a native container would fold its tabs into one accessibility element. Verified in jest (`TabsSegmentedKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`).
 
 ## Look
 
