@@ -260,6 +260,17 @@ export interface ComposerPanelProps {
   /** The tab on the card's top edge — typically `<ComposerPanelStatusTab />`. */
   status?: ReactNode;
 
+  /**
+   * Drawn where send would be, while there is nothing to send — no draft and
+   * no attachment — and no turn is in flight.
+   *
+   * An assistant with a voice mode puts its call button here, the slot the
+   * thumb is already over; the pill takes the same prop. Omit it and send sits
+   * there disabled, as before. A stop always wins over it, and a lone
+   * attachment gives the slot back to send: a picture with no caption is a turn.
+   */
+  emptyAction?: ReactNode;
+
   /** The prompt field itself, for focus or a scripted demo. */
   inputRef?: RefObject<TextInput | null>;
   labels?: ComposerPanelLabels;
