@@ -89,6 +89,7 @@ import {
   VIEWPORT_GUTTER,
 } from './constants';
 import { useMenuPalette } from './menu-palette';
+import { pushFloatingEscape } from './escape-stack';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
 import { useFrameThrottle } from './use-frame-throttle';
@@ -433,18 +434,17 @@ export function FloatingPanel({
     [progress, slideX, slideY, scaleFrom, blurFrom],
   );
 
+  // Escape dismisses the INNERMOST open surface and nothing under it — a Select
+  // inside a Dialog closes its list, not the dialog (`escape-stack.ts`). The
+  // entry is taken once per open and calls the CURRENT `onDismiss` through a
+  // ref: re-pushing it whenever the callback's identity changed would move a
+  // re-rendered parent menu above its own open submenu.
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
   useEffect(() => {
     if (phase !== 'open' || !dismissible || typeof document === 'undefined') return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      // Stop the key reaching a Dialog underneath: the innermost open surface is
-      // the one Escape dismisses.
-      event.stopPropagation();
-      onDismiss();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [phase, dismissible, onDismiss]);
+    return pushFloatingEscape(() => onDismissRef.current());
+  }, [phase, dismissible]);
 
   // The NON-modal outside press. Deliberately `pointerdown` in the CAPTURE
   // phase and never `preventDefault`: the surface has to be gone before the

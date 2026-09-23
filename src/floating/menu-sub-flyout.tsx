@@ -51,6 +51,7 @@ import {
   MENU_SUB_SIDE_OFFSET,
   ROW_ICON_SIZE,
 } from './constants';
+import { pushFloatingEscape } from './escape-stack';
 import { FloatingPanel } from './FloatingPanel';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
 import type {
@@ -546,22 +547,19 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       };
     }, [node, sub]);
 
-    // Escape, in the CAPTURE phase with `stopImmediatePropagation`. Every open
-    // `FloatingPanel` has a bubble-phase `keydown` listener on `document`, and
-    // `stopPropagation` does not stop a sibling listener on the same node — so
-    // without this the sub and its parent menu would both close on one press.
-    // Capture runs before bubble whatever the registration order, which is what
-    // makes "innermost first" hold rather than "whichever mounted first".
+    // Escape closes this flyout and leaves the menu open. The flyout's panel is
+    // `dismissible={false}` (a press outside it is the parent's business), so it
+    // takes its own entry on the escape stack — pushed after the parent's, so it
+    // is the one Escape reaches first (`escape-stack.ts`). This used to be a
+    // document CAPTURE listener with `stopImmediatePropagation`, which also took
+    // Escape away from any field inside the flyout.
+    const { open: subOpen, closeAndRefocus } = sub;
+    const closeRef = useRef(closeAndRefocus);
+    closeRef.current = closeAndRefocus;
     useEffect(() => {
-      if (!sub.open || typeof document === 'undefined') return;
-      const onKeyDown = (event: KeyboardEvent) => {
-        if (event.key !== 'Escape') return;
-        event.stopImmediatePropagation();
-        sub.closeAndRefocus();
-      };
-      document.addEventListener('keydown', onKeyDown, true);
-      return () => document.removeEventListener('keydown', onKeyDown, true);
-    }, [sub]);
+      if (!subOpen || typeof document === 'undefined') return undefined;
+      return pushFloatingEscape(() => closeRef.current());
+    }, [subOpen]);
 
     // Move focus onto the panel once it has been placed, so Right genuinely
     // ENTERS the submenu rather than only opening it.

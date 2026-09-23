@@ -7,6 +7,7 @@ import React, {
 import { BackHandler, Platform } from 'react-native';
 
 import { useDialogControl } from '../dialog/context';
+import { hasOpenFloatingSurface } from '../floating/escape-stack';
 import type { DialogProps } from '../dialog/types';
 import {
   finalizeClose,
@@ -211,6 +212,11 @@ function useEscapeDismissesTop(): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      // An open anchored surface (a Select's list, a menu, a popover) takes
+      // Escape first — `floating/escape-stack.ts` closes it and keeps the key
+      // from the dialog underneath. Dismissing the top dialog here would close
+      // the dialog UNDER the open list, and the list with it.
+      if (hasOpenFloatingSurface()) return;
       const stack = getSnapshot();
       const top = stack[stack.length - 1];
       if (!top) return;
