@@ -22,13 +22,15 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
-import type { WebCssStyle } from '../styles/web-view-style';
+import { WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, WEB_VIEWPORT_HEIGHT, type WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import { AiChatShellContext, useAiChatShell, type AiChatShellState } from './context';
+import { AiChatDocumentGutterContext, AiChatShellContext, useAiChatShell, type AiChatShellState } from './context';
 import {
   dataHook,
+  DOCUMENT_RAIL,
   IS_WEB,
   PANEL_BREAKPOINT,
+  SHELL_GUTTER,
   SIDEBAR_BREAKPOINT,
   useAiChatPalette,
   useAiChatWebCss,
@@ -319,6 +321,7 @@ export function AiChatShell({
   onPanelOpenChange,
   background,
   surface = true,
+  scroll = 'container',
   labels,
   style,
   testID,
@@ -328,6 +331,12 @@ export function AiChatShell({
   const reducedMotion = useReducedMotion();
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
   const { width: windowWidth } = useWindowDimensions();
+  // Native has no document: `document` is `container` there.
+  const documentScroll = IS_WEB && scroll === 'document';
+  // What covers the screen — the drawers, the backdrop, a shell background —
+  // is `fixed` over a scrolling document: `absolute` would cover the page and
+  // scroll away with it.
+  const overlayPosition = documentScroll ? WEB_POSITION_FIXED : 'absolute';
   const wide = windowWidth >= PANEL_BREAKPOINT;
   const navInFlow = windowWidth >= SIDEBAR_BREAKPOINT;
 
@@ -523,6 +532,7 @@ export function AiChatShell({
       // In flow it is always on screen; as a drawer, only while it is open.
       navPresented: navInFlow ? !!sidebar : navOpen,
       sidebarCollapsed,
+      documentScroll,
       openNav: () => {
         setPanelOpen(false);
         setNavOpen(true);
@@ -542,6 +552,7 @@ export function AiChatShell({
       navOpen,
       sidebar,
       sidebarCollapsed,
+      documentScroll,
       mobileSidebar,
       panel,
       setPanelOpen,
@@ -555,11 +566,13 @@ export function AiChatShell({
   const rootStyle: WebCssStyle = {
     position: 'relative',
     width: '100%',
-    height: '100%',
+    // A document-scrolled shell is at least one screen and grows with the
+    // chat. `clip`, not `hidden`, so it is not a scroll container of its own
+    // and the sticky columns inside still stick to the screen.
+    ...(documentScroll ? { minHeight: WEB_VIEWPORT_HEIGHT, overflow: WEB_OVERFLOW_CLIP } : { height: '100%', overflow: 'hidden' }),
     flexDirection: 'row',
     gap: 16,
-    overflow: 'hidden',
-    padding: 12,
+    padding: SHELL_GUTTER,
     backgroundColor: surface ? palette.full : 'transparent',
   };
 
@@ -567,6 +580,7 @@ export function AiChatShell({
 
   return (
     <AiChatShellContext.Provider value={shellState}>
+      <AiChatDocumentGutterContext.Provider value={documentScroll && surface ? palette.full : null}>
       <View
         {...dataHook('bloomAiChatDragging', dragging ? 'on' : '')}
         {...(navSwipeArmed ? navSwipe.panHandlers : null)}
@@ -574,7 +588,7 @@ export function AiChatShell({
         onLayout={(event: LayoutChangeEvent) => setShellWidth(event.nativeEvent.layout.width)}
         style={[rootStyle, style]}>
         {background ? (
-          <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <View pointerEvents="none" style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0 }}>
             {background}
           </View>
         ) : null}
@@ -582,7 +596,7 @@ export function AiChatShell({
           <View
             aria-hidden={!navOpen}
             pointerEvents={navOpen ? 'box-none' : 'none'}
-            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, zIndex: 10, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
+            style={{ position: overlayPosition, top: 0, bottom: 0, left: 0, zIndex: 10, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
             <Animated.View
               pointerEvents={navOpen ? 'auto' : 'none'}
               style={[{ height: '100%', width: 260, transformOrigin: 'left' }, railStyle]}>
@@ -594,9 +608,8 @@ export function AiChatShell({
         {navInFlow ? (
           <View
             style={{
-              position: 'relative',
+              ...(documentScroll ? DOCUMENT_RAIL : { position: 'relative', height: '100%' }),
               zIndex: 10,
-              height: '100%',
               // Untouched unless the host asked for a width: the sidebar has
               // always sized itself.
               ...(sidebarCollapsed
@@ -618,7 +631,7 @@ export function AiChatShell({
               flex: 1,
               flexDirection: 'column',
               gap: 8,
-              overflow: 'hidden',
+              overflow: documentScroll ? WEB_OVERFLOW_CLIP : 'hidden',
               backgroundColor: surface ? palette.full : 'transparent',
             },
             navInFlow ? null : workspaceStyle,
@@ -636,7 +649,12 @@ export function AiChatShell({
               />
             </Animated.View>
           ) : null}
-          <View style={{ minHeight: 0, minWidth: 0, flex: 1, flexDirection: 'row', gap: 12, overflow: 'hidden' }}>
+          <View
+            style={
+              documentScroll
+                ? { minWidth: 0, flexGrow: 1, flexDirection: 'row', gap: 12 }
+                : { minHeight: 0, minWidth: 0, flex: 1, flexDirection: 'row', gap: 12, overflow: 'hidden' }
+            }>
             <View style={{ position: 'relative', minWidth: 0, flex: 1, flexBasis: 0, flexDirection: 'row' }}>
               {children}
               {wide && panel ? (
@@ -649,7 +667,14 @@ export function AiChatShell({
                 />
               ) : null}
             </View>
-            {wide && panel ? panel(panelWidth) : null}
+            {wide && panel ? (
+              documentScroll ? (
+                // A row, so the panel stretches to the rail's height.
+                <View style={[DOCUMENT_RAIL, { flexDirection: 'row' }]}>{panel(panelWidth)}</View>
+              ) : (
+                panel(panelWidth)
+              )
+            ) : null}
           </View>
         </Animated.View>
 
@@ -657,7 +682,7 @@ export function AiChatShell({
           <View
             aria-hidden={!panelOpen}
             pointerEvents={panelOpen ? 'auto' : 'none'}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
+            style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
             <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, backdropStyle]}>
               <Pressable
                 accessibilityRole="button"
@@ -707,6 +732,7 @@ export function AiChatShell({
           </View>
         ) : null}
       </View>
+      </AiChatDocumentGutterContext.Provider>
     </AiChatShellContext.Provider>
   );
 }

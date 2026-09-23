@@ -272,21 +272,20 @@ describe('AiChatContainer floatingChrome', () => {
     expect(scroller(api).onScroll).toBeDefined();
   });
 
-  it('fades an edge in only while the transcript runs under it', () => {
+  it('fades the header in only while the transcript runs under it, and never walls off the composer', () => {
     const api = floating();
     measure(api, 60, 100);
     settle(api, 1000, 600);
-    // 1000 content, 400 viewport: range 600. At the end: only the top is covered.
+    // 1000 content, 400 viewport: range 600. Scrolled at all: the header fades.
     scrollTo_(api, 600, 1000);
     expect(api.getByTestId('chat-fade-top', HIDDEN)).toBeTruthy();
-    expect(api.queryByTestId('chat-fade-bottom', HIDDEN)).toBeNull();
-    // Mid-thread: both.
     scrollTo_(api, 300, 1000);
-    expect(api.getByTestId('chat-fade-bottom', HIDDEN)).toBeTruthy();
-    // At the top: only the bottom.
+    expect(api.getByTestId('chat-fade-top', HIDDEN)).toBeTruthy();
+    // At the top: nothing under the header.
     scrollTo_(api, 0, 1000);
     expect(api.queryByTestId('chat-fade-top', HIDDEN)).toBeNull();
-    expect(api.getByTestId('chat-fade-bottom', HIDDEN)).toBeTruthy();
+    // The transcript passes behind the composer in sight: no band, anywhere.
+    expect(api.queryByTestId('chat-fade-bottom', HIDDEN)).toBeNull();
   });
 
   it('draws no fades without a surface to fade to', () => {

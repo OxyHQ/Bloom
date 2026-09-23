@@ -60,6 +60,12 @@ export interface AiChatShellState {
   navPresented: boolean;
   /** The in-flow sidebar is narrowed to its rail width (`sidebarCollapsed`). */
   sidebarCollapsed: boolean;
+  /**
+   * The page scrolls the DOCUMENT (`scroll="document"`, web). The container
+   * pins its chrome to the screen and the thread follows the window instead of
+   * a `ScrollView` of its own.
+   */
+  documentScroll: boolean;
   openNav: () => void;
   closeNav: () => void;
   openPanel: () => void;
@@ -75,6 +81,15 @@ export interface AiChatShellState {
 export type AiChatShellIcon = BloomIconComponent;
 
 export const AiChatShellContext = createContext<AiChatShellState | null>(null);
+
+/**
+ * Internal: what a document-scrolled shell tells the card inside it — the
+ * colour of the gutter around the card, which the card's pinned frame paints
+ * over whatever of the conversation scrolls into it. `null` when the page is
+ * not document-scrolled, or when the shell paints no surface of its own and
+ * there is no known colour to mask with.
+ */
+export const AiChatDocumentGutterContext = createContext<string | null>(null);
 
 export function useAiChatShell(): AiChatShellState | null {
   return useContext(AiChatShellContext);
