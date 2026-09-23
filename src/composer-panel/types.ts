@@ -271,6 +271,14 @@ export interface ComposerPanelProps {
    */
   emptyAction?: ReactNode;
 
+  /**
+   * The field's key events, BEFORE the panel's own Enter rule, so a host can
+   * take a key from it — the pill's contract. Calling `preventDefault()` stops
+   * the panel acting on that key: a suggestion list over the composer drives
+   * the arrows, Enter and Escape this way.
+   */
+  onKeyPress?: (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
+
   /** The prompt field itself, for focus or a scripted demo. */
   inputRef?: RefObject<TextInput | null>;
   labels?: ComposerPanelLabels;
