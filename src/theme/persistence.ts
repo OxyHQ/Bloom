@@ -146,7 +146,17 @@ export const webLocalStorage: BloomThemeStorage | undefined = (() => {
   if (typeof globalThis === 'undefined') return undefined;
   if (!('localStorage' in globalThis)) return undefined;
 
-  const ls = (globalThis as { localStorage: Storage }).localStorage;
+  // READING the property can throw, not just using it: a document in an iframe
+  // sandboxed without `allow-same-origin` has an opaque origin, and its
+  // `localStorage` getter raises a SecurityError. This runs at module load, so
+  // a throw here takes down every consumer that imports the theme — the
+  // sandboxed page then has no storage, like native without an adapter.
+  let ls: Storage;
+  try {
+    ls = (globalThis as { localStorage: Storage }).localStorage;
+  } catch {
+    return undefined;
+  }
 
   return {
     getItem: (key) => {
