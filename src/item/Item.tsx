@@ -34,6 +34,7 @@ const ItemComponent = function Item({
   // different statements to assistive tech; both remain falsy for styling.
   selected,
   active = false,
+  highlighted = false,
   density = 'comfortable',
   style,
   titleStyle,
@@ -73,20 +74,21 @@ const ItemComponent = function Item({
       minHeight: cfg.minHeight,
       borderRadius: borderRadius.sm,
     };
-    // Precedence, loudest first. Hover paints ONLY a row that had no background
-    // of its own: washing over `active` or `selected` would read as the row
-    // losing the state it is announcing, which is worse than no hover at all.
-    // `contrast50` is the same wash `SubtleHover` uses, so a hovered row and a
-    // hovered card agree.
+    // Precedence, loudest first. Hover and the keyboard's cursor paint ONLY a
+    // row that had no background of its own: washing over `active` or
+    // `selected` would read as the row losing the state it is announcing,
+    // which is worse than no hover at all. `contrast50` is the same wash
+    // `SubtleHover` uses, so a hovered row and a hovered card agree — and it
+    // reads on a primary-tinted surface, where `primaryLight` does not.
     if (active) {
       base.backgroundColor = theme.colors.primaryLight;
     } else if (selected) {
       base.backgroundColor = theme.colors.backgroundSecondary;
-    } else if (hovered) {
+    } else if (highlighted || hovered) {
       base.backgroundColor = theme.colors.contrast50;
     }
     return base;
-  }, [cfg, selected, active, hovered, theme]);
+  }, [cfg, selected, active, highlighted, hovered, theme]);
 
   const body =
     children != null ? (
