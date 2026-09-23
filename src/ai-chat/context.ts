@@ -79,3 +79,42 @@ export const AiChatShellContext = createContext<AiChatShellState | null>(null);
 export function useAiChatShell(): AiChatShellState | null {
   return useContext(AiChatShellContext);
 }
+
+/**
+ * The heights an `AiChatContainer floatingChrome` measures for the chrome it
+ * floats over its `children`: the header block at the top and the footer
+ * (`AgentThinking` + composer, with its fade strip) at the bottom, px.
+ */
+export interface AiChatChromeInsets {
+  top: number;
+  bottom: number;
+}
+
+/** Where the thread is, reported to the container so each edge knows when to fade. */
+export interface AiChatScrollMetrics {
+  offset: number;
+  viewport: number;
+  content: number;
+}
+
+/**
+ * What a floating-chrome container hands its `children`. Internal: the thread
+ * reads `insets` and reports its scroll; hosts read only the insets, through
+ * `useAiChatChromeInsets()`.
+ */
+export interface AiChatFloatingChrome {
+  insets: AiChatChromeInsets;
+  reportScroll: (metrics: AiChatScrollMetrics) => void;
+}
+
+export const AiChatFloatingChromeContext = createContext<AiChatFloatingChrome | null>(null);
+
+/**
+ * Inside `AiChatContainer floatingChrome`: how much of the top and bottom of the
+ * card the floating header and composer cover, so a custom child (an empty
+ * state, a scroller of its own) can keep its resting content clear of them.
+ * `null` anywhere else — outside a container, or in one that stacks its chrome.
+ */
+export function useAiChatChromeInsets(): AiChatChromeInsets | null {
+  return useContext(AiChatFloatingChromeContext)?.insets ?? null;
+}
