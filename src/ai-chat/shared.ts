@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Platform } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
 
 import {
   BUTTON_SHADOW,
@@ -7,6 +7,11 @@ import {
   type Ramp,
 } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import {
+  WEB_POSITION_STICKY,
+  webViewportHeightMinus,
+  type WebCssStyle,
+} from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 
@@ -107,6 +112,39 @@ export const PANEL_BREAKPOINT = 1280;
 /** The sidebar sits in flow from `lg`; below it becomes a push drawer. */
 export const SIDEBAR_BREAKPOINT = 1024;
 
+/** The shell's padding: the gutter around its columns, px. */
+export const SHELL_GUTTER = 12;
+
+/**
+ * `scroll="document"`: a column pinned to the viewport while the document
+ * scrolls under it — the sidebar and the panel. One screen tall less the
+ * gutter above and below, so it closes where the page does; `flex-start` so
+ * the row's stretch does not make it as tall as the page, which would leave the
+ * sticky box nowhere to move.
+ */
+export const DOCUMENT_RAIL: WebCssStyle = {
+  position: WEB_POSITION_STICKY,
+  top: SHELL_GUTTER,
+  height: webViewportHeightMinus(SHELL_GUTTER * 2),
+  alignSelf: 'flex-start',
+  flexShrink: 0,
+};
+
+/**
+ * `scroll="document"`: a layer the size of the visible card that takes no room
+ * in the flow — pinned like the rail, then pulled back out of the layout by an
+ * equal negative margin, so what follows it starts where it does. The card's
+ * frame and its `background` slot are drawn on it: the card grows with the
+ * conversation, the layer stays the size of the screen.
+ */
+export const DOCUMENT_LAYER: WebCssStyle = {
+  position: WEB_POSITION_STICKY,
+  top: SHELL_GUTTER,
+  height: webViewportHeightMinus(SHELL_GUTTER * 2),
+  marginBottom: `calc(-100dvh + ${SHELL_GUTTER * 2}px)` as ViewStyle['marginBottom'],
+  borderRadius: CONTAINER_RADIUS,
+};
+
 // ---------------------------------------------------------------------------
 //  Web
 // ---------------------------------------------------------------------------
@@ -132,7 +170,10 @@ const STYLE_ID = 'bloom-ai-chat-web-css';
  * - the generated image's feathered radial reveal, a registered `--bloom-ai-reveal`
  *   percentage transitioning 0% → 132% over 1550ms;
  * - the resize grip's hover reveal;
- * - the composer field's placeholder colour.
+ * - the composer field's placeholder colour;
+ * - the document-scrolled card's frame, clipped to its gutter (RN-web drops
+ *   `clip-path` from `style`), and its thread out of the browser's scroll
+ *   anchoring.
  */
 export const AI_CHAT_WEB_CSS = `
 @property --bloom-ai-reveal {
@@ -158,6 +199,8 @@ export const AI_CHAT_WEB_CSS = `
 [data-bloom-ai-chat-zoom="in"] { cursor: zoom-in; }
 [data-bloom-ai-chat-zoom="out"] { cursor: zoom-out; }
 [data-bloom-ai-chat-zoom]:focus-visible { box-shadow: inset 0 0 0 2px var(--bloom-ai-chat-ring); }
+[data-bloom-ai-chat-frame] { clip-path: inset(-${SHELL_GUTTER}px -1px); }
+[data-bloom-ai-chat-thread] { overflow-anchor: none; }
 [data-bloom-ai-chat-scroll="thin"] { scrollbar-width: thin; }
 [data-bloom-ai-chat-scroll="none"] { scrollbar-width: none; }
 [data-bloom-ai-chat-scroll="none"]::-webkit-scrollbar { display: none; }

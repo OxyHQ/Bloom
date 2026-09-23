@@ -470,6 +470,25 @@ export interface AiChatShellProps {
    * Default `true`; `false` leaves both transparent.
    */
   surface?: boolean;
+  /**
+   * What scrolls the page — `AppShell`'s contract.
+   *
+   * - `container` (default) — the shell fills its parent and the conversation
+   *   scrolls inside the card, in the thread's own `ScrollView`.
+   * - `document` — WEB: the chat grows the document and the browser scrolls it:
+   *   the page's scrollbar, scroll restoration, the mobile address bar
+   *   collapsing and `window.scrollTo` all behave as on any page. The sidebar
+   *   and the panel stay pinned (`position: sticky`); the chat's header and
+   *   composer float over the conversation, pinned to the top and the bottom of
+   *   the screen, and it passes behind them. The drawers and the backdrop are
+   *   `position: fixed`, so they cover the screen rather than the page.
+   *
+   *   Nothing between the shell and the document may be a scroll container: an
+   *   app's `html`/`body`/root reset of `height: 100%; overflow: hidden` pins
+   *   everything to one screen, so it has to let the document grow. Native has
+   *   no document and treats it as `container`.
+   */
+  scroll?: 'container' | 'document';
   labels?: AiChatShellLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
