@@ -166,6 +166,25 @@ has to supply one. A `Popover` or a `DropdownMenu` inside a field deliberately
 does NOT take the field's id: it is not the field's control. See
 [Composition](/docs/composition).
 
+## Keyboard (web)
+
+The web select follows the ARIA select-only combobox pattern. Focus goes where a keyboard user expects it, so the list can be operated without a pointer:
+
+| where | key | does |
+| --- | --- | --- |
+| trigger | <kbd>Enter</kbd> · <kbd>Space</kbd> · <kbd>↓</kbd> · <kbd>↑</kbd> | opens the list with focus on the **chosen** option, or the first enabled one when nothing is chosen |
+| trigger, list already open (pointer) | <kbd>↓</kbd> · <kbd>↑</kbd> | moves focus into the list |
+| list | <kbd>↓</kbd> · <kbd>↑</kbd> | next / previous enabled option, stopping at the ends (no wrap) |
+| list | <kbd>Home</kbd> · <kbd>End</kbd> | first / last enabled option |
+| list | <kbd>Enter</kbd> · <kbd>Space</kbd> | chooses the focused option and closes |
+| list | <kbd>Esc</kbd> · <kbd>Tab</kbd> | closes without choosing |
+
+Every close — a choice, <kbd>Esc</kbd>, <kbd>Tab</kbd> — returns focus to the trigger, so the next <kbd>Tab</kbd> continues from the select rather than from the top of the page. A pointer open leaves focus where the pointer put it.
+
+<kbd>Esc</kbd> closes the **innermost** open surface only. A select inside a `Dialog` closes its list and leaves the dialog open; a second <kbd>Esc</kbd> closes the dialog. (It used to close both: the list's listener and the dialog's sat side by side on `document`, and the dialog's ran first.) Every anchored surface shares this through `floating/escape-stack.ts`.
+
+Why Bloom supplies this rather than react-native-web: an option is a `role="radio"` `Pressable`, and react-native-web presses one on <kbd>Enter</kbd> only — it synthesises <kbd>Space</kbd> for `role="button"` alone — and it never moves focus into a portaled list. Verified in jest (`SelectKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`). Native is unchanged: the list is a bottom sheet there.
+
 ## Selection state
 
 Both forks render each option as `role="radio"` with `aria-checked` — the only spelling react-native-web reads, and one React Native folds back into `accessibilityState`. `SelectItemIndicator` draws the mark — a `text-secondary` check in the row's right-hand gutter on both platforms — and the chosen row also takes the highlight wash.
