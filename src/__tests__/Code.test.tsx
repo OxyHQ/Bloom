@@ -2,7 +2,16 @@ import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Code, CodeBlock, CodeLines, isHighlightedLanguage, tokenizeCode } from '../code';
+import {
+  Code,
+  CodeBlock,
+  CodeLines,
+  isHighlightedLanguage,
+  tokenColor,
+  tokenizeCode,
+  useCodePalette,
+  type CodePalette,
+} from '../code';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(<BloomThemeProvider mode="light">{ui}</BloomThemeProvider>);
@@ -134,5 +143,20 @@ describe('CodeLines', () => {
     expect(numbered.getByText('2')).toBeTruthy();
     const bare = renderWithTheme(<CodeLines code={'a\nb'} lineNumbers={false} />);
     expect(bare.queryByText('2')).toBeNull();
+  });
+});
+
+describe('tokenColor', () => {
+  it('paints a token the colour CodeLines paints it', () => {
+    let palette: CodePalette | undefined;
+    function Probe() {
+      palette = useCodePalette();
+      return null;
+    }
+    renderWithTheme(<Probe />);
+    const { getByText } = renderWithTheme(<CodeLines code="const a = 1" language="ts" />);
+    const flat = (style: unknown): Record<string, unknown> =>
+      Array.isArray(style) ? Object.assign({}, ...style.map(flat)) : ((style as Record<string, unknown>) ?? {});
+    expect(flat(getByText('const').props.style).color).toBe(tokenColor('keyword', palette!));
   });
 });
