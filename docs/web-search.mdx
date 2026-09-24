@@ -44,7 +44,7 @@ The component is UI only — it streams nothing itself. Either let its ticker pa
 | `sources` | Branches into a **Sources** row beneath the step. |
 | `heading` | First step only: the root the trail hangs from — no branch of its own, everything else nests under its glyph. Carries no sources. |
 
-A source is `{ title, domain, href?, brand?, icon? }`. `icon` (a ready-made 12px node) wins over `brand`; with neither, the mark is a quiet dot. Near-black brands (`x`, `github`, `apple`, `notion`) paint in the text colour so they survive dark mode; Google's mark takes the theme accent, as `SocialButton` does.
+A source is `{ title, domain, href?, brand?, faviconUrl?, icon? }`. `icon` (a ready-made 12px node) wins over `brand`, `brand` over `faviconUrl` (the site's favicon, drawn 12×12; an image that fails to load falls back), and with none the mark is a quiet dot. Near-black brands (`x`, `github`, `apple`, `notion`) paint in the text colour so they survive dark mode; Google's mark takes the theme accent, as `SocialButton` does.
 
 ## Units and `revealed`
 
