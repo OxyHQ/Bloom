@@ -538,7 +538,11 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   // Plain navigation belongs to the viewport; only the reading surfaces are inset.
   const documentPanelInset = feedRevealed ? 12 : compactPanel ? 0 : gutter;
   const externalTopHeight = showTopBar ? topBarHeight : 0;
-  const plainDocumentFrame = doc && contentAligned && flowSidebar?.surface === 'plain' && !topBarNode;
+  // A property of the NAVIGATION, not of who scrolls: native resolves every
+  // shell to container scroll, and gating this on `document` left native
+  // phones with an 8px frame around the reading panel that the same layout on
+  // the web does not draw.
+  const plainFrame = contentAligned && flowSidebar?.surface === 'plain' && !topBarNode;
   const readingGap = Math.max(0, asideGap ?? columnGap);
   const readingGroupWidth = contentWidth + (asideBeside ? asideWidth + readingGap : 0);
   const centredBody = (
@@ -556,7 +560,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           // grows the page, the aside is sticky). Bounded: they stretch.
           alignItems: doc ? 'flex-start' : 'stretch',
           ...(contentAligned ? { flexGrow: compactPanel ? 1 : 0, flexBasis: compactPanel ? 'auto' : readingGroupWidth, maxWidth: compactPanel ? undefined : readingGroupWidth } : {}),
-          ...(plainDocumentFrame ? { paddingTop: compactPanel ? 0 : gutter, paddingBottom: compactPanel ? 0 : gutter } : {}),
+          ...(plainFrame ? { paddingTop: compactPanel ? 0 : gutter, paddingBottom: compactPanel ? 0 : gutter } : {}),
         },
         fill,
       ]}
@@ -747,7 +751,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const navRegion =
     navInFlow && flowSidebar ? (
       doc ? (
-        <View testID={testID ? `${testID}-navigation` : undefined} style={stickyRail(dockedNav || plainDocumentFrame ? 0 : gutter)}>
+        <View testID={testID ? `${testID}-navigation` : undefined} style={stickyRail(dockedNav || plainFrame ? 0 : gutter)}>
           <Sidebar {...flowSidebar} />
         </View>
       ) : canvas && !dockedNav ? (
@@ -794,8 +798,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     // shorthand to physical sides, and which of two declarations for one edge
     // wins is then a matter of declaration order rather than intent.
     ...(dockedNav
-      ? { paddingTop: 0, paddingBottom: 0, paddingInlineStart: 0, paddingInlineEnd: canvas || plainDocumentFrame ? 0 : gutter }
-      : { padding: canvas || plainDocumentFrame ? 0 : gutter }),
+      ? { paddingTop: 0, paddingBottom: 0, paddingInlineStart: 0, paddingInlineEnd: canvas || plainFrame ? 0 : gutter }
+      : { padding: canvas || plainFrame ? 0 : gutter }),
     backgroundColor: background,
   };
 

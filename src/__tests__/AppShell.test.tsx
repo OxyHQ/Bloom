@@ -577,6 +577,26 @@ describe('AppShell variant="feed"', () => {
     expect(resolvedStyle(group?.props.style)).toMatchObject({ paddingTop: 8, paddingBottom: 8 });
   });
 
+  /**
+   * The same plain, content-aligned layout on a phone, as a native app mounts it:
+   * container scroll (native has no document) and the reveal drawer. Gating the
+   * flush frame on document scroll left native with an 8px frame around the
+   * reading panel that the web draws edge to edge.
+   */
+  it('keeps the same plain feed shell flush on a native phone, as on the web', () => {
+    jest.replaceProperty(ReactNative.Platform, 'OS', 'android');
+    setWidth(411);
+    const screen = renderIn(<AppShell testID="shell" variant="feed" scroll="fixed" navigationAlign="content"
+      drawer="reveal" sidebar={{ items: NAV, surface: 'plain' }} gutter={8} panel>
+      <ReactNative.Text>Body</ReactNative.Text></AppShell>);
+    const row = hostParent(hostParent(screen.getByTestId('shell-content')) as never);
+    const paddings = [row, hostParent(screen.getByTestId('shell-content'))].map((node) => resolvedStyle(node?.props.style));
+    for (const style of paddings) {
+      expect(style.padding ?? 0).toBe(0);
+      expect(style.paddingTop ?? 0).toBe(0);
+    }
+  });
+
   it.each([
     { width: 699, framedFrom: undefined, expected: false },
     { width: 700, framedFrom: undefined, expected: true },
