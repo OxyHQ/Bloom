@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { AiChatContainerBase } from './AiChatContainer';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { AiChatGalleryPanelBase } from './AiChatGalleryPanelBase';
 import { AiChatImageGenerationBase } from './AiChatImageGenerationBase';
@@ -7,6 +8,7 @@ import { AiChatAssistantMessageBase } from './AiChatMessages';
 import { AiChatPlatformContext, type AiChatPlatform } from './context';
 import type {
   AiChatAssistantMessageProps,
+  AiChatContainerProps,
   AiChatFeedbackRowProps,
   AiChatGalleryPanelProps,
   AiChatImageGenerationProps,
@@ -54,5 +56,14 @@ export function bindAiChat(platform: AiChatPlatform) {
   }
   AiChatGalleryPanel.displayName = 'AiChatGalleryPanel';
 
-  return { AiChatFeedbackRow, AiChatAssistantMessage, AiChatImageGeneration, AiChatGalleryPanel };
+  function AiChatContainer(props: AiChatContainerProps) {
+    return (
+      <AiChatPlatformContext.Provider value={platform}>
+        <AiChatContainerBase {...props} />
+      </AiChatPlatformContext.Provider>
+    );
+  }
+  AiChatContainer.displayName = 'AiChatContainer';
+
+  return { AiChatFeedbackRow, AiChatAssistantMessage, AiChatImageGeneration, AiChatGalleryPanel, AiChatContainer };
 }

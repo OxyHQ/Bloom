@@ -125,11 +125,11 @@ Under `<AiChatShell scroll="document">` (web) the **document** is the scroller, 
 | shell | at least one screen (`100dvh`) and grows with the chat; `overflow: clip`, never `hidden`, so it is not a scroll container |
 | sidebar, panel | sticky rails, `top: 12`, one screen tall less the gutter above and below |
 | drawers, backdrop, shell `background` | `position: fixed`, so they cover the screen, not the page |
-| card | grows with the conversation, one screen tall at the least; the chrome always floats (`floatingChrome` is implied) |
+| card | a [`ContentPanel`](/docs/bloom/main/content-panel), `framed` at the shell's gutter (`overlayInset` 12, `maskColor` the shell's background-full, background-secondary as its surface): its sticky mask, radius and edge keep the card framed at the screen's edges while the conversation scrolls under them, as on any framed Oxy web page. It grows with the conversation, one screen tall at the least; the chrome always floats (`floatingChrome` is implied) |
 | header block | sticky in the flow at `top: 12`, with the same fade while turns run under it |
 | footer block | sticky in the flow at `bottom: 12`, no band — the conversation passes behind the composer |
-| frame | a layer the size of the visible card, sticky at the gutter: a ring of the shell's background-full over whatever scrolls past the card's edge, so the card keeps its rounded corners and its gutter at the top and bottom of the screen. Clipped sideways to 1px, so it never reaches the columns beside the card. Drawn only when the shell paints its `surface` |
-| container `background` | the same screen-sized layer, under the turns: a wallpaper stays put while the conversation moves over it |
+| container `background` | a screen-sized layer with the panel's geometry, under the turns: a wallpaper stays put while the conversation moves over it |
+| conversation | one stacking layer (`zIndex: 0`) under the header and the composer: a turn's own z-indexes (a search log, a progress card, a date header) never climb over the chrome |
 | thread | a plain view, no scroller: bottom-anchored, px 16 / pt 16, turns 12 apart |
 
 The thread keeps its props and its handle. It follows through the window, opens at its newest turn (the page is shared with whatever route was on it before), fires `onStartReached` near the top and holds a landed page still. Offsets stay in **the thread's own frame**: `0` is the thread's top, so a row's `onLayout` y is still a `scrollToOffset` target, and `contentSize` runs to the **end of the page**, so `contentSize − offset − viewport` is still the distance left to scroll. `getScrollView()` returns `null`. The browser's scroll anchoring is off inside the thread — it would move the page for growth the thread already accounts for, and only in some browsers.

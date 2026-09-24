@@ -1,5 +1,6 @@
 import { createContext, useContext, type ComponentType, type ReactNode } from 'react';
 
+import type { ContentPanelProps } from '../content-panel/types';
 import type { TooltipSize } from '../tooltip/constants';
 import type { BloomIconComponent } from '../icons/icon-component';
 
@@ -21,6 +22,11 @@ export interface AiChatPlatform {
   }>;
   TooltipTrigger: ComponentType<{ children: ReactNode }>;
   TooltipTextBubble: ComponentType<{ children: ReactNode; size?: TooltipSize }>;
+  /**
+   * The framed document surface: a document-scrolled chat's card is one, so
+   * its gutter mask, corners and edge are the panel's own.
+   */
+  ContentPanel: ComponentType<ContentPanelProps>;
 }
 
 export const AiChatPlatformContext = createContext<AiChatPlatform | null>(null);

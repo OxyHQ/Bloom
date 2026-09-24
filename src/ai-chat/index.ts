@@ -1,11 +1,12 @@
 export {
   AiChatAssistantMessage,
+  AiChatContainer,
   AiChatFeedbackRow,
   AiChatGalleryPanel,
   AiChatImageGeneration,
 } from './AiChat';
 export { AiChatCodePanel } from './AiChatCodePanel';
-export { AiChatContainer, AiChatThread } from './AiChatContainer';
+export { AiChatThread } from './AiChatContainer';
 export {
   AiChatBullet,
   AiChatBulletList,

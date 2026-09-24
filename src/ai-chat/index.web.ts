@@ -5,12 +5,13 @@
 
 export {
   AiChatAssistantMessage,
+  AiChatContainer,
   AiChatFeedbackRow,
   AiChatGalleryPanel,
   AiChatImageGeneration,
 } from './AiChat.web';
 export { AiChatCodePanel } from './AiChatCodePanel';
-export { AiChatContainer, AiChatThread } from './AiChatContainer';
+export { AiChatThread } from './AiChatContainer';
 export {
   AiChatBullet,
   AiChatBulletList,

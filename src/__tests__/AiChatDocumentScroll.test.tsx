@@ -9,8 +9,8 @@
  *   page and clips with `overflow: clip`; the sidebar and the panel are sticky
  *   rails one screen tall.
  * - **The chat's chrome is pinned in the flow.** The header and the composer
- *   are sticky at the screen's gutter, and the card carries a frame the size of
- *   the screen that masks the gutter around it.
+ *   are sticky at the screen's gutter, and the card is a `ContentPanel`, whose
+ *   sticky mask and edge keep the card framed at the screen's edges.
  * - **The thread has no scroller of its own.** It follows through the window,
  *   in its own frame: offset 0 is the thread's top, and the content runs to the
  *   end of the page.
@@ -31,7 +31,7 @@ jest.mock('react-native', () => {
 
 import { NativeScrollEvent, NativeSyntheticEvent, Text, View } from 'react-native';
 
-import { AiChatContainer, AiChatShell, AiChatThread, type AiChatThreadHandle } from '../ai-chat';
+import { AiChatContainer, AiChatShell, AiChatThread, type AiChatThreadHandle } from '../ai-chat/index.web';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -107,25 +107,26 @@ describe('AiChatShell scroll="document"', () => {
     }
   });
 
-  it('pins the header and the composer to the screen, and frames the card', () => {
+  it('pins the header and the composer to the screen, on a ContentPanel card', () => {
     mount({ scroll: 'document' });
     expect(style(byTestId('chat-chrome-top')).position).toBe('sticky');
     expect(style(byTestId('chat-chrome-bottom')).position).toBe('sticky');
-    const frame = byTestId('chat-frame');
-    expect(style(frame).position).toBe('sticky');
-    expect(frame.getAttribute('data-bloom-ai-chat-frame')).not.toBeNull();
+    // The panel's own sticky mask and edge, pinned at the shell's gutter.
+    const mask = byTestId('content-panel-bleed-mask');
+    expect(mask.style.top || style(mask).top).toBe('12px');
+    expect(byTestId('content-panel-border-frame')).toBeTruthy();
+    expect(byTestId('chat').closest('[data-testid="content-panel-content"]')).not.toBeNull();
   });
 
-  it('keeps the whole conversation one layer under the frame and the chrome', () => {
+  it('keeps the whole conversation one layer under the chrome', () => {
     // A turn's own parts may carry a z-index (a search log, a progress card);
     // if the conversation were not its own stacking context, the highest of
-    // them would climb over the frame and show in the gutter.
+    // them would climb over the header and the composer.
     mount({ scroll: 'document' });
     const layer = byTestId('thread').parentElement as HTMLElement;
     expect(style(layer).zIndex).toBe('0');
-    expect(Number(style(byTestId('chat-frame')).zIndex)).toBeGreaterThan(0);
-    expect(Number(style(byTestId('chat-chrome-top')).zIndex)).toBeGreaterThan(Number(style(byTestId('chat-frame')).zIndex));
-    expect(Number(style(byTestId('chat-chrome-bottom')).zIndex)).toBeGreaterThan(Number(style(byTestId('chat-frame')).zIndex));
+    expect(Number(style(byTestId('chat-chrome-top')).zIndex)).toBeGreaterThan(0);
+    expect(Number(style(byTestId('chat-chrome-bottom')).zIndex)).toBeGreaterThan(0);
   });
 
   it('drives the window from the thread handle, in the thread’s own frame', () => {
@@ -171,6 +172,6 @@ describe('AiChatShell scroll="container"', () => {
   it('keeps the thread a scroller of its own', () => {
     mount({});
     expect(byTestId('thread').getAttribute('data-bloom-ai-chat-scroll')).toBe('thin');
-    expect(container.querySelector('[data-testid="chat-frame"]')).toBeNull();
+    expect(container.querySelector('[data-testid="content-panel-surface"]')).toBeNull();
   });
 });
