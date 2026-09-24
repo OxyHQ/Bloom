@@ -395,7 +395,15 @@ function FloatingChrome({
     </View>
   );
 
-  const thread = <AiChatFloatingChromeContext.Provider value={chrome}>{children}</AiChatFloatingChromeContext.Provider>;
+  // The conversation is ONE layer under the chrome and the frame. A turn's own
+  // parts may carry a z-index (a search log, a progress card, a date header);
+  // without a stacking context of its own, the highest of them would climb
+  // over the frame and show in the gutter, or over the header.
+  const thread = (
+    <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, minHeight: 0, flexDirection: 'column', zIndex: 0 }}>
+      <AiChatFloatingChromeContext.Provider value={chrome}>{children}</AiChatFloatingChromeContext.Provider>
+    </View>
+  );
 
   if (documentScroll) {
     return (
