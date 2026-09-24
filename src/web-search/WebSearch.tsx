@@ -9,6 +9,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -373,6 +374,7 @@ function SourceMark({
   );
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
+  const [faviconFailed, setFaviconFailed] = useState(false);
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -451,6 +453,13 @@ function SourceMark({
         </View>
       ) : source.brand ? (
         <BrandMark brand={source.brand} size={12} palette={palette} />
+      ) : source.faviconUrl && !faviconFailed ? (
+        <Image
+          source={{ uri: source.faviconUrl }}
+          onError={() => setFaviconFailed(true)}
+          resizeMode="contain"
+          style={{ width: 12, height: 12, borderRadius: 2 }}
+        />
       ) : (
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: palette.markDot }} />
       )}
