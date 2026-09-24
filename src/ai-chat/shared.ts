@@ -7,6 +7,7 @@ import {
   type Ramp,
 } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { borderRadius } from '../styles/tokens';
 import {
   WEB_POSITION_STICKY,
   webViewportHeightMinus,
@@ -131,18 +132,24 @@ export const DOCUMENT_RAIL: WebCssStyle = {
 };
 
 /**
+ * `scroll="document"`: the card is a `ContentPanel`, and this is its radius.
+ */
+export const DOCUMENT_CARD_RADIUS = borderRadius._3xl;
+
+/**
  * `scroll="document"`: a layer the size of the visible card that takes no room
  * in the flow — pinned like the rail, then pulled back out of the layout by an
  * equal negative margin, so what follows it starts where it does. The card's
- * frame and its `background` slot are drawn on it: the card grows with the
- * conversation, the layer stays the size of the screen.
+ * `background` slot is drawn on it: the card grows with the conversation, the
+ * layer stays the size of the screen — the same geometry as the panel's own
+ * sticky frame.
  */
 export const DOCUMENT_LAYER: WebCssStyle = {
   position: WEB_POSITION_STICKY,
   top: SHELL_GUTTER,
   height: webViewportHeightMinus(SHELL_GUTTER * 2),
   marginBottom: `calc(-100dvh + ${SHELL_GUTTER * 2}px)` as ViewStyle['marginBottom'],
-  borderRadius: CONTAINER_RADIUS,
+  borderRadius: DOCUMENT_CARD_RADIUS,
 };
 
 // ---------------------------------------------------------------------------
@@ -171,9 +178,7 @@ const STYLE_ID = 'bloom-ai-chat-web-css';
  *   percentage transitioning 0% → 132% over 1550ms;
  * - the resize grip's hover reveal;
  * - the composer field's placeholder colour;
- * - the document-scrolled card's frame, clipped to its gutter (RN-web drops
- *   `clip-path` from `style`), and its thread out of the browser's scroll
- *   anchoring.
+ * - a document-scrolled thread out of the browser's scroll anchoring.
  */
 export const AI_CHAT_WEB_CSS = `
 @property --bloom-ai-reveal {
@@ -199,7 +204,6 @@ export const AI_CHAT_WEB_CSS = `
 [data-bloom-ai-chat-zoom="in"] { cursor: zoom-in; }
 [data-bloom-ai-chat-zoom="out"] { cursor: zoom-out; }
 [data-bloom-ai-chat-zoom]:focus-visible { box-shadow: inset 0 0 0 2px var(--bloom-ai-chat-ring); }
-[data-bloom-ai-chat-frame] { clip-path: inset(-${SHELL_GUTTER}px -1px); }
 [data-bloom-ai-chat-thread] { overflow-anchor: none; }
 [data-bloom-ai-chat-scroll="thin"] { scrollbar-width: thin; }
 [data-bloom-ai-chat-scroll="none"] { scrollbar-width: none; }

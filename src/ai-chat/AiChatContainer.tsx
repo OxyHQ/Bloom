@@ -33,6 +33,7 @@ import { GlyphAction } from './AiChatControls';
 import {
   AiChatDocumentGutterContext,
   AiChatFloatingChromeContext,
+  useAiChatPlatform,
   useAiChatShell,
   type AiChatChromeInsets,
   type AiChatFloatingChrome,
@@ -41,6 +42,7 @@ import {
 import {
   CONTAINER_RADIUS,
   dataHook,
+  DOCUMENT_CARD_RADIUS,
   DOCUMENT_LAYER,
   IS_WEB,
   SHELL_GUTTER,
@@ -102,13 +104,15 @@ const HIDDEN_FROM_A11Y = {
  * `AiChatThread` child through context (its content padding) and any other
  * child through `useAiChatChromeInsets()`.
  *
- * Under a shell with `scroll="document"` the chrome always floats, since the
+ * Under a shell with `scroll="document"` the card is a `ContentPanel` — the
+ * framed document surface, whose sticky mask and edge keep the card's corners
+ * and gutter at the screen's edges — and the chrome always floats, since the
  * document is what moves: the header and the footer are `sticky` in the flow,
- * pinned to the screen's top and bottom gutter, the `background` slot and the
- * card's frame are layers the size of the screen, and the card grows with the
- * conversation. At rest nothing overlaps, so the insets are zero.
+ * pinned to the screen's top and bottom gutter, the `background` slot is a
+ * layer the size of the screen, and the card grows with the conversation. At
+ * rest nothing overlaps, so the insets are zero.
  */
-export function AiChatContainer({
+export function AiChatContainerBase({
   project,
   title,
   projectIcon = RiFolderLine,
@@ -198,19 +202,8 @@ export function AiChatContainer({
       <FloatingChrome
         documentScroll
         testID={testID}
-        rootStyle={[
-          {
-            // Grows with the conversation, one screen at the least; nothing
-            // clips it, so the header and composer inside can stick.
-            minHeight: webViewportHeightMinus(SHELL_GUTTER * 2),
-            minWidth: 0,
-            flex: 1,
-            flexDirection: 'column',
-            borderRadius: CONTAINER_RADIUS,
-            backgroundColor: surface ? palette.secondary : 'transparent',
-          },
-          style,
-        ]}
+        rootStyle={style}
+        surfaceColor={surface ? palette.secondary : null}
         backgroundLayer={
           background ? (
             <View pointerEvents="none" style={[DOCUMENT_LAYER, { overflow: 'hidden' }]}>
@@ -269,7 +262,9 @@ interface FloatingChromeProps {
   footerBody: ReactNode;
   /** The opaque surface the header's edge fades to, or `null` for no fade. */
   fadeColor: string | null;
-  /** `documentScroll`: the gutter around the card, which its frame masks in. */
+  /** `documentScroll`: the card's own surface, or `null` for none. */
+  surfaceColor?: string | null;
+  /** `documentScroll`: the gutter around the card, which the panel masks in. */
   gutterColor?: string | null;
   children: ReactNode;
 }
@@ -296,6 +291,7 @@ function FloatingChrome({
   crumbRow,
   footerBody,
   fadeColor,
+  surfaceColor = null,
   gutterColor = null,
   children,
 }: FloatingChromeProps) {
@@ -371,9 +367,9 @@ function FloatingChrome({
               // does is a line across the transcript again.
               height: Math.round(headerHeight * (1 + SCRIM_TAIL_RATIO)),
               // The card's own corners, since nothing clips a document card.
-              borderTopLeftRadius: CONTAINER_RADIUS,
-              borderTopRightRadius: CONTAINER_RADIUS,
-              overflow: 'hidden',
+              ...(documentScroll
+                ? { borderTopLeftRadius: DOCUMENT_CARD_RADIUS, borderTopRightRadius: DOCUMENT_CARD_RADIUS, overflow: 'hidden' as const }
+                : null),
             },
             topStyle,
           ]}>
@@ -407,27 +403,12 @@ function FloatingChrome({
 
   if (documentScroll) {
     return (
-      <View testID={testID} style={rootStyle}>
+      <DocumentCard testID={testID} style={rootStyle} surfaceColor={surfaceColor} gutterColor={gutterColor}>
         {backgroundLayer}
-        {gutterColor ? (
-          // The card's frame, pinned to the screen: a ring of the gutter's
-          // colour painted over whatever of the conversation scrolls past the
-          // card's visible edge, so the card keeps its rounded corners and its
-          // gutter at the top and the bottom of the screen. Clipped to the
-          // gutter sideways (the family sheet), so it never reaches the columns
-          // beside the card.
-          <View
-            testID={`${prefix}-frame`}
-            pointerEvents="none"
-            {...HIDDEN_FROM_A11Y}
-            {...dataHook('bloomAiChatFrame')}
-            style={[DOCUMENT_LAYER, { zIndex: 1, boxShadow: `0 0 0 ${SHELL_GUTTER}px ${gutterColor}` }]}
-          />
-        ) : null}
         {top}
         {thread}
         {bottom}
-      </View>
+      </DocumentCard>
     );
   }
 
@@ -438,6 +419,45 @@ function FloatingChrome({
       {top}
       {bottom}
     </View>
+  );
+}
+
+/**
+ * A document-scrolled chat's card: a `ContentPanel`, framed at the shell's
+ * gutter. The panel's sticky overlays keep the card's rounded corners, its
+ * gutter (masked in the shell's colour) and its edge at the screen's edges
+ * while the conversation scrolls the document under them — the same surface a
+ * framed Oxy web page stands on.
+ */
+function DocumentCard({
+  testID,
+  style,
+  surfaceColor,
+  gutterColor,
+  children,
+}: {
+  testID?: string;
+  style: StyleProp<ViewStyle>;
+  surfaceColor: string | null;
+  gutterColor: string | null;
+  children: ReactNode;
+}) {
+  const { ContentPanel } = useAiChatPlatform();
+  return (
+    <ContentPanel
+      framed
+      overlayInset={SHELL_GUTTER}
+      maskColor={gutterColor ?? undefined}
+      surfaceStyle={{ backgroundColor: surfaceColor ?? 'transparent' }}
+      surfaceColor={surfaceColor ?? undefined}
+      contentStyle={{ flexDirection: 'column' }}>
+      <View
+        testID={testID}
+        // One screen at the least, growing with the conversation.
+        style={[{ minHeight: webViewportHeightMinus(SHELL_GUTTER * 2), flexGrow: 1, flexDirection: 'column' }, style]}>
+        {children}
+      </View>
+    </ContentPanel>
   );
 }
 

@@ -1,3 +1,4 @@
+import { ContentPanel } from '../content-panel/index.web';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip/index.web';
 import { bindAiChat } from './bindAiChat';
 
@@ -6,9 +7,10 @@ import { bindAiChat } from './bindAiChat';
  * `.web` path because a bundler resolving `package.json#exports` applies no
  * platform extensions to relative specifiers.
  */
-const parts = bindAiChat({ Tooltip, TooltipTrigger, TooltipTextBubble });
+const parts = bindAiChat({ Tooltip, TooltipTrigger, TooltipTextBubble, ContentPanel });
 
 export const AiChatFeedbackRow = parts.AiChatFeedbackRow;
 export const AiChatAssistantMessage = parts.AiChatAssistantMessage;
 export const AiChatImageGeneration = parts.AiChatImageGeneration;
 export const AiChatGalleryPanel = parts.AiChatGalleryPanel;
+export const AiChatContainer = parts.AiChatContainer;
