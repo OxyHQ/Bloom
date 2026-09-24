@@ -109,14 +109,14 @@ export function AiChatAssistantMessageBase({
   );
 }
 
-export function AiChatMessageLine({ children, tone = 'primary', block = false, style }: AiChatMessageLineProps) {
+export function AiChatMessageLine({ children, tone = 'primary', block = false, selectable = true, style }: AiChatMessageLineProps) {
   const palette = useAiChatPalette();
   return (
     <RevealLine style={style}>
       {block ? (
         children
       ) : (
-        <Text variant="body-regular" style={{ color: tone === 'secondary' ? palette.textSecondary : palette.text }}>
+        <Text selectable={selectable} variant="body-regular" style={{ color: tone === 'secondary' ? palette.textSecondary : palette.text }}>
           {children}
         </Text>
       )}

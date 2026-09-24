@@ -200,3 +200,7 @@ No device-runtime verification is implied by the Android back-handler tests.
 `AiChatContainer.actions` composes real menu triggers or other chat actions in
 the breadcrumb action row, replacing the default share/more controls. Use it
 with `AiChatMobileHeader` to preserve the template layout without a second toolbar.
+
+## Selection
+
+Content is selectable and the interface is not. Every control takes no selection on web (Bloom's base rule, adopted by the theme provider); the breadcrumb and the web-search trail are navigation and activity, so their text is not selectable either. A reply's lines are content — `AiChatMessageLine` is selectable by default — and a status line passes `selectable={false}`.
