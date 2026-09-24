@@ -32,7 +32,15 @@ available platform material. `maxWidth` defaults to 560 points.
 The universal entry uses no Apple-only peers. The specialized `tab-bar` subpath
 continues to provide its native enhancements independently.
 
-`actionPlacement="auto"` (default) moves the action above and to the right when placing it beside the tabs would leave less than 56 points per destination. `beside` retains the horizontal arrangement; `above` always lifts it. The action uses the same scroll-driven visibility in both placements. Its measured height plus a 10-point gap joins the reserved footprint, so the final content remains reachable.
+`actionPlacement="auto"` (default) moves the action above and to the end edge (the right in LTR, the left in RTL) when placing it beside the tabs would leave less than 56 points per destination. `beside` retains the horizontal arrangement; `above` always lifts it. The action uses the same scroll-driven visibility in both placements. Its measured height plus a 10-point gap joins the reserved footprint, so the final content remains reachable.
+
+## Right-to-left
+
+The row is a flex row, so under `dir="rtl"` (web) or `I18nManager.isRTL`
+(native) the first destination sits at the right and the action at the left. The
+tab bar's highlight and its tap/scrub hit-testing follow — both read
+`useIsRtl()`, because a `translateX` and a physical touch `x` do not mirror by
+themselves. Setup: [`AppShell`, Right-to-left](/docs/bloom/main/app-shell).
 
 ## Pager and shell composition
 

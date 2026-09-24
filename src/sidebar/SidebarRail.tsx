@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { Badge } from '../badge';
+import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useSidebarPalette } from './palette';
 import { IS_WEB } from './parts';
 import { SidebarPrimaryAction } from './SidebarPrimaryAction';
@@ -34,10 +35,14 @@ export function SidebarRail({
   secondaryItems = [],
   selected,
   onNavigate,
+  accessibilityLabel = 'Sidebar',
   style,
   testID,
 }: SidebarProps) {
   const palette = useSidebarPalette();
+  // The badges sit on logical insets; react-native-web resolves those against a
+  // `dir` prop, not `<html dir>` (see `useDirectionProps`).
+  const dirProps = useDirectionProps();
 
   const renderItem = (item: SidebarNavItem) => {
     const isSelected = selected === item.key;
@@ -68,8 +73,9 @@ export function SidebarRail({
 
   return (
     <View
+      {...dirProps}
       role="complementary"
-      accessibilityLabel="Sidebar"
+      accessibilityLabel={accessibilityLabel}
       testID={testID}
       style={[
         {

@@ -177,6 +177,30 @@ describe('WebSearch', () => {
     expect(fillOf(2)).toBe(resolveButtonRamps(theme).accent[500]);
   });
 
+  it("draws a source's favicon, lets a brand mark win over it, and falls back to the dot when it fails", () => {
+    const { getByTestId } = renderSearch(
+      <WebSearch
+        testID="ws"
+        revealed={99}
+        reduce
+        steps={[{
+          label: 'Searched the web for',
+          sources: [
+            { title: 'GSMArena', domain: 'www.gsmarena.com', faviconUrl: 'https://api.clarity.surf/favicons/www.gsmarena.com' },
+            { title: 'Reddit', domain: 'www.reddit.com', brand: 'reddit', faviconUrl: 'https://api.clarity.surf/favicons/www.reddit.com' },
+          ],
+        }]}
+      />,
+    );
+    const stack = getByTestId('ws-step-0-sources-stack', hidden);
+    const images = () => stack.findAll((node) => typeof node.type === 'string' && node.props.source?.uri !== undefined && typeof node.props.onError === 'function');
+    expect(images().map((node) => node.props.source.uri)).toEqual(['https://api.clarity.surf/favicons/www.gsmarena.com']);
+    expect(resolvedStyle(images()[0]!.props.style)).toMatchObject({ width: 12, height: 12 });
+
+    act(() => images()[0]!.props.onError({ nativeEvent: { error: 'HTTP 404' } }));
+    expect(images()).toHaveLength(0);
+  });
+
   it('opens sources bottom-up one row per 100ms, then closes them again', () => {
     jest.useFakeTimers();
     const { getByTestId, queryByText } = renderSearch(

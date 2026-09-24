@@ -740,3 +740,14 @@ describe('Tabs', () => {
     });
   });
 });
+
+it('keeps the native horizontal viewport intrinsic while retaining caller strip geometry', () => {
+  const tree = renderWithTheme(<Tabs testID="intrinsic-tabs" value="a" variant="underline" style={{ height: 38, paddingLeft: 12, borderBottomWidth: 2 }}>
+    <TabsTrigger value="a" label="First" />
+    <TabsTrigger value="b" label="Second" />
+  </Tabs>);
+  const viewport = tree.getByTestId('intrinsic-tabs');
+  expect(viewport.props.horizontal).toBe(true);
+  expect(flattenStyle(viewport.props.style)).toMatchObject({ flexGrow: 0, flexShrink: 0 });
+  expect(flattenStyle(viewport.props.contentContainerStyle)).toMatchObject({ height: 38, paddingLeft: 12, borderBottomWidth: 2, flexGrow: 1 });
+});

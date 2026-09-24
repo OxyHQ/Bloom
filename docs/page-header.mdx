@@ -286,3 +286,10 @@ The provider accepts the existing `scrollY` shared value or inherits `Screen`'s.
 Native lists retain sticky ownership and consume `useHeaderDockInset()` as their
 supported sticky-header offset; see [layout](./layout.mdx). Storybook's
 **Profile Docking** demonstrates the document-scroll composition.
+
+For a native list behind the header, use `placement="overlay"` and let the list
+consume `useHeaderDockInset()` for sticky clearance. This absolute header has
+both a local stacking index and native elevation: Android scroll surfaces can
+otherwise paint over its controls. `placement="overlap"` is the document-scroll
+composition for web. Keep the header and list in the same unclipped parent;
+no descendant elevation can escape an ancestor's clipping bounds.

@@ -159,7 +159,7 @@ const BreadcrumbItemComponent: React.FC<BreadcrumbItemProps> = ({
       {Icon ? <Icon width={16} height={16} fill={foreground} /> : null}
       {children != null ? (
         typeof children === 'string' || typeof children === 'number' ? (
-          <Text variant="caption-1-medium" numberOfLines={1} style={[{ color: foreground }, textStyle]}>
+          <Text selectable={false} variant="caption-1-medium" numberOfLines={1} style={[{ color: foreground }, textStyle]}>
             {children}
           </Text>
         ) : (

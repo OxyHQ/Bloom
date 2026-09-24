@@ -12,6 +12,13 @@ import type { View } from 'react-native';
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
+import {
+  hostElement,
+  isInMenuSurface,
+  useMenuFocusIntent,
+  useMenuPanelKeys,
+  useReturnFocusOnClose,
+} from '../floating/menu-keyboard';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { cx } from '../floating/shared';
@@ -26,6 +33,7 @@ import type {
 
 export function ContextMenu({ children, onOpenChange }: ContextMenuProps) {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
+  const focusIntent = useMenuFocusIntent();
 
   const value = useMemo(
     () => ({
@@ -41,8 +49,9 @@ export function ContextMenu({ children, onOpenChange }: ContextMenuProps) {
         onOpenChange?.(false);
       },
       anchor,
+      focusIntent,
     }),
-    [anchor, onOpenChange],
+    [anchor, onOpenChange, focusIntent],
   );
 
   return <ContextMenuProvider value={value}>{children}</ContextMenuProvider>;
@@ -59,7 +68,9 @@ export function ContextMenuTrigger({
 }: ContextMenuTriggerProps) {
   const menu = useContextMenu();
   const wrapperRef = useRef<View | null>(null);
-  const { openAt } = menu;
+  const { openAt, focusIntent } = menu;
+  // Focus returns here when the menu closes with it inside (`menu-keyboard.ts`).
+  useReturnFocusOnClose(wrapperRef, menu.open, isInMenuSurface);
 
   // A DOM subscription, not derived state: `contextmenu` has no React Native
   // prop and react-native-web filters unknown props off a `View`, so the only
@@ -73,6 +84,11 @@ export function ContextMenuTrigger({
 
     const onContextMenu = (event: MouseEvent) => {
       event.preventDefault();
+      // A context menu takes focus on its first row however it opened — the
+      // right-click is the only way in, and without focus in the panel its
+      // arrows and Escape have nothing to act on. A pointer open paints no
+      // ring: the rows highlight on `:focus-visible` only.
+      if (focusIntent) focusIntent.edge.current = 'first';
       openAt({
         top: event.clientY,
         bottom: event.clientY,
@@ -82,7 +98,7 @@ export function ContextMenuTrigger({
     };
     element.addEventListener('contextmenu', onContextMenu);
     return () => element.removeEventListener('contextmenu', onContextMenu);
-  }, [openAt, disabled]);
+  }, [openAt, disabled, focusIntent]);
 
   return (
     <TriggerSlot
@@ -129,9 +145,16 @@ export function ContextMenuContent({
     [menu.close],
   );
   const onDismiss = useCallback(() => menu.close(), [menu]);
+  const [panel, setPanel] = useState<View | null>(null);
+  useMenuPanelKeys(hostElement(panel), {
+    open: menu.open,
+    onTab: onDismiss,
+    intent: menu.focusIntent,
+  });
 
   return (
     <FloatingPanel
+      panelRef={setPanel}
       open={menu.open}
       anchor={menu.anchor}
       role="menu"

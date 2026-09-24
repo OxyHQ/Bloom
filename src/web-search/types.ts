@@ -22,6 +22,12 @@ export interface WebSearchSource {
   /** Draws that site's real mark in its own colour. */
   brand?: WebSearchBrand;
   /**
+   * The site's favicon, for a site with no brand mark: an image URL drawn 12×12
+   * in the mark. A brand mark wins over it; an image that fails to load falls
+   * back to the dot, so a missing icon never leaves a broken one.
+   */
+  faviconUrl?: string;
+  /**
    * A glyph for anything outside the brand marks — a docs site, a customer's own
    * product. Supplied ready-made and sized by the caller (the slot is 12×12).
    * Takes precedence over `brand`.

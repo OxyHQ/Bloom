@@ -72,6 +72,28 @@ continuous scroll. A screen that measures scroll passes its own value.
 has reached the first heading has read something — and an empty outline at 0,
 which is the honest answer rather than a guess.
 
+## Give a heading an `href` and it is a real link
+
+On web a heading with an `href` (usually `#id`) renders as an `<a href>`. A
+reader can open it in a new tab, copy it, or middle-click it, and a crawler
+reads the document's structure from the links — none of which a row that only
+answers presses can offer.
+
+```tsx
+<OutlineNav
+  headings={headings.map((h) => ({ ...h, href: `#${h.id}` }))}
+  activeId={activeId}
+  onSelect={(heading) => scrollTo(heading.id)}
+/>
+```
+
+`onSelect` still owns the ordinary press: a plain click calls it and the
+browser does not follow the link, so the app's own scroll (and any offset for a
+sticky header) is what runs. A modified click — ⌘, Ctrl or Shift held, or a
+button other than the primary — is left to the browser, which opens the tab or
+window the reader asked for. Without `onSelect`, the anchor simply navigates.
+Native ignores `href`.
+
 ## Traps
 
 - **The progress bar is a `Meter`**, so it is a real `progressbar` with a name

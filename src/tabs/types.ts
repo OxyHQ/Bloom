@@ -62,6 +62,12 @@ export interface TabsProps {
    * set of tabs (e.g. 2–3). Defaults to `false`.
    */
   fullWidth?: boolean;
+  /**
+   * The strip's accessible name — the `tablist`'s `aria-label` on web ("Account
+   * sections"). The tab labels name the TABS, not the set of them. Ignored on
+   * native, where naming the container would fold its tabs into one element.
+   */
+  label?: string;
   /** The tab items. Must be TabsTrigger components. */
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;

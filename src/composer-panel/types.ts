@@ -260,6 +260,25 @@ export interface ComposerPanelProps {
   /** The tab on the card's top edge — typically `<ComposerPanelStatusTab />`. */
   status?: ReactNode;
 
+  /**
+   * Drawn where send would be, while there is nothing to send — no draft and
+   * no attachment — and no turn is in flight.
+   *
+   * An assistant with a voice mode puts its call button here, the slot the
+   * thumb is already over; the pill takes the same prop. Omit it and send sits
+   * there disabled, as before. A stop always wins over it, and a lone
+   * attachment gives the slot back to send: a picture with no caption is a turn.
+   */
+  emptyAction?: ReactNode;
+
+  /**
+   * The field's key events, BEFORE the panel's own Enter rule, so a host can
+   * take a key from it — the pill's contract. Calling `preventDefault()` stops
+   * the panel acting on that key: a suggestion list over the composer drives
+   * the arrows, Enter and Escape this way.
+   */
+  onKeyPress?: (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
+
   /** The prompt field itself, for focus or a scripted demo. */
   inputRef?: RefObject<TextInput | null>;
   labels?: ComposerPanelLabels;

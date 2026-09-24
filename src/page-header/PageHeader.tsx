@@ -416,7 +416,12 @@ function PageHeaderComponent({
       style={[
         styles.container,
         { paddingTop: padTop },
-        overlay ? [styles.overlay, { zIndex: Z_INDEX.floating }] : null,
+        overlay ? [styles.overlay, {
+          zIndex: Z_INDEX.floating,
+          // Android's native scroll surfaces also participate in elevation.
+          // Keep this local chrome above its sibling list without a portal.
+          ...(!isWeb ? { elevation: Z_INDEX.floating } : {}),
+        }] : null,
         containerWeb,
         placement === 'overlap' ? { marginBottom: -height, zIndex: Z_INDEX.floating } : null,
         style,

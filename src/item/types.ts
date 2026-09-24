@@ -26,8 +26,15 @@ export interface ItemProps {
    * `Item` is used as an option inside an overlay (combobox, command, menu).
    */
   selected?: boolean;
-  /** Highlighted (keyboard-focused) state for overlay lists. */
+  /** The "you are here" state: the current route in a navigation list. */
   active?: boolean;
+  /**
+   * The keyboard's cursor in a list the field above it drives (arrow keys over
+   * a combobox or a composer's suggestions). Paints the hover wash, since it
+   * is the same claim as the pointer resting on the row, and announces
+   * nothing: the row is neither chosen (`selected`) nor current (`active`).
+   */
+  highlighted?: boolean;
   /** Vertical density. Defaults to `'comfortable'`. */
   density?: 'comfortable' | 'compact';
   style?: StyleProp<ViewStyle>;

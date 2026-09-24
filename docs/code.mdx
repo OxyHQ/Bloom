@@ -78,6 +78,18 @@ surface.
 
 `tokenizeCode(source, language, highlight)` is exported for surfaces that lay
 the tokens out themselves; it returns one array of `{ kind, text }` per line.
+Colour them with `tokenColor(kind, useCodePalette())` — the same palette the
+card paints with, so a hand-laid editor or diff mock-up and a `CodeBlock` on the
+same page cannot disagree about what a keyword looks like.
+
+```tsx
+import { tokenColor, tokenizeCode, useCodePalette } from '@oxy.so/bloom/code';
+
+const palette = useCodePalette();
+tokenizeCode(source, 'tsx').map((line) =>
+  line.map((token) => <span style={{ color: tokenColor(token.kind, palette) }}>{token.text}</span>),
+);
+```
 
 ## Props
 

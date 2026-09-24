@@ -12,6 +12,14 @@ export interface OutlineHeading {
    * arithmetic.
    */
   level: number;
+  /**
+   * Where the heading lives, usually `#id`. On web it makes the row a real
+   * `<a href>`: a reader can open it in a new tab, copy it, or middle-click it,
+   * and a crawler sees the document's structure. A plain press still goes to
+   * `onSelect` (the app does the jumping); a modified one (⌘/Ctrl/Shift, or a
+   * button other than the primary) is left to the browser. Ignored on native.
+   */
+  href?: string;
 }
 
 /**

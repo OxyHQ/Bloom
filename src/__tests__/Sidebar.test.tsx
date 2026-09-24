@@ -96,11 +96,13 @@ describe('Sidebar', () => {
     const light = resolveSidebarPalette(buildTheme('teal', 'light'));
     expect(panel.height).toBe('100%');
     expect(panel.flexShrink).toBe(0);
-    expect(panel.borderRightWidth).toBe(1);
+    // The END edge, so the hairline faces the content in either direction.
+    expect(panel.borderEndWidth).toBe(1);
+    expect(panel.borderRightWidth).toBeUndefined();
     expect(panel.backgroundColor).toBe(light.panel);
     // Docked chrome uses the shared hairline against the panel surface.
-    expect(panel.borderRightColor).toBe(light.dockedEdge);
-    expect(panel.borderRightColor).not.toBe(light.panelBorder);
+    expect(panel.borderEndColor).toBe(light.dockedEdge);
+    expect(panel.borderEndColor).not.toBe(light.panelBorder);
   });
 
   it('size drives the row, the glyph and the panel together — and the collapsed width is the square plus the panel', () => {

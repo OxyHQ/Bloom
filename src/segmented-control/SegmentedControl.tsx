@@ -32,6 +32,8 @@ import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles
 import type { WebCssStyle } from '../styles/web-view-style';
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { useFieldMembership } from '../field/membership';
+import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
+import { webDataSet } from '../styles/web-data';
 
 /**
  * A segmented control using Bloom's canonical surface and text roles.
@@ -104,6 +106,16 @@ function resolveSegmentedPalette(theme: Theme): SegmentedPalette {
 
 const STYLE_ID = 'bloom-segmented-control-web-css';
 const SEGMENT = '[data-bloom-segmented-item]';
+/** The group node — the owner a segment's keyboard walks within. */
+const GROUP = '[data-bloom-segmented-group]';
+
+/** The attribute that says a segment is the chosen one, per role. */
+function isChosenSegment(element: HTMLElement): boolean {
+  return (
+    element.getAttribute('aria-checked') === 'true' ||
+    element.getAttribute('aria-selected') === 'true'
+  );
+}
 
 const SEGMENTED_CSS = interactiveWebCss({
   selector: SEGMENT,
@@ -230,6 +242,15 @@ export function SegmentedControl<T extends string>({
   const candidate = useSharedValue('');
   const suppressUntil = useRef(0);
   const [release, setRelease] = useState(0);
+  // Web: ONE tab stop for the whole group — the chosen segment — as the ARIA
+  // radio-group and tab patterns require (`hooks/roving-focus.ts`).
+  const groupRef = useRef<View | null>(null);
+  useRovingTabIndex(
+    () => groupRef.current as unknown as Element | null,
+    SEGMENT,
+    isChosenSegment,
+    GROUP,
+  );
   const register = useCallback((segment: SegmentPosition) => {
     segments.value = [...segments.value.filter(item => item.value !== segment.value), segment].sort((a, b) => a.x - b.x);
     return () => { segments.value = segments.value.filter(item => item.value !== segment.value); };
@@ -335,6 +356,8 @@ export function SegmentedControl<T extends string>({
   return (
     <GestureDetector gesture={gesture} touchAction="pan-y">
     <View
+      ref={groupRef}
+      {...webDataSet({ bloomSegmentedGroup: '' })}
       testID={testID}
       nativeID={field.nativeID}
       accessibilityLabel={field.accessibilityLabel}
@@ -456,6 +479,27 @@ export function SegmentedControlItem({
   const itemRole = ctx.type === 'tabs' ? 'tab' : 'radio';
   const geometry = GEOMETRY[ctx.size];
 
+  // Web keyboard, per the ARIA pattern the group's role names. A radio group
+  // answers all four arrows and has no Home/End; a tab strip answers
+  // Left/Right plus Home/End. Both select as focus moves — the control is a
+  // controlled value with nothing expensive behind a change — and both take
+  // Space, which react-native-web only synthesises for `role="button"`. Enter
+  // stays with react-native-web's own press. `allowKeyboardPress` first, so a
+  // drag's click suppression can never swallow a key.
+  const onKeyDown = useCallback(
+    (event: { key: string; currentTarget: unknown; preventDefault: () => void }) => {
+      ctx.allowKeyboardPress();
+      handleRovingKeyDown(event, {
+        selector: SEGMENT,
+        owner: GROUP,
+        orientation: ctx.type === 'tabs' ? 'horizontal' : 'both',
+        homeEnd: ctx.type === 'tabs',
+        activate: 'follow',
+      });
+    },
+    [ctx],
+  );
+
   const itemStyle: WebCssStyle = {
     flexGrow: 1,
     flexDirection: 'row',
@@ -488,7 +532,7 @@ export function SegmentedControlItem({
         setPosition(measuredPosition);
       }}>
       <Pressable
-        {...(IS_WEB ? ({ dataSet: { bloomSegmentedItem: '' }, onKeyDown: ctx.allowKeyboardPress } as Record<string, unknown>) : {})}
+        {...(IS_WEB ? ({ dataSet: { bloomSegmentedItem: '' }, onKeyDown } as Record<string, unknown>) : {})}
         onPress={onPress}
         onHoverIn={onHoverIn}
         onHoverOut={onHoverOut}

@@ -76,11 +76,15 @@ Pressing an open menu's trigger closes it.
 
 Sub-menus fly out beside their trigger row on web and render as an inline disclosure on native — see [DropdownMenu](/docs/bloom/main/dropdown-menu).
 
+## Keyboard (web)
+
+Each menu takes the keys `DropdownMenu` documents: <kbd>Enter</kbd> · <kbd>Space</kbd> · <kbd>↓</kbd> on a trigger open its menu onto the first row (<kbd>↑</kbd> onto the last), the arrows move between rows and wrap, <kbd>Home</kbd> · <kbd>End</kbd> jump, <kbd>Enter</kbd> · <kbd>Space</kbd> activate, and <kbd>Esc</kbd> · <kbd>Tab</kbd> close the menu with focus back on its trigger. See [DropdownMenu → Keyboard](/docs/bloom/main/dropdown-menu).
+
 ## What is not here yet
 
 Two things a desktop menu bar has that this one does not, both deliberate rather than forgotten:
 
 - **Hover to switch.** On a real desktop bar, once one menu is open, moving the pointer across a sibling trigger switches to it without a click. That needs hover intent, which is the same machinery a sub-menu flyout needs.
-- **Arrow-key navigation between menus.** Roving focus across the bar and into the open panel.
+- **Arrow-key navigation between menus.** <kbd>←</kbd> · <kbd>→</kbd> across the bar, and from one open menu to the next. Each trigger is its own tab stop until then.
 
-A press opens, a press closes, and every row is reachable by tab. Nothing is half-wired.
+A press opens, a press closes, and every menu is reachable by <kbd>Tab</kbd> and operable from the keyboard once open. Nothing is half-wired.

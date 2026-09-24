@@ -209,6 +209,44 @@ describe('it emits rather than jumps', () => {
   });
 });
 
+describe('a heading with an href', () => {
+  const LINKED: OutlineHeading[] = HEADINGS.map((h) => ({ ...h, href: `#${h.id}` }));
+
+  it('is a real anchor to it', () => {
+    mount(<OutlineNav headings={LINKED} testID="o" />);
+    const row = byTestId('o-row-c');
+    expect(row.tagName).toBe('A');
+    expect(row.getAttribute('href')).toBe('#c');
+  });
+
+  it('keeps a plain press for the app: onSelect runs and the browser does not follow', () => {
+    const onSelect = jest.fn();
+    mount(<OutlineNav headings={LINKED} onSelect={onSelect} testID="o" />);
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    act(() => {
+      byTestId('o-row-c').dispatchEvent(event);
+    });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('leaves a modified click to the browser', () => {
+    const onSelect = jest.fn();
+    mount(<OutlineNav headings={LINKED} onSelect={onSelect} testID="o" />);
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true, metaKey: true });
+    act(() => {
+      byTestId('o-row-c').dispatchEvent(event);
+    });
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('stays a plain row without one', () => {
+    mount(<OutlineNav headings={HEADINGS} testID="o" />);
+    expect(byTestId('o-row-c').tagName).not.toBe('A');
+  });
+});
+
 describe('the progress bar', () => {
   it('is a real progressbar with a name and a spoken reading', () => {
     mount(<OutlineNav headings={HEADINGS} activeId="d" testID="o" />);

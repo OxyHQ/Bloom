@@ -138,7 +138,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
         navFrom={navFrom}
         navExpandedFrom={navExpandedFrom}
         header={props.header !== undefined ? props.header : props.title ? <PageHeader title={props.title}
-          subtitle={props.breadcrumb} actions={props.actions} leading={<AppShellMenuButton />} /> : undefined}
+          subtitle={props.breadcrumb} actions={props.actions} leading={<AppShellMenuButton accessibilityLabel={props.drawerOpenLabel} />} /> : undefined}
         bottomBar={props.bottomBar !== undefined ? props.bottomBar : bottom}
         bottomBarVisibility={props.bottomBarVisibility ?? 'compact'}
         floatingAction={props.floatingAction !== undefined ? props.floatingAction : (primaryAction && (!compact || !hasNavigation || props.bottomBar !== undefined) ? <Fab {...primaryAction} /> : undefined)}

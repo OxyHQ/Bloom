@@ -9,6 +9,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -373,6 +374,7 @@ function SourceMark({
   );
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
+  const [faviconFailed, setFaviconFailed] = useState(false);
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -451,6 +453,13 @@ function SourceMark({
         </View>
       ) : source.brand ? (
         <BrandMark brand={source.brand} size={12} palette={palette} />
+      ) : source.faviconUrl && !faviconFailed ? (
+        <Image
+          source={{ uri: source.faviconUrl }}
+          onError={() => setFaviconFailed(true)}
+          resizeMode="contain"
+          style={{ width: 12, height: 12, borderRadius: 2 }}
+        />
       ) : (
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: palette.markDot }} />
       )}
@@ -521,7 +530,7 @@ function SourceLinkRow({
           textStyle,
         ]}
       >
-        <Text
+        <Text selectable={false}
           variant="body-regular"
           numberOfLines={1}
           style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}
@@ -529,7 +538,7 @@ function SourceLinkRow({
           {source.title}
         </Text>
         {showDomain ? (
-          <Text variant="caption-1-regular" style={{ flexShrink: 0, color: palette.textTertiary }}>
+          <Text selectable={false} variant="caption-1-regular" style={{ flexShrink: 0, color: palette.textTertiary }}>
             {source.domain}
           </Text>
         ) : null}
@@ -731,7 +740,7 @@ function SourcesRow({
             ringStyle,
           ]}
         >
-          <Text variant="body-regular" style={{ color: palette.textSecondary }}>
+          <Text selectable={false} variant="body-regular" style={{ color: palette.textSecondary }}>
             {label}
           </Text>
           <Animated.View
@@ -821,7 +830,7 @@ function StepContent({
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
       <StepGlyph step={step} palette={palette} />
-      <Text variant="body-regular" style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
+      <Text selectable={false} variant="body-regular" style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
         {active ? <AgentLogShimmerText>{step.label}</AgentLogShimmerText> : step.label}
         {step.query ? (
           <RNText
@@ -837,7 +846,7 @@ function StepContent({
         ) : null}
       </Text>
       {step.meta ? (
-        <Text
+        <Text selectable={false}
           variant="body-regular"
           style={[{ flexShrink: 0, paddingTop: 1, color: palette.textTertiary }, TABULAR]}
         >

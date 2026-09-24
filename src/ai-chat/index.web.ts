@@ -5,12 +5,13 @@
 
 export {
   AiChatAssistantMessage,
+  AiChatContainer,
   AiChatFeedbackRow,
   AiChatGalleryPanel,
   AiChatImageGeneration,
 } from './AiChat.web';
 export { AiChatCodePanel } from './AiChatCodePanel';
-export { AiChatContainer, AiChatThread } from './AiChatContainer';
+export { AiChatThread } from './AiChatContainer';
 export {
   AiChatBullet,
   AiChatBulletList,
@@ -20,8 +21,8 @@ export {
   AiChatUserMessage,
 } from './AiChatMessages';
 export { AiChatMobileHeader, AiChatResizeHandle, AiChatShell } from './AiChatShell';
-export { useAiChatShell } from './context';
-export type { AiChatShellState } from './context';
+export { useAiChatChromeInsets, useAiChatShell } from './context';
+export type { AiChatChromeInsets, AiChatShellState } from './context';
 export type {
   AiChatAssistantMessageProps,
   AiChatBulletListProps,

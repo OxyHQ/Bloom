@@ -6,12 +6,18 @@
  * `floating/menu-rows` set the native file publishes; what changes between the
  * two is stated once, as `presentation`.
  */
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
+import {
+  hostElement,
+  useMenuFocusIntent,
+  useMenuPanelKeys,
+  useMenuTriggerKeys,
+} from '../floating/menu-keyboard';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { cx } from '../floating/shared';
@@ -37,7 +43,11 @@ export function DropdownMenu({
     onChange: onOpenChange,
   });
   const anchorRef = useRef<View | null>(null);
-  const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef }), [isOpen, setOpen]);
+  const focusIntent = useMenuFocusIntent();
+  const value = useMemo(
+    () => ({ open: isOpen, setOpen, anchorRef, focusIntent }),
+    [isOpen, setOpen, focusIntent],
+  );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
 }
@@ -52,6 +62,14 @@ export function DropdownMenuTrigger({
   testID,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
+  // Web: Enter/Space/ArrowDown open into the first row, ArrowUp into the last,
+  // and focus comes back here when the menu closes (`floating/menu-keyboard.ts`).
+  useMenuTriggerKeys(menu.anchorRef, {
+    open: menu.open,
+    setOpen: menu.setOpen,
+    disabled,
+    intent: menu.focusIntent,
+  });
 
   return (
     <TriggerSlot
@@ -97,9 +115,14 @@ export function DropdownMenuContent({
     () => ({ close, presentation: 'dropdown' }),
     [close],
   );
+  // Arrows, Home/End, Space and Tab inside the open menu, and the keyboard
+  // open's landing row (`floating/menu-keyboard.ts`).
+  const [panel, setPanel] = useState<View | null>(null);
+  useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });
 
   return (
     <FloatingPanel
+      panelRef={setPanel}
       open={menu.open}
       anchor={anchor}
       role="menu"

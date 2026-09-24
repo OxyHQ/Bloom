@@ -10,7 +10,8 @@
  * menubar menu hang under its trigger the way a desktop menu bar does, rather
  * than centring like a popover.
  */
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import type { View } from 'react-native';
 
 import {
   MENUBAR_ALIGN_OFFSET,
@@ -19,6 +20,7 @@ import {
 } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
+import { hostElement, useMenuPanelKeys } from '../floating/menu-keyboard';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { cx } from '../floating/shared';
@@ -52,9 +54,12 @@ export function MenubarContent({
     () => ({ close, presentation: 'dropdown' }),
     [close],
   );
+  const [panel, setPanel] = useState<View | null>(null);
+  useMenuPanelKeys(hostElement(panel), { open: menu.open, onTab: close, intent: menu.focusIntent });
 
   return (
     <FloatingPanel
+      panelRef={setPanel}
       open={menu.open}
       anchor={anchor}
       role="menu"

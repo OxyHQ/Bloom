@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { Meter } from '../stat-bar';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -100,15 +100,36 @@ function OutlineRow({
     paddingLeft: 10,
     '--bloom-outline-ring': paint.accent,
   };
+  // On web a heading with an href is a real anchor (see `OutlineHeading.href`).
+  const href = IS_WEB ? heading.href : undefined;
   return (
     <Pressable
       {...webDataSet({ bloomOutlineRow: '' })}
+      {...(href != null ? ({ href } as Record<string, unknown>) : {})}
       role="link"
       accessibilityLabel={heading.label}
       // The reader is AT this heading; they did not choose it from a set.
       aria-current={active ? ('location' as const) : undefined}
       accessibilityState={{ selected: active }}
-      onPress={onSelect ? () => onSelect(heading) : undefined}
+      onPress={
+        onSelect
+          ? (event: GestureResponderEvent) => {
+              if (href != null) {
+                // A modified click asks the browser for a tab or a window: leave
+                // it the anchor. Only a plain press is the app's jump.
+                const click = event.nativeEvent as unknown as {
+                  metaKey?: boolean;
+                  ctrlKey?: boolean;
+                  shiftKey?: boolean;
+                  button?: number;
+                };
+                if (click.metaKey || click.ctrlKey || click.shiftKey || (click.button ?? 0) !== 0) return;
+                event.preventDefault();
+              }
+              onSelect(heading);
+            }
+          : undefined
+      }
       onHoverIn={onIn}
       onHoverOut={onOut}
       style={[rowStyle, ringOffset as WebCssStyle]}
