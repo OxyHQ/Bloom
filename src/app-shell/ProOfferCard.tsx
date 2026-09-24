@@ -13,6 +13,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Mask, Rect, Stop } from 'react-native-svg';
 
 import { Button, CloseButton } from '../button';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
@@ -22,18 +23,19 @@ import type { ProOfferCardProps } from './types';
 
 /**
  * `ProOfferCard`: the upgrade prompt anchored
- * bottom-left of the app.
+ * bottom-start of the app (bottom-left in LTR, bottom-right in RTL).
  *
  *   card       280 wide (full width minus 12 each side under `sm`), 12 from
- *              the bottom-left, radius 16, 1px border-button-white,
+ *              the bottom-start corner, radius 16, 1px border-button-white,
  *              background-secondary, p16, gap 12, shadow-waitlist
  *   backdrop   a tonal band across the top (card → raised surface →
  *              clear, diagonal, 70%), masked from opaque at 38% to clear
  *   copy       mark, then title body-medium / description body-2-regular
  *              secondary, 4 apart
  *   cta        full-width button with a white 40% shimmer sweeping across it
- *              every 2.5s (skewed −12°), hidden under reduced motion
- *   close      xs close button 12 from the top-right
+ *              every 2.5s (skewed −12°) toward the end edge, hidden under
+ *              reduced motion
+ *   close      xs close button 12 from the top-end corner
  *   enter      fades up 16px over 300ms after a 1.2s delay
  *
  * No shader backdrop ships by default; pass your own
@@ -79,6 +81,8 @@ function DefaultBackdrop({ from, via }: { from: string; via: string }) {
 
 function Shimmer({ width }: { width: number }) {
   const reducedMotion = useReducedMotion();
+  // The sweep runs start → end, so under RTL both its travel and its lean flip.
+  const dir = useIsRtl() ? -1 : 1;
   const travel = useSharedValue(0);
   useEffect(() => {
     if (reducedMotion || width === 0) return;
@@ -90,14 +94,14 @@ function Shimmer({ width }: { width: number }) {
   }, [reducedMotion, width, travel]);
   const barWidth = width * 0.45;
   const style = useAnimatedStyle(
-    () => ({ transform: [{ translateX: travel.value * barWidth * 3.5 }, { skewX: '-12deg' }] }),
-    [travel, barWidth],
+    () => ({ transform: [{ translateX: dir * travel.value * barWidth * 3.5 }, { skewX: `${dir * -12}deg` }] }),
+    [travel, barWidth, dir],
   );
   if (reducedMotion || width === 0) return null;
   return (
     <Animated.View
       pointerEvents="none"
-      style={[{ position: 'absolute', top: 0, bottom: 0, left: -width * 0.55, width: barWidth }, style]}
+      style={[{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: -width * 0.55, width: barWidth }, style]}
     >
       <Svg width="100%" height="100%">
         <Defs>
@@ -130,6 +134,9 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  // Fixed to the viewport, usually outside any shell: it hands react-native-web
+  // the document's direction itself so its logical insets resolve against it.
+  const dirProps = useDirectionProps();
   const { width: viewport } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
   const [ctaWidth, setCtaWidth] = useState(0);
@@ -160,8 +167,8 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
       ? {
           position: IS_WEB ? WEB_POSITION_FIXED : 'absolute',
           bottom: 12,
-          left: 12,
-          ...(narrow ? { right: 12 } : { width: 280 }),
+          insetInlineStart: 12,
+          ...(narrow ? { insetInlineEnd: 12 } : { width: 280 }),
           zIndex: Z_INDEX.floating,
         }
       : { width: 280 };
@@ -183,6 +190,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
 
   return (
     <Animated.View
+      {...dirProps}
       role="complementary"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
@@ -235,7 +243,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
         size="xs"
         accessibilityLabel={dismissLabel}
         onPress={onDismiss}
-        style={{ position: 'absolute', top: 12, right: 12, zIndex: Z_INDEX.raised }}
+        style={{ position: 'absolute', top: 12, insetInlineEnd: 12, zIndex: Z_INDEX.raised }}
         testID={testID ? `${testID}-dismiss` : undefined}
       />
     </Animated.View>

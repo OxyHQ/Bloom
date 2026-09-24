@@ -38,12 +38,12 @@ export const Basic: Story = {
     const [value, setValue] = useState('posts');
     return (
       <View style={{ width: 420, maxWidth: '100%', gap: 12 }}>
-        <Tabs value={value} onValueChange={setValue}>
+        <Tabs label="Profile sections" value={value} onValueChange={setValue}>
           <TabsTrigger value="posts" label="Posts" />
           <TabsTrigger value="replies" label="Replies" />
           <TabsTrigger value="media" label="Media" />
         </Tabs>
-        <Text>{PANELS[value]}</Text>
+        <Text testID="tabs-panel">{PANELS[value]}</Text>
       </View>
     );
   },

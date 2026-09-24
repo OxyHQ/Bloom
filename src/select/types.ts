@@ -174,4 +174,10 @@ export type SelectItemContextValue = {
   selected: boolean;
   /** Read by `SelectItemText`, which paints `text-disabled`. */
   disabled: boolean;
+  /**
+   * The list's size token, so `SelectItemText` can pick its type ramp without
+   * reading the forked `SelectContext` — which is what kept it, and the check
+   * and the rule beside it, written out twice.
+   */
+  size: SelectSize;
 };

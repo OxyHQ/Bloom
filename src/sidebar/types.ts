@@ -28,7 +28,7 @@ export interface SidebarNavItem {
   activeIcon?: SidebarIcon;
   /** Link target. On web the row renders a real anchor. */
   href?: string;
-  /** Counter badge on the right; primary-tinted when the row is selected. */
+  /** Counter badge at the row's end (the right in LTR); primary-tinted when the row is selected. */
   badge?: string | number;
   /**
    * An ACTION row (Settings → a modal): intercepts the navigation. When set,
@@ -87,7 +87,7 @@ export interface SidebarRailItemProps {
   activeIcon?: SidebarIcon;
   label: string;
   href?: string;
-  /** Sits over the indicator's top-right corner. */
+  /** Sits over the indicator's top-end corner (top-right in LTR). */
   badge?: ReactNode;
   selected?: boolean;
   onPress?: () => void;
@@ -158,6 +158,8 @@ export interface SidebarTeam {
   groups?: SidebarMenuGroup[];
   /** Footer line: product name and an optional version chip. */
   footer?: { label: string; version?: string };
+  /** Names the menu the card opens. Default `` `${name} menu` ``. */
+  menuLabel?: string;
 }
 
 export interface SidebarAccountUser {
@@ -210,6 +212,8 @@ export interface SidebarAccount {
   onManage?: () => void;
   addUserLabel?: string;
   manageLabel?: string;
+  /** Names the menu the switcher opens. Default `"Account menu"`. */
+  menuLabel?: string;
 }
 
 export interface SidebarTeamMenuProps {
@@ -289,6 +293,15 @@ export interface SidebarProps {
   /** Rendered inside a mobile drawer: always expanded, close button instead of collapse. */
   mobile?: boolean;
   onClose?: () => void;
+
+  /** The landmark's accessible name. Default `"Sidebar"`. */
+  accessibilityLabel?: string;
+  /** Names the collapse control while expanded. Default `"Collapse sidebar"`. */
+  collapseLabel?: string;
+  /** Names the same control while collapsed. Default `"Expand sidebar"`. */
+  expandLabel?: string;
+  /** Names the `mobile` close button. Default `"Close sidebar"`. */
+  closeLabel?: string;
   /** Expanded width fills the container instead of the size's own width. */
   fluid?: boolean;
   /** The panel's edge. Defaults to `card`. */
@@ -307,8 +320,17 @@ export interface SidebarProps {
   searchShortcutLabel?: string;
   /** Binds ⌘L / Ctrl+L on web. Defaults to true. */
   searchShortcut?: boolean;
+  /** Names the quick-search button. Default `"Quick Search"`. */
   searchLabel?: string;
+  /** Names the search button in a flat `mobile` header. Default `"Search"`. */
+  searchButtonLabel?: string;
+  /** Placeholder. Defaults `"Search navigation…"`, or `"Search..."` in a flat `mobile` header. */
   searchPlaceholder?: string;
+  /** Names the search field. Default `"Filter navigation"`. */
+  filterLabel?: string;
+  /** Names the button that clears and closes the search. Default `"Clear navigation search"`. */
+  clearSearchLabel?: string;
+  /** Default `"No results"`. */
   noResultsLabel?: string;
 
   /**
@@ -346,7 +368,7 @@ export interface SidebarTreeItem {
   onLongPress?: () => void;
   key: string;
   label: string;
-  /** A short chip on the right, e.g. a relative time (`34m`, `now`). */
+  /** A short chip at the row's end (the right in LTR), e.g. a relative time (`34m`, `now`). */
   meta?: string;
   /** Link target (a real anchor on web). */
   href?: string;

@@ -114,6 +114,29 @@ Mount `BloomHapticsProvider` if the app needs to turn haptics off globally
 Fetch an image before it is rendered — the transition into a full-screen viewer,
 the next page of a carousel.
 
+## `useIsRtl`
+
+Whether the layout is mirrored, read from where each platform's layout engine
+reads it: `<html dir>` on web (observed live, so a language switch re-renders),
+`I18nManager.isRTL` on native (fixed for the process — `forceRTL` applies on the
+next launch). The server snapshot is `false`.
+
+Use it only for what a logical style key cannot express — a `translateX` or
+`scaleX` sign, a `transformOrigin`, a floating `side`. Insets should be the
+CSS logical keys (`paddingInlineStart`, `insetInlineEnd`), which mirror with no
+hook; in a reanimated mapper, React Native's `paddingStart` spelling is dropped
+on web. Capture it into a worklet as a multiplier and list it in the deps:
+
+On web, react-native-web resolves logical insets against a `dir` prop on an
+ancestor `View`, not against `<html dir>` — so a root that uses them also
+needs `<View dir={useIsRtl() ? 'rtl' : undefined}>` (Bloom's page-frame
+families do this themselves).
+
+```tsx
+const dir = useIsRtl() ? -1 : 1;
+const style = useAnimatedStyle(() => ({ transform: [{ translateX: dir * 24 * p.value }] }), [p, dir]);
+```
+
 ## `mergeRefs`
 
 Combines several refs into one callback.

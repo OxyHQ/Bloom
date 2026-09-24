@@ -106,6 +106,27 @@ Both announce their state as `aria-checked`, which is the spelling react-native-
 
 The established defaults stay unchanged: checkbox rows use a check and radio rows use a dot, both in the leading gutter. `indicator` replaces that selected mark, `indicatorPosition="trailing"` moves its reserved gutter to the opposite edge, and `indicator={null}` suppresses the visual mark without removing `aria-checked`. These props are implemented once by the shared row factory, so `ContextMenu` and `Menubar` receive the identical contract.
 
+## Keyboard (web)
+
+The web menu follows the ARIA menu-button pattern, and the same keys reach `ContextMenu` and `Menubar` — all three render one row set (`floating/menu-keyboard.ts`):
+
+| where | key | does |
+| --- | --- | --- |
+| trigger | <kbd>Enter</kbd> · <kbd>Space</kbd> · <kbd>↓</kbd> | opens the menu with focus on the first enabled row |
+| trigger | <kbd>↑</kbd> | opens the menu with focus on the last enabled row |
+| trigger, menu already open (pointer) | <kbd>↓</kbd> · <kbd>↑</kbd> | moves focus into the menu (first / last row) |
+| menu | <kbd>↓</kbd> · <kbd>↑</kbd> | next / previous enabled row, wrapping at the ends |
+| menu | <kbd>Home</kbd> · <kbd>End</kbd> | first / last enabled row |
+| menu | <kbd>Enter</kbd> · <kbd>Space</kbd> | activates the row: a checkbox row toggles, a radio row selects, and `keepOpen` still decides whether the menu closes |
+| menu | <kbd>Esc</kbd> · <kbd>Tab</kbd> | closes the menu; a menu is not part of the page's tab order |
+| sub trigger | <kbd>→</kbd> · <kbd>Enter</kbd> · <kbd>Space</kbd> | opens the flyout on its first row (below) |
+| flyout | <kbd>←</kbd> · <kbd>Esc</kbd> | closes the flyout onto its trigger row, leaving the menu open |
+| flyout | <kbd>Tab</kbd> | closes the whole menu |
+
+Whenever the menu closes with focus inside it — a row activated, <kbd>Esc</kbd>, <kbd>Tab</kbd> — focus returns to the trigger. A pointer open leaves focus where the pointer put it; a right-click opens a `ContextMenu` onto its first row (no ring is painted — rows highlight on `:focus-visible`), since the menu's keys need focus inside it.
+
+Before this the trigger opened the menu and focus stayed on it: the rows are portaled to the end of `<body>`, so the arrows had nothing to move, <kbd>Tab</kbd> walked on through the page behind the open menu, and <kbd>Space</kbd> pressed nothing (react-native-web presses a `menuitem`, `checkbox` or `radio` on <kbd>Enter</kbd> only). Verified in jest (`MenuKeyboard.web.test.tsx`) and in a real browser (`scripts/verify-web-keyboard.mjs`). Native is unchanged — the menu is a bottom sheet there.
+
 ## Sub-menus: a flyout on web, an inline disclosure on native
 
 The API is one thing on both platforms — a shadcn call site ports across unchanged — and the presentation is the platform's own, matching what each platform's upstream does.

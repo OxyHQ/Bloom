@@ -110,7 +110,7 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 ```
 
 - An 80px column on background-full with no panel chrome. The primary items are centred vertically in a scroller (px 8, py 24, gap 8); `secondaryItems` sit at the foot.
-- Each item (`SidebarRailItem`) is min-height 64, radius 20, py 8: a 48 × 32 pill behind a 22px icon, and 5 below it a one-line 10px label. Selected, the pill takes the accent-500 fill with the primary foreground, the label turns text-primary medium, and `activeIcon` (e.g. the filled glyph) replaces `icon`. Hover fills the pill with background-secondary-hover. A `badge` sits over the pill's top-right corner.
+- Each item (`SidebarRailItem`) is min-height 64, radius 20, py 8: a 48 × 32 pill behind a 22px icon, and 5 below it a one-line 10px label. Selected, the pill takes the accent-500 fill with the primary foreground, the label turns text-primary medium, and `activeIcon` (e.g. the filled glyph) replaces `icon`. Hover fills the pill with background-secondary-hover. A `badge` sits over the pill's top-end corner (top-right in LTR).
 - Navigation only: `account`, `team`, `plan`, `tree`, quick search, the theme toggle and collapse belong to the panel and are ignored here. Routing (`href`, `onPress`, `onNavigate`) works as below.
 - In `AppShell` the rail stays in flow from `sm`; see `docs/app-shell.mdx`.
 
@@ -162,7 +162,20 @@ The docked edge is not the card's border: that one is white in light mode, a hig
 
 The table describes a card without a primary action. Runtime collapsed width is the icon lane plus 7px padding on each side and the borders actually painted: card adds2px, docked1px, plain0px. The lane is the row square, or at least50px when `primaryAction` is present (total66/65/64px respectively). Navigation and search retain their30/40/44px circles, centred in the wider lane; their icons are not enlarged. Logo, collapse control, modes, theme and account controls share that centre. Expanded navigation retains its2px inset, and the primary action uses the same edges. A row outside a sidebar takes `size` itself; inside one it inherits the panel's.
 
-`AppShell` passes both through (`sidebar={{ surface, size }}`) and treats `docked` as what it is — it gives up its left and vertical padding around that column and lets it run the full height, so the hairline is the separator instead of a gutter.
+`AppShell` passes both through (`sidebar={{ surface, size }}`) and treats `docked` as what it is — it gives up its start and vertical padding around that column and lets it run the full height, so the hairline is the separator instead of a gutter.
+
+## Right-to-left
+
+The sidebar mirrors with the document (`<html dir="rtl">` on web,
+`I18nManager.isRTL` on native): the `docked` hairline is on the END edge
+(`borderEndWidth`), so it faces the content in either direction; the collapse
+control, its glyph, the folder connector and the account/team menus flip with
+it. How direction is read and what an app must set: [`AppShell`, Right-to-left](/docs/bloom/main/app-shell).
+
+Every label it speaks is a prop (`accessibilityLabel`, `collapseLabel`,
+`expandLabel`, `closeLabel`, `searchLabel`, `searchButtonLabel`, `filterLabel`,
+`clearSearchLabel`, `noResultsLabel`, `account.menuLabel`, `team.menuLabel`);
+defaults and what each names: [`AppShell`, Labels](/docs/bloom/main/app-shell).
 
 ## Navigation
 

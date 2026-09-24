@@ -235,15 +235,14 @@ export function ChevronUpDownSmall({ color, size = 16 }: { color: string; size?:
   );
 }
 
-/** The width both sidebar menus give their popover: `w-[265px]`. */
-export function menuPanelStyle(_palette?: SidebarPalette): ViewStyle {
-  // `w-[265px]` is the only thing these menus say differently from the popover
-  // panel itself — radius, border, surface, `p-2.5` and `shadow-dropdown` are
-  // `Popover`'s own defaults now (`popover/surface.ts`).
-  return MENU_PANEL;
-}
-
-const MENU_PANEL: ViewStyle = { width: 265 };
+/**
+ * The width both sidebar menus give their popover: `w-[265px]` — the only
+ * thing these menus say differently from the popover panel itself. Radius,
+ * border, surface, `p-2.5` and `shadow-dropdown` are `Popover`'s own defaults
+ * (`popover/surface.ts`), which is why this stopped being a function of the
+ * palette: it took one and ignored it, and both call sites kept passing one.
+ */
+export const SIDEBAR_MENU_PANEL: ViewStyle = { width: 265 };
 
 /** Full-bleed menu divider: `-mx-2.5 h-px bg-border-button-default`. */
 export function MenuDivider({ palette, spacing }: { palette: SidebarPalette; spacing: number }) {

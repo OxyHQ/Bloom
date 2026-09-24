@@ -3,8 +3,9 @@
  * Generate the platform-aware bits of @oxy.so/bloom's published surface:
  *
  *   1. The `exports` field of `package.json`.
- *   2. Every WEB BARREL (`src/index.web.ts`, `src/theme/index.web.ts`) — each
- *      one derived from its native sibling.
+ *   2. EVERY web barrel — each one derived from its native sibling. A barrel
+ *      qualifies by existing: any `index.ts` with an `index.web.ts` beside it.
+ *      None is maintained by hand.
  *
  * The single source of truth is the layout under `src/`. A subpath gets a
  * `"browser"` export condition iff it appears in `WEB_FORKED_SUBPATHS`
@@ -313,6 +314,13 @@ const SUBPATHS = /** @type {const} */ ([
 /**
  * Subpaths whose default entry has a `.web.{ts,tsx}` sibling.
  *
+ * This Set governs ONE thing: which subpaths get a `browser` export condition.
+ * It no longer decides what any barrel points at — the web barrels derive that
+ * from the tree (see `buildWebBarrel`). So a fork added without an entry here
+ * still retargets correctly inside the barrels while its own subpath silently
+ * lacks a `browser` condition; `web-fork-reachability.test.ts` is what fails on
+ * that gap.
+ *
  * The corresponding `.web` source files MUST exist (the script asserts this);
  * if you remove a fork delete the entry here and re-run the script.
  */
@@ -615,52 +623,106 @@ function buildTypesVersionsField() {
 // --------------------------------------------------------------------------
 
 /**
- * Barrels that exist in a native and a web variant, where the web variant is
- * DERIVED from the native one rather than maintained by hand.
+ * EVERY web barrel is derived from its native sibling; none is maintained by
+ * hand. A barrel qualifies by existing: any `src/**\/index.ts` with an
+ * `index.web.ts` beside it is regenerated here.
  *
- * `children` names the sibling FOLDERS whose `index.web` the web barrel must
- * point at. This has to be spelled out because **export conditions do not
- * apply to relative specifiers** — `theme/index.ts` naming `./color-scope`
- * resolves to the native `index.tsx` in every bundler that is not Metro, no
- * matter what `package.json#exports` says about `./theme`. Metro alone picks
- * the `.web` sibling up by platform extension, which is exactly why the gap
- * was invisible: Metro-web was right and Vite/webpack/SSR silently got native.
+ * The retarget rule is one sentence — *for each `from '<relative>'`, resolve
+ * the specifier to a stem and, if `<stem>.web.ts(x)` exists, name that file
+ * instead* — and it is the same rule `web-fork-reachability.test.ts` enforces
+ * at test time (its `reachesNativeFromWeb`). Generating it makes the mistake
+ * unwritable rather than merely caught: **export conditions do not apply to
+ * relative specifiers**, so a web barrel naming `./color-scope` resolves to the
+ * NATIVE file in every bundler that is not Metro, whatever
+ * `package.json#exports` says. Metro alone picks the `.web` sibling up by
+ * platform extension, which is exactly why the gap stayed invisible — Metro-web
+ * was right while Vite/webpack/SSR silently got native.
  *
- * Generated rather than hand-written for the same reason the root barrel is:
- * two barrels that must agree on every line drift the moment one is edited.
+ * Keying on the `.web` sibling's EXISTENCE is what keeps a NEUTRAL module's
+ * bare specifier bare. Naming `.web` on a module that has no fork breaks
+ * native, so the rule must not fire there, and it cannot: there is no file for
+ * it to name.
+ *
+ * Before this was a rule it was a hand-written `children` list per barrel, and
+ * the two spellings of one export list drifted: at 0807179 `fab/index.ts`
+ * exported `FabMinimizeBehavior` and `fab/index.web.ts` did not, so the type
+ * was absent from every web build and present in every native one, with
+ * nothing to report it.
  */
-const WEB_BARRELS = /** @type {const} */ ([
-  { source: 'button/index.ts', children: ['Button'] },
-  { source: 'fab/index.ts', children: ['Fab'] },
-  { source: 'bottom-bar/index.ts', children: ['BottomBar'] },
-  { source: 'app-shell/index.ts', children: ['../bottom-bar', '../fab', '../content-panel', '../theme/color-scope'] },
-  {
-    source: 'index.ts',
-    // Every web-forked subpath except the root itself.
-    children: [...WEB_FORKED_SUBPATHS].filter((s) => s !== '.').map((s) => s.replace(/^\.\//, '')),
-  },
-  {
-    // `BloomColorScope` / `BloomSeedScope` fork because the web variants write
-    // the resolved tokens as real CSS custom properties on an inline `style`,
-    // while native publishes them through react-native-css's `VariableContext`.
-    // Resolved to the native file, a web consumer's scope emits NO vars at all
-    // (the provider is absent off-Metro), which is the silent
-    // "scoped subtree renders with the root palette" failure.
-    source: 'theme/index.ts',
-    children: ['color-scope', 'seed-scope'],
-  },
-]);
 
 /**
- * Rewrite a native barrel into its web variant by retargeting every line that
- * re-exports a forked child folder to that folder's `index.web` entry.
+ * The one line a web barrel says that its native sibling cannot.
  *
- * The transform is purely textual and only touches lines of the form
- * `from './<folder>'`. Lines that don't match — including deeper paths like
- * `from './color-scope/seed-scope'`, which is not forked — pass through
- * verbatim.
+ * `dialog` is the single case: its web fork publishes `BLOOM_DIALOG_CSS`, the
+ * stylesheet a consumer adopts, which has no native counterpart. Everything
+ * else about the barrel still generates. Keeping this as DATA rather than a
+ * hand-maintained file is what keeps "no web barrel is written by hand" a
+ * property of the tree instead of a convention.
+ *
+ * @type {Record<string, string[]>}
  */
-function buildWebBarrel(originalSource, sourceRelPath, children) {
+const WEB_BARREL_EXTRAS = {
+  'dialog/index.ts': ["export { BLOOM_DIALOG_CSS } from './Dialog.web';"],
+};
+
+/** Every `src/**\/index.ts` that has an `index.web.ts` beside it, `src`-relative. */
+function discoverWebBarrels() {
+  /** @type {string[]} */
+  const found = [];
+  /** @param {string} dir */
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name === 'index.web.ts' && existsSync(join(dir, 'index.ts'))) {
+        found.push(relative(SRC, join(dir, 'index.ts')));
+      }
+    }
+  };
+  walk(SRC);
+  return found.sort();
+}
+
+/**
+ * The file a relative specifier resolves to, and how it got there.
+ *
+ * `'./Popover'` lands on a FILE and forks as `./Popover.web`; `'../dialog'`
+ * lands on a DIRECTORY and forks as `../dialog/index.web`. An explicit
+ * `'../dialog/index'` resolves as a file and yields the same string, which is
+ * why both spellings survive the round trip unchanged.
+ *
+ * @param {string} fromDir absolute directory of the importing file
+ * @param {string} specifier the relative specifier as written
+ * @returns {{ stem: string, suffix: string } | null}
+ */
+function resolveSpecifier(fromDir, specifier) {
+  const base = join(fromDir, specifier);
+  for (const extension of ['.ts', '.tsx']) {
+    if (existsSync(base + extension)) return { stem: base, suffix: '.web' };
+  }
+  for (const extension of ['.ts', '.tsx']) {
+    if (existsSync(join(base, `index${extension}`))) {
+      return { stem: join(base, 'index'), suffix: '/index.web' };
+    }
+  }
+  return null;
+}
+
+/** Whether a resolved stem has a `.web` fork beside it. */
+function hasWebFork(stem) {
+  return existsSync(`${stem}.web.ts`) || existsSync(`${stem}.web.tsx`);
+}
+
+/**
+ * Rewrite a native barrel into its web variant.
+ *
+ * Purely textual, and only on lines ending in `from '<relative>'` — which
+ * covers both the `export … from` re-exports and the `import { Dialog } from`
+ * lines the factory barrels open with. Every other line, including a deeper
+ * path into an unforked module, passes through verbatim.
+ */
+function buildWebBarrel(originalSource, sourceRelPath) {
   const header = [
     '// AUTO-GENERATED by scripts/generate-platform-exports.mjs — DO NOT EDIT.',
     `// Source of truth: src/${sourceRelPath}.`,
@@ -670,33 +732,59 @@ function buildWebBarrel(originalSource, sourceRelPath, children) {
     '',
   ].join('\n');
 
+  const fromDir = join(SRC, dirname(sourceRelPath));
   const transformed = originalSource
     .split('\n')
     .map((line) => {
-      const match = line.match(/from '((?:\.\.\/|\.\/)[A-Za-z-]+(?:\/[A-Za-z-]+)*)'(\s*;?\s*)$/);
+      const match = line.match(/from '((?:\.\.\/|\.\/)[^']+)'(\s*;?\s*)$/);
       if (!match) return line;
       const specifier = match[1];
-      const folder = specifier.replace(/^\.\//, '');
-      if (!children.includes(folder)) return line;
-      const isFile = existsSync(join(SRC, dirname(sourceRelPath), `${folder}.web.tsx`)) || existsSync(join(SRC, dirname(sourceRelPath), `${folder}.web.ts`));
-      return line.replace(`from '${specifier}'`, `from '${specifier}${isFile ? '.web' : '/index.web'}'`);
+      const resolved = resolveSpecifier(fromDir, specifier);
+      if (!resolved || !hasWebFork(resolved.stem)) return line;
+      // The suffix already encodes which shape the specifier had, so it is
+      // appended verbatim: `'../dialog'` resolved as a DIRECTORY and gains
+      // `/index.web`, while an explicit `'../dialog/index'` resolved as a FILE
+      // and gains `.web`. Both spellings land on the same module, which is why
+      // either survives the round trip.
+      return line.replace(`from '${specifier}'`, `from '${specifier}${resolved.suffix}'`);
     })
     .join('\n');
 
-  return header + transformed;
+  const extras = WEB_BARREL_EXTRAS[sourceRelPath];
+  return header + transformed + (extras ? `${extras.join('\n')}\n` : '');
 }
 
 // --------------------------------------------------------------------------
 //  Main
 // --------------------------------------------------------------------------
 
+/**
+ * `--print-barrels` renders every web barrel to stdout as JSON and writes
+ * NOTHING. It exists for `web-barrels-are-generated.test.ts`, so that gate can
+ * compare the committed files against THIS generator rather than against a
+ * re-implementation of its rule — a gate that re-implements its subject
+ * measures the re-implementation. Jest transforms to CommonJS and cannot
+ * import an ES module, so the test shells out, as `reanimated-deps.test.ts`
+ * already does.
+ */
+function printBarrels() {
+  /** @type {Record<string, string>} */
+  const rendered = {};
+  for (const source of discoverWebBarrels()) {
+    rendered[source] = buildWebBarrel(readFileSync(join(SRC, source), 'utf8'), source);
+  }
+  process.stdout.write(JSON.stringify(rendered));
+}
+
 function main() {
+  if (process.argv.includes('--print-barrels')) return printBarrels();
+
   // 1. Regenerate the web barrels FIRST so the exports-field assertion that
   //    each `.web` source exists will pass.
-  for (const { source, children } of WEB_BARRELS) {
+  for (const source of discoverWebBarrels()) {
     const nativePath = join(SRC, source);
     const webPath = join(SRC, source.replace(/\.ts$/, '.web.ts'));
-    writeFileSync(webPath, buildWebBarrel(readFileSync(nativePath, 'utf8'), source, children));
+    writeFileSync(webPath, buildWebBarrel(readFileSync(nativePath, 'utf8'), source));
     console.log(
       `[generate-platform-exports] wrote ${relative(REPO_ROOT, webPath)} from ${relative(REPO_ROOT, nativePath)}`,
     );

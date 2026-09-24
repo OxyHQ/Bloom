@@ -66,9 +66,10 @@ Give the shell a sized parent — it fills it.
 - `navOpen` / `panelOpen` are controllable. Reduced motion snaps: the drag itself still tracks the finger 1:1 (it is direct manipulation, not an animation), and only the settle at the end of it jumps rather than travels.
 - **A collapsible rail** — `sidebarCollapsed` publishes the state while the sidebar owns its width and transition. `sidebarWidth` and `collapsedSidebarWidth` are explicit column overrides only; omit them for a Bloom `Sidebar` so its FAB, insets and collapse animation determine the actual width. The shell does not clip that sidebar into a fixed 56px lane.
 - **`background` and `surface`** — `background` is any node, drawn above the shell's own background-full and below the sidebar, workspace and drawers; it is never interactive. The workspace paints background-full too, so pass `surface={false}` with it (that drops both) or the layer is covered exactly where the chat sits. When the layer belongs to the chat rather than the page, put it on `AiChatContainer` instead, which is the nearer slot and needs no opt-out.
-- **What the shell publishes** — `useAiChatShell()` returns the shell's state to any descendant: `compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav` / `hasPanel`, `openNav` / `closeNav` / `openPanel`, and **`navPresented`**.
+- **`scroll`** — what scrolls the page, `AppShell`'s contract. `container` (the default) fills the parent and the conversation scrolls inside the card. **`document`** (web) grows the page and lets the browser scroll it — the page's scrollbar, scroll restoration, the mobile address bar collapsing and `window.scrollTo` behave as on any page. See [Document scroll](#document-scroll). Native has no document and treats it as `container`.
+- **What the shell publishes** — `useAiChatShell()` returns the shell's state to any descendant: `compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav` / `hasPanel`, `documentScroll`, `openNav` / `closeNav` / `openPanel`, and **`navPresented`**.
 
-  `navPresented` is the one to guard a nav's accessibility with. Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed — so everything inside `mobileSidebar` is still focusable and still read aloud unless its own tree says otherwise. The shell marks its own wrapper `aria-hidden` and `pointerEvents="none"`, which handles the pointer but not the tab order of a host's controls; read `navPresented` and skip them while it is `false`.
+  Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed. The shell takes it out of reach itself: while closed, the nav drawer and the panel drawer are `aria-hidden` and `pointerEvents="none"`, `inert` on web (so their controls leave the tab order too) and hidden from VoiceOver/TalkBack on native. A host does not wrap `mobileSidebar` in a gate of its own; `navPresented` is there for anything else that has to know whether the nav is on screen.
 
 ## Container and thread
 
@@ -94,6 +95,52 @@ The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is 
 **Not there:** virtualization and `scrollToIndex`. The thread is a `ScrollView`, so a long history is fully mounted, and a host jumping to a cursor measures that turn's row (`onLayout`) and calls `scrollToOffset`. `maintainStartPosition` is the web-safe half of React Native's `maintainVisibleContentPosition`, which react-native-web ignores.
 
 **Hazard (web):** react-native-web gives every view `min-height: 0`, so the usual `flexGrow: 1` + `justifyContent: 'flex-end'` content container stays the viewport's height and its children overflow it instead of scrolling — and `onContentSizeChange` never sees the growth. The thread floors its container at `minHeight: '100%'` on web instead.
+
+### Floating chrome
+
+`<AiChatContainer floatingChrome>` keeps every part and changes the geometry: the conversation fills the **whole card** and scrolls **behind** the header and **behind** the composer. Use it when the transcript is the screen — a full-height chat where two opaque bands would each take a strip of it, or where a `background` layer should run edge to edge under everything. Leave it off (the default, and what the AI Chat template uses) for the stacked layout above.
+
+| Layer | Geometry |
+|---|---|
+| card | unchanged: radius 24, background-secondary (or `surface={false}`), clipped; `background` still fills it under everything |
+| `children` | fill the card's full height — nothing is in flow above or below them |
+| header block | the `header` slot (`AiChatMobileHeader`) + the breadcrumb row, absolute at the top, transparent — no band of its own |
+| footer block | `AgentThinking` + `composer`, absolute at the bottom, px 10 / pt 12 / pb 10, gap 10 — **no band of its own**: the transcript passes behind the composer and stays in sight around it |
+| top fade | the page-header edge scrim in the card surface, opaque at the top edge, ending 55% of the header block's height below it; fades in over the first **16px** scrolled (the gap it closes) |
+
+Both blocks are `pointerEvents="box-none"`, so the transcript under their empty space still scrolls and takes clicks. The fade is decorative (hidden from assistive tech) and exists **only while turns are actually under the header**. Nothing is painted behind the composer: its own card is what covers the turns under it, as the conversation slides past on either side.
+
+**Insets.** The container measures both blocks (`onLayout`) and hands the heights to its children through context. An `AiChatThread` pads its **content** by them — pt = header block + 16, pb = footer block — and sets matching iOS `scrollIndicatorInsets`, so at rest the first and last turns sit exactly where the stacked layout puts them relative to the chrome, and in motion pass under it. The `ScrollView` stays the only scroller; `autoFollow`, `followThreshold`, `onStartReached`, `maintainStartPosition` and the ref work unchanged. A resize that is **exactly** the chrome's (the composer growing, `AgentThinking` appearing, the header measuring in on mount) is not a new turn: a reader at the end stays at the end without an animated follow, and a reader mid-thread keeps their turn in place. Any other child reads the same numbers from `useAiChatChromeInsets()` (`{ top, bottom }`, or `null` outside a floating container) to keep an empty state or a scroller of its own clear of the chrome.
+
+**Why a fade, not a frost.** `AgentChat` frosts its overlaid header (white/black 20%, a 20px backdrop blur on web) once the transcript reaches it. Here the chrome has no band, and a frosted rectangle is one: it ends at its own bottom edge, and that edge is a line across the transcript. A one-colour opacity ramp is identical on native and web and needs no blur.
+
+**Limits.** The fade is background-secondary. With `surface={false}` there is no known colour to fade to, so the header floats **without** it. Over an opaque `background` layer the fade is the card surface, not the layer.
+
+### Document scroll
+
+Under `<AiChatShell scroll="document">` (web) the **document** is the scroller, the way every framed Oxy web page scrolls. The chat keeps every part; what moves is the page.
+
+| Part | Geometry |
+|---|---|
+| shell | at least one screen (`100dvh`) and grows with the chat; `overflow: clip`, never `hidden`, so it is not a scroll container |
+| sidebar, panel | sticky rails, `top: 12`, one screen tall less the gutter above and below |
+| drawers, backdrop, shell `background` | `position: fixed`, so they cover the screen, not the page |
+| card | a [`ContentPanel`](/docs/bloom/main/content-panel), `framed` at the shell's gutter (`overlayInset` 12, `maskColor` the shell's background-full, background-secondary as its surface, `chrome="none"` — the template's card has no edge): its sticky mask and radius keep the card framed at the screen's edges while the conversation scrolls under them, as on any framed Oxy web page. It grows with the conversation, one screen tall at the least; the chrome always floats (`floatingChrome` is implied) |
+| header block | sticky in the flow at `top: 12`, with the same fade while turns run under it |
+| footer block | sticky in the flow at `bottom: 12`, no band — the conversation passes behind the composer |
+| container `background` | a screen-sized layer with the panel's geometry, under the turns: a wallpaper stays put while the conversation moves over it |
+| conversation | one stacking layer (`zIndex: 0`) under the header and the composer: a turn's own z-indexes (a search log, a progress card, a date header) never climb over the chrome |
+| thread | a plain view, no scroller: bottom-anchored, px 16 / pt 16, turns 12 apart |
+
+The thread keeps its props and its handle. It follows through the window, opens at its newest turn (the page is shared with whatever route was on it before), fires `onStartReached` near the top and holds a landed page still. Offsets stay in **the thread's own frame**: `0` is the thread's top, so a row's `onLayout` y is still a `scrollToOffset` target, and `contentSize` runs to the **end of the page**, so `contentSize − offset − viewport` is still the distance left to scroll. `getScrollView()` returns `null`. The browser's scroll anchoring is off inside the thread — it would move the page for growth the thread already accounts for, and only in some browsers.
+
+At rest the chrome is in the flow and covers nothing, so `useAiChatChromeInsets()` is `{ top: 0, bottom: 0 }`.
+
+**The host's part.** Nothing between the shell and the document may be a scroll container:
+
+- Expo / react-native-web inject `html, body { height: 100%; overflow: hidden }` and `#root { height: 100% }`. Override them with unlayered rules — `height: auto`, `min-height: 100%` (`100vh` on `#root`) and `overflow: visible` on **both** axes (one clipped axis promotes the other to `auto`).
+- `expo-router`'s `Stack` renders each web screen absolutely positioned, which pins the page to one screen: on web, host the routes with `Slot`, or a `Navigator` that renders the focused screen in the flow.
+- Every route shares the one window scroll, so a page that is not a chat should open at the top (or where the reader left it): `useScrollRestoration('window')` from [`scroll`](/docs/bloom/main/scroll).
 
 ## Turns
 
@@ -153,3 +200,7 @@ No device-runtime verification is implied by the Android back-handler tests.
 `AiChatContainer.actions` composes real menu triggers or other chat actions in
 the breadcrumb action row, replacing the default share/more controls. Use it
 with `AiChatMobileHeader` to preserve the template layout without a second toolbar.
+
+## Selection
+
+Content is selectable and the interface is not. Every control takes no selection on web (Bloom's base rule, adopted by the theme provider); the breadcrumb and the web-search trail are navigation and activity, so their text is not selectable either. A reply's lines are content — `AiChatMessageLine` is selectable by default — and a status line passes `selectable={false}`.

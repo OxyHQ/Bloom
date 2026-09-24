@@ -13,6 +13,7 @@ import Animated, {
 import type { ContentPanelProps } from '../content-panel/types';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Sidebar } from '../sidebar';
@@ -39,11 +40,11 @@ import { useShellWidth } from './use-shell-width';
  *   nav        the sidebar in flow from `navFrom` (`lg` for the panel, `sm` for
  *              a rail, `sm` whenever `navExpandedFrom` swaps the two); below it
  *              the same props drive the drawer. `overlay` pads the whole frame
- *              by `gutter`, `reveal` sits the rail 12 from the top-left
+ *              by `gutter`, `reveal` sits the rail 12 from the top-start corner
  *   page       `dashboard` one fluid column capped at `contentMaxWidth`;
  *              `feed`/`focus` a `contentWidth` reading column centred in what
  *              the nav leaves; `split` a column of header over three panes
- *   aside      optional right column, `asideWidth` (320) wide from `asideFrom`
+ *   aside      optional end-side column (right in LTR), `asideWidth` (320) wide from `asideFrom`
  *              (xl), pinned like the rail; below it stacked after the content
  *   slots      `topBar` above the columns, `bottomBar` pinned to the bottom
  *              with the safe-area inset, `floatingAction` above that bar —
@@ -51,7 +52,7 @@ import { useShellWidth } from './use-shell-width';
  *   below nav  the header grows a hamburger (also with no title — see
  *              `useAppShell` / `AppShellMenuButton`). `overlay` opens the rail
  *              as a drawer (12 inset) over a 40% black backdrop; `reveal`
- *              slides the page 272 right and rounds it to 32 while the rail,
+ *              slides the page 272 toward the end edge and rounds it to 32 while the rail,
  *              flat beneath it, scales up from 0.94 and fades in (325ms,
  *              cubic-bezier(0.42, 0, 0.58, 1)); pressing the page (a 10% black
  *              / 5% white veil) closes it
@@ -148,6 +149,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   overlay,
   drawerOpen,
   onDrawerOpenChange,
+  drawerOpenLabel = 'Open navigation',
+  drawerCloseLabel = 'Close navigation',
   scroll = 'document',
   style,
   testID,
@@ -204,6 +207,15 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const asideStacked = hasAside && !asideBeside && asideCollapse === 'stack' && !canvas;
 
   const reducedMotion = useReducedMotion();
+  // Insets here are logical; a `translateX` sign and a `transformOrigin` are
+  // not, so the reveal reads the direction once here.
+  const rtl = useIsRtl();
+  const dir = rtl ? -1 : 1;
+  const railOrigin = rtl ? 'right center' : 'left center';
+  // react-native-web resolves logical insets against its OWN direction context
+  // (a `dir` prop), not `<html dir>` — every root and the portaled drawer hand
+  // it on.
+  const dirProps = useDirectionProps();
   const [open, setOpen] = useControllableState<boolean>({
     value: drawerOpen,
     defaultValue: false,
@@ -337,6 +349,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           actions={actions}
           menuOpen={isOpen}
           showMenu={menuInHeader}
+          menuLabel={drawerOpenLabel}
           onMenuPress={menuInHeader ? shell.toggleDrawer : undefined}
           testID={testID ? `${testID}-header` : undefined}
         />
@@ -387,8 +400,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     reveal.value = reducedMotion ? target : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
   }, [isOpen, drawerStyle, reducedMotion, reveal]);
   const feedPageStyle = useAnimatedStyle(() => ({
-    transform: reveal.value === 0 ? [] : [{ translateX: (REVEAL_OFFSET + 12) * reveal.value }],
-  }), [reveal]);
+    transform: reveal.value === 0 ? [] : [{ translateX: dir * (REVEAL_OFFSET + 12) * reveal.value }],
+  }), [reveal, dir]);
 
   const feedChromeTransition: WebCssStyle = Platform.OS === 'web'
     ? { '--bloom-panel-inset-duration': reducedMotion ? '0ms' : `${REVEAL_MS}ms` } : {};
@@ -407,8 +420,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     [reveal],
   );
   const pageStyle = useAnimatedStyle(
-    () => ({ transform: reveal.value === 0 ? [] : [{ translateX: REVEAL_OFFSET * reveal.value }], borderRadius: 32 * reveal.value }),
-    [reveal],
+    () => ({ transform: reveal.value === 0 ? [] : [{ translateX: dir * REVEAL_OFFSET * reveal.value }], borderRadius: 32 * reveal.value }),
+    [reveal, dir],
   );
   const veilStyle = useAnimatedStyle(() => ({ opacity: reveal.value }), [reveal]);
 
@@ -416,6 +429,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     return (
       <AppShellProvider value={shell}>
         <View
+          {...dirProps}
           testID={testID}
           onLayout={onLayout}
           style={[frame, doc ? { overflow: WEB_OVERFLOW_CLIP } : null, { flexDirection: 'row', backgroundColor: background }, style]}
@@ -425,7 +439,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               style={[
                 flowSidebar.surface === 'docked'
                   ? { flexShrink: 0 }
-                  : { paddingTop: 12, paddingBottom: 12, paddingLeft: 12, flexShrink: 0 },
+                  : { paddingTop: 12, paddingBottom: 12, paddingInlineStart: 12, flexShrink: 0 },
                 doc ? stickyRail(0) : null,
               ]}
             >
@@ -438,9 +452,9 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               pointerEvents={isOpen ? 'auto' : 'none'}
               // Fixed on web in document mode: the rail waits beneath the VIEWPORT,
               // wherever the page is scrolled to.
-              style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, left: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}
+              style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingInlineStart: 6 }}
             >
-              <Animated.View style={[{ height: '100%', width: 260, transformOrigin: 'left center' }, railStyle]}>
+              <Animated.View style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}>
                 <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />
               </Animated.View>
             </View>
@@ -473,7 +487,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
             >
               {column}
             </Scroller>
-            {asideColumn({ paddingTop: small ? 24 : 12, paddingBottom: 12, paddingRight: 12 })}
+            {asideColumn({ paddingTop: small ? 24 : 12, paddingBottom: 12, paddingInlineEnd: 12 })}
             {!wide ? (
               <Animated.View
                 pointerEvents={isOpen ? 'auto' : 'none'}
@@ -481,7 +495,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               >
                 <Pressable
                   role="button"
-                  accessibilityLabel="Close navigation"
+                  accessibilityLabel={drawerCloseLabel}
                   focusable={isOpen}
                   onPress={() => setOpen(false)}
                   style={{
@@ -713,7 +727,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
         {headerNode}
         <View style={{ flex: 1, minHeight: 0, minWidth: 0 }}>{children}</View>
       </View>
-      {asideColumn(canvas ? { padding: gutter, paddingLeft: 0 } : {})}
+      {asideColumn(canvas ? { paddingTop: gutter, paddingBottom: gutter, paddingInlineEnd: gutter } : {})}
     </>
   );
 
@@ -727,7 +741,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           : dashboardBody;
 
   // A DOCKED nav is flush to the window: it takes the shell's whole height and
-  // its own hairline is the separator, so the shell gives up its left and
+  // its own hairline is the separator, so the shell gives up its start and
   // vertical padding around that column rather than framing it like a card.
   const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
   const navRegion =
@@ -738,7 +752,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
         </View>
       ) : canvas && !dockedNav ? (
         // The canvas row has no padding of its own, so the nav states its.
-        <View style={{ padding: gutter, paddingRight: 0, flexShrink: 0 }}>
+        <View style={{ paddingTop: gutter, paddingBottom: gutter, paddingInlineStart: gutter, flexShrink: 0 }}>
           <Sidebar {...flowSidebar} />
         </View>
       ) : (
@@ -754,11 +768,12 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
             onPress={() => setOpen(false)}
             blurIntensity={0}
             dimOpacity={0.4}
-            accessibilityLabel="Close navigation"
+            accessibilityLabel={drawerCloseLabel}
           />
           <View
+            {...dirProps}
             pointerEvents="box-none"
-            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, flexDirection: 'row', padding: 12 }}
+            style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: 0, flexDirection: 'row', padding: 12 }}
           >
             <View pointerEvents="auto" style={{ height: '100%' }}>
               <Sidebar {...drawerSidebar} mobile onClose={() => setOpen(false)} />
@@ -774,19 +789,24 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     gap: dockedNav || canvas ? 0 : Math.max(0, navigationGap ?? columnGap),
     // A canvas runs to the window's edge, so the row keeps no padding at all
     // and each region carries its own (the nav below, the aside in `canvasBody`).
-    padding: canvas || plainDocumentFrame ? 0 : gutter,
-    ...(dockedNav ? { paddingLeft: 0, paddingTop: 0, paddingBottom: 0 } : null),
+    // A docked nav keeps only the END padding. Spelled in longhands, never the
+    // `padding` shorthand plus a logical override: react-native-web expands the
+    // shorthand to physical sides, and which of two declarations for one edge
+    // wins is then a matter of declaration order rather than intent.
+    ...(dockedNav
+      ? { paddingTop: 0, paddingBottom: 0, paddingInlineStart: 0, paddingInlineEnd: canvas || plainDocumentFrame ? 0 : gutter }
+      : { padding: canvas || plainDocumentFrame ? 0 : gutter }),
     backgroundColor: background,
   };
 
   if (variant === 'feed' && drawerStyle === 'reveal' && drawerAvailable) {
     return (
       <AppShellProvider value={shell}>
-        <View testID={testID} onLayout={onLayout}
+        <View {...dirProps} testID={testID} onLayout={onLayout}
           style={[frame, { overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden', backgroundColor: background }, style]}>
           <View aria-hidden={!isOpen} pointerEvents={isOpen ? 'auto' : 'none'}
-            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, left: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
-            <Animated.View style={[{ height: '100%', width: 260, transformOrigin: 'left center' }, railStyle]}>
+            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingInlineStart: 6 }}>
+            <Animated.View style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}>
               {drawerSidebar && <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />}
             </Animated.View>
           </View>
@@ -798,7 +818,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
             </StyledView>
             <Animated.View pointerEvents={isOpen ? 'auto' : 'none'}
               style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, veilStyle]}>
-              <Pressable role="button" accessibilityLabel="Close navigation" focusable={isOpen}
+              <Pressable role="button" accessibilityLabel={drawerCloseLabel} focusable={isOpen}
                 onPress={() => setOpen(false)} testID={testID ? `${testID}-veil` : undefined}
                 style={{ flex: 1 }} />
             </Animated.View>
@@ -823,6 +843,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     return (
       <AppShellProvider value={shell}>
         <View
+          {...dirProps}
           testID={testID}
           onLayout={onLayout}
           style={[frame, { flexDirection: 'column', backgroundColor: background }, style]}
@@ -842,7 +863,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
 
   return (
     <AppShellProvider value={shell}>
-      <View testID={testID} onLayout={onLayout} style={[frame, rowStyle, style]}>
+      <View {...dirProps} testID={testID} onLayout={onLayout} style={[frame, rowStyle, style]}>
         {navRegion}
         {drawerRegion}
         {body}

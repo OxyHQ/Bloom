@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { resolvedStyle } from './support/rendered-style';
 // Imported by explicit filename: jest has no platform-extension resolution, so
 // `'../select'` would silently exercise the NATIVE fork — which has always
 // applied the label — and the suite would pass no matter what the web fork did.
@@ -42,5 +43,29 @@ describe.each([
     const item = getByLabelText('Option A');
     expect(item).toBeTruthy();
     expect(item.props.accessibilityRole).toBe('radio');
+  });
+
+  /**
+   * The option's label takes the LIST's size, and reads it from the per-item
+   * context both forks publish rather than from the forked `SelectContext` —
+   * which is what let `SelectItemText` become one shared module instead of two
+   * identical copies. Nothing pinned it before: swapping the `md` and `sm`
+   * entries of the type ramp left this suite green.
+   */
+  it.each([
+    ['md', 14],
+    ['sm', 13],
+  ] as const)('takes the %s list size for its own type ramp', (size, fontSize) => {
+    const tree = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Select value="a" size={size}>
+          <SelectItem value="a" label="Option A">
+            <SelectItemText>Option A</SelectItemText>
+          </SelectItem>
+        </Select>
+      </BloomThemeProvider>,
+    );
+
+    expect(resolvedStyle(tree.getByText('Option A').props.style).fontSize).toBe(fontSize);
   });
 });

@@ -1,6 +1,7 @@
 import { useBloomAppearance } from '../appearance';
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -42,12 +43,14 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import {
+  defaultExtractLabel,
   defaultItemValueExtractor,
   ItemContext,
   SelectChevron,
   SelectTriggerStateContext,
   SelectValueRow,
   useSelectItemContext,
+  VALUE_TYPE,
 } from './shared';
 import type {
   SelectContentProps,
@@ -61,9 +64,16 @@ import type {
   SelectValueProps,
 } from './types';
 import { useFieldMembership } from '../field/membership';
+import { isSpaceKey, rovingItems, rovingMove, rovingTarget } from '../hooks/roving-focus';
+import { hostElement, useReturnFocusOnClose } from '../floating/menu-keyboard';
 
 /** The trigger's `offset={4}`. */
 const SELECT_OFFSET = 4;
+
+/** An option row, marked through `dataSet` — a class never reaches the DOM. */
+const OPTION = '[data-bloom-select-option]';
+/** The option list, so a nested list's rows are never counted as this one's. */
+const LIST = '[data-bloom-select-list]';
 
 /**
  * The trigger's interactive states — `hover:bg-background-primary-hover
@@ -129,6 +139,15 @@ type SelectContextValue = Pick<SelectProps, 'value' | 'onValueChange' | 'disable
   close: () => void;
   /** The trigger box, so `SelectContent` can anchor itself against it. */
   triggerRef: React.RefObject<View | null>;
+  /**
+   * Set by a key on the trigger (Enter, Space, ArrowDown, ArrowUp) and consumed
+   * by `SelectContent`, which moves focus into the list only when the key asked
+   * for it. A pointer open leaves focus where the pointer put it.
+   */
+  keyboardIntent: React.MutableRefObject<boolean>;
+  /** Bumped to ask an ALREADY-open list to take focus (an arrow on its trigger). */
+  focusRequest: number;
+  requestListFocus: () => void;
 };
 
 const SelectContext = createContext<SelectContextValue | null>(null);
@@ -166,6 +185,8 @@ export function Select({ children, value, onValueChange, disabled, size: sizePro
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<View | null>(null);
   const valueStoreState = useState<unknown>(undefined);
+  const keyboardIntent = useRef(false);
+  const [focusRequest, setFocusRequest] = useState(0);
 
   const ctx = useMemo<SelectContextValue>(
     () => ({
@@ -177,8 +198,14 @@ export function Select({ children, value, onValueChange, disabled, size: sizePro
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
       triggerRef,
+      keyboardIntent,
+      focusRequest,
+      requestListFocus: () => {
+        keyboardIntent.current = true;
+        setFocusRequest((count) => count + 1);
+      },
     }),
-    [value, onValueChange, disabled, size, isOpen],
+    [value, onValueChange, disabled, size, isOpen, focusRequest],
   );
 
   return (
@@ -257,6 +284,35 @@ export function SelectTrigger({
     () => ({ disabled: isDisabled, open: ctx.isOpen, size: ctx.size }),
     [isDisabled, ctx.isOpen, ctx.size],
   );
+
+  // The keyboard's way INTO the list (ARIA select-only combobox). Enter and
+  // Space already press the trigger through react-native-web; they only mark
+  // the open as a keyboard one here, so the list takes focus when it arrives.
+  // ArrowDown/ArrowUp open it too — and on a list the pointer already opened,
+  // they move focus into it.
+  //
+  // A DOM listener on the anchor wrapper rather than an `onKeyDown` prop: under
+  // `asChild` the control is the caller's element, whose props this family does
+  // not own. The wrapper holds only the trigger, and its bubble listener runs
+  // before React's root-level handlers.
+  const { isOpen, open, keyboardIntent, requestListFocus, triggerRef } = ctx;
+  useEffect(() => {
+    const wrapper = hostElement(triggerRef.current);
+    if (!wrapper || isDisabled) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      if (event.key === 'Enter' || isSpaceKey(event.key)) {
+        if (!isOpen) keyboardIntent.current = true;
+        return;
+      }
+      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+      event.preventDefault();
+      if (!isOpen) open();
+      requestListFocus();
+    };
+    wrapper.addEventListener('keydown', onKeyDown);
+    return () => wrapper.removeEventListener('keydown', onKeyDown);
+  }, [triggerRef, isDisabled, isOpen, open, keyboardIntent, requestListFocus]);
 
   return (
     <SelectTriggerStateContext.Provider value={triggerState}>
@@ -338,15 +394,6 @@ export function SelectValue({
 }
 
 /** `text-body-medium` on `md`, `text-body-2-medium` on `sm` — trigger value and option label alike. */
-const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
-
-function defaultExtractLabel(item: unknown): React.ReactNode {
-  if (item != null && typeof item === 'object' && 'label' in item) {
-    return (item as { label: React.ReactNode }).label;
-  }
-  return String(item);
-}
-
 // ---------------------------------------------------------------------------
 // SelectIcon
 // ---------------------------------------------------------------------------
@@ -393,6 +440,76 @@ export function SelectContent<T>({
   }, [items, ctx.value, valueExtractor, setStoredItem]);
   const anchor = useAnchorRect(ctx.triggerRef, ctx.isOpen);
   const listRef = useRef<ScrollView | null>(null);
+  // The list's DOM node as STATE as well: the panel portals in a render after it
+  // opens, and the keyboard listener and the initial focus both need the node.
+  const [listNode, setListNode] = useState<HTMLElement | null>(null);
+  const listNodeRef = useRef<HTMLElement | null>(null);
+  const attachList = useCallback((scrollView: ScrollView | null) => {
+    listRef.current = scrollView;
+    const node = hostElement(scrollView);
+    listNodeRef.current = node;
+    setListNode(node);
+  }, []);
+
+  const { isOpen, close, keyboardIntent, focusRequest, triggerRef } = ctx;
+
+  // A keyboard open lands focus on the chosen option, or the first enabled one
+  // — the ARIA listbox contract. Without it the list opened and focus stayed on
+  // the trigger, where the arrows did nothing: a keyboard user could open the
+  // select and never choose.
+  useEffect(() => {
+    if (!isOpen || !listNode || !keyboardIntent.current) return;
+    keyboardIntent.current = false;
+    const options = rovingItems(listNode, OPTION, { owner: LIST });
+    const chosen =
+      options.find((option) => option.getAttribute('aria-checked') === 'true') ?? options[0];
+    chosen?.focus({ preventScroll: true });
+  }, [isOpen, listNode, focusRequest, keyboardIntent]);
+
+  // Keys inside the open list. ArrowDown/ArrowUp step between enabled options
+  // and stop at the ends; Home/End jump to them; Space chooses — react-native-web
+  // presses a `radio` on Enter only, so Enter is already the option's own; Tab
+  // closes the list and hands focus back to the trigger, the way a native
+  // select does. Escape is `FloatingPanel`'s (it closes the innermost surface
+  // only), and the close below returns focus.
+  useEffect(() => {
+    if (!listNode) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      const active =
+        typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
+      const current = active?.closest?.(OPTION) ?? null;
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (isSpaceKey(event.key)) {
+        if (!current || current.getAttribute('aria-disabled') === 'true') return;
+        event.preventDefault();
+        (current as HTMLElement).click();
+        return;
+      }
+      const move = rovingMove(event.key, { orientation: 'vertical', homeEnd: true });
+      if (move === null) return;
+      event.preventDefault();
+      rovingTarget(rovingItems(listNode, OPTION, { owner: LIST }), current, move, false)?.focus();
+    };
+    listNode.addEventListener('keydown', onKeyDown);
+    return () => listNode.removeEventListener('keydown', onKeyDown);
+  }, [listNode, close]);
+
+  // Closing hands focus back to the trigger when it was inside the list — a
+  // choice, Escape, Tab — so the next Tab continues from the select instead of
+  // from the top of the document (`floating/menu-keyboard.ts`).
+  useEffect(() => {
+    if (!isOpen) keyboardIntent.current = false;
+  }, [isOpen, keyboardIntent]);
+  useReturnFocusOnClose(
+    triggerRef,
+    isOpen,
+    useCallback((element: Element) => listNodeRef.current?.contains(element) === true, []),
+  );
 
   // The list is a plain `max-h-[240px] overflow-auto` box: the native
   // scrollbar and nothing else. It used to carry shadcn's scroll-up/down
@@ -447,7 +564,8 @@ export function SelectContent<T>({
       className={className}
     >
       <ScrollView
-        ref={listRef}
+        ref={attachList}
+        {...({ dataSet: { bloomSelectList: '' } } as Record<string, unknown>)}
         style={{ maxHeight }}
         // `flex flex-col gap-1` — the rows sit 4px apart.
         contentContainerStyle={styles.list}
@@ -477,6 +595,7 @@ export function SelectItem({
   style,
 }: SelectItemProps) {
   const ctx = useSelectContext();
+  const { size } = ctx;
   const palette = useMenuPalette();
   const {
     state: hovered,
@@ -491,8 +610,8 @@ export function SelectItem({
   // background below, but they are no longer PUBLISHED — nothing ever read
   // them, and `pressed` was published as a literal `false`.
   const itemCtx = useMemo<SelectItemContextValue>(
-    () => ({ selected: isSelected, disabled }),
-    [isSelected, disabled],
+    () => ({ selected: isSelected, disabled, size }),
+    [isSelected, disabled, size],
   );
   // `(isFocused || isSelected) && MENU_ITEM_ACTIVE`: hover, keyboard
   // focus and the chosen option share one `dropdown-item-hover-background`.
@@ -502,6 +621,7 @@ export function SelectItem({
     <StyledPressable
       ref={ref}
       accessibilityRole="radio"
+      {...({ dataSet: { bloomSelectOption: '' } } as Record<string, unknown>)}
       // The native fork has always applied this; web declared `label` and then
       // dropped it, leaving every option a `role="radio"` with no accessible
       // name for a screen reader to announce.
@@ -549,69 +669,13 @@ export function SelectItem({
 // SelectItemText
 // ---------------------------------------------------------------------------
 
-export function SelectItemText({ children, className, style }: SelectItemTextProps) {
-  const { size } = useSelectContext();
-  const { disabled } = useSelectItemContext();
-  const palette = useMenuPalette();
-  // `text-text-primary`, or `text-text-disabled` on a disabled option. Inline
-  // only without a caller `className` (see `SelectValue`).
-  return (
-    <StyledText
-      numberOfLines={1}
-      className={cx(
-        SELECT_ITEM_TEXT_CLASS[size],
-        menuTypeClass(VALUE_TYPE[size], className),
-        className && 'text-foreground',
-        className,
-      )}
-      style={[
-        menuType(VALUE_TYPE[size], className),
-        className ? null : { color: disabled ? palette.textDisabled : palette.text },
-        style,
-      ]}>
-      {children}
-    </StyledText>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // SelectItemIndicator
 // ---------------------------------------------------------------------------
 
-export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
-  const palette = useMenuPalette();
-  const { selected } = useSelectItemContext();
-
-  // `absolute right-2 flex size-3.5 items-center justify-center` holding
-  // a `size-4 text-text-secondary` check. A select's tick sits on the RIGHT — the
-  // opposite side from a menu's — which is what leaves the option's own text
-  // starting flush at `pl-2` like every other line in the panel. Bloom drew it in
-  // a 30px LEFT gutter, so a select and a dropdown menu disagreed about which
-  // edge a selection mark belongs on.
-  if (!selected) return null;
-
-  return (
-    <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
-      <IconComponent
-        width={ROW_ICON_SIZE}
-        height={ROW_ICON_SIZE}
-        fill={palette.textSecondary}
-      />
-    </StyledView>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // SelectSeparator
 // ---------------------------------------------------------------------------
-
-export function SelectSeparator() {
-  const palette = useMenuPalette();
-  // `-mx-2 my-1.5 h-px bg-border-button-default`, bleeding through the listbox's `p-2`.
-  return (
-    <StyledView className={SELECT_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
-  );
-}
 
 const styles = StyleSheet.create({
   // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface

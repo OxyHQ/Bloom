@@ -1,3 +1,16 @@
+/**
+ * `Dialog` — WEB: a pure-DOM modal overlay rendered into Bloom's `Portal`.
+ *
+ * The native fork (`Dialog.tsx`) presents through Bloom's `BottomSheet`, which
+ * is built on react-native-gesture-handler + reanimated and has no web
+ * behaviour worth emulating. So this is not a port of that file; it is the
+ * other half of one contract, and the props are what the two agree on.
+ *
+ * This fork is also the family's only publisher of `BLOOM_DIALOG_CSS` — the
+ * stylesheet a web consumer adopts. Native has no counterpart, which is why
+ * the generated web barrel carries one line its native sibling cannot
+ * (`WEB_BARREL_EXTRAS` in `scripts/generate-platform-exports.mjs`).
+ */
 import React, {
   createContext,
   useCallback,

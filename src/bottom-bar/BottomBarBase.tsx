@@ -3,6 +3,7 @@ import { View, ScrollView, Keyboard, Platform } from 'react-native';
 import { useEffect } from 'react';
 import Animated, { useAnimatedReaction, useAnimatedStyle, interpolate, runOnJS, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDirectionProps } from '../hooks/use-is-rtl';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { FAB_METRICS } from '../fab/constants';
@@ -21,6 +22,8 @@ interface Props extends BottomBarProps {
 export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueChange, activeProgress, onValueLongPress, action,
   actionPlacement = 'auto', actionBehavior = 'hide', material = 'translucent', minimizeProgress, blur = true, maxWidth = 560, style, testID }: Props) {
   const insets = useSafeAreaInsets();
+  // Logical insets below; react-native-web needs the direction handed to it.
+  const dirProps = useDirectionProps();
   const minimize = useMinimizeState();
   const progress = minimizeProgress ?? minimize.progress;
   const reducedMotion = useReducedMotion();
@@ -62,13 +65,16 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
     const amount = hideAction ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value)) : 0;
     return {
       ...(actionWidth == null ? {} : { width: actionWidth * (1 - amount) }),
-      marginLeft: items.length && !above ? 10 * (1 - amount) : 0,
+      // Logical, and the CSS name rather than RN's `marginStart`: reanimated's
+      // web writer hands a mapper's result to RNW's `createReactDOMStyle`,
+      // which never rewrites `marginStart`, so the browser would drop it.
+      marginInlineStart: items.length && !above ? 10 * (1 - amount) : 0,
       opacity: 1 - amount,
       transform: [{ scale: 1 - amount * 0.15 }],
     };
   }, [progress, hideAction, reducedMotion, actionWidth, items.length, above]);
   if (keyboardVisible || (!items.length && !action)) return null;
-  return <View testID={testID} pointerEvents="box-none" style={[{ height: bottom + footprint, justifyContent: 'flex-end' }, style]}>
+  return <View {...dirProps} testID={testID} pointerEvents="box-none" style={[{ height: bottom + footprint, justifyContent: 'flex-end' }, style]}>
     {blur && material === 'translucent' && <Blur direction="bottom" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottom + footprint + BLUR_BLEED }} />}
     <Animated.View testID={testID ? `${testID}-row` : undefined} onLayout={event => setRowWidth(event.nativeEvent.layout.width)} pointerEvents="box-none" style={[{ justifyContent: items.length ? 'center' : 'flex-end', alignSelf: 'center', width: '100%', maxWidth, paddingLeft: 12, paddingRight: 12, marginBottom: bottom, flexDirection: 'row', alignItems: 'center' }, rowStyle]}>
       {items.length > 0 && <View testID={testID ? `${testID}-navigation` : undefined} style={{ width: navigationWidth, minWidth: 0 }}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minWidth: '100%' }}><View style={{ width: Math.max(navigationWidth, items.length * 44 + 8) }}><Navigation scrollable={navigationWidth > 0 && navigationWidth < items.length * 44 + 8} embedded blur={false} material={material} minimizeProgress={progress}
@@ -79,7 +85,7 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
       {action && <Animated.View ref={actionRef} pointerEvents={actionHidden ? 'none' : 'auto'}
         accessibilityElementsHidden={actionHidden} importantForAccessibility={actionHidden ? 'no-hide-descendants' : 'auto'}
         aria-hidden={actionHidden} testID={testID ? `${testID}-action` : undefined}
-        style={[{ flexShrink: 0, alignItems: 'flex-start', justifyContent: 'center' }, above ? { position: 'absolute', right: 12, bottom: '100%', marginBottom: 10 } : undefined, actionStyle]}>
+        style={[{ flexShrink: 0, alignItems: 'flex-start', justifyContent: 'center' }, above ? { position: 'absolute', insetInlineEnd: 12, bottom: '100%', marginBottom: 10 } : undefined, actionStyle]}>
         <View testID={testID ? `${testID}-action-content` : undefined} onLayout={event => { setActionWidth(event.nativeEvent.layout.width); setActionHeight(event.nativeEvent.layout.height); }} style={{ flexShrink: 0, ...(actionWidth == null ? {} : { width: actionWidth }) }}>{action}</View>
       </Animated.View>}
     </Animated.View>

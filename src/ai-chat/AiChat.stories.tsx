@@ -289,3 +289,62 @@ export const BackgroundLayer: Story = {
     );
   },
 };
+
+/**
+ * `floatingChrome`: the conversation fills the whole card and scrolls BEHIND
+ * the breadcrumb and the composer. Neither has a band of its own — each edge
+ * fades the surface in only while turns actually run under it. At rest (the
+ * thread follows to the end) the bottom is clear; scroll up and the last turns
+ * dissolve under the composer while the top clears.
+ */
+export const FloatingChrome: Story = {
+  render: function Render() {
+    const [working, setWorking] = useState(false);
+    const [turns, setTurns] = useState(6);
+    return (
+      <View style={{ gap: 16 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Button size="sm" onPress={() => setWorking((w) => !w)} appearance="outline" tone="neutral">
+            {working ? 'Stop working' : 'Start working'}
+          </Button>
+          <Button size="sm" onPress={() => setTurns((n) => n + 1)} appearance="outline" tone="neutral">
+            Add a turn
+          </Button>
+        </View>
+        <View style={{ maxWidth: '100%', width: 718, height: 560 }}>
+          <AiChatContainer
+            floatingChrome
+            testID="floating-chat"
+            project="vibl coding project"
+            title="coding scenario"
+            onShare={() => {}}
+            onMore={() => {}}
+            working={working}
+            composer={<ComposerPill surface={false} glass={working} models={['Composer 2.5', 'Fable 5', 'Sonnet 5']} />}>
+            <AiChatThread>
+              {Array.from({ length: turns }, (_, i) =>
+                i % 2 === 0 ? (
+                  <AiChatUserMessage key={i}>
+                    {`Turn ${i + 1}: update our colour tokens for dark mode and add a reusable theme toggle.`}
+                  </AiChatUserMessage>
+                ) : (
+                  <AiChatAssistantMessage key={i} feedback={false}>
+                    <AiChatMessageLine>{`Turn ${i + 1}: the toggle updates the root theme from one place and persists the selection.`}</AiChatMessageLine>
+                    <AiChatBulletList>
+                      <AiChatBullet>
+                        <AiChatStrong>Tokens</AiChatStrong> — dark surfaces now come from the semantic ramp.
+                      </AiChatBullet>
+                      <AiChatBullet>
+                        <AiChatStrong>Toggle</AiChatStrong> — one component, registered once.
+                      </AiChatBullet>
+                    </AiChatBulletList>
+                  </AiChatAssistantMessage>
+                ),
+              )}
+            </AiChatThread>
+          </AiChatContainer>
+        </View>
+      </View>
+    );
+  },
+};

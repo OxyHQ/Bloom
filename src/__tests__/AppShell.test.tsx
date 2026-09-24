@@ -365,7 +365,8 @@ describe('AppShell variant="canvas"', () => {
     const nav = screen.getByTestId('shell').props.children;
     expect(nav).toBeTruthy();
     // …and the aside keeps its own inset rather than touching the edge.
-    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({ padding: 16, paddingLeft: 0 });
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({ paddingTop: 16, paddingBottom: 16, paddingInlineEnd: 16 });
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style).paddingInlineStart).toBeUndefined();
   });
 });
 
@@ -445,7 +446,7 @@ describe('NotificationBell', () => {
     setWidth(1440);
     const screen = renderIn(<NotificationBell testID="bell" notifications={ITEMS} />);
     const count = screen.getByTestId('bell-count');
-    expect(resolvedStyle(count.props.style)).toMatchObject({ width: 16, height: 16, top: 2, left: 18 });
+    expect(resolvedStyle(count.props.style)).toMatchObject({ width: 16, height: 16, top: 2, insetInlineStart: 18 });
     expect(screen.getByText('2')).toBeTruthy();
     const override = renderIn(<NotificationBell testID="bell2" notifications={ITEMS} unreadCount={5} />);
     expect(override.getByText('5')).toBeTruthy();
@@ -463,7 +464,7 @@ describe('ProOfferCard', () => {
     );
     expect(resolvedStyle(screen.getByTestId('offer').props.style)).toMatchObject({
       width: 280,
-      left: 12,
+      insetInlineStart: 12,
       bottom: 12,
       borderRadius: 16,
       borderWidth: 1,

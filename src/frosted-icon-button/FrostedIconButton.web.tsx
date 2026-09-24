@@ -1,3 +1,12 @@
+/**
+ * `FrostedIconButton` — WEB: a real HTML `<button>` frosted by a real CSS
+ * `backdrop-filter`.
+ *
+ * The native fork frosts via `expo-blur`'s `BlurView`. Forking the file rather
+ * than branching inside one is what keeps that import out of the web graph
+ * entirely — `expo-blur` is an optional peer, and a web bundler that resolves
+ * it at all is a build a consumer did not ask for.
+ */
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, {

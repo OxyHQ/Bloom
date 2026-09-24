@@ -79,6 +79,12 @@ export interface AiChatMessageLineProps {
   tone?: 'primary' | 'secondary';
   /** Render `children` as a block (a code card, an image) instead of a paragraph. */
   block?: boolean;
+  /**
+   * Whether the line's text can be selected. Default `true`: a reply's lines
+   * are content. `false` for a status line ("Worked for 5m 32s"), which is the
+   * interface talking, not the answer.
+   */
+  selectable?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -317,6 +323,23 @@ export interface AiChatContainerProps {
    * `false` leaves the root transparent.
    */
   surface?: boolean;
+  /**
+   * Float the header and the composer OVER the transcript instead of stacking
+   * them around it. Default `false`: header row, thread, footer, as siblings.
+   *
+   * With it, `children` fill the whole card and scroll BEHIND both: the header
+   * slot and breadcrumb row are pinned to the top with no band of their own,
+   * the footer (`AgentThinking` + `composer`) to the bottom. Each edge paints a
+   * fade of the card's surface only while the transcript actually runs under
+   * it, ramping in over the first px of overlap. An `AiChatThread` inside pads
+   * its content by the measured heights of both, so the first and last turns
+   * rest clear of them; a custom child reads the same numbers from
+   * `useAiChatChromeInsets()`.
+   *
+   * The fades are background-secondary; with `surface={false}` there is no
+   * known colour to fade to, so the chrome floats without them.
+   */
+  floatingChrome?: boolean;
   labels?: AiChatContainerLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -453,6 +476,25 @@ export interface AiChatShellProps {
    * Default `true`; `false` leaves both transparent.
    */
   surface?: boolean;
+  /**
+   * What scrolls the page — `AppShell`'s contract.
+   *
+   * - `container` (default) — the shell fills its parent and the conversation
+   *   scrolls inside the card, in the thread's own `ScrollView`.
+   * - `document` — WEB: the chat grows the document and the browser scrolls it:
+   *   the page's scrollbar, scroll restoration, the mobile address bar
+   *   collapsing and `window.scrollTo` all behave as on any page. The sidebar
+   *   and the panel stay pinned (`position: sticky`); the chat's header and
+   *   composer float over the conversation, pinned to the top and the bottom of
+   *   the screen, and it passes behind them. The drawers and the backdrop are
+   *   `position: fixed`, so they cover the screen rather than the page.
+   *
+   *   Nothing between the shell and the document may be a scroll container: an
+   *   app's `html`/`body`/root reset of `height: 100%; overflow: hidden` pins
+   *   everything to one screen, so it has to let the document grow. Native has
+   *   no document and treats it as `container`.
+   */
+  scroll?: 'container' | 'document';
   labels?: AiChatShellLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;

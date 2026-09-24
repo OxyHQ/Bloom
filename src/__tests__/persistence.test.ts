@@ -153,3 +153,25 @@ describe('writePersistedTheme', () => {
     ).resolves.toBeUndefined();
   });
 });
+
+describe('webLocalStorage', () => {
+  it('is undefined rather than a throw where reading localStorage is refused', () => {
+    // A document sandboxed without `allow-same-origin` throws from the getter.
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new Error('SecurityError: the document is sandboxed');
+      },
+    });
+    try {
+      jest.isolateModules(() => {
+        const { Platform } = require('react-native') as { Platform: { OS: string } };
+        Platform.OS = 'web';
+        const { webLocalStorage } = require('../theme/persistence') as typeof import('../theme/persistence');
+        expect(webLocalStorage).toBeUndefined();
+      });
+    } finally {
+      delete (globalThis as { localStorage?: Storage }).localStorage;
+    }
+  });
+});

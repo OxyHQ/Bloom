@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { mirrorAlign, useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { RiNotificationLine } from '../icons/remix/RiNotificationLine';
 import { NotificationCenter } from '../notification-center';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
@@ -16,10 +17,10 @@ import type { NotificationBellProps } from './types';
  * glyph, and the notification center in a popover under it.
  *
  *   trigger   medium secondary icon button (36), RiNotificationLine 20
- *   count     16px red-600 disc at top 2 / left 18, 1.5px ring in the button's
+ *   count     16px red-600 disc at top 2 / inline-start 18, 1.5px ring in the button's
  *             own surface (so it reads punched out), 10/16 bold white; the ring
  *             drops away while the button is hovered or pressed
- *   popover   bottom-end, 8px off, 440 wide, no chrome of its own — the center
+ *   popover   bottom, trailing edge (mirrored under RTL), 8px off, 440 wide, no chrome of its own — the center
  *             (max 430) is the card
  */
 const NotificationBellComponent: React.FC<NotificationBellProps> = ({
@@ -33,6 +34,8 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const rtl = useIsRtl();
+  const dirProps = useDirectionProps();
   const [open, setOpen] = useState(false);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const unread = unreadCount ?? notifications.filter((item) => item.unread).length;
@@ -48,6 +51,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <View
+        {...dirProps}
         style={{ position: 'relative', flexDirection: 'row' }}
         // Hover is read on the wrapper (the `group`).
         {...({ onPointerEnter: onIn, onPointerLeave: onOut })}
@@ -62,7 +66,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
             style={{
               position: 'absolute',
               top: 2,
-              left: 18,
+              insetInlineStart: 18,
               width: 16,
               height: 16,
               borderRadius: borderRadius.full,
@@ -82,7 +86,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
       <PopoverContent
         label={accessibilityLabel}
         side="bottom"
-        align="end"
+        align={mirrorAlign('end', 'bottom', rtl)}
         sideOffset={8}
         style={{
           width,

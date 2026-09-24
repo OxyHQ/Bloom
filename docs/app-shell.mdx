@@ -324,7 +324,7 @@ overlapping another, and no console error.
 - `lg` and up: the rail sits in flow; the content column is centred, max `contentMaxWidth` (1300), header then content 16 apart.
 - Below `lg` the header shows a menu button, and `drawer` picks how the rail arrives:
   - `overlay` — a drawer over the page on a 40% black backdrop (portaled through `OverlayRoot`, so it ranks with every other overlay).
-  - `reveal` — the rail waits flat beneath the page; the page slides 272 right and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
+  - `reveal` — the rail waits flat beneath the page; the page slides 272 toward the end edge (right in LTR, left in RTL) and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
 - `drawerOpen` / `onDrawerOpenChange` control it.
 - `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
 
@@ -336,7 +336,7 @@ overlapping another, and no console error.
 </AppShell>
 ```
 
-A second column on the right of the page (`dashboard` and `feed`; `split` has
+A second column at the end edge of the page — the right in LTR, the left in RTL (`dashboard` and `feed`; `split` has
 its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it stays in natural document flow. A tall aside scrolls with the page until its lower edge is visible, then sticks; it does not capture wheel gestures in a nested ScrollView. Container and fixed modes retain bounded aside scrolling. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
 
 ## Eight shells, one component
@@ -387,7 +387,7 @@ render three of these side by side with nothing positioned by hand.
 <AppShell sidebar={{ items }} />                                                     {/* the floating card */}
 ```
 
-A `docked` nav is flush to the window: the shell drops its left and vertical padding around that column, gives up the column gap and lets the nav run the full height, because the nav's own hairline is the separator. Everything else about the shell is unchanged. The surfaces and sizes themselves are in [`Sidebar`](/docs/bloom/main/sidebar).
+A `docked` nav is flush to the window: the shell drops its start (left in LTR) and vertical padding around that column, gives up the column gap and lets the nav run the full height, because the nav's own hairline is the separator. Everything else about the shell is unchanged. The surfaces and sizes themselves are in [`Sidebar`](/docs/bloom/main/sidebar).
 
 ## Opening the drawer without a title
 
@@ -463,13 +463,81 @@ never the arrangement:
 None of this is exercised by the web gate: jest resolves no platform extensions
 here, and Storybook is react-native-web. It is reasoned, not measured.
 
+## Right-to-left
+
+`AppShell`, `Sidebar`, `BottomBar` and the tab bar under it mirror for
+right-to-left languages. Bloom never decides the direction — it reads the one
+the platform's layout engine is already using:
+
+- **Web:** `document.documentElement.dir`. Set `<html dir="rtl">` (and `lang`)
+  when the locale is Arabic, Hebrew, Persian or Urdu; change it at runtime and
+  the shell follows on the next frame, no reload.
+- **Native:** `I18nManager.isRTL`. Call `I18nManager.allowRTL(true)` and
+  `I18nManager.forceRTL(true)` for an RTL locale; React Native applies it on
+  the NEXT launch, so reload the app (e.g. `expo-updates`' `reloadAsync`) after
+  changing it. A running app cannot mirror itself.
+
+That is all a consumer does. Inside, two mechanisms:
+
+- **Insets are logical.** The drawer rail, the overlay drawer, the docked
+  hairline, the aside's padding, the notification count, the offer card and the
+  bottom bar's action use `insetInlineStart`/`paddingInlineEnd`/`borderEndWidth`
+  and friends. Yoga resolves them against `I18nManager`. react-native-web does
+  NOT resolve them against `<html dir>`: its inline and atomic style paths
+  rewrite them to PHYSICAL properties against its own direction context — a
+  `dir` prop on an ancestor `View` — defaulting to left-to-right (measured on
+  0.21.2: `insetInlineStart: 0` renders `left: 0px` with no context). So each
+  family root (`AppShell`, the portaled drawer, `Sidebar`, the rail,
+  `BottomBar`, the tab bar, `ProOfferCard`, `NotificationBell`) spreads
+  `dir="rtl"` on web when the document is right-to-left. A screen of your own
+  that uses logical insets outside those roots needs the same:
+  `<View dir={useIsRtl() ? 'rtl' : undefined}>` on web.
+- **The CSS spelling, not React Native's.** `paddingInlineStart`, never
+  `paddingStart`: reanimated's web writer hands a mapper's result to
+  react-native-web's `createReactDOMStyle`, which does not rewrite
+  `paddingStart`, so the browser would drop it inside an animated style. The
+  CSS spelling passes through as a real logical property (and Fabric parses it
+  on native).
+- **Signs read `useIsRtl()`** (`@oxy.so/bloom/hooks`): the `reveal` slide, the
+  rail's `transformOrigin`, the sidebar's collapse control and glyph, the
+  folder connector, the offer card's shimmer, the tab bar's highlight and scrub
+  hit-testing, and the account/team menus' floating `side`/`align` (floating
+  sides are physical).
+
+`src/__tests__/app-shell-rtl-census.test.ts` fails the build on a new one-sided
+physical key, a React Native logical key, or a sign without `useIsRtl` in these
+families. Jest has no layout engine, so the mirrored PAINT is verified in a
+browser with `dir="rtl"` and on a device with `forceRTL` — not by the suite.
+
+## Labels
+
+Every word the shell and the sidebar speak is a prop defaulting to the English
+it replaced, so an app can translate them:
+
+| Prop | Default | Names |
+| --- | --- | --- |
+| `drawerOpenLabel` | `"Open navigation"` | the header's hamburger (also `AppShellHeader` `menuLabel`, `AppShellMenuButton` `accessibilityLabel`) |
+| `drawerCloseLabel` | `"Close navigation"` | the overlay drawer's backdrop and the `reveal` page veil |
+| `resizeLabel` | `"Resize panes"` | the `split` divider |
+| `sidebar.accessibilityLabel` | `"Sidebar"` | the navigation landmark (panel and rail) |
+| `sidebar.collapseLabel` / `expandLabel` | `"Collapse sidebar"` / `"Expand sidebar"` | the collapse control, per state |
+| `sidebar.closeLabel` | `"Close sidebar"` | the drawer sidebar's own close button |
+| `sidebar.searchLabel` / `searchButtonLabel` | `"Quick Search"` / `"Search"` | the search button (panel / flat mobile header) |
+| `sidebar.filterLabel` / `clearSearchLabel` | `"Filter navigation"` / `"Clear navigation search"` | the search field and its clear button |
+| `sidebar.account.menuLabel` / `team.menuLabel` | `"Account menu"` / `` `${name} menu` `` | the switcher menus |
+
+`NotificationBell` (`accessibilityLabel`), `ProOfferCard` (`accessibilityLabel`,
+`dismissLabel`) and the sidebar's `searchPlaceholder`, `noResultsLabel`,
+`modesLabel`, `account.usersLabel`/`addUserLabel`/`manageLabel` and
+`plan.actionLabel` were already props.
+
 ## NotificationBell
 
-A medium secondary icon button with the unread count (16px red disc, 1.5px ring in the button's surface that drops on hover) and a `NotificationCenter` in a bottom-end popover, 440 wide. `unreadCount` overrides the computed count.
+A medium secondary icon button with the unread count (16px red disc, 1.5px ring in the button's surface that drops on hover) and a `NotificationCenter` in a popover below it aligned to its trailing edge (mirrored under RTL), 440 wide. `unreadCount` overrides the computed count.
 
 ## ProOfferCard
 
-280 wide, 12 from the bottom-left (`placement="inline"` renders in flow), radius 16, card-coloured hairline, the waitlist shadow; a light band across the top (default: an accent gradient; pass `backdrop` for your own, masked the same way on web), the copy, a full-width CTA with a sweeping shimmer (hidden under reduced motion) and an xs close button. It rises in after `enterDelay` (1.2s). Persisting the dismissal is the host's job.
+280 wide, 12 from the bottom-start corner — bottom-left in LTR, bottom-right in RTL (`placement="inline"` renders in flow), radius 16, card-coloured hairline, the waitlist shadow; a light band across the top (default: an accent gradient; pass `backdrop` for your own, masked the same way on web), the copy, a full-width CTA with a sweeping shimmer (hidden under reduced motion) and an xs close button. It rises in after `enterDelay` (1.2s). Persisting the dismissal is the host's job.
 
 A live ray-field WebGL backdrop and animated Pro logo are brand artwork and are not included — pass `backdrop` / `logo`.
 
@@ -485,7 +553,7 @@ Use `navigation={[{ value, label, icon }]}`, `value` and `onValueChange` once.
 and sidebar from 1024. Explicit `bottom`, `rail` or `sidebar` overrides that choice.
 
 `primaryAction` accepts Fab props. In bottom placement it appears beside the tab
-capsule and shares its animation; wider placements float it at the bottom-right
+capsule and shares its animation; wider placements float it at the bottom-end corner (bottom-right in LTR)
 of the content area, independently of the sidebar.
 `header` overrides the default header; `title`, `breadcrumb` and `actions` configure
 that default. `contentMaxWidth` defaults to 1300. `overlay` stays in the screen's

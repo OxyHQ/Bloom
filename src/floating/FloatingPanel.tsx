@@ -89,6 +89,7 @@ import {
   VIEWPORT_GUTTER,
 } from './constants';
 import { useMenuPalette } from './menu-palette';
+import { pushFloatingEscape } from './escape-stack';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
 import { useFrameThrottle } from './use-frame-throttle';
@@ -105,36 +106,31 @@ const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
 const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
 
 /**
- * The per-surface chrome and motion. All three share the one popover motion;
- * `menu` and `listbox` use the menu recipe (`menu-styles.ts`) with colours from
- * `menu-palette.ts`, while `popover` leaves the whole panel to its caller's
- * resolved `style` (`popover/surface.ts`).
+ * The ONE motion every anchored surface runs: 150ms `ease-out`, fade +
+ * `scale-95` + 2px blur, no slide, scaling from the corner nearest the
+ * trigger, and the same shape reversed on the way out. It was written out
+ * three times, once per surface, with only the chrome differing — three
+ * spellings of one decision, any of which could be edited alone.
+ */
+const MENU_MOTION = {
+  duration: MENU_MOTION_DURATION,
+  easing: MENU_EASING,
+  scaleFrom: MENU_MOTION_SCALE_FROM,
+  slide: 0,
+  blur: MENU_MOTION_BLUR,
+} as const;
+
+/**
+ * The per-surface chrome. `menu` and `listbox` use the menu recipe
+ * (`constants.ts`'s `MENU_PANEL_CLASS` / `LISTBOX_PANEL_CLASS`) with colours
+ * from `menu-palette.ts`; `popover` carries NO chrome of its own here, because
+ * `popover/surface.ts` resolves the whole panel inline and hands it over as
+ * `style` so a caller's `className` can still override any one piece of it.
  */
 const SURFACE = {
-  popover: {
-    className: '',
-    duration: MENU_MOTION_DURATION,
-    easing: MENU_EASING,
-    scaleFrom: MENU_MOTION_SCALE_FROM,
-    slide: 0,
-    blur: MENU_MOTION_BLUR,
-  },
-  menu: {
-    className: MENU_PANEL_CLASS,
-    duration: MENU_MOTION_DURATION,
-    easing: MENU_EASING,
-    scaleFrom: MENU_MOTION_SCALE_FROM,
-    slide: 0,
-    blur: MENU_MOTION_BLUR,
-  },
-  listbox: {
-    className: LISTBOX_PANEL_CLASS,
-    duration: MENU_MOTION_DURATION,
-    easing: MENU_EASING,
-    scaleFrom: MENU_MOTION_SCALE_FROM,
-    slide: 0,
-    blur: MENU_MOTION_BLUR,
-  },
+  popover: { ...MENU_MOTION, className: '' },
+  menu: { ...MENU_MOTION, className: MENU_PANEL_CLASS },
+  listbox: { ...MENU_MOTION, className: LISTBOX_PANEL_CLASS },
 } as const;
 
 /**
@@ -203,6 +199,7 @@ export function FloatingPanel({
   testID,
   children,
   surface = 'popover',
+  panelRef,
 }: FloatingPanelProps) {
   const chrome = SURFACE[surface];
   const isMenuSurface = surface !== 'popover';
@@ -224,8 +221,11 @@ export function FloatingPanel({
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(0);
 
+  const panelRefRef = useRef(panelRef);
+  panelRefRef.current = panelRef;
   const attach = useCallback((node: View | null) => {
     setPanelNode(node);
+    panelRefRef.current?.(node);
   }, []);
 
   const store = useCallback((next: DropdownPlacement | null) => {
@@ -438,18 +438,17 @@ export function FloatingPanel({
     [progress, slideX, slideY, scaleFrom, blurFrom],
   );
 
+  // Escape dismisses the INNERMOST open surface and nothing under it — a Select
+  // inside a Dialog closes its list, not the dialog (`escape-stack.ts`). The
+  // entry is taken once per open and calls the CURRENT `onDismiss` through a
+  // ref: re-pushing it whenever the callback's identity changed would move a
+  // re-rendered parent menu above its own open submenu.
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
   useEffect(() => {
     if (phase !== 'open' || !dismissible || typeof document === 'undefined') return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      // Stop the key reaching a Dialog underneath: the innermost open surface is
-      // the one Escape dismisses.
-      event.stopPropagation();
-      onDismiss();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [phase, dismissible, onDismiss]);
+    return pushFloatingEscape(() => onDismissRef.current());
+  }, [phase, dismissible]);
 
   // The NON-modal outside press. Deliberately `pointerdown` in the CAPTURE
   // phase and never `preventDefault`: the surface has to be gone before the

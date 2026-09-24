@@ -176,6 +176,17 @@ export const StyleSheet = {
   hairlineWidth: 1,
 };
 
+// Direction is process-wide on native; a suite flips `isRTL` to render the
+// mirrored layout and restores it afterwards.
+export const I18nManager = {
+  isRTL: false,
+  doLeftAndRightSwapInRTL: true,
+  allowRTL: (_allow: boolean) => {},
+  forceRTL: (_force: boolean) => {},
+  swapLeftAndRightInRTL: (_swap: boolean) => {},
+  getConstants: () => ({ isRTL: I18nManager.isRTL, doLeftAndRightSwapInRTL: true, localeIdentifier: 'en_US' }),
+};
+
 export const PixelRatio = {
   get: () => 1,
   getFontScale: () => 1,

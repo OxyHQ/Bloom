@@ -36,6 +36,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import { hairlineOn, surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type {
   TabsContentProps,
@@ -222,6 +223,12 @@ const IS_WEB = Platform.OS === 'web';
 
 const STYLE_ID = 'bloom-tabs-web-css';
 const TRIGGER = '[data-bloom-tabs-trigger]';
+/** The strip — the owner a trigger's keyboard walks within. */
+const STRIP = '[data-bloom-tabs-strip]';
+
+function isSelectedTab(element: HTMLElement): boolean {
+  return element.getAttribute('aria-selected') === 'true';
+}
 
 const BLOOM_TABS_CSS = interactiveWebCss({
   selector: TRIGGER,
@@ -280,6 +287,13 @@ interface TabsContextValue {
   reportTriggerLayout: (value: string, layout: TriggerLayout) => void;
   /** A trigger reports that the ROUTER considers it focused. */
   reportFocused: (value: string) => void;
+  /**
+   * What an arrow key does on web: `follow` selects the tab it lands on
+   * (automatic activation, the controlled path), `manual` only moves focus and
+   * leaves Enter/Space to select (the focus-driven path, where selecting is a
+   * navigation). See `TabsProps.value`.
+   */
+  activation: 'follow' | 'manual';
 }
 
 const TabsContext = createContext<TabsContextValue | null>(null);
@@ -340,6 +354,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     hasSelection = true,
     variant = 'underline',
     fullWidth = false,
+    label,
     children,
     style,
     testID,
@@ -378,6 +393,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   const remeasureScheduledRef = useRef(false);
   const indicatorPlacedRef = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
+  const stripRef = useRef<View>(null);
   const viewportWidthRef = useRef(0);
   // The value the underline currently belongs to, from EITHER path. A ref
   // because the layout callback below must see the latest selection without
@@ -572,6 +588,21 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // is the bug.
   useEffect(scheduleRemeasure);
 
+  // Web: ONE tab stop for the strip — the selected tab, or the first enabled one
+  // when none is — as the ARIA tabs pattern requires (`hooks/roving-focus.ts`).
+  // The strip is whichever node carries `role="tablist"`: the scroll view's own
+  // node, or the full-width row.
+  useRovingTabIndex(
+    () =>
+      (fullWidth
+        ? (stripRef.current as unknown as Element | null)
+        : ((scrollRef.current as unknown as { getScrollableNode?: () => Element | null } | null)
+            ?.getScrollableNode?.() ?? null)),
+    TRIGGER,
+    isSelectedTab,
+    STRIP,
+  );
+
   useImperativeHandle(
     dragRef,
     (): TabsDragController => ({
@@ -640,6 +671,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       registerTrigger,
       reportTriggerLayout,
       reportFocused,
+      activation: value === undefined ? 'manual' : 'follow',
     }),
     [
       value,
@@ -668,6 +700,13 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     }),
     [isUnderline, paint.separator],
   );
+
+  // Web only: `role="tablist"` and its name. On native the strip stays a plain
+  // container — a named native View would become ONE accessibility element
+  // and swallow its tabs on iOS.
+  const stripA11y: Record<string, unknown> = IS_WEB
+    ? { role: 'tablist', 'aria-label': label, dataSet: { bloomTabsStrip: '' } }
+    : {};
 
   // The underline sits OVER the baseline: it is `bottom-0` of a wrapper whose
   // child carries the border. An absolute child is placed inside the border,
@@ -731,7 +770,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   return (
     <TabsContext.Provider value={contextValue}>
       {fullWidth ? (
-        <View style={[containerStyle, style]} testID={testID}>
+        <View ref={stripRef} {...stripA11y} style={[containerStyle, style]} testID={testID}>
           {isUnderline ? null : indicator}
           {children}
           {isUnderline ? indicator : null}
@@ -739,6 +778,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       ) : (
         <ScrollView
           ref={scrollRef}
+          {...stripA11y}
           horizontal
           // A tab strip owns its intrinsic cross-axis height. RN ScrollView's
           // default flexGrow: 1 otherwise consumes the list's remaining space.
@@ -780,6 +820,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     registerTrigger,
     reportTriggerLayout,
     reportFocused,
+    activation,
   } = useTabsContext('TabsTrigger');
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
   // otherwise selection comes from the bar's controlled `value`.
@@ -829,6 +870,28 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     // would fight the router for the same underline.
     if (isFocused === undefined) onValueChange?.(value);
   }, [value, disabled, onValueChange, onPressProp, isFocused]);
+
+  // Web keyboard (ARIA tabs): Left/Right move between tabs with wrap-around,
+  // Home/End jump to the ends, disabled tabs are skipped, and Space selects —
+  // react-native-web presses a `tab` on Enter only. Enter stays with its own
+  // press handling.
+  const webKeyboard = useMemo(
+    () =>
+      IS_WEB
+        ? {
+            onKeyDown: (event: { key: string; currentTarget: unknown; preventDefault: () => void }) => {
+              handleRovingKeyDown(event, {
+                selector: TRIGGER,
+                owner: STRIP,
+                orientation: 'horizontal',
+                homeEnd: true,
+                activate: activation,
+              });
+            },
+          }
+        : {},
+    [activation],
+  );
 
   const labelColor = isSelected ? paint.selectedLabel : paint.idleLabel;
   const iconColor = isSelected ? paint.selectedIcon : paint.idleIcon;
@@ -881,6 +944,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     >
       <Pressable
         {...webDataSet({ bloomTabsTrigger: variant })}
+        {...webKeyboard}
         style={[
           triggerStyle,
           fullWidth && { flex: 1 },
