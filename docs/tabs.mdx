@@ -142,3 +142,9 @@ hover row and the `filled` thumb are steps off that surface.
 The rail used to be `neutral-800` in dark — the exact fill `QueuePanel` (and
 every other menu-surface family) paints its panel with, **ΔE 0**. A tab strip
 inside one had no rail. On the page the rail lands within 0.04 of its old colour.
+
+The scrolling tab viewport keeps its intrinsic height (`flexGrow: 0`,
+`flexShrink: 0`). This matters in native columns above virtualized lists:
+React Native's default ScrollView growth otherwise takes space from the feed,
+even when the caller gives the tab strip a fixed height. Caller `style` still
+styles the strip content, including its height, padding, and separator.

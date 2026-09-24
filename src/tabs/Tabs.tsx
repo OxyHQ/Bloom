@@ -780,6 +780,9 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
           ref={scrollRef}
           {...stripA11y}
           horizontal
+          // A tab strip owns its intrinsic cross-axis height. RN ScrollView's
+          // default flexGrow: 1 otherwise consumes the list's remaining space.
+          style={{ flexGrow: 0, flexShrink: 0 }}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[containerStyle, style]}
           onLayout={(e) => {
