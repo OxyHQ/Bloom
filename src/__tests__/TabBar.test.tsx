@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ReactTestInstance } from 'react-test-renderer';
+import { Platform } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -251,6 +252,72 @@ describe('TabBar', () => {
     );
     fireEvent.press(triggers(UNSAFE_root)[1] as ReactTestInstance);
     expect(onIndexChange).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The bar's `Tap` gesture reports every pointer tap on its own, and outside
+   * iOS nothing cancels the button's press, so that press must not report the
+   * same tap again. Gesture arbitration itself is not observable here (the
+   * shared mock discards gestures); what IS decidable is which presses the
+   * button forwards, from the event react-native-web actually delivers.
+   */
+  describe('presses the gesture already reported', () => {
+    const click = { nativeEvent: { type: 'click' } };
+    const keyup = { nativeEvent: { type: 'keyup', key: 'Enter' } };
+    afterEach(() => jest.restoreAllMocks());
+
+    it('does not select again on a web pointer click', () => {
+      jest.replaceProperty(Platform, 'OS', 'web');
+      const onIndexChange = jest.fn();
+      const { UNSAFE_root } = renderWithTheme(<Bar activeIndex={0} onIndexChange={onIndexChange} />);
+      fireEvent.press(triggers(UNSAFE_root)[2] as ReactTestInstance, click);
+      expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
+    it('selects on web keyboard activation, which the gesture never sees', () => {
+      jest.replaceProperty(Platform, 'OS', 'web');
+      const onIndexChange = jest.fn();
+      const { UNSAFE_root } = renderWithTheme(<Bar activeIndex={0} onIndexChange={onIndexChange} />);
+      fireEvent.press(triggers(UNSAFE_root)[2] as ReactTestInstance, keyup);
+      expect(onIndexChange).toHaveBeenCalledTimes(1);
+      expect(onIndexChange).toHaveBeenCalledWith(2);
+    });
+
+    it('does not navigate twice through a router trigger on a web pointer click', () => {
+      jest.replaceProperty(Platform, 'OS', 'web');
+      const onPress = jest.fn();
+      const { UNSAFE_root } = renderWithTheme(
+        <TabBar>
+          {ITEMS.map((item, index) => (
+            <TabBarButton key={item.name} item={item} index={index} isFocused={index === 0} onPress={onPress} />
+          ))}
+        </TabBar>,
+      );
+      fireEvent.press(triggers(UNSAFE_root)[1] as ReactTestInstance, click);
+      expect(onPress).not.toHaveBeenCalled();
+      fireEvent.press(triggers(UNSAFE_root)[1] as ReactTestInstance, keyup);
+      expect(onPress).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps a scrollable bar’s pointer clicks, since it has no gesture to report them', () => {
+      jest.replaceProperty(Platform, 'OS', 'web');
+      const onIndexChange = jest.fn();
+      const { UNSAFE_root } = renderWithTheme(
+        <TabBar activeIndex={0} onIndexChange={onIndexChange} scrollable>
+          {ITEMS.map((item, index) => <TabBarButton key={item.name} item={item} index={index} />)}
+        </TabBar>,
+      );
+      fireEvent.press(triggers(UNSAFE_root)[1] as ReactTestInstance, click);
+      expect(onIndexChange).toHaveBeenCalledWith(1);
+    });
+
+    it('stands down on Android, where every press may be a reported touch', () => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+      const onIndexChange = jest.fn();
+      const { UNSAFE_root } = renderWithTheme(<Bar activeIndex={0} onIndexChange={onIndexChange} />);
+      fireEvent.press(triggers(UNSAFE_root)[2] as ReactTestInstance, {});
+      expect(onIndexChange).not.toHaveBeenCalled();
+    });
   });
 
   it('lets isFocused override the bar activeIndex', () => {

@@ -30,6 +30,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  type GestureResponderEvent,
   type ViewStyle,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -111,6 +112,28 @@ type BarContextValue = {
 };
 
 const BarContext = createContext<BarContextValue | null>(null);
+
+/**
+ * Whether the bar's `Tap` gesture has already reported the touch a button's
+ * press came from. The gesture activates on RELEASE, after the `Pressable` has
+ * fired, and it cancels that press on iOS alone:
+ *
+ * - iOS: RNGH sets `cancelsTouchesInView`, so a press that still arrives came
+ *   from something the gesture never saw (VoiceOver, a hardware keyboard).
+ * - Android: nothing is cancelled. Measured on a Pixel 10 Pro, one tap produced
+ *   `PRESSABLE selectIndex(1)` AND `GESTURE tap selectIndex(1)` ~600ms apart.
+ *   A press there cannot say whether it was a touch, so every press is taken
+ *   for one.
+ * - Web: nothing is cancelled either. Measured in Mention's web build, one
+ *   mouse click reached `onIndexChange` twice. react-native-web says which
+ *   input it was: a pointer press arrives as the DOM `click`, and a keyboard
+ *   Enter or Space as `keyup`, which the gesture never sees.
+ */
+function gestureReportedPress(event: GestureResponderEvent): boolean {
+  if (Platform.OS === 'android') return true;
+  if (Platform.OS === 'web') return (event.nativeEvent as { type?: string }).type === 'click';
+  return false;
+}
 
 function OptionalGesture({ enabled, children, ...props }: ComponentProps<typeof GestureDetector> & { enabled: boolean }) {
   return enabled ? <GestureDetector {...props}>{children}</GestureDetector> : <Fragment>{children}</Fragment>;
@@ -699,8 +722,8 @@ function TabBarButtonBody({
         if (isFocused === undefined) bar?.selectIndex(index);
       }}
       onPress={(event) => {
-        // The bar's GestureDetector normally consumes touches; this still fires
-        // for assistive-technology activation (VoiceOver) and keyboard focus.
+        // Fires for keyboard and assistive-technology activation, and on
+        // Android and web also for the pointer taps the gesture reports.
         if (bar) {
           // Appear at the tab when hidden, slide to it when visible — the same
           // rule the tap gesture and the controlled path follow. Skipped on the
@@ -713,20 +736,20 @@ function TabBarButtonBody({
           bar.highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
         }
         setMinimized(minimized, 0);
-        // Controlled path only, and NOT on Android. On the focus-driven path the
-        // trigger's own `onPress` below performs the navigation, so reporting
-        // the selection here as well would navigate twice.
-        //
-        // ANDROID IS THE ONE PLATFORM THAT DOUBLES. RNGH sets
-        // `cancelsTouchesInView` on iOS, so a recognised tap cancels this press
-        // and the gesture above is the only reporter there; react-native-web
-        // likewise routes a keyboard Enter or Space through this press and
-        // nothing else. Android cancels nothing — measured on a Pixel 10 Pro,
-        // one tap produced `PRESSABLE selectIndex(1)` AND `GESTURE tap
-        // selectIndex(1)` ~600ms apart on a busy JS thread — so there, and only
-        // there, this press stands down.
-        if (isFocused === undefined && (bar?.scrollable || Platform.OS !== 'android')) bar?.selectIndex(index);
-        onPress?.(event);
+        // A tap the bar's gesture already reported is not reported again
+        // (`gestureReportedPress`). A scrollable bar has no gesture, so its
+        // presses are the only reporter.
+        const reported = bar != null && !bar.scrollable && gestureReportedPress(event);
+        // Controlled path only. On the focus-driven path the trigger's own
+        // `onPress` below performs the navigation, so reporting the selection
+        // here as well would navigate twice.
+        if (isFocused === undefined && !reported) bar?.selectIndex(index);
+        // The trigger's `onPress` is for what the gesture cannot see (keyboard,
+        // assistive technology). On web a pointer click has already navigated
+        // through `onIndexChange`, so it stands down. Android keeps calling it:
+        // a press there cannot tell a touch from a keyboard or D-pad, and
+        // dropping it would strand keyboard navigation.
+        if (!(reported && Platform.OS === 'web')) onPress?.(event);
       }}
       // `Pressable`'s `style` also accepts a function of the press state; both
       // forms are composed on top of the flex-share base so a caller can tint
