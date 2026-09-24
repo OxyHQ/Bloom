@@ -521,7 +521,7 @@ function SourceLinkRow({
           textStyle,
         ]}
       >
-        <Text
+        <Text selectable={false}
           variant="body-regular"
           numberOfLines={1}
           style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}
@@ -529,7 +529,7 @@ function SourceLinkRow({
           {source.title}
         </Text>
         {showDomain ? (
-          <Text variant="caption-1-regular" style={{ flexShrink: 0, color: palette.textTertiary }}>
+          <Text selectable={false} variant="caption-1-regular" style={{ flexShrink: 0, color: palette.textTertiary }}>
             {source.domain}
           </Text>
         ) : null}
@@ -731,7 +731,7 @@ function SourcesRow({
             ringStyle,
           ]}
         >
-          <Text variant="body-regular" style={{ color: palette.textSecondary }}>
+          <Text selectable={false} variant="body-regular" style={{ color: palette.textSecondary }}>
             {label}
           </Text>
           <Animated.View
@@ -821,7 +821,7 @@ function StepContent({
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
       <StepGlyph step={step} palette={palette} />
-      <Text variant="body-regular" style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
+      <Text selectable={false} variant="body-regular" style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
         {active ? <AgentLogShimmerText>{step.label}</AgentLogShimmerText> : step.label}
         {step.query ? (
           <RNText
@@ -837,7 +837,7 @@ function StepContent({
         ) : null}
       </Text>
       {step.meta ? (
-        <Text
+        <Text selectable={false}
           variant="body-regular"
           style={[{ flexShrink: 0, paddingTop: 1, color: palette.textTertiary }, TABULAR]}
         >

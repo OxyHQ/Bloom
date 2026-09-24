@@ -79,6 +79,12 @@ export interface AiChatMessageLineProps {
   tone?: 'primary' | 'secondary';
   /** Render `children` as a block (a code card, an image) instead of a paragraph. */
   block?: boolean;
+  /**
+   * Whether the line's text can be selected. Default `true`: a reply's lines
+   * are content. `false` for a status line ("Worked for 5m 32s"), which is the
+   * interface talking, not the answer.
+   */
+  selectable?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 

@@ -33,6 +33,8 @@ import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { type AppColorName } from './color-presets';
 import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
 import { applyVarsToRootVariables } from './native-root-vars';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { BASE_WEB_CSS, BASE_WEB_CSS_ID } from '../styles/base-web-css';
 import {
   readPersistedTheme,
   readPersistedThemeSync,
@@ -446,6 +448,12 @@ export function BloomThemeProvider({
   useIsomorphicLayoutEffect(() => {
     applyVarsToRootVariables(themeVars);
   }, [themeVars]);
+
+  // Web: the rules every family relies on (`styles/base-web-css.ts`). A no-op
+  // on native and during SSR, where there is no document to adopt into.
+  useIsomorphicLayoutEffect(() => {
+    if (Platform.OS === 'web') adoptStyleSheet(BASE_WEB_CSS_ID, BASE_WEB_CSS);
+  }, []);
 
   const contextValue = useMemo<BloomThemeContextValue>(
     () => ({
