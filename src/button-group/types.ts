@@ -2,6 +2,7 @@ import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 
 import type { ControlMaterial } from '../control-surface/types';
 import type { ButtonIconComponent } from '../button/types';
+import type { BloomIconRenderer } from '../icons/render-icon';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
 /** The two group sizes: 34px (`md`) and 30px (`sm`) items. */
@@ -67,6 +68,14 @@ export interface ButtonGroupItemProps {
   leadingIcon?: ButtonIconComponent;
   /** Icon component after the label. */
   trailingIcon?: ButtonIconComponent;
+  /**
+   * Draw the leading glyph yourself, handed the item's size and the foreground
+   * for the CURRENT state — for an app's own icon set, whose props Bloom's icon
+   * slot cannot name. Wins over `leadingIcon`. See `icons/render-icon.tsx`.
+   */
+  renderLeadingIcon?: BloomIconRenderer;
+  /** Same as {@link ButtonGroupItemProps.renderLeadingIcon}, after the label. */
+  renderTrailingIcon?: BloomIconRenderer;
   accessibilityLabel?: string;
 
   // ── The trigger contract ────────────────────────────────────────────────

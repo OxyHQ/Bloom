@@ -1,5 +1,6 @@
 import type { LinkButtonProps } from './types';
 import React, { useMemo, memo, type ComponentType } from 'react';
+import { resolveIconSlot } from '../icons/render-icon';
 import {
   ActivityIndicator,
   Linking,
@@ -175,6 +176,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   trailing,
   leadingIcon: LeadingIcon,
   trailingIcon: TrailingIcon,
+  renderLeadingIcon,
+  renderTrailingIcon,
   iconOnly = false,
   linkTone = 'primary',
   underline,
@@ -298,9 +301,11 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
   const content = (
     <>
-      {LeadingIcon ? (
-        <LeadingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
-      ) : null}
+      {resolveIconSlot(renderLeadingIcon, iconSize, paint.foreground, () =>
+        LeadingIcon ? (
+          <LeadingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
+        ) : null,
+      )}
       {leading}
       {iconNode}
       {!isSquare && children != null && (
@@ -313,9 +318,13 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         </Text>
       )}
       {trailing}
-      {!isSquare && TrailingIcon ? (
-        <TrailingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
-      ) : null}
+      {!isSquare
+        ? resolveIconSlot(renderTrailingIcon, iconSize, paint.foreground, () =>
+            TrailingIcon ? (
+              <TrailingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
+            ) : null,
+          )
+        : null}
     </>
   );
 

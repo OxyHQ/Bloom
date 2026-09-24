@@ -3,6 +3,7 @@ import React, { Children, createContext, Fragment, isValidElement, memo, useCont
 import { Platform, Pressable, View, type TextStyle } from 'react-native';
 
 import { useInheritedControl } from '../control-surface';
+import { resolveIconSlot } from '../icons/render-icon';
 import { GlassIsland } from '../glass';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
@@ -271,6 +272,8 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
   iconOnly = false,
   leadingIcon: LeadingIcon,
   trailingIcon: TrailingIcon,
+  renderLeadingIcon,
+  renderTrailingIcon,
   accessibilityLabel,
   accessibilityRole = 'button',
   hitSlop,
@@ -355,9 +358,11 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
       aria-haspopup={ariaHasPopup}
       testID={testID}
     >
-      {LeadingIcon ? (
-        <LeadingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} />
-      ) : null}
+      {resolveIconSlot(renderLeadingIcon, geometry.iconSize, foreground, () =>
+        LeadingIcon ? (
+          <LeadingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} />
+        ) : null,
+      )}
       {!iconOnly && children != null ? (
         typeof children === 'string' || typeof children === 'number' ? (
           <Text variant="body-medium" numberOfLines={1} style={labelStyle}>
@@ -367,9 +372,13 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
           children
         )
       ) : null}
-      {!iconOnly && TrailingIcon ? (
-        <TrailingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} />
-      ) : null}
+      {!iconOnly
+        ? resolveIconSlot(renderTrailingIcon, geometry.iconSize, foreground, () =>
+            TrailingIcon ? (
+              <TrailingIcon width={geometry.iconSize} height={geometry.iconSize} fill={foreground} />
+            ) : null,
+          )
+        : null}
     </Pressable>
   );
 };
