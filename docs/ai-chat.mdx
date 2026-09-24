@@ -69,7 +69,7 @@ Give the shell a sized parent — it fills it.
 - **`scroll`** — what scrolls the page, `AppShell`'s contract. `container` (the default) fills the parent and the conversation scrolls inside the card. **`document`** (web) grows the page and lets the browser scroll it — the page's scrollbar, scroll restoration, the mobile address bar collapsing and `window.scrollTo` behave as on any page. See [Document scroll](#document-scroll). Native has no document and treats it as `container`.
 - **What the shell publishes** — `useAiChatShell()` returns the shell's state to any descendant: `compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav` / `hasPanel`, `documentScroll`, `openNav` / `closeNav` / `openPanel`, and **`navPresented`**.
 
-  `navPresented` is the one to guard a nav's accessibility with. Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed — so everything inside `mobileSidebar` is still focusable and still read aloud unless its own tree says otherwise. The shell marks its own wrapper `aria-hidden` and `pointerEvents="none"`, which handles the pointer but not the tab order of a host's controls; read `navPresented` and skip them while it is `false`.
+  Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed. The shell takes it out of reach itself: while closed, the nav drawer and the panel drawer are `aria-hidden` and `pointerEvents="none"`, `inert` on web (so their controls leave the tab order too) and hidden from VoiceOver/TalkBack on native. A host does not wrap `mobileSidebar` in a gate of its own; `navPresented` is there for anything else that has to know whether the nav is on screen.
 
 ## Container and thread
 
