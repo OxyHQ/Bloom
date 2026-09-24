@@ -10,8 +10,9 @@ import type { SidebarProps } from '../sidebar/types';
  * How the sidebar reaches a narrow screen (below `lg`):
  *
  * - `overlay`  a drawer over the page with a 40% black backdrop
- * - `reveal`   the sidebar waits beneath the page, which slides 272px right and
- *              rounds its corner to 32 as the rail scales in from 0.94
+ * - `reveal`   the sidebar waits beneath the page, which slides 272px toward
+ *              the end edge (right in LTR, left in RTL) and rounds its corner
+ *              to 32 as the rail scales in from 0.94
  */
 export type AppShellDrawer = 'overlay' | 'reveal';
 
@@ -92,7 +93,7 @@ export interface AppShellEngineProps {
   title?: string;
   /** Breadcrumb trail above the heading (a `Breadcrumb`). */
   breadcrumb?: ReactNode;
-  /** Header actions on the right (`NotificationBell`, buttons). */
+  /** Header actions at the end edge — the right in LTR (`NotificationBell`, buttons). */
   actions?: ReactNode;
   /**
    * Replaces the whole header. Put an `AppShellMenuButton` in it to keep the
@@ -105,7 +106,7 @@ export interface AppShellEngineProps {
    */
   header?: ReactNode;
   /**
-   * A second column on the right of the page (a detail panel, activity, a
+   * A second column at the page's end edge — the right in LTR, the left in RTL (a detail panel, activity, a
    * chat). In flow from `asideFrom`; below it, stacked under the content or
    * hidden (`asideCollapse`). Pinned like the sidebar — with document scroll
    * it stays in document flow and sticks after tall content reaches its lower edge.
@@ -130,6 +131,14 @@ export interface AppShellEngineProps {
   /** Controlled drawer state (below `lg`). */
   drawerOpen?: boolean;
   onDrawerOpenChange?: (open: boolean) => void;
+  /** Names the hamburger that opens the drawer. Default `"Open navigation"`. */
+  drawerOpenLabel?: string;
+  /**
+   * Names the controls that close the drawer — the backdrop and the page veil a
+   * `reveal` drawer leaves. Default `"Close navigation"`. The sidebar's own close
+   * button is `sidebar.closeLabel`.
+   */
+  drawerCloseLabel?: string;
   /**
    * What scrolls the page.
    *
@@ -285,6 +294,8 @@ export interface AppShellHeaderProps {
    * header falls back to the window being narrower than `lg`.
    */
   showMenu?: boolean;
+  /** Names the hamburger. Default `"Open navigation"`. */
+  menuLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -318,7 +329,7 @@ export interface ProOfferCardProps {
   accessibilityLabel?: string;
   dismissLabel?: string;
   /**
-   * `fixed` (default) anchors bottom-left of the viewport (web) / the nearest
+   * `fixed` (default) anchors bottom-start (bottom-left in LTR) of the viewport (web) / the nearest
    * positioned parent (native); `inline` renders in flow.
    */
   placement?: 'fixed' | 'inline';

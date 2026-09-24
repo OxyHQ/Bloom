@@ -105,7 +105,7 @@ describe('NotificationBell', () => {
     setWidth(1440);
     const screen = renderIn(<NotificationBell testID="bell" notifications={ITEMS} />);
     const count = screen.getByTestId('bell-count');
-    expect(resolvedStyle(count.props.style)).toMatchObject({ width: 16, height: 16, top: 2, left: 18 });
+    expect(resolvedStyle(count.props.style)).toMatchObject({ width: 16, height: 16, top: 2, insetInlineStart: 18 });
     expect(screen.getByText('2')).toBeTruthy();
     const override = renderIn(<NotificationBell testID="bell2" notifications={ITEMS} unreadCount={5} />);
     expect(override.getByText('5')).toBeTruthy();
@@ -123,7 +123,7 @@ describe('ProOfferCard', () => {
     );
     expect(resolvedStyle(screen.getByTestId('offer').props.style)).toMatchObject({
       width: 280,
-      left: 12,
+      insetInlineStart: 12,
       bottom: 12,
       borderRadius: 16,
       borderWidth: 1,

@@ -10,6 +10,7 @@ import Animated, {
 
 import { Badge } from '../badge';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { mirrorAlign, mirrorSide, useIsRtl } from '../hooks/use-is-rtl';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { borderRadius } from '../styles/tokens';
@@ -43,7 +44,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  *                     tertiary-hover) that turns over while open (200ms)
  *   card (collapsed)  36px circle, transparent, just the avatar
  *   menu              265 wide, radius 16, 1px border, p10, shadow-dropdown,
- *                     beside the rail (right, bottom-aligned), below it under
+ *                     beside the rail (end side, bottom-aligned), below it under
  *                     `sm`; header, grouped rows with full-bleed dividers
  *                     (10px either side), footer with a version chip
  *   row               p8 radius 10 gap 10, icon 20 secondary, body-medium
@@ -149,6 +150,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
   const narrow = width < BREAKPOINTS.sm;
   const { state: hovered, onIn, onOut } = useInteractionState();
   const reducedMotion = useReducedMotion();
+  const rtl = useIsRtl();
 
   const turn = useSharedValue(0);
   useEffect(() => {
@@ -168,7 +170,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
     const height = expandedHeight + (36 - expandedHeight) * p;
     return { width: inSidebar ? '100%' : naturalWidth.value > 0 ? naturalWidth.value + (36 - naturalWidth.value) * p : p === 1 ? 36 : '100%',
       height,
-      borderRadius: height / 2, paddingLeft: 10 + (compactPadding - 10) * p, paddingRight: 16 + (compactPadding - 16) * p };
+      borderRadius: height / 2, paddingInlineStart: 10 + (compactPadding - 10) * p, paddingInlineEnd: 16 + (compactPadding - 16) * p };
   }, [progress, expandedHeight, inSidebar, naturalWidth, compactPadding]);
   const fill = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const cardStyle: WebCssStyle = {
@@ -209,7 +211,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
           <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1 }}>
             <SidebarAvatarView avatar={team.avatar} size="md" palette={palette} />
             <Collapsible collapsed={collapsed}>
-              <View style={{ paddingLeft: 8, justifyContent: 'center', alignItems: 'flex-start' }}>
+              <View style={{ paddingInlineStart: 8, justifyContent: 'center', alignItems: 'flex-start' }}>
                 <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                   {team.name}
                 </Text>
@@ -241,9 +243,11 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
         </AnimatedPressable>
       </PopoverTrigger>
       <PopoverContent
-        label={`${team.name} menu`}
-        side={narrow ? 'bottom' : 'right'}
-        align={narrow ? 'start' : 'end'}
+        label={team.menuLabel ?? `${team.name} menu`}
+        // Beside the rail's trailing edge: floating sides are physical, so
+        // they are mirrored here rather than by the layout.
+        side={mirrorSide(narrow ? 'bottom' : 'right', rtl)}
+        align={mirrorAlign(narrow ? 'start' : 'end', narrow ? 'bottom' : 'right', rtl)}
         sideOffset={8}
         maxWidth={width - 32}
         style={SIDEBAR_MENU_PANEL}

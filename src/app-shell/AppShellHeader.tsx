@@ -15,9 +15,9 @@ import type { AppShellHeaderProps } from './types';
  *
  *   header     column, gap 8
  *   title row  wraps, items bottom-aligned, space-between, gap 8
- *   left       gap 6: a medium icon button (hamburger, below `lg` only) and the
+ *   start      gap 6: a medium icon button (hamburger, below `lg` only) and the
  *              title — title-2-medium, px4, no wrap, text-primary
- *   actions    wrap, right-aligned, gap 10
+ *   actions    wrap, end-aligned (right in LTR, left in RTL), gap 10
  */
 const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
   title,
@@ -26,6 +26,7 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
   onMenuPress,
   menuOpen = false,
   showMenu: showMenuProp,
+  menuLabel = 'Open navigation',
   style,
   testID,
 }) => {
@@ -52,7 +53,7 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
       >
         <View style={{ minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           {showMenu ? (
-            <Button size="md" icon={menuOpen ? RiCloseLine : RiMenuLine} accessibilityLabel="Open navigation" aria-expanded={menuOpen} onPress={onMenuPress} testID={testID ? `${testID}-menu` : undefined} appearance="plain" tone="neutral" />
+            <Button size="md" icon={menuOpen ? RiCloseLine : RiMenuLine} accessibilityLabel={menuLabel} aria-expanded={menuOpen} onPress={onMenuPress} testID={testID ? `${testID}-menu` : undefined} appearance="plain" tone="neutral" />
           ) : null}
           {title != null ? (
             <Text

@@ -118,7 +118,7 @@ function ModeRow({
           <Text
             variant="caption-2-regular"
             numberOfLines={1}
-            style={{ color: palette.textTertiary, paddingRight: 12, opacity: hovered ? 1 : 0 }}
+            style={{ color: palette.textTertiary, paddingInlineEnd: 12, opacity: hovered ? 1 : 0 }}
           >
             {mode.shortcut}
           </Text>

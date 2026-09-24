@@ -26,7 +26,7 @@ const SELECTION_DURATION = 220;
  *              glyph), background-secondary-hover on hover
  *   label      10px, centred, one line; text-primary medium while selected,
  *              text-secondary otherwise
- *   badge      over the indicator's top-right corner
+ *   badge      over the indicator's top-end corner (top-right in LTR)
  *
  * With `href` the item is a link (a real anchor on web).
  */
@@ -111,7 +111,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
           <SelectedGlyph width={ICON_SIZE} height={ICON_SIZE} fill={palette.selectedForeground} />
         </Animated.View>
         {badge != null ? (
-          <View pointerEvents="none" style={{ position: 'absolute', top: -6, left: INDICATOR_WIDTH - 16 }}>
+          <View pointerEvents="none" style={{ position: 'absolute', top: -6, insetInlineStart: INDICATOR_WIDTH - 16 }}>
             {badge}
           </View>
         ) : null}
