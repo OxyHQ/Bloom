@@ -81,6 +81,14 @@ function mount(onNavOpenChange: (open: boolean) => void, navSwipeEnabled?: boole
   return shell as HTMLElement;
 }
 
+/**
+ * The events' clock. The release reads the finger's velocity off `timeStamp`,
+ * and jsdom stamps real time, so two events dispatched in the same millisecond
+ * made the outcome depend on the machine. One frame (16ms) apart, always.
+ */
+let clock = 0;
+const tick = (event: Event) => Object.defineProperty(event, 'timeStamp', { value: (clock += 16) });
+
 interface Point {
   x: number;
   y: number;
@@ -101,6 +109,7 @@ function touch(target: HTMLElement, type: string, { x, y }: Point, up = false) {
     screenY: y,
   };
   Object.assign(event, { changedTouches: [point], touches: up ? [] : [point] });
+  tick(event);
   act(() => {
     target.dispatchEvent(event);
   });
@@ -113,6 +122,7 @@ function mouse(target: HTMLElement, type: string, { x, y }: Point) {
   // measure zero travel and be rejected for the wrong reason.
   Object.defineProperty(event, 'pageX', { value: x });
   Object.defineProperty(event, 'pageY', { value: y });
+  tick(event);
   act(() => {
     target.dispatchEvent(event);
   });

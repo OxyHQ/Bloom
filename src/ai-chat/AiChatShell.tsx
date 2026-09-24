@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
+  Platform,
   Pressable,
   View,
   useWindowDimensions,
   type GestureResponderEvent,
   type LayoutChangeEvent,
   type PointerEvent,
+  type ViewProps,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -42,6 +44,18 @@ const REVEAL_MS = 325;
 const REVEAL_OFFSET = 272;
 const DRAWER_EASE = Easing.bezier(0.4, 0, 0.2, 1);
 const DRAWER_MS = 300;
+
+/**
+ * A drawer at rest stays mounted, parked offscreen, so hiding it takes more
+ * than `aria-hidden` (the accessibility tree) and `pointerEvents` (the mouse):
+ * its rows would still take Tab. `inert` removes them from the tab order as
+ * well; react-native-web forwards it, React Native's types do not list it.
+ * Native gets the platform flags that hide a subtree from VoiceOver/TalkBack.
+ */
+const CLOSED_LAYER: ViewProps =
+  Platform.OS === 'web'
+    ? ({ 'aria-hidden': true, inert: true } as ViewProps)
+    : { 'aria-hidden': true, accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' };
 
 // --- Nav drawer swipe ------------------------------------------------------
 //
@@ -594,7 +608,7 @@ export function AiChatShell({
         ) : null}
         {!navInFlow && mobileSidebar ? (
           <View
-            aria-hidden={!navOpen}
+            {...(navOpen ? null : CLOSED_LAYER)}
             pointerEvents={navOpen ? 'box-none' : 'none'}
             style={{ position: overlayPosition, top: 0, bottom: 0, left: 0, zIndex: 10, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
             <Animated.View
@@ -680,7 +694,7 @@ export function AiChatShell({
 
         {!wide && panel ? (
           <View
-            aria-hidden={!panelOpen}
+            {...(panelOpen ? null : CLOSED_LAYER)}
             pointerEvents={panelOpen ? 'auto' : 'none'}
             style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
             <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, backdropStyle]}>
