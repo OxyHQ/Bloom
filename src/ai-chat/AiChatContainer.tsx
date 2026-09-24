@@ -446,6 +446,10 @@ function DocumentCard({
   return (
     <ContentPanel
       framed
+      // The AI Chat card has no edge of its own — the template's card is a
+      // surface on background-full, not a bordered, lifted panel. The panel
+      // still masks the gutter and rounds the corners.
+      chrome="none"
       overlayInset={SHELL_GUTTER}
       maskColor={gutterColor ?? undefined}
       surfaceStyle={{ backgroundColor: surfaceColor ?? 'transparent' }}

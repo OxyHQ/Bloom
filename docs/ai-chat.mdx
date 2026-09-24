@@ -125,7 +125,7 @@ Under `<AiChatShell scroll="document">` (web) the **document** is the scroller, 
 | shell | at least one screen (`100dvh`) and grows with the chat; `overflow: clip`, never `hidden`, so it is not a scroll container |
 | sidebar, panel | sticky rails, `top: 12`, one screen tall less the gutter above and below |
 | drawers, backdrop, shell `background` | `position: fixed`, so they cover the screen, not the page |
-| card | a [`ContentPanel`](/docs/bloom/main/content-panel), `framed` at the shell's gutter (`overlayInset` 12, `maskColor` the shell's background-full, background-secondary as its surface): its sticky mask, radius and edge keep the card framed at the screen's edges while the conversation scrolls under them, as on any framed Oxy web page. It grows with the conversation, one screen tall at the least; the chrome always floats (`floatingChrome` is implied) |
+| card | a [`ContentPanel`](/docs/bloom/main/content-panel), `framed` at the shell's gutter (`overlayInset` 12, `maskColor` the shell's background-full, background-secondary as its surface, `chrome="none"` — the template's card has no edge): its sticky mask and radius keep the card framed at the screen's edges while the conversation scrolls under them, as on any framed Oxy web page. It grows with the conversation, one screen tall at the least; the chrome always floats (`floatingChrome` is implied) |
 | header block | sticky in the flow at `top: 12`, with the same fade while turns run under it |
 | footer block | sticky in the flow at `bottom: 12`, no band — the conversation passes behind the composer |
 | container `background` | a screen-sized layer with the panel's geometry, under the turns: a wallpaper stays put while the conversation moves over it |

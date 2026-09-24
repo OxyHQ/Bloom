@@ -114,7 +114,8 @@ describe('AiChatShell scroll="document"', () => {
     // The panel's own sticky mask and edge, pinned at the shell's gutter.
     const mask = byTestId('content-panel-bleed-mask');
     expect(mask.style.top || style(mask).top).toBe('12px');
-    expect(byTestId('content-panel-border-frame')).toBeTruthy();
+    // No edge: the template's card is a surface, not a bordered panel.
+    expect(container.querySelector('[data-testid="content-panel-border-frame"]')).toBeNull();
     expect(byTestId('chat').closest('[data-testid="content-panel-content"]')).not.toBeNull();
   });
 
