@@ -116,6 +116,18 @@ describe('AiChatShell scroll="document"', () => {
     expect(frame.getAttribute('data-bloom-ai-chat-frame')).not.toBeNull();
   });
 
+  it('keeps the whole conversation one layer under the frame and the chrome', () => {
+    // A turn's own parts may carry a z-index (a search log, a progress card);
+    // if the conversation were not its own stacking context, the highest of
+    // them would climb over the frame and show in the gutter.
+    mount({ scroll: 'document' });
+    const layer = byTestId('thread').parentElement as HTMLElement;
+    expect(style(layer).zIndex).toBe('0');
+    expect(Number(style(byTestId('chat-frame')).zIndex)).toBeGreaterThan(0);
+    expect(Number(style(byTestId('chat-chrome-top')).zIndex)).toBeGreaterThan(Number(style(byTestId('chat-frame')).zIndex));
+    expect(Number(style(byTestId('chat-chrome-bottom')).zIndex)).toBeGreaterThan(Number(style(byTestId('chat-frame')).zIndex));
+  });
+
   it('drives the window from the thread handle, in the thread’s own frame', () => {
     const ref = React.createRef<AiChatThreadHandle>();
     mount({ scroll: 'document', threadRef: ref });
