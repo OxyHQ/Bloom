@@ -19,6 +19,7 @@ import { Badge } from '../badge';
 import { CloseButton } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiSideBarFill } from '../icons/remix/RiSideBarFill';
@@ -87,6 +88,7 @@ function SearchField({
   onDismiss,
   placeholder,
   label,
+  clearLabel,
   compact = false,
 }: {
   palette: SidebarPalette;
@@ -96,6 +98,7 @@ function SearchField({
   onDismiss: (restoreFocus: boolean) => void;
   placeholder: string;
   label: string;
+  clearLabel: string;
   compact?: boolean;
 }) {
   const inputStyle: TextStyle & WebCssStyle = {
@@ -130,7 +133,7 @@ function SearchField({
       />
       <CloseButton
         size="xs"
-        accessibilityLabel="Clear navigation search"
+        accessibilityLabel={clearLabel}
         onPress={() => onDismiss(true)}
         style={{ backgroundColor: palette.tertiaryHover }}
       />
@@ -157,6 +160,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   onCollapsedChange,
   mobile = false,
   onClose,
+  accessibilityLabel = 'Sidebar',
+  collapseLabel = 'Collapse sidebar',
+  expandLabel = 'Expand sidebar',
+  closeLabel = 'Close sidebar',
   fluid = false,
   surface = 'card',
   size: sizeProp,
@@ -167,7 +174,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   searchQuery,
   onSearchQueryChange,
   searchLabel = 'Quick Search',
+  searchButtonLabel = 'Search',
   searchPlaceholder,
+  filterLabel = 'Filter navigation',
+  clearSearchLabel = 'Clear navigation search',
   noResultsLabel = 'No results',
   logo,
   account,
@@ -186,6 +196,12 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const metrics = SIDEBAR_METRICS[size];
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
+  // Insets below are logical and mirror by themselves; the header control's
+  // `translateX` and the collapse glyph's `scaleX` are signs, and flip here.
+  const dir = useIsRtl() ? -1 : 1;
+  // A standalone sidebar has no shell above it to hand react-native-web the
+  // document's direction, so it hands it on itself (see `useDirectionProps`).
+  const dirProps = useDirectionProps();
 
   const [collapsedState, setCollapsed] = useControllableState<boolean>({
     value: collapsedProp,
@@ -255,8 +271,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     return { paddingLeft: padding, paddingRight: padding, marginLeft: (collapsedLane - metrics.row.square) / 2 * progress.value, marginRight: (collapsedLane - metrics.row.square) / 2 * progress.value };
   }, [progress, metrics.row.square, metrics.row.padding, metrics.row.icon, expandedInset, collapsedLane]);
   const sideBarIconStyle = useAnimatedStyle(
-    () => ({ transform: [{ scaleX: 2 * progress.value - 1 }] }),
-    [progress],
+    () => ({ transform: [{ scaleX: dir * (2 * progress.value - 1) }] }),
+    [progress, dir],
   );
 
   const hasLogo = !!logo;
@@ -266,17 +282,17 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   }), [progress, hasLogo, hasAccount]);
   const headerIdentityGeometry = useAnimatedStyle(() => ({
     top: hasLogo ? 0 : 30 * progress.value,
-    right: (hasLogo ? 28 : 20) * (1 - progress.value),
+    insetInlineEnd: (hasLogo ? 28 : 20) * (1 - progress.value),
   }), [progress, hasLogo]);
   const headerControlGeometry = useAnimatedStyle(() => {
     const p = progress.value;
     return {
-      left: `${100 * (1 - p)}%` as `${number}%`,
+      insetInlineStart: `${100 * (1 - p)}%` as `${number}%`,
       width: 20 + (collapsedLane - 20) * p,
       top: hasLogo ? 8 + 38 * p : hasAccount ? 6 * (1 - p) : 0,
-      transform: [{ translateX: -20 * (1 - p) }],
+      transform: [{ translateX: dir * -20 * (1 - p) }],
     };
-  }, [progress, hasLogo, hasAccount, collapsedLane]);
+  }, [progress, hasLogo, hasAccount, collapsedLane, dir]);
   const themeGeometry = useAnimatedStyle(() => ({ height: 40 - 4 * progress.value }), [progress]);
   const themeExpandedStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const themeCollapsedStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
@@ -368,7 +384,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   // ---- chrome ------------------------------------------------------------
   // Three surfaces, one place. `docked` keeps the panel fill and spends its
-  // edge on ONE hairline — the side facing the content — because a column
+  // edge on ONE hairline — the side facing the content, its END edge (the
+  // nav is the row's first child, so the right in LTR, the left in RTL) — because a column
   // flush to the window has no other edge to draw: a border all the way round
   // would draw two lines nobody can see and one they can.
   const chrome: WebCssStyle =
@@ -377,8 +394,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       : surface === 'docked'
         ? {
             backgroundColor: palette.panel,
-            borderRightWidth: 1,
-            borderRightColor: palette.dockedEdge,
+            borderEndWidth: 1,
+            borderEndColor: palette.dockedEdge,
           }
         : {
             borderRadius: 24,
@@ -411,7 +428,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         borderRadius: borderRadius.full,
         backgroundColor: palette.tertiary,
         ...(searchActive
-          ? { flex: 1, gap: 8, paddingLeft: 8, paddingRight: 10, boxShadow: searchRing }
+          ? { flex: 1, gap: 8, paddingInlineStart: 8, paddingInlineEnd: 10, boxShadow: searchRing }
           : { width: 36, gap: 0, paddingLeft: 8, paddingRight: 8 }),
       }}
     >
@@ -419,7 +436,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         ref={searchTriggerRef}
         {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
         role="button"
-        accessibilityLabel="Search"
+        accessibilityLabel={searchButtonLabel}
         onPress={activateSearch}
         style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
       >
@@ -434,7 +451,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           onChangeText={setQuery}
           onDismiss={deactivateSearch}
           placeholder={placeholder}
-          label="Filter navigation"
+          label={filterLabel}
+          clearLabel={clearSearchLabel}
         />
       ) : null}
     </View>
@@ -442,7 +460,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     <Pressable
       {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
       role="button"
-      accessibilityLabel="Close sidebar"
+      accessibilityLabel={closeLabel}
       onPress={onClose}
       testID="sidebar-close"
     >
@@ -452,7 +470,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     <Pressable
       {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
       role="button"
-      accessibilityLabel={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      accessibilityLabel={collapsed ? expandLabel : collapseLabel}
       aria-expanded={!collapsed}
       onPress={toggleCollapse}
       style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}
@@ -476,8 +494,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         backgroundColor: palette.tertiary,
         paddingTop: 8,
         paddingBottom: 8,
-        paddingLeft: 8,
-        paddingRight: 10,
+        paddingInlineStart: 8,
+        paddingInlineEnd: 10,
         boxShadow: searchRing,
       }}
       testID="sidebar-search-field"
@@ -490,7 +508,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         onChangeText={setQuery}
         onDismiss={deactivateSearch}
         placeholder={placeholder}
-        label="Filter navigation"
+        label={filterLabel}
+        clearLabel={clearSearchLabel}
       />
     </View>
   ) : (
@@ -600,7 +619,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   ) : (
     <>
       <Animated.View testID="sidebar-header" style={[{ width: '100%', position: 'relative' }, headerGeometry]}>
-        {logo || account ? <Animated.View style={[{ position: 'absolute', left: 0, minWidth: 0 }, headerIdentityGeometry]}>
+        {logo || account ? <Animated.View style={[{ position: 'absolute', insetInlineStart: 0, minWidth: 0 }, headerIdentityGeometry]}>
           {logo ? <SidebarLogoView logo={logo} collapsed={collapsed} testID="sidebar-logo" /> : accountMenu}
         </Animated.View> : null}
         <Animated.View testID="sidebar-header-control" style={[{ position: 'absolute', height: 20 }, headerControlGeometry]}>
@@ -616,8 +635,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     <SidebarGeometryProvider value={geometry}>
     <CollapseProvider value={progress}>
       <Animated.View
+        {...dirProps}
         role="complementary"
-        accessibilityLabel="Sidebar"
+        accessibilityLabel={accessibilityLabel}
         onLayout={onPanelLayout}
         testID={testID}
         style={[
@@ -706,7 +726,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             <Animated.View testID="sidebar-theme-morph" style={[{ position: 'relative', overflow: 'hidden' }, themeGeometry]}>
               <Animated.View pointerEvents={collapsed ? 'none' : 'auto'} aria-hidden={collapsed} accessibilityElementsHidden={collapsed} importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
                 {...(IS_WEB && collapsed ? { inert: true } : {})}
-                style={[{ position: 'absolute', left: 0, top: 0 }, themeExpandedStyle]}>
+                style={[{ position: 'absolute', insetInlineStart: 0, top: 0 }, themeExpandedStyle]}>
                 <ThemeToggle variant="sidebar-segmented" style={plain ? { backgroundColor: palette.panel } : undefined} />
               </Animated.View>
               <Animated.View pointerEvents={collapsed ? 'auto' : 'none'} aria-hidden={!collapsed} accessibilityElementsHidden={!collapsed} importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}

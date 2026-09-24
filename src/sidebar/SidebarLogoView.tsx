@@ -18,7 +18,7 @@ export const SIDEBAR_LOGO_SIZE = 36;
  *   mark      centred in a 36 × 36 box — the collapsed column — so it stays
  *             put while the rail morphs; sized by the caller (a 24–28px glyph
  *             reads right)
- *   wordmark  8 to the right, in a collapse slot; a string renders as
+ *   wordmark  8 after it (inline-end), in a collapse slot; a string renders as
  *             headline-semibold text-primary, anything else as given (an SVG
  *             wordmark, an image)
  *   link      with `href` a real anchor on web, with `onPress` a button; the
@@ -53,7 +53,7 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
       ) : null}
       {wordmark != null && showWordmark ? (
         <Collapsible collapsed={collapsed}>
-          <View style={{ minHeight: SIDEBAR_LOGO_SIZE, paddingLeft: icon != null ? 8 : 0, justifyContent: 'center' }} testID={testID ? `${testID}-wordmark` : undefined}>
+          <View style={{ minHeight: SIDEBAR_LOGO_SIZE, paddingInlineStart: icon != null ? 8 : 0, justifyContent: 'center' }} testID={testID ? `${testID}-wordmark` : undefined}>
             {typeof wordmark === 'string' ? (
               <Text variant="headline-semibold" numberOfLines={1} style={{ color: palette.text }}>
                 {wordmark}

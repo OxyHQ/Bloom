@@ -41,7 +41,7 @@ it('hides a minimized accessory from hit testing and accessibility and releases 
   expect(action.props.importantForAccessibility).toBe('no-hide-descendants');
   expect(action.props['aria-hidden']).toBe(true);
   expect(resolvedStyle(action.props.style).opacity).toBe(0);
-  expect(resolvedStyle(action.props.style).marginLeft).toBe(0);
+  expect(resolvedStyle(action.props.style).marginInlineStart).toBe(0);
 });
 it.each(['standalone', 'visible'] as const)('keeps a %s action available while minimized', mode => {
   const progress = { value: 1 } as NonNullable<TabBarProps['minimizeProgress']>;
@@ -57,7 +57,7 @@ it('lifts the action when measured width cannot fit comfortable targets and rese
   const heightBefore = Number(resolvedStyle(view.getByTestId('bar').props.style).height);
   act(() => view.getByTestId('bar-row').props.onLayout({nativeEvent:{layout:{width:280,height:58}}}));
   const actionBefore = view.getByTestId('bar-action');
-  expect(resolvedStyle(actionBefore.props.style)).toMatchObject({position:'absolute',bottom:'100%',right:12,marginBottom:10,marginLeft:0});
+  expect(resolvedStyle(actionBefore.props.style)).toMatchObject({position:'absolute',bottom:'100%',insetInlineEnd:12,marginBottom:10,marginInlineStart:0});
   act(() => view.getByTestId('bar-action-content').props.onLayout({nativeEvent:{layout:{width:50,height:64}}}));
   expect(Number(resolvedStyle(view.getByTestId('bar').props.style).height)).toBe(heightBefore+64+10);
   act(() => view.getByTestId('bar-row').props.onLayout({nativeEvent:{layout:{width:500,height:58}}}));

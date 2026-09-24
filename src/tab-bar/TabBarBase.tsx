@@ -48,6 +48,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHaptics } from '../hooks/use-haptics';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
@@ -178,6 +179,14 @@ function TabBarBody({
   const isDragging = useSharedValue(false);
   const lastTicked = useSharedValue(-1);
   const { colors } = useTheme();
+  // The tabs are a flex row, so they mirror under RTL by themselves; the
+  // highlight is a `translateX` from the start edge and the scrub reads a
+  // PHYSICAL `event.x`, so both take the direction explicitly.
+  const rtl = useIsRtl();
+  const dir = rtl ? -1 : 1;
+  // The capsule's `insetInlineStart` must resolve on the same side the row
+  // mirrors to; react-native-web reads that from a `dir` prop, not `<html>`.
+  const dirProps = useDirectionProps();
   const theme = useTabBarTheme(material === 'solid' ? { ...themeOverrides, solidFallback: themeOverrides?.solidFallback ?? colors.backgroundSecondary } : themeOverrides);
   const impact = useHaptics();
 
@@ -310,7 +319,10 @@ function TabBarBody({
       // border edge either way.)
       const barWidth = barOuterWidth - sideInset * 2;
       const itemWidth = (barWidth - ROW_PAD_H * 2) / tabCount;
-      const raw = (x - ROW_PAD_H) / itemWidth - 0.5;
+      // Under RTL the first tab is at the right edge, so distance is measured
+      // from there instead.
+      const fromStart = rtl ? barWidth - x : x;
+      const raw = (fromStart - ROW_PAD_H) / itemWidth - 0.5;
       return Math.min(Math.max(raw, 0), tabCount - 1);
     };
 
@@ -413,6 +425,7 @@ function TabBarBody({
     highlightOpacity,
     minimized,
     progress,
+    rtl,
   ]);
 
   // CRITICAL — every shared value and every scalar a mapper READS must appear
@@ -497,9 +510,9 @@ function TabBarBody({
       // out-of-range one is a real place — one item-width to the LEFT of the
       // first tab, i.e. half outside the pill — not an absence.
       opacity: highlightOpacity.value,
-      transform: [{ translateX: ROW_PAD_H + itemWidth * slideIndex.value }],
+      transform: [{ translateX: dir * (ROW_PAD_H + itemWidth * slideIndex.value) }],
     };
-  }, [progress, slideIndex, highlightOpacity, barOuterWidth, tabCount, minimizeInset]);
+  }, [progress, slideIndex, highlightOpacity, barOuterWidth, tabCount, minimizeInset, dir]);
 
   // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
   // its own layout can never drift from where the bar actually sits.
@@ -534,7 +547,7 @@ function TabBarBody({
 
   const ResolvedSurface = material === 'solid' ? SolidTabBarSurface : Surface;
   return (
-    <View {...viewProps} onLayout={(event) => { setContainerWidth(event.nativeEvent.layout.width); onLayout?.(event); }} pointerEvents="box-none" style={[embedded ? { width: '100%' } : styles.root, style]}>
+    <View {...viewProps} {...dirProps} onLayout={(event) => { setContainerWidth(event.nativeEvent.layout.width); onLayout?.(event); }} pointerEvents="box-none" style={[embedded ? { width: '100%' } : styles.root, style]}>
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
           Rendered CONDITIONALLY, and as nothing at all when off: the band is
           full-bleed and 114pt tall at a zero bottom inset, so it blurs whatever
@@ -784,7 +797,8 @@ const styles = StyleSheet.create({
   },
   highlight: {
     position: 'absolute',
-    left: 0,
+    // The START edge: the translate above runs from it, signed by direction.
+    insetInlineStart: 0,
     borderCurve: 'continuous',
   },
   itemRow: {

@@ -31,8 +31,8 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
   const geometry = useAnimatedStyle(() => ({
     width: inSidebar ? '100%' : naturalWidth.value > 0 ? naturalWidth.value + (36 - naturalWidth.value) * progress.value : progress.value === 1 ? 36 : '100%',
     height: 56 - 20 * progress.value,
-    paddingLeft: 10 + (compactPadding - 10) * progress.value,
-    paddingRight: 12 + (compactPadding - 12) * progress.value,
+    paddingInlineStart: 10 + (compactPadding - 10) * progress.value,
+    paddingInlineEnd: 12 + (compactPadding - 12) * progress.value,
   }), [progress, inSidebar, naturalWidth, compactPadding]);
   const fill = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const avatar = plan.avatar ?? { initials: plan.name.slice(0, 1).toUpperCase(), color: 'blue' as const };
@@ -87,7 +87,7 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
       <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center' }}>
         {avatarNode}
         <Collapsible collapsed={collapsed}>
-        <View style={{ paddingLeft: 8, minWidth: 0, flexShrink: 1, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+        <View style={{ paddingInlineStart: 8, minWidth: 0, flexShrink: 1, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
           <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
             {plan.name}
           </Text>

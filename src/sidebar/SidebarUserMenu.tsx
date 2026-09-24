@@ -4,6 +4,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { mirrorAlign, mirrorSide, useIsRtl } from '../hooks/use-is-rtl';
 import { RiAddFill } from '../icons/remix/RiAddFill';
 import { RiEqualizer3Line } from '../icons/remix/RiEqualizer3Line';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
@@ -36,7 +37,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  *              without moving layout. Collapsed: the rail's 36px column, the
  *              pill squared to 42×42 (3px sides).
  *   menu       265 wide, radius 16, border, p10, shadow-dropdown, beside the
- *              rail (right, top-aligned), below it under `sm`: "Users with
+ *              rail (its end side — right in LTR — top-aligned), below it under `sm`: "Users with
  *              access" (pt5, gap 6), rows px8 py6 radius 10 (20px avatar +
  *              body-medium), a full-bleed divider 14px either side, then two
  *              small secondary buttons 12 apart, pb8 so the inset reads 18
@@ -158,6 +159,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
   const [open, setOpen] = useState(false);
   const { width } = useWindowDimensions();
   const narrow = width < BREAKPOINTS.sm;
+  const rtl = useIsRtl();
   const { state: hovered, onIn, onOut } = useInteractionState();
 
   const progress = useSidebarCollapseProgress(collapsed);
@@ -208,7 +210,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
           />
           <SidebarAvatarView avatar={account.avatar} size="md" palette={palette} background={avatarBackground} />
           <Collapsible collapsed={collapsed}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingLeft: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingInlineStart: 8 }}>
               <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                 {account.name}
               </Text>
@@ -218,9 +220,10 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
         </AnimatedPressable>
       </PopoverTrigger>
       <PopoverContent
-        label="Account menu"
-        side={narrow ? 'bottom' : 'right'}
-        align="start"
+        label={account.menuLabel ?? 'Account menu'}
+        // Beside the rail's trailing edge; floating sides are physical.
+        side={mirrorSide(narrow ? 'bottom' : 'right', rtl)}
+        align={mirrorAlign('start', narrow ? 'bottom' : 'right', rtl)}
         sideOffset={8}
         maxWidth={width - 32}
         style={SIDEBAR_MENU_PANEL}

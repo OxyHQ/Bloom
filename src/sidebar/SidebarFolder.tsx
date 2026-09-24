@@ -12,6 +12,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import { RiFolderLine } from '../icons/remix/RiFolderLine';
 import { RiFolderOpenLine } from '../icons/remix/RiFolderOpenLine';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -27,13 +28,15 @@ const FIRST_CENTER = 15;
 /**
  * The curved connector: a guide dropping from the folder glyph with a rounded
  * elbow into each row — 1px icon-quaternary, trunk at x 17, each elbow landing 5px
- * right of it and running on to 11.5.
+ * toward the end of it and running on to 11.5. The path is drawn left-to-right,
+ * so under RTL the box is mirrored as well as anchored from the start edge.
  */
 function TreeConnector({ count, color }: { count: number; color: string }) {
+  const rtl = useIsRtl();
   if (count === 0) return null;
   const height = FIRST_CENTER + ROW_PITCH * (count - 1) + 1;
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 16.5, width: 12, height }}>
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, insetInlineStart: 16.5, width: 12, height, transform: rtl ? [{ scaleX: -1 }] : undefined }}>
       <Svg width={12} height={height} viewBox={`0 0 12 ${height}`} fill="none">
         {Array.from({ length: count }, (_, i) => {
           const y = FIRST_CENTER + ROW_PITCH * i;
@@ -69,8 +72,8 @@ function TreeRow({
     borderRadius: borderRadius.full,
     paddingTop: 5,
     paddingBottom: 5,
-    paddingRight: 8,
-    paddingLeft: 36,
+    paddingInlineEnd: 8,
+    paddingInlineStart: 36,
     backgroundColor: selected || hovered ? palette.rowHover : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
