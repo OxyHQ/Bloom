@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   TextInput,
   View,
@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography';
@@ -175,18 +176,15 @@ export function ComposerPanelBase({
   );
 
   // The prompt grows with its text, one 20px line at a time, up to 200 before it
-  // scrolls. Web measures the textarea from zero (so it also shrinks back);
-  // native reads the content size.
+  // scrolls. Web measures the textarea, collapsing it only when the draft may
+  // have got shorter (`useTextareaAutosize`); native reads the content size.
   const [height, setHeight] = useState(PROMPT_LINE);
-  useLayoutEffect(() => {
-    if (!IS_WEB) return;
-    const node = fieldRef.current as unknown as { style?: { height: string }; scrollHeight?: number } | null;
-    if (!node?.style || typeof node.scrollHeight !== 'number') return;
-    node.style.height = '0px';
-    const next = Math.min(PROMPT_MAX_HEIGHT, Math.max(PROMPT_LINE, node.scrollHeight));
-    node.style.height = `${next}px`;
-    setHeight(next);
-  }, [text]);
+  useTextareaAutosize(fieldRef, text, {
+    enabled: IS_WEB,
+    height,
+    minHeight: PROMPT_LINE,
+    onMeasure: (content) => setHeight(Math.min(PROMPT_MAX_HEIGHT, Math.max(PROMPT_LINE, content))),
+  });
   const onContentSizeChange = useCallback(
     (event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
       if (IS_WEB) return;

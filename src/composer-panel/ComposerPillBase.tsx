@@ -16,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RadioIndicator } from '../radio-indicator';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -459,6 +460,15 @@ export function ComposerPillBase({
   const [contentHeight, setContentHeight] = useState(LINE_HEIGHT);
   const [modelWidth, setModelWidth] = useState(0);
 
+  const fieldRef = useRef<TextInput | null>(null);
+  const setFieldRef = useCallback(
+    (node: TextInput | null) => {
+      fieldRef.current = node;
+      if (inputRef) (inputRef as React.MutableRefObject<TextInput | null>).current = node;
+    },
+    [inputRef],
+  );
+
   // The add control shares the canonical inset and hover surfaces.
   const addPalette: ComposerPalette = useMemo(() => {
     if (glass) return { ...palette, add: 'transparent', addHover: 'transparent' };
@@ -547,6 +557,22 @@ export function ComposerPillBase({
   const pillHeight = PILL_HEIGHT + (lines - 1) * LINE_HEIGHT;
   const multiLine = lines > 1;
 
+  /*
+   * On web the field is measured, not reported. react-native-web's
+   * `onContentSizeChange` reads `scrollHeight` on input only, and that never
+   * falls below the height already applied: a pill grown to four lines stayed
+   * four lines tall after the draft was deleted, and after send — a
+   * programmatic clear fires no input at all. `useTextareaAutosize` measures on
+   * every change of the draft and collapses the field only when it may have
+   * got shorter.
+   */
+  useTextareaAutosize(fieldRef, text, {
+    enabled: IS_WEB,
+    height: fieldHeight,
+    minHeight: LINE_HEIGHT,
+    onMeasure: setContentHeight,
+  });
+
   const pillStyle: WebCssStyle = {
     width: '100%',
     height: pillHeight,
@@ -593,7 +619,7 @@ export function ComposerPillBase({
 
       <View style={fieldStyle}>
         <TextInput
-          ref={inputRef}
+          ref={setFieldRef}
           {...dataHook('bloomComposerInput')}
           testID={testID ? `${testID}-input` : undefined}
           accessibilityLabel={labels.message}
@@ -609,7 +635,7 @@ export function ComposerPillBase({
           cursorColor={palette.accent500}
           returnKeyType="send"
           multiline
-          onContentSizeChange={(event) => setContentHeight(event.nativeEvent.contentSize.height)}
+          onContentSizeChange={IS_WEB ? undefined : (event) => setContentHeight(event.nativeEvent.contentSize.height)}
           style={{
             width: '100%',
             height: fieldHeight,
