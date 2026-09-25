@@ -8,4 +8,5 @@ export type {
   RatingInputSize,
   RatingProps,
   RatingSize,
+  RatingVariant,
 } from './types';

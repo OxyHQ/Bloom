@@ -6,6 +6,13 @@ export type RatingSize = 'small' | 'medium';
 /** `parenthesis` draws "(128)"; `reviews` draws "· 128 reviews". */
 export type RatingCountStyle = 'parenthesis' | 'reviews';
 
+/**
+ * `compact` (default) is one star and the value; `stars` a full row of `max`
+ * stars (five) filled to the value — fractionally, so 4.3 fills the fifth star
+ * 30% — before the value.
+ */
+export type RatingVariant = 'compact' | 'stars';
+
 export interface RatingProps {
   /**
    * The rating on a 5 scale. A number is drawn with up to two decimals (4.9,
@@ -23,6 +30,20 @@ export interface RatingProps {
   newLabel?: string;
   /** Default `medium`. */
   size?: RatingSize;
+  /** Default `compact` — one star. `stars` draws a row of five, filled fractionally. */
+  variant?: RatingVariant;
+  /**
+   * Paints the star(s) and the value — and the count, unless `countColor` is
+   * given — e.g. white over a brand-coloured hero, where text-primary and
+   * text-secondary are illegible. Default: text-primary (count text-secondary).
+   */
+  color?: string;
+  /** The filled star(s) alone, e.g. a gold star beside neutral text. Default `color`. */
+  starColor?: string;
+  /** The count alone. Default `color` when given, else text-secondary. */
+  countColor?: string;
+  /** `stars` variant: the unfilled part of each star. Default the theme's border colour. */
+  emptyStarColor?: string;
   /**
    * Overrides the composed accessible name ("Rated 4.92 out of 5, 128
    * reviews"), which is English — pass a translated sentence here.
