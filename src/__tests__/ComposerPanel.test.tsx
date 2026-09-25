@@ -250,6 +250,59 @@ describe('ComposerPanel', () => {
     expect(onRetry).toHaveBeenCalledWith('b');
   });
 
+  it('keeps + and voice on the card and truncates the model chip instead (long names, large fonts)', () => {
+    const long: ModelPickerProvider[] = [
+      { id: 'deepseek', name: 'DeepSeek', models: [{ id: 'deepseek/v4-pro', name: 'DeepSeek: DeepSeek V4 Pro 0813' }] },
+    ];
+    const { getByLabelText, getByTestId } = renderIn(<ComposerPanel testID="composer" providers={long} />);
+    const style = (node: { props: Record<string, unknown> }) => resolvedStyle(node.props.style);
+    const trigger = getByTestId('composer-model');
+    // The chip is the one that gives: it shrinks, and it is never a fixed 32.
+    expect(style(trigger)).toMatchObject({ flexShrink: 1, minWidth: 0, minHeight: 32, maxWidth: 240 });
+    expect(style(trigger).height).toBeUndefined();
+    const name = within(trigger).getByText('DeepSeek: DeepSeek V4 Pro 0813');
+    expect(name.props.numberOfLines).toBe(1);
+    expect(style(name)).toMatchObject({ flexShrink: 1, minWidth: 0 });
+    // Its group may shrink to it; the groups holding the buttons may not.
+    expect(style(trigger.parent!)).toMatchObject({ flexShrink: 1, minWidth: 0 });
+    let add = getByLabelText('Add attachment').parent;
+    while (add && style(add).flexDirection !== 'row') add = add.parent;
+    expect(style(add!).flexShrink).toBe(0);
+    let voice = getByLabelText('Voice input').parent;
+    while (voice && style(voice).flexDirection !== 'row') voice = voice.parent;
+    expect(style(voice!).flexShrink).toBe(0);
+  });
+
+  it('sizes the prompt to a value set from outside, without waiting for a focus (native)', () => {
+    const question = 'Line one\nLine two\nLine three\nLine four';
+    const draw = (value: string) => <ComposerPanel testID="composer" value={value} onValueChange={() => {}} />;
+    const screen = renderIn(draw(''));
+    const input = () => screen.getByTestId('composer-input');
+    const twin = () => screen.getByTestId('composer-input-twin', { includeHiddenElements: true });
+    const layout = (height: number) =>
+      fireEvent(twin(), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 300, height } } });
+
+    // An edit loads a four-line question: the twin lays it out, the field follows.
+    screen.rerender(<BloomThemeProvider mode="light" colorPreset="teal">{draw(question)}</BloomThemeProvider>);
+    expect(twin().props.children).toBe(question);
+    layout(80);
+    expect(resolvedStyle(input().props.style).height).toBe(80);
+
+    // Cancel clears it: one line again, not four.
+    screen.rerender(<BloomThemeProvider mode="light" colorPreset="teal">{draw('')}</BloomThemeProvider>);
+    expect(twin().props.children).toBe(' ');
+    layout(20);
+    expect(resolvedStyle(input().props.style).height).toBe(20);
+
+    // Past the cap the field stops growing and scrolls.
+    layout(400);
+    expect(resolvedStyle(input().props.style).height).toBe(200);
+    expect(input().props.scrollEnabled).toBe(true);
+    // The twin is invisible and out of the accessibility tree.
+    expect(resolvedStyle(twin().props.style).opacity).toBe(0);
+    expect(twin().props.importantForAccessibility).toBe('no-hide-descendants');
+  });
+
   it('exports the four permission modes', () => {
     expect(COMPOSER_PANEL_PERMISSIONS.map((mode) => mode.id)).toEqual(['auto', 'manual', 'plan', 'bypass']);
   });

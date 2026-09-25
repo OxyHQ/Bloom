@@ -34,6 +34,7 @@ import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { useTheme } from '../theme/use-theme';
+import { SheetKeyboardProvider } from './context';
 import type { BottomSheetRef, BottomSheetProps, BottomSheetShellProps, BottomSheetBaseProps } from './types';
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
@@ -659,7 +660,9 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // (`layout/screen-scope.tsx`).
     const surfaceChildren = (
         <SurfaceLevelProvider level={0} fill={colors.background}>
-            <ScreenScope>{children}</ScreenScope>
+            <SheetKeyboardProvider value={keyboardHeight}>
+                <ScreenScope>{children}</ScreenScope>
+            </SheetKeyboardProvider>
         </SurfaceLevelProvider>
     );
 

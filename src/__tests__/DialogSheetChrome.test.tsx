@@ -1,6 +1,9 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
+// The sheet's keyboard tracker, as jest maps it (the package is an optional
+// peer and not installed here).
+import { useKeyboardHandler } from '../../__mocks__/react-native-keyboard-controller';
 
 import { Dialog, useDialogControl } from '../dialog';
 import {
@@ -47,15 +50,18 @@ function openDialog(props: Partial<React.ComponentProps<typeof Dialog>>) {
       </Dialog>
     );
   }
-  const utils = render(
+  const draw = () => (
     <BloomThemeProvider mode="light" colorPreset="teal">
       <Harness />
-    </BloomThemeProvider>,
+    </BloomThemeProvider>
   );
+  const utils = render(draw());
   act(() => {
     control?.open();
   });
-  return utils;
+  /** A render with nothing changed but shared values, which jest's mappers only read on render. */
+  const refresh = () => utils.rerender(draw());
+  return { ...utils, refresh };
 }
 
 afterEach(() => {
@@ -93,6 +99,25 @@ describe('bottom-placement Dialog keeps its content off the system gesture bar',
 
     const bounded = openDialog({ scrollable: false });
     expect(resolvedStyle(bounded.getByTestId(SPACER).props.style).height).toBe(GESTURE_BAR_INSET);
+  });
+
+  it('folds the spacer while the keyboard is up, which already covers the gesture bar', () => {
+    // Android 16: the sheet rides on the keyboard, and a spacer left standing
+    // floated its buttons a gesture bar's height above it.
+    mockInsets.bottom = GESTURE_BAR_INSET;
+    const { getByTestId, refresh } = openDialog({});
+    const calls = (useKeyboardHandler as jest.Mock).mock.calls;
+    const handlers = calls[calls.length - 1]?.[0] as {
+      onEnd: (event: { height: number }) => void;
+    };
+    const spacerHeight = () => resolvedStyle(getByTestId(SPACER).props.style).height;
+    expect(spacerHeight()).toBe(GESTURE_BAR_INSET);
+    act(() => handlers.onEnd({ height: 300 }));
+    refresh();
+    expect(spacerHeight()).toBe(0);
+    act(() => handlers.onEnd({ height: 0 }));
+    refresh();
+    expect(spacerHeight()).toBe(GESTURE_BAR_INSET);
   });
 
   it('adds nothing on a device with no bottom inset', () => {

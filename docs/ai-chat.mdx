@@ -87,7 +87,7 @@ The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is 
 |---|---|---|---|
 | `autoFollow` | `boolean` | `true` | Follow the newest turn as the content grows. |
 | `followAnimated` | `boolean` | `true` | `false` for a follow that must not be seen travelling. |
-| `followThreshold` | `number` | — | Follow only from within this many px of the bottom, measured **before** the growth. Omit and every growth follows. |
+| `followThreshold` | `number` | — | Follow only from within this many px of the bottom, measured **before** the growth. Omit and every growth follows. A follow still on its way counts as at the bottom, so growths landing before its scroll event keep following; a scroll **up** ends it. A growth that is not followed calls `onScroll` with the unchanged offset and the new content size, so a jump-to-latest button hears that the end moved away. |
 | `onStartReached` | `() => void` | — | The reader came near the **top**. A chat pages upward, so this — not `onEndReached` — is its pagination signal. Once per approach; it re-arms when the reader leaves the zone. |
 | `onStartReachedThreshold` | `number` | `300` | How near the top, px. |
 | `maintainStartPosition` | `boolean` | `false` | The growth that answers an `onStartReached` is added to the offset, so a page landing **above** the reader does not move the turn they are on. Inert without `onStartReached` — the thread only anchors growth it asked for. |

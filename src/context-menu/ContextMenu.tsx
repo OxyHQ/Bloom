@@ -14,6 +14,7 @@ import { MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
+import { LongPressArea } from '../floating/LongPressArea';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { ContextMenuProvider, useContextMenu } from './context';
@@ -57,9 +58,13 @@ export function ContextMenuTrigger({
 }: ContextMenuTriggerProps) {
   const menu = useContextMenu();
 
+  // Without `asChild` the trigger is Bloom's own, and it is a `LongPressArea`
+  // rather than TriggerSlot's `Pressable`: a Pressable holds the touch
+  // responder, which on Android keeps a horizontal ScrollView inside the
+  // trigger (a code block in a chat turn) from ever scrolling.
   return (
     <TriggerSlot
-      asChild={asChild}
+      asChild
       className={className}
       style={style}
       testID={testID}
@@ -76,7 +81,7 @@ export function ContextMenuTrigger({
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
       }}>
-      {children}
+      {asChild ? children : <LongPressArea>{children}</LongPressArea>}
     </TriggerSlot>
   );
 }

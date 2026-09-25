@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View, useWindowDimensions, type ScrollView } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -37,6 +37,7 @@ import {
 import { ModalPortal } from './modal-portal';
 import type { SettingsPalette } from './palette';
 import type { SettingsModalProps, SettingsNavGroup, SettingsNavItem } from './types';
+import { useKeyboardReveal } from './use-keyboard-reveal';
 import { IS_WEB, useSettingsWebCss } from './web-css';
 
 /**
@@ -722,9 +723,15 @@ function PageScroller({
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = Math.max(0, event.contentOffset.y);
   }, [scrollY]);
+  const scrollRef = useRef<ScrollView>(null);
+  // The keyboard slides over an edge-to-edge modal: pad by it, and bring the
+  // focused field up above it.
+  const keyboardHeight = useKeyboardReveal(scrollRef, scrollY, !IS_WEB);
   return (
     <Animated.ScrollView
+      ref={scrollRef}
       style={styles.scroll}
+      keyboardShouldPersistTaps="handled"
       stickyHeaderIndices={IS_WEB ? undefined : [0]}
       onScroll={onScroll}
       scrollEventThrottle={16}
@@ -737,7 +744,7 @@ function PageScroller({
         style={{
           paddingLeft: inset,
           paddingRight: inset,
-          paddingBottom: inset,
+          paddingBottom: inset + keyboardHeight,
           paddingTop: insetTop,
         }}
       >

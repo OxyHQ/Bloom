@@ -68,7 +68,8 @@ describe('AppShell', () => {
     expect(narrow.queryByTestId('sidebar-item-home')).toBeNull();
     fireEvent.press(narrow.getByTestId('shell-header-menu'));
     expect(narrow.getByTestId('sidebar-close')).toBeTruthy();
-    expect(resolvedStyle(narrow.getByTestId('sidebar-item-home').props.style).minHeight).toBeUndefined();
+    // The panel's row, not the rail's 64-tall item (a panel row's floor is its square).
+    expect(resolvedStyle(narrow.getByTestId('sidebar-item-home').props.style).minHeight).not.toBe(64);
   });
 
   it('narrow overlay: the menu button opens the drawer, the close button shuts it', () => {
@@ -923,7 +924,7 @@ describe('AppShell nav sizing', () => {
 
     setWidth(1440);
     const panel = renderIn(<AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />);
-    expect(resolvedStyle(panel.getByTestId('sidebar-item-home').props.style).minHeight).toBeUndefined();
+    expect(resolvedStyle(panel.getByTestId('sidebar-item-home').props.style).minHeight).not.toBe(64);
   });
 });
 

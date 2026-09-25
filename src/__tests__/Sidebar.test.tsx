@@ -123,7 +123,10 @@ describe('Sidebar', () => {
       const screen = renderIn(<Sidebar testID="sb" size={size} items={ITEMS} />);
       const row = resolvedStyle(screen.getByTestId('sidebar-item-home').props.style);
       expect(row.paddingLeft).toBe(expected.padding);
-      expect(row.height).toBe(expected.square);
+      // Expanded, the square is a floor, not a height: at the largest system
+      // font the label is taller than it and a fixed height clipped it.
+      expect(row.minHeight).toBe(expected.square);
+      expect(row.height).toBeUndefined();
       screen.unmount();
     }
   });

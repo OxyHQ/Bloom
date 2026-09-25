@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { BackHandler, Platform, type View } from 'react-native';
+import { BackHandler, Keyboard, Platform, type View } from 'react-native';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { listenForEscape, tabbablesWithin, wrapTab } from '../overlay/modal-keyboard';
 import { hasActiveOverlays } from '../overlay/stack';
@@ -10,7 +10,11 @@ import { hasActiveOverlays } from '../overlay/stack';
  *
  *   open    Escape (web) and back (Android) close it
  *   modal   it covers the workspace: focus moves in on open, Tab is kept
- *           inside, and focus goes back to the opener on close
+ *           inside, and focus goes back to the opener on close (web); on
+ *           native the keyboard goes down as it opens — a composer that had
+ *           the focus (say, regained after a sheet closed) otherwise kept the
+ *           keyboard up under the drawer (Android 16). Nothing refocuses the
+ *           composer on close.
  *
  * Any portaled overlay above (a dialog, a menu) takes all of it first.
  */
@@ -22,6 +26,7 @@ export function usePanelInteraction(open: boolean, modal: boolean, close: () => 
   useEffect(() => {
     if (!open) return;
     if (Platform.OS !== 'web') {
+      if (modal) Keyboard?.dismiss?.();
       const subscription = BackHandler?.addEventListener('hardwareBackPress', () => {
         if (hasActiveOverlays()) return false;
         closeRef.current();
