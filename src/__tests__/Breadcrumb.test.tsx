@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { I18nManager, Text, View } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -123,5 +123,40 @@ describe('Breadcrumb', () => {
     const link = getByLabelText('Design team');
     expect(link.findAll((node) => node.props.testID === 'mark').length).toBeGreaterThan(0);
     expect(getByTestId('mark')).toBeTruthy();
+  });
+
+  describe('separator direction', () => {
+    const i18n = I18nManager as { isRTL: boolean };
+    afterEach(() => {
+      i18n.isRTL = false;
+    });
+
+    const separators = (ui: React.ReactElement) =>
+      renderWithTheme(ui)
+        .getByTestId('nav')
+        .findAll((node) => typeof node.type === 'string' && node.props['aria-hidden'] === true);
+
+    const crumbs = (props: Record<string, unknown> = {}) => (
+      <Breadcrumb testID="nav" {...props}>
+        <BreadcrumbItem href="#a">Home</BreadcrumbItem>
+        <BreadcrumbItem current>Board</BreadcrumbItem>
+      </Breadcrumb>
+    );
+
+    it('points the chevron the reading direction: unmirrored left-to-right, scaleX -1 right-to-left', () => {
+      const [ltr] = separators(crumbs());
+      expect(resolvedStyle(ltr!.props.style).transform).toBeUndefined();
+      i18n.isRTL = true;
+      const [rtl] = separators(crumbs());
+      expect(resolvedStyle(rtl!.props.style).transform).toEqual([{ scaleX: -1 }]);
+    });
+
+    it('renders a caller separator in place of the chevron, hidden from assistive tech', () => {
+      const nodes = separators(crumbs({ separator: <Text testID="slash">/</Text> }));
+      expect(nodes).toHaveLength(1);
+      expect(nodes[0]!.findAll((node) => node.props.testID === 'slash').length).toBeGreaterThan(0);
+      // No chevron alongside it.
+      expect(nodes[0]!.props.style?.width).toBeUndefined();
+    });
   });
 });

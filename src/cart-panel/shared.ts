@@ -45,7 +45,15 @@ export function optionsLine(options: ReadonlyArray<string> | undefined): string 
 export function composeCartLineName(
   line: Pick<
     CartLineEntry,
-    'name' | 'options' | 'note' | 'quantity' | 'price' | 'originalPrice' | 'unavailable' | 'unavailableLabel'
+    | 'name'
+    | 'options'
+    | 'note'
+    | 'quantity'
+    | 'price'
+    | 'originalPrice'
+    | 'secondaryPrice'
+    | 'unavailable'
+    | 'unavailableLabel'
   >,
 ): string {
   const parts: string[] = [line.name];
@@ -55,6 +63,8 @@ export function composeCartLineName(
   parts.push(String(line.quantity));
   if (line.originalPrice) parts.push(`${line.price}, originally ${line.originalPrice}`);
   else parts.push(line.price);
+  // The second currency travels with the price it restates.
+  if (line.secondaryPrice) parts.push(line.secondaryPrice);
   if (line.unavailable) parts.push(line.unavailableLabel ?? 'Sold out');
   return parts.join(', ');
 }

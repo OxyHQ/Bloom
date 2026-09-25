@@ -83,6 +83,18 @@ describe('it does no money maths, and holds no second breakdown', () => {
     expect(byTestId('c-line-sorrel-price-0').textContent).toContain('13,00 €');
   });
 
+  it('draws a line’s secondary price under its price, and says it in the line’s name', () => {
+    mount(
+      panel({
+        lines: [{ id: 'ember', name: 'Ember flatbread', price: '$13.20', secondaryPrice: '≈ 12,00 €', quantity: 1 }],
+      }),
+    );
+    expect(byTestId('c-line-ember-secondary-price').textContent).toBe('≈ 12,00 €');
+    expect(rowOf('c-line-ember').getAttribute('aria-label')).toBe('Ember flatbread, 1, $13.20, ≈ 12,00 €');
+    mount(panel());
+    expect(queryTestId('c-line-sorrel-secondary-price')).toBeNull();
+  });
+
   it('routes the totals through price-breakdown, not a copy', () => {
     mount(panel());
     // `PriceSummary`'s own testID shape. A hand-rolled summary would not have it.
@@ -170,6 +182,61 @@ describe('the stepper does not remove', () => {
     mount(<CartLine name="Sorrel stew" price="€10.00" quantity={3} testID="l" />);
     expect(queryTestId('l-stepper')).toBeNull();
     expect(byTestId('l-quantity').textContent).toBe('×3');
+  });
+});
+
+describe('removeInStepper moves removal into the stepper (opt-in)', () => {
+  it('at quantity 1 the decrement is the named remove control, and no separate one is drawn', () => {
+    let removed = 0;
+    mount(
+      <CartLine
+        name="Sorrel stew"
+        price="€10.00"
+        quantity={1}
+        removeInStepper
+        onQuantityChange={() => undefined}
+        onRemove={() => {
+          removed += 1;
+        }}
+        testID="l"
+      />,
+    );
+    expect(queryTestId('l-remove')).toBeNull();
+    const remove = byTestId('l-stepper-decrement');
+    expect(remove.getAttribute('aria-label')).toBe('Remove Sorrel stew');
+    click(remove);
+    expect(removed).toBe(1);
+  });
+
+  it('a sold-out line keeps its separate remove control, its stepper being disabled', () => {
+    mount(
+      <CartLine
+        name="Harbour pickles"
+        price="€4.20"
+        quantity={1}
+        unavailable
+        removeInStepper
+        onQuantityChange={() => undefined}
+        onRemove={() => undefined}
+        testID="l"
+      />,
+    );
+    expect(byTestId('l-remove').getAttribute('aria-label')).toBe('Remove Harbour pickles');
+    expect(byTestId('l-stepper-decrement').getAttribute('aria-label')).toBe('Decrease');
+  });
+
+  it('CartPanel passes it to every line', () => {
+    const removed: string[] = [];
+    mount(
+      panel({
+        removeInStepper: true,
+        onLineQuantityChange: () => undefined,
+        onLineRemove: (id) => removed.push(id),
+      }),
+    );
+    expect(queryTestId('c-line-sorrel-remove')).toBeNull();
+    click(byTestId('c-line-sorrel-stepper-decrement'));
+    expect(removed).toEqual(['sorrel']);
   });
 });
 

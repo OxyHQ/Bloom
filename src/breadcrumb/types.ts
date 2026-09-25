@@ -6,6 +6,13 @@ import type { ButtonIconComponent } from '../button/types';
 export interface BreadcrumbProps {
   /** `BreadcrumbItem` children. Chevron separators are inserted between them. */
   children: ReactNode;
+  /**
+   * Replaces the chevron between items — e.g. `"/"` as a `Text`, or an icon.
+   * Hidden from assistive technology. The default chevron points the reading
+   * direction (it mirrors in a right-to-left layout); a custom separator is
+   * rendered as given.
+   */
+  separator?: ReactNode;
   /** Names the navigation landmark. Default `"Breadcrumb"`. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

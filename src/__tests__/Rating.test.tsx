@@ -13,7 +13,7 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Rating, RatingBar, RatingInput } from '../rating';
-import { formatRatingValue } from '../rating/Rating';
+import { formatRatingValue, starFill } from '../rating/Rating';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -119,6 +119,66 @@ describe('Rating', () => {
     expect(byTestId('r').querySelector('svg')?.getAttribute('width')).toBe('16');
     mount(<Rating value={4.9} size="small" testID="r" />);
     expect(byTestId('r').querySelector('svg')?.getAttribute('width')).toBe('14');
+  });
+});
+
+describe('Rating colour override', () => {
+  it('color paints the star, the value AND the count, for a brand-coloured hero', () => {
+    mount(<Rating value={4.92} count={128} color="#ffffff" testID="r" />);
+    const [value, count] = Array.from(byTestId('r').querySelectorAll('[dir="auto"]')) as HTMLElement[];
+    expect(getComputedStyle(value as HTMLElement).color).toBe(normalise('#ffffff'));
+    expect(getComputedStyle(count as HTMLElement).color).toBe(normalise('#ffffff'));
+    expect(byTestId('r').querySelector('path')?.getAttribute('fill')).toBe('#ffffff');
+  });
+
+  it('starColor and countColor override their own part only', () => {
+    mount(<Rating value={4.92} count={128} starColor="#f5a623" countColor="#eeeeee" testID="r" />);
+    const [value, count] = Array.from(byTestId('r').querySelectorAll('[dir="auto"]')) as HTMLElement[];
+    expect(getComputedStyle(value as HTMLElement).color).toBe(normalise(colors.text));
+    expect(getComputedStyle(count as HTMLElement).color).toBe(normalise('#eeeeee'));
+    expect(byTestId('r').querySelector('path')?.getAttribute('fill')).toBe('#f5a623');
+  });
+});
+
+describe('Rating variant="stars"', () => {
+  it('fills each star by its share of the value', () => {
+    expect([0, 1, 2, 3, 4].map((i) => starFill(4.3, i).toFixed(2))).toEqual(['1.00', '1.00', '1.00', '1.00', '0.30']);
+    expect([0, 1, 2, 3, 4].map((i) => starFill(0.5, i))).toEqual([0.5, 0, 0, 0, 0]);
+    expect(starFill(Number.NaN, 0)).toBe(0);
+  });
+
+  it('draws five stars, clipping the partial one to its fraction, with the value and count after', () => {
+    mount(<Rating variant="stars" value={3.5} count={12} testID="r" />);
+    const row = byTestId('r-stars');
+    // Five empty stars plus four filled overlays (3 whole + one half).
+    expect(row.querySelectorAll('svg')).toHaveLength(9);
+    expect(byTestId('r-stars-2').style.width).toBe('16px');
+    expect(byTestId('r-stars-3').style.width).toBe('8px');
+    expect(container.querySelector('[data-testid="r-stars-4"]')).toBeNull();
+    expect(byTestId('r').textContent).toBe('3.5(12)');
+    // Still ONE named image.
+    expect(byTestId('r').getAttribute('aria-label')).toBe('Rated 3.5 out of 5, 12 reviews');
+  });
+
+  it('parses a string value for the fill, and draws newLabel alone while unrated', () => {
+    mount(<Rating variant="stars" value="4.0" testID="r" />);
+    expect(byTestId('r-stars').querySelectorAll('svg')).toHaveLength(9);
+    mount(<Rating variant="stars" value={null} testID="r" />);
+    expect(container.querySelector('[data-testid="r-stars"]')).toBeNull();
+    expect(byTestId('r').textContent).toBe('New');
+  });
+
+  it('anchors the fill at the logical start, so it fills from the right in RTL', () => {
+    document.documentElement.dir = 'rtl';
+    try {
+      mount(<Rating variant="stars" value={3.5} testID="r" />);
+      expect(byTestId('r').getAttribute('dir')).toBe('rtl');
+      const clip = byTestId('r-stars-3');
+      expect(clip.style.right).toBe('0px');
+      expect(clip.style.left).toBe('');
+    } finally {
+      document.documentElement.removeAttribute('dir');
+    }
   });
 });
 

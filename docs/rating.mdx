@@ -32,6 +32,11 @@ const [stars, setStars] = useState<number | null>(null);
 | `reviewsLabel`       | the word after the count, default `"reviews"` — translate it                            |
 | `newLabel`           | drawn instead of the value when there is no rating yet, default `"New"`                 |
 | `size`               | `'small'` (14px star, body-2 text) or `'medium'` (default, 16px star, body text)        |
+| `variant`            | `'compact'` (default, one star) or `'stars'` (five stars, filled fractionally, before the value) |
+| `color`              | paints the star(s), the value and the count — e.g. white over a brand-coloured hero      |
+| `starColor`          | the filled star(s) only (a gold star beside neutral text); default `color`               |
+| `countColor`         | the count only; default `color` when given, else text-secondary                          |
+| `emptyStarColor`     | `stars` only: the unfilled part of each star; default the border colour                   |
 | `accessibilityLabel` | replaces the composed name — pass a translated sentence                                 |
 | `style`, `testID`    |                                                                                          |
 
@@ -40,6 +45,23 @@ The star and value are text-primary (`body-semibold`), the count text-secondary
 named "Rated 4.92 out of 5, 128 reviews", so a screen reader does not read the
 star, the number and the brackets as separate items. That sentence is English;
 apps in other languages pass `accessibilityLabel`.
+
+### Five stars, and colour
+
+`variant="stars"` draws a row of five stars 2px apart instead of the single
+star. Each is the unfilled star (`emptyStarColor`) with the filled star clipped
+over it to its share of the value — 4.3 fills four stars and 30% of the fifth. A
+string `value` is parsed for the fill and drawn as given. The clip is anchored
+with a logical inset, so in a right-to-left layout the row fills from the right
+(the root carries `dir` on web for react-native-web to resolve it). The row
+stays ONE named image, like the compact rating.
+
+```tsx
+<Rating variant="stars" value={4.3} count={128} color="#fff" emptyStarColor="rgba(255,255,255,0.35)" />
+```
+
+Over a surface the theme's text pair cannot sit on — a brand-coloured hero — pass
+`color`; the default text-primary/text-secondary are measured against the PAGE.
 
 ## `RatingBar`
 

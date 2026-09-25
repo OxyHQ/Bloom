@@ -90,6 +90,12 @@ export interface CheckoutConfirmProps {
    */
   amount?: string;
   /**
+   * A second, PRE-FORMATTED rendering of `amount` — the buyer's currency beside
+   * the shop's, `"≈ 12,00 €"` — drawn de-emphasised, centred under the button.
+   * Named like `PriceLine.secondaryAmount`; drawn as given, nothing converts.
+   */
+  secondaryAmount?: string;
+  /**
    * The terms line under the button — a string, or a node with links in it.
    * `null` draws none.
    */

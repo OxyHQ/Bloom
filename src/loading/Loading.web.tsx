@@ -16,7 +16,7 @@ import { useBloomAppearance } from '../appearance';
 import { animation } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
-import { bindLoading, SIZE_CONFIG, styles } from './LoadingBase';
+import { bindLoading, LoadingRoot, SIZE_CONFIG, styles } from './LoadingBase';
 import { SpinnerIcon } from './SpinnerIcon.web';
 import type { TopLoadingProps } from './types';
 
@@ -41,6 +41,7 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   iconSize,
   heightOffset = 0,
   spinnerIcon,
+  accessibilityLabel,
   testID,
 }) => {
   const theme = useTheme();
@@ -84,7 +85,10 @@ const TopLoading: React.FC<TopLoadingProps> = ({
           style,
         ]}
       >
-        {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
+        {/* Named only while it is showing: a collapsed bar is not a wait. */}
+        <LoadingRoot accessibilityLabel={showLoading ? accessibilityLabel : undefined}>
+          {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
+        </LoadingRoot>
       </View>
     </View>
   );

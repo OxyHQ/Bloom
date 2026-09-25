@@ -36,6 +36,7 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
 | `formatValue`                       | the drawn and announced text, e.g. `(n) => (n === 8 ? '8+' : String(n))` |
 | `accessibilityLabel`                | **required** — what is being counted                                     |
 | `decrementLabel` / `incrementLabel` | the buttons' names, default `"Decrease"` / `"Increase"` — translate them  |
+| `onRemove` / `removeLabel`          | opt-in: at `min` the `−` becomes a trash button named `removeLabel` (default `"Remove"`) that calls `onRemove`; without it the button disables at `min` |
 | `style`, `testID`                   | the row; `testID` also derives `-decrement`, `-value`, `-increment`      |
 
 `StepperRow` takes every `Stepper` prop plus `title`, `description`, `divider`
@@ -52,6 +53,30 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
   does not move the buttons.
 - **Row** title `headline-medium` text-primary over a `body-regular`
   text-secondary description, the stepper on the right, 16 above and below.
+
+## Remove at the floor
+
+By default the stepper floors at `min` and the `−` disables there. A basket line
+that should go from 1 to gone opts in with `onRemove`:
+
+```tsx
+<Stepper
+  value={quantity}
+  min={1}
+  onValueChange={setQuantity}
+  onRemove={removeLine}
+  removeLabel={`Remove ${name}`}
+  accessibilityLabel={name}
+/>
+```
+
+At `min` the `−` draws `RiDeleteBinLine`, is named `removeLabel`, stays enabled
+and calls `onRemove` rather than `onValueChange`. Above `min` it is the ordinary
+decrement. Only the BUTTON removes: ArrowDown, Home and the native `decrement`
+action on the value still stop at `min`, because a key or a swipe that deletes is
+a destructive action behind an arithmetic one. So that a keyboard user can
+reach it, the remove button joins the tab order (the decrement never does). A
+`disabled` stepper offers no removal.
 
 ## Accessibility
 

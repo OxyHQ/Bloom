@@ -256,8 +256,9 @@ export type DialogProps = React.PropsWithChildren<{
   actions?: DialogAction[];
   /**
    * Surface anchor. Defaults to `'center'` (the centered modal — current
-   * behavior). `'left'`/`'right'` render an anchored side-sheet, `'bottom'` a
-   * bottom-sheet. A responsive map resolves by viewport width, e.g.
+   * behavior). `'left'`/`'right'` render an anchored side-sheet on that
+   * physical edge; `'start'`/`'end'` on the logical edge (mirrored, with its
+   * slide-in, in a right-to-left layout); `'bottom'` a bottom-sheet. A responsive map resolves by viewport width, e.g.
    * `{ base: 'bottom', md: 'left' }` (drawer on wide, sheet on narrow).
    */
   placement?: ResponsiveDialogPlacement;

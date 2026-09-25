@@ -242,8 +242,10 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     // WHICH attribute is a property of the ROLE, not a preference — a `radio`
     // carries `aria-checked` and a `tab` `aria-selected`; `aria-pressed` on
     // either is invalid, and `aria-selected` on a `button` is too.
+    // A `checkbox` (a multi-select filter chip) reads `aria-checked` like a
+    // `radio`; what differs is that its group allows several at once.
     const stateProps =
-      role === 'radio'
+      role === 'radio' || role === 'checkbox'
         ? { accessibilityState: { checked: selected, disabled }, 'aria-checked': selected }
         : role === 'tab'
           ? { accessibilityState: { selected, disabled }, 'aria-selected': selected }

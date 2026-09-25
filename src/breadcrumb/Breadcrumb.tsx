@@ -13,6 +13,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { BUTTON_TRANSITION_MS } from '../button/shared';
@@ -77,10 +78,19 @@ const BREADCRUMB_CSS = interactiveWebCss({
 
 const IS_WEB = Platform.OS === 'web';
 
-/** `ChevronRightSmall`, path for path. */
-function Chevron({ color }: { color: string }) {
+/**
+ * `ChevronRightSmall`, path for path. It points the READING direction: the
+ * row mirrors in a right-to-left layout (flex order follows the direction on
+ * both platforms), so a fixed right-pointing chevron would point back at the
+ * crumb it came from. A glyph is a sign, not an inset — no logical style key
+ * can flip it — so it reads `useIsRtl()` and mirrors itself with `scaleX`.
+ */
+function Chevron({ color, rtl }: { color: string; rtl: boolean }) {
   return (
-    <View aria-hidden style={{ width: 12, height: 12, flexShrink: 0 }}>
+    <View
+      aria-hidden
+      style={{ width: 12, height: 12, flexShrink: 0, ...(rtl ? { transform: [{ scaleX: -1 }] } : null) }}
+    >
       <Svg width={12} height={12} viewBox="0 0 12 12" fill="none">
         <Path
           d="M4.5 3L7.14645 5.64645C7.34171 5.84171 7.34171 6.15829 7.14645 6.35355L4.5 9"
@@ -95,16 +105,31 @@ function Chevron({ color }: { color: string }) {
 
 const BreadcrumbComponent: React.FC<BreadcrumbProps> = ({
   children,
+  separator,
   accessibilityLabel = 'Breadcrumb',
   style,
   testID,
 }) => {
   const theme = useTheme();
+  const rtl = useIsRtl();
+  const directionProps = useDirectionProps();
   const palette = useMemo(() => resolveBreadcrumbPalette(theme), [theme]);
   const items = Children.toArray(children).filter(isValidElement);
+  // A caller's separator is theirs to mirror (or not — a "/" needs nothing);
+  // it is hidden from assistive technology like the chevron, since the list
+  // structure already says where one crumb ends.
+  const between =
+    separator !== undefined ? (
+      <View aria-hidden style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center' }}>
+        {separator}
+      </View>
+    ) : (
+      <Chevron color={palette.tertiary} rtl={rtl} />
+    );
 
   return (
     <View
+      {...directionProps}
       role="navigation"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
@@ -121,7 +146,7 @@ const BreadcrumbComponent: React.FC<BreadcrumbProps> = ({
         >
           {items.map((item, index) => (
             <Fragment key={item.key ?? index}>
-              {index > 0 ? <Chevron color={palette.tertiary} /> : null}
+              {index > 0 ? between : null}
               {item}
             </Fragment>
           ))}

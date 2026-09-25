@@ -192,6 +192,49 @@ describe('Stepper behaviour', () => {
   });
 });
 
+describe('Stepper remove at the floor (opt-in)', () => {
+  it('without onRemove the decrement still disables at min, as before', () => {
+    mount(<Controlled initial={1} min={1} />);
+    expect(byTestId('st-decrement').getAttribute('aria-label')).toBe('Decrease');
+    expect(byTestId('st-decrement').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('with onRemove, the decrement at min is an enabled, named, focusable remove button', () => {
+    const onRemove = jest.fn();
+    const onChange = jest.fn();
+    mount(<Controlled initial={2} min={1} onRemove={onRemove} removeLabel="Remove Sorrel stew" onChange={onChange} />);
+    // Above the floor it is still the arithmetic decrement.
+    expect(byTestId('st-decrement').getAttribute('aria-label')).toBe('Decrease');
+    press('st-decrement');
+    expect(onChange).toHaveBeenCalledWith(1);
+    expect(onRemove).not.toHaveBeenCalled();
+    const remove = byTestId('st-decrement');
+    expect(remove.getAttribute('aria-label')).toBe('Remove Sorrel stew');
+    expect(remove.getAttribute('aria-disabled')).not.toBe('true');
+    // The button joins the tab order here (`tabIndex={0}`), since the value's
+    // keyboard never removes. Only `Button.web.tsx` forwards `tabIndex`, and
+    // jest resolves the native `Button`, so that half is not observable here.
+    press('st-decrement');
+    expect(onRemove).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('defaults the remove name to "Remove", and the keyboard at min does not remove', () => {
+    const onRemove = jest.fn();
+    mount(<Controlled initial={0} onRemove={onRemove} />);
+    expect(byTestId('st-decrement').getAttribute('aria-label')).toBe('Remove');
+    key('st-value', 'ArrowDown');
+    key('st-value', 'Home');
+    expect(onRemove).not.toHaveBeenCalled();
+  });
+
+  it('a disabled stepper does not offer removal', () => {
+    mount(<Controlled initial={1} min={1} onRemove={() => {}} disabled />);
+    expect(byTestId('st-decrement').getAttribute('aria-label')).toBe('Decrease');
+    expect(byTestId('st-decrement').getAttribute('aria-disabled')).toBe('true');
+  });
+});
+
 describe('StepperRow', () => {
   it('renders title and description, names the stepper by the title, and draws the hairline on request', () => {
     mount(

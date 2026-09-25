@@ -28,6 +28,7 @@ import Animated, {
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { useTheme } from '../theme/use-theme';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
@@ -51,6 +52,8 @@ import {
   PANEL_RADIUS,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
+  physicalDialogSide,
+  type DialogSidePlacement,
 } from './placement';
 import type {
   DialogAction,
@@ -137,9 +140,9 @@ function CenteredOrSideDialog({
   containerClassName,
   label,
   children,
-}: Omit<DialogProps, 'placement'> & { placement: 'center' | 'left' | 'right' }) {
+}: Omit<DialogProps, 'placement'> & { placement: 'center' | DialogSidePlacement }) {
   const isControlled = controlledOpen !== undefined;
-  const isSide = placement === 'left' || placement === 'right';
+  const isSide = placement !== 'center';
   const headerController = useDialogHeaderController();
   const scrollableResolved = scrollable ?? true;
   const { height: viewportHeight } = useWindowDimensions();
@@ -422,7 +425,7 @@ function SideSheet({
 }: {
   open: boolean;
   onDismiss: () => void;
-  side: 'left' | 'right';
+  side: DialogSidePlacement;
   width: number;
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
@@ -453,8 +456,16 @@ function SideSheet({
   const insetBottom = inset?.bottom ?? 0;
   const insetLeft = inset?.left ?? 0;
   const insetRight = inset?.right ?? 0;
-  const anchorInset = side === 'left' ? insetLeft : insetRight;
-  const oppositeInset = side === 'left' ? insetRight : insetLeft;
+  // `start`/`end` resolve to the physical edge they land on for everything a
+  // layout engine does not mirror: the slide sign, and which `inset` applies.
+  const rtl = useIsRtl();
+  const edge = physicalDialogSide(side, rtl);
+  // The POSITION of a logical placement is a logical key, resolved by Yoga
+  // against `I18nManager` — a physical `left`/`right` here would be swapped by
+  // React Native's default `swapLeftAndRightInRTL` and land on the wrong edge.
+  const anchorKey = side === 'start' ? 'insetInlineStart' : side === 'end' ? 'insetInlineEnd' : side;
+  const anchorInset = edge === 'left' ? insetLeft : insetRight;
+  const oppositeInset = edge === 'left' ? insetRight : insetLeft;
 
   const sideWidth = useMemo(() => {
     const available = viewportWidth - anchorInset - oppositeInset - SIDE_SHEET_MIN_GUTTER;
@@ -491,7 +502,7 @@ function SideSheet({
     if (dismissOnBackdrop) onDismiss();
   }, [dismissOnBackdrop, onDismiss]);
 
-  const hiddenSign = side === 'left' ? -1 : 1;
+  const hiddenSign = edge === 'left' ? -1 : 1;
   const panelAnimatedStyle = useAnimatedStyle(() => {
     const hidden = 1 - progress.value;
     return {
@@ -513,11 +524,11 @@ function SideSheet({
       ({
         top: insetTop,
         bottom: insetBottom,
-        [side]: anchorInset,
+        [anchorKey]: anchorInset,
         width: sideWidth,
         borderRadius: PANEL_RADIUS,
       }),
-    [insetTop, insetBottom, side, anchorInset, sideWidth],
+    [insetTop, insetBottom, anchorKey, anchorInset, sideWidth],
   );
 
   if (!mounted) return null;

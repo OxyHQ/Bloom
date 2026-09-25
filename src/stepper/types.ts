@@ -38,6 +38,15 @@ export interface StepperProps {
   decrementLabel?: string;
   /** Name of the `+` button. Default `"Increase"`. */
   incrementLabel?: string;
+  /**
+   * Opt-in remove at the floor: at `min` the `−` button becomes a trash button
+   * that calls this instead of disabling (a basket line going from 1 to gone).
+   * Only the button removes — the keyboard and accessibility actions on the
+   * value still stop at `min`. Without it the stepper floors at `min`.
+   */
+  onRemove?: () => void;
+  /** Name of the trash button drawn at `min` with `onRemove`. Default `"Remove"`. */
+  removeLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
