@@ -8,7 +8,7 @@
  * app owns drafts per conversation and a composer that kept its own would lose
  * them on every navigation.
  */
-import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   TextInput,
   View,
@@ -31,6 +31,7 @@ import { RiForbidLine } from '../icons/remix/RiForbidLine';
 import { RiMic2Line } from '../icons/remix/RiMic2Line';
 import { RiSendPlaneLine } from '../icons/remix/RiSendPlaneLine';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -175,19 +176,16 @@ export function ChatComposer({
    *
    * They are not interchangeable: react-native-web reports `scrollHeight`,
    * which never falls below the height already applied, so a field grown to six
-   * lines and then emptied would stay six lines tall. Collapsing the node to
-   * zero first and restoring it in the same frame is what makes it SHRINK.
+   * lines and then emptied would stay six lines tall. `useTextareaAutosize`
+   * collapses the node to measure it only when the draft may have got SHORTER —
+   * collapsing on every keystroke re-laid-out the whole page three times a key.
    */
-  useLayoutEffect(() => {
-    if (!IS_WEB) return;
-    const node = localRef.current as unknown as HTMLTextAreaElement | null;
-    if (!node || typeof node.scrollHeight !== 'number' || !node.style) return;
-    const previous = node.style.height;
-    node.style.height = '0px';
-    const measured = node.scrollHeight;
-    node.style.height = previous;
-    if (measured > 0) setContentHeight(measured);
-  }, [text, minHeight]);
+  useTextareaAutosize(localRef, text, {
+    enabled: IS_WEB,
+    height,
+    minHeight,
+    onMeasure: setContentHeight,
+  });
 
   const onContentSizeChange = useCallback(
     (event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
