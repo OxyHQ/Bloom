@@ -52,7 +52,7 @@ The sidebar does not create a composer or any other application-specific UI.
 | --- | --- |
 | `Sidebar` | the rail |
 | `SidebarModeSwitcher` | a vertical segmented control of icon + label modes (Search / Computer); the `modes` prop renders it under the header |
-| `SidebarItem` | one navigation row, a full pill: rest / hover / selected (solid accent fill with the primary foreground — no gradient, ring or highlight), optional badge, `collapsed` 36px square |
+| `SidebarItem` | one navigation row, a full pill: rest / hover / selected (solid accent fill with the primary foreground — no gradient, ring or highlight), optional badge (collapsed, it moves over the icon's top-end corner; `collapsedBadge` overrides it there), `collapsed` 36px square |
 | `SidebarUserMenu` | the account trigger (2px hover pill outside its box) and its menu |
 | `SidebarAccountMenuContent` | that menu's body, for another trigger |
 | `SidebarTeamMenu` | the team card and its grouped menu with a version footer |
@@ -184,7 +184,7 @@ defaults and what each names: [`AppShell`, Labels](/docs/bloom/main/app-shell).
 
 ## Collapse
 
-`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs between the size's two widths (260 → 52 at `md`) in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button. `fluid` fills the container while expanded. Reduced motion snaps.
+`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs between the size's two widths (260 → 52 at `md`) in 300ms while labels, the row-end badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. A badge doesn't disappear: collapsed, it fades in over the icon's top-end corner at the small size, capped at `99+` so it fits the square (the expanded row still shows the full count). `mobile` is always expanded and shows a close button. `fluid` fills the container while expanded. Reduced motion snaps.
 
 After expanding, the account trigger's hover pill stays off until the pointer leaves it, so a stationary pointer does not light it up.
 

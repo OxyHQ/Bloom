@@ -70,7 +70,14 @@ export interface SidebarItemProps {
    */
   size?: SidebarSize;
   href?: string;
+  /** Sits at the row's end while expanded; over the icon's top-end corner while collapsed. */
   badge?: ReactNode;
+  /**
+   * The badge shown over the icon while collapsed, when it should differ from
+   * `badge` — e.g. a capped count (`max={99}`) that fits the square. Defaults
+   * to `badge`.
+   */
+  collapsedBadge?: ReactNode;
   selected?: boolean;
   /** Icon-only square matching the sidebar size (40px for md). */
   collapsed?: boolean;
