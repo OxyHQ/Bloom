@@ -132,6 +132,15 @@ export interface ChipRowProps {
   accessibilityLabel?: string;
   /** Marks the whole row disabled to assistive technology (web `aria-disabled`). */
   disabled?: boolean;
+  /**
+   * Whether a tap on a pill while the software keyboard is open reaches the
+   * pill. Default `handled`: the pill takes the press and the keyboard stays.
+   * React Native's own default (`never`) spends the first tap dismissing the
+   * keyboard, so a row of pills under a text field — a composer's audience and
+   * language pills, a search screen's filters — needed two taps, and the first
+   * one dropped the keyboard the reader was typing with. Native only.
+   */
+  keyboardShouldPersistTaps?: 'always' | 'never' | 'handled';
   style?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
   testID?: string;

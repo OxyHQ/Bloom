@@ -65,6 +65,7 @@ function ChipRowComponent({
   role = 'group',
   accessibilityLabel,
   disabled,
+  keyboardShouldPersistTaps = 'handled',
   style,
   contentContainerStyle,
   testID,
@@ -127,6 +128,7 @@ function ChipRowComponent({
         {...(IS_WEB ? ({ dataSet: { bloomChipRowTrack: '' } } as Record<string, unknown>) : {})}
         horizontal
         showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         scrollEventThrottle={16}
         onScroll={onScroll}
         onLayout={onLayout}
