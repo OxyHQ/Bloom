@@ -254,11 +254,15 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     };
   }, [progress, expandedWidth, fluid, collapsedWidth, expandedPadding, collapsedPadding]);
   const [contentHeight, setContentHeight] = useState(0);
+  // A worklet copies what it reads to the UI runtime, and `tree` carries the
+  // app's rows, elements and data — a `Date` among them crashes native on the
+  // copy. The mapper reads only whether there is one (`worklet-captures.test.ts`).
+  const treeShown = Boolean(tree);
   const contentMorph = useAnimatedStyle(() => ({
     height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
     opacity: 1 - progress.value,
-    marginTop: tree ? 0 : 24 * (1 - progress.value),
-  }), [contentHeight, collapsed, progress, tree]);
+    marginTop: treeShown ? 0 : 24 * (1 - progress.value),
+  }), [contentHeight, collapsed, progress, treeShown]);
   const contentWidth = useAnimatedStyle(() => ({ width: expandedWidth.value - expandedPadding * 2 }), [expandedWidth, expandedPadding]);
   const navInset = useAnimatedStyle(() => {
     const inset = expandedInset * (1 - progress.value);
