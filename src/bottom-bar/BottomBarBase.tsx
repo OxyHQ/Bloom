@@ -61,6 +61,9 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
   const rowStyle = useAnimatedStyle(() => ({
     height: interpolate(reducedMotion ? Number(progress.value > 0.01) : progress.value, [0, 1], [EXPANDED_HEIGHT, MINIMIZED_HEIGHT], 'clamp'),
   }), [progress, reducedMotion]);
+  // Not `items.length` in the mapper: a worklet copies `items` whole to the UI
+  // runtime, icon elements and all (`worklet-captures.test.ts`).
+  const hasItems = items.length > 0;
   const actionStyle = useAnimatedStyle(() => {
     const amount = hideAction ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value)) : 0;
     return {
@@ -68,11 +71,11 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
       // Logical, and the CSS name rather than RN's `marginStart`: reanimated's
       // web writer hands a mapper's result to RNW's `createReactDOMStyle`,
       // which never rewrites `marginStart`, so the browser would drop it.
-      marginInlineStart: items.length && !above ? 10 * (1 - amount) : 0,
+      marginInlineStart: hasItems && !above ? 10 * (1 - amount) : 0,
       opacity: 1 - amount,
       transform: [{ scale: 1 - amount * 0.15 }],
     };
-  }, [progress, hideAction, reducedMotion, actionWidth, items.length, above]);
+  }, [progress, hideAction, reducedMotion, actionWidth, hasItems, above]);
   if (keyboardVisible || (!items.length && !action)) return null;
   return <View {...dirProps} testID={testID} pointerEvents="box-none" style={[{ height: bottom + footprint, justifyContent: 'flex-end' }, style]}>
     {blur && material === 'translucent' && <Blur direction="bottom" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottom + footprint + BLUR_BLEED }} />}
