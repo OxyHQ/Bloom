@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Text as RNText,
   TextInput,
   View,
   type LayoutChangeEvent,
   type NativeSyntheticEvent,
-  type TextInputContentSizeChangeEventData,
   type TextInputKeyPressEventData,
 } from 'react-native';
 import Animated, {
@@ -177,7 +177,11 @@ export function ComposerPanelBase({
 
   // The prompt grows with its text, one 20px line at a time, up to 200 before it
   // scrolls. Web measures the textarea, collapsing it only when the draft may
-  // have got shorter (`useTextareaAutosize`); native reads the content size.
+  // have got shorter (`useTextareaAutosize`). Native lays the same text out in
+  // an invisible twin and takes ITS height: the field's own
+  // `onContentSizeChange` does not fire for a value set from outside until the
+  // field is focused (Android 16), so a question loaded to edit showed one line
+  // and a cancelled edit kept four.
   const [height, setHeight] = useState(PROMPT_LINE);
   useTextareaAutosize(fieldRef, text, {
     enabled: IS_WEB,
@@ -185,13 +189,9 @@ export function ComposerPanelBase({
     minHeight: PROMPT_LINE,
     onMeasure: (content) => setHeight(Math.min(PROMPT_MAX_HEIGHT, Math.max(PROMPT_LINE, content))),
   });
-  const onContentSizeChange = useCallback(
-    (event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
-      if (IS_WEB) return;
-      setHeight(Math.min(PROMPT_MAX_HEIGHT, Math.max(PROMPT_LINE, event.nativeEvent.contentSize.height)));
-    },
-    [],
-  );
+  const onTwinLayout = useCallback((event: LayoutChangeEvent) => {
+    setHeight(Math.min(PROMPT_MAX_HEIGHT, Math.max(PROMPT_LINE, event.nativeEvent.layout.height)));
+  }, []);
 
   const submit = useCallback(() => {
     if (disabled || busy) return;
@@ -253,7 +253,6 @@ export function ComposerPanelBase({
               value={text}
               onChangeText={setText}
               onKeyPress={onKeyPress}
-              onContentSizeChange={onContentSizeChange}
               placeholder={placeholder}
               placeholderTextColor={palette.textTertiary}
               selectionColor={palette.accent500}
@@ -273,10 +272,36 @@ export function ComposerPanelBase({
                 ...(IS_WEB ? { caretColor: palette.accent500 } : null),
               }}
             />
+            {IS_WEB ? null : (
+              <RNText
+                aria-hidden
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                pointerEvents="none"
+                testID={testID ? `${testID}-input-twin` : undefined}
+                onLayout={onTwinLayout}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 6,
+                  right: 6,
+                  opacity: 0,
+                  ...TYPE_SCALE['body-regular'],
+                  fontFamily: 'Inter',
+                }}>
+                {/* A trailing newline is a line of its own in the field; a
+                    Text drops it unless something follows. */}
+                {text.endsWith('\n') || text === '' ? `${text} ` : text}
+              </RNText>
+            )}
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {/* The actions never give way: + and the permission chip on the
+                left, voice and send on the right keep their size, and the
+                model chip between them is what truncates (a long model name
+                once covered + and pushed voice off the card). */}
+            <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {addMenu.length > 0 ? (
                 <AddMenu
                   palette={palette}
@@ -299,7 +324,7 @@ export function ComposerPanelBase({
                 />
               ) : null}
             </View>
-            <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 16 }}>
               {providers && providers.length > 0 ? (
                 <ModelPickerBase
                   providers={providers}
@@ -314,7 +339,7 @@ export function ComposerPanelBase({
                   testID={testID ? `${testID}-model` : undefined}
                 />
               ) : null}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <MicButton
                   listening={isListening}
                   onToggle={() => setListening(!isListening)}

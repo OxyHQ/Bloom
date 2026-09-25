@@ -48,6 +48,8 @@ const RAIL_PADDING = 3;
 const MARK_HEIGHT = 30;
 const MARK_GAP = 6;
 const ROW_HEIGHT = 36;
+/** The model chip's widest: past this a name truncates even with room to spare. */
+const MODEL_TRIGGER_MAX_WIDTH = 240;
 
 const DEFAULT_LABELS: Required<ModelPickerLabels> = {
   models: 'Models',
@@ -546,8 +548,14 @@ export function ModelPickerBase({
   const rows: Match[] = results ?? (activeProvider ? activeProvider.models.map((model) => ({ provider: activeProvider, model })) : []);
 
   const triggerStyle: WebCssStyle = {
-    height: 32,
-    flexShrink: 0,
+    // At least 32, never exactly: at the largest system font the name is taller
+    // than 32 and a fixed height clipped it. It shrinks (with an ellipsis) to
+    // leave the composer's own buttons their room, and stops at a width that
+    // still reads as a chip.
+    minHeight: 32,
+    minWidth: 0,
+    maxWidth: MODEL_TRIGGER_MAX_WIDTH,
+    flexShrink: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -590,7 +598,7 @@ export function ModelPickerBase({
         onHoverIn={() => setHovered(true)}
         onHoverOut={() => setHovered(false)}
         style={[triggerStyle, style]}>
-        <Text variant="body-medium" numberOfLines={1} style={{ paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}>
+        <Text variant="body-medium" numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, minWidth: 0, paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}>
           {selected?.model.name ?? ''}
         </Text>
         <TurningChevron degrees={open ? 180 : 0} color={palette.iconSecondary} />
