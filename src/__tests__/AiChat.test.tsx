@@ -33,7 +33,14 @@ import {
 } from '../ai-chat';
 import type { AiChatGeneration } from '../ai-chat';
 import { distributeGenerations } from '../ai-chat/AiChatGalleryPanelBase';
-import { resolveAiChatPalette } from '../ai-chat/shared';
+import { AI_CHAT_WEB_CSS, resolveAiChatPalette } from '../ai-chat/shared';
+import { SwapGlyph } from '../ai-chat/AiChatControls';
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
+import { DISABLED_OPACITY } from '../styles/tokens';
+import { RiPencilLine } from '../icons/remix/RiPencilLine';
+import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
+import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { resolvedStyle } from './support/rendered-style';
 import { buildTheme } from '../theme/build-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -109,6 +116,140 @@ describe('AiChatFeedbackRow', () => {
     pressHost(getByLabelText('Copy response'));
     expect(onCopy).toHaveBeenCalledTimes(2);
     jest.useRealTimers();
+  });
+});
+
+describe('AiChatFeedbackRow copy confirmation', () => {
+  // The check glyph's swap is the confirmation (the native tooltip needs a
+  // measured anchor jest never gives it, so its "Copied!" never mounts here).
+  const copied = (utils: ReturnType<typeof renderIn>) =>
+    utils.UNSAFE_getAllByType(SwapGlyph).some((glyph) => glyph.props.shown && glyph.findAllByType(RiCheckLine).length > 0);
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('confirms a sync copy at once, as before', () => {
+    const utils = renderIn(<AiChatFeedbackRow onCopy={() => {}} />);
+    expect(copied(utils)).toBe(false);
+    pressHost(utils.getByLabelText('Copy response'));
+    expect(copied(utils)).toBe(true);
+  });
+
+  it('does not confirm a copy that returned false or threw', () => {
+    const refused = renderIn(<AiChatFeedbackRow onCopy={() => false} />);
+    pressHost(refused.getByLabelText('Copy response'));
+    expect(copied(refused)).toBe(false);
+    const threw = renderIn(
+      <AiChatFeedbackRow
+        onCopy={() => {
+          throw new Error('denied');
+        }}
+      />,
+    );
+    pressHost(threw.getByLabelText('Copy response'));
+    expect(copied(threw)).toBe(false);
+  });
+
+  it('waits for an async copy, and confirms only when it resolves true or nothing', async () => {
+    let settle: (ok: boolean | void) => void = () => {};
+    const utils = renderIn(<AiChatFeedbackRow onCopy={() => new Promise<boolean | void>((resolve) => (settle = resolve))} />);
+    pressHost(utils.getByLabelText('Copy response'));
+    expect(copied(utils)).toBe(false);
+    await act(async () => {
+      settle(true);
+    });
+    expect(copied(utils)).toBe(true);
+  });
+
+  it('never confirms an async copy that resolves false or rejects', async () => {
+    let settle: (ok: boolean) => void = () => {};
+    const refused = renderIn(<AiChatFeedbackRow onCopy={() => new Promise<boolean>((resolve) => (settle = resolve))} />);
+    pressHost(refused.getByLabelText('Copy response'));
+    await act(async () => {
+      settle(false);
+    });
+    expect(copied(refused)).toBe(false);
+
+    let fail: (reason: unknown) => void = () => {};
+    const rejected = renderIn(<AiChatFeedbackRow onCopy={() => new Promise<void>((_, reject) => (fail = reject))} />);
+    pressHost(rejected.getByLabelText('Copy response'));
+    await act(async () => {
+      fail(new Error('clipboard blocked'));
+    });
+    expect(copied(rejected)).toBe(false);
+  });
+});
+
+describe('turn actions', () => {
+  it('draws extra feedback actions after copy and calls each', () => {
+    const onSpeak = jest.fn();
+    const onRegenerate = jest.fn();
+    const { getByLabelText, getByTestId } = renderIn(
+      <AiChatAssistantMessage
+        testID="reply"
+        feedbackProps={{
+          actions: [
+            { key: 'speak', label: 'Read aloud', icon: RiVolumeUpLine, onPress: onSpeak, active: true },
+            { key: 'regenerate', label: 'Regenerate', icon: RiRefreshLine, onPress: onRegenerate },
+          ],
+        }}>
+        Reply
+      </AiChatAssistantMessage>,
+    );
+    pressHost(getByLabelText('Read aloud'));
+    pressHost(getByLabelText('Regenerate'));
+    expect(onSpeak).toHaveBeenCalledTimes(1);
+    expect(onRegenerate).toHaveBeenCalledTimes(1);
+    expect(getByTestId('reply-feedback-speak')).toBeTruthy();
+    // A toggle carries its state for native; a plain action carries none.
+    expect(getByLabelText('Read aloud').props.accessibilityState).toMatchObject({ selected: true });
+    expect(getByLabelText('Regenerate').props.accessibilityState).not.toHaveProperty('selected');
+  });
+
+  it('a disabled action is announced disabled and ignores presses', () => {
+    const onPress = jest.fn();
+    const { getByLabelText } = renderIn(
+      <AiChatFeedbackRow actions={[{ key: 'r', label: 'Regenerate', icon: RiRefreshLine, onPress, disabled: true }]} />,
+    );
+    const button = getByLabelText('Regenerate');
+    expect(button.props.accessibilityState).toMatchObject({ disabled: true });
+    // The jest Pressable ignores `disabled`; the prop is what the real ones read.
+    expect(button.props.disabled).toBe(true);
+    expect(button.props['aria-disabled']).toBe(true);
+    expect(resolvedStyle(button.props.style).opacity).toBe(DISABLED_OPACITY);
+  });
+
+  it('puts the user turn actions under its card, reachable without hover', () => {
+    const onCopy = jest.fn();
+    const onEdit = jest.fn();
+    const { getByLabelText, getByTestId } = renderIn(
+      <AiChatUserMessage
+        testID="ask"
+        actions={[
+          { key: 'copy', label: 'Copy message', icon: RiFileCopyLine, onPress: onCopy },
+          { key: 'edit', label: 'Edit message', icon: RiPencilLine, onPress: onEdit },
+        ]}>
+        hello
+      </AiChatUserMessage>,
+    );
+    // No hover gate in the tree: the row is rendered, visible and named.
+    expect(resolvedStyle(getByTestId('ask-actions').props.style).opacity ?? 1).toBe(1);
+    pressHost(getByLabelText('Copy message'));
+    pressHost(getByLabelText('Edit message'));
+    expect(onCopy).toHaveBeenCalledTimes(1);
+    expect(onEdit).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders no actions row for a user turn without actions', () => {
+    const { queryByTestId } = renderIn(<AiChatUserMessage testID="ask">hello</AiChatUserMessage>);
+    expect(queryByTestId('ask-actions')).toBeNull();
+  });
+
+  it('hides a user turn actions only behind a pointer, never from focus', () => {
+    const css = AI_CHAT_WEB_CSS.replace(/\s+/g, ' ');
+    expect(css).toMatch(/@media \(hover: hover\) \{ \[data-bloom-ai-chat-turn\] \[data-bloom-ai-chat-turn-actions\] \{ opacity: 0;/);
+    expect(css).toContain('[data-bloom-ai-chat-turn]:focus-within [data-bloom-ai-chat-turn-actions]');
   });
 });
 

@@ -4,6 +4,7 @@ export {
   AiChatFeedbackRow,
   AiChatGalleryPanel,
   AiChatImageGeneration,
+  AiChatUserMessage,
 } from './AiChat';
 export { AiChatCodePanel } from './AiChatCodePanel';
 export { AiChatThread } from './AiChatContainer';
@@ -13,7 +14,6 @@ export {
   AiChatLinkChip,
   AiChatMessageLine,
   AiChatStrong,
-  AiChatUserMessage,
 } from './AiChatMessages';
 export { AiChatMobileHeader, AiChatResizeHandle, AiChatShell } from './AiChatShell';
 export { useAiChatChromeInsets, useAiChatShell } from './context';
@@ -27,6 +27,7 @@ export type {
   AiChatCodePanelProps,
   AiChatContainerLabels,
   AiChatContainerProps,
+  AiChatCopyResult,
   AiChatFeedbackLabels,
   AiChatFeedbackRowProps,
   AiChatGalleryPanelLabels,
@@ -46,5 +47,6 @@ export type {
   AiChatStrongProps,
   AiChatThreadHandle,
   AiChatThreadProps,
+  AiChatTurnAction,
   AiChatUserMessageProps,
 } from './types';

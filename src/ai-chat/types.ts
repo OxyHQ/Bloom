@@ -30,14 +30,47 @@ export interface AiChatFeedbackLabels {
   copied?: string;
 }
 
+/**
+ * What a copy handler reports. `void` (or `true`) is a copy that happened;
+ * `false` is one that did not. A promise is waited for: the confirmation shows
+ * once it resolves, and never if it resolves `false` or rejects.
+ */
+export type AiChatCopyResult = void | boolean | Promise<void | boolean>;
+
+/**
+ * One extra action on a turn — read aloud, regenerate, edit. Drawn with the
+ * feedback row's own button: a 16px glyph on a 28px square, a tooltip naming it.
+ */
+export interface AiChatTurnAction {
+  /** Stable React key, and the suffix of the button's `testID`. */
+  key: string;
+  /** The accessible name, and the tooltip's copy. */
+  label: string;
+  /** A Bloom icon component (`RiVolumeUpLine`, not `<RiVolumeUpLine />`). */
+  icon: AiChatIconComponent;
+  onPress: () => void;
+  /**
+   * Makes the action a TOGGLE (read aloud while it is speaking): `true` paints
+   * the hover surface and the primary glyph, and announces it pressed. Leave it
+   * undefined for a plain button — `false` announces "not pressed".
+   */
+  active?: boolean;
+  /** Dimmed to the shared disabled opacity, unfocusable, announced disabled. */
+  disabled?: boolean;
+}
+
 export interface AiChatFeedbackRowProps {
   onLike?: () => void;
   onDislike?: () => void;
   /**
-   * Copy handler. The glyph swaps to a check and the tooltip reads "Copied!" for
-   * 1.6s either way.
+   * Copy handler. The glyph swaps to a check and the tooltip reads "Copied!"
+   * for 1.6s once the copy has happened: at once for a handler that returns
+   * nothing (or `true`), after the promise resolves for an async one, and not
+   * at all when it returns or resolves `false`, throws or rejects.
    */
-  onCopy?: () => void;
+  onCopy?: () => AiChatCopyResult;
+  /** More buttons after copy, in order — read aloud, regenerate… */
+  actions?: ReadonlyArray<AiChatTurnAction>;
   labels?: AiChatFeedbackLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -50,6 +83,13 @@ export interface AiChatFeedbackRowProps {
 export interface AiChatUserMessageProps {
   /** `AiChatMessageLine`s — or a string, wrapped in one. */
   children: ReactNode;
+  /**
+   * Buttons under the card, right-aligned — copy, edit. On a web pointer they
+   * fade in while the turn is hovered or holds focus; they stay in the tab order
+   * and the accessibility tree throughout, and on native (and touch web) they
+   * are always shown.
+   */
+  actions?: ReadonlyArray<AiChatTurnAction>;
   /** Skip the blur-in (a turn restored from history). Default `true`. */
   animate?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -64,7 +104,7 @@ export interface AiChatAssistantMessageProps {
   children: ReactNode;
   /** The like / dislike / copy row under the reply. Default `true`. */
   feedback?: boolean;
-  /** Feedback handlers and labels. */
+  /** Feedback handlers, extra `actions` and labels. */
   feedbackProps?: Omit<AiChatFeedbackRowProps, 'style' | 'testID'>;
   /** Skip the staggered blur-in. Default `true`. */
   animate?: boolean;
@@ -141,7 +181,7 @@ export interface AiChatImageGenerationProps {
   /** Feedback handlers under the landed image. */
   onLike?: () => void;
   onDislike?: () => void;
-  onCopy?: () => void;
+  onCopy?: () => AiChatCopyResult;
   labels?: AiChatImageGenerationLabels;
   feedbackLabels?: AiChatFeedbackLabels;
   style?: StyleProp<ViewStyle>;

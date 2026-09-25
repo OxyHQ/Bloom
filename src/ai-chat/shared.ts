@@ -176,7 +176,7 @@ const STYLE_ID = 'bloom-ai-chat-web-css';
  * - the split-flap countdown's two leaves (`flap-fall` / `flap-rise`);
  * - the generated image's feathered radial reveal, a registered `--bloom-ai-reveal`
  *   percentage transitioning 0% → 132% over 1550ms;
- * - the resize grip's hover reveal;
+ * - the resize grip's hover reveal, and a user turn's actions (pointer only);
  * - the composer field's placeholder colour;
  * - a document-scrolled thread out of the browser's scroll anchoring.
  */
@@ -260,6 +260,14 @@ export const AI_CHAT_WEB_CSS = `
 [data-bloom-ai-chat-grip-pill="dragging"] { opacity: 1; }
 [data-bloom-ai-chat-grip] { cursor: col-resize; touch-action: none; outline: none; }
 [data-bloom-ai-chat-dragging="on"] { cursor: col-resize; user-select: none; }
+@media (hover: hover) {
+  [data-bloom-ai-chat-turn] [data-bloom-ai-chat-turn-actions] {
+    opacity: 0;
+    transition: opacity ${TRANSITION_MS}ms ease;
+  }
+  [data-bloom-ai-chat-turn]:hover [data-bloom-ai-chat-turn-actions],
+  [data-bloom-ai-chat-turn]:focus-within [data-bloom-ai-chat-turn-actions] { opacity: 1; }
+}
 [data-bloom-ai-chat-chip] {
   display: inline-flex;
   max-width: calc(100% - 4px);
@@ -275,7 +283,8 @@ export const AI_CHAT_WEB_CSS = `
   [data-bloom-ai-chat-control],
   [data-bloom-ai-chat-tile] [data-bloom-ai-chat-scrim],
   [data-bloom-ai-chat-tile-image],
-  [data-bloom-ai-chat-grip] [data-bloom-ai-chat-grip-pill] { transition: none; }
+  [data-bloom-ai-chat-grip] [data-bloom-ai-chat-grip-pill],
+  [data-bloom-ai-chat-turn] [data-bloom-ai-chat-turn-actions] { transition: none; }
   [data-bloom-ai-chat-flap] { animation-duration: 1ms; animation-delay: 0ms; }
 }
 `;

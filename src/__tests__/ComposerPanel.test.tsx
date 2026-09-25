@@ -216,6 +216,40 @@ describe('ComposerPanel', () => {
     expect(onRemove).toHaveBeenCalledWith('a');
   });
 
+  it('draws a failed tile: its message, no ring or percentage, and the dismiss back', () => {
+    const onRemove = jest.fn();
+    const files: ComposerPanelAttachment[] = [
+      { id: 'a', name: 'Deck.key', kind: 'presentation', progress: 40, error: 'Too large' },
+    ];
+    const { getByLabelText, getByText, queryByText, queryByLabelText } = renderIn(
+      <ComposerPanel attachments={files} onRemoveAttachment={onRemove} />,
+    );
+    expect(getByText('Too large')).toBeTruthy();
+    expect(getByLabelText('Deck.key: Too large')).toBeTruthy();
+    // `progress` is ignored once failed: no percentage in flight.
+    expect(queryByText('40%', { includeHiddenElements: true })).toBeNull();
+    const dismiss = getByLabelText('Remove Deck.key');
+    expect(resolvedStyle(dismiss.props.style).opacity).toBe(1);
+    pressHost(dismiss);
+    expect(onRemove).toHaveBeenCalledWith('a');
+    // No retry handler, no retry button.
+    expect(queryByLabelText('Retry Deck.key')).toBeNull();
+  });
+
+  it('puts a retry on failed tiles only, when `onAttachmentRetry` is given', () => {
+    const onRetry = jest.fn();
+    const files: ComposerPanelAttachment[] = [
+      { id: 'a', name: 'Brief.docx', kind: 'document' },
+      { id: 'b', name: 'Photo.png', kind: 'image', src: 'x.png', error: 'Network error' },
+    ];
+    const { getByLabelText, queryByLabelText } = renderIn(
+      <ComposerPanel attachments={files} onAttachmentRetry={onRetry} labels={{ retry: 'Try again' }} />,
+    );
+    expect(queryByLabelText('Try again Brief.docx')).toBeNull();
+    pressHost(getByLabelText('Try again Photo.png'));
+    expect(onRetry).toHaveBeenCalledWith('b');
+  });
+
   it('exports the four permission modes', () => {
     expect(COMPOSER_PANEL_PERMISSIONS.map((mode) => mode.id)).toEqual(['auto', 'manual', 'plan', 'bypass']);
   });
@@ -354,6 +388,24 @@ describe('ComposerAttachments', () => {
     expect(onUploadComplete).toHaveBeenCalledTimes(2);
     expect(onAllUploaded).toHaveBeenCalledTimes(1);
     expect(queryByLabelText('Two.docx')).toBeTruthy();
+  });
+
+  it('skips a failed file: it is done with, not queued', () => {
+    const onUploadComplete = jest.fn();
+    const files: ComposerPanelAttachment[] = [
+      { id: 'a', name: 'One.docx', kind: 'document', progress: 0, error: 'Too large' },
+      { id: 'b', name: 'Two.docx', kind: 'document', progress: 0 },
+    ];
+    const { queryByLabelText } = renderIn(
+      <ComposerAttachments attachments={files} uploadDuration={200} uploadGap={10} onUploadComplete={onUploadComplete} />,
+    );
+    expect(queryByLabelText('One.docx: Too large')).toBeTruthy();
+    expect(queryByLabelText('Two.docx')).toBeTruthy();
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    expect(onUploadComplete).toHaveBeenCalledTimes(1);
+    expect(onUploadComplete.mock.calls[0][0]).toMatchObject({ id: 'b' });
   });
 });
 
@@ -520,6 +572,7 @@ it.each(['light', 'dark'] as const)('composer reads canonical foreground and sur
     border: c.borderLight, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
     iconSecondary: c.textSecondary, iconTertiary: c.textTertiary, focusRing: c.primary,
     accent500: c.primarySubtleForeground,
+    errorSurface: c.errorSubtle, errorText: c.errorSubtleForeground,
   });
 });
 

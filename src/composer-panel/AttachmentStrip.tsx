@@ -10,6 +10,8 @@ import Animated, {
 import Svg, { Path } from 'react-native-svg';
 
 import { mixColor } from '../button/shared';
+import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
+import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
 import { Text } from '../typography';
 import type { WebCssStyle } from '../styles/web-view-style';
 import {
@@ -101,6 +103,41 @@ function TileDismiss({
   );
 }
 
+/**
+ * A failed tile's retry: a 24px disc on the card surface where the kind glyph
+ * sits (3, 4), a 14px refresh glyph in the error foreground, text-primary on
+ * hover.
+ */
+function TileRetry({ label, onPress, palette }: { label: string; onPress: () => void; palette: ComposerPalette }) {
+  const [hovered, setHovered] = useState(false);
+  const style: WebCssStyle = {
+    position: 'absolute',
+    top: 3,
+    left: 3,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: palette.surface,
+    cursor: 'pointer',
+    '--bloom-composer-ring': palette.focusRing,
+  };
+  return (
+    <Pressable
+      {...dataHook('bloomComposerControl', 'offset')}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      hitSlop={4}
+      style={style}>
+      <RiRefreshLine width={14} height={14} fill={hovered ? palette.text : palette.errorText} />
+    </Pressable>
+  );
+}
+
 /** The upload percentage's box: top 3 / right 3, blurring out as it fades. */
 function percentStyle(inFlight: boolean): WebCssStyle {
   return {
@@ -123,7 +160,9 @@ interface TileProps {
   attachment: ComposerPanelAttachment;
   palette: ComposerPalette;
   onRemove?: () => void;
+  onRetry?: () => void;
   removeLabel: string;
+  retryLabel: string;
 }
 
 /**
@@ -134,9 +173,23 @@ interface TileProps {
  * percentage (9/16 medium, tabular; white over a photo, accent-500 otherwise)
  * sits at top 3 / right 3; once landed it blurs out as the dismiss blurs in on
  * the same spot.
+ *
+ * A FAILED tile (`error`) drops the ring and percentage and fills with the
+ * error subtle surface under an error-foreground border: the warning glyph (or
+ * the retry button) at (3, 4) and the message in 9/11 medium, two lines at
+ * most, from (5, 30). The dismiss shows as on a landed tile.
  */
-export const AttachmentTile = memo(function AttachmentTile({ attachment, palette, onRemove, removeLabel }: TileProps) {
-  const { progress } = attachment;
+export const AttachmentTile = memo(function AttachmentTile({
+  attachment,
+  palette,
+  onRemove,
+  onRetry,
+  removeLabel,
+  retryLabel,
+}: TileProps) {
+  const { error } = attachment;
+  const failed = !!error;
+  const progress = failed ? undefined : attachment.progress;
   const inFlight = progress !== undefined;
   const image = attachment.kind === 'image' ? attachment.src : undefined;
   const dash = inFlight && progress < 100 ? (Math.max(0, progress) / 100) * TILE_RING_LENGTH : TILE_RING_LENGTH + 2;
@@ -144,8 +197,8 @@ export const AttachmentTile = memo(function AttachmentTile({ attachment, palette
 
   return (
     <View
-      accessibilityLabel={attachment.name}
-      {...(IS_WEB ? { title: attachment.name } : {})}
+      accessibilityLabel={failed ? `${attachment.name}: ${error}` : attachment.name}
+      {...(IS_WEB ? { title: failed ? `${attachment.name}: ${error}` : attachment.name } : {})}
       style={{
         position: 'relative',
         width: TILE,
@@ -153,7 +206,7 @@ export const AttachmentTile = memo(function AttachmentTile({ attachment, palette
         flexShrink: 0,
         borderRadius: TILE_RADIUS,
         borderWidth: 1,
-        borderColor: palette.tileBorder,
+        borderColor: failed ? palette.errorText : palette.tileBorder,
       }}>
       {image ? (
         <View
@@ -195,6 +248,41 @@ export const AttachmentTile = memo(function AttachmentTile({ attachment, palette
           </Text>
         </View>
       )}
+
+      {failed ? (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: TILE_RADIUS - 1,
+            backgroundColor: palette.errorSurface,
+          }}>
+          {onRetry ? null : (
+            <View style={{ position: 'absolute', top: 4, left: 3, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+              <RiErrorWarningLine width={20} height={20} fill={palette.errorText} />
+            </View>
+          )}
+          <Text
+            numberOfLines={2}
+            style={{
+              position: 'absolute',
+              top: 30,
+              left: 5,
+              right: 5,
+              // 9px has no type-ramp step; spelled out literally.
+              fontSize: 9,
+              lineHeight: 11,
+              fontWeight: '500',
+              color: palette.errorText,
+            }}>
+            {error}
+          </Text>
+          {onRetry ? <TileRetry label={`${retryLabel} ${attachment.name}`} onPress={onRetry} palette={palette} /> : null}
+        </View>
+      ) : null}
 
       {/* Upload ring over the border: the svg spans the border box. */}
       <View
@@ -288,7 +376,9 @@ interface StripProps {
   attachments: ReadonlyArray<ComposerPanelAttachment>;
   palette: ComposerPalette;
   onRemove?: (id: string) => void;
+  onRetry?: (id: string) => void;
   removeLabel: string;
+  retryLabel: string;
 }
 
 /**
@@ -296,7 +386,7 @@ interface StripProps {
  * scale 0.8 → 1, fade and un-blur on arrival over 280ms `cubic-bezier(0.22, 1,
  * 0.36, 1)`, and play it backwards on dismissal before leaving the row.
  */
-export function AttachmentStrip({ attachments, palette, onRemove, removeLabel }: StripProps) {
+export function AttachmentStrip({ attachments, palette, onRemove, onRetry, removeLabel, retryLabel }: StripProps) {
   const [leaving, setLeaving] = useState<ReadonlyArray<ComposerPanelAttachment>>([]);
   const previous = useRef(attachments);
 
@@ -330,7 +420,9 @@ export function AttachmentStrip({ attachments, palette, onRemove, removeLabel }:
             attachment={attachment}
             palette={palette}
             removeLabel={removeLabel}
+            retryLabel={retryLabel}
             onRemove={onRemove && !isLeaving ? () => onRemove(attachment.id) : undefined}
+            onRetry={onRetry && !isLeaving ? () => onRetry(attachment.id) : undefined}
           />
         </PresenceTile>
       ))}

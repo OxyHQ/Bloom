@@ -74,6 +74,9 @@ export interface ComposerPalette {
   accent500: string;
   /** `border-focus-ring`. */
   focusRing: string;
+  /** A failed tile: the error subtle surface and its paired foreground. */
+  errorSurface: string;
+  errorText: string;
   /** `shadow-xs`, `shadow-dropdown` and the card's raw Figma shadow. */
   shadowXs: string;
   shadowDropdown: string;
@@ -121,6 +124,8 @@ export function resolveComposerPalette(theme: Theme): ComposerPalette {
     accent400: c.primary,
     accent500: c.primarySubtleForeground,
     focusRing: c.primary,
+    errorSurface: c.errorSubtle,
+    errorText: c.errorSubtleForeground,
     shadowXs: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     shadowDropdown: dark ? MENU_SHADOW.dark : MENU_SHADOW.light,
     shadowCard: '0 1px 0.5px 0 rgba(0, 0, 0, 0.02), 0 4px 2px 0 rgba(0, 0, 0, 0.02)',

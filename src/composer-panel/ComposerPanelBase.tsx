@@ -50,6 +50,7 @@ const DEFAULT_LABELS: Required<ComposerPanelLabels> = {
   send: 'Send message',
   stop: 'Stop generating',
   remove: 'Remove',
+  retry: 'Retry',
 };
 
 /**
@@ -143,6 +144,7 @@ export function ComposerPanelBase({
   onListeningChange,
   attachments,
   onRemoveAttachment,
+  onAttachmentRetry,
   status,
   emptyAction,
   onKeyPress: onKeyPressProp,
@@ -235,7 +237,9 @@ export function ComposerPanelBase({
               attachments={attachments ?? []}
               palette={palette}
               onRemove={onRemoveAttachment}
+              onRetry={onAttachmentRetry}
               removeLabel={labels.remove}
+              retryLabel={labels.retry}
             />
           </View>
         </Collapse>

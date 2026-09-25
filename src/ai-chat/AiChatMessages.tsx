@@ -3,6 +3,7 @@ import { View, type LayoutChangeEvent } from 'react-native';
 
 import { RiLinkM } from '../icons/remix/RiLinkM';
 import { Text } from '../typography';
+import { TurnActionButton } from './AiChatControls';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { RevealFade, RevealLine, RevealSequence, useRevealSlot } from './AiChatReveal';
 import { CARD_RADIUS, dataHook, IS_WEB, useAiChatPalette, useAiChatWebCss } from './shared';
@@ -23,6 +24,10 @@ import type {
  *   user       pushed right with a 6px bleed past the column (`-mr-1.5`), hugging
  *              its text up to half the column + 6; radius 16, background-primary,
  *              px 12 / py 11, shadow-card; body-regular text-primary, left-aligned
+ *   actions    under the user card, 8 below it and right-aligned: the feedback
+ *              row's buttons, 6 apart. On a web pointer they fade in (150ms)
+ *              while the turn is hovered or holds focus — opacity only, so they
+ *              stay tabbable and announced; always shown on native and touch
  *   assistant  full width, gap 8, body-regular text-primary; the feedback row last
  *   line       a paragraph; `secondary` tone for status lines
  *   bullets    disc markers outside a 21px indent, items 8 apart
@@ -55,12 +60,13 @@ function asBlocks(children: React.ReactNode): React.ReactNode {
   });
 }
 
-export function AiChatUserMessage({ children, animate = true, style, testID }: AiChatUserMessageProps) {
+export function AiChatUserMessageBase({ children, actions, animate = true, style, testID }: AiChatUserMessageProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const [column, setColumn] = useState(0);
   return (
     <View
+      {...dataHook('bloomAiChatTurn')}
       testID={testID}
       onLayout={(event: LayoutChangeEvent) => setColumn(event.nativeEvent.layout.width)}
       style={[{ width: '100%', alignItems: 'flex-end' }, style]}>
@@ -80,6 +86,23 @@ export function AiChatUserMessage({ children, animate = true, style, testID }: A
         }}>
         <RevealSequence animate={animate}>{asBlocks(children)}</RevealSequence>
       </RevealFade>
+      {actions && actions.length > 0 ? (
+        <RevealFade animate={animate} style={{ marginTop: 8 }}>
+          <View
+            {...dataHook('bloomAiChatTurnActions')}
+            testID={testID ? `${testID}-actions` : undefined}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            {actions.map((action) => (
+              <TurnActionButton
+                key={action.key}
+                action={action}
+                palette={palette}
+                testID={testID ? `${testID}-actions` : undefined}
+              />
+            ))}
+          </View>
+        </RevealFade>
+      ) : null}
     </View>
   );
 }

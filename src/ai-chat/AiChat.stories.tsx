@@ -6,6 +6,10 @@ import { Button } from '../button';
 import { CodeBlock } from '../code';
 import { ComposerLoader } from '../composer-loader';
 import { ComposerPill, ComposerStatusBar } from '../composer-panel';
+import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
+import { RiPencilLine } from '../icons/remix/RiPencilLine';
+import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
+import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -103,6 +107,50 @@ export const Messages: Story = {
 export const FeedbackRow: Story = {
   parameters: { controls: { disable: true } },
   render: () => <AiChatFeedbackRow />,
+};
+
+/**
+ * Turn actions: the user card's copy / edit (hover or tab into the turn on
+ * web), and a reply with read aloud (a toggle) and regenerate (disabled while
+ * "busy") after copy. The copy waits 600ms, as a clipboard write might, before
+ * it confirms.
+ */
+export const TurnActions: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => {
+    const [speaking, setSpeaking] = useState(false);
+    const [busy, setBusy] = useState(false);
+    return (
+      <View style={{ maxWidth: '100%', width: 718, gap: 12 }}>
+        <AiChatUserMessage
+          actions={[
+            { key: 'copy', label: 'Copy message', icon: RiFileCopyLine, onPress: () => {} },
+            { key: 'edit', label: 'Edit message', icon: RiPencilLine, onPress: () => {} },
+          ]}>
+          what changed in the theme tokens?
+        </AiChatUserMessage>
+        <AiChatAssistantMessage
+          feedbackProps={{
+            onCopy: () => new Promise<void>((resolve) => setTimeout(resolve, 600)),
+            actions: [
+              { key: 'speak', label: speaking ? 'Stop reading' : 'Read aloud', icon: RiVolumeUpLine, onPress: () => setSpeaking((on) => !on), active: speaking },
+              {
+                key: 'regenerate',
+                label: 'Regenerate',
+                icon: RiRefreshLine,
+                disabled: busy,
+                onPress: () => {
+                  setBusy(true);
+                  setTimeout(() => setBusy(false), 1500);
+                },
+              },
+            ],
+          }}>
+          The surface tokens moved to one ladder; every card now reads its parent fill.
+        </AiChatAssistantMessage>
+      </View>
+    );
+  },
 };
 
 /** The generation frame: the dot wave and countdown for four seconds, then the radial reveal and the feedback row. */

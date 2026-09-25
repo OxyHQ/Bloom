@@ -80,6 +80,13 @@ export interface ComposerPanelAttachment {
    * once the file has landed — that also reveals the dismiss.
    */
   progress?: number;
+  /**
+   * The upload failed, and why ("Too large", "Network error"). The tile turns
+   * to the error surface and shows this in place of the name; the ring and the
+   * percentage go (any `progress` is ignored) and the dismiss comes back. With
+   * `ComposerPanel`'s `onAttachmentRetry` it also gets a retry button.
+   */
+  error?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -195,6 +202,8 @@ export interface ComposerPanelLabels {
   stop?: string;
   /** Default `'Remove'` — prefixed to the file name on a tile's dismiss. */
   remove?: string;
+  /** Default `'Retry'` — prefixed to the file name on a failed tile's retry. */
+  retry?: string;
 }
 
 export interface ComposerPanelProps {
@@ -256,6 +265,8 @@ export interface ComposerPanelProps {
   /** Tiles above the prompt. Each one's `progress` drives its upload ring. */
   attachments?: ReadonlyArray<ComposerPanelAttachment>;
   onRemoveAttachment?: (id: string) => void;
+  /** Draws a retry button on every tile with an `error`; called with its id. */
+  onAttachmentRetry?: (id: string) => void;
 
   /** The tab on the card's top edge — typically `<ComposerPanelStatusTab />`. */
   status?: ReactNode;
