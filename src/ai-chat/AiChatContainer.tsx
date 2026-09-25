@@ -92,10 +92,11 @@ const HIDDEN_FROM_A11Y = {
  * `floatingChrome` changes the geometry, not the parts:
  *
  *   thread    the `children` fill the whole card, under everything below
- *   header    the `header` slot + breadcrumb row, absolute at the top, no band;
- *             an edge scrim of the surface (opaque at the top, gone
- *             `SCRIM_TAIL_RATIO` below the block) fades in over the first 16px
- *             of transcript scrolled under it
+ *   header    the `header` slot + breadcrumb row, absolute at the top, no band
+ *             at rest; once the transcript scrolls under it, the surface fades
+ *             in behind it over the first 16px — solid across the whole block,
+ *             then a ramp to nothing `SCRIM_TAIL_RATIO` below it — so no turn
+ *             ever shows through the title or the crumbs
  *   footer    absolute at the bottom, with no band of its own: the transcript
  *             passes behind the composer and stays in sight around it
  *
@@ -340,6 +341,7 @@ function FloatingChrome({
   const alpha = parsed?.a ?? 1;
   const topStyle = useAnimatedStyle(() => ({ opacity: topFade.value * alpha }), [topFade, alpha]);
   const prefix = testID ?? 'ai-chat';
+  const scrimTail = Math.round(headerHeight * SCRIM_TAIL_RATIO);
 
   // Absolute over a card of fixed height; sticky in the flow of a card that
   // grows with the document, pinned to the screen's gutter.
@@ -363,9 +365,7 @@ function FloatingChrome({
               top: 0,
               left: 0,
               right: 0,
-              // Past the block's own bottom: a ramp that ends where the layout
-              // does is a line across the transcript again.
-              height: Math.round(headerHeight * (1 + SCRIM_TAIL_RATIO)),
+              height: headerHeight + scrimTail,
               // The card's own corners, since nothing clips a document card.
               ...(documentScroll
                 ? { borderTopLeftRadius: DOCUMENT_CARD_RADIUS, borderTopRightRadius: DOCUMENT_CARD_RADIUS, overflow: 'hidden' as const }
@@ -373,7 +373,17 @@ function FloatingChrome({
             },
             topStyle,
           ]}>
-          <EdgeScrim color={solid} />
+          {/* SOLID behind the header's own block. A ramp that starts fading
+              inside the block leaves the breadcrumb row over half-covered
+              turns — measured in a browser, a code block's lines read straight
+              through the chat's title and crumbs at every width. The ramp
+              only starts where the block ends. */}
+          <View testID={`${prefix}-fade-top-surface`} style={{ height: headerHeight, backgroundColor: solid }} />
+          {/* Past the block's own bottom: a ramp that ends where the layout
+              does is a line across the transcript again. */}
+          <View style={{ height: scrimTail }}>
+            <EdgeScrim color={solid} />
+          </View>
         </Animated.View>
       ) : null}
       {header}

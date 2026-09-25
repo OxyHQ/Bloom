@@ -169,3 +169,16 @@ export function resetOverlayStack(): void {
 export function hasActiveOverlays(): boolean {
   return registry().live.size > 0;
 }
+
+/**
+ * Whether the surface painting at `layer` is the top-most one open — the one
+ * Escape and Tab belong to. A menu opened from inside a dialog takes a higher
+ * rank than the dialog, so the dialog stands aside until it closes.
+ */
+export function isTopmostOverlayLayer(layer: OverlayLayer): boolean {
+  const { live } = registry();
+  if (live.size === 0) return false;
+  let top = 0;
+  for (const rank of live) if (rank > top) top = rank;
+  return layerForRank(top).root === layer.root;
+}

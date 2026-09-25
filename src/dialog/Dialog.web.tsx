@@ -37,6 +37,7 @@ import Animated, {
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Backdrop, OverlayRoot } from '../overlay';
+import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { StyledView } from '../styles/styled-primitives';
 import { Portal } from '../portal/index.web';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -219,6 +220,7 @@ function CenterOrSideDialog({
   // the imperative `control.close()` still drives the exit + post-exit onClose.
   const [isOpen, setIsOpen] = useState(() => controlledOpen ?? startOpen ?? false);
   const [isClosing, setIsClosing] = useState(false);
+  const panelRef = useRef<View>(null);
   const closeCallbacksRef = useRef<(() => void)[]>([]);
   // Read the latest controlled flag inside stable callbacks without re-binding.
   const isControlledRef = useRef(isControlled);
@@ -314,24 +316,6 @@ function CenterOrSideDialog({
       : withTiming(1, { duration: BACKDROP_FADE_IN_DURATION, easing: Easing.out(Easing.ease) });
   }, [backdropFade, isOpen, isClosing]);
 
-  // Escape-to-close while open. The listener is intentionally scoped to the
-  // open lifetime so stacked dialogs don't fight for the keydown — the
-  // top-most one wins via document-level event order. Escape honors
-  // `dismissOnBackdrop`: a blocking dialog (e.g. an unanswered confirm) is not
-  // dismissible by Escape, matching the backdrop's behavior. The default
-  // (`dismissOnBackdrop` true) is unchanged — Escape still closes.
-  useEffect(() => {
-    if (!isOpen || !dismissOnBackdrop || typeof document === 'undefined') return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        close();
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [close, dismissOnBackdrop, isOpen]);
-
   useImperativeHandle(
     control?.ref,
     () => ({ open, close }),
@@ -359,6 +343,12 @@ function CenterOrSideDialog({
                 `OverlayInertBoundary` take the page out of the tab order and
                 the accessibility tree while it is open. */}
             <OverlayRoot modal>
+              <ModalKeyboard
+                panelRef={panelRef}
+                closing={isClosing}
+                dismissible={dismissOnBackdrop}
+                dismiss={close}
+              />
               {/* The press target IS the full-viewport box, so it uses
                   `Backdrop` (which opts back in from the Portal root's
                   `pointer-events: none` via the `pointerEvents` PROP — the style
@@ -380,6 +370,7 @@ function CenterOrSideDialog({
                 }}
               >
                 <DialogPanel
+                  panelRef={panelRef}
                   testID={testID}
                   label={label}
                   title={title}
@@ -410,6 +401,7 @@ function CenterOrSideDialog({
         <ClosingContext.Provider value={isClosing}>
           <RemoveScrollBar />
           <SheetSurface
+            panelRef={panelRef}
             testID={testID}
             label={label}
             title={title}
@@ -439,6 +431,7 @@ function CenterOrSideDialog({
 }
 
 function DialogPanel({
+  panelRef,
   testID,
   label,
   title,
@@ -454,6 +447,7 @@ function DialogPanel({
   isClosing,
   children,
 }: {
+  panelRef: React.RefObject<View | null>;
   testID?: string;
   label?: string;
   title?: string;
@@ -508,7 +502,11 @@ function DialogPanel({
 
   return (
     <Animated.View
+      ref={panelRef}
       role="dialog"
+      aria-modal
+      // Focus lands on the panel itself when it holds nothing tabbable.
+      tabIndex={-1}
       aria-label={label}
       aria-labelledby={title ? titleId : undefined}
       aria-describedby={description ? descriptionId : undefined}
@@ -625,6 +623,7 @@ function DialogPanel({
  * implementation with native and supports drag-to-dismiss on web.
  */
 function SheetSurface({
+  panelRef,
   testID,
   label,
   title,
@@ -646,6 +645,7 @@ function SheetSurface({
   style,
   children,
 }: {
+  panelRef: React.RefObject<View | null>;
   testID?: string;
   label?: string;
   title?: string;
@@ -750,6 +750,7 @@ function SheetSurface({
 
   return (
     <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName} modal>
+      <ModalKeyboard panelRef={panelRef} closing={!shown} dismissible={dismissOnBackdrop} dismiss={onDismiss} />
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
@@ -763,7 +764,10 @@ function SheetSurface({
       />
 
       <StyledView
+        ref={panelRef}
         role="dialog"
+        aria-modal
+        tabIndex={-1}
         aria-label={label}
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}

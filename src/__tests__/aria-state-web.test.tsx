@@ -91,6 +91,7 @@ import {
 import { MenuSurfaceProvider } from '../floating/context';
 import { DotGridMeter } from '../dot-grid-meter';
 import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
+import { Dialog as WebDialog } from '../dialog/Dialog.web';
 import { ToastContent } from '../toast/ToastContent';
 // Both Select forks by explicit filename: jest has no platform-extension
 // resolution, so a bare `'../select'` would only ever exercise the native one
@@ -1284,5 +1285,21 @@ describe('Chat list', () => {
     expect(link.getAttribute('aria-current')).toBe('true');
     expect(link.hasAttribute('aria-selected')).toBe(false);
     expect(link.getAttribute('aria-label')).toBe('Ana Ferrer, 12:41');
+  });
+});
+
+describe('modal dialogs say they are modal', () => {
+  // `aria-modal` is what tells a screen reader the page behind is out of
+  // reach; the panel is portaled, so it is found on the document, not in the
+  // mount container.
+  it.each(['center', 'right'] as const)('Dialog (%s) emits role="dialog", aria-modal and its name', (placement) => {
+    mount(
+      <WebDialog open onClose={() => {}} placement={placement} label="Shortcuts">
+        <Text>Body</Text>
+      </WebDialog>,
+    );
+    const panel = document.querySelector('[role="dialog"][aria-label="Shortcuts"]');
+    expect(panel).not.toBeNull();
+    expect(panel?.getAttribute('aria-modal')).toBe('true');
   });
 });

@@ -69,7 +69,9 @@ Give the shell a sized parent — it fills it.
 - **`scroll`** — what scrolls the page, `AppShell`'s contract. `container` (the default) fills the parent and the conversation scrolls inside the card. **`document`** (web) grows the page and lets the browser scroll it — the page's scrollbar, scroll restoration, the mobile address bar collapsing and `window.scrollTo` behave as on any page. See [Document scroll](#document-scroll). Native has no document and treats it as `container`.
 - **What the shell publishes** — `useAiChatShell()` returns the shell's state to any descendant: `compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav` / `hasPanel`, `documentScroll`, `openNav` / `closeNav` / `openPanel`, and **`navPresented`**.
 
-  Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed. The shell takes it out of reach itself: while closed, the nav drawer and the panel drawer are `aria-hidden` and `pointerEvents="none"`, `inert` on web (so their controls leave the tab order too) and hidden from VoiceOver/TalkBack on native. A host does not wrap `mobileSidebar` in a gate of its own; `navPresented` is there for anything else that has to know whether the nav is on screen.
+  Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed. The shell takes it out of reach itself: while closed, the nav drawer and the panel drawer are `aria-hidden` and `pointerEvents="none"`, `inert` on web (so their controls leave the tab order too) and hidden from VoiceOver/TalkBack on native. The veil over the workspace is inside the same gate, and it is never a Tab stop — react-native-web's `Pressable` writes `tabIndex` 0 over `focusable={false}`, so the veil takes `tabIndex={-1}`. A host does not wrap `mobileSidebar` in a gate of its own; `navPresented` is there for anything else that has to know whether the nav is on screen.
+
+  An open nav drawer owns the keyboard the way the panel drawer does: on web focus moves to its first control, Tab and Shift+Tab stay inside it, Escape closes it — also from a text field in it — and focus returns to whatever opened it (the menu button); Android back closes it. Portaled menus and dialogs above it take all of that first.
 
 ## Container and thread
 
@@ -106,7 +108,7 @@ The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is 
 | `children` | fill the card's full height — nothing is in flow above or below them |
 | header block | the `header` slot (`AiChatMobileHeader`) + the breadcrumb row, absolute at the top, transparent — no band of its own |
 | footer block | `AgentThinking` + `composer`, absolute at the bottom, px 10 / pt 12 / pb 10, gap 10 — **no band of its own**: the transcript passes behind the composer and stays in sight around it |
-| top fade | the page-header edge scrim in the card surface, opaque at the top edge, ending 55% of the header block's height below it; fades in over the first **16px** scrolled (the gap it closes) |
+| top fade | the card surface, **solid behind the whole header block**, then the page-header edge scrim ramping to nothing 55% of the block's height below it; fades in over the first **16px** scrolled (the gap it closes). The ramp used to start at the top edge, leaving the breadcrumb row over a half-covered turn — code and text read straight through the title and crumbs |
 
 Both blocks are `pointerEvents="box-none"`, so the transcript under their empty space still scrolls and takes clicks. The fade is decorative (hidden from assistive tech) and exists **only while turns are actually under the header**. Nothing is painted behind the composer: its own card is what covers the turns under it, as the conversation slides past on either side.
 
@@ -228,7 +230,9 @@ never presents a preview or a style editor that does not exist.
 
 ### Panel keyboard ownership
 
-An open `AiChatShell` panel closes on Escape (web) or Android back. Controlled
+An open `AiChatShell` panel closes on Escape (web) or Android back — on web
+also with the caret in one of its text fields, whose keydowns react-native-web
+never lets bubble (`overlay/modal-keyboard.ts`). Controlled
 hosts keep `panelOpen` in sync through `onPanelOpenChange`; removing their
 `panel` closes the desktop rail. At compact widths the drawer moves web focus
 inside, cycles Tab/Shift+Tab, and returns focus to its opener when closed.
