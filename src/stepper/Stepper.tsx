@@ -5,6 +5,7 @@ import { Button } from '../button';
 import { webDataSet } from '../styles/web-data';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { RiAddLine } from '../icons/remix/RiAddLine';
+import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -33,6 +34,14 @@ import { useFieldMembership } from '../field/membership';
  * the tab order, being pointer affordances for the same action. On native it
  * answers the `increment`/`decrement` accessibility actions (VoiceOver swipe
  * up/down, TalkBack volume keys).
+ *
+ * REMOVE AT THE FLOOR is opt-in (`onRemove`). With it, the `−` button at `min`
+ * turns into a trash button named `removeLabel` that calls `onRemove` — a
+ * basket line that goes from 1 to gone. Without it the button disables at
+ * `min`, as it always has. The keyboard and the accessibility actions on the
+ * value never remove: an arrow key or a volume-key swipe that deletes is a
+ * destructive action behind an arithmetic one. So that a keyboard user can
+ * still reach it, the button joins the tab order while it is the remove control.
  */
 
 const IS_WEB = Platform.OS === 'web';
@@ -83,6 +92,8 @@ function StepperComponent({
   accessibilityLabel,
   decrementLabel = 'Decrease',
   incrementLabel = 'Increase',
+  onRemove,
+  removeLabel = 'Remove',
   style,
   testID,
 }: StepperProps) {
@@ -99,6 +110,8 @@ function StepperComponent({
 
   const canDecrement = !disabled && value > min;
   const canIncrement = !disabled && (max === undefined || value < max);
+  // At the floor with `onRemove`, the decrement slot IS the remove control.
+  const removes = onRemove !== undefined && !disabled && value <= min;
 
   const change = useCallback(
     (target: number) => {
@@ -180,11 +193,11 @@ function StepperComponent({
         variant="secondary"
         size={config.button}
         iconOnly
-        icon={RiSubtractLine}
-        onPress={decrement}
-        disabled={!canDecrement}
-        accessibilityLabel={decrementLabel}
-        tabIndex={-1}
+        icon={removes ? RiDeleteBinLine : RiSubtractLine}
+        onPress={removes ? onRemove : decrement}
+        disabled={!(canDecrement || removes)}
+        accessibilityLabel={removes ? removeLabel : decrementLabel}
+        tabIndex={removes ? 0 : -1}
         testID={testID ? `${testID}-decrement` : undefined}
       />
       <View

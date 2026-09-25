@@ -173,6 +173,61 @@ describe('the stepper does not remove', () => {
   });
 });
 
+describe('removeInStepper moves removal into the stepper (opt-in)', () => {
+  it('at quantity 1 the decrement is the named remove control, and no separate one is drawn', () => {
+    let removed = 0;
+    mount(
+      <CartLine
+        name="Sorrel stew"
+        price="€10.00"
+        quantity={1}
+        removeInStepper
+        onQuantityChange={() => undefined}
+        onRemove={() => {
+          removed += 1;
+        }}
+        testID="l"
+      />,
+    );
+    expect(queryTestId('l-remove')).toBeNull();
+    const remove = byTestId('l-stepper-decrement');
+    expect(remove.getAttribute('aria-label')).toBe('Remove Sorrel stew');
+    click(remove);
+    expect(removed).toBe(1);
+  });
+
+  it('a sold-out line keeps its separate remove control, its stepper being disabled', () => {
+    mount(
+      <CartLine
+        name="Harbour pickles"
+        price="€4.20"
+        quantity={1}
+        unavailable
+        removeInStepper
+        onQuantityChange={() => undefined}
+        onRemove={() => undefined}
+        testID="l"
+      />,
+    );
+    expect(byTestId('l-remove').getAttribute('aria-label')).toBe('Remove Harbour pickles');
+    expect(byTestId('l-stepper-decrement').getAttribute('aria-label')).toBe('Decrease');
+  });
+
+  it('CartPanel passes it to every line', () => {
+    const removed: string[] = [];
+    mount(
+      panel({
+        removeInStepper: true,
+        onLineQuantityChange: () => undefined,
+        onLineRemove: (id) => removed.push(id),
+      }),
+    );
+    expect(queryTestId('c-line-sorrel-remove')).toBeNull();
+    click(byTestId('c-line-sorrel-stepper-decrement'));
+    expect(removed).toEqual(['sorrel']);
+  });
+});
+
 describe('a sold-out line is quietened, not disabled', () => {
   it('keeps the row at full opacity and the remove control operable', () => {
     let removed = 0;

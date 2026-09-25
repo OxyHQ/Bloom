@@ -187,6 +187,7 @@ function CartPanelComponent({
   lines,
   onLineQuantityChange,
   onLineRemove,
+  removeInStepper = false,
   minimumOrder,
   tip,
   promo,
@@ -251,6 +252,7 @@ function CartPanelComponent({
                     : undefined
                 }
                 onRemove={onLineRemove ? () => onLineRemove(line.id) : undefined}
+                removeInStepper={removeInStepper}
                 testID={testID ? `${testID}-line-${line.id}` : undefined}
               />
             ))}

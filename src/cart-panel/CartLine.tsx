@@ -23,10 +23,13 @@ import type { CartLineProps } from './types';
  *             the quantity control and remove, side by side
  *   trailing  the price, right-aligned, with an optional struck original
  *
- * THE STEPPER DOES NOT REMOVE. Its floor is 1, and removing is its own control
- * with its own name — a stepper that deletes the line when you press `−` once
- * too often is a destructive action behind an arithmetic one, and it has no
- * label saying so.
+ * BY DEFAULT THE STEPPER DOES NOT REMOVE. Its floor is 1, and removing is its
+ * own control with its own name — a stepper that deletes the line when you
+ * press `−` once too often is a destructive action behind an arithmetic one.
+ * `removeInStepper` opts into the storefront pattern instead: at 1 the `−`
+ * becomes a trash button NAMED as removal (`Stepper`'s `onRemove`), and the
+ * separate remove control is not drawn. A sold-out line keeps the separate
+ * control, because its stepper is disabled and could not remove anything.
  *
  * The row is never pressable, which is what lets the controls live in it: a
  * pressable `Item` is a real `<button>` on web and a control inside one is
@@ -56,6 +59,7 @@ function CartLineComponent(props: CartLineProps) {
     onQuantityChange,
     onRemove,
     removeLabel,
+    removeInStepper = false,
     density = 'comfortable',
     accessibilityLabel,
     style,
@@ -68,6 +72,10 @@ function CartLineComponent(props: CartLineProps) {
   const g = CART_GEOMETRY[density];
   const compact = density === 'compact';
   const chosen = optionsLine(options);
+  const removeName = removeLabel ?? `Remove ${name}`;
+  // The stepper carries removal only when it is live; a disabled stepper
+  // (sold out) cannot, and the line still needs its remove control.
+  const stepperRemoves = removeInStepper && onRemove !== undefined && onQuantityChange !== undefined && !unavailable;
 
   return (
     <Item
@@ -146,6 +154,8 @@ function CartLineComponent(props: CartLineProps) {
               min={1}
               disabled={unavailable}
               onValueChange={onQuantityChange}
+              onRemove={stepperRemoves ? onRemove : undefined}
+              removeLabel={stepperRemoves ? removeName : undefined}
               accessibilityLabel={name}
               testID={testID ? `${testID}-stepper` : undefined}
             />
@@ -158,11 +168,11 @@ function CartLineComponent(props: CartLineProps) {
               {`×${quantity}`}
             </Text>
           )}
-          {onRemove ? (
+          {onRemove && !stepperRemoves ? (
             <GlyphButton
               size={32}
               icon={RiDeleteBinLine}
-              accessibilityLabel={removeLabel ?? `Remove ${name}`}
+              accessibilityLabel={removeName}
               onPress={onRemove}
               testID={testID ? `${testID}-remove` : undefined}
             />
