@@ -222,29 +222,39 @@ describe('BottomSheet', () => {
     });
   });
 
-  describe('keyboard provider (Modal native-root boundary)', () => {
-    it('re-establishes a KeyboardProvider inside the Modal and wraps the sheet content', () => {
-      // RN <Modal> mounts into a SEPARATE native root; the app-root
-      // react-native-keyboard-controller <KeyboardProvider>'s native context
-      // does not cross that boundary. The sheet must therefore re-establish a
-      // provider INSIDE the Modal so its own keyboard tracker (SheetKeyboardSync)
-      // AND any inputs in `children` find a real KeyboardContext (otherwise:
-      // "Couldn't find real values for KeyboardContext ..." warning + broken
-      // keyboard insets). This asserts the presented content is a DESCENDANT of
-      // that in-Modal provider.
+  describe('keyboard provider: the app\'s one, never a second inside the Modal', () => {
+    it('adds no KeyboardProvider of its own and tracks the keyboard through the app\'s', () => {
+      // Every keyboard-controller provider suspends its main-window callback
+      // when a <Modal> shows and relies on `dialog.setOnDismissListener` to
+      // resume it; a dialog keeps only the last listener, so a provider added
+      // inside the sheet left the app's own suspended for good — after the
+      // first sheet, no KeyboardAvoidingView in the app followed the keyboard
+      // until a restart (Alia #608, Android 16). React context crosses the
+      // Modal, and the root provider carries the Modal window's keyboard
+      // events itself, so the sheet uses that one.
+      // The same module instance the sheet `require`s (moduleNameMapper'd to
+      // `__mocks__/`); `jest.requireMock` would hand back a separate automock.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { KeyboardProvider, useKeyboardHandler } = require('react-native-keyboard-controller') as {
+        KeyboardProvider: React.ComponentType<{ children?: React.ReactNode }>;
+        useKeyboardHandler: jest.Mock;
+      };
+      useKeyboardHandler.mockClear();
       const ref = createRef<BottomSheetRef>();
-      const { getByText, UNSAFE_getByType } = renderWithTheme(
-        <BottomSheet ref={ref}>
-          <Text>Keyboarded content</Text>
-        </BottomSheet>,
+      const { getByText, UNSAFE_getAllByType } = renderWithTheme(
+        <KeyboardProvider>
+          <BottomSheet ref={ref}>
+            <Text>Keyboarded content</Text>
+          </BottomSheet>
+        </KeyboardProvider>,
       );
       act(() => {
         ref.current?.present();
       });
 
-      const provider = UNSAFE_getByType('KeyboardProvider' as never);
-      expect(within(provider).getByText('Keyboarded content')).toBeTruthy();
       expect(getByText('Keyboarded content')).toBeTruthy();
+      expect(UNSAFE_getAllByType('KeyboardProvider' as never)).toHaveLength(1);
+      expect(useKeyboardHandler).toHaveBeenCalled();
     });
   });
 

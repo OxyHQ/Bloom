@@ -31,6 +31,10 @@ function Example() {
 }
 ```
 
+## Keyboard
+
+On native the sheet follows the keyboard through `react-native-keyboard-controller`, using the app's **one** `<KeyboardProvider>` at its root (`OxyProvider` mounts it for Oxy apps). The sheet mounts no provider of its own inside its `Modal`, and neither should anything else: every provider suspends its main-window callback while a `Modal` is up and resumes it from the dialog's dismiss listener, of which a dialog keeps only the last. With two providers, one stays suspended after the first sheet closes, and every `KeyboardAvoidingView` under it stops following the keyboard until the app restarts (Alia #608, Android 16). Without any root provider the sheet does not track the keyboard, like every other keyboard-controller consumer in that app.
+
 ## Ref methods
 
 | Method | Description |

@@ -127,7 +127,8 @@ export interface BottomSheetProps {
 /**
  * Props consumed by a platform Shell — the outermost wrapper that hosts the
  * sheet body in a full-screen overlay. Native wraps it in RN's `<Modal>` +
- * `<KeyboardProvider>` + `<GestureHandlerRootView>`; web wraps it in bloom's
+ * `<GestureHandlerRootView>` (keyboard tracking reads the app's own root
+ * `<KeyboardProvider>`, never a second one); web wraps it in bloom's
  * stable DOM `<Portal>` + a fixed `<GestureHandlerRootView>`. Splitting the
  * shell is what lets web avoid RN-Web's `<Modal>`/`ModalPortal`, whose host
  * node is orphaned under React 19 concurrent/StrictMode so the sheet mounts
