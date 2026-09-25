@@ -184,11 +184,15 @@ const FILES: SettingsStoredFile[] = (() => {
 //  Pages, wired with local state
 // ---------------------------------------------------------------------------
 
+const COMPACT_SELECT_FIELD = { gap: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 5, paddingBottom: 5 };
+
 function CompactSelect({ label, value, onChange, items }: { label: string; value: string; onChange: (v: string) => void; items: { value: string; label: string }[] }) {
   return (
-    // A compact row trigger: `h-8 gap-1 px-2 py-1.5` on the md select.
+    // A compact row trigger: 32px on the md select, from padding alone — 5 + 20
+    // + 5 inside the 1px border. Never a fixed `h-8`: the text then cannot grow
+    // with the font scale and Android cuts it in half (see `SelectTrigger`).
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger label={label} className="h-8 gap-1 px-2 py-1.5">
+      <SelectTrigger label={label} fieldStyle={COMPACT_SELECT_FIELD}>
         <SelectValue>
           {(v) => {
             const key = typeof v === 'object' && v !== null && 'value' in v ? (v as { value: string }).value : v;

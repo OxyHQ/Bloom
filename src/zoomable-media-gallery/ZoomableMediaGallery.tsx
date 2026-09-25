@@ -25,6 +25,7 @@ import {
   Gesture,
   GestureDetector,
 } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius } from '../styles/tokens';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
@@ -109,6 +110,13 @@ function shareUri(item: GalleryMedia): string | undefined {
 // image. `Platform.select` keeps them off native. `cursor` is a real
 // `ViewStyle` key on RN 0.83; `userSelect` is declared on `TextStyle` only,
 // which is what `WebCssStyle` covers.
+/** Share button inset from the top-right corner of the safe area. */
+const CHROME_EDGE = 16;
+/** Page indicator (and a lone caption) above the bottom of the safe area. */
+const INDICATOR_BOTTOM = 48;
+/** A caption lifted above the page counter + dots when the indicator shows. */
+const CAPTION_BOTTOM_WITH_INDICATOR = 110;
+
 const WEB_POINTER: WebCssStyle = { userSelect: 'none', cursor: 'pointer' };
 const WEB_USER_SELECT_NONE: WebCssStyle = { userSelect: 'none' };
 
@@ -207,6 +215,9 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  */
 const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false }, ref) => {
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
+  // The viewer is full-bleed, so its chrome must clear the status bar, the
+  // cutout and the home indicator itself — nothing above it applies them.
+  const insets = useSafeAreaInsets();
 
   const radiusFor = useCallback(
     (fit: FittedSize) => resolveCornerRadius(cornerRadius, fit),
@@ -928,7 +939,10 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
   }, [handleDismiss, isOpen, pageTo]);
 
   const renderContent = () => (
-    <OverlayRoot style={styles.modalContainer}>
+    // `onRequestClose`: Android back flies the media home like every other
+    // dismiss. The viewer is a Portal, not an RN `Modal`, so without it nothing
+    // consumed the press and back finished the whole app.
+    <OverlayRoot style={styles.modalContainer} onRequestClose={handleDismiss} modal>
       <GestureHandlerRootView style={StyleSheet.absoluteFill}>
         {/* Shared `Backdrop` (a Pressable) rather than a `Gesture.Tap()`: the
             viewer renders through the web Portal, whose root is
@@ -1063,7 +1077,10 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
           )}
 
           {pagerReady && items.length > 1 && (
-            <Animated.View style={[styles.indicatorWrap, backdropStyle]} pointerEvents="box-none">
+            <Animated.View
+              style={[styles.indicatorWrap, { bottom: INDICATOR_BOTTOM + insets.bottom }, backdropStyle]}
+              pointerEvents="box-none"
+            >
               <View style={styles.counterPill} pointerEvents="none">
                 <Text style={styles.counterText}>{`${activeIndex + 1} / ${items.length}`}</Text>
               </View>
@@ -1120,7 +1137,11 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
               accessibilityRole="button"
               accessibilityLabel="Share media"
               hitSlop={8}
-              style={[styles.shareButton, webPointerStyle]}
+              style={[
+                styles.shareButton,
+                { top: CHROME_EDGE + insets.top, right: CHROME_EDGE + insets.right },
+                webPointerStyle,
+              ]}
             >
               <RiUpload2Line fill="#fff" size="md" />
             </Pressable>
@@ -1130,7 +1151,11 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
             <Animated.View
               style={[
                 styles.altCaptionWrap,
-                items.length > 1 && styles.altCaptionWrapWithIndicator,
+                {
+                  bottom:
+                    (items.length > 1 ? CAPTION_BOTTOM_WITH_INDICATOR : INDICATOR_BOTTOM) +
+                    insets.bottom,
+                },
                 backdropStyle,
               ]}
               pointerEvents="none"
@@ -1209,9 +1234,9 @@ const styles = StyleSheet.create({
   mediaBox: {
     overflow: 'hidden',
   },
+  // `bottom` is inline: INDICATOR_BOTTOM above the bottom safe-area inset.
   indicatorWrap: {
     position: 'absolute',
-    bottom: 48,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -1298,10 +1323,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
     transform: [{ translateY: -22 }, { scale: 1.08 }],
   },
+  // `top`/`right` are inline: CHROME_EDGE inside the safe area. A bare 16
+  // put the button under the Android status bar, over the battery icon.
   shareButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
     width: 40,
     height: 40,
     borderRadius: borderRadius.full,
@@ -1309,17 +1334,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
   },
+  // `bottom` is inline, above the indicator when there is one, inside the safe area.
   altCaptionWrap: {
     position: 'absolute',
-    bottom: 48,
     left: 0,
     right: 0,
     alignItems: 'center',
     paddingHorizontal: 24,
-  },
-  // Lifted above the page counter + dots when the multi-image indicator shows.
-  altCaptionWrapWithIndicator: {
-    bottom: 110,
   },
   altCaptionPill: {
     maxWidth: 600,

@@ -546,7 +546,15 @@ function SideSheet({
   return (
     // `OverlayRoot` takes this drawer's place in the open-order overlay stack.
     // It mounts here, past the `mounted` guard, so the rank tracks OPENING.
-    <OverlayRoot style={[sideStyles.root, containerStyle]} className={containerClassName}>
+    // `onRequestClose`: the drawer is not an RN `Modal`, so Android back would
+    // otherwise pass straight to the screen behind it. A drawer that refuses
+    // backdrop dismissal still swallows the press, and stays open.
+    <OverlayRoot
+      style={[sideStyles.root, containerStyle]}
+      className={containerClassName}
+      onRequestClose={handleBackdropPress}
+      modal
+    >
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}

@@ -171,7 +171,8 @@ export const useWindowDimensions = () => ({ ...dimensionValues.window, scale: 1,
 export const StyleSheet = {
   create: <T extends Record<string, unknown>>(styles: T): T => styles,
   absoluteFill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
-  absoluteFillObject: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
+  // No `absoluteFillObject`: RN 0.85 removed it, and a mock that still offered
+  // it kept a zero-height settings modal green (`absolute-fill-object.test.ts`).
   flatten: (style: unknown) => style,
   hairlineWidth: 1,
 };
@@ -274,4 +275,12 @@ export const Linking = {
 export const Keyboard = {
   addListener: jest.fn((_name: string, _listener: () => void) => ({ remove: jest.fn() })),
   dismiss: jest.fn(),
+};
+
+// Present so suites can observe hardware-back registration (`OverlayRoot`'s
+// `onRequestClose`); each suite that presses back installs its own listener list.
+export const BackHandler = {
+  addEventListener: jest.fn((_event: string, _handler: () => boolean | null | undefined) => ({
+    remove: jest.fn(),
+  })),
 };

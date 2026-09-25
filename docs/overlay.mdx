@@ -79,6 +79,27 @@ Native bottom sheets never reach an `OverlayRoot` (they mount in an RN
 `<Modal>`), so `bottom-sheet/BottomSheetBase` does the same reset itself, once,
 for every sheet-presenting family.
 
+## Android back and screen readers belong to the root
+
+A portaled surface is not an RN `Modal`, so nothing consumes Android's hardware
+back for it. Pass `onRequestClose` to its `OverlayRoot` and the root registers
+the listener while mounted. `BackHandler` runs the newest listener first, so the
+surface opened last closes first. The media viewer once registered nothing, and
+back fell through to the app, which finished the activity at the root of its
+stack: pressing back to close an image closed the whole app
+(OxyHQ/Mention#1126). A surface that refuses dismissal still passes a handler,
+so the press is swallowed instead of reaching the screen underneath.
+
+`modal` sets `accessibilityViewIsModal` on the root. It goes on the root and
+not the panel because iOS hides only the modal view's siblings, and at the
+native outlet the root is the app content's sibling while the panel is not.
+
+Geometry matters to accessibility too. Android reports every view under a
+zero-area ancestor as not visible to the user. The settings modal's centring
+box once spread the removed `StyleSheet.absoluteFillObject` and collapsed to
+zero height. The panel still painted and took touches, but TalkBack saw only the
+backdrop's "Close". `absolute-fill-object.test.ts` now bans the property.
+
 ## The `pointerEvents` rule
 
 `box-none` and `box-only` are React Native-only values and **must be passed as

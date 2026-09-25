@@ -25,7 +25,7 @@ import PortalHost from "./PortalHostView";
  * export default function App() {
  *   return (
  *     <PortalProvider>
- *        <PortalHost style={StyleSheet.absoluteFillObject} name="overlay" />
+ *        <PortalHost style={StyleSheet.absoluteFill} name="overlay" />
  *     </PortalProvider>
  *   );
  * }

@@ -57,6 +57,7 @@ import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { layerForRank, type OverlayLayer } from './stack';
+import { useHardwareBack } from './use-hardware-back';
 import { useOverlayLayer } from './use-overlay-layer';
 import type { OverlayRootProps, BackdropProps } from './types';
 
@@ -109,32 +110,43 @@ export const BACKDROP_DIM_OPACITY = 0.28;
  * every Bloom surface already puts it. Descendants that need to order
  * themselves within the surface read `useOverlayLayerContext()`.
  */
-export function OverlayRoot({ children, className, style, testID, zIndex }: OverlayRootProps) {
+export function OverlayRoot({
+  children,
+  className,
+  style,
+  testID,
+  zIndex,
+  onRequestClose,
+  modal = false,
+}: OverlayRootProps) {
+  // On the root rather than in each surface: every portaled surface mounts one
+  // inside its open guard, so this is the one place that cannot be forgotten.
+  // The gallery once forgot it and Android back finished the whole activity.
+  useHardwareBack(onRequestClose);
   // Split into two components rather than branching on the hook: a pinned root
   // must not CONSUME a rank either. The toast host is pinned and mounts for the
   // whole life of the app, so holding a rank would keep the live set permanently
   // non-empty — the counter would never reset and depths would climb for the
   // rest of the session.
   return zIndex === undefined ? (
-    <StackedOverlayRoot className={className} style={style} testID={testID}>
+    <StackedOverlayRoot className={className} style={style} testID={testID} modal={modal}>
       {children}
     </StackedOverlayRoot>
   ) : (
-    <PinnedOverlayRoot zIndex={zIndex} className={className} style={style} testID={testID}>
+    <PinnedOverlayRoot zIndex={zIndex} className={className} style={style} testID={testID} modal={modal}>
       {children}
     </PinnedOverlayRoot>
   );
 }
 
-function StackedOverlayRoot({
-  children,
-  className,
-  style,
-  testID,
-}: Omit<OverlayRootProps, 'zIndex'>) {
+type OverlayRootViewProps = Pick<OverlayRootProps, 'children' | 'className' | 'style' | 'testID'> & {
+  modal: boolean;
+};
+
+function StackedOverlayRoot({ children, className, style, testID, modal }: OverlayRootViewProps) {
   const layer = useOverlayLayer();
   return (
-    <OverlayRootView layer={layer} className={className} style={style} testID={testID}>
+    <OverlayRootView layer={layer} className={className} style={style} testID={testID} modal={modal}>
       {children}
     </OverlayRootView>
   );
@@ -146,7 +158,8 @@ function PinnedOverlayRoot({
   style,
   testID,
   zIndex,
-}: OverlayRootProps & { zIndex: number }) {
+  modal,
+}: OverlayRootViewProps & { zIndex: number }) {
   // Outside the stack, so descendants must not read stack depths from it
   // either — every slot is the pinned depth.
   const layer = useMemo(
@@ -154,7 +167,7 @@ function PinnedOverlayRoot({
     [zIndex],
   );
   return (
-    <OverlayRootView layer={layer} className={className} style={style} testID={testID}>
+    <OverlayRootView layer={layer} className={className} style={style} testID={testID} modal={modal}>
       {children}
     </OverlayRootView>
   );
@@ -166,14 +179,19 @@ function OverlayRootView({
   style,
   testID,
   layer,
-}: Omit<OverlayRootProps, 'zIndex'> & { layer: OverlayLayer }) {
+  modal,
+}: OverlayRootViewProps & { layer: OverlayLayer }) {
   return (
     <OverlayLayerContext.Provider value={layer}>
       {/* `pointerEvents` stays a PROP: react-native-web resolves the RN-only
           `box-none` from the prop path only, and as a style entry it is silently
-          dropped — which makes the whole portaled surface click-through. */}
+          dropped — which makes the whole portaled surface click-through.
+          `accessibilityViewIsModal` sits HERE, not on the panel: iOS hides only
+          the modal view's SIBLINGS, and at the native outlet this root is the
+          sibling of the app content, where the panel is not. */}
       <StyledView
         pointerEvents="box-none"
+        accessibilityViewIsModal={modal && Platform.OS !== 'web' ? true : undefined}
         className={className}
         style={[styles.root, { zIndex: layer.root }, style]}
         testID={testID}

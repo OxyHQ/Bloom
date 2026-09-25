@@ -81,7 +81,7 @@ const PULSE_SCALE = 0.18;
 
 /** One full-size layer that centres whatever it holds on the box's centre. */
 const layerStyle: ViewStyle = {
-  ...StyleSheet.absoluteFillObject,
+  ...StyleSheet.absoluteFill,
   alignItems: 'center',
   justifyContent: 'center',
 };

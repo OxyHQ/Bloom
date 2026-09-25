@@ -141,6 +141,29 @@ describe('SettingsModal shell', () => {
     expect(getByRole('heading').props.children).toBe('General');
   });
 
+  /**
+   * OxyHQ/Mention#1126: TalkBack and UI Automator saw only the backdrop's
+   * "Close" — none of the modal. The centring box spread the removed
+   * `StyleSheet.absoluteFillObject`, so on RN 0.85+ it sat in flow at ZERO
+   * height; the panel painted outside it, and Android drops every view under a
+   * zero-area ancestor from the accessibility tree.
+   */
+  it('lays the panel out in a box that fills the screen, under a modal root', () => {
+    const { getByTestId } = renderWithTheme(<Controlled />);
+    flush();
+    let node = getByTestId('settings').parent;
+    while (node && resolvedStyle(node.props.style).justifyContent !== 'center') node = node.parent;
+    expect(resolvedStyle(node?.props.style)).toMatchObject({
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+    });
+    while (node && node.props.accessibilityViewIsModal === undefined) node = node.parent;
+    expect(node?.props.accessibilityViewIsModal).toBe(true);
+  });
+
   it('switches pages from the rail; rows without a page do not navigate', () => {
     const { getByTestId, getByText, queryByText } = renderWithTheme(<Controlled />);
     flush();

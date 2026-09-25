@@ -37,6 +37,13 @@ export type SelectTriggerProps = {
   /**
    * Utility classes APPENDED to the part's own — never substituted for them, so
    * a single layout class cannot strip the chrome.
+   *
+   * Never pin a HEIGHT here (`h-8`). The value's line box is 20 × the system
+   * font scale, and on native Yoga measures the text at most as tall as the
+   * space left inside the field: a fixed height cuts the glyphs in half on
+   * Android (OxyHQ/Mention#1126 — `h-8` is 28dp there, leaving 15.5dp for a
+   * 20dp line). Size a compact trigger with its padding (`fieldStyle`) so the
+   * text sets the height.
    */
   className?: string;
   /**

@@ -64,7 +64,7 @@ export function RowLink({
   };
   const interactive = Boolean(onPress || href || onLongPress);
   const style: WebCssStyle = {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: CHAT_ROW_RADIUS,
     '--bloom-chat-ring': paint.ring,
   };
