@@ -24,7 +24,9 @@ import type { SidebarItemProps } from './types';
  *              gradient, ring or top highlight
  *
  * The label and badge sit in collapse slots, so the icon stays pinned while the
- * rail morphs. With `href` the row is a link (a real anchor on web).
+ * rail morphs. Collapsed, the badge (or `collapsedBadge`) fades in off the
+ * square's top-end corner instead, so the count survives the collapse. With
+ * `href` the row is a link (a real anchor on web).
  */
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -34,6 +36,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   size,
   href,
   badge,
+  collapsedBadge,
   selected = false,
   collapsed = false,
   onPress,
@@ -54,13 +57,16 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   }, [progress, lane, metrics.row.square]);
   const itemGap = metrics.row.gap;
   const contentStyle = useAnimatedStyle(() => ({ gap: itemGap * (1 - progress.value) }), [progress, itemGap]);
+  const collapsedBadgeStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
   const foreground = selected ? palette.selectedForeground : palette.textSecondary;
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    overflow: 'hidden',
+    // Not clipped: the collapsed badge hangs off the square's top-end corner.
+    // The content clips itself instead, so the label can't spill mid-morph.
+    overflow: 'visible',
     height: metrics.row.square,
     paddingLeft: metrics.row.padding,
     paddingRight: metrics.row.padding,
@@ -103,7 +109,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
       style={[rowStyle, horizontalInset, style]}
       testID={testID}
     >
-      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1 }, contentStyle]}>
+      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }, contentStyle]}>
         <View style={{ flexShrink: 0 }}>
           <Icon width={metrics.row.icon} height={metrics.row.icon} fill={foreground} />
         </View>
@@ -114,6 +120,20 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
         </Collapsible>
       </Animated.View>
       {badge != null ? <Collapsible collapsed={collapsed}>{badge}</Collapsible> : null}
+      {badge != null || collapsedBadge != null ? (
+        // Hangs off the square's top-end corner, over the icon's edge. The
+        // expanded slot already carries the count to assistive tech.
+        <Animated.View
+          pointerEvents="none"
+          aria-hidden
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={[{ position: 'absolute', top: -4, insetInlineEnd: -6 }, collapsedBadgeStyle]}
+          testID={testID ? `${testID}-collapsed-badge` : undefined}
+        >
+          {collapsedBadge ?? badge}
+        </Animated.View>
+      ) : null}
     </AnimatedPressable>
   );
 };

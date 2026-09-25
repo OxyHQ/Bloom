@@ -189,6 +189,22 @@ describe('Sidebar', () => {
     expect(resolvedStyle(screen.getByTestId('sidebar-theme-morph').props.style).height).toBe(collapsed ? 36 : 40);
   });
 
+  it.each([false, true])('keeps the badge when collapsed, over the icon and capped at 99+ (collapsed=%s)', (collapsed) => {
+    const screen = renderIn(<Sidebar collapsed={collapsed} items={ITEMS} selected="home" />);
+    // Hidden from assistive tech, so the default queries can't see it.
+    const hidden = { includeHiddenElements: true };
+    expect(screen.queryByTestId('sidebar-item-home-collapsed-badge')).toBeNull();
+    const overlay = screen.getByTestId('sidebar-item-home-collapsed-badge', hidden);
+    // The overlay fades in with the collapse and never reaches assistive tech —
+    // the expanded slot already carries the count.
+    expect(resolvedStyle(overlay.props.style)).toMatchObject({ position: 'absolute', opacity: collapsed ? 1 : 0 });
+    expect(overlay.props['aria-hidden']).toBe(true);
+    expect(overlay.props.accessibilityElementsHidden).toBe(true);
+    expect(screen.getByText('99+', hidden)).toBeTruthy();
+    expect(screen.getByText('152', hidden)).toBeTruthy();
+    expect(screen.queryByTestId('sidebar-item-board-collapsed-badge', hidden)).toBeNull();
+  });
+
   it('honours showSearch=false in the plain mobile drawer and keeps dismissal reachable', () => {
     const onClose = jest.fn();
     const screen = renderIn(<Sidebar surface="plain" mobile showSearch={false} items={ITEMS} onClose={onClose} />);

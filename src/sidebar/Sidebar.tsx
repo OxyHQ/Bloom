@@ -358,6 +358,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   const renderRow = (item: SidebarNavItem) => {
     const isSelected = selected === item.key;
+    const badgeStyle = { backgroundColor: isSelected ? palette.badgePrimary : palette.badgeNeutral };
+    const badgeTextStyle = { color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary };
     return (
       <SidebarItem
         key={item.key}
@@ -371,11 +373,13 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         testID={`sidebar-item-${item.key}`}
         badge={
           item.badge !== undefined ? (
-            <Badge
-              content={item.badge}
-              style={{ backgroundColor: isSelected ? palette.badgePrimary : palette.badgeNeutral }}
-              textStyle={{ color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary }}
-            />
+            <Badge content={item.badge} style={badgeStyle} textStyle={badgeTextStyle} />
+          ) : undefined
+        }
+        collapsedBadge={
+          // The collapsed square has no room for "152": cap it at "99+".
+          item.badge !== undefined ? (
+            <Badge content={item.badge} max={99} size="small" style={badgeStyle} textStyle={badgeTextStyle} />
           ) : undefined
         }
       />
