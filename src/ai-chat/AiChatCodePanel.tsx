@@ -86,11 +86,12 @@ export function PanelPlaceholder({ label, palette }: { label: string; palette: A
  *
  *   column    `width` wide (410), full height, pt 8, gap 10, clipped
  *   header    Changes (∞) / Browser (globe) pills + terminal / expand / sidebar
- *             16px glyphs, 8 apart
+ *             16px glyphs, 8 apart; `browser={null}` drops the Browser pill
  *   summary   a strip with a 1px background-secondary frame on three sides
  *             (radius 10 on top), px 10 / pt 6 / pb 14: "12 Uncomitted changes"
  *             body-2-medium text-secondary, `+156` / `-23` body-regular
- *             emerald-700 / red-600 (6 apart) and the 16px undo glyph
+ *             emerald-700 / red-600 (6 apart) and, with `onUndo`, the 16px
+ *             undo glyph
  *   file row  tucked 7px up under the strip: radius 10, background-secondary,
  *             py 4 / pr 5 / pl 6; a 16px mark, the path body-regular text-primary
  *             (truncating) with its `+74`, and the `New` chip (radius 4,
@@ -125,9 +126,12 @@ export function AiChatCodePanel({
     defaultValue: defaultTab,
     onChange: onTabChange,
   });
+  // `browser={null}`: the host has no preview, so there is no tab to open.
+  const hasBrowser = browser !== null;
+  const shown = hasBrowser ? current : 'changes';
   const tabs: AiChatPanelTab[] = [
     { value: 'changes', label: l.changes, icon: RiInfinityLine },
-    { value: 'browser', label: l.browser, icon: RiGlobalLine },
+    ...(hasBrowser ? [{ value: 'browser', label: l.browser, icon: RiGlobalLine }] : []),
   ];
 
   return (
@@ -148,13 +152,13 @@ export function AiChatCodePanel({
         },
         style,
       ]}>
-      <PanelHeader tabs={tabs} value={current} onValueChange={(next) => setCurrent(next as 'changes' | 'browser')} label={l.tabs}>
+      <PanelHeader tabs={tabs} value={shown} onValueChange={(next) => setCurrent(next as 'changes' | 'browser')} label={l.tabs}>
         {actions.map((action) => (
           <GlyphAction key={action.key} icon={action.icon} label={action.label} onPress={action.onPress} palette={palette} />
         ))}
       </PanelHeader>
 
-      {current === 'changes' ? (
+      {shown === 'changes' ? (
         <>
           {changeCount !== undefined || changedFiles.length > 0 ? (
             <View style={{ width: '100%', flexDirection: 'column' }}>
@@ -186,7 +190,9 @@ export function AiChatCodePanel({
                         <Text variant="body-regular" style={{ color: palette.deletion }}>{`-${deletions}`}</Text>
                       ) : null}
                     </View>
-                    <GlyphAction icon={RiCornerUpLeftLine} label={l.undo} onPress={onUndo} palette={palette} hover={false} />
+                    {onUndo ? (
+                      <GlyphAction icon={RiCornerUpLeftLine} label={l.undo} onPress={onUndo} palette={palette} hover={false} />
+                    ) : null}
                   </View>
                 </View>
               ) : null}

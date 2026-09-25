@@ -187,6 +187,7 @@ export const CodePanel: Story = {
         additions={156}
         deletions={23}
         changedFiles={[{ path: 'app/components/button.tsx', additions: 74, status: 'New' }]}
+        onUndo={() => {}}
       />
     </View>
   ),
@@ -221,11 +222,38 @@ export const GalleryPanel: Story = {
           Land a generation
         </Button>
         <View style={{ height: 640, width: 410, maxWidth: '100%' }}>
-          <AiChatGalleryPanel width="100%" generations={WALL} generated={generated} />
+          <AiChatGalleryPanel width="100%" generations={WALL} generated={generated} onDownload={() => {}} onMore={() => {}} />
         </View>
       </View>
     );
   },
+};
+
+/**
+ * Both panels for a host with nothing behind their optional controls: no header
+ * actions, no undo, no download or more on the tiles, and `null` for the
+ * Browser and Styles tabs, so neither tab exists.
+ */
+export const PanelsWithoutBackend: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+      <View style={{ height: 480, width: 410, maxWidth: '100%' }}>
+        <AiChatCodePanel width="100%"
+          code={PANEL_CODE}
+          language="tsx"
+          changeCount={1}
+          additions={74}
+          changedFiles={[{ path: 'app/components/button.tsx', additions: 74, status: 'New' }]}
+          actions={[]}
+          browser={null}
+        />
+      </View>
+      <View style={{ height: 480, width: 410, maxWidth: '100%' }}>
+        <AiChatGalleryPanel width="100%" generations={WALL} actions={[]} stylePresets={null} />
+      </View>
+    </View>
+  ),
 };
 
 /** The chat container: breadcrumb header, a thread, and the glass composer lit while `working`. */

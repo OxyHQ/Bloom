@@ -175,7 +175,8 @@ interface TileProps {
  * One generation (`GenerationTile`): a radius-10 clipped tile at the
  * artwork's own aspect ratio on background-secondary, the image covering it.
  * Hovering lifts the image 3% (300ms ease-out) and fades in a scrim (200ms) with
- * the download / more actions top-right and the prompt along the bottom
+ * the download / more actions top-right (each only with its handler) and the
+ * prompt along the bottom
  * (body-2-regular, two lines; body-medium and p 10 when expanded, which also adds
  * a minimize action). The whole tile toggles the enlarged view.
  *
@@ -286,18 +287,22 @@ function GenerationTile({
               {expanded ? (
                 <ScrimAction label={labels.minimize(generation.prompt)} icon={RiCollapseDiagonalLine} onPress={onToggle} palette={palette} />
               ) : null}
-              <ScrimAction
-                label={labels.download(generation.prompt)}
-                icon={RiDownload2Line}
-                onPress={onDownload ? () => onDownload(generation) : undefined}
-                palette={palette}
-              />
-              <ScrimAction
-                label={labels.more(generation.prompt)}
-                icon={RiMore2Fill}
-                onPress={onMore ? () => onMore(generation) : undefined}
-                palette={palette}
-              />
+              {onDownload ? (
+                <ScrimAction
+                  label={labels.download(generation.prompt)}
+                  icon={RiDownload2Line}
+                  onPress={() => onDownload(generation)}
+                  palette={palette}
+                />
+              ) : null}
+              {onMore ? (
+                <ScrimAction
+                  label={labels.more(generation.prompt)}
+                  icon={RiMore2Fill}
+                  onPress={() => onMore(generation)}
+                  palette={palette}
+                />
+              ) : null}
             </View>
             <Text
               variant={expanded ? 'body-medium' : 'body-2-regular'}
@@ -459,9 +464,12 @@ export function AiChatGalleryPanelBase({
     });
   }, []);
 
+  // `stylePresets={null}`: the host has no styles to offer, so there is no tab.
+  const hasStyles = stylePresets !== null;
+  const shown = hasStyles ? current : 'gallery';
   const tabs: AiChatPanelTab[] = [
     { value: 'gallery', label: l.gallery, icon: GalleryGlyph },
-    { value: 'styles', label: l.styles, icon: RiSparkling2Line },
+    ...(hasStyles ? [{ value: 'styles', label: l.styles, icon: RiSparkling2Line }] : []),
   ];
 
   const renderTile = (generation: Placed, isExpanded: boolean) => (
@@ -499,7 +507,7 @@ export function AiChatGalleryPanelBase({
         },
         style,
       ]}>
-      <PanelHeader tabs={tabs} value={current} onValueChange={(next) => setCurrent(next as 'gallery' | 'styles')} label={l.tabs}>
+      <PanelHeader tabs={tabs} value={shown} onValueChange={(next) => setCurrent(next as 'gallery' | 'styles')} label={l.tabs}>
         {actions.map((action) => (
           <SurfaceAction
             key={action.key}
@@ -515,7 +523,7 @@ export function AiChatGalleryPanelBase({
         ))}
       </PanelHeader>
 
-      {current === 'gallery' ? (
+      {shown === 'gallery' ? (
         <ScrollView
           ref={scrollRef}
           {...dataHook('bloomAiChatScroll', 'thin')}
