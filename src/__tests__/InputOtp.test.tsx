@@ -129,4 +129,26 @@ describe('InputOtp', () => {
     expect(resolvedStyle(box(root, 0, 2).props.style).borderColor).toBe(p.ring);
     expect(resolvedStyle(box(root, 1, 2).props.style).borderColor).toBe(p.border);
   });
+
+  // On Android RN's `selectTextOnFocus` selects at the NEXT layout, which a
+  // focus does not cause, so a keystroke into a filled box landed beside the old
+  // digit. Native selects the digit in `onFocus`; see Search (OxyHQ/Mention#1126).
+  it('selects a filled box on focus so a keystroke replaces its digit', () => {
+    const setSelection = jest.fn();
+    const root = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <InputOtp length={2} value="5" />
+      </BloomThemeProvider>,
+      { createNodeMock: () => ({ setSelection, focus: jest.fn(), blur: jest.fn() }) },
+    );
+    expect(box(root, 0, 2).props.selectTextOnFocus).toBe(false);
+    act(() => {
+      box(root, 1, 2).props.onFocus({});
+    });
+    expect(setSelection).not.toHaveBeenCalled();
+    act(() => {
+      box(root, 0, 2).props.onFocus({});
+    });
+    expect(setSelection).toHaveBeenCalledWith(0, 1);
+  });
 });
