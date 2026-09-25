@@ -45,6 +45,15 @@ export interface RatingProps {
   /** `stars` variant: the unfilled part of each star. Default the theme's border colour. */
   emptyStarColor?: string;
   /**
+   * `stars` variant: the number the stars are filled to, clamped to `0..5`,
+   * independent of the drawn `value`. Pass it with a localised `value` string
+   * (`value="4,5"` with `fillValue={4.5}`) so the text follows the locale and
+   * the fill does not depend on parsing it. Without it a string `value` is
+   * parsed (bidi marks dropped, a comma decimal accepted). Ignored by
+   * `compact` and while there is no rating (`value` empty).
+   */
+  fillValue?: number;
+  /**
    * Overrides the composed accessible name ("Rated 4.92 out of 5, 128
    * reviews"), which is English — pass a translated sentence here.
    */
