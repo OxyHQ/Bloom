@@ -58,6 +58,7 @@ import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { layerForRank, type OverlayLayer } from './stack';
 import { useHardwareBack } from './use-hardware-back';
+import { useModalOverlayRegistration } from './use-modal-overlay-active';
 import { useOverlayLayer } from './use-overlay-layer';
 import type { OverlayRootProps, BackdropProps } from './types';
 
@@ -181,6 +182,9 @@ function OverlayRootView({
   layer,
   modal,
 }: OverlayRootViewProps & { layer: OverlayLayer }) {
+  // Android cannot confine TalkBack from this side of the outlet — the app's
+  // `OverlayInertBoundary` hides the content once it hears a modal is open.
+  useModalOverlayRegistration(modal);
   return (
     <OverlayLayerContext.Provider value={layer}>
       {/* `pointerEvents` stays a PROP: react-native-web resolves the RN-only

@@ -94,6 +94,17 @@ so the press is swallowed instead of reaching the screen underneath.
 not the panel because iOS hides only the modal view's siblings, and at the
 native outlet the root is the app content's sibling while the panel is not.
 
+`modal` also registers the surface as open in `overlay/modal-registry.ts` for
+as long as the root is mounted. That is the Android half: nothing on the
+surface's side of the outlet can confine TalkBack, so the app's
+[`OverlayInertBoundary`](/docs/bloom/main/portal) subscribes and hides the
+content while anything modal is open (`inert` on web). Dialog (every
+placement), the web `BottomSheet`, `SettingsModal` and `ZoomableMediaGallery`
+pass it; the native `BottomSheet` needs no flag because its shell is an RN
+`Modal`, its own window. Menus, popovers, tooltips, toasts, media flight and
+the shell drawers must not — the content under an anchored menu stays
+reachable. `overlay-inert-boundary.test.tsx` pins both lists.
+
 Geometry matters to accessibility too. Android reports every view under a
 zero-area ancestor as not visible to the user. The settings modal's centring
 box once spread the removed `StyleSheet.absoluteFillObject` and collapsed to

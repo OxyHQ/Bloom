@@ -76,11 +76,11 @@ Two consequences, both silent:
 - A `.native.*` file can stop compiling and the suite stays green. Precedent in the fleet: **1545 tests passed over a file that did not parse.**
 - Vendored `preset: react-native` suites cannot run unchanged. Teleport tests stay outside the tree, not `.skip`ped into false coverage (`docs/teleport.mdx`).
 
-**Recorded debt.** A platform config needs native peers installed or mocked. Asserting native behavior through a web-resolved file measures the wrong file.
+**Recorded debt:** a platform config needs native peers installed/mocked; asserting native behavior via a web-resolved file measures the wrong file.
 
 ## App root provider
 
-`BloomProvider` is the root. Depth hazards (restoration throws; minimization silently forks), explicit adapter replacing implicit Expo binding, outlet exclusions and native-only PortalProvider/Outlet: `docs/provider.mdx`, `docs/portal.mdx`.
+`BloomProvider` is the root. Depth hazards (restoration throws; minimization silently forks), explicit adapter replacing implicit Expo binding, outlet exclusions, native-only PortalProvider/Outlet: `docs/provider.mdx`, `docs/portal.mdx`.
 
 ## Screen composition
 
@@ -100,6 +100,7 @@ Router-agnostic `scroll/` core plus adapter imports no router; model: `docs/scro
 `docs/overlay.mdx`, `docs/styles.mdx` Z_INDEX: OverlayRoot/Backdrop is the ONLY stacking authority, never per-component zIndex. `pointerEvents="box-none"|"box-only"` must be a PROP; style entries silently drop, disastrous beneath web Portal's inherited pointer-events:none.
 
 - Read stacking rank on MOUNT via useState initializer; memoization can retain stale ranks.
+- **Modal surfaces pass `modal`; apps wrap content (NOT the outlet) in `OverlayInertBoundary`**: only an app-side view can hide content from TalkBack. Gate `overlay-inert-boundary.test.tsx`.
 - Native second mechanism is Android-safe; iOS unconfirmed: verify device before shipping (`docs/overlay.mdx`).
 - Jest sees valid markup, not covered surfaces or dropped pointer-event behavior. Gates: `overlay-stack-order.test.tsx`, `scripts/verify-overlay-stacking.mjs` (Chrome mouse.click; element.click bypasses hit testing), `pointer-events-style-form.test.ts`, `overlay-pointer-events.test.tsx` (real RNW). Verify browser dismissal.
 
@@ -151,14 +152,14 @@ Button uses semantic solid/subtle/outline/plain, no glass/default gradient (`but
 
 ## Web fonts
 
-Font-loading hazards (base64-inlining the `.woff2`s, the empty-stub requirement on `apply-font-faces.ts`, `FontLoader` forking, the `node` export condition, which families are registered) are in `docs/fonts.mdx`.
+Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub, `FontLoader` fork, `node` export condition, registered families): `docs/fonts.mdx`.
 
 ## Peers
 
 - **Peers source of truth:** peerDependencies + peerDependenciesMeta. Never duplicate ranges here; stale ranges falsely authorize missing peers.
 - **`@gorhom/bottom-sheet` is not a peer or dependency of any kind** — the bottom sheet is Bloom's own; the name survives only in comments. **A statically-imported peer is never `optional`** — optionality is about what RESOLVES, so omitting one makes Metro fail the build rather than degrade.
 - **Optional peers require `require('<literal>')` as a DIRECT try-block statement.** Metro stops at the first enclosing block: nesting an `if` inside try loses optionality. Put typeof-require guards outside. Parameter specifiers previously broke haptics, squircle clip, spinner and native color scoping. Reference `connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
-- **The Apple-only peers are reachable ONLY through `@oxy.so/bloom/tab-bar`** — a consumer that never imports it shouldn't install them to silence a warning (bun prints no mismatch warning for these at all). Bloom owns its toast engine (vendored); `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
+- **Apple-only peers are reachable ONLY via `@oxy.so/bloom/tab-bar`**; non-importers needn't install them (bun prints no mismatch warning for them). Toast engine is vendored; `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
 
 ## Style and `className`
 
@@ -172,7 +173,7 @@ Font-loading hazards (base64-inlining the `.woff2`s, the empty-stub requirement 
 
 ## ImageResolver
 
-Pure JS, one universal file. `ImageResolver = (id, variant?) => string | undefined`. `Avatar` invokes it only for a non-URL string `source` — a full URL or `{uri}` passes through untouched. Consumer wiring is in `~/Oxy/AGENTS.md`.
+Pure JS, universal. `ImageResolver = (id, variant?) => string | undefined`; `Avatar` calls it only for a non-URL string `source` (URLs/`{uri}` pass through). Consumer wiring: `~/Oxy/AGENTS.md`.
 
 ## Verifying a LOCAL Bloom build in a consumer (four silent wrong passes)
 

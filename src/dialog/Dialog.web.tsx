@@ -144,7 +144,8 @@ function useDialogCss(): void {
  * Accessibility: the panel has `role="dialog"` and the `title`/`description`
  * props (when provided) become the `aria-labelledby` / `aria-describedby`
  * targets. Pressing the backdrop dismisses. Pressing `Escape` dismisses.
- * Focus is locked inside the dialog while it's open.
+ * While it is open the page behind is `inert` — provided the app wraps its
+ * content in `OverlayInertBoundary` (`OverlayRoot modal` below registers it).
  *
  * Web motion never uses reanimated `exiting` (which throws `removeChild` on
  * concurrent React unmounts): the centered card uses CSS keyframes and the
@@ -354,8 +355,10 @@ function CenterOrSideDialog({
                 overlay stack. It mounts here, inside the `isOpen` guard, which
                 is what makes the rank track OPENING rather than mounting — the
                 dialog is declared once at the app root and stays mounted for
-                the app's lifetime. */}
-            <OverlayRoot>
+                the app's lifetime. `modal` makes the app's
+                `OverlayInertBoundary` take the page out of the tab order and
+                the accessibility tree while it is open. */}
+            <OverlayRoot modal>
               {/* The press target IS the full-viewport box, so it uses
                   `Backdrop` (which opts back in from the Portal root's
                   `pointer-events: none` via the `pointerEvents` PROP — the style
@@ -746,7 +749,7 @@ function SheetSurface({
   );
 
   return (
-    <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName}>
+    <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName} modal>
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}

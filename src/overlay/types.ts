@@ -36,11 +36,30 @@ export interface OverlayRootProps {
   onRequestClose?: () => void;
   /**
    * The surface is modal: a screen reader must not wander into the app behind
-   * it. Native only — sets `accessibilityViewIsModal` on this root, which is the
-   * app content's sibling at the portal outlet (iOS confines VoiceOver to
-   * it). Web surfaces already carry `aria-modal` on their own dialog node.
+   * it. Two effects:
+   *
+   *  - Native: sets `accessibilityViewIsModal` on this root, which is the app
+   *    content's sibling at the portal outlet (iOS confines VoiceOver to it).
+   *  - Every platform: registers the surface as an open modal while mounted
+   *    (`./modal-registry.ts`), so the app's `OverlayInertBoundary` hides the
+   *    content behind it — the only way to confine TalkBack on Android, and
+   *    what makes the content `inert` on web.
+   *
+   * Dialogs, sheets, the settings modal and the media viewer set it; anchored
+   * surfaces (menus, popovers, tooltips), toasts and the shell drawers do not.
    */
   modal?: boolean;
+}
+
+export interface OverlayInertBoundaryProps {
+  /** The app's own content — everything EXCEPT the `PortalOutlet`. */
+  children?: ReactNode;
+  /**
+   * Native only (web renders no box). Defaults to `flex: 1`; override when the
+   * boundary's parent is not a column that the content should fill.
+   */
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
 }
 
 export interface BackdropProps {
