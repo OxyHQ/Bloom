@@ -287,7 +287,7 @@ export function CardLink({ name, onPress, href, onLongPress, selected = false, r
     if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
   };
   const style: WebCssStyle = {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: radius,
     '--bloom-media-card-ring': paint.ring,
   };

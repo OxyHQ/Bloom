@@ -44,9 +44,9 @@ function PatternLayer({
     <View
       pointerEvents="none"
       testID="chat-background-pattern"
-      style={StyleSheet.absoluteFillObject}
+      style={StyleSheet.absoluteFill}
     >
-      <Svg style={StyleSheet.absoluteFillObject} width="100%" height="100%">
+      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
         <Defs>
           <Pattern
             id={id}
@@ -83,9 +83,9 @@ function GradientLayer({ colors }: { colors: string[] }) {
     <View
       pointerEvents="none"
       testID="chat-background-gradient"
-      style={StyleSheet.absoluteFillObject}
+      style={StyleSheet.absoluteFill}
     >
-      <Svg style={StyleSheet.absoluteFillObject} width="100%" height="100%">
+      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="0.35" y2="1">
             {colors.map((color, i) => (
@@ -159,13 +159,13 @@ function ChatBackgroundComponent({
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
             testID="chat-background-image"
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
           />
           <View
             pointerEvents="none"
             testID="chat-background-dim"
             style={[
-              StyleSheet.absoluteFillObject,
+              StyleSheet.absoluteFill,
               { backgroundColor: paint.imageDim, opacity: dim },
             ]}
           />

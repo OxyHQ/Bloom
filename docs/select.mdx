@@ -94,6 +94,16 @@ Colours are taken from the theme through the same ramps `Button` paints from (`f
 <SelectContent width={220} items={countries} renderItem={…} />
 ```
 
+### A compact trigger: size it with padding, never a height
+
+A settings row wants a 32px trigger with the `md` value. Get it from padding, so the value's line decides the height:
+
+```tsx
+<SelectTrigger label="Color mode" fieldStyle={{ gap: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 5, paddingBottom: 5 }}>
+```
+
+Do **not** pin a height (`className="h-8 …"`). The value's line box is 20 × the system font scale, and on native Yoga measures the text no taller than the room left inside the field, so a fixed height cuts the glyphs in half. On Android `h-8` is 28dp (a 14px rem), leaving 15.5dp for that 20dp line: the value is clipped at the default scale, and at a 1.15 font scale only the top half of "System" showed (OxyHQ/Mention#1126). The web hides the defect because an overflowing line is not clipped there.
+
 Spell padding in longhands: react-native-web ranks the `padding-inline` a `paddingHorizontal` becomes above the field's own classes AND above `padding-left`, so a longhand is what lands on both platforms.
 
 The colours are INLINE (or, for the web trigger's hover and ring, custom properties an adopted sheet reads): the ramp stops exist as no CSS variable a class could name. A caller's `style` still overrides them; a `className` on `SelectValue`/`SelectItemText` drops the inline colour so a `text-*` utility can apply.

@@ -61,6 +61,7 @@ beforeEach(() => {
     .mockReturnValue({ width: 1200, height: 800, scale: 1, fontScale: 1 });
 });
 afterEach(() => {
+  RN.Platform.OS = 'ios';
   jest.useRealTimers();
   jest.restoreAllMocks();
 });
@@ -130,6 +131,8 @@ it('guards a different page but permits selecting the current page', () => {
   expect(view.getByText('other content')).toBeTruthy();
 });
 it('guards compact back and Android back to navigation, then Android close', () => {
+  // Hardware back is Android's alone: `OverlayRoot` registers it nowhere else.
+  RN.Platform.OS = 'android';
   jest
     .mocked(RN.useWindowDimensions)
     .mockReturnValue({ width: 390, height: 800, scale: 1, fontScale: 1 });

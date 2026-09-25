@@ -23,6 +23,24 @@ export interface OverlayRootProps {
    * `./stack.ts` exists to remove.
    */
   zIndex?: number;
+  /**
+   * Android hardware back while this surface is open. A portaled surface is not
+   * an RN `Modal`, so nothing else consumes the press: without this the app's
+   * own back handling runs and, at the root of a stack, finishes the activity —
+   * the surface "closes" by closing the whole app. Called and consumed while the
+   * root is mounted; later-opened surfaces register later, and `BackHandler`
+   * runs the newest listener first, so the top surface closes first. A blocking
+   * surface still passes a handler (a no-op) so the press is swallowed rather
+   * than falling through to the screen underneath.
+   */
+  onRequestClose?: () => void;
+  /**
+   * The surface is modal: a screen reader must not wander into the app behind
+   * it. Native only — sets `accessibilityViewIsModal` on this root, which is the
+   * app content's sibling at the portal outlet (iOS confines VoiceOver to
+   * it). Web surfaces already carry `aria-modal` on their own dialog node.
+   */
+  modal?: boolean;
 }
 
 export interface BackdropProps {

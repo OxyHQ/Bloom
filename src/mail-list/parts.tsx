@@ -77,7 +77,7 @@ export function MailRowLink({
   };
   const interactive = Boolean(onPress || href || onLongPress);
   const style: WebCssStyle = {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: MAIL_ROW_RADIUS,
     '--bloom-mail-ring': paint.accent,
   };

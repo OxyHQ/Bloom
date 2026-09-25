@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { BackHandler, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -263,18 +263,13 @@ export function SettingsModal({
   const compactPageOpenRef = useRef(false);
   compactPageOpenRef.current = compactPageOpen && layoutRef.current === 'compact';
 
-  // Android back closes, like a native modal.
-  useEffect(() => {
-    // `BackHandler` is absent from some test environments' react-native mocks.
-    if (!mounted || IS_WEB || typeof BackHandler?.addEventListener !== 'function') return;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      // On a pushed page (compact), back returns to the section list first.
-      if (compactPageOpenRef.current) requestNavigation();
-      else requestClose();
-      return true;
-    });
-    return () => sub.remove();
-  }, [mounted, requestClose, requestNavigation]);
+  // Android back closes, like a native modal — handed to `OverlayRoot`, which
+  // owns hardware back for every portaled surface.
+  const onHardwareBack = useCallback(() => {
+    // On a pushed page (compact), back returns to the section list first.
+    if (compactPageOpenRef.current) requestNavigation();
+    else requestClose();
+  }, [requestClose, requestNavigation]);
 
   // ----- saved toast -------------------------------------------------------
   const [savedPhase, setSavedPhase] = useState<SavedPhase>('hidden');
@@ -351,7 +346,7 @@ export function SettingsModal({
   return (
     <ModalPortal>
       <SettingsModalContext.Provider value={context}>
-        <OverlayRoot>
+        <OverlayRoot onRequestClose={onHardwareBack} modal>
           <Backdrop
             onPress={requestClose}
             progress={progress}
@@ -813,7 +808,17 @@ function SavedToast({
 
 const styles = StyleSheet.create({
   center: {
-    ...StyleSheet.absoluteFillObject,
+    // Spelled out, not `StyleSheet.absoluteFillObject`: RN 0.85 removed it, and
+    // spreading the resulting `undefined` left this box in flow at ZERO height.
+    // The panel still painted (nothing clips it) and still took touches, but
+    // Android reports every view under a zero-area ancestor as not visible to
+    // the user, so TalkBack and UI Automator saw no modal content at all —
+    // only the backdrop's full-screen "Close".
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
     padding: VIEWPORT_GUTTER,
