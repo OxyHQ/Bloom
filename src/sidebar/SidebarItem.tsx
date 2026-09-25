@@ -67,7 +67,11 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     // Not clipped: the collapsed badge hangs off the square's top-end corner.
     // The content clips itself instead, so the label can't spill mid-morph.
     overflow: 'visible',
-    height: metrics.row.square,
+    // Collapsed it is a square. Expanded it is at LEAST the square: at the
+    // default type scale the label's line fits exactly, and at the largest
+    // system font a fixed height clipped it top and bottom (Android 16).
+    height: collapsed ? metrics.row.square : undefined,
+    minHeight: metrics.row.square,
     paddingLeft: metrics.row.padding,
     paddingRight: metrics.row.padding,
     paddingTop: metrics.row.padding,
