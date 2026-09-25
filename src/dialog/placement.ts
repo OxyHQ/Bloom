@@ -7,10 +7,27 @@ import { BREAKPOINTS } from '../styles/breakpoints';
  * Anchor a `<Dialog>` can render against.
  *
  * - `'center'` — the default centered modal card (current behavior).
- * - `'left'` / `'right'` — an anchored side-sheet / drawer.
+ * - `'left'` / `'right'` — an anchored side-sheet / drawer on that PHYSICAL edge.
+ * - `'start'` / `'end'` — the same drawer on the LOGICAL edge: `start` is the
+ *   left in a left-to-right layout and the right in a right-to-left one, and it
+ *   slides in from that edge. Resolved with `useIsRtl()`.
  * - `'bottom'` — a bottom-sheet (drag handle, slide-up).
  */
-export type DialogPlacement = 'center' | 'left' | 'right' | 'bottom';
+export type DialogPlacement = 'center' | 'left' | 'right' | 'start' | 'end' | 'bottom';
+
+/** The four side-sheet placements, physical and logical. */
+export type DialogSidePlacement = 'left' | 'right' | 'start' | 'end';
+
+/**
+ * The PHYSICAL edge a side placement lands on. `left`/`right` are themselves;
+ * `start` is `left` left-to-right and `right` right-to-left, `end` the reverse.
+ * The panel's `translateX` sign, which no layout engine mirrors, follows this.
+ */
+export function physicalDialogSide(side: DialogSidePlacement, rtl: boolean): 'left' | 'right' {
+  if (side === 'start') return rtl ? 'right' : 'left';
+  if (side === 'end') return rtl ? 'left' : 'right';
+  return side;
+}
 
 /**
  * A `<Dialog>` placement that may vary by viewport width.

@@ -6,7 +6,7 @@ order: 3
 
 # Dialog
 
-A single `<Dialog>` component for every overlay surface — centered modal, side-sheet (left/right drawer), or bottom-sheet — controlled by the `placement` prop. Same component, same props on every platform.
+A single `<Dialog>` component for every overlay surface — centered modal, side-sheet (left/right or logical start/end drawer), or bottom-sheet — controlled by the `placement` prop. Same component, same props on every platform.
 
 <Callout variant="warning" title="Required providers (native)">
 Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` for the bottom-sheet pan gestures to work. See [Getting started](/docs/bloom/main/getting-started).
@@ -105,7 +105,7 @@ Drop the declarative props entirely — `children` owns every pixel.
 | `children?` | `React.ReactNode` | — | Custom content rendered after the description. |
 | `onClose?` | `() => void` | — | Fires after the dialog finishes closing. In controlled mode, the host flips `open` to `false`. |
 | `contentPadding?` | `number` | `20` | Inner padding of the dialog body (px). Set `0` for custom children that own their insets. |
-| `width?` | `number` | `460` | Side-sheet width (px) on `left`/`right` placements. |
+| `width?` | `number` | `460` | Side-sheet width (px) on `left`/`right`/`start`/`end` placements. |
 | `maxWidth?` | `number` | `480` | Centered-card max width (px). |
 | `maxHeightRatio?` | `number` | `0.9` | Bottom-sheet max height as a fraction of the viewport height. |
 | `inset?` | `{ top?; bottom?; left?; right? }` | — | Side-sheet inset (px) from the overlay container edges. |
@@ -123,7 +123,7 @@ Drop the declarative props entirely — `children` owns every pixel.
 `placement` accepts a single value or a **responsive map** resolved by `useWindowDimensions()`:
 
 ```ts
-type DialogPlacement = 'center' | 'left' | 'right' | 'bottom';
+type DialogPlacement = 'center' | 'left' | 'right' | 'start' | 'end' | 'bottom';
 
 type ResponsiveDialogPlacement =
   | DialogPlacement
@@ -134,7 +134,8 @@ Breakpoints (px): `sm` 640 / `md` 768 / `lg` 1024 / `xl` 1280. The largest break
 
 Per-placement behavior:
 - `center` — DOM-portal modal (web) / detached floating card (native).
-- `left` / `right` — animated side-sheet anchored to the viewport edge.
+- `left` / `right` — animated side-sheet anchored to that PHYSICAL viewport edge.
+- `start` / `end` — the same side-sheet on the LOGICAL edge: `start` is the left in a left-to-right layout and the right in a right-to-left one (`end` the reverse), read from `useIsRtl()`, and the panel slides in from that edge. The matching `inset` side applies (`inset.right` for `start` in RTL). On native the panel is positioned with `insetInlineStart`/`insetInlineEnd`, which Yoga resolves against `I18nManager` — a physical `left`/`right` would be swapped by React Native's default `swapLeftAndRightInRTL`. On web the drawer is portaled outside any `dir` context, so it takes the physical edge `useIsRtl()` names. An app that ships Arabic or Hebrew wants `start`/`end`: `{ base: 'bottom', md: 'start' }` is the mirrored store drawer.
 - `bottom` — reuses the cross-platform `BottomSheet` on BOTH web and native (drag-to-dismiss + internal scroll work everywhere). Custom `children` on bottom placement are rendered in a NON-scrollable body — children own scrolling.
 
 ### `DialogAction`

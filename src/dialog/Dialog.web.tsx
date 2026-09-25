@@ -45,6 +45,7 @@ import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import { Context, useDialogContext, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
@@ -69,6 +70,8 @@ import {
   PANEL_RADIUS,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
+  physicalDialogSide,
+  type DialogSidePlacement,
 } from './placement';
 import type {
   DialogAction,
@@ -196,7 +199,7 @@ function CenterOrSideDialog({
   containerClassName,
   label,
   children,
-}: Omit<DialogProps, 'placement'> & { placement: 'center' | 'left' | 'right' }) {
+}: Omit<DialogProps, 'placement'> & { placement: 'center' | DialogSidePlacement }) {
   // Inject the required @keyframes on mount (before the panel ever appears —
   // this component renders once with `isOpen=false` prior to opening, so the
   // stylesheet is present by the time the animated surface mounts).
@@ -647,7 +650,7 @@ function SheetSurface({
   actions?: DialogAction[];
   header?: DialogProps['header'];
   scrollable?: boolean;
-  placement: 'left' | 'right';
+  placement: DialogSidePlacement;
   shown: boolean;
   width: number;
   inset?: DialogInset;
@@ -666,6 +669,7 @@ function SheetSurface({
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
   const { width: viewportWidth } = useWindowDimensions();
+  const rtl = useIsRtl();
 
   // Defer the entry transition by a frame so the start state paints before the
   // browser animates to `shown`. `entered` is false on the first committed
@@ -707,22 +711,26 @@ function SheetSurface({
     const insetBottom = inset?.bottom ?? 0;
     const insetLeft = inset?.left ?? 0;
     const insetRight = inset?.right ?? 0;
-    const anchorInset = placement === 'left' ? insetLeft : insetRight;
-    const oppositeInset = placement === 'left' ? insetRight : insetLeft;
+    // `start`/`end` land on a physical edge read from `useIsRtl()`. The drawer
+    // is portaled outside any `dir` context, so react-native-web would resolve
+    // a logical key left-to-right; the physical edge is the one that is right.
+    const edge = physicalDialogSide(placement, rtl);
+    const anchorInset = edge === 'left' ? insetLeft : insetRight;
+    const oppositeInset = edge === 'left' ? insetRight : insetLeft;
     const available = viewportWidth - anchorInset - oppositeInset - SIDE_SHEET_MIN_GUTTER;
     const cappedWidth = Math.max(0, Math.min(width, available));
-    const hiddenSign = placement === 'left' ? '-100%' : '100%';
+    const hiddenSign = edge === 'left' ? '-100%' : '100%';
 
     return {
       top: insetTop,
       bottom: insetBottom,
-      [placement]: anchorInset,
+      [edge]: anchorInset,
       width: cappedWidth,
       borderRadius: PANEL_RADIUS,
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
     };
-  }, [visible, placement, width, inset, viewportWidth]);
+  }, [visible, placement, rtl, width, inset, viewportWidth]);
 
   const handleBackdropPress = useCallback(() => {
     if (dismissOnBackdrop) onDismiss();
