@@ -13,6 +13,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { type AnimatedStyle } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useTheme } from '../theme/use-theme';
@@ -86,6 +87,11 @@ export function DialogBottomSheet({
   const titleId = useId();
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
+  // The sheet is flush with the bottom of the window (a `<Modal>` drawn
+  // edge-to-edge on Android, and under the home indicator on iOS), and
+  // `BottomSheet` deliberately leaves the safe area to its content. This Dialog
+  // IS the content's chrome, so it owns the inset (the spacer after the body).
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   // Read the latest controlled flag / `onClose` inside stable callbacks without
   // re-binding them (the context + imperative handle depend on `close` staying
@@ -325,11 +331,26 @@ export function DialogBottomSheet({
           <DialogMorphContent morph={morphState} style={scrollableResolved ? undefined : FILL_BOUNDED}>
             {header ? headerBody : dialogBody}
           </DialogMorphContent>
+          {/* The bottom safe area, INSIDE the scroll content. Without it the
+              last row of every bottom-placement Dialog was painted under the
+              Android gesture bar / iOS home indicator (a 2400px Pixel put a
+              "Having trouble?" link at 2297–2356px), and a body that outgrew
+              the sheet could not scroll its last rows out from under the bar —
+              the scroll range ended exactly where the bar began. A spacer
+              rather than a padding: the content box keeps the caller's
+              `padding`/`contentPadding` untouched on both platforms, and the
+              morph layer above still measures the content alone. */}
+          {bottomInset > 0 ? (
+            <View testID={SAFE_AREA_SPACER_TESTID} style={{ height: bottomInset }} />
+          ) : null}
         </StyledView>
       </Context.Provider>
     </BottomSheet>
   );
 }
+
+/** Test handle for the bottom safe-area spacer. */
+const SAFE_AREA_SPACER_TESTID = 'dialog-sheet-safe-area';
 
 /** Passes a bounded height down to a `scrollable={false}` body. */
 const FILL_BOUNDED = { flex: 1, minHeight: 0 } as const;

@@ -36,13 +36,24 @@ import {
 import { SHADOW_BOX } from './shadows';
 
 /**
+ * A px line-height as the unitless ratio of its font-size, spelled the way
+ * Tailwind spells its own type scale: `lineHeightRatio(22, 15)` → `calc(22 / 15)`.
+ * Exact on both platforms (no rounded decimal), and the only form
+ * react-native-css resolves correctly through `var()` — it multiplies any
+ * number by the font-size.
+ */
+export function lineHeightRatio(lineHeightPx: number, fontSizePx: number): string {
+  return `calc(${lineHeightPx} / ${fontSizePx})`;
+}
+
+/**
  * Produce the BODY of a Tailwind v4 `@theme` block (no surrounding braces) that
  * registers the full Bloom semantic vocabulary.
  *
  * - Colors → `--color-<role>: var(--canonical);`
  * - Spacing → `--spacing-<key>: <px>;`
  * - Radius  → `--radius-<key>: <px>;`
- * - Type    → `--text-<role>: <size>; --text-<role>--line-height: <lh>;`
+ * - Type    → `--text-<role>: <size>; --text-<role>--line-height: calc(<lh> / <size>);`
  *             `--font-<role>: var(--bloom-font-*);` (+ weight via utility doc)
  * - Shadow  → `--shadow-<s|m>: <box-shadow>;`
  */
@@ -94,10 +105,20 @@ export function bloomThemeCss(): string {
   }
 
   // Typography: size + line-height + family per role.
+  //
+  // The line-height is a UNITLESS ratio (`calc(22 / 15)`), the form Tailwind's
+  // own `--text-sm--line-height: calc(1.25 / 0.875)` takes — never px. On the
+  // web the two are identical (a unitless line-height is a multiple of the
+  // font-size: 15px × 22/15 = 22px). On native they are not: Tailwind v4 emits
+  // `line-height: var(--tw-leading, var(--text-body--line-height))`,
+  // react-native-css compiles that to `lineHeight(var(…, 22))`, and its runtime
+  // `lineHeight` resolver treats EVERY number as an em multiplier — so a px
+  // token rendered `text-body` at 22 × 15 = 330dp line-height on Android and
+  // iOS. See `lineHeightRatio` and `docs/typography.mdx`.
   for (const name of Object.keys(TYPOGRAPHY) as TypeRoleName[]) {
     const role = TYPOGRAPHY[name];
     lines.push(`  --text-${name}: ${role.size}px;`);
-    lines.push(`  --text-${name}--line-height: ${role.lineHeight}px;`);
+    lines.push(`  --text-${name}--line-height: ${lineHeightRatio(role.lineHeight, role.size)};`);
     lines.push(`  --text-${name}--font-weight: ${role.weight};`);
     lines.push(`  --font-${name}: ${FONT_FAMILY_VARS[role.family]};`);
   }

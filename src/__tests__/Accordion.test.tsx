@@ -77,3 +77,18 @@ describe('Accordion content is sized by its content, not by a constant', () => {
     expect(resolvedStyle(clipOf()?.props.style).maxHeight).toBeDefined();
   });
 });
+
+// RN's `flex: 1` is `flexBasis: 0`. In a shrink-wrapped trigger (Services puts
+// its "Having trouble?" trigger at `alignSelf: 'center'`) Yoga sized a
+// zero-basis label at its MINIMUM content width, so the label wrapped to
+// "Having / trouble?" on Android while web kept one line. The label box has to
+// grow into a full-width trigger yet measure from its content.
+describe('AccordionTrigger label box', () => {
+  it('grows and shrinks from its content size, never from a zero basis', () => {
+    const { getByTestId } = renderWithTheme(openAccordion());
+    const style = resolvedStyle(getByTestId('accordion-trigger-label').props.style);
+    expect(style).toMatchObject({ flexGrow: 1, flexShrink: 1 });
+    expect(style.flex).toBeUndefined();
+    expect(style.flexBasis).toBeUndefined();
+  });
+});

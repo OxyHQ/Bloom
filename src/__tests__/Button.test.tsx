@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import { Stop } from 'react-native-svg';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -246,6 +246,9 @@ describe('variant="text" geometry', () => {
 /** The floor `SIZE_HIT_SLOP` exists to reach — Apple's HIG, and `Checkbox`'s. */
 const MIN_TOUCH_TARGET = 44;
 
+/** Android's floor — Material's 48dp. */
+const ANDROID_MIN_TOUCH_TARGET = 48;
+
 /** The widest border any variant draws, on each of the two vertical edges. */
 const MAX_VERTICAL_BORDER = 2;
 
@@ -292,6 +295,38 @@ describe('Button geometry', () => {
       expect(height + 2 * verticalSlop).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
     },
   );
+
+  // Android's floor is Material's 48dp, not 44: a `lg` Button (44dp, no slack)
+  // used to stop 4dp short of it. The extra is VERTICAL only for row buttons.
+  describe('on Android', () => {
+    const original = Platform.OS;
+    beforeEach(() => {
+      Platform.OS = 'android';
+    });
+    afterEach(() => {
+      Platform.OS = original;
+    });
+
+    it.each(GEOMETRY)('$size reaches 48dp with vertical slop only', ({ size, height, verticalSlop }) => {
+      const { UNSAFE_getByType } = renderWithTheme(
+        <Button testID="btn" size={size}>
+          Save changes
+        </Button>,
+      );
+      const slop = UNSAFE_getByType(Pressable).props.hitSlop;
+      expect(slop).toEqual({ top: verticalSlop + 2, bottom: verticalSlop + 2, left: 0, right: 0 });
+      expect(height + slop.top + slop.bottom).toBeGreaterThanOrEqual(ANDROID_MIN_TOUCH_TARGET);
+    });
+
+    it.each(GEOMETRY)('$size icon square reaches 48dp on both axes', ({ size, height }) => {
+      const { UNSAFE_getByType } = renderWithTheme(
+        <Button testID="btn" size={size} icon={() => <View />} accessibilityLabel="Add" />,
+      );
+      const slop = UNSAFE_getByType(Pressable).props.hitSlop;
+      expect(height + slop.top + slop.bottom).toBeGreaterThanOrEqual(ANDROID_MIN_TOUCH_TARGET);
+      expect(height + slop.left + slop.right).toBeGreaterThanOrEqual(ANDROID_MIN_TOUCH_TARGET);
+    });
+  });
 
   it.each(GEOMETRY)('$size icon variant is an unpadded square', ({ size, height }) => {
     const { getByTestId } = renderWithTheme(

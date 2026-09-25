@@ -24,7 +24,7 @@ The Color roles prototype assigns `accent` to identity and links, `support` to c
 
 An `icon` without children makes a square action. Labelled actions use `leadingIcon` and `trailingIcon`, each an icon component receiving width, height and fill. `leading` and `trailing` are custom content slots.
 
-`loading` blocks activation while preserving the mounted label's width. `disabled` also blocks activation. A control drawing no text needs `accessibilityLabel`. Native touch targets retain the padding around compact visuals; web has real button, anchor and form semantics (`type="submit"` or `"reset"`). Activation is always `onPress`.
+`loading` blocks activation while preserving the mounted label's width. `disabled` also blocks activation. A control drawing no text needs `accessibilityLabel`. Native touch targets retain the padding around compact visuals: vertical hit slop brings every size to 44pt on iOS and 48dp (Material's floor) on Android, so a 44dp `lg` button gets 2dp above and below on Android. Web has real button, anchor and form semantics (`type="submit"` or `"reset"`). Activation is always `onPress`.
 
 The pressable is the parent's layout child: `className` and `style` are applied there, without an extra wrapper. Web styles flatten RN style arrays and register their interaction CSS using constructed stylesheets. `asChild` composes an existing web link; disabled state guards the composed handler.
 

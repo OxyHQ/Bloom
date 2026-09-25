@@ -83,6 +83,52 @@ const HEADER_H_PADDING = 20;
 /** Circular icon-button diameter for the default back / close affordances. */
 const NAV_BUTTON_SIZE = 36;
 
+/** The large title's line box (px) — `styles.largeTitle.lineHeight`. */
+const LARGE_TITLE_LINE_HEIGHT = 38;
+
+/**
+ * Content top inset (px) for an INLINE-CLOSE header (see {@link isInlineCloseHeader}):
+ * the large title's first line is centred on the nav row, level with the ✕,
+ * instead of starting below the whole bar.
+ */
+export const DIALOG_HEADER_INLINE_CONTENT_TOP = (DIALOG_NAV_BAR_HEIGHT - LARGE_TITLE_LINE_HEIGHT) / 2;
+
+/**
+ * Space (px) the large title's first line keeps clear at its trailing edge for
+ * the ✕ it shares a row with: the nav row's gutter + the button + an 8px gap,
+ * less the title block's own gutter.
+ */
+const INLINE_CLOSE_TITLE_RESERVE = HEADER_H_PADDING - 4 + NAV_BUTTON_SIZE + 8 - HEADER_H_PADDING;
+
+/** Scroll distance (px) over which the bar's scrim fades in on an inline-close header. */
+const INLINE_SCRIM_FADE_DISTANCE = 16;
+
+/**
+ * Whether a large-title header puts its title IN the nav row, beside the ✕,
+ * rather than in a band below the bar.
+ *
+ * The nav row exists for its controls. When it would hold nothing but the
+ * default close — no back, no leading slot, no trailing actions, no custom
+ * trailing node — a full 72px row above the title is an empty band on every
+ * entry view of a flow (an account dialog's first screen, a one-page sheet).
+ * The title then starts level with the ✕ and wraps before it; the bar's scrim
+ * and the small collapsed title still arrive once the title scrolls under it.
+ *
+ * Anything that gives the row content of its own keeps the stacked layout: a
+ * back button (the title would sit between two buttons), rich trailing actions
+ * or a custom `right` (unknown width), a branded `titleContent` (no large title
+ * at all), and `tone: 'onImage'` (the scrim is what makes the chrome legible
+ * over media, so it cannot start hidden).
+ */
+export function isInlineCloseHeader(config: DialogHeaderConfig): boolean {
+  const hasLargeTitle = !config.titleContent && (config.largeTitle ?? true) && !!config.title;
+  if (!hasLargeTitle) return false;
+  if (config.tone === 'onImage') return false;
+  if (config.left || config.onBack || config.right) return false;
+  if (config.actions?.length || config.primaryAction) return false;
+  return true;
+}
+
 /**
  * Trailing icon `actions` shown inline before they collapse into a "more"
  * overflow menu (Material overflow pattern). Kept small so the nav row never
@@ -473,6 +519,17 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   // so there is nothing to collapse and no large in-content title to collapse under.
   const hasLargeTitle =
     collapse && !config.titleContent && (config.largeTitle ?? true) && !!config.title;
+  // The large title shares the nav row with the ✕ at rest (`isInlineCloseHeader`),
+  // so the scrim — opaque at the top — must not paint over it until content
+  // actually scrolls under the bar. Only a collapsing bar has an in-content title.
+  const inlineClose = collapse && isInlineCloseHeader(config);
+
+  const scrimStyle = useAnimatedStyle(() => {
+    if (!inlineClose) return { opacity: 1 };
+    return {
+      opacity: interpolate(scrollY.value, [0, INLINE_SCRIM_FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+    };
+  }, [scrollY, inlineClose]);
 
   const titleStyle = useAnimatedStyle(() => {
     // When there is no large title to collapse under, the bar title is always
@@ -548,14 +605,23 @@ export const DialogNavHeader = memo(function DialogNavHeader({
       {/* Opaque (surface bg) at the top → transparent at the bottom, so scrolled
           content fades out under the bar. `onImage` swaps to a dark scrim so the
           chrome reads over media. Pure NativeWind — no SVG dependency. */}
-      <View
-        className={
-          onImage
-            ? 'bg-gradient-to-b from-black/60 to-transparent'
-            : 'bg-gradient-to-b from-bg to-transparent'
-        }
-        style={[StyleSheet.absoluteFill, { height: DIALOG_HEADER_OVERLAY_HEIGHT, pointerEvents: 'none' }]}
-      />
+      <Animated.View
+        testID="dialog-nav-scrim"
+        style={[
+          StyleSheet.absoluteFill,
+          { height: DIALOG_HEADER_OVERLAY_HEIGHT, pointerEvents: 'none' },
+          scrimStyle,
+        ]}
+      >
+        <View
+          className={
+            onImage
+              ? 'bg-gradient-to-b from-black/60 to-transparent'
+              : 'bg-gradient-to-b from-bg to-transparent'
+          }
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
       <View pointerEvents="box-none" style={styles.navRow}>
         <View style={styles.side}>{left}</View>
         <Animated.View
@@ -625,14 +691,31 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
     return onImage ? null : <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />;
   }
 
+  // Title level with the ✕ when the nav row would hold nothing else.
+  const inlineClose = isInlineCloseHeader(config);
+
   return (
     <>
-      {/* Clear the whole gradient overlay so the block starts below the bar. */}
-      <View style={{ height: DIALOG_HEADER_CONTENT_TOP }} />
+      {/* Clear the whole gradient overlay so the block starts below the bar —
+          or, inline with the ✕, just centre the first line on the nav row. */}
+      <View
+        testID="dialog-large-title-inset"
+        style={{ height: inlineClose ? DIALOG_HEADER_INLINE_CONTENT_TOP : DIALOG_HEADER_CONTENT_TOP }}
+      />
       <View onLayout={onLayout} testID="dialog-large-title" style={styles.largeTitleBlock}>
         {hasLargeTitle ? (
           <>
-            <H1 style={[styles.largeTitle, { color: onImage ? ON_IMAGE_TEXT : theme.colors.text }]}>
+            <H1
+              style={[
+                styles.largeTitle,
+                { color: onImage ? ON_IMAGE_TEXT : theme.colors.text },
+                // Wrap before the ✕ it shares the row with. A logical inset, so
+                // it follows the ✕ to the left edge in a right-to-left layout.
+                inlineClose && config.showClose !== false
+                  ? { marginInlineEnd: INLINE_CLOSE_TITLE_RESERVE }
+                  : null,
+              ]}
+            >
               {config.title}
             </H1>
             {config.subtitle ? (

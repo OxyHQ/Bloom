@@ -137,6 +137,11 @@ Per-placement behavior:
 - `left` / `right` — animated side-sheet anchored to that PHYSICAL viewport edge.
 - `start` / `end` — the same side-sheet on the LOGICAL edge: `start` is the left in a left-to-right layout and the right in a right-to-left one (`end` the reverse), read from `useIsRtl()`, and the panel slides in from that edge. The matching `inset` side applies (`inset.right` for `start` in RTL). On native the panel is positioned with `insetInlineStart`/`insetInlineEnd`, which Yoga resolves against `I18nManager` — a physical `left`/`right` would be swapped by React Native's default `swapLeftAndRightInRTL`. On web the drawer is portaled outside any `dir` context, so it takes the physical edge `useIsRtl()` names. An app that ships Arabic or Hebrew wants `start`/`end`: `{ base: 'bottom', md: 'start' }` is the mirrored store drawer.
 - `bottom` — reuses the cross-platform `BottomSheet` on BOTH web and native (drag-to-dismiss + internal scroll work everywhere). Custom `children` on bottom placement are rendered in a NON-scrollable body — children own scrolling.
+  The sheet is flush with the bottom of the window, so the Dialog ends its content with a spacer the height of the bottom safe area (the Android gesture bar, the iOS home indicator). This spacer is inside the scroll content. Content keeps its own padding; do not add `insets.bottom` yourself. Without the spacer, the last row sat under the gesture bar. A body taller than the sheet could not scroll it out, because the scroll range ended where the bar began.
+
+## Nav header: the title beside the ✕
+
+In `header` mode the large title normally starts below the 52px nav row. When that row would hold **only** the close button, the title starts level with the ✕ and wraps before it. That means no `onBack`, `left`, `right`, `actions` or `primaryAction`, and no `titleContent` or `tone: 'onImage'`. The row's scrim fades in once content scrolls under it. Without this, every entry view of a flow began with an empty band above its title. As soon as a back button or trailing actions appear, the title returns to its own row below the bar. `isInlineCloseHeader()` in `dialog/DialogHeader.tsx` is the rule.
 
 ### `DialogAction`
 
