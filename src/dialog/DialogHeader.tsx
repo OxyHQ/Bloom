@@ -27,6 +27,8 @@ import Animated, {
 // it put all 461 glyphs into every app that renders a Dialog, which is the cost
 // `./icons/Ri*` was added to remove. An app cannot opt out of what Bloom's own
 // components import, so the barrel has no place inside a shipped one.
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -481,6 +483,56 @@ function HeaderProgressBar({
 
 // --- Nav bar overlay --------------------------------------------------------
 
+/** Where the default scrim stops being opaque: the bottom of the nav row. */
+const SCRIM_SOLID_UNTIL = DIALOG_NAV_BAR_HEIGHT / DIALOG_HEADER_OVERLAY_HEIGHT;
+
+/** Dark scrim over media (`tone: 'onImage'`): 60% black fading to clear. */
+const ON_IMAGE_SCRIM = '#000000';
+const ON_IMAGE_SCRIM_OPACITY = 0.6;
+
+let navScrimIdCounter = 0;
+
+/**
+ * The nav bar's background. It used to be a Tailwind class,
+ * `bg-gradient-to-b from-bg to-transparent`. On native that compiles through
+ * react-native-css to `experimental_backgroundImage: "linear-gradient(to bottom
+ * in oklab, …)"`. React Native cannot parse the `in oklab` interpolation that
+ * Tailwind v4 always emits, so it painted NOTHING. The bar was transparent, and
+ * once a list scrolled, the collapsed title sat on top of the rows under it.
+ * The class also needed the consumer's Tailwind to scan Bloom's `lib/`, or the
+ * web bar was bare too. An SVG gradient paints the same on both platforms and
+ * has no such dependency.
+ *
+ * The default scrim is SOLID across the whole nav row and fades only over the
+ * tail below it. A gradient spread over the full overlay left the title's own
+ * row about two-thirds opaque, so rows passing behind it still showed through.
+ * The fade uses `stopOpacity`, never alpha in `stopColor`: SVG drops an
+ * embedded alpha (see `glass-colors.ts`).
+ */
+function NavScrim({ onImage, surface }: { onImage: boolean; surface: string }): React.ReactElement {
+  const id = useMemo(() => `bloom-dialog-nav-scrim${navScrimIdCounter++}`, []);
+  const color = onImage ? ON_IMAGE_SCRIM : surface;
+  // [offset, opacity] pairs: the dark scrim fades across its whole height; the
+  // surface scrim holds solid to the bottom of the nav row first.
+  const stops: Array<[number, number]> = onImage
+    ? [[0, ON_IMAGE_SCRIM_OPACITY], [1, 0]]
+    : [[0, 1], [SCRIM_SOLID_UNTIL, 1], [1, 0]];
+  return (
+    // `width`/`height` beside `absoluteFill`: an `<svg>` is a replaced element
+    // and falls back to 300 x 150 on web without them (`svg-absolute-fill-size`).
+    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} testID="dialog-nav-scrim-fill">
+      <Defs>
+        <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          {stops.map(([offset, opacity]) => (
+            <Stop key={offset} offset={String(offset)} stopColor={color} stopOpacity={opacity} />
+          ))}
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
+
 /**
  * The sticky nav bar: gradient background + left / center (collapsing title) /
  * right slots. Absolutely positioned at the top of the Dialog surface, painted
@@ -602,9 +654,10 @@ export const DialogNavHeader = memo(function DialogNavHeader({
 
   return (
     <View pointerEvents="box-none" style={[styles.overlay, style]}>
-      {/* Opaque (surface bg) at the top → transparent at the bottom, so scrolled
-          content fades out under the bar. `onImage` swaps to a dark scrim so the
-          chrome reads over media. Pure NativeWind — no SVG dependency. */}
+      {/* The surface colour behind the nav row, fading out over the tail below
+          it, so scrolled content passes UNDER the bar instead of through its
+          title. `onImage` swaps to a dark scrim so the chrome reads over media.
+          See `NavScrim` for why this is an SVG and not a gradient class. */}
       <Animated.View
         testID="dialog-nav-scrim"
         style={[
@@ -613,14 +666,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
           scrimStyle,
         ]}
       >
-        <View
-          className={
-            onImage
-              ? 'bg-gradient-to-b from-black/60 to-transparent'
-              : 'bg-gradient-to-b from-bg to-transparent'
-          }
-          style={StyleSheet.absoluteFill}
-        />
+        <NavScrim onImage={onImage} surface={theme.colors.background} />
       </Animated.View>
       <View pointerEvents="box-none" style={styles.navRow}>
         <View style={styles.side}>{left}</View>

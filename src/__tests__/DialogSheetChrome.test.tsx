@@ -11,6 +11,7 @@ import {
 } from '../dialog/DialogHeader';
 import type { DialogHeaderConfig } from '../dialog/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
 
 /**
@@ -154,5 +155,55 @@ describe('isInlineCloseHeader', () => {
   ];
   it.each(cases)('%s → %s', (_name, config, expected) => {
     expect(isInlineCloseHeader(config)).toBe(expected);
+  });
+});
+
+// The bar's background was a Tailwind class (`bg-gradient-to-b from-bg
+// to-transparent`). On native it compiled to a CSS gradient with Tailwind v4's
+// `in oklab` interpolation, which React Native cannot parse, so it painted
+// nothing. Once a list scrolled, the collapsed "Manage your Oxy Account" title
+// sat on top of the rows (OxyHQ/oxy#1375 item 12). The background is now an SVG
+// gradient Bloom paints itself: solid behind the nav row, fading only below it.
+describe('the nav bar paints its own background', () => {
+  type Node = { type: unknown; props: Record<string, unknown>; findAll: (p: (n: Node) => boolean) => Node[] };
+  const stopsIn = (root: Node) =>
+    root.findAll((n) => n.type === 'Stop').map((n) => ({
+      offset: Number(n.props.offset),
+      color: n.props.stopColor,
+      opacity: n.props.stopOpacity,
+    }));
+
+  it('is solid in the surface colour across the nav row, then fades out', () => {
+    const { getByTestId } = openDialog({ header: { title: 'Manage', onBack: () => {} } });
+    const scrim = getByTestId('dialog-nav-scrim') as unknown as Node;
+    expect(scrim.props.className).toBeUndefined();
+    expect(getByTestId('dialog-nav-scrim-fill')).toBeTruthy();
+    // The sheet's own fill: the `colors.background` the sheet paints.
+    let background: string | undefined;
+    function Probe() {
+      background = useTheme().colors.background;
+      return null;
+    }
+    render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Probe />
+      </BloomThemeProvider>,
+    );
+    expect(typeof background).toBe('string');
+
+    const stops = stopsIn(scrim);
+    const barBottom = DIALOG_NAV_BAR_HEIGHT / (DIALOG_NAV_BAR_HEIGHT + 20);
+    expect(stops).toEqual([
+      { offset: 0, color: background, opacity: 1 },
+      { offset: barBottom, color: background, opacity: 1 },
+      { offset: 1, color: background, opacity: 0 },
+    ]);
+  });
+
+  it('swaps to a dark scrim over media', () => {
+    const { getByTestId } = openDialog({ header: { title: 'Photo', tone: 'onImage' } });
+    const stops = stopsIn(getByTestId('dialog-nav-scrim') as unknown as Node);
+    expect(stops[0]).toEqual({ offset: 0, color: '#000000', opacity: 0.6 });
+    expect(stops[stops.length - 1]).toMatchObject({ offset: 1, opacity: 0 });
   });
 });
