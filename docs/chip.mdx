@@ -125,6 +125,7 @@ import { Chip, ChipRow } from '@oxy.so/bloom/chip';
 | `contentInset` | side padding inside the scroller |
 | `fadeColor` | the surface BEHIND the row — the row cannot know it. Default the page background; pass the card colour when the row sits on a card, or the fade blends into the wrong thing |
 | `ringInset` | room kept for a pill's focus ring inside the scroller, taken back out with negative margins so the row still lines up. Default 4 |
+| `keyboardShouldPersistTaps` | native: whether a tap on a pill while the keyboard is open reaches the pill. Default `handled` (React Native's own `never` spends the first tap dismissing the keyboard) |
 | `role` / `accessibilityLabel` | the row's semantics, which belong to the caller |
 
 The fade is web only (it is a CSS gradient); the row scrolls on both platforms.
