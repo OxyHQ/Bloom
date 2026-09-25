@@ -412,6 +412,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const plain = surface === 'plain';
   const flatMobile = mobile && plain;
   const searchRing = `inset 0 0 0 2px ${palette.searchRing}`;
+  // The glyph-only header buttons: the web ring rule paints
+  // `var(--bloom-sidebar-ring)`, which resolves to nothing — no ring at all —
+  // on a node that does not set it.
+  const iconButtonRing = { borderRadius: 6, '--bloom-sidebar-ring': palette.ring } as WebCssStyle;
   const placeholder = searchPlaceholder ?? (flatMobile ? 'Search...' : 'Search navigation…');
 
   const toggleCollapse = () => {
@@ -442,7 +446,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         role="button"
         accessibilityLabel={searchButtonLabel}
         onPress={activateSearch}
-        style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+        style={[{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, iconButtonRing]}
       >
         <RiSearchLine width={20} height={20} fill={palette.textSecondary} />
       </Pressable>
@@ -466,6 +470,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       role="button"
       accessibilityLabel={closeLabel}
       onPress={onClose}
+      style={iconButtonRing}
       testID="sidebar-close"
     >
       <RiCloseLine width={20} height={20} fill={palette.textSecondary} />
@@ -477,7 +482,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       accessibilityLabel={collapsed ? expandLabel : collapseLabel}
       aria-expanded={!collapsed}
       onPress={toggleCollapse}
-      style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}
+      style={[{ width: '100%', alignItems: 'center', justifyContent: 'center' }, iconButtonRing]}
       testID="sidebar-collapse"
     >
       <Animated.View style={sideBarIconStyle}>

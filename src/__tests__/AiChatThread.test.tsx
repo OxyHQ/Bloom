@@ -288,6 +288,21 @@ describe('AiChatContainer floatingChrome', () => {
     expect(api.queryByTestId('chat-fade-bottom', HIDDEN)).toBeNull();
   });
 
+  it('paints the surface SOLID behind the whole header block, and ramps only below it', () => {
+    const api = floating();
+    measure(api, 60, 100);
+    settle(api, 1000, 600);
+    scrollTo_(api, 300, 1000);
+    const fade = resolvedStyle(api.getByTestId('chat-fade-top', HIDDEN).props.style);
+    // The block plus its tail below: 60 + round(60 * 0.55).
+    expect(fade.height).toBe(93);
+    const surface = resolvedStyle(api.getByTestId('chat-fade-top-surface', HIDDEN).props.style);
+    // Opaque over the title and the crumbs: a turn scrolled under them cannot
+    // show through. The ramp would have been ~50% at the block's bottom edge.
+    expect(surface.height).toBe(60);
+    expect(surface.backgroundColor).toMatch(/^rgb\(/);
+  });
+
   it('draws no fades without a surface to fade to', () => {
     const api = floating({ surface: false });
     measure(api, 60, 100);

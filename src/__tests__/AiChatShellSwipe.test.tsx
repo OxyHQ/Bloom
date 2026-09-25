@@ -121,9 +121,12 @@ function renderShell({ mobileSidebar = <Text>nav</Text>, navSwipeEnabled }: Shel
       expect(created.length).toBeGreaterThan(0);
       return created[0]!;
     },
-    /** How far the drawer is out, read off the veil the reveal drives. */
+    /**
+     * How far the drawer is out, read off the veil the reveal drives. A closed
+     * veil is hidden from assistive tech, so the query has to include it.
+     */
     revealed: () => {
-      let node: ReactTestInstance | null = utils.getByLabelText('Close navigation');
+      let node: ReactTestInstance | null = utils.getByLabelText('Close navigation', { includeHiddenElements: true });
       while (node && resolvedStyle(node.props.style).opacity === undefined) node = node.parent;
       return resolvedStyle(node?.props.style).opacity as number | undefined;
     },
@@ -241,7 +244,7 @@ describe('AiChatShell nav swipe', () => {
     expect(shell.root().props.onMoveShouldSetResponder).toBeUndefined();
     expect(shell.config().onMoveShouldSetPanResponder!(TOUCH, dragFrom(6, 200))).toBe(false);
     // The drawer still exists — only the gesture is gone.
-    expect(shell.getByLabelText('Close navigation')).toBeTruthy();
+    expect(shell.getByLabelText('Close navigation', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('keeps the drag but snaps the settle under reduced motion', () => {

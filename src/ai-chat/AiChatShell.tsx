@@ -368,6 +368,10 @@ export function AiChatShell({
   const panelOpen = panelOpenState && !wide && !!panel;
   const dismissPanel = useCallback(() => setPanelOpen(false), [setPanelOpen]);
   const panelRef = usePanelInteraction(panelOpenState && !!panel, panelOpen, dismissPanel);
+  const dismissNav = useCallback(() => setNavOpen(false), [setNavOpen]);
+  // The nav drawer covers the workspace whenever it is open: Escape closes it,
+  // focus moves in and is kept there, and returns to the opener on close.
+  const navRef = usePanelInteraction(navOpen, navOpen, dismissNav);
   // The swipe's handlers are built once and read the drawer's state from here.
   const navOpenRef = useRef(navOpen);
   navOpenRef.current = navOpen;
@@ -608,6 +612,7 @@ export function AiChatShell({
         ) : null}
         {!navInFlow && mobileSidebar ? (
           <View
+            ref={navRef}
             {...(navOpen ? null : CLOSED_LAYER)}
             pointerEvents={navOpen ? 'box-none' : 'none'}
             style={{ position: overlayPosition, top: 0, bottom: 0, left: 0, zIndex: 10, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
@@ -652,12 +657,17 @@ export function AiChatShell({
           ]}>
           {!navInFlow ? (
             <Animated.View
+              {...(navOpen ? null : CLOSED_LAYER)}
               pointerEvents={navOpen ? 'auto' : 'none'}
               style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }, veilStyle]}>
+              {/* Never a Tab stop: open, focus is kept in the drawer and Escape
+                  closes it; closed, the veil is not there at all. `tabIndex`,
+                  not `focusable` — react-native-web's Pressable writes its own
+                  tabIndex 0 over `focusable`. */}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={l.closeNavigation}
-                focusable={navOpen}
+                tabIndex={-1}
                 onPress={() => setNavOpen(false)}
                 style={{ flex: 1, backgroundColor: veil }}
               />
@@ -701,7 +711,7 @@ export function AiChatShell({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={l.closePanel(panelLabel)}
-                focusable={panelOpen}
+                tabIndex={panelOpen ? 0 : -1}
                 onPress={() => setPanelOpen(false)}
                 style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
               />

@@ -188,6 +188,8 @@ defaults and what each names: [`AppShell`, Labels](/docs/bloom/main/app-shell).
 
 After expanding, the account trigger's hover pill stays off until the pointer leaves it, so a stationary pointer does not light it up.
 
+On web every control takes the same keyboard focus ring: one stylesheet rule on `[data-bloom-sidebar]:focus-visible` painting `var(--bloom-sidebar-ring)`. A control with the hook but without the variable matches the rule and paints nothing — the collapse button, the `mobile` close button and the flat header's search button shipped that way, focusable and invisible while focused. Each part sets the variable on itself; `SidebarFocusRingWeb.test.tsx` fails for any hooked control that resolves no ring colour.
+
 ## Quick search
 
 The pill button (or ⌘L / Ctrl+L on web; `searchShortcut={false}` to unbind) opens a field that filters every row by label; "No results" shows when nothing matches. Escape, the clear button, or a press outside the field (web) closes it and clears the query. Activating search on a collapsed rail expands it.

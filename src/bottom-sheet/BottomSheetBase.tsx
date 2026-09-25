@@ -32,6 +32,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
+import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { useTheme } from '../theme/use-theme';
 import type { BottomSheetRef, BottomSheetProps, BottomSheetShellProps, BottomSheetBaseProps } from './types';
 
@@ -92,6 +93,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasClosedRef = useRef(false);
     const scrollViewRef = useRef<Animated.ScrollView>(null);
+    const sheetRef = useRef<View>(null);
     /**
      * Monotonically increasing counter that identifies "the current close
      * attempt". Bumped every time the sheet re-opens (`present()`), so any
@@ -696,6 +698,11 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
 
     return (
         <Shell visible={rendered} onRequestClose={dismiss} keyboardHeight={keyboardHeight}>
+            {/* Web keyboard and focus: in on open, back on close, Tab kept in
+                the sheet, Escape a USER dismissal — through `onDismissAttempt`,
+                exactly like the backdrop. The sheet had no keyboard path at
+                all. Inside the shell's `OverlayRoot`; inert on native. */}
+            <ModalKeyboard panelRef={sheetRef} dismissible dismiss={handleBackdropPress} />
             <View style={StyleSheet.absoluteFill}>
                 {backdropComponent ? (
                     <Animated.View style={[StyleSheet.absoluteFill, customBackdropStyle]}>
@@ -723,6 +730,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
 
                 <GestureDetector gesture={panGesture}>
                     <Animated.View
+                        ref={sheetRef}
                         onLayout={onLayout}
                         style={[
                             dynamicStyles.sheet,

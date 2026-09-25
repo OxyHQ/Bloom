@@ -186,6 +186,34 @@ Two things are worth knowing rather than discovering:
   paints its tint at full intensity; you lose the blur and nothing else, with no
   warning and no crash.
 
+## Keyboard and focus (web)
+
+The centred card and the side drawers own the keyboard while they are the
+top-most surface:
+
+- **Focus moves in on open** — to whatever the content focused itself (an
+  `autoFocus` field), else the first tabbable control, else the panel — and
+  **returns to the element that opened it** as the dialog starts closing, unless
+  the host has already moved it somewhere else.
+- **Tab and Shift+Tab wrap** at the panel's edges.
+- **Escape dismisses** (when `dismissOnBackdrop` allows it) from anywhere,
+  including the dialog's own text field. react-native-web's `TextInput` stops
+  the propagation of every keydown, so a dialog listening on `document` never
+  heard Escape while focus was in its search box. The key is claimed in the
+  capture phase, dismissed in the bubble phase, and — for a key a text field
+  swallowed — after dispatch. A control that keeps Escape for itself calls
+  `preventDefault()` (the tag field and the composer do).
+- **One layer per Escape.** A menu, select or second dialog opened from this
+  one takes a higher place in the overlay stack and gets Escape, Tab and focus
+  until it closes. Gate: `DialogKeyboard.web.test.tsx`,
+  `SelectKeyboard.web.test.tsx`.
+
+The `bottom` placement is the shared `BottomSheet`, which does the same on web
+(`docs/bottom-sheet.mdx`). A controlled bottom dialog the SHEET closes — the
+backdrop, a drag, Escape — now calls `onClose`, so the host's `open` does not
+stay `true` over a closed sheet; a close the host made by flipping `open` still
+does not call it again.
+
 ## Web setup
 
 Inject the CSS animations into your global styles once:
