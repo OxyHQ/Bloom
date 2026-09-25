@@ -50,6 +50,8 @@ On web the menu anchors to the CLICK POINT, not to the trigger's box: right-clic
 
 On native there is no cursor to anchor to, so a long press presents the same bottom sheet `DropdownMenu` uses.
 
+The native trigger (without `asChild`) times the hold off raw touch events and never takes the touch responder. On Android the responder's view intercepts every later move of its touch, so a `Pressable` trigger kept a horizontal `ScrollView` inside it — a code block in a chat turn — from scrolling. Taps still reach whatever the content makes pressable; a drag past 10dp, an early lift or a scroller taking the touch cancels the hold, and assistive tech opens the menu through the `longpress` accessibility action. With `asChild` your own element takes the long press, responder and all.
+
 ## No `open` prop, on purpose
 
 `ContextMenu` is uncontrolled by construction. Its open POSITION comes from the pointer event that opened it, so there is no `open` a caller could set that would mean anything — Radix's `ContextMenu.Root` takes the same view. What you get instead is `onOpenChange`:
