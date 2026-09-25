@@ -37,6 +37,7 @@ const [stars, setStars] = useState<number | null>(null);
 | `starColor`          | the filled star(s) only (a gold star beside neutral text); default `color`               |
 | `countColor`         | the count only; default `color` when given, else text-secondary                          |
 | `emptyStarColor`     | `stars` only: the unfilled part of each star; default the border colour                   |
+| `fillValue`          | `stars` only: the number the stars fill to, clamped to `0..5`, independent of the drawn `value` |
 | `accessibilityLabel` | replaces the composed name — pass a translated sentence                                 |
 | `style`, `testID`    |                                                                                          |
 
@@ -50,8 +51,24 @@ apps in other languages pass `accessibilityLabel`.
 
 `variant="stars"` draws a row of five stars 2px apart instead of the single
 star. Each is the unfilled star (`emptyStarColor`) with the filled star clipped
-over it to its share of the value — 4.3 fills four stars and 30% of the fifth. A
-string `value` is parsed for the fill and drawn as given. The clip is anchored
+over it to its share of the value — 4.3 fills four stars and 30% of the fifth.
+
+A string `value` is drawn exactly as given. The fill comes from `fillValue` when
+you pass it — clamped to `0..5` — so a localised figure never has to be parsed:
+
+```tsx
+// "4,5" in a French or Spanish UI, isolated with FSI…PDI inside RTL text.
+<Rating variant="stars" value={localisedFigure} fillValue={4.5} count={128} />
+```
+
+Without `fillValue` the string is parsed for the fill: bidi isolates and marks
+(U+2066–U+2069, U+200E/U+200F, U+061C) are dropped, a comma or the Arabic
+decimal separator counts as the decimal point, and Arabic-Indic digits are read,
+so `"4,5"` wrapped in FSI…PDI still fills four and a half stars. A string that
+cannot be read fills nothing. Prefer `fillValue` — it is the number you already
+formatted from. The accessible name is built from the DRAWN text ("Rated 4,5 out
+of 5"), never from `fillValue`; its sentence is English, so pass
+`accessibilityLabel` in other languages. The clip is anchored
 with a logical inset, so in a right-to-left layout the row fills from the right
 (the root carries `dir` on web for react-native-web to resolve it). The row
 stays ONE named image, like the compact rating.

@@ -13,7 +13,7 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Rating, RatingBar, RatingInput } from '../rating';
-import { formatRatingValue, starFill } from '../rating/Rating';
+import { formatRatingValue, parseRatingValue, starFill } from '../rating/Rating';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -168,6 +168,57 @@ describe('Rating variant="stars"', () => {
     expect(byTestId('r').textContent).toBe('New');
   });
 
+  it('parseRatingValue reads a localised, bidi-isolated string', () => {
+    expect(parseRatingValue(4.5)).toBe(4.5);
+    expect(parseRatingValue('4.5')).toBe(4.5);
+    expect(parseRatingValue('4,5')).toBe(4.5);
+    // FSI … PDI, the way a localised figure is isolated inside RTL text.
+    expect(parseRatingValue('\u20684,5\u2069')).toBe(4.5);
+    expect(parseRatingValue('\u2066 3.25 \u2069')).toBe(3.25);
+    expect(parseRatingValue('\u200F4,0\u200E')).toBe(4);
+    expect(parseRatingValue('\u061C4,5')).toBe(4.5);
+    // Arabic-Indic digits with the Arabic decimal separator.
+    expect(parseRatingValue('\u0664\u066B\u0665')).toBe(4.5);
+    expect(parseRatingValue('\u06F3,\u06F5')).toBe(3.5);
+    expect(parseRatingValue('great')).toBeNaN();
+  });
+
+  it('a bidi-wrapped comma-decimal string fills the stars and is drawn exactly as given', () => {
+    const shown = '\u20684,5\u2069';
+    mount(<Rating variant="stars" value={shown} testID="r" />);
+    expect(byTestId('r-stars').querySelectorAll('svg')).toHaveLength(10);
+    expect(byTestId('r-stars-3').style.width).toBe('16px');
+    expect(byTestId('r-stars-4').style.width).toBe('8px');
+    expect(byTestId('r').textContent).toBe(shown);
+  });
+
+  it('fillValue drives the fill while a localised value stays the drawn text and the name', () => {
+    mount(<Rating variant="stars" value="3,5" fillValue={3.5} count={12} testID="r" />);
+    expect(byTestId('r-stars-3').style.width).toBe('8px');
+    expect(container.querySelector('[data-testid="r-stars-4"]')).toBeNull();
+    expect(byTestId('r').textContent).toBe('3,5(12)');
+    expect(byTestId('r').getAttribute('aria-label')).toBe('Rated 3,5 out of 5, 12 reviews');
+    // Wins over an unparseable display string too.
+    mount(<Rating variant="stars" value="★★★" fillValue={2.25} testID="r" />);
+    expect(byTestId('r-stars-2').style.width).toBe('4px');
+    expect(byTestId('r').textContent).toBe('★★★');
+  });
+
+  it('fillValue is clamped to 0..5, and ignored while unrated or compact', () => {
+    mount(<Rating variant="stars" value="9" fillValue={9} testID="r" />);
+    expect(byTestId('r-stars').querySelectorAll('svg')).toHaveLength(10);
+    expect(byTestId('r-stars-4').style.width).toBe('16px');
+    mount(<Rating variant="stars" value="-1" fillValue={-1} testID="r" />);
+    expect(byTestId('r-stars').querySelectorAll('svg')).toHaveLength(5);
+    mount(<Rating variant="stars" value="7,5" testID="r" />);
+    expect(byTestId('r-stars').querySelectorAll('svg')).toHaveLength(10);
+    mount(<Rating variant="stars" value={null} fillValue={4} testID="r" />);
+    expect(container.querySelector('[data-testid="r-stars"]')).toBeNull();
+    expect(byTestId('r').textContent).toBe('New');
+    mount(<Rating value="4,5" fillValue={4.5} testID="r" />);
+    expect(byTestId('r').querySelectorAll('svg')).toHaveLength(1);
+  });
+
   it('anchors the fill at the logical start, so it fills from the right in RTL', () => {
     document.documentElement.dir = 'rtl';
     try {
@@ -176,6 +227,22 @@ describe('Rating variant="stars"', () => {
       const clip = byTestId('r-stars-3');
       expect(clip.style.right).toBe('0px');
       expect(clip.style.left).toBe('');
+    } finally {
+      document.documentElement.removeAttribute('dir');
+    }
+  });
+
+  it('fillValue and a parsed localised string fill from the right in RTL too', () => {
+    document.documentElement.dir = 'rtl';
+    try {
+      mount(<Rating variant="stars" value={'\u20683,5\u2069'} fillValue={3.5} testID="r" />);
+      expect(byTestId('r').getAttribute('dir')).toBe('rtl');
+      expect(byTestId('r-stars-3').style.width).toBe('8px');
+      expect(byTestId('r-stars-3').style.right).toBe('0px');
+      expect(byTestId('r-stars-3').style.left).toBe('');
+      mount(<Rating variant="stars" value={'\u20683,5\u2069'} testID="r" />);
+      expect(byTestId('r-stars-3').style.width).toBe('8px');
+      expect(byTestId('r-stars-3').style.right).toBe('0px');
     } finally {
       document.documentElement.removeAttribute('dir');
     }
