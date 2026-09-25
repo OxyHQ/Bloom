@@ -4,6 +4,7 @@ import { resolveIconSlot } from '../icons/render-icon';
 import {
   ActivityIndicator,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -79,6 +80,42 @@ const SQUARE_HIT_SLOP = {
   md: { top: 4, bottom: 4, left: 4, right: 4 },
   lg: { top: 0, bottom: 0, left: 0, right: 0 },
 } as const satisfies Record<ButtonResolvedSize, NonNullable<ButtonProps['hitSlop']>>;
+
+type HitSlop = { top: number; bottom: number; left: number; right: number };
+
+/**
+ * Android's floor is 48dp (Material), 4dp above the 44 the tables above reach —
+ * so on Android every target grows 2dp at its top and bottom: `lg` (44dp tall,
+ * no slack) reaches 48, and every smaller size clears 48 the same way. Squares
+ * also grow 2dp at the sides, since they already take all-round slack; row
+ * buttons and links do not, because side slack steals presses from a
+ * neighbour. Two stacked buttons keep 4dp of every 8dp gap between them.
+ */
+const ANDROID_TARGET_EXTRA = 2;
+
+function growVertical(slop: HitSlop): HitSlop {
+  return { ...slop, top: slop.top + ANDROID_TARGET_EXTRA, bottom: slop.bottom + ANDROID_TARGET_EXTRA };
+}
+
+function growAllRound(slop: HitSlop): HitSlop {
+  return {
+    top: slop.top + ANDROID_TARGET_EXTRA,
+    bottom: slop.bottom + ANDROID_TARGET_EXTRA,
+    left: slop.left + ANDROID_TARGET_EXTRA,
+    right: slop.right + ANDROID_TARGET_EXTRA,
+  };
+}
+
+function mapSizes(
+  table: Record<ButtonResolvedSize, HitSlop>,
+  grow: (slop: HitSlop) => HitSlop,
+): Record<ButtonResolvedSize, HitSlop> {
+  return { xs: grow(table.xs), sm: grow(table.sm), md: grow(table.md), lg: grow(table.lg) };
+}
+
+const ANDROID_SIZE_HIT_SLOP = mapSizes(SIZE_HIT_SLOP, growVertical);
+const ANDROID_SQUARE_HIT_SLOP = mapSizes(SQUARE_HIT_SLOP, growAllRound);
+const ANDROID_LINK_HIT_SLOP = growVertical(LINK_HIT_SLOP);
 
 // ---------------------------------------------------------------------------
 //  The button renders ONE node — the same shape the web fork renders (one
@@ -286,11 +323,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     [geometry, paint.foreground, isLink, underlineMode, hovered, disabled],
   );
 
+  const android = Platform.OS === 'android';
   const defaultHitSlop = isSquare
-    ? SQUARE_HIT_SLOP[size]
+    ? (android ? ANDROID_SQUARE_HIT_SLOP : SQUARE_HIT_SLOP)[size]
     : isLink
-      ? LINK_HIT_SLOP
-      : SIZE_HIT_SLOP[size];
+      ? (android ? ANDROID_LINK_HIT_SLOP : LINK_HIT_SLOP)
+      : (android ? ANDROID_SIZE_HIT_SLOP : SIZE_HIT_SLOP)[size];
 
   const IconFromProp = icon != null && isIconComponent(icon) ? icon : null;
   const iconNode = IconFromProp ? (

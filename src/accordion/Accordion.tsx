@@ -140,6 +140,9 @@ const AccordionItemComponent: React.FC<AccordionItemProps> = ({
 
 // ---- Accordion Trigger ----
 
+/** The trigger's label box: fills the row, sized from its content (`flexBasis: 'auto'`). */
+const TRIGGER_LABEL_STYLE = { flexGrow: 1, flexShrink: 1 } as const;
+
 const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   children,
   icon,
@@ -200,7 +203,12 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
       aria-expanded={isExpanded}
     >
       {icon}
-      <View style={{ flex: 1 }}>
+      {/* Grow into a full-width trigger, but measure at the label's natural
+          width. RN's `flex: 1` is `flexBasis: 0`, and in a shrink-wrapped
+          trigger (`alignSelf: 'center'`) Yoga then sized the label at its
+          MINIMUM content width: "Having trouble?" wrapped to two lines on
+          Android while web (max-content sizing) kept it on one. */}
+      <View testID="accordion-trigger-label" style={TRIGGER_LABEL_STYLE}>
         {typeof children === 'string' ? (
           <Text
             style={[
