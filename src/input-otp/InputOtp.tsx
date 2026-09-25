@@ -291,7 +291,13 @@ export function InputOtp({
             autoFocus={autoFocus && index === 0}
             // Long enough to accept a full autofilled code in one box.
             maxLength={length}
-            selectTextOnFocus
+            // Typing into a filled box must REPLACE its digit, so the digit is
+            // selected on focus. Web's `selectTextOnFocus` does that. Android's
+            // does not: it selects on the input's next layout, and focusing a box
+            // lays nothing out, so the keystroke landed beside the old digit and
+            // `writeFrom` spread both across two boxes. Native selects in
+            // `onFocus` instead (see Search, OxyHQ/Mention#1126).
+            selectTextOnFocus={IS_WEB}
             caretHidden={false}
             editable={!disabled}
             accessibilityLabel={`Digit ${index + 1} of ${length}`}
@@ -300,7 +306,10 @@ export function InputOtp({
             value={digit === ' ' ? '' : digit}
             onChangeText={(text) => writeFrom(index, text)}
             onKeyPress={(event) => onKeyPress(event, index)}
-            onFocus={() => setFocusedIndex(index)}
+            onFocus={() => {
+              setFocusedIndex(index);
+              if (!IS_WEB && digit !== '' && digit !== ' ') inputsRef.current[index]?.setSelection(0, 1);
+            }}
             onBlur={() => setFocusedIndex((current) => (current === index ? null : current))}
             keyboardAppearance={theme.isDark ? 'dark' : 'light'}
             style={[
