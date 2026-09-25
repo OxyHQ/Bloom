@@ -143,6 +143,8 @@ Per-placement behavior:
 
 In `header` mode the large title normally starts below the 52px nav row. When that row would hold **only** the close button, the title starts level with the ✕ and wraps before it. That means no `onBack`, `left`, `right`, `actions` or `primaryAction`, and no `titleContent` or `tone: 'onImage'`. The row's scrim fades in once content scrolls under it. Without this, every entry view of a flow began with an empty band above its title. As soon as a back button or trailing actions appear, the title returns to its own row below the bar. `isInlineCloseHeader()` in `dialog/DialogHeader.tsx` is the rule.
 
+The bar's background is an SVG gradient Bloom paints itself. It is solid in the surface colour across the nav row and fades out over the 20px below it. Do not bring back the old Tailwind gradient class. On native it compiles to a CSS gradient with Tailwind v4's `in oklab` interpolation, which React Native cannot parse, so the bar was transparent and a collapsed title sat on top of the rows scrolling under it. On web it also depended on the consumer scanning Bloom's `lib/`.
+
 ### `DialogAction`
 
 | Prop | Type | Description |
