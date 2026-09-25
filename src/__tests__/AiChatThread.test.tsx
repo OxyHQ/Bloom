@@ -119,6 +119,70 @@ describe('AiChatThread follow', () => {
     expect(scrollToEnd).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps following a streamed answer whose growths land before the scroll event does', () => {
+    // Android, streaming: the follow's `scrollToEnd` has not produced its scroll
+    // event when the next chunk grows the content. The offset on record is the
+    // old one, and measured against it the reader looked 100px up — the follow
+    // dropped for good.
+    const api = renderIn(
+      <AiChatThread testID="thread" followThreshold={50}>
+        <AiChatUserMessage>hello</AiChatUserMessage>
+      </AiChatThread>,
+    );
+    settle(api, 1000, 600);
+    act(() => scroller(api).onContentSizeChange(0, 1100));
+    act(() => scroller(api).onContentSizeChange(0, 1200));
+    act(() => scroller(api).onContentSizeChange(0, 1300));
+    expect(scrollToEnd).toHaveBeenCalledTimes(3);
+
+    // It lands; the next growth is measured normally again and still follows.
+    act(() =>
+      scroller(api).onScroll?.({
+        nativeEvent: { contentOffset: { y: 900 }, layoutMeasurement: { height: 400 } },
+      }),
+    );
+    act(() => scroller(api).onContentSizeChange(0, 1400));
+    expect(scrollToEnd).toHaveBeenCalledTimes(4);
+  });
+
+  it('stops following when the reader scrolls up, and tells `onScroll` the end moved away', () => {
+    const onScroll = jest.fn();
+    const api = renderIn(
+      <AiChatThread testID="thread" followThreshold={50} onScroll={onScroll}>
+        <AiChatUserMessage>hello</AiChatUserMessage>
+      </AiChatThread>,
+    );
+    settle(api, 1000, 600);
+    act(() => scroller(api).onContentSizeChange(0, 1100));
+    expect(scrollToEnd).toHaveBeenCalledTimes(1);
+    // The reader takes over mid-follow, upward.
+    act(() =>
+      scroller(api).onScroll?.({
+        nativeEvent: { contentOffset: { y: 400 }, layoutMeasurement: { height: 400 } },
+      }),
+    );
+    onScroll.mockClear();
+    act(() => scroller(api).onContentSizeChange(0, 1300));
+    expect(scrollToEnd).toHaveBeenCalledTimes(1);
+    // No scroll happened, yet the host hears where the end is now: 500 below.
+    expect(onScroll).toHaveBeenCalledTimes(1);
+    const { contentOffset, layoutMeasurement, contentSize } = onScroll.mock.calls[0][0].nativeEvent;
+    expect(contentSize.height - contentOffset.y - layoutMeasurement.height).toBe(500);
+  });
+
+  it('follows the growth after a jump from the ref, before the jump has landed', () => {
+    const ref = createRef<AiChatThreadHandle>();
+    const api = renderIn(
+      <AiChatThread ref={ref} testID="thread" followThreshold={50}>
+        <AiChatUserMessage>hello</AiChatUserMessage>
+      </AiChatThread>,
+    );
+    settle(api, 1000, 100);
+    act(() => ref.current?.scrollToEnd());
+    act(() => scroller(api).onContentSizeChange(0, 1200));
+    expect(scrollToEnd).toHaveBeenCalledTimes(2);
+  });
+
   it('attaches no scroll listener when nothing is listening', () => {
     const api = renderIn(<AiChatThread testID="thread">turns</AiChatThread>);
     expect(scroller(api).onScroll).toBeUndefined();

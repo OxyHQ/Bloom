@@ -537,6 +537,16 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
   const contentHeight = useRef(0);
   const offset = useRef(0);
   const viewport = useRef(0);
+  /**
+   * A scroll to the end is on its way and has not landed. `offset` is only
+   * what the LAST scroll event said, so two growths between a `scrollToEnd`
+   * and the event it causes measured the reader against the old offset, read
+   * them as far from the bottom and dropped the follow for good (Android,
+   * streaming). While this holds, growth follows whatever `offset` says; it
+   * clears when a scroll event lands at the end or moves UP — only a reader
+   * (or a host) scrolls up, the follow never does.
+   */
+  const following = useRef(false);
   /** An `onStartReached` is out and its page has not landed yet. */
   const pageOut = useRef(false);
   /** The reader has left the top zone, so the next approach may fire again. */
@@ -560,7 +570,10 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
   useImperativeHandle(
     ref,
     (): AiChatThreadHandle => ({
-      scrollToEnd: (options) => scrollRef.current?.scrollToEnd({ animated: options?.animated ?? true }),
+      scrollToEnd: (options) => {
+        following.current = true;
+        scrollRef.current?.scrollToEnd({ animated: options?.animated ?? true });
+      },
       scrollToOffset: ({ offset: y, animated = false }) => scrollRef.current?.scrollTo({ y, animated }),
       getScrollView: () => scrollRef.current,
     }),
@@ -577,9 +590,13 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+      const movedUp = contentOffset.y < offset.current - 0.5;
       offset.current = contentOffset.y;
       viewport.current = layoutMeasurement.height;
       if (contentSize?.height) contentHeight.current = contentSize.height;
+      if (movedUp || contentHeight.current - contentOffset.y - layoutMeasurement.height <= EDGE_THRESHOLD) {
+        following.current = false;
+      }
       report();
       if (onStartReached) {
         if (contentOffset.y <= onStartReachedThreshold) {
@@ -624,7 +641,8 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
       const chromeShift = shift.top + shift.bottom;
       if (chromeShift !== 0 && Math.abs(height - previous - chromeShift) < 1) {
         const fromBottom = previous - offset.current - viewport.current;
-        if (fromBottom <= EDGE_THRESHOLD) {
+        if (following.current || fromBottom <= EDGE_THRESHOLD) {
+          following.current = true;
           scrollRef.current?.scrollToEnd({ animated: false });
         } else if (offset.current > 0 && shift.top !== 0) {
           scrollRef.current?.scrollTo({ y: offset.current + shift.top, animated: false });
@@ -642,15 +660,23 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
       pageOut.current = false;
 
       if (!autoFollow) return;
-      if (followThreshold !== undefined) {
+      if (followThreshold !== undefined && !following.current) {
         // Measured against the height BEFORE the growth: was the reader near
         // the bottom when this arrived?
         const fromBottom = previous - offset.current - viewport.current;
-        if (fromBottom > followThreshold) return;
+        if (fromBottom > followThreshold) {
+          // Staying put moves no scroll, so a host tracking the distance to
+          // the end from `onScroll` (a jump-to-latest button) would not hear
+          // that the end moved away. Tell it, as `DocumentThread` does on every
+          // growth.
+          onScroll?.(syntheticScroll(offset.current, viewport.current, height));
+          return;
+        }
       }
+      following.current = true;
       scrollRef.current?.scrollToEnd({ animated: followAnimated });
     },
-    [autoFollow, followAnimated, followThreshold, maintainStartPosition],
+    [autoFollow, followAnimated, followThreshold, maintainStartPosition, onScroll],
   );
 
   return (
@@ -681,6 +707,19 @@ const ScrollThread = forwardRef<AiChatThreadHandle, AiChatThreadProps>(function 
     </ScrollView>
   );
 });
+
+/** A scroll event for a position that did not change while the content did. */
+function syntheticScroll(offset: number, viewport: number, content: number): NativeSyntheticEvent<NativeScrollEvent> {
+  return {
+    nativeEvent: {
+      contentOffset: { x: 0, y: offset },
+      layoutMeasurement: { width: 0, height: viewport },
+      contentSize: { width: 0, height: content },
+      contentInset: { top: 0, left: 0, bottom: 0, right: 0 },
+      zoomScale: 1,
+    },
+  } as NativeSyntheticEvent<NativeScrollEvent>;
+}
 
 /** The window's scroll position and extent, px. */
 function readWindow() {
