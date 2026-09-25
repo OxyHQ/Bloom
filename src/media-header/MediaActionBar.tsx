@@ -279,6 +279,8 @@ function FollowButtonComponent({
   onFollowChange,
   label = 'Follow',
   followingLabel = 'Following',
+  accessibilityLabel,
+  accessibilityHint,
   color,
   tone = 'support',
   iconOnly = false,
@@ -319,7 +321,8 @@ function FollowButtonComponent({
   );
   return (
     <Button appearance="subtle" tone={tone} size={size} iconOnly={iconOnly}
-      pressed={following} stopPropagation accessibilityLabel={label} disabled={disabled} loading={loading}
+      pressed={following} stopPropagation accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityHint={accessibilityHint} disabled={disabled} loading={loading}
       onPress={() => onFollowChange(!following)} trailing={visual}
       style={style} testID={testID} />
   );

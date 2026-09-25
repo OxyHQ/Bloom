@@ -160,6 +160,16 @@ export interface FollowButtonProps extends ToggleBase {
   label?: string;
   /** Default `"Following"`. */
   followingLabel?: string;
+  /**
+   * Accessible name, instead of `label`. Pass one that follows the state when
+   * the caller knows more than the visible text does — "Following @nate"
+   * rather than "Follow" — so a screen reader hears who and whether without
+   * relying on the pressed state alone (Android TalkBack reads a pressed
+   * toggle as "selected", which says nothing about following).
+   */
+  accessibilityLabel?: string;
+  /** What pressing does, read after the name ("Unfollows @nate"). */
+  accessibilityHint?: string;
   /** Draw on a band: the pill takes the band's text colour. */
   color?: string;
   /** Shared Button sizes; small by default. */

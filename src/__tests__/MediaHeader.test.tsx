@@ -465,6 +465,18 @@ describe('FollowButton', () => {
     expect(byTestId('f').getAttribute('aria-label')).toBe('Save');
     expect(byTestId('f').getAttribute('aria-pressed')).toBe('true');
   });
+
+  it('takes a caller-supplied name and hint that follow the state', () => {
+    const onFollowChange = jest.fn();
+    mount(<FollowButton following onFollowChange={onFollowChange}
+      accessibilityLabel="Following @nate" accessibilityHint="Unfollows @nate" testID="f" />);
+    const el = byTestId('f');
+    expect(el.getAttribute('aria-label')).toBe('Following @nate');
+    expect(el.getAttribute('aria-pressed')).toBe('true');
+    // The visible labels are untouched by the accessible name.
+    expect(el.textContent).toContain('Following');
+    expect(el.textContent).not.toContain('@nate');
+  });
 });
 
 // ---------------------------------------------------------------------------
