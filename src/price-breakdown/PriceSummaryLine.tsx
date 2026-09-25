@@ -27,6 +27,8 @@ import type { PriceSummaryLineProps } from './types';
  *   state     "Estimated" / "Pending" in caption-1 under the amount, so the
  *             caveat travels with the NUMBER rather than with the label; the
  *             row keeps its own reading order for a screen reader
+ *   secondary `secondaryAmount` (a second currency) in body-2-regular
+ *             secondary under the amount, tabular, right-aligned
  *   info      a 32 round glyph after the label, opening a `Popover`
  *   height    32 minimum, whether or not the line has the info affordance
  *
@@ -38,6 +40,7 @@ function PriceSummaryLineComponent({
   label,
   sublabel,
   amount,
+  secondaryAmount,
   tone = 'default',
   state = 'final',
   info,
@@ -120,6 +123,15 @@ function PriceSummaryLineComponent({
         >
           {amount ?? pendingPlaceholder}
         </Text>
+        {secondaryAmount ? (
+          <Text
+            variant="body-2-regular"
+            testID={testID ? `${testID}-secondary-amount` : undefined}
+            style={{ color: paint.textSecondary, fontVariant: ['tabular-nums'], textAlign: 'right' }}
+          >
+            {secondaryAmount}
+          </Text>
+        ) : null}
         {caveat ? (
           <Text
             variant="caption-1-regular"

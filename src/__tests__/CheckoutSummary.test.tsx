@@ -222,6 +222,14 @@ describe('the confirm control', () => {
     expect(button.getAttribute('aria-label')).toBe('Place order · €49.62');
   });
 
+  it('draws a secondary amount under the button, leaving the button one amount', () => {
+    mount(<CheckoutConfirm amount="$53.90" secondaryAmount="≈ 49,62 €" onConfirm={() => {}} testID="confirm" />);
+    expect(byTestId('confirm-button').textContent).toBe('Place order · $53.90');
+    expect(byTestId('confirm-secondary-amount').textContent).toBe('≈ 49,62 €');
+    mount(<CheckoutConfirm amount="$53.90" onConfirm={() => {}} testID="confirm" />);
+    expect(queryTestId('confirm-secondary-amount')).toBeNull();
+  });
+
   it('refuses a SECOND press in the same tick, before `busy` can arrive', () => {
     let placed = 0;
     mount(<CheckoutConfirm onConfirm={() => (placed += 1)} testID="confirm" />);

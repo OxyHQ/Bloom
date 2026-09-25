@@ -43,9 +43,11 @@ Inline in a desktop sidebar it is dropped in a `Card`; on a phone it is what a `
 
 Which is why the vendor is a header and not a field on every line. Switching vendor is a different action — it empties the basket — and this component does not offer it.
 
-## The stepper does not remove
+## The stepper does not remove — unless you ask
 
 `CartLine`'s stepper has a floor of **1**, and removing is its own control with its own accessible name. A stepper that deletes the line when you press `−` once too often is a destructive action hiding behind an arithmetic one, and it has no label saying so.
+
+`removeInStepper` (on `CartLine`, and on `CartPanel` for every line) opts into the storefront pattern instead: at quantity 1 the `−` becomes a trash button NAMED as removal — `removeLabel`, default `"Remove <name>"` — through `Stepper`'s `onRemove`, and the separate remove control is not drawn. It needs both `onQuantityChange` and `onRemove`. A sold-out line keeps the separate control, because its stepper is disabled and could not remove anything.
 
 The line is never pressable, which is what lets its controls live inside it: a pressable `Item` is a real `<button>` on web, and a control inside one is invalid HTML whose click also fires the row. Editing a line's options is `MenuItemOptions` in a sheet, opened from the dish rather than from a row that is mostly controls.
 
@@ -71,6 +73,6 @@ Once the order is placed it belongs to `order-status`: `OrderStatusTimeline` for
 
 ## Traps
 
-- **Every amount is a string.** `price` on a line is the line's own total, already multiplied by `quantity` **by the app**. Nothing here multiplies, converts or rounds.
+- **Every amount is a string.** `price` on a line is the line's own total, already multiplied by `quantity` **by the app**. Nothing here multiplies, converts or rounds. A second currency is `secondaryPrice` (`"≈ 12,00 €"`), drawn de-emphasised under the price and added to the line's accessible name after it — `listing-card`'s `ListingPriceLine.secondary`, spelled after this family's `price`. The totals take `secondaryAmount` on their `PriceLine`s.
 - **The empty basket hides everything after the lines.** No tip picker, no promo field, no totals and no checkout button — each of them would be a control acting on nothing.
 - **`CartLine` takes the line's fields, not the entry.** `CartLineEntry` carries the `id` the panel keys and reports by; the standalone component takes the rest, so a caller cannot pass an id that reaches nothing.

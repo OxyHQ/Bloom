@@ -15,6 +15,9 @@ import type { CheckoutConfirmProps } from './types';
  * terms under it, and the state where it must not fire twice.
  *
  *   button   `Button` primary large, full width, "Place order · €24.80"
+ *   second   `secondaryAmount` ("≈ 12,00 €"), 8 under the button, the same
+ *            centred secondary line as the terms — the button carries ONE
+ *            amount, the one the charge is made in
  *   terms    12 under it; the centred secondary line every Bloom action card
  *            draws under its primary (`ActionCardNote`)
  *   footer   16 under the terms
@@ -44,6 +47,7 @@ import type { CheckoutConfirmProps } from './types';
 function CheckoutConfirmComponent({
   label = CHECKOUT_CONFIRM_LABEL,
   amount,
+  secondaryAmount,
   terms,
   onConfirm,
   disabled = false,
@@ -90,6 +94,11 @@ function CheckoutConfirmComponent({
       >
         {words}
       </Button>
+      {secondaryAmount ? (
+        <ActionCardNote style={{ marginTop: 8 }} testID={id('secondary-amount')}>
+          {secondaryAmount}
+        </ActionCardNote>
+      ) : null}
       {terms != null ? (
         <ActionCardNote style={{ marginTop: 12 }} testID={id('terms')}>
           {terms}

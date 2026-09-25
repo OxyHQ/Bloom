@@ -32,6 +32,12 @@ export interface PriceLine {
    * app owns currency, locale and the minus sign. Omit it for a `pending` line.
    */
   amount?: string;
+  /**
+   * A second, PRE-FORMATTED rendering of the same amount, drawn de-emphasised
+   * under it — the buyer's currency beside the shop's: `"≈ 12,00 €"`. Like
+   * `ListingPriceLine.secondary`, it is drawn as given; nothing converts.
+   */
+  secondaryAmount?: string;
   /** Default `default`. */
   tone?: PriceLineTone;
   /** Default `final`. */
@@ -54,6 +60,12 @@ export interface PriceTotal {
   label: string;
   /** PRE-FORMATTED, like every other amount here. */
   amount?: string;
+  /**
+   * A second, PRE-FORMATTED rendering of the same amount, drawn de-emphasised
+   * under it — the buyer's currency beside the shop's: `"≈ 12,00 €"`. Like
+   * `ListingPriceLine.secondary`, it is drawn as given; nothing converts.
+   */
+  secondaryAmount?: string;
   /** A quieter line under the total — "Includes taxes". */
   note?: string;
   /** Default `final`. */

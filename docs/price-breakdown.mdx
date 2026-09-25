@@ -37,6 +37,23 @@ two — and "quietly" is the problem: a mis-formatted price still renders.
 In particular, **`tone="discount"` colours a credit; it does not create one.** Pass
 `"−€5.00"`, not `"5.00"`.
 
+### A second currency
+
+`secondaryAmount` — on a `PriceLine` and on the `total` — is a second, pre-formatted
+rendering of the same amount, drawn under it in `body-2-regular` at the secondary rung,
+tabular and right-aligned: the buyer's currency beside the shop's.
+
+```tsx
+<PriceSummary
+  lines={[{ label: 'Subtotal', amount: '$13.20', secondaryAmount: '≈ 12,00 €' }]}
+  total={{ label: 'Total', amount: '$15.20', secondaryAmount: '≈ 13,82 €' }}
+/>
+```
+
+It is the same contract as `amount`: drawn as given, never converted. The name follows
+the family's own `amount`; `listing-card`'s `ListingPriceLine.secondary` and
+`cart-panel`'s `secondaryPrice` are the same idea on those families' `price`.
+
 ## The three tones
 
 | tone | what it is for |

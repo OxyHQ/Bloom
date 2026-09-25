@@ -26,10 +26,11 @@ export type ChipHue = 'lime' | 'rose' | 'yellow' | 'cyan' | 'blue' | 'purple' | 
 
 /**
  * What a pressable chip IS, which decides the state ARIA reads it by:
- * a toggle `button` (`aria-pressed`), a `radio` in a radiogroup
- * (`aria-checked`), or a `tab` in a tablist (`aria-selected`).
+ * a toggle `button` (`aria-pressed`), a `checkbox` in a multi-select filter
+ * group (`aria-checked`), a `radio` in a radiogroup (`aria-checked`), or a
+ * `tab` in a tablist (`aria-selected`).
  */
-export type ChipRole = 'button' | 'radio' | 'tab';
+export type ChipRole = 'button' | 'checkbox' | 'radio' | 'tab';
 
 export interface ChipProps {
   appearance?: BloomAppearance;
@@ -84,9 +85,10 @@ export interface ChipProps {
   selected?: boolean;
   /**
    * What a pressable chip is to assistive technology. Default `button`
-   * (`aria-pressed`). Use `radio` inside a `radiogroup` and `tab` inside a
-   * `tablist` — the state attribute follows the role, and a `radio` announcing
-   * `aria-pressed` is invalid.
+   * (`aria-pressed`). Use `checkbox` for a multi-select filter chip (in a
+   * `group`), `radio` inside a `radiogroup` and `tab` inside a `tablist` — the
+   * state attribute follows the role, and a `radio` announcing `aria-pressed`
+   * is invalid.
    */
   role?: ChipRole;
   /** Whether the chip is disabled. */

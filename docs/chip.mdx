@@ -66,15 +66,28 @@ The hues sit BESIDE the accent recipe, not inside it: `resolveAccentColors` is u
 
 ### Role
 
-A pressable chip's ROLE decides which state attribute it carries, and the three are not interchangeable:
+A pressable chip's ROLE decides which state attribute it carries, and the four are not interchangeable:
 
 | `role` | web | native |
 |---|---|---|
 | `button` (default) | `aria-pressed` | `accessibilityState.selected` |
+| `checkbox` | `aria-checked` | `accessibilityState.checked` |
 | `radio` | `aria-checked` | `accessibilityState.checked` |
 | `tab` | `aria-selected` | `accessibilityState.selected` |
 
 `aria-pressed` is invalid on a radio and on a tab, which is what this component used to emit for every one of them. Put a `radio` inside a `role="radiogroup"` and a `tab` inside a `role="tablist"` — `ChipRow` takes that role for you.
+
+A multi-select filter row (brands, sizes, amenities — any number on at once) is a `group` of `checkbox` chips: a screen reader then says "checked"/"not checked" rather than "pressed", which is what a filter is. `onCheckedChange` receives the next state.
+
+```tsx
+<ChipRow accessibilityLabel="Brand">
+  {brands.map((brand) => (
+    <Chip key={brand} role="checkbox" checked={picked.has(brand)} onCheckedChange={(on) => toggle(brand, on)}>
+      {brand}
+    </Chip>
+  ))}
+</ChipRow>
+```
 
 On web, `tabIndex` and `onKeyDown` are passed through for a roving-tabindex row (one tab stop, arrows move focus). Both are inert on native. A chip also forwards a ref to its pressable, so a row can focus one.
 

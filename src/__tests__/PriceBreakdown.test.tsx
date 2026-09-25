@@ -74,6 +74,34 @@ describe('it does no money maths, in either direction', () => {
   });
 });
 
+describe('a secondary amount (a second currency)', () => {
+  it('draws it under the line amount and under the total, byte for byte, and only when given', () => {
+    mount(
+      <PriceSummary
+        lines={[
+          { label: 'Subtotal', amount: '$13.20', secondaryAmount: '≈ 12,00 €' },
+          { label: 'Delivery', amount: '$2.00' },
+        ]}
+        total={{ label: 'Total', amount: '$15.20', secondaryAmount: '≈ 13,82 €' }}
+        testID="p"
+      />,
+    );
+    expect(byTestId('p-line-0-amount').textContent).toBe('$13.20');
+    expect(byTestId('p-line-0-secondary-amount').textContent).toBe('≈ 12,00 €');
+    expect(queryTestId('p-line-1-secondary-amount')).toBeNull();
+    expect(byTestId('p-total-secondary-amount').textContent).toBe('≈ 13,82 €');
+    // De-emphasised: the secondary rung, not the amount's colour.
+    const paint = resolvePricePaint(theme(), resolveSurfaceLevel(theme(), 0).background);
+    expect(getComputedStyle(byTestId('p-line-0-secondary-amount')).color).toBe(css(paint.textSecondary));
+    expect(getComputedStyle(byTestId('p-line-0-amount')).color).toBe(css(paint.text));
+  });
+
+  it('PriceSummaryLine takes it directly', () => {
+    mount(<PriceSummaryLine label="Subtotal" amount="$13.20" secondaryAmount="≈ 12,00 €" testID="l" />);
+    expect(byTestId('l-secondary-amount').textContent).toBe('≈ 12,00 €');
+  });
+});
+
 describe('tone and state', () => {
   it('paints a discount the success rung and leaves the rest alone', () => {
     mount(<PriceSummary lines={LINES} testID="p" />);

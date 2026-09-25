@@ -26,6 +26,12 @@ export interface CartLineEntry {
   price: string;
   /** PRE-FORMATTED price before a discount, struck through BEFORE `price`. */
   originalPrice?: string;
+  /**
+   * A second, PRE-FORMATTED rendering of `price` — the buyer's currency beside
+   * the shop's, `"≈ 12,00 €"` — drawn de-emphasised under it. The cart's
+   * spelling of `ListingPriceLine.secondary`; drawn as given, nothing converts.
+   */
+  secondaryPrice?: string;
   /** How many. Always at least 1 — a line with none of it is a line that was removed. */
   quantity: number;
   /** An absolute URL, or an id the app's `ImageResolver` turns into one. */
@@ -45,6 +51,13 @@ export interface CartLineProps extends Omit<CartLineEntry, 'id'> {
   onRemove?: () => void;
   /** Names the remove control, which draws no text. Default `"Remove <name>"`. */
   removeLabel?: string;
+  /**
+   * Moves removal INTO the stepper: at quantity 1 its `−` becomes a trash button
+   * named `removeLabel` that calls `onRemove`, and no separate remove control is
+   * drawn. Needs both `onQuantityChange` and `onRemove`; a sold-out line keeps
+   * the separate control. Default `false` — the stepper floors at 1.
+   */
+  removeInStepper?: boolean;
   /** Default `comfortable`. */
   density?: CartDensity;
   /** Replaces the composed name ("Ember flatbread, Large, Extra cheese, 2, €24.00"). */
@@ -151,6 +164,11 @@ export interface CartPanelProps {
   onLineQuantityChange?: (id: string, quantity: number) => void;
   /** With it every line draws a remove control. */
   onLineRemove?: (id: string) => void;
+  /**
+   * Every line removes from its stepper at quantity 1 instead of drawing a
+   * separate remove control (`CartLine`'s `removeInStepper`). Default `false`.
+   */
+  removeInStepper?: boolean;
 
   /** The shortfall warning. Drawn above the totals, where the number it is about is. */
   minimumOrder?: CartMinimumOrder;

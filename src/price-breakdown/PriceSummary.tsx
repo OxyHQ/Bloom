@@ -82,6 +82,7 @@ function PriceSummaryComponent({
               label={line.label}
               sublabel={line.sublabel}
               amount={line.amount}
+              secondaryAmount={line.secondaryAmount}
               tone={line.tone}
               state={line.state}
               info={line.info}
@@ -137,6 +138,15 @@ function PriceSummaryComponent({
               >
                 {total.amount ?? pendingPlaceholder}
               </Text>
+              {total.secondaryAmount ? (
+                <Text
+                  variant="body-2-regular"
+                  testID={testID ? `${testID}-total-secondary-amount` : undefined}
+                  style={{ color: paint.textSecondary, fontVariant: ['tabular-nums'], textAlign: 'right' }}
+                >
+                  {total.secondaryAmount}
+                </Text>
+              ) : null}
               {totalCaveat ? (
                 <Text
                   variant="caption-1-regular"
