@@ -83,6 +83,18 @@ describe('it does no money maths, and holds no second breakdown', () => {
     expect(byTestId('c-line-sorrel-price-0').textContent).toContain('13,00 €');
   });
 
+  it('draws a line’s secondary price under its price, and says it in the line’s name', () => {
+    mount(
+      panel({
+        lines: [{ id: 'ember', name: 'Ember flatbread', price: '$13.20', secondaryPrice: '≈ 12,00 €', quantity: 1 }],
+      }),
+    );
+    expect(byTestId('c-line-ember-secondary-price').textContent).toBe('≈ 12,00 €');
+    expect(rowOf('c-line-ember').getAttribute('aria-label')).toBe('Ember flatbread, 1, $13.20, ≈ 12,00 €');
+    mount(panel());
+    expect(queryTestId('c-line-sorrel-secondary-price')).toBeNull();
+  });
+
   it('routes the totals through price-breakdown, not a copy', () => {
     mount(panel());
     // `PriceSummary`'s own testID shape. A hand-rolled summary would not have it.

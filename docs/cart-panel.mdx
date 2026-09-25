@@ -73,6 +73,6 @@ Once the order is placed it belongs to `order-status`: `OrderStatusTimeline` for
 
 ## Traps
 
-- **Every amount is a string.** `price` on a line is the line's own total, already multiplied by `quantity` **by the app**. Nothing here multiplies, converts or rounds.
+- **Every amount is a string.** `price` on a line is the line's own total, already multiplied by `quantity` **by the app**. Nothing here multiplies, converts or rounds. A second currency is `secondaryPrice` (`"≈ 12,00 €"`), drawn de-emphasised under the price and added to the line's accessible name after it — `listing-card`'s `ListingPriceLine.secondary`, spelled after this family's `price`. The totals take `secondaryAmount` on their `PriceLine`s.
 - **The empty basket hides everything after the lines.** No tip picker, no promo field, no totals and no checkout button — each of them would be a control acting on nothing.
 - **`CartLine` takes the line's fields, not the entry.** `CartLineEntry` carries the `id` the panel keys and reports by; the standalone component takes the rest, so a caller cannot pass an id that reaches nothing.

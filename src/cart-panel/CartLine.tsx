@@ -21,7 +21,9 @@ import type { CartLineProps } from './types';
  *   leading   the square photo (56; 44 compact), washed while it is sold out
  *   body      the name; the chosen options on one quiet line; the note; then
  *             the quantity control and remove, side by side
- *   trailing  the price, right-aligned, with an optional struck original
+ *   trailing  the price, right-aligned, with an optional struck original, and
+ *             an optional `secondaryPrice` (a second currency) under it in the
+ *             secondary colour
  *
  * BY DEFAULT THE STEPPER DOES NOT REMOVE. Its floor is 1, and removing is its
  * own control with its own name — a stepper that deletes the line when you
@@ -51,6 +53,7 @@ function CartLineComponent(props: CartLineProps) {
     note,
     price,
     originalPrice,
+    secondaryPrice,
     quantity,
     photo,
     photoVariant,
@@ -103,6 +106,16 @@ function CartLineComponent(props: CartLineProps) {
             secondaryColor={paint.textSecondary}
             testID={testID ? `${testID}-price` : undefined}
           />
+          {secondaryPrice ? (
+            <Text
+              variant={compact ? 'caption-1-regular' : 'body-2-regular'}
+              numberOfLines={1}
+              testID={testID ? `${testID}-secondary-price` : undefined}
+              style={{ color: paint.textSecondary, fontVariant: ['tabular-nums'] }}
+            >
+              {secondaryPrice}
+            </Text>
+          ) : null}
         </View>
       }
       style={style}

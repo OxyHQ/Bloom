@@ -240,6 +240,7 @@ function CartPanelComponent({
                 note={line.note}
                 price={line.price}
                 originalPrice={line.originalPrice}
+                secondaryPrice={line.secondaryPrice}
                 quantity={line.quantity}
                 photo={line.photo}
                 photoVariant={line.photoVariant}

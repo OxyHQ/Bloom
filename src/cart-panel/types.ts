@@ -26,6 +26,12 @@ export interface CartLineEntry {
   price: string;
   /** PRE-FORMATTED price before a discount, struck through BEFORE `price`. */
   originalPrice?: string;
+  /**
+   * A second, PRE-FORMATTED rendering of `price` — the buyer's currency beside
+   * the shop's, `"≈ 12,00 €"` — drawn de-emphasised under it. The cart's
+   * spelling of `ListingPriceLine.secondary`; drawn as given, nothing converts.
+   */
+  secondaryPrice?: string;
   /** How many. Always at least 1 — a line with none of it is a line that was removed. */
   quantity: number;
   /** An absolute URL, or an id the app's `ImageResolver` turns into one. */
