@@ -303,18 +303,48 @@ describe('ComposerPanel', () => {
     expect(twin().props.importantForAccessibility).toBe('no-hide-descendants');
   });
 
+  it('grows the permission chip with the system font and truncates a long mode name', () => {
+    const modes = [
+      { ...COMPOSER_PANEL_PERMISSIONS[0]!, id: 'long', label: 'Ask before every single change to the project' },
+    ];
+    const { getByTestId } = renderIn(<ComposerPanel testID="composer" permissions={modes} />);
+    const trigger = getByTestId('composer-permission');
+    // The trigger styles itself by press state.
+    const raw = trigger.props.style as unknown;
+    const style = resolvedStyle(typeof raw === 'function' ? raw({ pressed: false }) : raw);
+    // A floor, never a fixed 30: at the largest font a fixed height clipped
+    // "Chat" top and bottom on Android.
+    expect(style).toMatchObject({ minHeight: 30, minWidth: 0, maxWidth: 160 });
+    expect(style.height).toBeUndefined();
+    const label = within(trigger).getByText('Ask before every single change to the project');
+    expect(label.props.numberOfLines).toBe(1);
+    expect(label.props.ellipsizeMode).toBe('tail');
+    expect(resolvedStyle(label.props.style)).toMatchObject({ flexShrink: 1, minWidth: 0 });
+  });
+
+  it('lets the model panel rows grow with the system font', () => {
+    const { getByTestId } = renderIn(<ComposerPanel testID="composer" providers={PROVIDERS} />);
+    pressHost(getByTestId('composer-model'));
+    let row = within(getByTestId('composer-model-panel')).getByLabelText('OpenAI GPT-5.6 Mini').parent;
+    while (row && resolvedStyle(row.props.style).flexDirection !== 'row') row = row.parent;
+    expect(resolvedStyle(row!.props.style)).toMatchObject({ minHeight: 36 });
+    expect(resolvedStyle(row!.props.style).height).toBeUndefined();
+  });
+
   it('exports the four permission modes', () => {
     expect(COMPOSER_PANEL_PERMISSIONS.map((mode) => mode.id)).toEqual(['auto', 'manual', 'plan', 'bypass']);
   });
 });
 
 describe('ComposerPanelStatusTab', () => {
-  it('hangs a 34px tab inset 28 with top corners only, and reads out the context', () => {
+  it('hangs a tab at least 34px tall inset 28 with top corners only, and reads out the context', () => {
     const { getByTestId, getByText, getByLabelText } = renderIn(
       <ComposerPanelStatusTab testID="tab" branch="Main" project="project-sea" context={57} />,
     );
+    // A floor, not a height: the labels grow with the system font.
+    expect(resolvedStyle(getByTestId('tab').props.style).height).toBeUndefined();
     expect(resolvedStyle(getByTestId('tab').props.style)).toMatchObject({
-      height: 34,
+      minHeight: 34,
       marginLeft: 28,
       marginRight: 28,
       borderTopLeftRadius: 16,
@@ -542,6 +572,13 @@ describe('ComposerPill', () => {
     expect(onModelChange).toHaveBeenCalledWith('Composer 2.5');
   });
 
+  it('gives the model trigger a floor of 32, not a fixed height (large fonts)', () => {
+    const { getByLabelText } = renderIn(<ComposerPill models={['Fable 5']} />);
+    const trigger = getByLabelText('Fable 5');
+    expect(resolvedStyle(trigger.props.style)).toMatchObject({ minHeight: 32 });
+    expect(resolvedStyle(trigger.props.style).height).toBeUndefined();
+  });
+
   it('keys, matches and reports the model id, drawing only the name', () => {
     const onModelChange = jest.fn();
     const { getByLabelText, queryByLabelText } = renderIn(
@@ -600,6 +637,12 @@ describe('ComposerStatusBar', () => {
     expect(getByText('Agent')).toBeTruthy();
     expect(getByText('57%')).toBeTruthy();
     expect(getByLabelText('Context 57%')).toBeTruthy();
+  });
+
+  it('is at least 26 tall, never exactly, so its labels grow with the system font', () => {
+    const { getByTestId } = renderIn(<ComposerStatusBar testID="status" branch="Main" folders={FOLDERS} />);
+    expect(resolvedStyle(getByTestId('status').props.style)).toMatchObject({ minHeight: 26 });
+    expect(resolvedStyle(getByTestId('status').props.style).height).toBeUndefined();
   });
 
   it('switches folders from the Local Folders panel', () => {

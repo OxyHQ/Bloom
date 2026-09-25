@@ -17,7 +17,7 @@ import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './
 
 /**
  * The header row both right-hand panels share: the `PillTabList` (blue
- * pills, 20px glyphs) on the left and the panel actions on the right, 30 tall.
+ * pills, 20px glyphs) on the left and the panel actions on the right, at least 30 tall.
  */
 export function PanelHeader({
   tabs,
@@ -33,7 +33,7 @@ export function PanelHeader({
   children: React.ReactNode;
 }) {
   return (
-    <View style={{ width: '100%', height: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+    <View style={{ width: '100%', minHeight: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <View accessibilityLabel={label} style={{ flexShrink: 1, minWidth: 0 }}>
         <Tabs variant="pill" value={value} onValueChange={onValueChange}>
           {tabs.map((tab) => (

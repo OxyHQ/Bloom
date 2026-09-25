@@ -369,7 +369,8 @@ function ModelRow({
     <View
       style={{
         position: 'relative',
-        height: ROW_HEIGHT,
+        // A floor, not a height: the name grows with the system font.
+        minHeight: ROW_HEIGHT,
         width: '100%',
         flexShrink: 0,
         flexDirection: 'row',
@@ -424,7 +425,7 @@ function ModelRow({
  *            mark in view (instantly on open, smoothly after)
  *   column   top 8 / right 8 / left 52: a 20px header ("Models" + a 50%-opacity
  *            "Quick Search" hint, or the search field), then the list 4 below
- *   rows     36 tall, radius 10, px 8: 16px mark, 6, name (+ provider while
+ *   rows     min 36 tall, radius 10, px 8: 16px mark, 6, name (+ provider while
  *            searching), the effort chip on the selected row, 12, 14px radio;
  *            4 apart, pb 4, soft top edge once scrolled
  *

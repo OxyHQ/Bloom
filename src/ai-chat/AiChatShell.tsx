@@ -236,7 +236,7 @@ export function AiChatResizeHandle({
 // ---------------------------------------------------------------------------
 
 /**
- * The in-container header below `xl`: 48 tall, px 12 / pt 11. The menu
+ * The in-container header below `xl`: at least 48 tall, px 12 / pt 11. The menu
  * button (below `lg`, where the sidebar is a drawer) and the chat's name in
  * headline-medium on the left; the button opening the panel drawer on the right.
  * Both are 36px secondary icon buttons. Renders nothing outside an
@@ -251,7 +251,7 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
       testID={testID}
       style={[
         {
-          height: 48,
+          minHeight: 48,
           flexShrink: 0,
           flexDirection: 'row',
           alignItems: 'center',
@@ -738,7 +738,7 @@ export function AiChatShell({
               ]}>
               <View
                 style={{
-                  height: 40,
+                  minHeight: 40,
                   flexShrink: 0,
                   flexDirection: 'row',
                   alignItems: 'center',

@@ -251,7 +251,9 @@ function ModelMenu({
   const modelName = models.find((entry) => entry.id === modelId)?.name ?? modelId;
   const hasEffort = levels.length > 0;
   const triggerStyle: WebCssStyle = {
-    height: 32,
+    // At least 32, never exactly: a fixed height clips the name at the largest
+    // system font.
+    minHeight: 32,
     flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',

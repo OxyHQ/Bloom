@@ -283,6 +283,15 @@ describe('AiChatImageGeneration', () => {
 });
 
 describe('AiChatCodePanel', () => {
+  it('gives the tab header a floor of 30, not a fixed height (large fonts)', () => {
+    const { getByLabelText } = renderIn(<AiChatCodePanel code="x" changeCount={1} additions={1} />);
+    let header = getByLabelText('Panel view').parent;
+    while (header && resolvedStyle(header.props.style).flexDirection !== 'row') header = header.parent;
+    if (!header) throw new Error('no tab header row');
+    expect(resolvedStyle(header.props.style)).toMatchObject({ minHeight: 30, width: '100%' });
+    expect(resolvedStyle(header.props.style).height).toBeUndefined();
+  });
+
   it('shows the summary, the changed file and every line of the code, and switches to the browser tab', () => {
     const { getByText, getAllByText, queryByText } = renderIn(
       <AiChatCodePanel
@@ -449,6 +458,22 @@ describe('AiChatShell', () => {
     const open = getByLabelText('Open code');
     fireEvent.press(open);
     expect(getByText('Code')).toBeTruthy();
+  });
+
+  it('lets the mobile header and the panel drawer header grow with the system font', () => {
+    const { getByText, getByLabelText, getByTestId } = renderIn(
+      <AiChatShell sidebar={null} panel={() => null} panelLabel="Code">
+        <AiChatMobileHeader testID="header" title="Agentic chat" />
+      </AiChatShell>,
+    );
+    expect(resolvedStyle(getByTestId('header').props.style)).toMatchObject({ minHeight: 48 });
+    expect(resolvedStyle(getByTestId('header').props.style).height).toBeUndefined();
+    fireEvent.press(getByLabelText('Open code'));
+    let drawerHeader = getByText('Code').parent;
+    while (drawerHeader && resolvedStyle(drawerHeader.props.style).flexDirection !== 'row') drawerHeader = drawerHeader.parent;
+    if (!drawerHeader) throw new Error('no drawer header row');
+    expect(resolvedStyle(drawerHeader.props.style)).toMatchObject({ minHeight: 40 });
+    expect(resolvedStyle(drawerHeader.props.style).height).toBeUndefined();
   });
 
   it('names the resize separator', () => {
