@@ -195,8 +195,8 @@ Leave `active` undefined for a plain button: `false` is a toggle that is off, an
 
 Both share a shell: `width` wide, full height, pt 8, gap 10, and a 30-tall header of pill tabs with actions on the right.
 
-- **Code** — Changes (∞) / Browser (globe) with terminal / expand / sidebar glyphs (16px, 8 apart). A summary strip framed on three sides by a 1px background-secondary line (radius 10 on top): "N Uncomitted changes" (body-2-medium secondary), `+156` / `-23` (body-regular success-700 / negative-600) and an undo glyph; each changed file tucks 7px up under it (radius 10, background-secondary, py 4 / pr 5 / pl 6: a 16px mark, the path with its additions, a `status` chip). Then the code as `CodeLines` at `md`, soft-wrapping, scrolling with a thin scrollbar. The Browser tab shows `browser` or a placeholder.
-- **Gallery** — Gallery (an 18px glyph, optically matching the 20px sparkle) / Styles, with 18px actions on 2px padding (radius 6, primary-hover, tooltips). The wall is explicit balanced columns 8 apart — always filling the shortest — so an insertion only moves its own column; `generated` images are pinned to the head of the first. Tiles (radius 10, background-secondary, the artwork covering them at its `aspectRatio`) cascade in top-left → bottom-right (fade + 8px blur over 400ms, scale from 95% over 550ms, 130ms × order late; a generated tile only fades). Hovering lifts the image 3% and fades in a scrim (neutral-950 40% → clear → 55%) with glass download / more actions (22px, neutral-950 @45%, 65% hovered, 4px blur) and the prompt (body-2-regular, two lines). Pressing a tile lifts it into a full-width row above the wall (body-medium prompt, p 10, a minimize action); on web it morphs between the two boxes by FLIP (550ms, 600ms for the enlarged tile) while its neighbours glide, painting above the wall in flight, and the scroller jumps to the top first.
+- **Code** — Changes (∞) / Browser (globe) with terminal / expand / sidebar glyphs (16px, 8 apart). A summary strip framed on three sides by a 1px background-secondary line (radius 10 on top): "N Uncomitted changes" (body-2-medium secondary), `+156` / `-23` (body-regular success-700 / negative-600) and, only with `onUndo`, an undo glyph; each changed file tucks 7px up under it (radius 10, background-secondary, py 4 / pr 5 / pl 6: a 16px mark, the path with its additions, a `status` chip). Then the code as `CodeLines` at `md`, soft-wrapping, scrolling with a thin scrollbar. The Browser tab shows `browser` or a placeholder; `browser={null}` drops the tab.
+- **Gallery** — Gallery (an 18px glyph, optically matching the 20px sparkle) / Styles (the tab shows `stylePresets` or a placeholder; `stylePresets={null}` drops it), with 18px actions on 2px padding (radius 6, primary-hover, tooltips). The wall is explicit balanced columns 8 apart — always filling the shortest — so an insertion only moves its own column; `generated` images are pinned to the head of the first. Tiles (radius 10, background-secondary, the artwork covering them at its `aspectRatio`) cascade in top-left → bottom-right (fade + 8px blur over 400ms, scale from 95% over 550ms, 130ms × order late; a generated tile only fades). Hovering lifts the image 3% and fades in a scrim (neutral-950 40% → clear → 55%) with glass download / more actions (22px, neutral-950 @45%, 65% hovered, 4px blur; each drawn only with its `onDownload` / `onMore`) and the prompt (body-2-regular, two lines). Pressing a tile lifts it into a full-width row above the wall (body-medium prompt, p 10, a minimize action); on web it morphs between the two boxes by FLIP (550ms, 600ms for the enlarged tile) while its neighbours glide, painting above the wall in flight, and the scroller jumps to the top first.
 
 ## Colour
 
@@ -216,6 +216,15 @@ application's real actions. Omit `title` and `project` to omit its breadcrumb;
 without breadcrumb or action handlers no extra header row is reserved. Share
 and more controls render only when `onShare` and `onMore` are supplied. This
 keeps applications without public sharing from presenting a dead share action.
+
+### Panels without a backend
+
+A panel control renders only when it can act. The summary's undo glyph needs
+`onUndo`, a tile's download and more actions need `onDownload` and `onMore`,
+and the header `actions` are the caller's list (pass `[]` for none: the defaults
+carry no handlers). A host with no browser preview or no style presets passes
+`browser={null}` or `stylePresets={null}` and the tab is gone, so the panel
+never presents a preview or a style editor that does not exist.
 
 ### Panel keyboard ownership
 

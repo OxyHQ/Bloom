@@ -241,12 +241,16 @@ export interface AiChatCodePanelProps {
   changeCount?: number;
   additions?: number;
   deletions?: number;
+  /** Reverts the changes. Without it the summary draws no undo glyph. */
   onUndo?: () => void;
   /** Controlled tab (`'changes' | 'browser'`). */
   tab?: 'changes' | 'browser';
   defaultTab?: 'changes' | 'browser';
   onTabChange?: (tab: 'changes' | 'browser') => void;
-  /** Replaces the "Browser preview" placeholder. */
+  /**
+   * The Browser tab's content. Omitted, the tab shows a "Browser preview"
+   * placeholder; `null` drops the tab, for a host with no preview to show.
+   */
   browser?: ReactNode;
   /** Header actions. Default terminal / expand / toggle glyphs. */
   actions?: ReadonlyArray<AiChatPanelAction>;
@@ -292,13 +296,18 @@ export interface AiChatGalleryPanelProps {
   generated?: ReadonlyArray<AiChatGeneration>;
   /** Column count. Default `3`. */
   columns?: number;
+  /** Saves a tile's image. Without it the tiles draw no download action. */
   onDownload?: (generation: AiChatGeneration) => void;
+  /** Opens a tile's own actions. Without it the tiles draw no more action. */
   onMore?: (generation: AiChatGeneration) => void;
   /** Controlled tab (`'gallery' | 'styles'`). */
   tab?: 'gallery' | 'styles';
   defaultTab?: 'gallery' | 'styles';
   onTabChange?: (tab: 'gallery' | 'styles') => void;
-  /** Replaces the "Style presets" placeholder. */
+  /**
+   * The Styles tab's content. Omitted, the tab shows a "Style presets"
+   * placeholder; `null` drops the tab, for a host with no style presets.
+   */
   stylePresets?: ReactNode;
   /** Header actions. Default new generation / expand / toggle. */
   actions?: ReadonlyArray<AiChatPanelAction>;

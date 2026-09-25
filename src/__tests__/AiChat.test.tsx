@@ -303,6 +303,26 @@ describe('AiChatCodePanel', () => {
     expect(getByText('Browser preview')).toBeTruthy();
     expect(queryByText('12 Uncomitted changes')).toBeNull();
   });
+
+  it('draws the undo glyph only with `onUndo`, and pressing it undoes', () => {
+    const onUndo = jest.fn();
+    const without = renderIn(<AiChatCodePanel code="x" changeCount={1} additions={1} />);
+    expect(without.queryByLabelText('Undo changes')).toBeNull();
+    without.unmount();
+    const withUndo = renderIn(<AiChatCodePanel code="x" changeCount={1} additions={1} onUndo={onUndo} />);
+    fireEvent.press(withUndo.getByLabelText('Undo changes'));
+    expect(onUndo).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops the Browser tab for `browser={null}`, even when asked to show it', () => {
+    const { getByText, queryByText } = renderIn(
+      <AiChatCodePanel code="const a = 1;" changeCount={1} tab="browser" browser={null} actions={[]} />,
+    );
+    expect(queryByText('Browser')).toBeNull();
+    expect(queryByText('Browser preview')).toBeNull();
+    expect(getByText('Changes')).toBeTruthy();
+    expect(getByText('1 Uncomitted changes')).toBeTruthy();
+  });
 });
 
 describe('AiChatGalleryPanel', () => {
@@ -325,6 +345,30 @@ describe('AiChatGalleryPanel', () => {
     // The tile itself and its scrim action.
     expect(minimize).toHaveLength(2);
     expect(minimize[0]!.props['aria-expanded']).toBe(true);
+  });
+
+  it('draws a tile\'s download and more actions only with their handlers', () => {
+    const without = renderIn(<AiChatGalleryPanel generations={WALL} />);
+    expect(without.queryByLabelText('Download A wide one')).toBeNull();
+    expect(without.queryByLabelText('More actions for A wide one')).toBeNull();
+    without.unmount();
+    const onDownload = jest.fn();
+    const onMore = jest.fn();
+    const withActions = renderIn(<AiChatGalleryPanel generations={WALL} onDownload={onDownload} onMore={onMore} />);
+    fireEvent.press(withActions.getByLabelText('Download A wide one'));
+    fireEvent.press(withActions.getByLabelText('More actions for A wide one'));
+    expect(onDownload).toHaveBeenCalledWith(expect.objectContaining({ id: 'wide' }));
+    expect(onMore).toHaveBeenCalledWith(expect.objectContaining({ id: 'wide' }));
+  });
+
+  it('drops the Styles tab for `stylePresets={null}`, even when asked to show it', () => {
+    const { getByText, queryByText, getByLabelText } = renderIn(
+      <AiChatGalleryPanel generations={WALL} tab="styles" stylePresets={null} />,
+    );
+    expect(queryByText('Styles')).toBeNull();
+    expect(queryByText('Style presets')).toBeNull();
+    expect(getByText('Gallery')).toBeTruthy();
+    expect(getByLabelText('Enlarge A wide one')).toBeTruthy();
   });
 });
 
