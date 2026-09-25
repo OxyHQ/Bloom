@@ -142,8 +142,8 @@ function FolderRow({
 }
 
 /**
- * The line under the AI chat's pill composer (the reference's `StatusBar`): 26
- * tall, space-between.
+ * The line under the AI chat's pill composer (the reference's `StatusBar`): at
+ * least 26 tall (it grows with the system font), space-between.
  *
  *   left     gap 12: the branch (mirrored merge glyph) and the project folder —
  *            its caret turns over while the "Local Folders" panel is open
@@ -188,7 +188,7 @@ export function ComposerStatusBarBase({
   return (
     <View
       testID={testID}
-      style={[{ width: '100%', height: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, style]}>
+      style={[{ width: '100%', minHeight: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, style]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         {branch !== undefined ? (
           <StatusItem

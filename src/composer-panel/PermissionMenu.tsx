@@ -10,6 +10,8 @@ import type { ComposerPanelLabels, ComposerPanelPermissionOption } from './types
 import { dataHook } from './web-hooks';
 
 const FLIP: ViewStyle = { transform: [{ scaleY: -1 }] };
+/** The permission chip's widest: past this a mode's name truncates. */
+const PERMISSION_TRIGGER_MAX_WIDTH = 160;
 
 interface PermissionMenuProps {
   palette: ComposerPalette;
@@ -27,7 +29,9 @@ interface PermissionMenuProps {
  * press or while its menu is open, and a 323px panel of radio rows that opens
  * upward.
  *
- *   trigger   h 30, pl 8 / pr 10, gap 4, icon 16, body-medium secondary
+ *   trigger   min-h 30 (grows with the system font), max-w 160 then the
+ *             label ellipsizes, pl 8 / pr 10, gap 4, icon 16, body-medium
+ *             secondary
  *   panel     w 323, radius 20, border, p 6, shadow-dropdown
  *   body      pt 4, header→rows 6; header px 8 gap 10, body-medium tertiary
  *   row       p 8, radius 14, gap 8, icon 20, label body-medium secondary,
@@ -82,7 +86,12 @@ export function PermissionMenu({
         onHoverOut={() => setHovered(false)}
         style={({ pressed }) => {
           const trigger: WebCssStyle = {
-            height: 30,
+            // At least 30, never exactly: at the largest system font the label
+            // is taller than 30 and a fixed height clipped it top and bottom.
+            // A long mode name truncates at a width that still reads as a chip.
+            minHeight: 30,
+            minWidth: 0,
+            maxWidth: PERMISSION_TRIGGER_MAX_WIDTH,
             flexShrink: 0,
             flexDirection: 'row',
             alignItems: 'center',
@@ -98,10 +107,14 @@ export function PermissionMenu({
           };
           return trigger;
         }}>
-        <View style={current.flip ? FLIP : undefined}>
+        <View style={current.flip ? [FLIP, { flexShrink: 0 }] : { flexShrink: 0 }}>
           <CurrentIcon width={16} height={16} fill={palette.iconSecondary} />
         </View>
-        <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+        <Text
+          variant="body-medium"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={{ flexShrink: 1, minWidth: 0, color: palette.textSecondary }}>
           {current.label}
         </Text>
       </Pressable>

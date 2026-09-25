@@ -44,7 +44,7 @@ function StatusItem({ icon, label, palette }: { icon: React.ReactNode; label: st
 
 /**
  * The status tab: the grey tab hanging off the Composer Panel's
- * top edge — 34 tall, inset 28 each side, radius 16 on the top corners only,
+ * top edge — at least 34 tall, inset 28 each side, radius 16 on the top corners only,
  * px 8 / py 4. Branch (mirrored merge glyph) and project folder on the left, 12
  * apart; the context meter on the right (py 4, pl 6 / pr 8, gap 4).
  */
@@ -58,7 +58,7 @@ function ComposerPanelStatusTabComponent({ branch, project, context, style, test
         {
           marginLeft: TAB_INSET,
           marginRight: TAB_INSET,
-          height: TAB_HEIGHT,
+          minHeight: TAB_HEIGHT,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
