@@ -293,6 +293,7 @@ describe('role="button" toggles use aria-pressed', () => {
   });
 
   it.each([
+    ['checkbox', 'aria-checked'],
     ['radio', 'aria-checked'],
     ['tab', 'aria-selected'],
   ] as const)('Chip with role="%s" emits %s, and nothing the role forbids', (role, attribute) => {

@@ -231,6 +231,7 @@ describe('Chip inverted', () => {
 describe('Chip role and state', () => {
   it.each([
     ['button', 'aria-pressed'],
+    ['checkbox', 'aria-checked'],
     ['radio', 'aria-checked'],
     ['tab', 'aria-selected'],
   ] as const)('a %s carries %s and nothing else', (role, attribute) => {
@@ -247,6 +248,23 @@ describe('Chip role and state', () => {
     for (const other of ['aria-pressed', 'aria-checked', 'aria-selected']) {
       if (other !== attribute) expect(el.getAttribute(other)).toBeNull();
     }
+  });
+
+  it.each([true, false])('a checkbox chip spells aria-checked="%s" and toggles through onCheckedChange', (checked) => {
+    const onCheckedChange = jest.fn();
+    mount(
+      <Chip role="checkbox" checked={checked} onCheckedChange={onCheckedChange} testID="c">
+        Wi-Fi
+      </Chip>,
+    );
+    const el = byTestId('c');
+    expect(el.getAttribute('role')).toBe('checkbox');
+    expect(el.getAttribute('aria-checked')).toBe(String(checked));
+    expect(el.getAttribute('aria-pressed')).toBeNull();
+    act(() => {
+      el.click();
+    });
+    expect(onCheckedChange).toHaveBeenCalledWith(!checked);
   });
 
   it('is not a control at all without onPress', () => {

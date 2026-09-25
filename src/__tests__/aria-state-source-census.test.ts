@@ -193,7 +193,7 @@ const RN_HOSTS = new Set([
 // back, handing it `role="radio"` for a delivery window. `Item.test.tsx` and
 // `DeliverySlot.test.tsx` pin the translation against the real DOM.
 //
-// `chip/Chip.tsx` is the second: it takes `role` as `'button' | 'radio' | 'tab'`
+// `chip/Chip.tsx` is the second: it takes `role` as `'button' | 'checkbox' | 'radio' | 'tab'`
 // and picks the state attribute the ROLE defines — `aria-pressed`,
 // `aria-checked`, `aria-selected` — alongside the native `accessibilityState`
 // spelling of the same thing. It is a claim its own file makes and
