@@ -35,6 +35,16 @@ An item is a **link** with `href`, a **button** with `onPress`, and a plain labe
 
 The list scrolls horizontally, with no scrollbar, when it outgrows its container. Bloom uses a full pill, like every other pressable, rather than a 6px corner.
 
+### Right-to-left and custom separators
+
+The chevron points the READING direction. In a right-to-left layout (`<html dir="rtl">` on web, `I18nManager.isRTL` natively) the row mirrors, and the chevron flips with it (`scaleX(-1)`, read from `useIsRtl()`) so it still points from each crumb to the next. The landmark also carries `dir` on web, so react-native-web resolves logical keys against it.
+
+`separator` replaces the chevron with any node — a `"/"`, a dot, an icon. It is hidden from assistive tech like the chevron, and rendered as given: a custom glyph that has a direction is the caller's to mirror.
+
+```tsx
+<Breadcrumb separator={<Text variant="caption-1-medium">/</Text>}>…</Breadcrumb>
+```
+
 ### `href` and routers
 
 On web an `href` item is a real `<a href>`, so middle-click and "open in new tab" work. Pass `onPress` too and the browser's navigation is prevented so the router can navigate instead. On native, an `href` item without `onPress` opens the URL with `Linking`.
@@ -48,6 +58,7 @@ On web an `href` item is a real `<a href>`, so middle-click and "open in new tab
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `Breadcrumb.accessibilityLabel?` | `string` | `'Breadcrumb'` | Names the landmark. |
+| `Breadcrumb.separator?` | `ReactNode` | direction-aware chevron | Replaces the chevron between items; hidden from assistive tech. |
 | `BreadcrumbItem.href?` | `string` | — | Makes the item a link. |
 | `BreadcrumbItem.onPress?` | `() => void` | — | Makes the item a button (or routes an `href`). |
 | `BreadcrumbItem.current?` | `boolean` | `false` | The active page. |
