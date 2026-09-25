@@ -32,8 +32,12 @@ function WebShell({ children }: BottomSheetShellProps) {
             {/* `OverlayRoot` owns the portal-root pointer-events opt-in (see
                 `src/overlay`). It used to ride in the style array below as an
                 RN-only box-none value, which never reached the DOM — the whole
-                sheet, backdrop included, was click-through on web. */}
-            <OverlayRoot style={webStyles.rootView}>
+                sheet, backdrop included, was click-through on web. `modal`:
+                the sheet dims and blocks the page, so the app's
+                `OverlayInertBoundary` makes that page inert while it is open.
+                (Native needs no flag — its shell is an RN `Modal`, a separate
+                window the screen reader is already confined to.) */}
+            <OverlayRoot style={webStyles.rootView} modal>
                 <GestureHandlerRootView style={StyleSheet.absoluteFill}>
                     {children}
                 </GestureHandlerRootView>

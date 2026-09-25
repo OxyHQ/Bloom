@@ -111,6 +111,7 @@ export {
   Backdrop,
   useOverlayLayer,
   useOverlayLayerContext,
+  useModalOverlayActive,
   layerForRank,
   BACKDROP_BLUR_INTENSITY,
   BACKDROP_DIM_OPACITY,

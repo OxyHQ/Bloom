@@ -7,6 +7,8 @@ export {
   type OverlayLayer,
 } from './stack';
 export { useOverlayLayer } from './use-overlay-layer';
+export { useModalOverlayActive } from './use-modal-overlay-active';
+export { OverlayInertBoundary } from './OverlayInertBoundary';
 export {
   useOverlayLayerContext,
   BACKDROP_BLUR_INTENSITY,
@@ -14,4 +16,4 @@ export {
   OverlayRoot,
   Backdrop,
 } from './Overlay';
-export type { OverlayRootProps, BackdropProps } from './types';
+export type { OverlayRootProps, BackdropProps, OverlayInertBoundaryProps } from './types';

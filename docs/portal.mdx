@@ -46,6 +46,43 @@ Outlets deliberately stay **out** of `BloomProvider`: their tree position is an
 app decision, and a second mount is silent — you get two of everything, which
 reads as a render loop rather than as a duplicated outlet.
 
+## Wrap the app content in `OverlayInertBoundary`
+
+A modal surface must keep a screen reader inside it. The outlet renders every
+surface as the app content's **sibling**, so the surface can only mark itself
+modal; it cannot hide the content. iOS honours that (`accessibilityViewIsModal`
+hides siblings). Android does not: TalkBack only skips a subtree whose own root
+says `importantForAccessibility="no-hide-descendants"`, and that root is the
+app's. With the settings modal open, TalkBack walked straight into the Home feed
+behind it (OxyHQ/Mention#1126).
+
+Wrap everything that is **not** the outlet:
+
+```tsx
+import { OverlayInertBoundary, PortalOutlet, PortalProvider } from '@oxy.so/bloom/portal';
+
+<PortalProvider>
+  <OverlayInertBoundary>
+    <AppContent />
+  </OverlayInertBoundary>
+  <PortalOutlet />
+</PortalProvider>
+```
+
+While any `OverlayRoot modal` is mounted the boundary hides what it wraps:
+`importantForAccessibility="no-hide-descendants"` on Android,
+`accessibilityElementsHidden` on iOS, `inert` + `aria-hidden` on web (removing
+the page from the tab order too — web dialogs set no focus trap of their own).
+Non-modal overlays — menus, popovers, tooltips, toasts — never trigger it.
+
+- **Never wrap the outlet.** The surfaces would hide themselves.
+- **Layout is unchanged.** On web the boundary is `display: contents` (no box;
+  document scroll is untouched). On native it is a `flex: 1` view that is never
+  collapsed; pass `style` if its parent is not a column the content fills.
+- Surfaces outside the boundary (a media-flight layer beside the outlet) stay
+  reachable — put only the app's own screens inside it.
+- `useModalOverlayActive()` reads the same state for app code that needs it.
+
 ## Portal is not enough on its own
 
 A portaled surface still needs:
