@@ -1,5 +1,6 @@
 /**
- * Android back with the phone's nav drawer open closes the DRAWER.
+ * Android back with the phone's nav drawer open closes the DRAWER, and opening
+ * the drawer puts the keyboard away.
  *
  * Found on a Pixel 8a with Bloom 4.23.0: the shell registered a hardware-back
  * handler for the panel drawer only, so back with the navigation drawer open
@@ -60,4 +61,18 @@ it('closes the open nav drawer instead of leaving the app', () => {
   screen.rerender(<Shell navOpen={false} onNavOpenChange={onNavOpenChange} />);
   expect(pressBack()).toBe(false);
   expect(onNavOpenChange).not.toHaveBeenCalled();
+});
+
+it('puts the keyboard away when the drawer opens, and leaves it alone otherwise', () => {
+  const dismiss = jest.spyOn(ReactNative.Keyboard, 'dismiss');
+  dismiss.mockClear();
+  const onNavOpenChange = jest.fn();
+  const screen = render(<Shell navOpen={false} onNavOpenChange={onNavOpenChange} />);
+  expect(dismiss).not.toHaveBeenCalled();
+  // A composer that regained focus after a sheet closed kept the keyboard up
+  // under the drawer (Android 16).
+  screen.rerender(<Shell navOpen onNavOpenChange={onNavOpenChange} />);
+  expect(dismiss).toHaveBeenCalledTimes(1);
+  screen.rerender(<Shell navOpen={false} onNavOpenChange={onNavOpenChange} />);
+  expect(dismiss).toHaveBeenCalledTimes(1);
 });
