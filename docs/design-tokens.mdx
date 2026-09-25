@@ -307,6 +307,28 @@ nine pairs on `Theme.chartColors`.
 | `headerBold` | 28 / 34 | 700 | display |
 | `buttonLarge` | 17 / 22 | 600 | sans |
 
+**Line-height tokens are unitless ratios, never px.** `theme.css` ships
+`--text-body--line-height: calc(22 / 15)`, the form Tailwind uses for its own
+scale (`--text-sm--line-height: calc(1.25 / 0.875)`). On the web the two forms
+paint the same 22px. On native they do not. Tailwind v4 emits
+`line-height: var(--tw-leading, var(--text-body--line-height))`,
+react-native-css (3.0.7) compiles it to `lineHeight(var(…))`, and that runtime
+resolver multiplies whatever number arrives by the font-size. A `22px` token
+therefore rendered `text-body` at `{ fontSize: 15, lineHeight: 330 }` on
+Android: every className-styled text row grew about 15× taller, so a pill-shaped
+row became a giant circle. Keep new line-height tokens in this form (`lineHeightRatio()` in
+`design-tokens/theme-css.ts`). `typography-native-line-height.test.tsx` runs
+the real Tailwind → react-native-css pipeline and renders each role.
+
+A related upstream gap: an arbitrary `leading-[22px]` compiled by
+react-native-css resolves to **no** line-height on native. Use a role token. That is a separate
+react-native-css issue; do not rely on the arbitrary form there.
+
+The test compiles through react-native-css, so Bloom pins `lightningcss` to
+1.30.1 in `package.json#overrides`, as the apps do. react-native-css 3.0.x
+cannot read lightningcss 1.32's AST ("expected an object-like struct named
+Specifier").
+
 ### Media and creator surfaces
 
 Media, library, queue, creator and property-insight palettes resolve structural

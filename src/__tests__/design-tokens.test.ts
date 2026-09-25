@@ -195,9 +195,20 @@ describe('design-tokens v4 @theme css', () => {
     expect(css).toContain('--spacing-space-8: 8px;');
     expect(css).toContain('--radius-radius-20: 20px;');
     expect(css).toContain('--text-body: 15px;');
-    expect(css).toContain('--text-body--line-height: 22px;');
+    expect(css).toContain('--text-body--line-height: calc(22 / 15);');
     expect(css).toContain('--font-body: var(--bloom-font-sans);');
     expect(css).toContain('--shadow-s:');
+  });
+
+  // A px line-height token renders at line-height × font-size on native
+  // (react-native-css multiplies any number reaching `lineHeight` through var()
+  // by the font-size). The rendered proof is typography-native-line-height.test.tsx.
+  it('emits every type-role line-height as a unitless ratio of its font-size', () => {
+    for (const [name, role] of Object.entries(TYPOGRAPHY)) {
+      const match = css.match(new RegExp(`--text-${name}--line-height: ([^;]+);`));
+      expect(match?.[1]).toBe(`calc(${role.lineHeight} / ${role.size})`);
+    }
+    expect(css).not.toMatch(/--line-height: [\d.]+px/);
   });
 
   it('wraps the body in a @theme block', () => {
