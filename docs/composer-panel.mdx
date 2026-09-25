@@ -116,10 +116,13 @@ interface ComposerPanelAttachment {
   src?: string;        // image thumbnail URI
   icon?: ReactNode;    // your own 24px artwork for a non-image tile
   progress?: number;   // 0–100 draws the ring; omit once landed
+  error?: string;      // the upload failed: shown on the tile, progress ignored
 }
 ```
 
 While `progress` is set the tile's content dims to 60%, the accent ring draws clockwise from top-centre over the 1px border (closed at 100) and the percentage sits top-right (white over a photo). Once `progress` is removed the percentage blurs out as the dismiss blurs in on the same spot; the dismiss is out of the accessibility tree until then. Tiles scale and blur in on arrival and out on removal (280ms).
+
+A tile with an `error` has **failed**: the ring and the percentage go (any `progress` is ignored), it fills with the error subtle surface under an error-foreground border, and the message sits in 9/11 medium, two lines at most, where the name was — the warning glyph above it. The tile is named `"<name>: <error>"` (also its web `title`, since two lines at 9px hold little), and the dismiss is back as on a landed tile. With `onAttachmentRetry` a retry button (a 24px disc, `labels.retry` + the file name: "Retry Photo.png") takes the glyph's place and calls it with the tile's id; the panel does not clear the error — send the tile back with `progress` and no `error` to start again. `ComposerAttachments`' simulated queue skips a failed file.
 
 Non-image tiles default to Remix file glyphs — illustrated plugin icons use SVG filters react-native-svg cannot draw; pass `icon` (and `image` on add-menu rows) for your own artwork.
 
@@ -189,6 +192,7 @@ Every control is named: the triggers announce their current value ("Permission: 
 | `effortLevels` | `string[]` | the default six | `[]` drops the effort axis. |
 | `listening` / `defaultListening` / `onListeningChange` | `boolean` | `false` | Voice input toggle. |
 | `attachments` / `onRemoveAttachment` | `ComposerPanelAttachment[]` / `(id) => void` | — | |
+| `onAttachmentRetry` | `(id) => void` | — | Draws a retry button on every failed (`error`) tile. |
 | `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
 | `inputRef` | `RefObject<TextInput>` | — | The prompt field. |
 | `labels`, `modelPickerLabels` | objects | English | Localisation. |

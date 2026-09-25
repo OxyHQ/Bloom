@@ -10,6 +10,7 @@ import { bindAiChat } from './bindAiChat';
 const parts = bindAiChat({ Tooltip, TooltipTrigger, TooltipTextBubble, ContentPanel });
 
 export const AiChatFeedbackRow = parts.AiChatFeedbackRow;
+export const AiChatUserMessage = parts.AiChatUserMessage;
 export const AiChatAssistantMessage = parts.AiChatAssistantMessage;
 export const AiChatImageGeneration = parts.AiChatImageGeneration;
 export const AiChatGalleryPanel = parts.AiChatGalleryPanel;

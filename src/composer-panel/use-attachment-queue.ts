@@ -4,8 +4,11 @@ import type { ComposerAttachmentsProps, ComposerPanelAttachment } from './types'
 
 const TICK_MS = 50;
 
-/** Anything carrying a progress value — the closed ring at 100 included — is still the queue's. */
-const inFlight = (attachment: ComposerPanelAttachment) => attachment.progress !== undefined;
+/**
+ * Anything carrying a progress value — the closed ring at 100 included — is
+ * still the queue's, unless it failed: a failed file is done with.
+ */
+const inFlight = (attachment: ComposerPanelAttachment) => attachment.progress !== undefined && !attachment.error;
 
 /** Keep the parent's order; keep our progress for files we already know. */
 function reconcile(

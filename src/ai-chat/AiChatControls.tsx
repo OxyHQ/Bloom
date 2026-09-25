@@ -9,9 +9,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import type { Props as IconProps } from '../icons/shared';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useAiChatPlatform } from './context';
 import { dataHook, IS_WEB, type AiChatPalette } from './shared';
+import type { AiChatTurnAction } from './types';
 
 /**
  * The family's small interactive pieces, shared by the message, image, code
@@ -178,6 +180,8 @@ export function SurfaceAction({
   hoverBackground,
   palette,
   glyph,
+  active,
+  disabled = false,
   style,
   testID,
 }: {
@@ -194,11 +198,20 @@ export function SurfaceAction({
   hoverBackground: string;
   palette: AiChatPalette;
   glyph: (color: string) => React.ReactNode;
+  /**
+   * A toggle's state: `true` holds the hover surface and the primary glyph.
+   * Undefined for a plain button, which then carries no pressed state at all.
+   */
+  active?: boolean;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const isToggle = active !== undefined;
   const tip = useHoverTooltip({ open: tooltipOpen, onOpenChange: onTooltipOpenChange });
-  const [hovered, setHovered] = useState(false);
+  const [hoveredRaw, setHovered] = useState(false);
+  const hovered = hoveredRaw && !disabled;
+  const lit = hovered || active === true;
   // A press focuses the control too; only keyboard focus should raise the tooltip.
   const pointerDown = useRef(false);
   const surface: WebCssStyle = {
@@ -207,7 +220,8 @@ export function SurfaceAction({
     alignItems: 'center',
     padding,
     borderRadius: radius,
-    backgroundColor: hovered ? hoverBackground : background,
+    backgroundColor: lit ? hoverBackground : background,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-ai-chat-ring': palette.ring,
   };
   return (
@@ -217,6 +231,12 @@ export function SurfaceAction({
         testID={testID}
         accessibilityRole="button"
         accessibilityLabel={label}
+        // BOTH spellings of the toggle state: react-native-web drops
+        // `accessibilityState` and React Native has no `aria-pressed`.
+        {...(isToggle ? { 'aria-pressed': active } : null)}
+        accessibilityState={{ disabled, ...(isToggle ? { selected: active } : null) }}
+        aria-disabled={disabled || undefined}
+        disabled={disabled}
         onPressIn={() => {
           pointerDown.current = true;
           tip.onHoverOut();
@@ -238,8 +258,43 @@ export function SurfaceAction({
         }}
         onBlur={() => tip.setOpen(false)}
         style={[surface, style]}>
-        {glyph(hovered ? palette.iconPrimary : palette.iconSecondary)}
+        {glyph(lit ? palette.iconPrimary : palette.iconSecondary)}
       </Pressable>
     </WithTooltip>
+  );
+}
+
+/** The feedback row's button surface: 28 square, radius 8, p 6, tertiary → secondary-hover. */
+export function turnActionSurface(palette: AiChatPalette) {
+  return {
+    padding: 6,
+    radius: 8,
+    background: palette.tertiary,
+    hoverBackground: palette.secondaryHover,
+    palette,
+  };
+}
+
+/** One caller-supplied turn action, drawn as a feedback-row button. */
+export function TurnActionButton({
+  action,
+  palette,
+  testID,
+}: {
+  action: AiChatTurnAction;
+  palette: AiChatPalette;
+  testID?: string;
+}) {
+  const Icon = action.icon;
+  return (
+    <SurfaceAction
+      {...turnActionSurface(palette)}
+      testID={testID ? `${testID}-${action.key}` : undefined}
+      label={action.label}
+      onPress={action.onPress}
+      active={action.active}
+      disabled={action.disabled}
+      glyph={(color) => <Icon width={16} height={16} fill={color} />}
+    />
   );
 }

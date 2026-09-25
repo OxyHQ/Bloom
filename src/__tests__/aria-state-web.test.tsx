@@ -113,6 +113,8 @@ import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar';
 import { Popover, PopoverTrigger } from '../popover';
 import { TabBar, TabBarButton } from '../tab-bar';
 import { ChatFolderTabs, ChatListItem } from '../chat-list';
+// The web binding by explicit filename, as the web bundle resolves it.
+import { AiChatFeedbackRow } from '../ai-chat/AiChat.web';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -345,6 +347,25 @@ describe('role="button" toggles use aria-pressed', () => {
     // state nobody set.
     c = mount(<GlyphButton accessibilityLabel="More options" icon={RiFireLine} testID="glyph" />);
     expect(byTestId(c, 'glyph').getAttribute('aria-pressed')).toBeNull();
+  });
+
+  it('an ai-chat turn action is a toggle only when it has an `active` state', () => {
+    const c = mount(
+      <AiChatFeedbackRow
+        testID="row"
+        actions={[
+          { key: 'speak', label: 'Read aloud', icon: RiFireLine, onPress: () => {}, active: true },
+          { key: 'again', label: 'Regenerate', icon: RiFireLine, onPress: () => {}, disabled: true },
+        ]}
+      />,
+    );
+    const speak = byTestId(c, 'row-speak');
+    expect(speak.getAttribute('role')).toBe('button');
+    expect(speak.getAttribute('aria-label')).toBe('Read aloud');
+    expect(speak.getAttribute('aria-pressed')).toBe('true');
+    const again = byTestId(c, 'row-again');
+    expect(again.getAttribute('aria-pressed')).toBeNull();
+    expect(again.getAttribute('aria-disabled')).toBe('true');
   });
 
   it('CompositionBar marks the selected segment with aria-pressed', () => {

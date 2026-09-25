@@ -5,9 +5,9 @@ import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiThumbDownLine } from '../icons/remix/RiThumbDownLine';
 import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
-import { SurfaceAction, SwapGlyph } from './AiChatControls';
+import { SurfaceAction, SwapGlyph, TurnActionButton, turnActionSurface } from './AiChatControls';
 import { CONFIRM_MS, useAiChatPalette, useAiChatWebCss } from './shared';
-import type { AiChatFeedbackRowProps } from './types';
+import type { AiChatCopyResult, AiChatFeedbackRowProps } from './types';
 
 const DEFAULT_LABELS = {
   like: 'Good response',
@@ -26,9 +26,12 @@ const DEFAULT_LABELS = {
  *   tooltip  a `sm` tooltip above, after a 200ms hover
  *   copy     the copy glyph blurs, scales to 75% and fades out as a check comes
  *            in (200ms ease-out); the tooltip is held open reading "Copied!"
- *            for 1.6s, then dismissed even if the pointer is still over it
+ *            for 1.6s, then dismissed even if the pointer is still over it — once
+ *            the copy HAPPENED: an async handler is waited for, and a `false`,
+ *            a throw or a rejection shows nothing
+ *   actions  the caller's extra buttons after copy, on the same surface
  */
-export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, labels, style, testID }: AiChatFeedbackRowProps) {
+export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, actions, labels, style, testID }: AiChatFeedbackRowProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
@@ -36,16 +39,20 @@ export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, labels, style
   const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
+  // The latest press: a slower, earlier copy settling late must not confirm.
+  const attempt = useRef(0);
+  const mounted = useRef(true);
 
-  const copy = () => {
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, []);
+
+  const confirm = () => {
     if (timer.current) clearTimeout(timer.current);
-    onCopy?.();
     setCopied(true);
     setCopyTooltipOpen(true);
     timer.current = setTimeout(() => {
@@ -54,13 +61,27 @@ export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, labels, style
     }, CONFIRM_MS);
   };
 
-  const surface = {
-    padding: 6,
-    radius: 8,
-    background: palette.tertiary,
-    hoverBackground: palette.secondaryHover,
-    palette,
+  const copy = () => {
+    const id = ++attempt.current;
+    let result: AiChatCopyResult;
+    try {
+      result = onCopy?.();
+    } catch {
+      return;
+    }
+    if (isPromiseLike(result)) {
+      result.then(
+        (ok) => {
+          if (ok !== false && mounted.current && id === attempt.current) confirm();
+        },
+        () => undefined,
+      );
+      return;
+    }
+    if (result !== false) confirm();
   };
+
+  const surface = turnActionSurface(palette);
 
   return (
     <View testID={testID} style={[{ flexDirection: 'row', alignItems: 'center', gap: 6 }, style]}>
@@ -97,6 +118,13 @@ export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, labels, style
           </View>
         )}
       />
+      {actions?.map((action) => (
+        <TurnActionButton key={action.key} action={action} palette={palette} testID={testID} />
+      ))}
     </View>
   );
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<void | boolean> {
+  return typeof (value as PromiseLike<unknown> | null | undefined)?.then === 'function';
 }

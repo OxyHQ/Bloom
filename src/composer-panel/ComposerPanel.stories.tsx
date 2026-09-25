@@ -178,6 +178,37 @@ export const Attachments: Story = {
   },
 };
 
+/** Failed uploads: the message on the tile, a retry that restarts the ring, and the dismiss. */
+export const FailedAttachments: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => {
+    const [files, setFiles] = useState<ComposerPanelAttachment[]>([
+      { id: 'photo', name: 'sunset.png', kind: 'image', src: PHOTO, error: 'Network error' },
+      { id: 'deck', name: 'Pitch.key', kind: 'presentation', error: 'Too large (max 20 MB)' },
+      { id: 'brief', name: 'Brief.docx', kind: 'document' },
+    ]);
+    const retry = (id: string) => {
+      setFiles((current) => current.map((file) => (file.id === id ? { ...file, error: undefined, progress: 30 } : file)));
+      setTimeout(
+        () => setFiles((current) => current.map((file) => (file.id === id ? { ...file, progress: undefined } : file))),
+        1200,
+      );
+    };
+    return (
+      <Frame>
+        <ComposerPanel
+          testID="composer"
+          providers={PROVIDERS}
+          status={STATUS}
+          attachments={files}
+          onAttachmentRetry={retry}
+          onRemoveAttachment={(id) => setFiles((current) => current.filter((file) => file.id !== id))}
+        />
+      </Frame>
+    );
+  },
+};
+
 /** The new composer with attachments: files land one after another with the simulated queue. */
 export const UploadQueue: Story = {
   parameters: { controls: { disable: true } },

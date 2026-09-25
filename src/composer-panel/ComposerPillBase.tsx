@@ -690,6 +690,7 @@ const DEFAULT_PANEL_LABELS = {
   send: 'Send message',
   stop: 'Stop generating',
   remove: 'Remove',
+  retry: 'Retry',
 };
 
 /**

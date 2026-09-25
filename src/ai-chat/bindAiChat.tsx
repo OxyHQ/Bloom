@@ -4,7 +4,7 @@ import { AiChatContainerBase } from './AiChatContainer';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { AiChatGalleryPanelBase } from './AiChatGalleryPanelBase';
 import { AiChatImageGenerationBase } from './AiChatImageGenerationBase';
-import { AiChatAssistantMessageBase } from './AiChatMessages';
+import { AiChatAssistantMessageBase, AiChatUserMessageBase } from './AiChatMessages';
 import { AiChatPlatformContext, type AiChatPlatform } from './context';
 import type {
   AiChatAssistantMessageProps,
@@ -12,6 +12,7 @@ import type {
   AiChatFeedbackRowProps,
   AiChatGalleryPanelProps,
   AiChatImageGenerationProps,
+  AiChatUserMessageProps,
 } from './types';
 
 /**
@@ -28,6 +29,15 @@ export function bindAiChat(platform: AiChatPlatform) {
     );
   }
   AiChatFeedbackRow.displayName = 'AiChatFeedbackRow';
+
+  function AiChatUserMessage(props: AiChatUserMessageProps) {
+    return (
+      <AiChatPlatformContext.Provider value={platform}>
+        <AiChatUserMessageBase {...props} />
+      </AiChatPlatformContext.Provider>
+    );
+  }
+  AiChatUserMessage.displayName = 'AiChatUserMessage';
 
   function AiChatAssistantMessage(props: AiChatAssistantMessageProps) {
     return (
@@ -65,5 +75,12 @@ export function bindAiChat(platform: AiChatPlatform) {
   }
   AiChatContainer.displayName = 'AiChatContainer';
 
-  return { AiChatFeedbackRow, AiChatAssistantMessage, AiChatImageGeneration, AiChatGalleryPanel, AiChatContainer };
+  return {
+    AiChatFeedbackRow,
+    AiChatUserMessage,
+    AiChatAssistantMessage,
+    AiChatImageGeneration,
+    AiChatGalleryPanel,
+    AiChatContainer,
+  };
 }
