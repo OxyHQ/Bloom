@@ -7,7 +7,9 @@
  * sheet is not something `BottomSheet` stacks. So each panel is a transparent
  * `Modal` holding a dismiss layer and the panel, placed against the trigger's
  * `measureInWindow` box: on the requested side when it fits, flipped when it
- * does not, clamped 8px inside the window. Nested `Modal`s stack on both
+ * does not, clamped 8px inside the window's SAFE area. The Modal draws edge to
+ * edge, so a clamp to the bare window put the effort panel under Android's
+ * gesture bar (Pixel 8a, Android 16). Nested `Modal`s stack on both
  * platforms, so the effort panel opens above the picker.
  *
  * Motion is the popover entry without the blur (no filter on native):
@@ -30,6 +32,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TRANSITION_MS } from './shared';
 import type { ComposerPopoverProps } from './types';
@@ -56,6 +59,7 @@ export function ComposerPopover({
   children,
 }: ComposerPopoverProps) {
   const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(open);
   const [anchor, setAnchor] = useState<Box | null>(null);
@@ -112,14 +116,18 @@ export function ComposerPopover({
   let left = GUTTER;
   let top = GUTTER;
   if (anchor && size) {
-    left = Math.min(Math.max(anchor.x, GUTTER), window.width - size.width - GUTTER);
+    const minLeft = insets.left + GUTTER;
+    const maxRight = window.width - insets.right - GUTTER;
+    const minTop = insets.top + GUTTER;
+    const maxBottom = window.height - insets.bottom - GUTTER;
+    left = Math.max(minLeft, Math.min(anchor.x, maxRight - size.width));
     const above = anchor.y - sideOffset - size.height;
     const below = anchor.y + anchor.height + sideOffset;
-    const fitsAbove = above >= GUTTER;
-    const fitsBelow = below + size.height <= window.height - GUTTER;
+    const fitsAbove = above >= minTop;
+    const fitsBelow = below + size.height <= maxBottom;
     const preferAbove = side === 'top' ? fitsAbove || !fitsBelow : !fitsBelow && fitsAbove;
     top = preferAbove ? above : below;
-    top = Math.min(Math.max(top, GUTTER), window.height - size.height - GUTTER);
+    top = Math.max(minTop, Math.min(top, maxBottom - size.height));
   }
 
   return (
