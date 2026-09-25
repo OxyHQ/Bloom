@@ -12,10 +12,11 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { type AnimatedStyle } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type AnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
+import { useSheetKeyboardHeight } from '../bottom-sheet/context';
 import { useTheme } from '../theme/use-theme';
 import { StyledView } from '../styles/styled-primitives';
 import { Context } from './context';
@@ -345,9 +346,7 @@ export function DialogBottomSheet({
               rather than a padding: the content box keeps the caller's
               `padding`/`contentPadding` untouched on both platforms, and the
               morph layer above still measures the content alone. */}
-          {bottomInset > 0 ? (
-            <View testID={SAFE_AREA_SPACER_TESTID} style={{ height: bottomInset }} />
-          ) : null}
+          {bottomInset > 0 ? <SafeAreaSpacer testID={SAFE_AREA_SPACER_TESTID} inset={bottomInset} /> : null}
         </StyledView>
       </Context.Provider>
     </BottomSheet>
@@ -356,6 +355,19 @@ export function DialogBottomSheet({
 
 /** Test handle for the bottom safe-area spacer. */
 const SAFE_AREA_SPACER_TESTID = 'dialog-sheet-safe-area';
+
+/**
+ * The gesture bar's height under the content — folded while the keyboard is
+ * up, because the keyboard covers the bar: the sheet already rides on top of
+ * the keyboard, and a spacer left standing floated its buttons a bar's height
+ * above it (Pixel 8a, Android 16). A child of the sheet, so it reads the
+ * sheet's own keyboard value.
+ */
+function SafeAreaSpacer({ inset, testID }: { inset: number; testID: string }) {
+  const keyboard = useSheetKeyboardHeight();
+  const style = useAnimatedStyle(() => ({ height: keyboard.value > 0 ? 0 : inset }), [keyboard, inset]);
+  return <Animated.View testID={testID} style={style} />;
+}
 
 /** Passes a bounded height down to a `scrollable={false}` body. */
 const FILL_BOUNDED = { flex: 1, minHeight: 0 } as const;
