@@ -66,6 +66,8 @@ import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
 import { Radio, RadioGroup } from '../radio';
 import { Meter, MeterRing, StatBar } from '../stat-bar';
+import { Loading } from '../loading';
+import { Loading as LoadingWeb } from '../loading/Loading.web';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
 import { AudiobookCard, EpisodeCard } from '../media-card';
@@ -604,6 +606,31 @@ describe('Radio', () => {
 // joining this suite is a step somebody has to remember. `aria-state-source-
 // census.test.ts` is the half that fails by default; these are the three it
 // found, asserted against the DOM react-native-web actually emits.
+describe('Loading: an indeterminate progressbar, when named', () => {
+  it.each(['spinner', 'inline'] as const)('%s: role, aria-label and aria-busy, and NO aria-valuenow', (variant) => {
+    const c = mount(<Loading variant={variant} accessibilityLabel="Loading results" testID="ld" />);
+    const el = byTestId(c, 'ld');
+    expect(el.getAttribute('role')).toBe('progressbar');
+    expect(el.getAttribute('aria-label')).toBe('Loading results');
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    // Indeterminate: a spinner has no amount done, and ARIA spells that by omission.
+    expect(el.getAttribute('aria-valuenow')).toBeNull();
+  });
+
+  it('the web top bar names its spinner while showing, and nothing once collapsed', () => {
+    let c = mount(<LoadingWeb variant="top" accessibilityLabel="Refreshing" testID="ld" />);
+    expect(byRole(c, 'progressbar').getAttribute('aria-label')).toBe('Refreshing');
+    c = mount(<LoadingWeb variant="top" showLoading={false} accessibilityLabel="Refreshing" testID="ld" />);
+    expect(c.querySelector('[role="progressbar"]')).toBeNull();
+  });
+
+  it('without a label it carries no role, as before (it may sit inside a named progressbar)', () => {
+    const c = mount(<Loading testID="ld" />);
+    expect(byTestId(c, 'ld').getAttribute('role')).toBeNull();
+    expect(c.querySelector('[role="progressbar"]')).toBeNull();
+  });
+});
+
 describe('progressbars announce their value', () => {
   it('Meter — the primitive every bar above is now built from', () => {
     // `StatBar`, `RatingBar`, the wizard's bar, the lease bar, the score bars

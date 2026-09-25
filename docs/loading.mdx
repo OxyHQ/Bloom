@@ -52,6 +52,16 @@ For native-tailwind users, `className` overrides `color`:
 <Loading variant="spinner" className="text-primary" />
 ```
 
+## Accessibility
+
+A spinner draws no words, so nothing but a name can tell a screen reader what is loading. Pass `accessibilityLabel` and the indicator becomes an indeterminate `progressbar`: `role="progressbar"`, `aria-label` and `aria-busy="true"` on web (flat `aria-*`, because react-native-web drops `accessibilityState`), the same role, label and busy state natively, and deliberately **no** `aria-valuenow` — that omission is how ARIA says "indeterminate". The `top` bar carries it only while `showLoading`.
+
+```tsx
+<Loading accessibilityLabel="Loading results" />
+```
+
+It is opt-in, so an unlabelled `Loading` renders exactly as before, with no role. That is right when the spinner sits INSIDE something already announcing the wait — an upload tile's own named progressbar — where a second one would say it twice.
+
 ## Props
 
 ### Shared
@@ -64,6 +74,7 @@ For native-tailwind users, `className` overrides `color`:
 | `className?` | `string` | NativeWind class. Overrides `color`. |
 | `style?` | `ViewStyle` | Container style. |
 | `showLoading?` | `boolean` | For animated variants — pause when false. |
+| `accessibilityLabel?` | `string` | Names the indicator and makes it an indeterminate `progressbar`. See [Accessibility](#accessibility). |
 | `testID?` | `string` | |
 
 ### `spinner`

@@ -23,7 +23,7 @@ import { normalizeBloomSize } from '../appearance/legacy';
 import { resolveBloomColors } from '../appearance/colors';
 import { useBloomAppearance } from '../appearance';
 import React, { memo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import type {
@@ -40,6 +40,54 @@ export const SIZE_CONFIG = {
   md: { spinner: 24, text: 15 },
   lg: { spinner: 44, text: 16 },
 } as const;
+
+/**
+ * The indicator's root: an indeterminate, NAMED `progressbar` when the caller
+ * gave `accessibilityLabel`, a plain view (today's behaviour) when not.
+ *
+ * Flat `aria-*` because react-native-web drops `accessibilityState` /
+ * `accessibilityValue`; React Native folds them back. `aria-valuenow` is
+ * deliberately absent (`undefined`): that is what makes a progressbar
+ * INDETERMINATE in ARIA, and a spinner has no amount done to report. The role
+ * is a literal on its own branch so `aria-state-source-census.test.ts` can read
+ * it; a computed role would be invisible to it.
+ */
+export function LoadingRoot({
+  accessibilityLabel,
+  style,
+  testID,
+  children,
+}: {
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+  children: React.ReactNode;
+}) {
+  if (accessibilityLabel) {
+    return (
+      <View
+        role="progressbar"
+        accessible
+        accessibilityLabel={accessibilityLabel}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={undefined}
+        aria-busy
+        style={style}
+        testID={testID}
+      >
+        {children}
+      </View>
+    );
+  }
+  // Nothing to carry (the `top` variant's inner slot): no extra node at all.
+  if (style === undefined && testID === undefined) return <>{children}</>;
+  return (
+    <View style={style} testID={testID}>
+      {children}
+    </View>
+  );
+}
 
 /** The two platform pieces a fork supplies. */
 export interface LoadingPlatform {
@@ -61,6 +109,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     showText = true,
     iconSize,
     spinnerIcon,
+    accessibilityLabel,
     testID,
   }) => {
     const theme = useTheme();
@@ -71,7 +120,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     const textColor = color ?? theme.colors.textSecondary;
 
     return (
-      <View style={[styles.container, style]} testID={testID}>
+      <LoadingRoot accessibilityLabel={accessibilityLabel} style={[styles.container, style]} testID={testID}>
         {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} className={className} />}
         {showText && text && (
           <Text
@@ -84,7 +133,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
             {text}
           </Text>
         )}
-      </View>
+      </LoadingRoot>
     );
   };
 
@@ -96,6 +145,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     style,
     textStyle,
     spinnerIcon,
+    accessibilityLabel,
     testID,
   }) => {
     const theme = useTheme();
@@ -105,7 +155,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     const textColor = theme.colors.textSecondary;
 
     return (
-      <View style={[styles.inlineContainer, style]} testID={testID}>
+      <LoadingRoot accessibilityLabel={accessibilityLabel} style={[styles.inlineContainer, style]} testID={testID}>
         {spinnerIcon ?? <SpinnerIcon size={sizeConfig.spinner} color={spinnerColor} />}
         {text && (
           <Text
@@ -117,7 +167,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
             {text}
           </Text>
         )}
-      </View>
+      </LoadingRoot>
     );
   };
 

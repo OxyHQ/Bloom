@@ -20,6 +20,17 @@ interface BaseLoadingProps {
   style?: ViewStyle;
   /** Whether loading is active (for animated variants) */
   showLoading?: boolean;
+  /**
+   * Names the indicator and makes it an indeterminate `progressbar` to
+   * assistive technology (`role="progressbar"` with `aria-label` and
+   * `aria-busy` on web; the same role, label and busy state natively). A
+   * spinner draws no words, so nothing else can say what is loading.
+   *
+   * Opt-in: without it the indicator carries no role, as before — which is
+   * right when it sits INSIDE a named progressbar already (an upload overlay),
+   * where a second one would announce the same wait twice.
+   */
+  accessibilityLabel?: string;
   testID?: string;
 }
 
