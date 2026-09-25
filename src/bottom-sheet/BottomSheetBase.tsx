@@ -606,7 +606,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     }, [colors.background, theme.isDark, detached]);
 
     // Publish the sheet's keyboard shared value to the shell so the native
-    // shell can drive it from inside its own <KeyboardProvider>. Kept stable
+    // shell's keyboard tracker can drive it. Kept stable
     // (shared values are stable refs) so the shell never re-mounts for this.
     if (!rendered) return null;
 

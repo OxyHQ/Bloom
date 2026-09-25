@@ -22,41 +22,39 @@ import type { BottomSheetProps, BottomSheetRef, BottomSheetShellProps } from './
 const noopKeyboardHandler = (_handlers: Record<string, (e: { height: number }) => void>, _deps: unknown[]) => {};
 let useKeyboardHandler: (handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void = noopKeyboardHandler;
 
-// react-native-keyboard-controller's <KeyboardProvider>. We re-establish it
-// INSIDE the sheet's RN <Modal> (see the render below): a <Modal> mounts into
-// its OWN native root, and neither the app-root GestureHandlerRootView nor the
-// app-root KeyboardProvider's native KeyboardControllerView extend across that
-// boundary. Without a provider inside the Modal, keyboard-controller consumers
-// (this sheet's keyboard tracker, plus any TextInputs in `children`) read the
-// default empty KeyboardContext — logging "Couldn't find real values for
-// KeyboardContext ..." — and receive no keyboard insets. When the optional
-// module is absent, or on web (no RN Modal native-window boundary, keyboard is
-// the browser's concern), this resolves to a passthrough that just renders its
-// children, so no provider is introduced where one isn't needed.
-const PassthroughKeyboardProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-let KeyboardProvider: React.ComponentType<{ children: React.ReactNode }> = PassthroughKeyboardProvider;
-
 if (Platform.OS !== 'web' && typeof require !== 'undefined') {
     try {
         const keyboardController = require('react-native-keyboard-controller');
         useKeyboardHandler = keyboardController.useKeyboardHandler ?? noopKeyboardHandler;
-        KeyboardProvider = keyboardController.KeyboardProvider ?? PassthroughKeyboardProvider;
     } catch {
-        // react-native-keyboard-controller not available — keep the no-op
-        // handler and passthrough provider.
+        // react-native-keyboard-controller not available — keep the no-op handler.
     }
 }
 
 /**
- * Registers the sheet's keyboard-height tracker. It lives in its own tiny
- * component — rendered INSIDE the Modal, under the re-established
- * <KeyboardProvider> — so `useKeyboardHandler` reads the in-Modal
- * KeyboardContext whose native KeyboardControllerView actually receives the
- * Modal window's keyboard insets (the app-root provider does not cross the
- * Modal's native-window boundary). It writes the live keyboard height into the
- * shared value that drives the sheet's translate/height styles. Renders
- * nothing. No-ops when react-native-keyboard-controller isn't installed / on
- * web (`useKeyboardHandler` is the module-level no-op there).
+ * Registers the sheet's keyboard-height tracker, writing the live keyboard
+ * height into the shared value that drives the sheet's translate/height styles.
+ * Renders nothing.
+ *
+ * It reads the APP's one `<KeyboardProvider>`, and the sheet deliberately does
+ * not mount a second one inside its `<Modal>`:
+ *
+ *  - React context crosses a `<Modal>` like any other element, so this hook
+ *    finds the app-root provider from inside the sheet.
+ *  - The native events cross too: when a `<Modal>` shows, the root provider's
+ *    `ModalAttachedWatcher` (keyboard-controller ≥ 1.13, Android) attaches a
+ *    keyboard callback to the dialog's window and propagates it to the ROOT
+ *    provider's view, which is where this handler is registered.
+ *  - A second provider breaks the app until it restarts. Every provider's
+ *    watcher answers the same `topShow`: each SUSPENDS its own main-window
+ *    callback and then calls `dialog.setOnDismissListener` to un-suspend it —
+ *    and a dialog keeps only the LAST listener. So on dismiss one provider
+ *    resumes and the others stay suspended for good: after the first sheet, the
+ *    app's `KeyboardAvoidingView`s never saw the keyboard again (Alia #608,
+ *    Android 16, keyboard-controller 1.21.9 and unchanged in 1.22.5).
+ *
+ * No app-root provider means keyboard-controller works nowhere in that app; the
+ * hook then no-ops (and warns in development) like every other consumer.
  */
 function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<number> }) {
     useKeyboardHandler({
@@ -73,27 +71,25 @@ function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<num
 }
 
 /**
- * Native shell: RN's `<Modal>` (its own native root window) + the
- * re-established `<KeyboardProvider>` + the sheet's keyboard tracker + a
- * `<GestureHandlerRootView>` (the app-root GHRV does not cross the Modal's
- * native-window boundary, so pan gestures need their own root here).
+ * Native shell: RN's `<Modal>` (its own native root window) + the sheet's
+ * keyboard tracker + a `<GestureHandlerRootView>` (the app-root GHRV does not
+ * cross the Modal's native-window boundary, so pan gestures need their own root
+ * here). No `<KeyboardProvider>`: see `SheetKeyboardSync`.
  */
 function NativeShell({ visible, onRequestClose, keyboardHeight, children }: BottomSheetShellProps) {
     return (
         <Modal visible={visible} transparent animationType="none" statusBarTranslucent onRequestClose={onRequestClose}>
             {/*
               This <Modal> is its own native window — the same boundary the
-              KeyboardProvider and GestureHandlerRootView above are re-established
-              for. `GlassBlurWindow` declares it to the glass layer, which is the
+              GestureHandlerRootView below is re-established for.
+              `GlassBlurWindow` declares it to the glass layer, which is the
               ONLY thing that lets a backdrop in here take an Android blur target:
               a BlurView in the app's own window would be a descendant of what it
               blurs, and that segfaults. See `glass/blur-target.tsx`.
             */}
             <GlassBlurWindow>
-                <KeyboardProvider>
-                    <SheetKeyboardSync keyboardHeight={keyboardHeight} />
-                    <GestureHandlerRootView style={styles.rootView}>{children}</GestureHandlerRootView>
-                </KeyboardProvider>
+                <SheetKeyboardSync keyboardHeight={keyboardHeight} />
+                <GestureHandlerRootView style={styles.rootView}>{children}</GestureHandlerRootView>
             </GlassBlurWindow>
         </Modal>
     );
