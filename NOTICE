@@ -31,6 +31,8 @@ derived source file names its origin in its header.
   Material Color Utilities      Apache-2.0           src/theme/color-engine/
   Remix Icon                    Remix Icon License   src/icons/remix/
                                 1.0                  (full text: LICENSE.txt)
+  Simple Icons                  CC0 1.0              src/icons/simple-icons/,
+                                                     src/social-button/
   Inter                         SIL OFL 1.1          src/fonts/assets/
                                                      (full text: Inter-OFL.txt)
   JetBrains Mono                SIL OFL 1.1          src/fonts/assets/ (full
