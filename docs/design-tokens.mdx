@@ -43,12 +43,23 @@ COLOR_PRESET_FAMILY_REGISTRY[0].displayName; // stable family copy and order
 COLOR_PRESET_GROUPS.ocean.presets;            // ordered recipes for a picker
 ```
 
-The 46 `pairing: 'curated'` recipes pin an intentional action seed. The first 16
-pin `tertiaryHex`; the newest 30 are complete three-seed combinations and pin
+The 47 `pairing: 'curated'` recipes pin an intentional action seed. The first 16
+pin `tertiaryHex`; 30 more are complete three-seed combinations and pin
 both `secondaryHex` support and `tertiaryHex` action. Identity remains
 `--primary`, support resolves through `--secondary`, and the standout action is
-`--tertiary`, which is the role used by FABs and compose actions. The other 18
-recipes derive both accent families dynamically. Every recipe exposes
+`--tertiary`, which is the role used by FABs and compose actions. The other 17
+recipes derive both accent families dynamically.
+
+The `oxy` brand recipe goes one step further: it carries a
+hand-authored `tokens` scheme per mode (`#rrggbb` keyed by canonical token)
+taken from the brand's own drawn palette. Those values win over the engine for
+the tokens they name — the accent fills and their labels verbatim, and the
+surface ladder (page, surface, popover, muted, card) in the scheme's own hue and
+chroma but on Bloom's four-tone ramp. Everything they leave out stays derived on
+purpose: text roles, borders, subtle tints, status fills and charts are what the
+policy holds at AA on that ladder, and a scheme drawn for shallower surfaces
+does not. An app-wide `secondaryColor`/`tertiaryColor` override still replaces
+the authored accent it pins. Every recipe exposes
 `displayName`, `description`, `family`, `pairing` and `featured` metadata, so
 consumer pickers do not need a second name/category map. Historical
 `APP_COLOR_PRESETS`, name arrays, hex lookup and access-gate arrays are derived

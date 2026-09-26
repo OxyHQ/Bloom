@@ -1,5 +1,5 @@
 import { APP_COLOR_PRESETS, type AppColorName, type PresetTokens } from './color-presets';
-import { generateRoleColors, type RoleColors } from './color-engine';
+import { argbFromHex, generateRoleColors, type RoleColors } from './color-engine';
 import { buildPolicyTokens } from './color-policy';
 
 /**
@@ -112,7 +112,28 @@ export function getPresetVars(
       secondary: accents?.secondaryHex ?? preset.secondaryHex,
       tertiary: accents?.tertiaryHex ?? preset.tertiaryHex,
     }),
+    ...authoredTokens(preset.tokens?.[mode], accents),
   };
+}
+
+/**
+ * A preset's hand-authored values, as the same `rgb(r g b)` form the engine
+ * emits. An app-wide accent override still wins over the authored accent it
+ * replaces, so the `secondary*`/`tertiary*` family is dropped when pinned.
+ */
+function authoredTokens(
+  authored: PresetTokens | undefined,
+  accents: ExplicitAccents | undefined,
+): PresetTokens {
+  if (authored === undefined) return {};
+  const out: PresetTokens = {};
+  for (const [token, hex] of Object.entries(authored)) {
+    if (accents?.secondaryHex !== undefined && token.startsWith('--secondary')) continue;
+    if (accents?.tertiaryHex !== undefined && token.startsWith('--tertiary')) continue;
+    const argb = argbFromHex(hex);
+    out[token] = `rgb(${(argb >> 16) & 255} ${(argb >> 8) & 255} ${argb & 255})`;
+  }
+  return out;
 }
 
 /**

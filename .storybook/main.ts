@@ -88,6 +88,9 @@ const config: StorybookConfig = {
           ignoreTryCatch: (id: string) => !id.startsWith('react-native-web/dist/'),
         },
       },
+      // Agent worktrees each carry a full `node_modules` and `lib/`; watching
+      // them exhausts the inotify limit (ENOSPC) and kills the dev server.
+      server: { watch: { ignored: ['**/.worktrees/**'] } },
       resolve: {
         alias: [
           {

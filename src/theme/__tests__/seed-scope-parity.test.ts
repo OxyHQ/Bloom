@@ -14,7 +14,11 @@ import { buildSeedScopeVars } from '../color-scope/seed-scope';
 describe('buildSeedScopeVars parity with preset scope', () => {
   const modes: Array<'light' | 'dark'> = ['light', 'dark'];
 
-  for (const name of APP_COLOR_NAMES as readonly AppColorName[]) {
+  // A preset with hand-authored `tokens` is a drawn brand scheme, not a seed
+  // derivation, so the seed path cannot (and should not) reproduce it.
+  for (const name of (APP_COLOR_NAMES as readonly AppColorName[]).filter(
+    (preset) => APP_COLOR_PRESETS[preset].tokens === undefined,
+  )) {
     for (const mode of modes) {
       it(`matches preset "${name}" in ${mode} mode`, () => {
         const preset = APP_COLOR_PRESETS[name];

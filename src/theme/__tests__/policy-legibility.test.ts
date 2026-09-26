@@ -261,8 +261,11 @@ describe('colour policy legibility', () => {
   // while accidentally collapsing to the same heavy fill, so contrast alone is
   // not an instrument for this rule.
   it('keeps identity deep in light and moves it toward its vivid peak in dark', () => {
+    // Authored brand schemes (`tokens`) choose their own fill and label; this
+    // pins the policy's derivation, and the AA checks above still cover them.
     const chromatic = APP_COLOR_NAMES.filter(
-      (name) => !isColourlessSeed(APP_COLOR_PRESETS[name].hex),
+      (name) =>
+        !isColourlessSeed(APP_COLOR_PRESETS[name].hex) && APP_COLOR_PRESETS[name].tokens === undefined,
     );
     const darkForegrounds = new Set<string>();
     for (const preset of chromatic) {

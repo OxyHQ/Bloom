@@ -267,9 +267,10 @@ describe('design-tokens resolved token values', () => {
   it("a preset's own seed reproduces that preset exactly", () => {
     // What lets a consumer theme a brand scope and the document root through one
     // code path: the seed form is not an approximation of the preset form.
-    const preset = APP_COLOR_PRESETS.oxy;
+    // A derived preset: `oxy` carries a drawn brand scheme instead.
+    const preset = APP_COLOR_PRESETS.purple;
     for (const mode of ['light', 'dark'] as const) {
-      const fromPreset = getPresetVars('oxy', mode);
+      const fromPreset = getPresetVars('purple', mode);
       const fromSeed = buildSeedScopeVars({
         seed: preset.hex,
         mode,

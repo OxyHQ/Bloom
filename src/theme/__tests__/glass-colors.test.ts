@@ -379,8 +379,8 @@ describe('glass surface legibility', () => {
       }
     }
     expect(rowsPerFill).toBe(PRESETS.length * MODES.length * 3);
-    expect(primaryFailures).toBe(50);
-    expect(shippedPrimaryFailures).toBe(25);
+    expect(primaryFailures).toBe(49);
+    expect(shippedPrimaryFailures).toBe(24);
     expect(newPrimaryFailures).toBe(25);
     expect(primaryWorst).toBeCloseTo(3.61, 1);
     expect(newPrimaryWorst).toBeCloseTo(4.17, 2);

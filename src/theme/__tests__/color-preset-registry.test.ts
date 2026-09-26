@@ -99,7 +99,15 @@ const ORIGINAL_RECIPES = {
   sky: { hex: '#03a9f4', variant: 'vivid' },
   orange: { hex: '#ff7a00', variant: 'vivid' },
   mint: { hex: '#14b8a6', variant: 'vivid' },
-  oxy: { hex: '#c46ede', variant: 'vivid', gate: 'handle' },
+  // Oxy keeps its seed; its accents are pinned to the brand's own drawn
+  // scheme (a derived pair rendered it teal and lime).
+  oxy: {
+    hex: '#c46ede',
+    variant: 'vivid',
+    gate: 'handle',
+    secondaryHex: '#8f3987',
+    tertiaryHex: '#a0392b',
+  },
   faircoin: { hex: '#9ffb50', variant: 'vivid', gate: 'handle' },
   pumpkin: { hex: '#ff9800', variant: 'vivid' },
   gray: { hex: '#607d8b', variant: 'vivid' },
@@ -177,13 +185,19 @@ describe('single declarative colour preset registry', () => {
         variant: preset.variant,
         ...(preset.label ? { label: preset.label } : {}),
         ...(preset.gate ? { gate: preset.gate } : {}),
+        ...(preset.secondaryHex ? { secondaryHex: preset.secondaryHex } : {}),
+        ...(preset.tertiaryHex ? { tertiaryHex: preset.tertiaryHex } : {}),
       }).toEqual(ORIGINAL_RECIPES[name]);
-      expect(preset.secondaryHex).toBeUndefined();
-      expect(preset.tertiaryHex).toBeUndefined();
-      expect(Object.keys(preset).sort()).toEqual(
+      expect(Object.keys(preset).filter((key) => key !== 'tokens').sort()).toEqual(
         ['name', ...Object.keys(ORIGINAL_RECIPES[name])].sort(),
       );
     }
+  });
+
+  it('reserves a hand-authored token scheme for the Oxy brand alone', () => {
+    expect(APP_COLOR_NAMES.filter((name) => APP_COLOR_PRESETS[name].tokens !== undefined)).toEqual([
+      'oxy',
+    ]);
   });
 
   it('keeps rich metadata out of the historical runtime lookup', () => {
@@ -242,7 +256,7 @@ describe('single declarative colour preset registry', () => {
       expect(recipe.pairing).toBe('curated');
       expect(recipe.tertiaryHex).toBeDefined();
     }
-    expect(COLOR_PRESET_REGISTRY.filter(({ pairing }) => pairing === 'derived')).toHaveLength(18);
+    expect(COLOR_PRESET_REGISTRY.filter(({ pairing }) => pairing === 'derived')).toHaveLength(17);
   });
 
   it('adds exactly 30 ungated three-seed combinations after the stable catalog', () => {
@@ -274,7 +288,7 @@ describe('single declarative colour preset registry', () => {
         measured += 1;
       }
     }
-    expect(measured).toBe(92);
+    expect(measured).toBe(94);
   });
 
   it('makes every new support seed govern the rendered secondary role in both modes', () => {
