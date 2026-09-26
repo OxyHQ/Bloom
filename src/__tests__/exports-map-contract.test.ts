@@ -196,6 +196,42 @@ describe('package.json#exports — the icon subpath pattern', () => {
 });
 
 /**
+ * The brand marks Remix does not draw (`src/icons/simple-icons/`, Simple Icons,
+ * CC0 1.0) get one EXACT key each rather than a `./icons/Si*` pattern — a
+ * pattern must clear the generator's 100-match vacuity floor. Exact keys are
+ * the shape that can drift: a glyph added to the folder without its key is
+ * reachable from the barrel and from nowhere else, the asymmetry the `Ri*`
+ * pattern exists to remove.
+ */
+const ICONS_SIMPLE_DIR = join(__dirname, '..', 'icons', 'simple-icons');
+
+describe('package.json#exports — Simple Icons brand marks', () => {
+  const onDisk = readdirSync(ICONS_SIMPLE_DIR)
+    .filter((name) => name.endsWith('.tsx'))
+    .map((name) => name.slice(0, -'.tsx'.length))
+    .sort();
+
+  it('names every file Si-prefixed, so none collides with the Ri* pattern', () => {
+    expect(onDisk.length).toBeGreaterThan(0);
+    expect(onDisk.filter((name) => !name.startsWith('Si'))).toEqual([]);
+  });
+
+  it('gives every glyph on disk an exact subpath, and no key names a missing glyph', () => {
+    const keyed = Object.keys(exportsMap)
+      .filter((key) => key.startsWith('./icons/Si'))
+      .map((key) => key.slice('./icons/'.length))
+      .sort();
+    expect(keyed).toEqual(onDisk);
+  });
+
+  it('barrel-exports exactly the glyphs on disk', () => {
+    const barrel = readFileSync(join(ICONS_SIMPLE_DIR, 'index.ts'), 'utf8');
+    const exported = [...barrel.matchAll(/export \{ (\w+) \}/g)].map((m) => m[1]).sort();
+    expect(exported).toEqual(onDisk);
+  });
+});
+
+/**
  * `typesVersions` — the same map again, for `moduleResolution: "node"`.
  *
  * node10 ignores `exports` outright. Measured on TypeScript 5.9 against a

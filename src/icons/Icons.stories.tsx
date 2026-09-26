@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import * as RemixIcons from './remix';
+import * as SimpleIcons from './simple-icons';
 import remixMapping from './remix-mapping.json';
 import type { Props as IconProps } from './shared';
 import { Text } from '../typography';
@@ -21,9 +22,11 @@ type Story = StoryObj;
 type IconComponent = React.ComponentType<IconProps>;
 
 const REMIX = RemixIcons as unknown as Record<string, IconComponent>;
+const SIMPLE = SimpleIcons as unknown as Record<string, IconComponent>;
 
 /**
- * Every Remix icon Bloom ships, by name. The export list of `./remix` is the
+ * Every icon Bloom ships, by name: Remix, plus the few Simple Icons brand marks
+ * Remix lacks. The export lists of `./remix` and `./simple-icons` are the
  * source of truth — a hand-maintained gallery would go stale the first time an
  * icon is added, and silently, because a missing entry looks exactly like an icon
  * that does not exist.
@@ -31,8 +34,8 @@ const REMIX = RemixIcons as unknown as Record<string, IconComponent>;
 function useIconEntries(): Array<[string, IconComponent]> {
   return useMemo(
     () =>
-      Object.entries(REMIX)
-        .filter(([name]) => /^Ri[A-Z0-9]/.test(name))
+      [...Object.entries(REMIX), ...Object.entries(SIMPLE)]
+        .filter(([name]) => /^(Ri|Si)[A-Z0-9]/.test(name))
         .sort(([a], [b]) => a.localeCompare(b)),
     [],
   );

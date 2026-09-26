@@ -153,7 +153,7 @@ Every palette is generated from a single seed colour by a dependency free colour
 
 Bloom publishes 168 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
 
-Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/<RiName>`. Metro does not tree-shake, so the flat `@oxy.so/bloom/icons` barrel ships all 475 glyphs to any app that names one — see [icons](./docs/icons.mdx) for the measurement and when to reach for which import. The barrel keeps working unchanged — it stays an exact `exports` key, and an exact key beats a pattern everywhere.
+Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/<RiName>`. Metro does not tree-shake, so the flat `@oxy.so/bloom/icons` barrel ships all 480 glyphs to any app that names one — see [icons](./docs/icons.mdx) for the measurement and when to reach for which import. The barrel keeps working unchanged — it stays an exact `exports` key, and an exact key beats a pattern everywhere.
 
 | Group | Exports |
 |---|---|

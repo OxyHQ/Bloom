@@ -1092,6 +1092,20 @@
         "default": "./lib/commonjs/icons/remix/Ri*.js"
       }
     },
+    "./icons/SiSubstack": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/simple-icons/SiSubstack.d.ts",
+        "default": "./src/icons/simple-icons/SiSubstack.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/simple-icons/SiSubstack.d.ts",
+        "default": "./lib/module/icons/simple-icons/SiSubstack.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/simple-icons/SiSubstack.d.ts",
+        "default": "./lib/commonjs/icons/simple-icons/SiSubstack.js"
+      }
+    },
     "./typography": {
       "react-native": {
         "types": "./lib/typescript/module/typography/index.d.ts",
@@ -3638,6 +3652,9 @@
       ],
       "icons/Ri*": [
         "./lib/typescript/module/icons/remix/Ri*.d.ts"
+      ],
+      "icons/SiSubstack": [
+        "./lib/typescript/module/icons/simple-icons/SiSubstack.d.ts"
       ],
       "typography": [
         "./lib/typescript/module/typography/index.d.ts"

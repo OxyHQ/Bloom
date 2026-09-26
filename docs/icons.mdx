@@ -1,6 +1,6 @@
 ---
 title: Icons
-description: Remix Icon, one component per glyph — how to import one glyph instead of all 475, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
+description: Remix Icon, one component per glyph — how to import one glyph instead of all 480, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
 order: 66
 ---
 
@@ -20,7 +20,7 @@ import { RiNotification3Line as BellIcon } from '@oxy.so/bloom/icons';
 ## Import one glyph, ship one glyph
 
 **Metro does not tree-shake.** `@oxy.so/bloom/icons` is a flat barrel over all
-475 glyphs, so an app that names one icon through it bundles all 475 — the
+480 glyphs, so an app that names one icon through it bundles all 480 — the
 import is a static graph edge to every one of them, and nothing downstream
 removes what the app never renders.
 
@@ -276,3 +276,22 @@ Generate it from the Remix SVG rather than hand-copying a path: one
 24×24 viewBox), and `src/icons/remix/index.ts` regenerated from the directory
 listing — never hand-edited. Use the exact Remix name, so a glyph found on
 remixicon.com is findable here by the same string.
+
+### Brand marks Remix does not draw
+
+Remix's Logos category covers most platforms (`RiMastodonFill`,
+`RiBlueskyFill`, `RiThreadsFill`, `RiInstagramFill`, `RiTwitterXFill`,
+`RiMediumFill`). For a brand it has no glyph for, and only then, the mark comes
+from [Simple Icons](https://simple-icons.org) (CC0 1.0) — the set
+`SocialButton` already draws its brand glyphs from — as
+`src/icons/simple-icons/Si<Brand>.tsx`, named as Simple Icons' React package
+names it. Today that is one glyph, `SiSubstack`.
+
+The path stays verbatim; the viewBox does not. Simple Icons draws edge to edge
+on its 24 grid, Remix Logos keep a 2-unit margin, so a Simple Icons glyph takes
+`viewBox: '-2 -2 28 28'` to sit at the same visual size beside a Remix one.
+
+Each gets an EXACT `exports` key (`@oxy.so/bloom/icons/SiSubstack`) in
+`scripts/generate-platform-exports.mjs` rather than a `./icons/Si*` pattern: a
+pattern must clear the 100-match floor that catches a renamed folder, and that
+floor is not worth lowering for a handful of files.

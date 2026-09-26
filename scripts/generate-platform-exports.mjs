@@ -150,6 +150,11 @@ const SUBPATHS = /** @type {const} */ ([
   // moving the prefix left makes that collision unrepresentable instead of
   // excluded by a list. The specifier a consumer writes is unchanged.
   ['./icons/Ri*', 'icons/remix/Ri*.tsx'],
+  // EXACT keys for the handful of brand marks Remix does not draw (Simple
+  // Icons, `src/icons/simple-icons/`). Not a `./icons/Si*` pattern: a pattern
+  // must clear MIN_PATTERN_MATCHES, and a floor lowered to fit one file would
+  // stop catching a renamed Remix folder. Promote to a pattern if this grows.
+  ['./icons/SiSubstack', 'icons/simple-icons/SiSubstack.tsx'],
   ['./typography', 'typography/index.ts'],
   ['./skeleton', 'skeleton/index.ts'],
   ['./grid', 'grid/index.ts'],
