@@ -51,6 +51,7 @@ interface ColorPresetSource {
   /** Force a white primary label even when preserving the seed would choose black. */
   label?: 'white';
   gate?: ColorPresetGate;
+  tokens?: PresetTokenOverrides;
 }
 
 /**
@@ -157,11 +158,63 @@ const COLOR_PRESET_SOURCES = [
     name: 'oxy',
     displayName: 'Oxy',
     family: 'brand',
-    description: 'Oxy purple, reserved for the Oxy account identity.',
+    description: 'Oxy orchid with a magenta support and a terracotta action, reserved for the Oxy account identity.',
     hex: '#c46ede',
+    secondaryHex: '#8f3987',
+    tertiaryHex: '#a0392b',
     variant: 'vivid',
-    pairing: 'derived',
+    pairing: 'curated',
     gate: 'handle',
+    // Hand-authored from the Oxy logo's own Material 3 scheme (plum page, pink
+    // surfaces, orchid/magenta/terracotta trio). The accent fills and their
+    // labels are that scheme's roles verbatim. The surface ladder keeps each
+    // role's hue and chroma (capped at Bloom's 28) but sits on Bloom's
+    // four-tone ramp, since the scheme's own two-tone steps fall below what the
+    // eye separates (`SURFACE_RAMP`, color-policy.ts). Text, borders and status
+    // stay derived: the policy is what holds them at AA on that deeper ladder.
+    tokens: {
+      light: {
+        '--background': '#f7ebf0',
+        '--surface': '#f1dde9',
+        '--popover': '#edcee4',
+        '--card': '#fff7f9',
+        '--muted': '#e7c1dd',
+        '--accent': '#e7c1dd',
+        '--primary': '#9422ae',
+        '--primary-foreground': '#ffeefc',
+        '--ring': '#9422ae',
+        '--secondary': '#8f3987',
+        '--secondary-foreground': '#ffeef8',
+        '--tertiary': '#a0392b',
+        '--tertiary-foreground': '#ffefed',
+        '--sidebar': '#f1dde9',
+        '--sidebar-primary': '#9422ae',
+        '--sidebar-primary-foreground': '#ffeefc',
+        '--sidebar-accent': '#ffbdf1',
+        '--sidebar-accent-foreground': '#772371',
+        '--sidebar-ring': '#9422ae',
+      },
+      dark: {
+        '--background': '#1f031d',
+        '--surface': '#2f0f2c',
+        '--popover': '#381835',
+        '--card': '#4b2947',
+        '--muted': '#42203d',
+        '--accent': '#42203d',
+        '--primary': '#ec86ff',
+        '--ring': '#ec86ff',
+        '--secondary': '#fd99ee',
+        '--secondary-foreground': '#651161',
+        '--tertiary': '#ff9381',
+        '--tertiary-foreground': '#640d05',
+        '--sidebar': '#2f0f2c',
+        '--sidebar-primary': '#ec86ff',
+        '--sidebar-primary-foreground': '#530065',
+        '--sidebar-accent': '#762371',
+        '--sidebar-accent-foreground': '#ffbbf1',
+        '--sidebar-ring': '#ec86ff',
+      },
+    },
   },
   {
     name: 'faircoin',
@@ -782,6 +835,8 @@ export interface AppColorPreset {
   tertiaryHex?: string;
   label?: 'white';
   gate?: ColorPresetGate;
+  /** Authored per-mode token values that win over the engine's derivation. */
+  tokens?: PresetTokenOverrides;
 }
 
 /** Enriched registry entry for a picker or colour playground. */
@@ -815,6 +870,7 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> =
       ...(preset.tertiaryHex !== undefined ? { tertiaryHex: preset.tertiaryHex } : {}),
       ...(preset.label !== undefined ? { label: preset.label } : {}),
       ...(preset.gate !== undefined ? { gate: preset.gate } : {}),
+      ...(preset.tokens !== undefined ? { tokens: preset.tokens } : {}),
     };
     return presets;
   }, {} as Record<AppColorName, AppColorPreset>);
@@ -856,6 +912,15 @@ export const COLOR_PRESET_GROUPS: Readonly<Record<ColorPresetFamily, ColorPreset
  * The engine now derives every role from the registry's seeds.
  */
 export type PresetTokens = Record<string, string>;
+
+/**
+ * A hand-authored brand scheme, per mode, as `#rrggbb` keyed by canonical token.
+ * Only for a brand that owns a drawn palette; every other preset stays derived.
+ */
+export interface PresetTokenOverrides {
+  light?: PresetTokens;
+  dark?: PresetTokens;
+}
 
 const namesGatedBy = (gate: ColorPresetGate | undefined): readonly AppColorName[] =>
   COLOR_PRESET_REGISTRY.filter((preset) => preset.gate === gate).map(({ name }) => name);

@@ -20,7 +20,7 @@ The 1.0.1 cohort now measures 36/340, including the original 18-preset cohort at
 
 If your app runs one of those 27 presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
 
-Over a retained black/mid-grey/white media sample, **50 of 384** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). The 1.0.1 catalog remains 25/204; the additions contribute 25/180, worst 4.17. That is a sample rather than a promise about arbitrary pixels. If a CTA must be legible over an image, `variant="inverse"` is opaque and backdrop-independent:
+Over a retained black/mid-grey/white media sample, **49 of 384** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). The 1.0.1 catalog is 24/204 (`oxy`'s authored dark fill with its black label clears one row); the additions contribute 25/180, worst 4.17. That is a sample rather than a promise about arbitrary pixels. If a CTA must be legible over an image, `variant="inverse"` is opaque and backdrop-independent:
 
 ```tsx
 <Button appearance="solid" tone="neutral">Comprar</Button>
