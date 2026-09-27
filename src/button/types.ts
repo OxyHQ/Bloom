@@ -353,6 +353,13 @@ export interface GlyphButtonProps {
   onLongPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
   /**
+   * Working — locating, loading — so a second press is refused. Announced as
+   * busy (`aria-busy` on the web, `accessibilityState.busy` on native) and NOT
+   * dimmed: the control is in use, not unavailable. The caller swaps the glyph
+   * for a spinner if it wants one.
+   */
+  busy?: boolean;
+  /**
    * A TOGGLE. Emits `aria-pressed` (web) AND `accessibilityState.selected`
    * (native) — react-native-web drops `accessibilityState` and React Native has
    * no `aria-pressed`, so a toggle needs both spellings. Leave it undefined for
