@@ -171,6 +171,8 @@ describe('InputOtp type="alphanumeric"', () => {
     expect(cleanInputOtpValue('ab-12 3c')).toBe('123');
     expect(cleanInputOtpValue('ab-12 3c', 'alphanumeric')).toBe('AB123C');
     expect(cleanInputOtpValue('ñé_!', 'alphanumeric')).toBe('');
+    // Dropped, not expanded: `ß` upper-cases to `SS`, `ı` to `I`.
+    expect(cleanInputOtpValue('aßbı', 'alphanumeric')).toBe('AB');
   });
 
   it('keeps the numeric default: number pad, digit boxes', () => {

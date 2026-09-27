@@ -58,7 +58,8 @@ import { useFieldMembership } from '../field/membership';
  */
 
 const NOT_DIGIT = /\D/g;
-const NOT_ALPHANUMERIC = /[^A-Z0-9]/g;
+/** Filtered BEFORE upper-casing: `'ß'.toUpperCase()` is `SS`, `'ı'` becomes `I`. */
+const NOT_ALPHANUMERIC = /[^A-Za-z0-9]/g;
 const BOX_SIZE = 48;
 const BOX_GAP = 8;
 const GROUP_GAP = 12;
@@ -150,7 +151,7 @@ export function resolveInputOtpBoxPaint(
 
 /** The characters `type` accepts, in order; everything else is dropped. Pure. */
 export function cleanInputOtpValue(raw: string, type: InputOtpType = 'numeric'): string {
-  return type === 'alphanumeric' ? raw.toUpperCase().replace(NOT_ALPHANUMERIC, '') : raw.replace(NOT_DIGIT, '');
+  return type === 'alphanumeric' ? raw.replace(NOT_ALPHANUMERIC, '').toUpperCase() : raw.replace(NOT_DIGIT, '');
 }
 
 const clean = (raw: string, length: number, type: InputOtpType) => cleanInputOtpValue(raw, type).slice(0, length);
