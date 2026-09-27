@@ -1,9 +1,22 @@
 import type { ViewStyleProp } from '../styles';
 
+/**
+ * What a box accepts. `numeric` (the default) keeps digits only;
+ * `alphanumeric` upper-cases and keeps `A`–`Z` and `0`–`9`.
+ */
+export type InputOtpType = 'numeric' | 'alphanumeric';
+
 export interface InputOtpProps extends ViewStyleProp {
-  /** Number of digit boxes, default `6`. */
+  /** Number of boxes, default `6`. */
   length?: number;
-  /** Controlled value. Non-digits are dropped and longer strings truncated to `length`. */
+  /**
+   * `numeric` (default): digits only, number pad. `alphanumeric`: letters and
+   * digits, upper-cased, on a letters keyboard with auto-capitalisation.
+   * Anything else — a dash, a space — is dropped either way, so a pasted
+   * `ABCDE-12345` fills ten boxes.
+   */
+  type?: InputOtpType;
+  /** Controlled value. Characters the `type` does not accept are dropped and longer strings truncated to `length`. */
   value?: string;
   /** Initial value when uncontrolled. */
   defaultValue?: string;
