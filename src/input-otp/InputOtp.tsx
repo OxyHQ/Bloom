@@ -19,13 +19,14 @@ import {
   TEXT_FIELD_TRANSITION_MS,
 } from '../text-field/shared';
 import { TYPE_SCALE } from '../typography/scale';
-import type { InputOtpProps } from './types';
+import type { InputOtpProps, InputOtpType } from './types';
 import { useFieldMembership } from '../field/membership';
 
 /**
  * `InputOtp`: one box per digit, side by side, behaving as ONE value.
  *
- *   box     48 × 48, radius 10, 1px border, shadow-xs
+ *   box     48 × 48, radius 10, 1px border, shadow-xs; narrower (never
+ *           wider) when the row does not fit its container
  *   digit   mono, title-3-medium 18/26 500, centred, tabular numerals
  *   gap     8 between boxes, +12 before each `groupEvery` group
  *   focus   accent-500 border + 2px accent-500 ring (outside the border)
@@ -46,12 +47,18 @@ import { useFieldMembership } from '../field/membership';
  * Digits are monospace so the boxes stay optically even — in a proportional
  * face a `1` is visibly narrower than an `8`.
  *
+ * `type="alphanumeric"` is the same field for codes that carry letters: every
+ * character is upper-cased, anything outside `A`–`Z`/`0`–`9` is dropped (so a
+ * code printed as `ABCDE-12345` pastes whole), and the keyboard is a letters
+ * one with auto-capitalisation instead of the number pad.
+ *
  * Focus paints on EVERY focus, not only keyboard focus: a text input matches
  * `:focus-visible` on a pointer focus too, so the ring shows on click, and
  * state (not CSS) carries it here so native paints the same ring.
  */
 
-const DIGITS_ONLY = /\D/g;
+const NOT_DIGIT = /\D/g;
+const NOT_ALPHANUMERIC = /[^A-Z0-9]/g;
 const BOX_SIZE = 48;
 const BOX_GAP = 8;
 const GROUP_GAP = 12;
@@ -141,7 +148,29 @@ export function resolveInputOtpBoxPaint(
   return { backgroundColor, borderColor, color, boxShadow };
 }
 
-const clean = (raw: string, length: number) => raw.replace(DIGITS_ONLY, '').slice(0, length);
+/** The characters `type` accepts, in order; everything else is dropped. Pure. */
+export function cleanInputOtpValue(raw: string, type: InputOtpType = 'numeric'): string {
+  return type === 'alphanumeric' ? raw.toUpperCase().replace(NOT_ALPHANUMERIC, '') : raw.replace(NOT_DIGIT, '');
+}
+
+const clean = (raw: string, length: number, type: InputOtpType) => cleanInputOtpValue(raw, type).slice(0, length);
+
+/**
+ * Keyboard and input hints per `type`. The one-time-code autofill hint is
+ * shared (below); only what the keyboard offers differs. Android has no
+ * `ascii-capable`, and its `visible-password` is the letters keyboard without
+ * suggestions or autocorrect — both of which would rewrite a code.
+ */
+const KEYBOARD_PROPS: Record<InputOtpType, Record<string, unknown>> = {
+  numeric: { inputMode: 'numeric', keyboardType: 'number-pad' },
+  alphanumeric: {
+    inputMode: 'text',
+    keyboardType: Platform.OS === 'android' ? 'visible-password' : 'ascii-capable',
+    autoCapitalize: 'characters',
+    autoCorrect: false,
+    spellCheck: false,
+  },
+};
 
 const WEB_BOX_STYLE: TextStyle | undefined = IS_WEB
   ? ({
@@ -155,6 +184,7 @@ const WEB_BOX_STYLE: TextStyle | undefined = IS_WEB
 
 export function InputOtp({
   length = 6,
+  type = 'numeric',
   value,
   defaultValue = '',
   onChange,
@@ -186,21 +216,24 @@ export function InputOtp({
   const groupName = membership.accessibilityLabel ?? 'One-time code';
 
   const inputsRef = useRef<Array<TextInput | null>>([]);
-  const [internal, setInternal] = useState(() => clean(defaultValue, length));
+  const [internal, setInternal] = useState(() => clean(defaultValue, length, type));
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const controlled = value !== undefined;
-  const code = clean(controlled ? value : internal, length);
+  const code = clean(controlled ? value : internal, length, type);
+  const unit = type === 'alphanumeric' ? 'Character' : 'Digit';
 
   const commit = useCallback(
     (next: string) => {
-      const cleaned = clean(next, length);
+      // `next` is already cleaned per character (a cleared box is a space
+      // placeholder, which `clean` drops along with anything else).
+      const cleaned = clean(next, length, type);
       if (!controlled) setInternal(cleaned);
       onChange?.(cleaned);
       if (cleaned.length === length) onComplete?.(cleaned);
     },
-    [controlled, length, onChange, onComplete],
+    [controlled, length, type, onChange, onComplete],
   );
 
   const focusBox = useCallback(
@@ -210,9 +243,9 @@ export function InputOtp({
     [length],
   );
 
-  /** Writes `digits` starting at `index`, which covers typing, paste and autofill. */
-  const writeFrom = (index: number, digits: string) => {
-    const incoming = digits.replace(DIGITS_ONLY, '');
+  /** Writes `text` starting at `index`, which covers typing, paste and autofill. */
+  const writeFrom = (index: number, text: string) => {
+    const incoming = cleanInputOtpValue(text, type);
     if (incoming === '') return;
     const chars = code.padEnd(length, ' ').split('');
     for (let offset = 0; offset < incoming.length && index + offset < length; offset += 1) {
@@ -281,16 +314,18 @@ export function InputOtp({
                 } as Record<string, unknown>)
               : {})}
             testID={testID ? `${testID}-${index}` : undefined}
-            // `text` with a numeric keyboard rather than a number input: a number
-            // input brings spinners, accepts `e` and `-`, and reports an empty
-            // value for anything it considers malformed.
-            inputMode="numeric"
-            keyboardType="number-pad"
+            // Numeric is `text` with a numeric keyboard rather than a number
+            // input: a number input brings spinners, accepts `e` and `-`, and
+            // reports an empty value for anything it considers malformed.
+            {...KEYBOARD_PROPS[type]}
             autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
             textContentType="oneTimeCode"
             autoFocus={autoFocus && index === 0}
-            // Long enough to accept a full autofilled code in one box.
-            maxLength={length}
+            // Long enough to accept a full autofilled or pasted code in one box,
+            // separators included: a browser truncates a paste to `maxLength`
+            // BEFORE the change handler sees it, so `length` alone lost the
+            // last character of `ABCDE-12345`.
+            maxLength={length * 2}
             // Typing into a filled box must REPLACE its digit, so the digit is
             // selected on focus. Web's `selectTextOnFocus` does that. Android's
             // does not: it selects on the input's next layout, and focusing a box
@@ -300,7 +335,7 @@ export function InputOtp({
             selectTextOnFocus={IS_WEB}
             caretHidden={false}
             editable={!disabled}
-            accessibilityLabel={`Digit ${index + 1} of ${length}`}
+            accessibilityLabel={`${unit} ${index + 1} of ${length}`}
             aria-invalid={invalid || undefined}
             aria-disabled={disabled || undefined}
             value={digit === ' ' ? '' : digit}
@@ -315,6 +350,12 @@ export function InputOtp({
             style={[
               {
                 width: BOX_SIZE,
+                // A box shrinks (never grows) when the row is narrower than
+                // its natural width, so ten boxes still fit a phone. `minWidth`
+                // 0 is what lets it: a flex item's automatic minimum is its
+                // specified width, and an `<input>` would otherwise overflow.
+                flexShrink: 1,
+                minWidth: 0,
                 height: BOX_SIZE,
                 marginLeft: gapBefore ? GROUP_GAP : 0,
                 padding: 0,

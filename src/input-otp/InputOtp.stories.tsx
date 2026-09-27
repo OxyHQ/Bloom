@@ -10,6 +10,7 @@ import { InputOtp } from './index';
 const meta: Meta<typeof InputOtp> = {
   argTypes: {
     "length": { control: 'number' },
+    "type": { control: 'select', options: ['numeric', 'alphanumeric'] },
     "value": { control: 'text' },
     "defaultValue": { control: 'text' },
     "invalid": { control: 'boolean' },
@@ -54,9 +55,27 @@ export const Matrix: Story = {
       <InputOtp defaultValue="12" invalid />
       <InputOtp defaultValue="12" isDisabled />
       <InputOtp length={4} defaultValue="4" />
+      <InputOtp type="alphanumeric" length={10} groupEvery={5} defaultValue="7K3QXM9P2T" />
     </View>
     );
   },
+};
+
+function AlphanumericControlled() {
+  const [code, setCode] = useState('');
+  const [done, setDone] = useState<string | null>(null);
+  return (
+    <View style={{ gap: 12 }}>
+      <InputOtp type="alphanumeric" length={10} groupEvery={5} value={code} onChange={setCode} onComplete={setDone} />
+      <Text>{done ? `Complete: ${done}` : `Typed: ${code || '—'} (paste ABCDE-12345)`}</Text>
+    </View>
+  );
+}
+
+/** Letters and digits, upper-cased; a pasted `XXXXX-XXXXX` fills every box. */
+export const Alphanumeric: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => <AlphanumericControlled />,
 };
 
 /** Edit the props in Controls; interactive state stays in sync. */

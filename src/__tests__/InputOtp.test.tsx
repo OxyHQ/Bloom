@@ -6,7 +6,7 @@ import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { BUTTON_SHADOW } from '../button/shared';
 import { InputOtp } from '../input-otp';
-import { resolveInputOtpBoxPaint, resolveInputOtpPalette } from '../input-otp/InputOtp';
+import { cleanInputOtpValue, resolveInputOtpBoxPaint, resolveInputOtpPalette } from '../input-otp/InputOtp';
 import { resolvedStyle } from './support/rendered-style';
 
 type Mode = 'light' | 'dark';
@@ -71,6 +71,9 @@ describe('InputOtp', () => {
     expect(root.getByLabelText('One-time code')).toBeTruthy();
     const style = resolvedStyle(box(root, 0).props.style);
     expect(style).toMatchObject({ width: 48, height: 48, borderRadius: 10, borderWidth: 1, fontSize: 18, fontWeight: '500', textAlign: 'center' });
+    // Narrows, never grows, when the row does not fit (ten boxes on a phone).
+    expect(style).toMatchObject({ flexShrink: 1, minWidth: 0 });
+    expect(style.flexGrow).toBeUndefined();
     expect(box(root, 0).props.autoComplete).toBe('one-time-code');
   });
 
@@ -150,5 +153,70 @@ describe('InputOtp', () => {
       box(root, 0, 2).props.onFocus({});
     });
     expect(setSelection).toHaveBeenCalledWith(0, 1);
+  });
+
+  it('accepts a pasted code with separators whole: maxLength leaves room for them', () => {
+    const root = renderWithTheme(<InputOtp />);
+    expect(box(root, 0).props.maxLength).toBe(12);
+    fireEvent.changeText(box(root, 0), '123-456');
+    expect(values(root)).toBe('1|2|3|4|5|6');
+  });
+});
+
+describe('InputOtp type="alphanumeric"', () => {
+  const chars = (root: ReturnType<typeof render>, length: number) =>
+    Array.from({ length }, (_, i) => root.getByLabelText(`Character ${i + 1} of ${length}`).props.value).join('');
+
+  it('cleans per type: numeric keeps digits, alphanumeric upper-cases and keeps A-Z0-9', () => {
+    expect(cleanInputOtpValue('ab-12 3c')).toBe('123');
+    expect(cleanInputOtpValue('ab-12 3c', 'alphanumeric')).toBe('AB123C');
+    expect(cleanInputOtpValue('ñé_!', 'alphanumeric')).toBe('');
+  });
+
+  it('keeps the numeric default: number pad, digit boxes', () => {
+    const root = renderWithTheme(<InputOtp length={2} />);
+    expect(box(root, 0, 2).props).toMatchObject({ inputMode: 'numeric', keyboardType: 'number-pad' });
+    expect(box(root, 0, 2).props.autoCapitalize).toBeUndefined();
+  });
+
+  it('uses a letters keyboard that capitalises, and keeps the one-time-code hint', () => {
+    const root = renderWithTheme(<InputOtp type="alphanumeric" length={10} />);
+    const first = root.getByLabelText('Character 1 of 10');
+    expect(first.props).toMatchObject({
+      inputMode: 'text',
+      keyboardType: 'ascii-capable',
+      autoCapitalize: 'characters',
+      autoCorrect: false,
+      spellCheck: false,
+      autoComplete: 'one-time-code',
+      textContentType: 'oneTimeCode',
+    });
+  });
+
+  it('a pasted XXXXX-XXXXX fills all ten boxes, upper-cased, and completes', () => {
+    const onChange = jest.fn();
+    const onComplete = jest.fn();
+    const root = renderWithTheme(
+      <InputOtp type="alphanumeric" length={10} groupEvery={5} onChange={onChange} onComplete={onComplete} />,
+    );
+    fireEvent.changeText(root.getByLabelText('Character 1 of 10'), 'abcde-fg234');
+    expect(chars(root, 10)).toBe('ABCDEFG234');
+    expect(onChange).toHaveBeenLastCalledWith('ABCDEFG234');
+    expect(onComplete).toHaveBeenCalledWith('ABCDEFG234');
+  });
+
+  it('groupEvery={5} splits ten boxes into two groups of five', () => {
+    const root = renderWithTheme(<InputOtp type="alphanumeric" length={10} groupEvery={5} />);
+    const margin = (i: number) => resolvedStyle(root.getByLabelText(`Character ${i + 1} of 10`).props.style).marginLeft;
+    expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(margin)).toEqual([0, 0, 0, 0, 0, 12, 0, 0, 0, 0]);
+  });
+
+  it('typing a letter fills and a symbol is dropped; a controlled value is cleaned too', () => {
+    const root = renderWithTheme(<InputOtp type="alphanumeric" length={4} />);
+    fireEvent.changeText(root.getByLabelText('Character 1 of 4'), 'x');
+    fireEvent.changeText(root.getByLabelText('Character 2 of 4'), '-');
+    expect(chars(root, 4)).toBe('X');
+    const controlled = renderWithTheme(<InputOtp type="alphanumeric" length={4} value="a-9z" />);
+    expect(chars(controlled, 4)).toBe('A9Z');
   });
 });

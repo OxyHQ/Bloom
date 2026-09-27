@@ -1,12 +1,12 @@
 ---
 title: InputOtp
-description: One-time-code input — one box per digit, one value.
+description: One-time-code input — one box per character, one value.
 order: 13
 ---
 
 # InputOtp
 
-A one-time-code field: a row of single-digit boxes that behaves as one value.
+A one-time-code field: a row of single-character boxes that behaves as one value. Digits by default; `type="alphanumeric"` for codes that carry letters.
 
 ```tsx
 import { InputOtp } from '@oxy.so/bloom/input-otp';
@@ -21,6 +21,7 @@ The `InputOtp` look, coloured by Bloom's theme:
 - Each box is **48 × 48**, radius 10, a 1px semantic hairline on the shared secondary surface, with the `shadow-xs` drop shadow.
 - Digits are **mono**, 18/26 medium, centred, with tabular numerals, so a row of `1`s and `8`s stays optically even.
 - Boxes sit **8px** apart; `groupEvery={3}` adds **12px** more before each group (`000 000`).
+- In a container narrower than the row (ten boxes on a phone), the boxes **narrow** to fit — the height, gaps and type stay; they never grow past 48.
 - **Hover** emphasizes the semantic border. **Focus** paints the border and a 2px ring outside it in the accent (`primary`) — on every focus, since a text input is `:focus-visible` on a click too.
 - **Invalid** gives every box a red border, a red tint and red digits; focus still wins over the red border.
 - **Disabled** dims the fill and the digits and drops the shadow.
@@ -33,17 +34,33 @@ The `InputOtp` look, coloured by Bloom's theme:
 | Backspace on a filled box | clears it in place |
 | Backspace on an empty box | clears the previous box and moves back |
 | ← / → (web, hardware keys) | move between boxes |
-| paste / OS autofill | distributes the digits from that box onwards |
+| paste / OS autofill | distributes the characters from that box onwards |
 
-Non-digits are dropped. `onChange` fires with the cleaned code on every change, `onComplete` once all `length` boxes are filled. Every box carries the one-time-code autofill hint (`one-time-code` on iOS and web, `sms-otp` on Android) and accepts more than one character, because the OS delivers the whole code into whichever box has focus.
+Non-digits are dropped (`type="alphanumeric"`: see below). `onChange` fires with the cleaned code on every change, `onComplete` once all `length` boxes are filled. Every box carries the one-time-code autofill hint (`one-time-code` on iOS and web, `sms-otp` on Android) and accepts more than one character, because the OS delivers the whole code into whichever box has focus.
 
 Clearing a box removes its digit from the value, so later digits move left.
+
+A box accepts up to `length × 2` characters in one change, so a code pasted with its separators (`123-456`, `ABCDE-12345`) arrives whole — a browser truncates a paste to `maxLength` before the change handler sees it.
+
+## Alphanumeric codes
+
+`type="alphanumeric"` is for codes that carry letters, such as a recovery or fallback code printed as `XXXXX-XXXXX`:
+
+```tsx
+<InputOtp type="alphanumeric" length={10} groupEvery={5} onComplete={verify} />
+```
+
+- Every character is **upper-cased**; anything outside `A`–`Z` and `0`–`9` is dropped, so the dash of a pasted `abcde-12345` never reaches the value (`ABCDE12345`). Narrow the alphabet further in the caller if the code's own alphabet is smaller.
+- The keyboard is a letters one with auto-capitalisation, no autocorrect and no spell-check (`ascii-capable` on iOS, `visible-password` on Android — the letters keyboard without suggestions); the one-time-code autofill hint is kept.
+- Each box is named `Character 1 of 10` rather than `Digit 1 of 10`.
+- `cleanInputOtpValue(raw, type)` is the same cleaning, exported for a caller that needs to normalise a code the same way.
 
 ## Props
 
 | Prop | Type | Description |
 |------|------|-------------|
 | `length?` | `number` | Number of boxes. Default `6`. |
+| `type?` | `'numeric' \| 'alphanumeric'` | What a box accepts. Default `'numeric'`. |
 | `value?` / `defaultValue?` | `string` | Controlled / initial code. |
 | `onChange?` | `(value: string) => void` | Every change. |
 | `onComplete?` | `(value: string) => void` | Once the last box is filled. |
@@ -56,7 +73,7 @@ Clearing a box removes its digit from the value, so later digits move left.
 
 ## Accessibility
 
-- The row is a `group` named by `accessibilityLabel`; each box is named `Digit 1 of 6` and so on.
+- The row is a `group` named by `accessibilityLabel`; each box is named `Digit 1 of 6` (`Character 1 of 10` when alphanumeric) and so on.
 - `aria-invalid` sits on each box, not the group — `group` does not support it.
 - Say why the code is invalid in text next to the field; the red border is not an announcement.
 

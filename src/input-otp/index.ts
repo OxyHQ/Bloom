@@ -1,2 +1,2 @@
 export { InputOtp } from './InputOtp';
-export type { InputOtpProps } from './types';
+export type { InputOtpProps, InputOtpType } from './types';
