@@ -375,6 +375,28 @@ const CarouselComponent = function Carousel({
     scrollRef.current?.scrollTo({ x: targetFor(target), animated: !reducedMotion });
   };
 
+  /**
+   * The arrows step from where the track IS, not from the active index. Slides
+   * narrower than the track share the end offset — every one that cannot reach
+   * the start edge clamps to it — so near the end "the slide before the active
+   * one" is often where the track already rests, and an index step would scroll
+   * nowhere and stay stuck there. Step to the nearest DISTINCT resting place
+   * instead (1px of slack, as in `measure`).
+   */
+  const step = (direction: -1 | 1) => {
+    const x = scroll.current.x;
+    const targets = offsets.current
+      .slice(0, count)
+      .filter((item): item is SlideOffset => Boolean(item))
+      .map(targetFor);
+    const next =
+      direction === 1
+        ? targets.filter((t) => t > x + 1).reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY)
+        : targets.filter((t) => t < x - 1).reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY);
+    if (!Number.isFinite(next)) return;
+    scrollRef.current?.scrollTo({ x: next, animated: !reducedMotion });
+  };
+
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentSize } = event.nativeEvent;
     scroll.current = { x: contentOffset.x, contentWidth: contentSize.width };
@@ -413,8 +435,8 @@ const CarouselComponent = function Carousel({
           <View style={{ flex: 1, minWidth: 0 }}>{header}</View>
           {showArrows && count > 0 ? (
             <>
-              <Button size="sm" icon={RiArrowLeftSLine} accessibilityLabel={previousLabel} disabled={atStart} onPress={() => scrollToIndex(active - 1)} appearance="subtle" tone="neutral" />
-              <Button size="sm" icon={RiArrowRightSLine} accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => scrollToIndex(active + 1)} appearance="subtle" tone="neutral" />
+              <Button size="sm" icon={RiArrowLeftSLine} accessibilityLabel={previousLabel} disabled={atStart} onPress={() => step(-1)} appearance="subtle" tone="neutral" />
+              <Button size="sm" icon={RiArrowRightSLine} accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => step(1)} appearance="subtle" tone="neutral" />
             </>
           ) : null}
         </View>
