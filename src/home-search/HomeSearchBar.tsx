@@ -21,6 +21,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import type { HomeSearchBarProps, HomeSearchSegment } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * Bloom's wide housing search: one full pill split into any segments — the
@@ -107,7 +108,7 @@ export function HomeSearchBar<K extends string = string>({
   activeSegment,
   onActiveSegmentChange,
   onSearch,
-  searchLabel = 'Search',
+  searchLabel: searchLabelProp,
   query,
   onQueryChange,
   panel,
@@ -115,6 +116,8 @@ export function HomeSearchBar<K extends string = string>({
   style,
   testID,
 }: HomeSearchBarProps<K>) {
+  const common = useCommonMessages();
+  const searchLabel = searchLabelProp ?? common.search;
   const theme = useTheme();
   const palette = useStaySearchPalette();
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);

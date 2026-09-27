@@ -24,6 +24,7 @@ import {
   TILE_RADIUS,
 } from './shared';
 import type { MediaCardLayout, MediaCardProps, MediaCardSize } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The anatomy every music card shares.
@@ -92,6 +93,7 @@ export function MediaCardSkeleton({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const common = useCommonMessages();
   const box = resolveArtworkBox(size, layout, aspectRatio, artworkSize);
   const row = layout === 'row';
   const padding = row ? ROW_PADDING : TILE_PADDING;
@@ -103,7 +105,7 @@ export function MediaCardSkeleton({
   return (
     <View
       aria-busy
-      accessibilityLabel="Loading"
+      accessibilityLabel={common.loading}
       style={[
         {
           flexDirection: row ? 'row' : 'column',

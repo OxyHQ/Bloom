@@ -3,6 +3,7 @@ import React, { memo, useCallback, useEffect, useRef } from 'react';
 import type { DialogAction, DialogProps } from '../dialog';
 import { useDialogControl } from '../dialog/context';
 import type { AlertDialogProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 type DialogComponent = React.ComponentType<DialogProps>;
 
@@ -45,7 +46,7 @@ export function createAlertDialog(Dialog: DialogComponent) {
     title,
     description,
     confirmLabel = 'Confirm',
-    cancelLabel = 'Cancel',
+    cancelLabel: cancelLabelProp,
     onConfirm,
     onCancel,
     destructive = false,
@@ -54,6 +55,8 @@ export function createAlertDialog(Dialog: DialogComponent) {
     cardStyle,
     testID,
   }: AlertDialogProps) {
+    const common = useCommonMessages();
+    const cancelLabel = cancelLabelProp ?? common.cancel;
     const control = useDialogControl();
 
     // Bridge the public *controlled* `visible` prop onto the Dialog's

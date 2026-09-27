@@ -14,6 +14,7 @@ import { Text } from '../typography';
 import { Artwork, CardLink, useMediaCardCss } from './parts';
 import { composeName, resolveMediaCardPaint, ROW_PADDING, ROW_RADIUS } from './shared';
 import type { FriendActivityCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 const AVATAR = 40;
 const DOT = 12;
@@ -50,13 +51,14 @@ function FriendActivityCardComponent({
   style,
   testID,
 }: FriendActivityCardProps) {
+  const common = useCommonMessages();
   const theme = useTheme();
   useMediaCardCss();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
 
   if (skeleton) {
     return (
-      <View aria-busy accessibilityLabel="Loading" style={[{ flexDirection: 'row', gap: 12, padding: ROW_PADDING }, style]} testID={testID}>
+      <View aria-busy accessibilityLabel={common.loading} style={[{ flexDirection: 'row', gap: 12, padding: ROW_PADDING }, style]} testID={testID}>
         <SkeletonCircle size={AVATAR} />
         <View style={{ flex: 1, gap: 8, justifyContent: 'center' }}>
           <SkeletonBox width="35%" height={12} borderRadius={4} />

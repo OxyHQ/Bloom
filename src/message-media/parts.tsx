@@ -29,6 +29,7 @@ import {
 } from './shared';
 import { useMediaSource } from './use-media-source';
 import type { MessageMediaSource } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The pieces every block in `message-media` is built from.
@@ -557,10 +558,12 @@ function retryStyle(hovered: boolean, paint: MessageMediaPaint): WebCssStyle {
 export const MediaFailure = memo(function MediaFailure({
   paint,
   label = 'Not sent',
-  retryLabel = 'Retry',
+  retryLabel: retryLabelProp,
   onRetry,
   testID,
 }: MediaFailureProps) {
+  const common = useCommonMessages();
+  const retryLabel = retryLabelProp ?? common.retry;
   useMessageMediaCss();
   const [hovered, setHovered] = useState(false);
   return (

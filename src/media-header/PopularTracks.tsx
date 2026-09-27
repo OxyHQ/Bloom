@@ -11,6 +11,7 @@ import { Text } from '../typography';
 import { useImageUri, useMediaHeaderPaint } from './parts';
 import { type MediaHeaderPaint } from './shared';
 import type { PopularTrack, PopularTracksProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * An artist's most played tracks: five rows, "See more" shows ten.
@@ -129,13 +130,15 @@ function PopularTracksComponent({
   expanded: expandedProp,
   onExpandedChange,
   showMoreLabel = 'See more',
-  showLessLabel = 'Show less',
+  showLessLabel: showLessLabelProp,
   activeTrackId,
   playing = false,
   onTrackPress,
   style,
   testID,
 }: PopularTracksProps) {
+  const common = useCommonMessages();
+  const showLessLabel = showLessLabelProp ?? common.showLess;
   const paint = useMediaHeaderPaint();
   const [expandedState, setExpandedState] = useState(false);
   const expanded = expandedProp ?? expandedState;

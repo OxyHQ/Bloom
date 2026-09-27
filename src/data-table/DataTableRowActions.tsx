@@ -12,6 +12,7 @@ import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { useTheme } from '../theme/use-theme';
 import { DataTableRowAction } from './DataTable';
 import type { DataTableRowActionsProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /** `size-[18px] text-foreground-icon-secondary` — a menu entry's glyph. */
 const MENU_ICON_SIZE = 18;
@@ -33,10 +34,12 @@ export function DataTableRowActions({
   name,
   actions = [],
   menu = [],
-  menuLabel = 'More actions',
+  menuLabel: menuLabelProp,
   style,
   testID,
 }: DataTableRowActionsProps) {
+  const common = useCommonMessages();
+  const menuLabel = menuLabelProp ?? common.moreActions;
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const menuName = `${menuLabel} for ${name}`;

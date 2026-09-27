@@ -49,6 +49,7 @@ import {
   type ToasterProps,
   type ToastProps,
 } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 export type ToastContentProps = Pick<
   ToastProps,
@@ -323,6 +324,7 @@ function ToastCloseButton({
   onDismiss: (id: string | number) => void;
   buttonStyle?: StyleProp<ViewStyle>;
 }) {
+  const common = useCommonMessages();
   const handlePress = React.useCallback(() => {
     onDismiss(id);
   }, [onDismiss, id]);
@@ -346,7 +348,7 @@ function ToastCloseButton({
       // unlabelled button beside the message it dismisses. The string is fixed
       // rather than a prop because the control means one thing — the same call
       // `DialogHeader` and `SheetShell` make for their own close affordances.
-      accessibilityLabel="Close"
+      accessibilityLabel={common.close}
       style={[styles.close, buttonStyle]}
     />
   );

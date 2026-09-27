@@ -39,6 +39,7 @@ import type { SettingsPalette } from './palette';
 import type { SettingsModalProps, SettingsNavGroup, SettingsNavItem } from './types';
 import { useKeyboardReveal } from './use-keyboard-reveal';
 import { IS_WEB, useSettingsWebCss } from './web-css';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A settings modal.
@@ -134,6 +135,7 @@ export function SettingsModal({
   labels,
   testID,
 }: SettingsModalProps) {
+  const common = useCommonMessages();
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const reducedMotion = useReducedMotion();
@@ -406,7 +408,7 @@ export function SettingsModal({
                           header={{
                             title: pageConfig.title,
                             onBack: requestNavigation,
-                            backLabel: labels?.back ?? 'Back',
+                            backLabel: labels?.back ?? common.back,
                             closeLabel,
                             onClose: requestClose,
                           }}

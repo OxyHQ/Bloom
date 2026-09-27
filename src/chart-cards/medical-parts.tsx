@@ -11,6 +11,7 @@ import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * Chrome shared by the medical dashboard cards (`StepsCard`,
@@ -347,12 +348,15 @@ export function WeekRangePill({
   label,
   onPrev,
   onNext,
-  prevLabel = 'Previous',
-  nextLabel = 'Next',
+  prevLabel: prevLabelProp,
+  nextLabel: nextLabelProp,
   width = 151,
   style,
   testID,
 }: WeekRangePillProps) {
+  const common = useCommonMessages();
+  const prevLabel = prevLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const palette = useChartCardPalette();
   const interactive = !!(onPrev || onNext);
   const noop = () => {};

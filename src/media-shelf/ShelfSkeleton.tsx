@@ -4,6 +4,7 @@ import { ScrollView, View, type LayoutChangeEvent } from 'react-native';
 import * as Skeleton from '../skeleton';
 import { SHELF_GAP, shelfGridColumns } from './shared';
 import type { ShelfSkeletonProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The placeholder for a `Shelf` that is still loading: a title bar and
@@ -21,10 +22,12 @@ function ShelfSkeletonComponent({
   round = false,
   eyebrow = false,
   gap = SHELF_GAP,
-  accessibilityLabel = 'Loading',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: ShelfSkeletonProps) {
+  const common = useCommonMessages();
+  const accessibilityLabel = accessibilityLabelProp ?? common.loading;
   const [gridWidth, setGridWidth] = useState(0);
   const onGridLayout = useCallback((event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width;

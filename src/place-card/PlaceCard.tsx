@@ -34,6 +34,7 @@ import { PLACE_CARD_GEOMETRY, PLACE_OPEN_TONE } from './constants';
 import { PlaceActions } from './PlaceActions';
 import { composePlaceName, openLabelFor, resolvePlaceCardPaint, type PlaceCardPaint } from './shared';
 import type { PlaceCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A place on the map — the result you scroll past, and the header of the sheet
@@ -219,11 +220,12 @@ function PlaceCardSkeleton({
   style,
   testID,
 }: Pick<PlaceCardProps, 'style' | 'testID'> & { density: 'row' | 'detail' }) {
+  const common = useCommonMessages();
   if (density === 'row') {
     return (
       <View
         aria-busy
-        accessibilityLabel="Loading"
+        accessibilityLabel={common.loading}
         style={[{ flexDirection: 'row', alignItems: 'flex-start' }, style]}
         testID={testID}
       >
@@ -243,7 +245,7 @@ function PlaceCardSkeleton({
     );
   }
   return (
-    <View aria-busy accessibilityLabel="Loading" style={style} testID={testID}>
+    <View aria-busy accessibilityLabel={common.loading} style={style} testID={testID}>
       <SkeletonBox width="100%" height={G.cover} borderRadius={G.radius} />
       <View style={{ gap: 8, paddingTop: G.padding }}>
         <SkeletonBox width="55%" height={20} borderRadius={4} />

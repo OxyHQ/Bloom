@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Button } from '../button';
 import { ToggleChipGroup } from './ToggleChipGroup';
 import type { AmenityFilterProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A `ToggleChipGroup` that shows its first `collapsedCount` options and a
@@ -18,13 +19,16 @@ export function AmenityFilter<T extends string = string>({
   options,
   value,
   collapsedCount = 6,
-  showMoreLabel = 'Show more',
-  showLessLabel = 'Show less',
+  showMoreLabel: showMoreLabelProp,
+  showLessLabel: showLessLabelProp,
   defaultExpanded = false,
   style,
   testID,
   ...group
 }: AmenityFilterProps<T>) {
+  const common = useCommonMessages();
+  const showMoreLabel = showMoreLabelProp ?? common.showMore;
+  const showLessLabel = showLessLabelProp ?? common.showLess;
   const [expanded, setExpanded] = useState(defaultExpanded);
   const foldable = options.length > collapsedCount;
   const selected = new Set<T>(value);

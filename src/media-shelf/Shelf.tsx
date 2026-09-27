@@ -31,6 +31,7 @@ import {
   type ShelfScroll,
 } from './shared';
 import type { ShelfProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A section of a home or search page: a header over a run of items.
@@ -69,12 +70,15 @@ function ShelfComponent({
   gap = SHELF_GAP,
   contentInset = 0,
   headingLevel = 2,
-  previousLabel = 'Previous',
-  nextLabel = 'Next',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   children,
   style,
   testID,
 }: ShelfProps) {
+  const common = useCommonMessages();
+  const previousLabel = previousLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   useEffect(() => {

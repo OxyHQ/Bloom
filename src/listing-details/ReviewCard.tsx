@@ -17,6 +17,7 @@ import {
   type ListingPalette,
 } from './shared';
 import type { ReviewCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * One guest review.
@@ -67,8 +68,8 @@ function ReviewCardComponent({
   date,
   text,
   numberOfLines = 4,
-  showMoreLabel = 'Show more',
-  showLessLabel = 'Show less',
+  showMoreLabel: showMoreLabelProp,
+  showLessLabel: showLessLabelProp,
   expanded: expandedProp,
   onExpandedChange,
   hostResponse,
@@ -76,6 +77,9 @@ function ReviewCardComponent({
   style,
   testID,
 }: ReviewCardProps) {
+  const common = useCommonMessages();
+  const showMoreLabel = showMoreLabelProp ?? common.showMore;
+  const showLessLabel = showLessLabelProp ?? common.showLess;
   const theme = useTheme();
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);

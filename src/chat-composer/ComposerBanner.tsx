@@ -23,6 +23,7 @@ import {
   resolveChatComposerPalette,
 } from './shared';
 import type { ComposerBannerProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /** A URL passes through; a bare id goes to the app's `ImageResolver`. */
 function isUrl(value: string): boolean {
@@ -37,12 +38,14 @@ export function ComposerBanner({
   icon,
   accentColor,
   onClose,
-  closeLabel = 'Cancel',
+  closeLabel: closeLabelProp,
   trailing,
   style,
   testID,
   accessibilityLabel,
 }: ComposerBannerProps) {
+  const common = useCommonMessages();
+  const closeLabel = closeLabelProp ?? common.cancel;
   const theme = useTheme();
   const palette = resolveChatComposerPalette(theme);
   const resolveImage = useImageResolver();

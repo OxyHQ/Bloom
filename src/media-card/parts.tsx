@@ -37,6 +37,7 @@ import {
 } from './shared';
 import type { MediaCardMenuItem } from './types';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { useCommonMessages } from '../locale/common-messages';
 
 export function useMediaCardCss(): void {
   React.useEffect(() => {
@@ -324,7 +325,7 @@ export function hasMenu(menu: React.ReactNode, items?: ReadonlyArray<MediaCardMe
 export function CardMenu({
   items,
   menu,
-  label = 'More options',
+  label: labelProp,
   subject,
   open,
   onOpenChange,
@@ -340,6 +341,8 @@ export function CardMenu({
   reveal: boolean;
   testID?: string;
 }) {
+  const common = useCommonMessages();
+  const label = labelProp ?? common.moreOptions;
   const name = `${label} for ${subject}`;
   return (
     <View

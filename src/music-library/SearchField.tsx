@@ -14,6 +14,7 @@ import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';
 import { IS_WEB, MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID, resolveMusicLibraryPaint } from './shared';
 import type { SearchFieldProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The top-bar search pill.
@@ -59,13 +60,15 @@ function SearchFieldComponent({
   onBrowsePress,
   browseActive = false,
   placeholder = 'What do you want to play?',
-  accessibilityLabel = 'Search',
+  accessibilityLabel: accessibilityLabelProp,
   clearLabel = 'Clear search',
   browseLabel = 'Browse',
   autoFocus,
   style,
   testID,
 }: SearchFieldProps) {
+  const common = useCommonMessages();
+  const accessibilityLabel = accessibilityLabelProp ?? common.search;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);

@@ -60,6 +60,7 @@ import {
   type ListingCardPaint,
 } from './shared';
 import type { ListingCardLayout, ListingCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A home in a results grid — a stay, a rental, a home for sale or a swap.
@@ -407,12 +408,13 @@ function ListingCardSkeleton({
   style,
   testID,
 }: Pick<ListingCardProps, 'style' | 'testID'> & { layout: ListingCardLayout; compact: boolean }) {
+  const common = useCommonMessages();
   const horizontal = layout === 'horizontal';
   if (compact) {
     return (
       <View
         aria-busy
-        accessibilityLabel="Loading"
+        accessibilityLabel={common.loading}
         style={[{ flexDirection: 'row', alignItems: 'center' }, style]}
         testID={testID}
       >
@@ -434,7 +436,7 @@ function ListingCardSkeleton({
   return (
     <View
       aria-busy
-      accessibilityLabel="Loading"
+      accessibilityLabel={common.loading}
       style={[{ flexDirection: horizontal ? 'row' : 'column', alignItems: 'flex-start' }, style]}
       testID={testID}
     >
