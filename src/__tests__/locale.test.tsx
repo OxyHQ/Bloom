@@ -2,8 +2,11 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
+import { formatEventDate, formatShortMonth } from '../calendar/shared';
+import { formatMonthTitle } from '../date-picker/calendar-grid';
 import { DATE_PICKER_MESSAGES } from '../date-picker/messages';
 import { BLOOM_LANGUAGES, LocaleProvider, resolveBloomLanguage, useBloomLocale } from '../locale';
+import { formatGregorian } from '../locale/format-date';
 import { pickMessages } from '../locale/messages';
 import { plural, pluralCategory } from '../locale/plural';
 
@@ -101,5 +104,31 @@ describe('useBloomLocale', () => {
         </LocaleProvider>,
       ).getByTestId('probe'),
     ).toHaveTextContent('fr');
+  });
+});
+
+describe('formatGregorian', () => {
+  const september = new Date(2026, 8, 16);
+
+  it('keeps a locale whose default calendar is not Gregorian on the grid\'s calendar', () => {
+    // Unpinned, fa-IR titles this month 1405 (Persian) and th-TH 2569 (Buddhist),
+    // while the grid under the title lays out, and returns, Gregorian days.
+    expect(formatGregorian(september, 'fa-IR', { year: 'numeric' })).toBe('۲۰۲۶');
+    expect(formatGregorian(september, 'th-TH', { year: 'numeric' })).toBe('2026');
+    expect(formatMonthTitle(september, 'th-TH')).toContain('2026');
+  });
+
+  it('is what CalendarView formats with too — the same fix, not a second copy', () => {
+    expect(formatShortMonth(september, 'fa-IR')).toBe(formatGregorian(september, 'fa-IR', { month: 'short' }));
+    expect(formatShortMonth(september, 'fa-IR')).not.toBe(new Intl.DateTimeFormat('fa-IR', { month: 'short' }).format(september));
+    expect(formatEventDate(september, 'en-US')).toBe('Wed, Sep 16');
+  });
+
+  it('keeps the locale\'s language', () => {
+    expect(formatGregorian(september, 'es-ES', { month: 'long' })).toBe('septiembre');
+  });
+
+  it('returns null for a tag the runtime rejects', () => {
+    expect(formatGregorian(september, 'not a locale!', { month: 'long' })).toBeNull();
   });
 });

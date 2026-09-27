@@ -26,6 +26,10 @@ Set it once, from the app's own language, and every Bloom component below follow
 
 Bloom ships its strings in `BLOOM_LANGUAGES`: English, Spanish, Catalan, German, French, Italian, Portuguese, Russian, Turkish, Japanese, Chinese, Arabic, Hindi, Bengali and Indonesian. A locale is matched on its primary subtag (`es-MX` → Spanish, `pt_BR` → Portuguese); a language Bloom does not ship falls back to English. `resolveBloomLanguage(locale)` answers which one a tag gets.
 
+## Dates stay Gregorian
+
+Bloom's calendars lay out and return Gregorian `Date`s, so every date they format goes through `formatGregorian` (`src/locale/format-date.ts`): the locale's language, digits and order, on the Gregorian calendar. Without it, a locale whose default calendar is another one — `fa-IR` (Persian), `th-TH` (Buddhist) — would title a Gregorian September with another calendar's month and year, and the day a reader picks would not be the day the app receives.
+
 ## Overriding a string
 
 Each family keeps its `labels` prop. A key passed there wins over Bloom's string for the locale, one key at a time — for wording of your own, not for translation.

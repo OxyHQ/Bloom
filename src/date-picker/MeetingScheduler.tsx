@@ -16,6 +16,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { RiGlobalLine } from '../icons/remix/RiGlobalLine';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
+import { formatGregorian } from '../locale/format-date';
 import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -97,11 +98,11 @@ function formatTime(time: string, format: MeetingSchedulerHourFormat): string {
 }
 
 function weekdayShort(date: Date, locale?: string): string {
-  try {
-    return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date).slice(0, 2);
-  } catch {
-    return ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][date.getDay()] ?? '';
-  }
+  return (
+    formatGregorian(date, locale, { weekday: 'short' })?.slice(0, 2) ??
+    ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][date.getDay()] ??
+    ''
+  );
 }
 
 // ---------------------------------------------------------------------------
