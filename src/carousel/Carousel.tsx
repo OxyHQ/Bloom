@@ -265,6 +265,35 @@ interface SlideOffset {
   width: number;
 }
 
+/**
+ * A place the track can come to rest, and the slide it stands for. Slides
+ * narrower than the track share one: every slide that cannot reach the start
+ * edge clamps to the same end offset, so the end is ONE stop however many slides
+ * it holds.
+ */
+interface Stop {
+  offset: number;
+  slide: number;
+}
+
+/**
+ * Collapse per-slide resting offsets (ascending) into distinct stops, 1px of
+ * slack for fractional hi-DPI offsets. A shared stop stands for its FIRST slide,
+ * except the end, which stands for the LAST — the far end is where the last
+ * slide is, and naming anything else would leave it unreachable.
+ */
+function toStops(resting: readonly number[]): Stop[] {
+  const stops: Stop[] = [];
+  resting.forEach((offset, slide) => {
+    const last = stops[stops.length - 1];
+    if (last && Math.abs(offset - last.offset) <= 1) return;
+    stops.push({ offset, slide });
+  });
+  const end = stops[stops.length - 1];
+  if (end) end.slide = resting.length - 1;
+  return stops;
+}
+
 const CarouselComponent = function Carousel({
   children,
   accessibilityLabel,
@@ -293,51 +322,14 @@ const CarouselComponent = function Carousel({
   const offsets = useRef<SlideOffset[]>([]);
   const scroll = useRef({ x: 0, contentWidth: 0 });
   const [trackWidth, setTrackWidth] = useState(0);
-  const [snapOffsets, setSnapOffsets] = useState<number[]>([]);
+  const [stops, setStops] = useState<Stop[]>([]);
   const [active, setActive] = useState(0);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
 
   const onIndexChangeRef = useRef(onIndexChange);
   onIndexChangeRef.current = onIndexChange;
-  const activeRef = useRef(active);
-
-  const measure = useCallback(() => {
-    const { x, contentWidth } = scroll.current;
-    const viewport = trackWidth;
-    // 1px of slack: offsets are fractional on hi-DPI displays, so an exact
-    // comparison leaves the end arrow enabled on a fully scrolled track.
-    const start = x <= 1;
-    const end = viewport > 0 && contentWidth > 0 && x >= contentWidth - viewport - 1;
-    setAtStart(start);
-    setAtEnd(end);
-
-    const all = offsets.current.slice(0, count);
-    if (all.length === 0) return;
-
-    let next: number;
-    if (end) {
-      next = count - 1;
-    } else if (start) {
-      next = 0;
-    } else {
-      next = 0;
-      let shortest = Number.POSITIVE_INFINITY;
-      all.forEach((item, index) => {
-        if (!item) return;
-        const distance = Math.abs(item.x - x);
-        if (distance < shortest) {
-          shortest = distance;
-          next = index;
-        }
-      });
-    }
-    setActive(next);
-    if (next !== activeRef.current) {
-      activeRef.current = next;
-      onIndexChangeRef.current?.(next);
-    }
-  }, [count, trackWidth]);
+  const activeSlideRef = useRef(0);
 
   const targetFor = useCallback(
     (item: SlideOffset) => {
@@ -349,59 +341,92 @@ const CarouselComponent = function Carousel({
   );
 
   /**
-   * Where each slide comes to rest, in slide order (so ascending) — or `null`
-   * until every slide has been measured.
+   * The distinct places the track can rest — or `null` until every slide has
+   * been measured. Arrows, dots, snapping and the active slide all read this
+   * ONE list, so they cannot disagree about where the track can go.
    */
-  const restingOffsets = useCallback((): number[] | null => {
+  const computeStops = useCallback((): Stop[] | null => {
     const all = offsets.current.slice(0, count);
     if (all.length !== count || all.some((o) => !o)) return null;
-    return all.map(targetFor);
+    return toStops(all.map(targetFor));
   }, [count, targetFor]);
 
-  const recomputeSnaps = useCallback(() => {
-    if (IS_WEB) return; // CSS scroll-snap owns snapping on web.
-    const resting = restingOffsets();
-    if (resting) setSnapOffsets(resting);
-  }, [restingOffsets]);
+  const measure = useCallback(() => {
+    const { x, contentWidth } = scroll.current;
+    const viewport = trackWidth;
+    // 1px of slack: offsets are fractional on hi-DPI displays, so an exact
+    // comparison leaves the end arrow enabled on a fully scrolled track.
+    const start = x <= 1;
+    const end = viewport > 0 && contentWidth > 0 && x >= contentWidth - viewport - 1;
+    setAtStart(start);
+    setAtEnd(end);
+
+    const all = computeStops();
+    if (!all || all.length === 0) return;
+
+    // The ends are pinned, not measured: within 1px of either end the first/last
+    // stop is active. Between them, the stop nearest the scroll offset — compared
+    // against where each stop RESTS (inset and centring included), not where its
+    // slide sits in the content.
+    let next = 0;
+    if (end) {
+      next = all.length - 1;
+    } else if (!start) {
+      let shortest = Number.POSITIVE_INFINITY;
+      all.forEach((stop, index) => {
+        const distance = Math.abs(stop.offset - x);
+        if (distance < shortest) {
+          shortest = distance;
+          next = index;
+        }
+      });
+    }
+    setActive(next);
+    const slide = all[next]?.slide ?? 0;
+    if (slide !== activeSlideRef.current) {
+      activeSlideRef.current = slide;
+      onIndexChangeRef.current?.(slide);
+    }
+  }, [computeStops, trackWidth]);
+
+  const recomputeStops = useCallback(() => {
+    const next = computeStops();
+    if (next) setStops(next);
+  }, [computeStops]);
 
   const reportOffset = useCallback(
     (index: number, x: number, width: number) => {
       offsets.current[index] = { x, width };
-      recomputeSnaps();
+      recomputeStops();
       measure();
     },
-    [measure, recomputeSnaps],
+    [measure, recomputeStops],
   );
 
   useEffect(() => {
-    recomputeSnaps();
+    recomputeStops();
     measure();
-  }, [recomputeSnaps, measure]);
+  }, [recomputeStops, measure]);
 
-  const scrollToIndex = (index: number) => {
-    const target = offsets.current[Math.max(0, Math.min(index, count - 1))];
-    if (!target) return;
-    scrollRef.current?.scrollTo({ x: targetFor(target), animated: !reducedMotion });
+  const scrollToStop = (stop: Stop | undefined) => {
+    if (!stop) return;
+    scrollRef.current?.scrollTo({ x: stop.offset, animated: !reducedMotion });
   };
 
   /**
-   * The arrows step from where the track IS, not from the active index. Slides
-   * narrower than the track share the end offset — every one that cannot reach
-   * the start edge clamps to it — so near the end "the slide before the active
-   * one" is often where the track already rests, and an index step would scroll
-   * nowhere and stay stuck there. Step to the nearest DISTINCT resting place
-   * instead (1px of slack, as in `measure`).
+   * The arrows step from where the track IS, to the nearest stop before or after
+   * it (1px of slack, as in `measure`) — never by slide index, which near the
+   * end names a slide whose stop the track already rests at.
    */
   const step = (direction: -1 | 1) => {
-    const resting = restingOffsets();
-    if (!resting) return;
+    const all = computeStops();
+    if (!all) return;
     const x = scroll.current.x;
-    const next =
+    scrollToStop(
       direction === 1
-        ? resting.find((t) => t > x + 1)
-        : [...resting].reverse().find((t) => t < x - 1);
-    if (next === undefined) return;
-    scrollRef.current?.scrollTo({ x: next, animated: !reducedMotion });
+        ? all.find((stop) => stop.offset > x + 1)
+        : [...all].reverse().find((stop) => stop.offset < x - 1),
+    );
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -412,9 +437,11 @@ const CarouselComponent = function Carousel({
 
   const onContentSizeChange = (width: number) => {
     scroll.current = { ...scroll.current, contentWidth: width };
-    recomputeSnaps();
+    recomputeStops();
     measure();
   };
+
+  const dotCount = stops.length > 0 ? stops.length : count;
 
   const contextValue = useMemo(
     () => ({ trackWidth, count, reportOffset }),
@@ -462,7 +489,7 @@ const CarouselComponent = function Carousel({
           onScroll={onScroll}
           onContentSizeChange={onContentSizeChange}
           onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
-          snapToOffsets={IS_WEB ? undefined : snapOffsets}
+          snapToOffsets={IS_WEB ? undefined : stops.map((stop) => stop.offset)}
           decelerationRate={IS_WEB ? undefined : 'fast'}
           disableIntervalMomentum
           style={trackStyle}
@@ -476,18 +503,24 @@ const CarouselComponent = function Carousel({
         </ScrollView>
       </CarouselContext.Provider>
 
-      {showDots && count > 1 ? (
+      {showDots && dotCount > 1 ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: inset }}>
-          {Array.from({ length: count }, (_, index) => (
-            <CarouselDot
-              key={index}
-              active={index === active}
-              paint={paint}
-              label={dotLabel ? dotLabel(index + 1) : `Go to slide ${index + 1}`}
-              reducedMotion={reducedMotion}
-              onPress={() => scrollToIndex(index)}
-            />
-          ))}
+          {Array.from({ length: dotCount }, (_, index) => {
+            // One dot per STOP: slides that share a resting place share a dot,
+            // so no dot scrolls nowhere. Until the slides are measured there is
+            // one per slide, which is what full-width slides settle on anyway.
+            const slide = stops[index]?.slide ?? index;
+            return (
+              <CarouselDot
+                key={index}
+                active={index === active}
+                paint={paint}
+                label={dotLabel ? dotLabel(slide + 1) : `Go to slide ${slide + 1}`}
+                reducedMotion={reducedMotion}
+                onPress={() => scrollToStop(stops[index])}
+              />
+            );
+          })}
         </View>
       ) : null}
     </View>

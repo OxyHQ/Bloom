@@ -184,7 +184,8 @@ describe('Carousel', () => {
       }),
     );
     // Start offset = x − inset, clamped to [0, content − viewport] (564 − 400).
-    expect(track.props.snapToOffsets).toEqual([0, 164, 164]);
+    // Slides 1 and 2 both clamp to 164: ONE stop, so one snap offset.
+    expect(track.props.snapToOffsets).toEqual([0, 164]);
   });
   it('steps back from the far end when several slides share the end offset', () => {
     // Narrow slides: the last three all clamp to the same end offset (532), so
@@ -229,6 +230,74 @@ describe('Carousel', () => {
     scroll(368);
     fireEvent.press(api.getByLabelText('Next slide'));
     expect(scrollTo).toHaveBeenLastCalledWith({ x: 532, animated: true });
+  });
+  describe('narrow slides share their stops', () => {
+    // Five 172px slides in a 400px track, inset 12, gap 12: slides 3 and 4
+    // cannot reach the start edge, so they rest where slide 2's end clamp does.
+    const content = 12 + 5 * 172 + 4 * 12 + 12; // 932 → max offset 532
+
+    function narrow(props: Partial<React.ComponentProps<typeof Carousel>> = {}) {
+      const api = renderWithTheme(
+        <Carousel accessibilityLabel="Narrow" inset={12} gap={12} {...props}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <CarouselItem key={i} testID={`slide-${i}`} width={172}>
+              <></>
+            </CarouselItem>
+          ))}
+        </Carousel>,
+      );
+      const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+      act(() => {
+        fireEvent(track, 'layout', layout(0, 400));
+        fireEvent(track, 'contentSizeChange', content, 100);
+      });
+      [0, 1, 2, 3, 4].forEach((i) =>
+        act(() => {
+          fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(12 + i * 184, 172));
+        }),
+      );
+      const scroll = (x: number) =>
+        act(() => {
+          fireEvent.scroll(track, {
+            nativeEvent: {
+              contentOffset: { x, y: 0 },
+              contentSize: { width: content, height: 100 },
+              layoutMeasurement: { width: 400, height: 100 },
+            },
+          });
+        });
+      return { api, track, scroll };
+    }
+
+    it('draws one dot per stop, so no dot scrolls nowhere', () => {
+      const { api, track } = narrow();
+
+      // Stops: 0 (slide 1), 184 (slide 2), 368 (slide 3), 532 (the end, slide 5).
+      expect(track.props.snapToOffsets).toEqual([0, 184, 368, 532]);
+      expect(api.queryByLabelText('Go to slide 4')).toBeNull();
+      fireEvent.press(api.getByLabelText('Go to slide 5'));
+      expect(scrollTo).toHaveBeenLastCalledWith({ x: 532, animated: true });
+    });
+
+    it('names the active slide by where its stop RESTS, inset included', () => {
+      const onIndexChange = jest.fn();
+      const { api, scroll } = narrow({ onIndexChange });
+
+      // 184 is slide 2's resting offset (its x is 196 = 184 + inset).
+      scroll(184);
+      expect(onIndexChange).toHaveBeenLastCalledWith(1);
+      expect(api.getByLabelText('Go to slide 2').props['aria-current']).toBe(true);
+
+      // At 282 the nearest RESTING offset is slide 3's (368, 86 away; slide 2's
+      // 184 is 98 away). Compared against where the slides SIT (196 and 380),
+      // it would be slide 2 — off by the inset.
+      scroll(282);
+      expect(onIndexChange).toHaveBeenLastCalledWith(2);
+
+      scroll(532);
+      expect(onIndexChange).toHaveBeenLastCalledWith(4);
+      expect(api.getByLabelText('Go to slide 5').props['aria-current']).toBe(true);
+    });
   });
 });
 
