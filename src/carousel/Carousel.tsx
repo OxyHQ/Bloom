@@ -348,12 +348,21 @@ const CarouselComponent = function Carousel({
     [align, inset, trackWidth],
   );
 
+  /**
+   * Where each slide comes to rest, in slide order (so ascending) — or `null`
+   * until every slide has been measured.
+   */
+  const restingOffsets = useCallback((): number[] | null => {
+    const all = offsets.current.slice(0, count);
+    if (all.length !== count || all.some((o) => !o)) return null;
+    return all.map(targetFor);
+  }, [count, targetFor]);
+
   const recomputeSnaps = useCallback(() => {
     if (IS_WEB) return; // CSS scroll-snap owns snapping on web.
-    const all = offsets.current.slice(0, count);
-    if (all.length !== count || all.some((o) => !o)) return;
-    setSnapOffsets(all.map(targetFor));
-  }, [count, targetFor]);
+    const resting = restingOffsets();
+    if (resting) setSnapOffsets(resting);
+  }, [restingOffsets]);
 
   const reportOffset = useCallback(
     (index: number, x: number, width: number) => {
@@ -384,16 +393,14 @@ const CarouselComponent = function Carousel({
    * instead (1px of slack, as in `measure`).
    */
   const step = (direction: -1 | 1) => {
+    const resting = restingOffsets();
+    if (!resting) return;
     const x = scroll.current.x;
-    const targets = offsets.current
-      .slice(0, count)
-      .filter((item): item is SlideOffset => Boolean(item))
-      .map(targetFor);
     const next =
       direction === 1
-        ? targets.filter((t) => t > x + 1).reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY)
-        : targets.filter((t) => t < x - 1).reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY);
-    if (!Number.isFinite(next)) return;
+        ? resting.find((t) => t > x + 1)
+        : [...resting].reverse().find((t) => t < x - 1);
+    if (next === undefined) return;
     scrollRef.current?.scrollTo({ x: next, animated: !reducedMotion });
   };
 
