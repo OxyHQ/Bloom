@@ -5,8 +5,8 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { BUTTON_SHADOW } from '../button/shared';
-import { InputOtp } from '../input-otp';
-import { cleanInputOtpValue, resolveInputOtpBoxPaint, resolveInputOtpPalette } from '../input-otp/InputOtp';
+import { InputOtp, cleanInputOtpValue } from '../input-otp';
+import { resolveInputOtpBoxPaint, resolveInputOtpPalette } from '../input-otp/InputOtp';
 import { resolvedStyle } from './support/rendered-style';
 
 type Mode = 'light' | 'dark';
@@ -182,8 +182,9 @@ describe('InputOtp type="alphanumeric"', () => {
   it('uses a letters keyboard that capitalises, and keeps the one-time-code hint', () => {
     const root = renderWithTheme(<InputOtp type="alphanumeric" length={10} />);
     const first = root.getByLabelText('Character 1 of 10');
+    // No `inputMode` on native: it would outrank `keyboardType` (web gets `text`).
+    expect(first.props.inputMode).toBeUndefined();
     expect(first.props).toMatchObject({
-      inputMode: 'text',
       keyboardType: 'ascii-capable',
       autoCapitalize: 'characters',
       autoCorrect: false,

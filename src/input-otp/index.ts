@@ -1,2 +1,2 @@
-export { InputOtp } from './InputOtp';
+export { InputOtp, cleanInputOtpValue } from './InputOtp';
 export type { InputOtpProps, InputOtpType } from './types';

@@ -160,12 +160,17 @@ const clean = (raw: string, length: number, type: InputOtpType) => cleanInputOtp
  * shared (below); only what the keyboard offers differs. Android has no
  * `ascii-capable`, and its `visible-password` is the letters keyboard without
  * suggestions or autocorrect — both of which would rewrite a code.
+ *
+ * Alphanumeric sets `inputMode` on web ONLY: React Native gives `inputMode`
+ * precedence over `keyboardType`, so `inputMode: 'text'` on native would open
+ * the ordinary keyboard instead of `ascii-capable` / `visible-password`.
  */
 const KEYBOARD_PROPS: Record<InputOtpType, Record<string, unknown>> = {
   numeric: { inputMode: 'numeric', keyboardType: 'number-pad' },
   alphanumeric: {
-    inputMode: 'text',
-    keyboardType: Platform.OS === 'android' ? 'visible-password' : 'ascii-capable',
+    ...(IS_WEB
+      ? { inputMode: 'text' }
+      : { keyboardType: Platform.OS === 'android' ? 'visible-password' : 'ascii-capable' }),
     autoCapitalize: 'characters',
     autoCorrect: false,
     spellCheck: false,

@@ -51,9 +51,9 @@ A box accepts up to `length × 2` characters in one change, so a code pasted wit
 ```
 
 - Every character is **upper-cased**; anything outside `A`–`Z` and `0`–`9` is dropped, so the dash of a pasted `abcde-12345` never reaches the value (`ABCDE12345`). Narrow the alphabet further in the caller if the code's own alphabet is smaller.
-- The keyboard is a letters one with auto-capitalisation, no autocorrect and no spell-check (`ascii-capable` on iOS, `visible-password` on Android — the letters keyboard without suggestions); the one-time-code autofill hint is kept.
+- The keyboard is a letters one with auto-capitalisation, no autocorrect and no spell-check (`ascii-capable` on iOS, `visible-password` on Android — the letters keyboard without suggestions, `inputMode="text"` on web); the one-time-code autofill hint is kept. Native sets no `inputMode`, which React Native would rank above `keyboardType`.
 - Each box is named `Character 1 of 10` rather than `Digit 1 of 10`.
-- `cleanInputOtpValue(raw, type)` is the same cleaning, exported for a caller that needs to normalise a code the same way.
+- `cleanInputOtpValue(raw, type)` (from `@oxy.so/bloom/input-otp`) is the same cleaning, exported for a caller that needs to normalise a code the same way.
 
 ## Props
 
