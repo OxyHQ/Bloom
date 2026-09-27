@@ -469,6 +469,7 @@ export function MeetingScheduler({
         weekStartsOn={weekStartsOn}
         locale={locale}
         accessibilityLabel={accessibilityLabel}
+        labels={labels}
         testID={testID ? `${testID}-calendar` : undefined}
       />
       <View

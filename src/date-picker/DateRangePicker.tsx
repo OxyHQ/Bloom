@@ -36,6 +36,11 @@ import type { DateRange, DateRangePickerProps } from './types';
 /** 16 + 118 + 12 + two panels + 8 between them + 8 — the popup width. */
 const DUAL_MONTH_WIDTH = 16 + 118 + 12 + MONTH_PANEL_WIDTH * 2 + 8 + 8;
 
+/** The pill's English default; `labels.daysSelected` takes the app's own plural rules. */
+function daysSelected(days: number): string {
+  return `${days} day${days === 1 ? '' : 's'} selected`;
+}
+
 /** `text-body-medium`, in Inter. */
 const BODY: TextStyle = TYPE_SCALE['body-medium'];
 
@@ -88,6 +93,7 @@ export function DateRangePicker({
   placeholder = 'Select date range',
   accessibilityLabel = 'Date range',
   quickSelect = true,
+  labels,
   disabled,
   open: openProp,
   defaultOpen = false,
@@ -154,8 +160,8 @@ export function DateRangePicker({
             <View style={{ width: 118, gap: 6 }}>
               {presets.map((preset) => (
                 <PresetRow
-                  key={preset.label}
-                  label={preset.label}
+                  key={preset.key}
+                  label={labels?.presets?.[preset.key] ?? preset.label}
                   active={isSameRange(pending, preset.range)}
                   onPress={() => choose(preset.range)}
                   palette={palette}
@@ -183,6 +189,7 @@ export function DateRangePicker({
             weekStartsOn={weekStartsOn}
             locale={locale}
             accessibilityLabel={accessibilityLabel}
+            labels={labels}
             testID={testID ? `${testID}-calendar` : undefined}
           />
           <View
@@ -206,7 +213,7 @@ export function DateRangePicker({
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                       <DateChipInput
                         date={pending.start}
-                        label="Start date"
+                        label={labels?.startDate ?? 'Start date'}
                         palette={palette}
                         onCommit={(start) =>
                           setPending({ start, end: start > pending.end ? start : pending.end })
@@ -215,7 +222,7 @@ export function DateRangePicker({
                       <Text style={{ ...BODY, color: palette.secondaryText }}>-</Text>
                       <DateChipInput
                         date={pending.end}
-                        label="End date"
+                        label={labels?.endDate ?? 'End date'}
                         palette={palette}
                         onCommit={(end) =>
                           setPending({ start: end < pending.start ? end : pending.start, end })
@@ -234,7 +241,7 @@ export function DateRangePicker({
                         }}
                       >
                         <Text style={{ ...BODY, color: palette.secondaryText }}>
-                          {days} day{days === 1 ? '' : 's'} selected
+                          {(labels?.daysSelected ?? daysSelected)(days)}
                         </Text>
                       </View>
                     ) : null}
@@ -252,6 +259,7 @@ export function DateRangePicker({
                 setOpenState(false);
               }}
               applyDisabled={!pending}
+              labels={labels}
               testID={testID}
             />
           </View>

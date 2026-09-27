@@ -23,11 +23,23 @@ export interface CalendarConstraintProps {
   locale?: string;
 }
 
+/**
+ * Fixed strings of the month panels, overridable for localisation. Month and
+ * weekday names already follow `locale`; these are the rest.
+ */
+export interface CalendarLabels {
+  /** Names the previous-month chevron. Default `'Previous month'`. */
+  previousMonth?: string;
+  /** Names the next-month chevron. Default `'Next month'`. */
+  nextMonth?: string;
+}
+
 interface CalendarBaseProps extends CalendarConstraintProps {
   /** Month shown first. Defaults to the selected day's month, else today's. */
   defaultMonth?: Date;
   /** Names the calendar grid. Defaults to the month title. */
   accessibilityLabel?: string;
+  labels?: CalendarLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -68,6 +80,40 @@ interface PickerBaseProps extends CalendarConstraintProps {
   testID?: string;
 }
 
+/** `DatePicker`'s fixed strings, overridable for localisation. */
+export interface DatePickerLabels extends CalendarLabels {
+  /** The footer's dismiss button. Default `'Cancel'`. */
+  cancel?: string;
+  /** The footer's commit button. Default `'Apply'`. */
+  apply?: string;
+}
+
+/** The quick-select column's rows, in the order they are drawn. */
+export type DateRangePreset =
+  | 'today'
+  | 'yesterday'
+  | 'lastWeek'
+  | 'thisMonth'
+  | 'lastMonth'
+  | 'thisYear'
+  | 'lastYear'
+  | 'allTime';
+
+/** `DateRangePicker`'s fixed strings, overridable for localisation. */
+export interface DateRangePickerLabels extends DatePickerLabels {
+  /**
+   * The footer pill. Receives the count so the app pluralises with its own
+   * i18n rules. Default `(n) => \`${n} day${n === 1 ? '' : 's'} selected\``.
+   */
+  daysSelected?: (days: number) => string;
+  /** Names the start-date chip. Default `'Start date'`. */
+  startDate?: string;
+  /** Names the end-date chip. Default `'End date'`. */
+  endDate?: string;
+  /** Quick-select rows; any left out keep their English text (`'Today'`, `'Last week'`, …). */
+  presets?: Partial<Record<DateRangePreset, string>>;
+}
+
 export interface DatePickerProps extends PickerBaseProps {
   /** Committed day (controlled). `null` for none. */
   value?: Date | null;
@@ -79,6 +125,8 @@ export interface DatePickerProps extends PickerBaseProps {
   placeholder?: string;
   /** Names the popup and its calendar. Defaults to `'Date'`. */
   accessibilityLabel?: string;
+  /** Footer buttons and month chevrons. */
+  labels?: DatePickerLabels;
 }
 
 export interface DateRangePickerProps extends PickerBaseProps {
@@ -94,6 +142,8 @@ export interface DateRangePickerProps extends PickerBaseProps {
   accessibilityLabel?: string;
   /** Show the quick-select column (Today, Last week, …). Defaults to `true`. */
   quickSelect?: boolean;
+  /** Footer buttons and pill, date chips, quick-select rows and month chevrons. */
+  labels?: DateRangePickerLabels;
 }
 
 /** The person the meeting is booked with. */
@@ -136,7 +186,7 @@ export type HourFormat = '12h' | '24h';
 export type MeetingSchedulerHourFormat = HourFormat;
 
 /** Fixed strings, overridable for localisation. */
-export interface MeetingSchedulerLabels {
+export interface MeetingSchedulerLabels extends CalendarLabels {
   /** Default `'Send meeting'`. */
   send?: string;
   /** Chip text before a time is picked. Default `'Select a time'`. */

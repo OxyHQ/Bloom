@@ -10,7 +10,7 @@
  * internal state. The time of day on an input is ignored.
  */
 
-import type { DateRange, WeekStart } from './types';
+import type { DateRange, DateRangePreset, WeekStart } from './types';
 
 const MS_PER_DAY = 86_400_000;
 
@@ -334,20 +334,22 @@ export function clampDate(date: Date, { minDate, maxDate }: DateConstraints): Da
   return startOfDay(date);
 }
 
-/** Quick-select presets, relative to `now`. */
-export function quickSelectPresets(now: Date = today()): { label: string; range: DateRange }[] {
+/** Quick-select presets, relative to `now`. `label` is the English default. */
+export function quickSelectPresets(
+  now: Date = today(),
+): { key: DateRangePreset; label: string; range: DateRange }[] {
   const lastMonth = addMonths(now, -1);
   const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), 1);
   const yesterday = addDays(now, -1);
   return [
-    { label: 'Today', range: { start: now, end: now } },
-    { label: 'Yesterday', range: { start: yesterday, end: yesterday } },
-    { label: 'Last week', range: { start: addDays(now, -7), end: yesterday } },
-    { label: 'This month', range: { start: startOfMonth(now), end: endOfMonth(now) } },
-    { label: 'Last month', range: { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) } },
-    { label: 'This year', range: { start: startOfYear(now), end: endOfYear(now) } },
-    { label: 'Last year', range: { start: startOfYear(lastYear), end: endOfYear(lastYear) } },
-    { label: 'All time', range: { start: addMonths(now, -120), end: now } },
+    { key: 'today', label: 'Today', range: { start: now, end: now } },
+    { key: 'yesterday', label: 'Yesterday', range: { start: yesterday, end: yesterday } },
+    { key: 'lastWeek', label: 'Last week', range: { start: addDays(now, -7), end: yesterday } },
+    { key: 'thisMonth', label: 'This month', range: { start: startOfMonth(now), end: endOfMonth(now) } },
+    { key: 'lastMonth', label: 'Last month', range: { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) } },
+    { key: 'thisYear', label: 'This year', range: { start: startOfYear(now), end: endOfYear(now) } },
+    { key: 'lastYear', label: 'Last year', range: { start: startOfYear(lastYear), end: endOfYear(lastYear) } },
+    { key: 'allTime', label: 'All time', range: { start: addMonths(now, -120), end: now } },
   ];
 }
 

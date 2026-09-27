@@ -84,6 +84,43 @@ A range takes two presses in either order; between them the band follows the poi
 | `disabled?` | `boolean` | `false` | Blocks opening (pickers). |
 | `RangeCalendar.visibleMonths?` | `1 \| 2` | `1` | Months side by side. |
 | `defaultMonth?` | `Date` | value's month, else today's | First month shown (calendars). |
+| `labels?` | `CalendarLabels` / `DatePickerLabels` / `DateRangePickerLabels` | English | Fixed strings, for localisation — see below. |
+
+## Localisation (`labels`)
+
+Month titles, weekday names, the trigger's date and every day's accessible name already follow `locale`. The remaining fixed strings go through a `labels` object; anything left out keeps its English default, so passing nothing changes nothing.
+
+| Key | On | Default |
+|-----|----|---------|
+| `previousMonth` / `nextMonth` | `Calendar`, `RangeCalendar`, `DatePicker`, `DateRangePicker`, `MeetingScheduler` | `'Previous month'` / `'Next month'` (chevron names) |
+| `cancel` / `apply` | `DatePicker`, `DateRangePicker` | `'Cancel'` / `'Apply'` |
+| `daysSelected` | `DateRangePicker` | `'1 day selected'`, `'14 days selected'` (English plural) |
+| `startDate` / `endDate` | `DateRangePicker` | `'Start date'` / `'End date'` (chip names) |
+| `presets` | `DateRangePicker` | `{ today: 'Today', yesterday: 'Yesterday', lastWeek: 'Last week', thisMonth: 'This month', lastMonth: 'Last month', thisYear: 'This year', lastYear: 'Last year', allTime: 'All time' }` |
+
+`daysSelected` is a function rather than a string so the app pluralises with its own rules (i18next's `count`, `Intl.PluralRules`) instead of Bloom guessing them. `presets` is partial — translate only the rows you need.
+
+```tsx
+<DateRangePicker
+  value={range}
+  onChange={setRange}
+  locale="es-ES"
+  placeholder={t('range.placeholder')}
+  accessibilityLabel={t('range.label')}
+  labels={{
+    cancel: t('common.cancel'),
+    apply: t('common.apply'),
+    daysSelected: (count) => t('range.daysSelected', { count }),
+    startDate: t('range.start'),
+    endDate: t('range.end'),
+    previousMonth: t('calendar.previousMonth'),
+    nextMonth: t('calendar.nextMonth'),
+    presets: { today: t('range.today'), yesterday: t('range.yesterday') },
+  }}
+/>
+```
+
+The trigger's empty text and the popup's name are the `placeholder` and `accessibilityLabel` props. `TimeField` draws no fixed text of its own: its name is `accessibilityLabel` (or an enclosing `Field`'s label) and its empty text is `placeholder`. `MeetingScheduler`'s own strings (`send`, `selectTime`, `duration`) sit in the same `labels` object as its chevrons, beside `triggerLabel` and `accessibilityLabel`.
 
 ## TimeField
 
