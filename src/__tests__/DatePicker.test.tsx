@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
+import { BloomProvider } from '../provider';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import * as ReactNative from 'react-native';
 
@@ -150,11 +151,11 @@ describe('calendar grid: selection and constraints', () => {
     expect(presets.map((p) => p.key)).toEqual([
       'today', 'yesterday', 'lastWeek', 'thisMonth', 'lastMonth', 'thisYear', 'lastYear', 'allTime',
     ]);
-    const lastWeek = presets.find((p) => p.label === 'Last week')!.range;
+    const lastWeek = presets.find((p) => p.key === 'lastWeek')!.range;
     expect([iso(lastWeek.start), iso(lastWeek.end)]).toEqual(['2026-9-9', '2026-9-15']);
-    const lastMonth = presets.find((p) => p.label === 'Last month')!.range;
+    const lastMonth = presets.find((p) => p.key === 'lastMonth')!.range;
     expect([iso(lastMonth.start), iso(lastMonth.end)]).toEqual(['2026-8-1', '2026-8-31']);
-    const lastYear = presets.find((p) => p.label === 'Last year')!.range;
+    const lastYear = presets.find((p) => p.key === 'lastYear')!.range;
     expect([iso(lastYear.start), iso(lastYear.end)]).toEqual(['2025-1-1', '2025-12-31']);
   });
 });
@@ -271,6 +272,39 @@ describe('DatePicker', () => {
   });
 });
 
+describe('locale: Bloom speaks the picker\'s own strings', () => {
+  it('translates a DatePicker from its locale prop — trigger, footer and chevrons', () => {
+    const { getByText, getByTestId, getByLabelText } = renderWithTheme(
+      <DatePicker defaultOpen locale="es-ES" testID="dp" />,
+    );
+    expect(getByText('Seleccionar fecha')).toBeTruthy();
+    expect(getByTestId('dp-cancel')).toHaveTextContent('Cancelar');
+    expect(getByTestId('dp-apply')).toHaveTextContent('Aplicar');
+    expect(getByLabelText('Mes siguiente')).toBeTruthy();
+    // Month names already followed the locale; they still do.
+    expect(getByLabelText('Mes anterior')).toBeTruthy();
+  });
+
+  it("takes BloomProvider's locale when the picker has none", () => {
+    const { getByTestId, getByLabelText } = render(
+      <BloomProvider locale="de-DE" mode="light" colorPreset="teal">
+        <DatePicker defaultValue={day(16)} defaultOpen testID="dp" />
+      </BloomProvider>,
+    );
+    expect(getByTestId('dp-cancel')).toHaveTextContent('Abbrechen');
+    expect(getByTestId('dp-apply')).toHaveTextContent('Übernehmen');
+    expect(getByLabelText('Nächster Monat')).toBeTruthy();
+  });
+
+  it('lets labels override a localised string, one key at a time', () => {
+    const { getByTestId } = renderWithTheme(
+      <DatePicker defaultOpen locale="es" labels={{ apply: 'Listo' }} testID="dp" />,
+    );
+    expect(getByTestId('dp-apply')).toHaveTextContent('Listo');
+    expect(getByTestId('dp-cancel')).toHaveTextContent('Cancelar');
+  });
+});
+
 describe('labels (localisation)', () => {
   it('renames the month chevrons of a calendar', () => {
     const { getByLabelText, queryByLabelText } = renderWithTheme(
@@ -321,6 +355,16 @@ describe('labels (localisation)', () => {
       expect(getByLabelText('Start date')).toBeTruthy();
       expect(getByLabelText('End date')).toBeTruthy();
       expect(getByTestId('drp-apply')).toHaveTextContent('Apply');
+    });
+
+    it('speaks Russian from its locale, with Russian plurals and presets', () => {
+      const { getByText, getByLabelText, getByTestId } = renderWithTheme(
+        <DateRangePicker defaultValue={range} defaultOpen locale="ru-RU" testID="drp" />,
+      );
+      expect(getByText('Выбрано 14 дней')).toBeTruthy();
+      expect(getByText('Прошлая неделя')).toBeTruthy();
+      expect(getByLabelText('Дата начала')).toBeTruthy();
+      expect(getByTestId('drp-apply')).toHaveTextContent('Применить');
     });
 
     it('translates every fixed string, pluralising through the caller', () => {

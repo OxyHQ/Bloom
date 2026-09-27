@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions, type TextStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text, TYPE_SCALE } from '../typography';
 import {
@@ -13,6 +14,7 @@ import {
 import { RangeCalendar } from './Calendar';
 import { MONTH_PANEL_WIDTH } from './CalendarMonth';
 import { DateChipInput } from './DateChipInput';
+import { DATE_PICKER_MESSAGES } from './messages';
 import type { CalendarPalette } from './palette';
 import { PickerActions, PickerShell, usePickerPalette } from './PickerShell';
 import { SummaryPresence } from './SummaryPresence';
@@ -35,11 +37,6 @@ import type { DateRange, DateRangePickerProps } from './types';
 
 /** 16 + 118 + 12 + two panels + 8 between them + 8 — the popup width. */
 const DUAL_MONTH_WIDTH = 16 + 118 + 12 + MONTH_PANEL_WIDTH * 2 + 8 + 8;
-
-/** The pill's English default; `labels.daysSelected` takes the app's own plural rules. */
-function daysSelected(days: number): string {
-  return `${days} day${days === 1 ? '' : 's'} selected`;
-}
 
 /** `text-body-medium`, in Inter. */
 const BODY: TextStyle = TYPE_SCALE['body-medium'];
@@ -90,8 +87,8 @@ export function DateRangePicker({
   value,
   defaultValue = null,
   onChange,
-  placeholder = 'Select date range',
-  accessibilityLabel = 'Date range',
+  placeholder: placeholderProp,
+  accessibilityLabel: accessibilityLabelProp,
   quickSelect = true,
   labels,
   disabled,
@@ -102,11 +99,14 @@ export function DateRangePicker({
   maxDate,
   isDateUnavailable,
   weekStartsOn,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: DateRangePickerProps) {
   const palette = usePickerPalette();
+  const { locale, messages } = useMessages(DATE_PICKER_MESSAGES, localeProp);
+  const placeholder = placeholderProp ?? messages.rangePlaceholder;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.rangeLabel;
   const { width: windowWidth } = useWindowDimensions();
   const [committed, setCommitted] = useControllableState<DateRange | null>({
     value,
@@ -161,7 +161,7 @@ export function DateRangePicker({
               {presets.map((preset) => (
                 <PresetRow
                   key={preset.key}
-                  label={labels?.presets?.[preset.key] ?? preset.label}
+                  label={labels?.presets?.[preset.key] ?? messages.presets[preset.key]}
                   active={isSameRange(pending, preset.range)}
                   onPress={() => choose(preset.range)}
                   palette={palette}
@@ -213,7 +213,7 @@ export function DateRangePicker({
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                       <DateChipInput
                         date={pending.start}
-                        label={labels?.startDate ?? 'Start date'}
+                        label={labels?.startDate ?? messages.startDate}
                         palette={palette}
                         onCommit={(start) =>
                           setPending({ start, end: start > pending.end ? start : pending.end })
@@ -222,7 +222,7 @@ export function DateRangePicker({
                       <Text style={{ ...BODY, color: palette.secondaryText }}>-</Text>
                       <DateChipInput
                         date={pending.end}
-                        label={labels?.endDate ?? 'End date'}
+                        label={labels?.endDate ?? messages.endDate}
                         palette={palette}
                         onCommit={(end) =>
                           setPending({ start: end < pending.start ? end : pending.start, end })
@@ -241,7 +241,7 @@ export function DateRangePicker({
                         }}
                       >
                         <Text style={{ ...BODY, color: palette.secondaryText }}>
-                          {(labels?.daysSelected ?? daysSelected)(days)}
+                          {(labels?.daysSelected ?? messages.daysSelected)(days)}
                         </Text>
                       </View>
                     ) : null}
@@ -259,7 +259,8 @@ export function DateRangePicker({
                 setOpenState(false);
               }}
               applyDisabled={!pending}
-              labels={labels}
+              cancelLabel={labels?.cancel ?? messages.cancel}
+              applyLabel={labels?.apply ?? messages.apply}
               testID={testID}
             />
           </View>

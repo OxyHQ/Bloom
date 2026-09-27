@@ -19,6 +19,17 @@ import { expoRouterScrollAdapter } from '@oxy.so/bloom/scroll/expo-router';
 </BloomProvider>
 ```
 
+Pass `locale` to set the language every Bloom component below speaks — dates,
+month names and Bloom's own strings (Cancel, Apply, …). Unset, components follow
+the runtime's locale; a component's own `locale` prop still wins. See
+[Locale](/docs/locale).
+
+```tsx
+<BloomProvider scrollAdapter={expoRouterScrollAdapter} locale={i18n.language}>
+  <App />
+</BloomProvider>
+```
+
 Keep the adapter reference stable. Vite and other router integrations supply their
 own `ScrollRouterAdapter`; Expo consumers now pass the adapter explicitly instead
 of receiving an implicit router dependency.

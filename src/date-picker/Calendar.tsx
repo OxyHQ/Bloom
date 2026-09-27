@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useTheme } from '../theme/use-theme';
 import {
@@ -21,6 +22,7 @@ import {
   type DayCellState,
 } from './calendar-grid';
 import { CALENDAR_CSS, CalendarMonth, dayKey } from './CalendarMonth';
+import { DATE_PICKER_MESSAGES } from './messages';
 import { resolveCalendarPalette } from './palette';
 import type {
   CalendarConstraintProps,
@@ -73,13 +75,16 @@ function CalendarFrame({
   maxDate,
   isDateUnavailable,
   weekStartsOn = 0,
-  locale,
+  locale: localeProp,
   accessibilityLabel,
   labels,
   style,
   testID,
 }: CalendarFrameProps) {
   const theme = useTheme();
+  const { locale, messages } = useMessages(DATE_PICKER_MESSAGES, localeProp);
+  const previousLabel = labels?.previousMonth ?? messages.previousMonth;
+  const nextLabel = labels?.nextMonth ?? messages.nextMonth;
   const palette = useMemo(() => resolveCalendarPalette(theme), [theme]);
   const [firstMonth, setFirstMonth] = useState(() => startOfMonth(initialDate));
   const [focusedDate, setFocusedDate] = useState(() => startOfDay(initialDate));
@@ -202,7 +207,8 @@ function CalendarFrame({
           onKeyDown={onKeyDown}
           registerNode={registerNode}
           accessibilityLabel={accessibilityLabel}
-          labels={labels}
+          previousLabel={previousLabel}
+          nextLabel={nextLabel}
           testID={testID ? `${testID}-month-${index}` : undefined}
         />
       ))}

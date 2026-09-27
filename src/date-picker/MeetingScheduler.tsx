@@ -16,11 +16,14 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { RiGlobalLine } from '../icons/remix/RiGlobalLine';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
+import { formatGregorian } from '../locale/format-date';
+import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { Calendar } from './Calendar';
 import { formatTriggerDate, today } from './calendar-grid';
+import { DATE_PICKER_MESSAGES } from './messages';
 import type { CalendarPalette } from './palette';
 import { PickerShell, usePickerPalette } from './PickerShell';
 import type {
@@ -95,11 +98,11 @@ function formatTime(time: string, format: MeetingSchedulerHourFormat): string {
 }
 
 function weekdayShort(date: Date, locale?: string): string {
-  try {
-    return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date).slice(0, 2);
-  } catch {
-    return ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][date.getDay()] ?? '';
-  }
+  return (
+    formatGregorian(date, locale, { weekday: 'short' })?.slice(0, 2) ??
+    ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][date.getDay()] ??
+    ''
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -352,8 +355,8 @@ export function MeetingScheduler({
   defaultValue,
   onChange,
   defaultHourFormat = '24h',
-  triggerLabel = 'Schedule a meeting',
-  accessibilityLabel = 'Schedule meeting',
+  triggerLabel: triggerLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   labels,
   disabled,
   open: openProp,
@@ -363,11 +366,14 @@ export function MeetingScheduler({
   maxDate,
   isDateUnavailable,
   weekStartsOn,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: MeetingSchedulerProps) {
   const theme = useTheme();
+  const { locale, messages } = useMessages(DATE_PICKER_MESSAGES, localeProp);
+  const triggerLabel = triggerLabelProp ?? messages.meetingTrigger;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.meetingLabel;
   const palette = usePickerPalette();
   const { width: windowWidth } = useWindowDimensions();
   const slots = useMemo(() => timeSlots ?? defaultTimeSlots(), [timeSlots]);
@@ -397,8 +403,8 @@ export function MeetingScheduler({
 
   const wide = windowWidth >= WIDE_WIDTH + 32;
   const shadow2xs = theme.isDark ? SHADOW_2XS.dark : SHADOW_2XS.light;
-  const sendLabel = labels?.send ?? 'Send meeting';
-  const durationText = (labels?.duration ?? ((n: number) => `${n} minutes`))(meeting.durationMinutes);
+  const sendLabel = labels?.send ?? messages.send;
+  const durationText = (labels?.duration ?? messages.duration)(meeting.durationMinutes);
   const chevron = useMemo(() => ({ open, color: palette.secondaryText }), [open, palette.secondaryText]);
 
   const hostColumn = (
@@ -505,7 +511,7 @@ export function MeetingScheduler({
                 {formatTriggerDate(pending.date, locale)}
               </Text>
               <Text style={[BODY_MEDIUM, { color: palette.secondaryText }]}>
-                {pending.time ?? labels?.selectTime ?? 'Select a time'}
+                {pending.time ?? labels?.selectTime ?? messages.selectTime}
               </Text>
             </>
           ) : null}

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { Calendar } from './Calendar';
 import { formatTriggerDate } from './calendar-grid';
 import { DateChipInput } from './DateChipInput';
+import { DATE_PICKER_MESSAGES } from './messages';
 import { PickerActions, PickerShell, usePickerPalette } from './PickerShell';
 import { SummaryPresence } from './SummaryPresence';
 import type { DatePickerProps } from './types';
@@ -27,8 +29,8 @@ export function DatePicker({
   value,
   defaultValue = null,
   onChange,
-  placeholder = 'Select date',
-  accessibilityLabel = 'Date',
+  placeholder: placeholderProp,
+  accessibilityLabel: accessibilityLabelProp,
   labels,
   disabled,
   open: openProp,
@@ -38,11 +40,14 @@ export function DatePicker({
   maxDate,
   isDateUnavailable,
   weekStartsOn,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: DatePickerProps) {
   const palette = usePickerPalette();
+  const { locale, messages } = useMessages(DATE_PICKER_MESSAGES, localeProp);
+  const placeholder = placeholderProp ?? messages.datePlaceholder;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.dateLabel;
   const [committed, setCommitted] = useControllableState<Date | null>({
     value,
     defaultValue,
@@ -128,7 +133,8 @@ export function DatePicker({
               setOpenState(false);
             }}
             applyDisabled={!pending}
-            labels={labels}
+            cancelLabel={labels?.cancel ?? messages.cancel}
+            applyLabel={labels?.apply ?? messages.apply}
             testID={testID}
           />
         </View>

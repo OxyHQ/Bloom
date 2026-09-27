@@ -19,18 +19,22 @@ export interface CalendarConstraintProps {
   isDateUnavailable?: (date: Date) => boolean;
   /** First column of the grid. Defaults to `0` (Sunday). */
   weekStartsOn?: WeekStart;
-  /** BCP 47 locale for month, weekday and trigger text. Defaults to the runtime's. */
+  /**
+   * BCP 47 locale for month, weekday and trigger text, and for Bloom's own
+   * strings (Cancel, Apply, …). Defaults to `BloomProvider`'s `locale`, else the
+   * runtime's.
+   */
   locale?: string;
 }
 
 /**
- * Fixed strings of the month panels, overridable for localisation. Month and
- * weekday names already follow `locale`; these are the rest.
+ * Overrides for the month panels' fixed strings. Bloom already speaks them in
+ * the picker's `locale`; pass these only for wording of your own.
  */
 export interface CalendarLabels {
-  /** Names the previous-month chevron. Default `'Previous month'`. */
+  /** Names the previous-month chevron (`'Previous month'` in English). */
   previousMonth?: string;
-  /** Names the next-month chevron. Default `'Next month'`. */
+  /** Names the next-month chevron (`'Next month'` in English). */
   nextMonth?: string;
 }
 
@@ -80,11 +84,11 @@ interface PickerBaseProps extends CalendarConstraintProps {
   testID?: string;
 }
 
-/** `DatePicker`'s fixed strings, overridable for localisation. */
+/** Overrides for `DatePicker`'s fixed strings, which Bloom already speaks in `locale`. */
 export interface DatePickerLabels extends CalendarLabels {
-  /** The footer's dismiss button. Default `'Cancel'`. */
+  /** The footer's dismiss button (`'Cancel'` in English). */
   cancel?: string;
-  /** The footer's commit button. Default `'Apply'`. */
+  /** The footer's commit button (`'Apply'` in English). */
   apply?: string;
 }
 
@@ -99,18 +103,18 @@ export type DateRangePreset =
   | 'lastYear'
   | 'allTime';
 
-/** `DateRangePicker`'s fixed strings, overridable for localisation. */
+/** Overrides for `DateRangePicker`'s fixed strings, which Bloom already speaks in `locale`. */
 export interface DateRangePickerLabels extends DatePickerLabels {
   /**
-   * The footer pill. Receives the count so the app pluralises with its own
-   * i18n rules. Default `(n) => \`${n} day${n === 1 ? '' : 's'} selected\``.
+   * The footer pill. Receives the count; Bloom's own pluralises per language
+   * (`'14 days selected'` in English).
    */
   daysSelected?: (days: number) => string;
-  /** Names the start-date chip. Default `'Start date'`. */
+  /** Names the start-date chip (`'Start date'` in English). */
   startDate?: string;
-  /** Names the end-date chip. Default `'End date'`. */
+  /** Names the end-date chip (`'End date'` in English). */
   endDate?: string;
-  /** Quick-select rows; any left out keep their English text (`'Today'`, `'Last week'`, …). */
+  /** Quick-select rows; any left out keep Bloom's (`'Today'`, `'Last week'`, … in English). */
   presets?: Partial<Record<DateRangePreset, string>>;
 }
 
@@ -121,9 +125,9 @@ export interface DatePickerProps extends PickerBaseProps {
   defaultValue?: Date | null;
   /** Called on Apply with the chosen day. */
   onChange?: (date: Date | null) => void;
-  /** Trigger text with no day committed. Defaults to `'Select date'`. */
+  /** Trigger text with no day committed. Defaults to Bloom's (`'Select date'` in English). */
   placeholder?: string;
-  /** Names the popup and its calendar. Defaults to `'Date'`. */
+  /** Names the popup and its calendar. Defaults to Bloom's (`'Date'` in English). */
   accessibilityLabel?: string;
   /** Footer buttons and month chevrons. */
   labels?: DatePickerLabels;
@@ -136,9 +140,9 @@ export interface DateRangePickerProps extends PickerBaseProps {
   defaultValue?: DateRange | null;
   /** Called on Apply with the chosen range. */
   onChange?: (range: DateRange | null) => void;
-  /** Trigger text with no range committed. Defaults to `'Select date range'`. */
+  /** Trigger text with no range committed. Defaults to Bloom's (`'Select date range'` in English). */
   placeholder?: string;
-  /** Names the popup and its calendar. Defaults to `'Date range'`. */
+  /** Names the popup and its calendar. Defaults to Bloom's (`'Date range'` in English). */
   accessibilityLabel?: string;
   /** Show the quick-select column (Today, Last week, …). Defaults to `true`. */
   quickSelect?: boolean;
@@ -185,13 +189,13 @@ export type HourFormat = '12h' | '24h';
 /** The hour-format toggle. An alias of {@link HourFormat}. */
 export type MeetingSchedulerHourFormat = HourFormat;
 
-/** Fixed strings, overridable for localisation. */
+/** Overrides for `MeetingScheduler`'s fixed strings, which Bloom already speaks in `locale`. */
 export interface MeetingSchedulerLabels extends CalendarLabels {
-  /** Default `'Send meeting'`. */
+  /** `'Send meeting'` in English. */
   send?: string;
-  /** Chip text before a time is picked. Default `'Select a time'`. */
+  /** Chip text before a time is picked (`'Select a time'` in English). */
   selectTime?: string;
-  /** `{n} minutes`. Default `(n) => \`${n} minutes\``. */
+  /** The duration row (`'30 minutes'` in English). */
   duration?: (minutes: number) => string;
 }
 
@@ -212,9 +216,9 @@ export interface MeetingSchedulerProps extends CalendarConstraintProps {
   onChange?: (value: MeetingSchedulerValue | null) => void;
   /** Initial hour format. Defaults to `'24h'`. */
   defaultHourFormat?: MeetingSchedulerHourFormat;
-  /** Trigger text. Defaults to `'Schedule a meeting'`. */
+  /** Trigger text. Defaults to Bloom's (`'Schedule a meeting'` in English). */
   triggerLabel?: string;
-  /** Names the popup and its calendar. Defaults to `'Schedule meeting'`. */
+  /** Names the popup and its calendar. Defaults to Bloom's (`'Schedule meeting'` in English). */
   accessibilityLabel?: string;
   labels?: MeetingSchedulerLabels;
   disabled?: boolean;

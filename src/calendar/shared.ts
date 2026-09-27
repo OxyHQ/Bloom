@@ -3,6 +3,7 @@ import { Platform, useWindowDimensions } from 'react-native';
 
 import { addDays, buildMonthGrid, isSameMonth, startOfDay } from '../date-picker/calendar-grid';
 import type { CalendarViewEvent } from './types';
+import { formatGregorian } from '../locale/format-date';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -95,18 +96,10 @@ export function currentGmtLabel(now: Date = new Date()): string {
   return `GMT${offset >= 0 ? '+' : ''}${offset}`;
 }
 
-function format(date: Date, locale: string | undefined, options: Intl.DateTimeFormatOptions): string | null {
-  try {
-    return new Intl.DateTimeFormat(locale, options).format(date);
-  } catch {
-    return null;
-  }
-}
-
 /** `Tue, Aug 11` — the details panel's date line. */
 export function formatEventDate(date: Date, locale?: string): string {
   return (
-    format(date, locale, {
+    formatGregorian(date, locale, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -116,7 +109,7 @@ export function formatEventDate(date: Date, locale?: string): string {
 
 /** `Aug` — the month switcher's label below `sm`. */
 export function formatShortMonth(date: Date, locale?: string): string {
-  return format(date, locale, { month: 'short' }) ?? String(date.getMonth() + 1);
+  return formatGregorian(date, locale, { month: 'short' }) ?? String(date.getMonth() + 1);
 }
 
 /** `Sun` … `Sat` — the month grid's weekday pills. */
@@ -126,8 +119,8 @@ export function weekdayShortLabels(locale?: string): { short: string; long: stri
   return fallback.map((name, index) => {
     const date = addDays(sunday, index);
     return {
-      short: format(date, locale, { weekday: 'short' }) ?? name,
-      long: format(date, locale, { weekday: 'long' }) ?? name,
+      short: formatGregorian(date, locale, { weekday: 'short' }) ?? name,
+      long: formatGregorian(date, locale, { weekday: 'long' }) ?? name,
     };
   });
 }

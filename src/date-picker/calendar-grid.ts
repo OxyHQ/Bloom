@@ -11,6 +11,7 @@
  */
 
 import type { DateRange, DateRangePreset, WeekStart } from './types';
+import { formatGregorian } from '../locale/format-date';
 
 const MS_PER_DAY = 86_400_000;
 
@@ -130,37 +131,29 @@ export function weekdayLabels(
   const sunday = new Date(2023, 0, 1);
   return Array.from({ length: 7 }, (_, column) => {
     const date = addDays(sunday, (weekStartsOn + column) % 7);
-    const long = format(date, locale, { weekday: 'long' }) ?? FALLBACK_WEEKDAYS[date.getDay()]!;
-    const short = format(date, locale, { weekday: 'short' }) ?? long;
+    const long = formatGregorian(date, locale, { weekday: 'long' }) ?? FALLBACK_WEEKDAYS[date.getDay()]!;
+    const short = formatGregorian(date, locale, { weekday: 'short' }) ?? long;
     return { short: short.slice(0, 2), long };
   });
-}
-
-function format(date: Date, locale: string | undefined, options: Intl.DateTimeFormatOptions): string | null {
-  try {
-    return new Intl.DateTimeFormat(locale, options).format(date);
-  } catch {
-    return null;
-  }
 }
 
 /** `September 2026` — the month panel's title. */
 export function formatMonthTitle(month: Date, locale?: string): string {
   return (
-    format(month, locale, { month: 'long', year: 'numeric' }) ??
+    formatGregorian(month, locale, { month: 'long', year: 'numeric' }) ??
     `${month.getMonth() + 1}/${month.getFullYear()}`
   );
 }
 
 /** `Sep 16, 2026` — the trigger's label. */
 export function formatTriggerDate(date: Date, locale?: string): string {
-  return format(date, locale, { month: 'short', day: 'numeric', year: 'numeric' }) ?? formatChipDate(date);
+  return formatGregorian(date, locale, { month: 'short', day: 'numeric', year: 'numeric' }) ?? formatChipDate(date);
 }
 
 /** `Wednesday, September 16, 2026` — a day button's accessible name. */
 export function formatAccessibleDate(date: Date, locale?: string): string {
   return (
-    format(date, locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) ??
+    formatGregorian(date, locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) ??
     formatChipDate(date)
   );
 }
@@ -334,22 +327,22 @@ export function clampDate(date: Date, { minDate, maxDate }: DateConstraints): Da
   return startOfDay(date);
 }
 
-/** Quick-select presets, relative to `now`. `label` is the English default. */
+/** Quick-select presets, relative to `now`. Their names are `DatePickerMessages.presets`. */
 export function quickSelectPresets(
   now: Date = today(),
-): { key: DateRangePreset; label: string; range: DateRange }[] {
+): { key: DateRangePreset; range: DateRange }[] {
   const lastMonth = addMonths(now, -1);
   const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), 1);
   const yesterday = addDays(now, -1);
   return [
-    { key: 'today', label: 'Today', range: { start: now, end: now } },
-    { key: 'yesterday', label: 'Yesterday', range: { start: yesterday, end: yesterday } },
-    { key: 'lastWeek', label: 'Last week', range: { start: addDays(now, -7), end: yesterday } },
-    { key: 'thisMonth', label: 'This month', range: { start: startOfMonth(now), end: endOfMonth(now) } },
-    { key: 'lastMonth', label: 'Last month', range: { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) } },
-    { key: 'thisYear', label: 'This year', range: { start: startOfYear(now), end: endOfYear(now) } },
-    { key: 'lastYear', label: 'Last year', range: { start: startOfYear(lastYear), end: endOfYear(lastYear) } },
-    { key: 'allTime', label: 'All time', range: { start: addMonths(now, -120), end: now } },
+    { key: 'today', range: { start: now, end: now } },
+    { key: 'yesterday', range: { start: yesterday, end: yesterday } },
+    { key: 'lastWeek', range: { start: addDays(now, -7), end: yesterday } },
+    { key: 'thisMonth', range: { start: startOfMonth(now), end: endOfMonth(now) } },
+    { key: 'lastMonth', range: { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) } },
+    { key: 'thisYear', range: { start: startOfYear(now), end: endOfYear(now) } },
+    { key: 'lastYear', range: { start: startOfYear(lastYear), end: endOfYear(lastYear) } },
+    { key: 'allTime', range: { start: addMonths(now, -120), end: now } },
   ];
 }
 

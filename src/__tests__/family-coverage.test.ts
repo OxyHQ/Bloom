@@ -367,6 +367,8 @@ const NO_COMPONENT: readonly string[] = [
   'image-aspect-ratio-cache',
   // A resolver function type, a raw context Provider and a hook — no `.tsx`.
   'image-resolver',
+  // A context Provider, a hook and the language table — no `.tsx`.
+  'locale',
   // Style atoms, tokens and the `styled()` primitives — inputs to components.
   'styles',
 ];

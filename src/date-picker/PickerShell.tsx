@@ -7,7 +7,6 @@ import { RiCalendarLine as CalendarIcon } from '../icons/remix/RiCalendarLine';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { useTheme } from '../theme/use-theme';
 import { resolveCalendarPalette, type CalendarPalette } from './palette';
-import type { DatePickerLabels } from './types';
 
 /**
  * The chrome both pickers share (`date-picker/shared.tsx`).
@@ -100,22 +99,24 @@ export function PickerActions({
   onCancel,
   onApply,
   applyDisabled,
-  labels,
+  cancelLabel,
+  applyLabel,
   testID,
 }: {
   onCancel: () => void;
   onApply: () => void;
   applyDisabled: boolean;
-  labels?: DatePickerLabels;
+  cancelLabel: string;
+  applyLabel: string;
   testID?: string;
 }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
       <Button onPress={onCancel} testID={testID ? `${testID}-cancel` : undefined} appearance="subtle" tone="neutral">
-        {labels?.cancel ?? 'Cancel'}
+        {cancelLabel}
       </Button>
       <Button onPress={onApply} disabled={applyDisabled} testID={testID ? `${testID}-apply` : undefined}>
-        {labels?.apply ?? 'Apply'}
+        {applyLabel}
       </Button>
     </View>
   );
