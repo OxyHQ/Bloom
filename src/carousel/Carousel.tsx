@@ -40,6 +40,7 @@ import type { CarouselItemProps, CarouselProps } from './types';
  * prev/next buttons above and a position indicator below.
  *
  *   column     gap 16
+ *   header     optional leading content of the arrows row (a title)
  *   arrows     right-aligned row, gap 8, small secondary icon buttons
  *              (Bloom's pill `Button`, sized to a 32px square icon button)
  *   track      native horizontal scrolling that SNAPS to each slide — CSS
@@ -105,6 +106,7 @@ const DOT = '[data-bloom-carousel-dot]';
 const BLOOM_CAROUSEL_CSS = `
 ${TRACK} {
   scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--bloom-carousel-inset, 0px);
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   outline: none;
@@ -266,10 +268,12 @@ interface SlideOffset {
 const CarouselComponent = function Carousel({
   children,
   accessibilityLabel,
+  header,
   showArrows = true,
   showDots = true,
   align = 'start',
   gap = 16,
+  inset = 0,
   onIndexChange,
   previousLabel = 'Previous slide',
   nextLabel = 'Next slide',
@@ -337,11 +341,11 @@ const CarouselComponent = function Carousel({
 
   const targetFor = useCallback(
     (item: SlideOffset) => {
-      const raw = align === 'center' ? item.x - (trackWidth - item.width) / 2 : item.x;
+      const raw = align === 'center' ? item.x - (trackWidth - item.width) / 2 : item.x - inset;
       const max = Math.max(0, scroll.current.contentWidth - trackWidth);
       return Math.min(Math.max(0, raw), max);
     },
-    [align, trackWidth],
+    [align, inset, trackWidth],
   );
 
   const recomputeSnaps = useCallback(() => {
@@ -392,6 +396,8 @@ const CarouselComponent = function Carousel({
     width: '100%',
     // The `:focus-visible` ring colour, read by the adopted sheet.
     '--bloom-carousel-ring': paint.ring,
+    // Where a start-aligned slide snaps to on web, matching `inset` on native.
+    '--bloom-carousel-inset': `${inset}px`,
   };
 
   return (
@@ -402,10 +408,15 @@ const CarouselComponent = function Carousel({
       style={[{ width: '100%', flexDirection: 'column', gap: 16 }, style]}
       testID={testID}
     >
-      {showArrows && count > 0 ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <Button size="sm" icon={RiArrowLeftSLine} accessibilityLabel={previousLabel} disabled={atStart} onPress={() => scrollToIndex(active - 1)} appearance="subtle" tone="neutral" />
-          <Button size="sm" icon={RiArrowRightSLine} accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => scrollToIndex(active + 1)} appearance="subtle" tone="neutral" />
+      {header != null || (showArrows && count > 0) ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: inset }}>
+          <View style={{ flex: 1, minWidth: 0 }}>{header}</View>
+          {showArrows && count > 0 ? (
+            <>
+              <Button size="sm" icon={RiArrowLeftSLine} accessibilityLabel={previousLabel} disabled={atStart} onPress={() => scrollToIndex(active - 1)} appearance="subtle" tone="neutral" />
+              <Button size="sm" icon={RiArrowRightSLine} accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => scrollToIndex(active + 1)} appearance="subtle" tone="neutral" />
+            </>
+          ) : null}
         </View>
       ) : null}
 
@@ -426,7 +437,7 @@ const CarouselComponent = function Carousel({
           decelerationRate={IS_WEB ? undefined : 'fast'}
           disableIntervalMomentum
           style={trackStyle}
-          contentContainerStyle={{ gap }}
+          contentContainerStyle={{ gap, paddingHorizontal: inset }}
         >
           {slides.map((child, index) => (
             <CarouselItemIndexContext.Provider key={child.key ?? index} value={index}>
@@ -437,7 +448,7 @@ const CarouselComponent = function Carousel({
       </CarouselContext.Provider>
 
       {showDots && count > 1 ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: inset }}>
           {Array.from({ length: count }, (_, index) => (
             <CarouselDot
               key={index}

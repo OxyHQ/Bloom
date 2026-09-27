@@ -3,6 +3,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Carousel, CarouselItem } from '../carousel';
+import { Text } from '../typography';
 import { resolveCarouselPaint } from '../carousel/Carousel';
 import type { Theme } from '../theme/types';
 
@@ -150,6 +151,40 @@ describe('Carousel', () => {
     expect(api.getByTestId('slide-1').props.style).toEqual(
       expect.arrayContaining([{ width: 300 }]),
     );
+  });
+  it('shares the arrows row with a header, and renders the header without arrows', () => {
+    const withArrows = renderWithTheme(gallery({ header: <Text>Who to follow</Text> }));
+    expect(withArrows.getByText('Who to follow')).toBeTruthy();
+    expect(withArrows.getByLabelText('Next slide')).toBeTruthy();
+
+    const alone = renderWithTheme(gallery({ header: <Text>Who to follow</Text>, showArrows: false }));
+    expect(alone.getByText('Who to follow')).toBeTruthy();
+    expect(alone.queryByLabelText('Next slide')).toBeNull();
+  });
+
+  it('pads the track by `inset` and snaps a slide to the inset, not flush', () => {
+    const api = renderWithTheme(
+      <Carousel accessibilityLabel="Inset" inset={12} gap={12}>
+        {[0, 1, 2].map((i) => (
+          <CarouselItem key={i} testID={`slide-${i}`} width={172}>
+            <></>
+          </CarouselItem>
+        ))}
+      </Carousel>,
+    );
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    expect(track.props.contentContainerStyle).toEqual({ gap: 12, paddingHorizontal: 12 });
+    act(() => {
+      fireEvent(track, 'layout', layout(0, 400));
+      fireEvent(track, 'contentSizeChange', 12 + 3 * 172 + 2 * 12 + 12, 100);
+    });
+    [0, 1, 2].forEach((i) =>
+      act(() => {
+        fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(12 + i * 184, 172));
+      }),
+    );
+    // Start offset = x − inset, clamped to [0, content − viewport] (564 − 400).
+    expect(track.props.snapToOffsets).toEqual([0, 164, 164]);
   });
 });
 

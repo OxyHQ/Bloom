@@ -26,10 +26,12 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 
 | Prop | Default | |
 | --- | --- | --- |
+| `header` | | Leading content of the arrows row, e.g. a section title. Header at the start, arrows at the end — one row, not two. |
 | `showArrows` | `true` | Prev/next buttons, right-aligned above the track. They disable at each end. |
 | `showDots` | `true` | Position indicator; never shown for a single slide. Each dot is a button. |
 | `align` | `'start'` | Where a slide rests when it snaps: `'start'` or `'center'`. |
 | `gap` | `16` | Space between slides, px. |
+| `inset` | `0` | Horizontal padding of the header row, the dots and the track's two ends. Slides scroll under it to the edges, and a start-aligned slide snaps to the inset rather than flush. |
 | `onIndexChange` | | The slide in view changed. |
 | `previousLabel` / `nextLabel` / `dotLabel` | English | Localised button names. |
 

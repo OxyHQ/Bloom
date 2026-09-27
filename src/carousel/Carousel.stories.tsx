@@ -133,3 +133,25 @@ export const Controls: Story = {
     );
   },
 };
+
+/** A titled row of fixed-width cards: header and arrows share one row, and the track is inset. */
+export const WithHeader: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Frame>
+      <Carousel
+        accessibilityLabel="Who to follow"
+        header={<Text variant="body-medium">Who to follow</Text>}
+        showDots={false}
+        inset={12}
+        gap={12}
+      >
+        {[1, 2, 3, 4, 5].map((i) => (
+          <CarouselItem key={i} width={172}>
+            <Slide label={`Card ${i}`} height={220} />
+          </CarouselItem>
+        ))}
+      </Carousel>
+    </Frame>
+  ),
+};
