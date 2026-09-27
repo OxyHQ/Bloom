@@ -29,6 +29,7 @@ export function DatePicker({
   onChange,
   placeholder = 'Select date',
   accessibilityLabel = 'Date',
+  labels,
   disabled,
   open: openProp,
   defaultOpen = false,
@@ -91,6 +92,7 @@ export function DatePicker({
           weekStartsOn={weekStartsOn}
           locale={locale}
           accessibilityLabel={accessibilityLabel}
+          labels={labels}
           testID={testID ? `${testID}-calendar` : undefined}
         />
         <View
@@ -126,6 +128,7 @@ export function DatePicker({
               setOpenState(false);
             }}
             applyDisabled={!pending}
+            labels={labels}
             testID={testID}
           />
         </View>

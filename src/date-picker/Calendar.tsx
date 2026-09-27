@@ -22,7 +22,13 @@ import {
 } from './calendar-grid';
 import { CALENDAR_CSS, CalendarMonth, dayKey } from './CalendarMonth';
 import { resolveCalendarPalette } from './palette';
-import type { CalendarConstraintProps, CalendarProps, DateRange, RangeCalendarProps } from './types';
+import type {
+  CalendarConstraintProps,
+  CalendarLabels,
+  CalendarProps,
+  DateRange,
+  RangeCalendarProps,
+} from './types';
 
 /**
  * `Calendar` (one day) and `RangeCalendar` (a span of days): month panels
@@ -51,6 +57,7 @@ interface CalendarFrameProps extends CalendarConstraintProps {
   /** The day under the pointer, or under keyboard focus. */
   onPreviewDay?: (date: Date | null) => void;
   accessibilityLabel?: string;
+  labels?: CalendarLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -68,6 +75,7 @@ function CalendarFrame({
   weekStartsOn = 0,
   locale,
   accessibilityLabel,
+  labels,
   style,
   testID,
 }: CalendarFrameProps) {
@@ -194,6 +202,7 @@ function CalendarFrame({
           onKeyDown={onKeyDown}
           registerNode={registerNode}
           accessibilityLabel={accessibilityLabel}
+          labels={labels}
           testID={testID ? `${testID}-month-${index}` : undefined}
         />
       ))}

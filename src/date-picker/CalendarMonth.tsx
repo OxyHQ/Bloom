@@ -14,7 +14,7 @@ import {
   type DayCellState,
 } from './calendar-grid';
 import type { CalendarPalette } from './palette';
-import type { WeekStart } from './types';
+import type { CalendarLabels, WeekStart } from './types';
 
 /**
  * One month panel: header, weekday row and day grid.
@@ -281,6 +281,7 @@ export interface CalendarMonthProps {
   onKeyDown: (key: string, preventDefault: () => void) => void;
   registerNode: (key: string, node: View | null) => void;
   accessibilityLabel?: string;
+  labels?: CalendarLabels;
   testID?: string;
 }
 
@@ -308,6 +309,7 @@ export function CalendarMonth({
   onKeyDown,
   registerNode,
   accessibilityLabel,
+  labels,
   testID,
 }: CalendarMonthProps) {
   const title = formatMonthTitle(month, locale);
@@ -339,7 +341,7 @@ export function CalendarMonth({
         {onPrevious ? (
           <NavButton
             direction="left"
-            label="Previous month"
+            label={labels?.previousMonth ?? 'Previous month'}
             onPress={onPrevious}
             disabled={previousDisabled}
             palette={palette}
@@ -356,7 +358,7 @@ export function CalendarMonth({
         {onNext ? (
           <NavButton
             direction="right"
-            label="Next month"
+            label={labels?.nextMonth ?? 'Next month'}
             onPress={onNext}
             disabled={nextDisabled}
             palette={palette}

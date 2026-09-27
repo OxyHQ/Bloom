@@ -2,7 +2,9 @@ import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Calendar, DatePicker, RangeCalendar } from '../date-picker';
+import * as ReactNative from 'react-native';
+
+import { Calendar, DatePicker, DateRangePicker, RangeCalendar } from '../date-picker';
 import {
   addMonths,
   buildMonthGrid,
@@ -145,6 +147,9 @@ describe('calendar grid: selection and constraints', () => {
 
   it('builds the quick-select presets relative to today', () => {
     const presets = quickSelectPresets(day(16));
+    expect(presets.map((p) => p.key)).toEqual([
+      'today', 'yesterday', 'lastWeek', 'thisMonth', 'lastMonth', 'thisYear', 'lastYear', 'allTime',
+    ]);
     const lastWeek = presets.find((p) => p.label === 'Last week')!.range;
     expect([iso(lastWeek.start), iso(lastWeek.end)]).toEqual(['2026-9-9', '2026-9-15']);
     const lastMonth = presets.find((p) => p.label === 'Last month')!.range;
@@ -263,5 +268,93 @@ describe('DatePicker', () => {
       fireEvent.press(getByTestId('dp-cancel'));
     });
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('labels (localisation)', () => {
+  it('renames the month chevrons of a calendar', () => {
+    const { getByLabelText, queryByLabelText } = renderWithTheme(
+      <Calendar defaultValue={day(16)} labels={{ previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente' }} />,
+    );
+    pressHost(getByLabelText('Mes siguiente'));
+    expect(getByLabelText('Mes anterior')).toBeTruthy();
+    expect(queryByLabelText('Next month')).toBeNull();
+  });
+
+  it('keeps the English footer when DatePicker gets no labels', () => {
+    const { getByTestId } = renderWithTheme(<DatePicker defaultValue={day(16)} defaultOpen testID="dp" />);
+    expect(getByTestId('dp-cancel')).toHaveTextContent('Cancel');
+    expect(getByTestId('dp-apply')).toHaveTextContent('Apply');
+  });
+
+  it('translates the DatePicker footer and chevrons', () => {
+    const { getByTestId, getByLabelText } = renderWithTheme(
+      <DatePicker
+        defaultValue={day(16)}
+        defaultOpen
+        labels={{ cancel: 'Cancelar', apply: 'Aplicar', nextMonth: 'Mes siguiente' }}
+        testID="dp"
+      />,
+    );
+    expect(getByTestId('dp-cancel')).toHaveTextContent('Cancelar');
+    expect(getByTestId('dp-apply')).toHaveTextContent('Aplicar');
+    expect(getByLabelText('Mes siguiente')).toBeTruthy();
+  });
+
+  describe('DateRangePicker, wide enough for the dual view', () => {
+    let dimensions: jest.SpyInstance;
+    beforeEach(() => {
+      dimensions = jest
+        .spyOn(ReactNative, 'useWindowDimensions')
+        .mockReturnValue({ width: 1280, height: 800, scale: 1, fontScale: 1 });
+    });
+    afterEach(() => dimensions.mockRestore());
+
+    const range = { start: day(9), end: day(22) };
+
+    it('keeps the English defaults', () => {
+      const { getByText, getByLabelText, getByTestId } = renderWithTheme(
+        <DateRangePicker defaultValue={range} defaultOpen testID="drp" />,
+      );
+      expect(getByText('14 days selected')).toBeTruthy();
+      expect(getByText('Last week')).toBeTruthy();
+      expect(getByLabelText('Start date')).toBeTruthy();
+      expect(getByLabelText('End date')).toBeTruthy();
+      expect(getByTestId('drp-apply')).toHaveTextContent('Apply');
+    });
+
+    it('translates every fixed string, pluralising through the caller', () => {
+      const daysSelected = jest.fn((n: number) => (n === 1 ? '1 día' : `${n} días`));
+      const { getByText, queryByText, getByLabelText, getByTestId } = renderWithTheme(
+        <DateRangePicker
+          defaultValue={range}
+          defaultOpen
+          testID="drp"
+          labels={{
+            cancel: 'Cancelar',
+            apply: 'Aplicar',
+            daysSelected,
+            startDate: 'Inicio',
+            endDate: 'Fin',
+            previousMonth: 'Mes anterior',
+            nextMonth: 'Mes siguiente',
+            presets: { today: 'Hoy', lastWeek: 'Semana pasada' },
+          }}
+        />,
+      );
+      expect(daysSelected).toHaveBeenCalledWith(14);
+      expect(getByText('14 días')).toBeTruthy();
+      expect(queryByText('14 days selected')).toBeNull();
+      expect(getByText('Hoy')).toBeTruthy();
+      expect(getByText('Semana pasada')).toBeTruthy();
+      // A preset left out keeps its English text.
+      expect(getByText('Yesterday')).toBeTruthy();
+      expect(getByLabelText('Inicio')).toBeTruthy();
+      expect(getByLabelText('Fin')).toBeTruthy();
+      expect(getByLabelText('Mes anterior')).toBeTruthy();
+      expect(getByLabelText('Mes siguiente')).toBeTruthy();
+      expect(getByTestId('drp-cancel')).toHaveTextContent('Cancelar');
+      expect(getByTestId('drp-apply')).toHaveTextContent('Aplicar');
+    });
   });
 });

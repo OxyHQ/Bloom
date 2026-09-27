@@ -8,10 +8,14 @@ export { TimeField } from './TimeField';
 
 export type {
   CalendarConstraintProps,
+  CalendarLabels,
   CalendarProps,
+  DatePickerLabels,
   DatePickerProps,
   DateRange,
+  DateRangePickerLabels,
   DateRangePickerProps,
+  DateRangePreset,
   HourFormat,
   MeetingSchedulerDetails,
   MeetingSchedulerHost,

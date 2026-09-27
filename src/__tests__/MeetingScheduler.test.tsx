@@ -37,6 +37,16 @@ describe('MeetingScheduler', () => {
     expect(getByText('Select a time')).toBeTruthy();
   });
 
+  it('passes the month-chevron labels through to its calendar', () => {
+    const { getByLabelText, queryByLabelText } = renderScheduler({
+      defaultOpen: true,
+      labels: { previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente' },
+    });
+    expect(getByLabelText('Mes anterior')).toBeTruthy();
+    expect(getByLabelText('Mes siguiente')).toBeTruthy();
+    expect(queryByLabelText('Next month')).toBeNull();
+  });
+
   it('generates half-hour slots from 09:00 to 18:30', () => {
     const { getByTestId, queryByTestId } = renderScheduler({ defaultOpen: true });
     expect(getByTestId('ms-slot-09:00')).toBeTruthy();
