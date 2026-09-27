@@ -35,6 +35,17 @@ describe('COMMON_MESSAGES', () => {
     expect(COMMON_MESSAGES.en.stepOf(2, 5)).toBe('Step 2 of 5');
     expect(COMMON_MESSAGES.es.stepOf(2, 5)).toBe('Paso 2 de 5');
   });
+
+  it("joins a name to its subject with the language's own connector", () => {
+    expect(COMMON_MESSAGES.en.labelFor('More actions', 'Ana')).toBe('More actions for Ana');
+    expect(COMMON_MESSAGES.es.labelFor('Más acciones', 'Ana')).toBe('Más acciones de Ana');
+    expect(COMMON_MESSAGES.ja.labelFor('その他の操作', 'アナ')).toBe('アナのその他の操作');
+    for (const language of BLOOM_LANGUAGES) {
+      if (language === 'en') continue;
+      // Never an English connector between translated words.
+      expect(COMMON_MESSAGES[language].labelFor('X', 'Y')).not.toMatch(/\bfor\b/);
+    }
+  });
 });
 
 describe('families speak the common words in the locale', () => {

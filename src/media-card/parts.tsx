@@ -343,7 +343,7 @@ export function CardMenu({
 }) {
   const common = useCommonMessages();
   const label = labelProp ?? common.moreOptions;
-  const name = `${label} for ${subject}`;
+  const name = common.labelFor(label, subject);
   return (
     <View
       {...webDataSet({ bloomMediaCardMenu: '', ...(reveal ? { bloomMediaCardReveal: 'hover' } : null) })}

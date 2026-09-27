@@ -42,7 +42,7 @@ export function DataTableRowActions({
   const menuLabel = menuLabelProp ?? common.moreActions;
   const theme = useTheme();
   const [open, setOpen] = useState(false);
-  const menuName = `${menuLabel} for ${name}`;
+  const menuName = common.labelFor(menuLabel, name);
 
   return (
     <View

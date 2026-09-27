@@ -22,6 +22,11 @@ export interface CommonMessages {
   /** Names a progress bar. */
   progress: string;
   stepOf: (step: number, total: number) => string;
+  /**
+   * A control's name about one item: "More actions for Ana". The connector is
+   * the language's, never an English "for" between translated words.
+   */
+  labelFor: (label: string, subject: string) => string;
   /** The hint on a sheet's drag handle. */
   tapToClose: string;
   cancel: string;
@@ -57,6 +62,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'More actions',
     progress: 'Progress',
     stepOf: (step, total) => `Step ${step} of ${total}`,
+    labelFor: (label, subject) => `${label} for ${subject}`,
     tapToClose: 'Tap to close',
     cancel: 'Cancel',
     done: 'Done',
@@ -89,6 +95,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Más acciones',
     progress: 'Progreso',
     stepOf: (step, total) => `Paso ${step} de ${total}`,
+    labelFor: (label, subject) => `${label} de ${subject}`,
     tapToClose: 'Toca para cerrar',
     cancel: 'Cancelar',
     done: 'Hecho',
@@ -121,6 +128,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Més accions',
     progress: 'Progrés',
     stepOf: (step, total) => `Pas ${step} de ${total}`,
+    labelFor: (label, subject) => `${label} de ${subject}`,
     tapToClose: 'Toca per tancar',
     cancel: 'Cancel·la',
     done: 'Fet',
@@ -153,6 +161,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Weitere Aktionen',
     progress: 'Fortschritt',
     stepOf: (step, total) => `Schritt ${step} von ${total}`,
+    labelFor: (label, subject) => `${label} für ${subject}`,
     tapToClose: 'Zum Schließen tippen',
     cancel: 'Abbrechen',
     done: 'Fertig',
@@ -185,6 +194,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: "Plus d'actions",
     progress: 'Progression',
     stepOf: (step, total) => `Étape ${step} sur ${total}`,
+    labelFor: (label, subject) => `${label} pour ${subject}`,
     tapToClose: 'Touchez pour fermer',
     cancel: 'Annuler',
     done: 'Terminé',
@@ -217,6 +227,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Altre azioni',
     progress: 'Avanzamento',
     stepOf: (step, total) => `Passaggio ${step} di ${total}`,
+    labelFor: (label, subject) => `${label} per ${subject}`,
     tapToClose: 'Tocca per chiudere',
     cancel: 'Annulla',
     done: 'Fine',
@@ -249,6 +260,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Mais ações',
     progress: 'Progresso',
     stepOf: (step, total) => `Etapa ${step} de ${total}`,
+    labelFor: (label, subject) => `${label} de ${subject}`,
     tapToClose: 'Toque para fechar',
     cancel: 'Cancelar',
     done: 'Concluído',
@@ -281,6 +293,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Другие действия',
     progress: 'Прогресс',
     stepOf: (step, total) => `Шаг ${step} из ${total}`,
+    labelFor: (label, subject) => `${label}: ${subject}`,
     tapToClose: 'Нажмите, чтобы закрыть',
     cancel: 'Отмена',
     done: 'Готово',
@@ -313,6 +326,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Diğer işlemler',
     progress: 'İlerleme',
     stepOf: (step, total) => `Adım ${step}/${total}`,
+    labelFor: (label, subject) => `${subject}: ${label}`,
     tapToClose: 'Kapatmak için dokunun',
     cancel: 'İptal',
     done: 'Bitti',
@@ -345,6 +359,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'その他の操作',
     progress: '進捗',
     stepOf: (step, total) => `ステップ ${step}/${total}`,
+    labelFor: (label, subject) => `${subject}の${label}`,
     tapToClose: 'タップして閉じる',
     cancel: 'キャンセル',
     done: '完了',
@@ -377,6 +392,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: '更多操作',
     progress: '进度',
     stepOf: (step, total) => `第 ${step} 步，共 ${total} 步`,
+    labelFor: (label, subject) => `${subject}的${label}`,
     tapToClose: '轻触以关闭',
     cancel: '取消',
     done: '完成',
@@ -409,6 +425,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'إجراءات إضافية',
     progress: 'التقدم',
     stepOf: (step, total) => `الخطوة ${step} من ${total}`,
+    labelFor: (label, subject) => `${label}: ${subject}`,
     tapToClose: 'انقر للإغلاق',
     cancel: 'إلغاء',
     done: 'تم',
@@ -441,6 +458,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'और कार्रवाइयां',
     progress: 'प्रगति',
     stepOf: (step, total) => `चरण ${step} / ${total}`,
+    labelFor: (label, subject) => `${subject} के लिए ${label}`,
     tapToClose: 'बंद करने के लिए टैप करें',
     cancel: 'रद्द करें',
     done: 'हो गया',
@@ -473,6 +491,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'আরও কাজ',
     progress: 'অগ্রগতি',
     stepOf: (step, total) => `ধাপ ${step}/${total}`,
+    labelFor: (label, subject) => `${subject}-এর জন্য ${label}`,
     tapToClose: 'বন্ধ করতে ট্যাপ করুন',
     cancel: 'বাতিল',
     done: 'সম্পন্ন',
@@ -505,6 +524,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     moreActions: 'Tindakan lainnya',
     progress: 'Kemajuan',
     stepOf: (step, total) => `Langkah ${step} dari ${total}`,
+    labelFor: (label, subject) => `${label} untuk ${subject}`,
     tapToClose: 'Ketuk untuk menutup',
     cancel: 'Batal',
     done: 'Selesai',
