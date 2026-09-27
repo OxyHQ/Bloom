@@ -8,6 +8,7 @@ import { RiShieldStarFill } from '../icons/remix/RiShieldStarFill';
 import { EASE_IN_OUT, useCardMotion, type CardMotionPose } from '../notification/use-card-motion';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { AnnouncementProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * `Announcement`: a compact announcement / onboarding card sized for a
@@ -51,11 +52,13 @@ function AnnouncementComponent({
   onAction,
   dismissible = false,
   onClose,
-  closeLabel = 'Dismiss',
+  closeLabel: closeLabelProp,
   introDelay,
   style,
   testID,
 }: AnnouncementProps) {
+  const common = useCommonMessages();
+  const closeLabel = closeLabelProp ?? common.dismiss;
   const theme = useTheme();
   const paint = useMemo(() => {
     return {

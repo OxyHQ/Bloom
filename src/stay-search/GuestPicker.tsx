@@ -10,6 +10,7 @@ import { DEFAULT_GUEST_DESCRIPTIONS, DEFAULT_GUEST_LABELS, GUEST_KINDS } from '.
 import { useGuestPickerClose } from './context';
 import { applyGuestCount, minimumAdults } from './guests';
 import type { GuestKind, GuestPickerProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /** The kinds `maxGuests` counts; infants and pets ride free. */
 const COUNTED: readonly GuestKind[] = ['adults', 'children'];
@@ -44,11 +45,13 @@ function GuestPickerComponent({
   incrementLabel,
   note,
   onClose,
-  closeLabel = 'Close',
+  closeLabel: closeLabelProp,
   size = 'medium',
   style,
   testID,
 }: GuestPickerProps) {
+  const common = useCommonMessages();
+  const closeLabel = closeLabelProp ?? common.close;
   const theme = useTheme();
   const contextClose = useGuestPickerClose();
   const close = onClose ?? contextClose;

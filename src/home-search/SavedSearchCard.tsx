@@ -18,6 +18,7 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { SavedSearchCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * One saved search in a list: what it looks for, how much is new, and how
@@ -61,11 +62,14 @@ function SavedSearchCardComponent({
   onPress,
   onEdit,
   onDelete,
-  editLabel = 'Edit',
-  deleteLabel = 'Delete',
+  editLabel: editLabelProp,
+  deleteLabel: deleteLabelProp,
   style,
   testID,
 }: SavedSearchCardProps) {
+  const common = useCommonMessages();
+  const editLabel = editLabelProp ?? common.edit;
+  const deleteLabel = deleteLabelProp ?? common.delete;
   const theme = useTheme();
   const palette = useStaySearchPalette();
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);

@@ -19,6 +19,7 @@ import { clamp01 } from '../styles/clamp';
 import { isImageUrl as isUrl } from '../image-resolver';
 import { webDataSet as webData } from '../styles/web-data';
 import type { MediaHeaderPerson, MediaImageSource } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /** The family's paint for an artwork colour, plus its web sheet. */
 export function useMediaHeaderPaint(artworkColor?: string | null): MediaHeaderPaint {
@@ -395,8 +396,8 @@ export function ClampedText({
   color,
   linkColor,
   ring,
-  showMoreLabel = 'Show more',
-  showLessLabel = 'Show less',
+  showMoreLabel: showMoreLabelProp,
+  showLessLabel: showLessLabelProp,
   testID,
 }: {
   children: string;
@@ -408,6 +409,9 @@ export function ClampedText({
   showLessLabel?: string;
   testID?: string;
 }) {
+  const common = useCommonMessages();
+  const showMoreLabel = showMoreLabelProp ?? common.showMore;
+  const showLessLabel = showLessLabelProp ?? common.showLess;
   const [expanded, setExpanded] = React.useState(false);
   const { state: hovered, onIn, onOut } = useInteractionState();
   // Only offer the toggle when the text can plausibly overflow: ~ 60 characters a line.

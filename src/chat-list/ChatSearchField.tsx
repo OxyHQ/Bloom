@@ -18,6 +18,7 @@ import {
   resolveChatListPaint,
 } from './shared';
 import type { ChatSearchFieldProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The search pill above the conversations.
@@ -66,7 +67,7 @@ function ChatSearchFieldComponent({
   onSubmit,
   onFocus,
   onBlur,
-  placeholder = 'Search',
+  placeholder: placeholderProp,
   accessibilityLabel = 'Search chats',
   clearLabel = 'Clear search',
   trailing,
@@ -74,6 +75,8 @@ function ChatSearchFieldComponent({
   style,
   testID,
 }: ChatSearchFieldProps) {
+  const common = useCommonMessages();
+  const placeholder = placeholderProp ?? common.search;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);

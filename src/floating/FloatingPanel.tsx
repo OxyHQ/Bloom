@@ -93,6 +93,7 @@ import { pushFloatingEscape } from './escape-stack';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
 import { useFrameThrottle } from './use-frame-throttle';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The one node: the panel's own chrome, the caller's classes, the computed
@@ -201,6 +202,7 @@ export function FloatingPanel({
   surface = 'popover',
   panelRef,
 }: FloatingPanelProps) {
+  const common = useCommonMessages();
   const chrome = SURFACE[surface];
   const isMenuSurface = surface !== 'popover';
   const palette = useMenuPalette();
@@ -493,7 +495,7 @@ export function FloatingPanel({
             // contract, which is the whole reason it is not a bare Pressable.
             blurIntensity={0}
             dimOpacity={0}
-            accessibilityLabel="Dismiss"
+            accessibilityLabel={common.dismiss}
           />
         ) : null}
         <AnimatedPanel

@@ -22,6 +22,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PLACE_REVIEW_CATEGORIES_WIDE_MIN_WIDTH } from './constants';
 import type { PlaceReviewCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * One past tenant's review of a building.
@@ -60,8 +61,8 @@ function PlaceReviewCardComponent({
   notRecommendLabel = "Wouldn't recommend",
   text,
   numberOfLines = 4,
-  showMoreLabel = 'Show more',
-  showLessLabel = 'Show less',
+  showMoreLabel: showMoreLabelProp,
+  showLessLabel: showLessLabelProp,
   expanded: expandedProp,
   onExpandedChange,
   helpfulCount,
@@ -74,6 +75,9 @@ function PlaceReviewCardComponent({
   style,
   testID,
 }: PlaceReviewCardProps) {
+  const common = useCommonMessages();
+  const showMoreLabel = showMoreLabelProp ?? common.showMore;
+  const showLessLabel = showLessLabelProp ?? common.showLess;
   useHousingWebCss();
   const palette = useHousingPalette();
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);

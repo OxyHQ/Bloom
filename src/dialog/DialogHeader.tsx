@@ -46,6 +46,7 @@ import { useDialogControl } from './context';
 import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';
 import type { DialogHeaderConfig } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 export type { DialogHeaderConfig } from './types';
 
@@ -367,9 +368,10 @@ function HeaderOverflowMenu({
 }): React.ReactElement {
   // Own the open state so an item press can close the popover before acting.
   const [open, setOpen] = useState(false);
+  const common = useCommonMessages();
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild label="More">
+      <PopoverTrigger asChild label={common.more}>
         <FrostedIconButton
           size="sm"
           icon={(iconProps) => <RiMoreFill {...iconProps}
@@ -379,7 +381,7 @@ function HeaderOverflowMenu({
         />
       </PopoverTrigger>
       <PopoverContent
-        label="More actions"
+        label={common.moreActions}
         align="end">
         {items.map((action) => (
           <Item
@@ -447,6 +449,7 @@ function HeaderProgressBar({
   onImage: boolean;
 }): React.ReactElement {
   const theme = useTheme();
+  const common = useCommonMessages();
   const fraction = total > 0 ? Math.min(1, Math.max(0, step / total)) : 0;
   return (
     <View
@@ -464,8 +467,8 @@ function HeaderProgressBar({
       // means the same thing — so unlike `Slider` and `DotGridMeter` it takes
       // no prop. `aria-valuetext` carries the reading, since the raw number is
       // announced as a percentage otherwise.
-      accessibilityLabel="Progress"
-      aria-valuetext={`Step ${step} of ${total}`}
+      accessibilityLabel={common.progress}
+      aria-valuetext={common.stepOf(step, total)}
       style={[
         styles.progressTrack,
         { backgroundColor: onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border },
@@ -564,6 +567,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   style?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
+  const common = useCommonMessages();
   const config = useMergedHeaderConfig(header, controller.store);
   const { scrollY, largeTitleHeight } = controller;
 
@@ -611,7 +615,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   const closeButton = (
     <FrostedIconButton
       onPress={onDismiss}
-      accessibilityLabel="Close"
+      accessibilityLabel={common.close}
       icon={(iconProps) => <RiCloseLine {...iconProps} size="md" fill={iconFill} />}
     />
   );
@@ -645,7 +649,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     (config.onBack ? (
       <FrostedIconButton
         onPress={config.onBack}
-        accessibilityLabel="Go back"
+        accessibilityLabel={common.goBack}
         icon={(iconProps) => <RiArrowLeftSLine {...iconProps} size="md" fill={iconFill} />}
       />
     ) : hasRichTrailing && config.showClose !== false ? (
@@ -712,6 +716,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
   header: DialogHeaderConfig;
 }) {
   const theme = useTheme();
+  const common = useCommonMessages();
   const config = useMergedHeaderConfig(header, controller.store);
   const { largeTitleHeight } = controller;
 
@@ -781,7 +786,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
             <Search
               value={config.search.value}
               onValueChange={config.search.onValueChange}
-              label={config.search.placeholder ?? 'Search'}
+              label={config.search.placeholder ?? common.search}
               onSubmitEditing={config.search.onSubmit}
               onClearText={() => config.search?.onValueChange('')}
             />

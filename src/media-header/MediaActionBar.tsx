@@ -33,6 +33,7 @@ import type {
   MediaMoreButtonProps,
   ShuffleButtonProps,
 } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The row of controls under a media header.
@@ -144,10 +145,12 @@ ShuffleButton.displayName = 'ShuffleButton';
 
 function MediaMoreButtonComponent({
   onPress,
-  accessibilityLabel = 'More options',
+  accessibilityLabel: accessibilityLabelProp,
   size = 28,
   ...rest
 }: MediaMoreButtonProps) {
+  const common = useCommonMessages();
+  const accessibilityLabel = accessibilityLabelProp ?? common.moreOptions;
   return (
     <MediaIconButton
       icon={RiMoreFill}

@@ -24,6 +24,7 @@ import {
   type MapMarkerPaint,
 } from './shared';
 import type { MapListingPreviewProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The small card a map shows when a marker is pressed.
@@ -124,12 +125,15 @@ function MapListingPreviewComponent({
   onPress,
   layout = 'vertical',
   width = DEFAULT_WIDTH,
-  closeLabel = 'Close',
-  favoriteLabel = 'Save',
+  closeLabel: closeLabelProp,
+  favoriteLabel: favoriteLabelProp,
   accessibilityLabel,
   style,
   testID,
 }: MapListingPreviewProps) {
+  const common = useCommonMessages();
+  const closeLabel = closeLabelProp ?? common.close;
+  const favoriteLabel = favoriteLabelProp ?? common.save;
   const theme = useTheme();
   const paint = useMemo(() => resolveMapMarkerPaint(theme), [theme]);
   const resolver = useImageResolver();

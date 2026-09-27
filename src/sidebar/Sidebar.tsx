@@ -44,6 +44,7 @@ import { SidebarTeamMenu } from './SidebarTeamMenu';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
 import type { SidebarNavItem, SidebarProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
@@ -174,7 +175,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   searchQuery,
   onSearchQueryChange,
   searchLabel = 'Quick Search',
-  searchButtonLabel = 'Search',
+  searchButtonLabel: searchButtonLabelProp,
   searchPlaceholder,
   filterLabel = 'Filter navigation',
   clearSearchLabel = 'Clear navigation search',
@@ -189,6 +190,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   style,
   testID,
 }) => {
+  const common = useCommonMessages();
+  const searchButtonLabel = searchButtonLabelProp ?? common.search;
   const palette = useSidebarPalette();
   const canonicalSize = sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp === 'large' ? 'lg' : sizeProp;
   const {size: scopedSize} = useBloomAppearance({size: canonicalSize}, {size: 'md', tone: 'neutral'});

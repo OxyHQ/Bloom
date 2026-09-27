@@ -36,11 +36,15 @@ Each family keeps its `labels` prop. A key passed there wins over Bloom's string
 
 ## Which families speak it
 
-Adopted so far: **date-picker** (`DatePicker`, `DateRangePicker`, `Calendar`, `RangeCalendar`, `MeetingScheduler`). Other families still take their fixed strings as English defaults on their `labels`/`*Label` props; they move onto the same catalogs family by family.
+- **The common words**, everywhere they are a fixed string or a default: Close, Dismiss, Back, Loading, More options, Cancel, Done, Save, Delete, Edit, Remove, Retry, Search, Show more / less, Next, Previous, Menu… That covers `Dialog` (close, back, overflow menu, step progress), the sheet handle, `Toast`'s close, `Backdrop`, `FloatingPanel`, `AlertDialog`'s cancel, `DropdownMenu`, `Pagination`, `PageHeader`, `Wizard`, `Stepper`, `DataTable`, the card skeletons ("Loading") and about thirty more families' `*Label` defaults. A caller's own `*Label` prop still wins.
+- **date-picker** in full (`DatePicker`, `DateRangePicker`, `Calendar`, `RangeCalendar`, `MeetingScheduler`).
+
+Strings particular to other families (and the common words inside their `labels` objects) still default to English; they move onto catalogs family by family.
 
 ## Adding a family (for Bloom authors)
 
 - The family's strings live in `src/<family>/messages.ts` as a `MessageCatalog<M>` (`src/locale/messages.ts`). The type requires EVERY language and every key, so a new string or a new language fails the type-check until it is translated — a missing translation is never an English word in a translated screen.
 - Read it with `useMessages(CATALOG, localeProp)`, which also returns the resolved locale to hand to `Intl`. Let `labels?.x ?? messages.x` decide each string.
 - Count-dependent strings are functions using `plural(language, n, forms)` (`src/locale/plural.ts`). It carries the CLDR rules itself because **Hermes has no `Intl.PluralRules`**: a catalog calling it would pluralise on web and throw on a phone.
+- A word most families say belongs in `COMMON_MESSAGES` (`src/locale/common-messages.ts`, read with `useCommonMessages()`), not in a family catalog: one translation, reviewed once.
 - `locale.test.tsx` checks each catalog's keys match English and that a non-English catalog is not a copy of it — add the family's catalog there.

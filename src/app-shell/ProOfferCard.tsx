@@ -20,6 +20,7 @@ import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ProOfferCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * `ProOfferCard`: the upgrade prompt anchored
@@ -127,12 +128,14 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   backdrop,
   backdropHeight = 120,
   accessibilityLabel = 'Pro offer',
-  dismissLabel = 'Dismiss',
+  dismissLabel: dismissLabelProp,
   placement = 'fixed',
   enterDelay = 1200,
   style,
   testID,
 }) => {
+  const common = useCommonMessages();
+  const dismissLabel = dismissLabelProp ?? common.dismiss;
   const theme = useTheme();
   // Fixed to the viewport, usually outside any shell: it hands react-native-web
   // the document's direction itself so its logical insets resolve against it.

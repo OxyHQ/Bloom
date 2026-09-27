@@ -15,6 +15,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ListingQualityItem, ListingQualityMeterProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * How complete a listing is: a score ring, a checklist of what is left, and
@@ -102,11 +103,13 @@ function ListingQualityMeterComponent({
   tipsTitle = 'Tips',
   formatScore = (score) => `${score}`,
   accessibilityLabel = 'Listing quality score',
-  doneLabel = 'Done',
+  doneLabel: doneLabelProp,
   todoLabel = 'To do',
   style,
   testID,
 }: ListingQualityMeterProps) {
+  const common = useCommonMessages();
+  const doneLabel = doneLabelProp ?? common.done;
   const theme = useTheme();
   useEffect(() => {
     if (IS_WEB) adoptStyleSheet(STYLE_ID, CSS);

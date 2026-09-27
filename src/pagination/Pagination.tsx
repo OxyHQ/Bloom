@@ -13,6 +13,7 @@ import { RiArrowLeftLine as ArrowLeft } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightLine as ArrowRight } from '../icons/remix/RiArrowRightLine';
 import type { Theme } from '../theme/types';
 import type { PaginationProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The pagination, coloured from Bloom's theme through the ramps
@@ -177,13 +178,16 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   totalPages,
   onChange,
   siblingCount = 1,
-  previousLabel = 'Previous',
-  nextLabel = 'Next',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   getPageLabel,
   accessibilityLabel = 'Pagination',
   style,
   testID,
 }) => {
+  const common = useCommonMessages();
+  const previousLabel = previousLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, PAGINATION_CSS);
   const palette = useMemo(() => resolvePaginationPalette(theme), [theme]);

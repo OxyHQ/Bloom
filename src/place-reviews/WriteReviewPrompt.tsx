@@ -8,6 +8,7 @@ import { RiQuillPenLine } from '../icons/remix/RiQuillPenLine';
 import { HousingCard, IconTile, useHousingPalette } from '../tenancy/parts';
 import { Text } from '../typography';
 import type { WriteReviewPromptProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * An invitation for a past tenant to review the building.
@@ -28,11 +29,13 @@ function WriteReviewPromptComponent({
   actionLabel = 'Write a review',
   onStart,
   onDismiss,
-  dismissLabel = 'Dismiss',
+  dismissLabel: dismissLabelProp,
   media,
   style,
   testID,
 }: WriteReviewPromptProps) {
+  const common = useCommonMessages();
+  const dismissLabel = dismissLabelProp ?? common.dismiss;
   const palette = useHousingPalette();
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const body = description ?? `Help future tenants of ${buildingTitle}. Reviews are anonymous.`;

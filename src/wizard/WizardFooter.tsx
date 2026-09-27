@@ -7,6 +7,7 @@ import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style'
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { WizardFooterProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The action bar under a step of a multi-step flow.
@@ -29,10 +30,10 @@ const NARROW = 480;
 
 function WizardFooterComponent({
   onBack,
-  backLabel = 'Back',
+  backLabel: backLabelProp,
   backDisabled = false,
   onNext,
-  nextLabel = 'Next',
+  nextLabel: nextLabelProp,
   nextDisabled = false,
   loading = false,
   status,
@@ -40,6 +41,9 @@ function WizardFooterComponent({
   style,
   testID,
 }: WizardFooterProps) {
+  const common = useCommonMessages();
+  const backLabel = backLabelProp ?? common.back;
+  const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
   const [width, setWidth] = useState(0);
   const narrow = width > 0 && width < NARROW;

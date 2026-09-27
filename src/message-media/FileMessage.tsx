@@ -30,6 +30,7 @@ import {
   resolveMessageMediaPaint,
 } from './shared';
 import type { FileKind, FileMessageProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /** One glyph per kind. The colour is `resolveFileKindPaint`'s job, not this map's. */
 const KIND_ICONS: Record<FileKind, typeof RiFileTextLine> = {
@@ -84,13 +85,15 @@ function FileMessageComponent({
   width,
   accessibilityLabel,
   downloadLabel = 'Download',
-  cancelLabel = 'Cancel',
+  cancelLabel: cancelLabelProp,
   tone = 'incoming',
   onColor,
   bubbleColor,
   style,
   testID,
 }: FileMessageProps) {
+  const common = useCommonMessages();
+  const cancelLabel = cancelLabelProp ?? common.cancel;
   const theme = useTheme();
   useMessageMediaCss();
   const paint = useMemo(

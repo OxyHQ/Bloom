@@ -16,6 +16,7 @@ import {
 } from './constants';
 import { activityBodyIsLong, groupActivityByDay, resolveActivityFeedPaint } from './shared';
 import type { ActivityFeedEntry, ActivityFeedProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * Everything anyone did with a customer, newest block first, grouped by day.
@@ -44,14 +45,17 @@ import type { ActivityFeedEntry, ActivityFeedProps } from './types';
 function ActivityFeedComponent({
   entries,
   bodyLines = 3,
-  moreLabel = 'Show more',
-  lessLabel = 'Show less',
+  moreLabel: moreLabelProp,
+  lessLabel: lessLabelProp,
   formatLoggedBy = (name: string) => `Logged by ${name}`,
   emptyLabel = 'Nothing logged yet',
   accessibilityLabel,
   style,
   testID,
 }: ActivityFeedProps) {
+  const common = useCommonMessages();
+  const moreLabel = moreLabelProp ?? common.showMore;
+  const lessLabel = lessLabelProp ?? common.showLess;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveActivityFeedPaint(theme, surface), [theme, surface]);

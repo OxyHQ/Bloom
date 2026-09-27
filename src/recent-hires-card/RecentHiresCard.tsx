@@ -14,6 +14,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { RecentHire, RecentHiresCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The "Recent hires" card:
@@ -144,8 +145,8 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   teamLabel,
   onTeamPress,
   teamAccessibilityLabel,
-  previousLabel = 'Previous',
-  nextLabel = 'Next',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   onPreviousPress,
   onNextPress,
   previousDisabled,
@@ -154,6 +155,9 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   style,
   testID,
 }) => {
+  const common = useCommonMessages();
+  const previousLabel = previousLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
   const palette = useMemo(() => resolveRecentHiresPalette(theme), [theme]);
 
