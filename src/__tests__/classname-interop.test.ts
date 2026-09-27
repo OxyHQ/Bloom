@@ -82,6 +82,8 @@ const CAST_EXEMPTIONS = [
   'social-button/SocialButton.tsx',
   'button/CloseButton.tsx',
   'button/GlyphButton.tsx',
+  // The web-only `href` that makes a heading row a real anchor, like `Breadcrumb`.
+  'outline-nav/OutlineNav.tsx',
   // The `dataSet` sheet hooks (shimmer, reveal, focus rings) of the agent blocks.
   'agent-thinking/AgentThinking.tsx',
   'agent-log/AgentLog.tsx',

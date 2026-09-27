@@ -58,6 +58,11 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
     reason:
       '`(flattened as ViewStyle)?.width` narrows a `StyleSheet.flatten` result, which is legitimately `ViewStyle | TextStyle | ImageStyle`. Not a web-CSS cast.',
   },
+  'ai-chat/shared.ts': {
+    count: 1,
+    reason:
+      "`marginBottom: calc(-100dvh + …) as ViewStyle['marginBottom']` on `DOCUMENT_LAYER` — the same VALUE-level cast as `Rail`'s `100vh`, pulling the viewport-sized sticky layer back out of the flow by its own height. Local for the same reason: no other family needs a negative viewport margin.",
+  },
   'rail/Rail.tsx': {
     count: 1,
     reason:
@@ -70,7 +75,7 @@ describe('web-only CSS styles', () => {
     expect(files.length).toBeGreaterThan(100);
   });
 
-  it('has no inline `as ViewStyle` outside the two documented exceptions', () => {
+  it('has no inline `as ViewStyle` outside the documented exceptions', () => {
     const found: Record<string, number> = {};
     for (const file of files) {
       const hits = codeOf(file).match(/\bas ViewStyle\b/g);

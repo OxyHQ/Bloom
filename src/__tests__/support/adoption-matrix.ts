@@ -402,6 +402,11 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       verdict: 'does-not-apply',
       reason: SELECTION_ROW,
     },
+    styles: {
+      verdict: 'does-not-apply',
+      reason:
+        'the roles are CSS attribute selectors in `styles/base-web-css.ts` (`[role="radio"]` and its siblings take no text selection), not a node the family renders — it draws no control at all.',
+    },
     'job-board': {
       verdict: 'does-not-apply',
       reason: SELECTION_ROW,

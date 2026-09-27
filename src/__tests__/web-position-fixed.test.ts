@@ -89,6 +89,7 @@ describe('web position: fixed', () => {
     expect(runtimeExports).toEqual([
       'WEB_POSITION_FIXED', 'WEB_POSITION_STICKY', 'WEB_SURFACE_STICKY_TOP',
       'WEB_VIEWPORT_HEIGHT', 'webViewportHeightMinus', 'WEB_OVERFLOW_CLIP',
+      'webSurfaceStickyTopPlus',
     ]);
     expect(crossings).toEqual([
       { owner: 'WEB_POSITION_FIXED', type: "ViewStyle['position']" },
@@ -97,6 +98,7 @@ describe('web position: fixed', () => {
       { owner: 'WEB_VIEWPORT_HEIGHT', type: "ViewStyle['height']" },
       { owner: 'webViewportHeightMinus', type: "ViewStyle['height']" },
       { owner: 'WEB_OVERFLOW_CLIP', type: "ViewStyle['overflow']" },
+      { owner: 'webSurfaceStickyTopPlus', type: "ViewStyle['top']" },
     ]);
   });
 
