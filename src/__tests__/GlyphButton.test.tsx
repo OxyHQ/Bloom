@@ -257,6 +257,28 @@ describe('GlyphButton accessibility and disabled', () => {
     // swallow it.
   });
 
+  it('busy: announced in both spellings, press refused, NOT dimmed', () => {
+    const { getByTestId } = renderWithTheme(
+      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="Locating" busy onPress={() => {}} />,
+    );
+    const node = getByTestId('g');
+    expect(node.props['aria-busy']).toBe(true);
+    expect(node.props.accessibilityState).toMatchObject({ busy: true, disabled: false });
+    expect(node.props.disabled).toBe(true);
+    expect(node.props['aria-disabled']).toBeUndefined();
+    expect(resolvedStyle(node.props.style).opacity).toBe(1);
+  });
+
+  it('a control that is not busy says nothing about it', () => {
+    const { getByTestId } = renderWithTheme(
+      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="Locate" onPress={() => {}} />,
+    );
+    const node = getByTestId('g');
+    expect(node.props['aria-busy']).toBeUndefined();
+    expect(node.props.accessibilityState).toMatchObject({ busy: false });
+    expect(node.props.disabled).toBe(false);
+  });
+
   it('`disabledOpacity` keeps a call site`s own dim (track-list draws 0.4)', () => {
     const { getByTestId } = renderWithTheme(
       <GlyphButton

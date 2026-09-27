@@ -23,6 +23,7 @@ import type { GlyphButtonProps } from './types';
  *   fill       `fill` / none             the same
  *   hover fill `hoverFill` / neutral wash
  *   disabled   `aria-disabled`, no press, dimmed to `disabledOpacity` (0.5)
+ *   busy       `aria-busy`, no press, NOT dimmed — working, not unavailable
  *
  * Colour change only, no scale, 150ms. Focus is a 2px ring at a 2px offset,
  * `:focus-visible` so a mouse press leaves none behind; `ring` is a PROP because
@@ -89,6 +90,7 @@ function GlyphButtonComponent(
     onPress,
     onLongPress,
     disabled = false,
+    busy = false,
     pressed,
     color,
     hoverColor,
@@ -117,7 +119,10 @@ function GlyphButtonComponent(
   const { state: held, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   const glyph = glyphSize ?? glyphButtonGlyphSize(size);
-  const active = !disabled && (hovered || held);
+  // Busy blocks a second press the way `Button`'s `loading` does, but keeps the
+  // rest paint: a control that is working is not one that is unavailable.
+  const blocked = disabled || busy;
+  const active = !blocked && (hovered || held);
   const isToggle = pressed !== undefined;
 
   const foreground = pressed
@@ -152,11 +157,14 @@ function GlyphButtonComponent(
       // BOTH spellings of the toggle state: react-native-web drops
       // `accessibilityState` and React Native has no `aria-pressed`.
       {...(isToggle ? { 'aria-pressed': pressed } : null)}
-      accessibilityState={{ disabled, ...(isToggle ? { selected: pressed } : null) }}
+      // `aria-busy` for the web, `accessibilityState.busy` for native, for the
+      // same reason as the toggle above.
+      accessibilityState={{ disabled, busy, ...(isToggle ? { selected: pressed } : null) }}
       aria-disabled={disabled || undefined}
+      aria-busy={busy || undefined}
       aria-expanded={ariaExpanded}
       {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
-      disabled={disabled}
+      disabled={blocked}
       onPress={onPress}
       onLongPress={onLongPress}
       onHoverIn={onHoverIn}
