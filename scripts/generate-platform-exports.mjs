@@ -54,6 +54,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./provider', 'provider/index.ts'],
   ['./surfaces', 'surfaces/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
+  // The locale Bloom's own strings and dates speak in (`LocaleProvider`).
+  ['./locale', 'locale/index.ts'],
   ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],
   ['./theme', 'theme/index.ts'],
   ['./color-presets', 'theme/color-presets.ts'],

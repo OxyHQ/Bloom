@@ -334,22 +334,22 @@ export function clampDate(date: Date, { minDate, maxDate }: DateConstraints): Da
   return startOfDay(date);
 }
 
-/** Quick-select presets, relative to `now`. `label` is the English default. */
+/** Quick-select presets, relative to `now`. Their names are `DatePickerMessages.presets`. */
 export function quickSelectPresets(
   now: Date = today(),
-): { key: DateRangePreset; label: string; range: DateRange }[] {
+): { key: DateRangePreset; range: DateRange }[] {
   const lastMonth = addMonths(now, -1);
   const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), 1);
   const yesterday = addDays(now, -1);
   return [
-    { key: 'today', label: 'Today', range: { start: now, end: now } },
-    { key: 'yesterday', label: 'Yesterday', range: { start: yesterday, end: yesterday } },
-    { key: 'lastWeek', label: 'Last week', range: { start: addDays(now, -7), end: yesterday } },
-    { key: 'thisMonth', label: 'This month', range: { start: startOfMonth(now), end: endOfMonth(now) } },
-    { key: 'lastMonth', label: 'Last month', range: { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) } },
-    { key: 'thisYear', label: 'This year', range: { start: startOfYear(now), end: endOfYear(now) } },
-    { key: 'lastYear', label: 'Last year', range: { start: startOfYear(lastYear), end: endOfYear(lastYear) } },
-    { key: 'allTime', label: 'All time', range: { start: addMonths(now, -120), end: now } },
+    { key: 'today', range: { start: now, end: now } },
+    { key: 'yesterday', range: { start: yesterday, end: yesterday } },
+    { key: 'lastWeek', range: { start: addDays(now, -7), end: yesterday } },
+    { key: 'thisMonth', range: { start: startOfMonth(now), end: endOfMonth(now) } },
+    { key: 'lastMonth', range: { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) } },
+    { key: 'thisYear', range: { start: startOfYear(now), end: endOfYear(now) } },
+    { key: 'lastYear', range: { start: startOfYear(lastYear), end: endOfYear(lastYear) } },
+    { key: 'allTime', range: { start: addMonths(now, -120), end: now } },
   ];
 }
 

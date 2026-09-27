@@ -80,6 +80,8 @@ export type { BloomIconComponent } from './icons/icon-component';
 // App-wide plumbing (pure JS — no peer beyond what this barrel already links)
 export { ImageResolverProvider, useImageResolver, isImageUrl } from './image-resolver';
 export type { ImageResolver } from './image-resolver';
+export { LocaleProvider, useBloomLocale, BLOOM_LANGUAGES, resolveBloomLanguage } from './locale';
+export type { BloomLanguage } from './locale';
 // A namespace, not seven loose verbs: `getAspectRatio`/`setAspectRatio`/
 // `hasAspectRatio` are exactly the collision-prone shape the namespace rule
 // covers.

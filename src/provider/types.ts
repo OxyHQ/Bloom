@@ -15,4 +15,10 @@ export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'child
   imageResolver?: ImageResolver;
   /** `false` disables haptic feedback app-wide (honored by every `useHaptics()` call). */
   haptics?: boolean;
+  /**
+   * BCP 47 locale for every Bloom component below — dates, month names and
+   * Bloom's own strings (Cancel, Apply, …). A component's own `locale` prop
+   * wins. Unset, components follow the runtime's locale.
+   */
+  locale?: string;
 }

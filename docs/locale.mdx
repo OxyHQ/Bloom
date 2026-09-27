@@ -1,0 +1,42 @@
+---
+title: Locale
+description: The language Bloom's own strings and dates speak in, set once for the app.
+order: 55
+---
+
+# Locale
+
+A Bloom component that draws fixed text — a Cancel button, a chevron's name, "14 days selected" — speaks it in a **locale**, and so do the dates it formats. The locale is, in order:
+
+1. the component's own `locale` prop,
+2. the nearest `LocaleProvider` — `BloomProvider`'s `locale` prop mounts one,
+3. the runtime's (the browser's, or the device's).
+
+```tsx
+import { BloomProvider } from '@oxy.so/bloom/provider';
+
+<BloomProvider locale={i18n.language}>
+  <App />
+</BloomProvider>
+```
+
+Set it once, from the app's own language, and every Bloom component below follows it — including after a language switch, since the provider re-renders with the new value. `LocaleProvider` (from `@oxy.so/bloom/locale`) scopes a different locale to a subtree.
+
+## Languages
+
+Bloom ships its strings in `BLOOM_LANGUAGES`: English, Spanish, Catalan, German, French, Italian, Portuguese, Russian, Turkish, Japanese, Chinese, Arabic, Hindi, Bengali and Indonesian. A locale is matched on its primary subtag (`es-MX` → Spanish, `pt_BR` → Portuguese); a language Bloom does not ship falls back to English. `resolveBloomLanguage(locale)` answers which one a tag gets.
+
+## Overriding a string
+
+Each family keeps its `labels` prop. A key passed there wins over Bloom's string for the locale, one key at a time — for wording of your own, not for translation.
+
+## Which families speak it
+
+Adopted so far: **date-picker** (`DatePicker`, `DateRangePicker`, `Calendar`, `RangeCalendar`, `MeetingScheduler`). Other families still take their fixed strings as English defaults on their `labels`/`*Label` props; they move onto the same catalogs family by family.
+
+## Adding a family (for Bloom authors)
+
+- The family's strings live in `src/<family>/messages.ts` as a `MessageCatalog<M>` (`src/locale/messages.ts`). The type requires EVERY language and every key, so a new string or a new language fails the type-check until it is translated — a missing translation is never an English word in a translated screen.
+- Read it with `useMessages(CATALOG, localeProp)`, which also returns the resolved locale to hand to `Intl`. Let `labels?.x ?? messages.x` decide each string.
+- Count-dependent strings are functions using `plural(language, n, forms)` (`src/locale/plural.ts`). It carries the CLDR rules itself because **Hermes has no `Intl.PluralRules`**: a catalog calling it would pluralise on web and throw on a phone.
+- `locale.test.tsx` checks each catalog's keys match English and that a non-English catalog is not a copy of it — add the family's catalog there.
