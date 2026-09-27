@@ -31,18 +31,25 @@ import { Button } from '@oxy.so/bloom';
 
 | Variant | Paint |
 |---|---|
-| `primary` | Top-to-bottom gradient of `primary` (500 → 600). Hover lightens it (400 → 500), press deepens it (600 → 700). Label `primaryForeground`. xs drop shadow. |
-| `destructive` | The same recipe on `negative` / `negativeForeground`. |
-| `secondary` / `outline` | `card` surface, 1px `border`, `text` label, xs drop shadow; hover/press step the surface and border toward the label colour. |
-| `ghost` | The `primarySubtle` tint with its `primarySubtleForeground` label — the policy's own legibility-checked pair; hover/press deepen the tint. |
-| `icon` | `secondary`'s surface as a fixed square (border included), glyph 20 / 16 at medium / small; disabled dims the whole control to 0.6. |
-| `inverse` | White surface, black label — for use over media. |
-| `text` | Borderless `primary` label on a compact 4/8 padding with a hover wash (Bloom-only). |
-| `link` | No container at all — label only, `accent-600` (`linkTone="secondary"`: secondary text), underline (offset 3) on hover, `accent-800` while held. |
+| `primary` / `destructive` | Saturated brand colour with the fill's on-colour, sheen and a pronounced inset rim. Coverage is 94% at rest, 97% on hover and 99% on press. |
+| `secondary` / `outline` / `icon` | Clear neutral glass; the backdrop shows through. The existing border and geometry stay intact. |
+| `ghost` | The theme's paired subtle tint with its original alpha, over the base glass material. |
+| `inverse` | High-coverage white glass (94% at rest) with a black label. |
+| `text` / `link` | Label actions, without glass. |
 
-The accent and neutral ramps are rebuilt around the theme colours in OKLCH (`button/shared.ts`), since Bloom presets carry one `primary` rather than a Tailwind ramp. There is NO press scale — a press is the active paint alone — and disabled buttons take their own paint instead of an opacity dip (`icon` excepted).
+The material is built into Button: no provider, wrapper or opt-in prop. Inspect **Base / Button / Glass Playground** in Storybook over flat, patterned and photographic backgrounds. Use the theme toolbar to compare light and dark modes. Disabled and loading controls retain their existing interaction semantics.
 
-On web the state colours arrive as `--bloom-btn-*` custom properties and are declared only in the adopted stylesheet — an inline `background-color` would silence the `:hover` rule. The gradient variants cross-fade their hover gradient in through `::before`, because `background-image` does not transition. On native the gradient is a `react-native-svg` layer; every gradient stop is an opaque composite, since react-native-svg drops alpha in `stopColor`.
+Both forks share interaction tint definitions in `button/shared.ts`; their optical layers come from the same `surface/` material used by the public `Surface` container. The material now follows the reference's layer order: a **transparent root**, the backdrop/refraction layer underneath, then the tint and rim, with the label above everything. Painting the tint on the root would make the filter sample an already washed-out image. Neutral glass is 25% coverage at rest, with theme text. Primary and destructive retain their saturated 94% fill and on-fill labels. Every surface variant uses the same backdrop filter, rim and sheen, including disabled and loading states.
+
+On web every surface variant uses a full-pane pseudo-element that captures the backdrop with `blur(3px)`, then applies a shared SVG filter: one-octave turbulence at `0.01 0.01`, Gaussian smoothing of 3 and displacement of 150. There is no edge mask. A second pseudo-element holds tint, sheen and the reference's white inset highlights. Text and icons are outside the filter. Disabled controls change tint and label colour and block interaction; their refraction, sheen, rim and shadow remain. Loading preserves the resting material. Neutral hover and press raise coverage to 32% and 40% without changing geometry.
+
+A single production filter definition is retained per document and updated when the recipe changes during HMR. It installs after mount, so SSR does not access browser globals. There are no pointer listeners or animation loops; each visible filtered pane still incurs compositor work. Rendering is verified in Chromium and can differ across browsers. In the local headless Chrome scroll check (3 seconds), 12 neutral buttons produced 181 frames with p95 16.8ms and none above 25ms; the 160-button stress scene produced about 103 frames with p95 33.4ms. The full-pane reference effect has a real cost in dense scenes. These are desktop smoke measurements, not a mobile-device benchmark or a general FPS guarantee.
+
+The playground places an independently defined **CodePen material reference** beside real Bloom secondary and primary buttons over the same patterned or photographic panel. The reference retains a white 25% tint, while Bloom follows the selected theme. This is a comparison of material layers, not a claim that their typography or theme palette is identical.
+
+Native uses the shared `SurfacePaint` SVG tint/sheen layer with explicit `stopOpacity` and the same per-variant tint coverage, without blur or refraction. The parent remains the styled Pressable, so layout classes still apply to the node its parent lays out. There is no press scale.
+
+The translucent variants are backdrop-dependent; the playground is a visual review surface, not a claim of AA on every photograph. `inverse` is now high-coverage translucent white, not an opaque guarantee over uncontrolled content. Use a solid caller-provided style if the backdrop must be hidden. SVG and CSS must be checked visually as well as with shared-token tests.
 
 ## Sizes
 
@@ -191,3 +198,5 @@ const [busy, setBusy] = useState(false);
   <Button variant="secondary" iconOnly leadingIcon={RiLink} accessibilityLabel="Link" />
 </View>
 ```
+
+Branded controls can pass `colors={{ background, foreground }}` with an already resolved fill/on-fill pair. Surface variants preserve that pair through the shared saturated glass recipe; `text` and `link` ignore it. `SocialButton` uses this rather than owning a second material renderer.

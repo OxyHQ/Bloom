@@ -158,7 +158,7 @@ export type {
   SurfacePromptOptions,
 } from './surfaces/index.web';
 export * from './button/index.web';
-export * from './button-group';
+export * from './button-group/index.web';
 export {
   EDGE_GAP,
   windowEdgeGap,
@@ -178,8 +178,8 @@ export { Carousel, CarouselItem } from './carousel';
 export type { CarouselProps, CarouselItemProps } from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
 export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';
-export { SocialButton, SOCIAL_PROVIDERS } from './social-button';
-export type { SocialBrand, SocialBrandConfig, SocialButtonAppearance, SocialButtonProps, SocialButtonSize, SocialProvider } from './social-button';
+export { SocialButton, SOCIAL_PROVIDERS } from './social-button/index.web';
+export type { SocialBrand, SocialBrandConfig, SocialButtonAppearance, SocialButtonProps, SocialButtonSize, SocialProvider } from './social-button/index.web';
 export * from './notification';
 export * from './announcement';
 export * from './data-table';
@@ -342,3 +342,7 @@ export * as Code from './code';
 
 // Fonts
 export * as Fonts from './fonts/index.web';
+
+// Passive material container, distinct from imperative dialog `surfaces`.
+export { Surface } from './surface/index.web';
+export type { SurfaceProps } from './surface/index.web';

@@ -339,8 +339,8 @@ describe('Button.web', () => {
       expect(getByRole(c, 'button', { name: 'Go' }).style.getPropertyValue('--bloom-btn-press-scale')).toBe('1');
     });
 
-    it('does not paint solid variants with a gradient', () => {
-      const c = mount(<Button variant="secondary">Cancel</Button>);
+    it('keeps inline text actions without a glass gradient', () => {
+      const c = mount(<Button variant="text">Cancel</Button>);
       expect(getByRole(c, 'button', { name: 'Cancel' })).not.toHaveClass('bloom-btn--gradient');
     });
 
@@ -356,4 +356,51 @@ describe('Button.web', () => {
       expect(btn.querySelector('svg')?.getAttribute('data-width')).toBe('14');
     });
   });
+});
+
+it('paints neutral glass once and preserves the single-node asChild surface', () => {
+  const c = mount(<Button variant="secondary" asChild><a href="#">Explore glass</a></Button>);
+  const control = getByRole(c, 'link', { name: 'Explore glass' });
+  expect(control).toHaveClass('bloom-btn--glass');
+  expect(control.querySelector('svg')).toBeNull();
+  expect(control.style.getPropertyValue('--bloom-btn-bg')).toMatch(/0\.25\)$/);
+  // The image is optical light only; tinting it too would apply alpha twice.
+  expect(control.style.getPropertyValue('--bloom-btn-bg-image')).toContain('0.18');
+  expect(control.style.getPropertyValue('--bloom-btn-bg-image')).not.toContain('0.25');
+});
+
+it('preserves saturated brand colour within the base refracted material', () => {
+  const c = mount(<Button>Create</Button>);
+  const control = getByRole(c, 'button');
+  expect(control).toHaveClass('bloom-btn--glass');
+  expect(control.style.getPropertyValue('--bloom-btn-bg')).toMatch(/0\.94\)$/);
+  expect(control).toHaveClass('bloom-btn--refracted');
+});
+
+
+it.each(['primary', 'destructive', 'secondary', 'outline', 'icon', 'ghost', 'inverse'] as const)(
+  '%s keeps the base material and blocks interaction when disabled', (variant) => {
+    const onPress = jest.fn();
+    const c = mount(<Button variant={variant} disabled onPress={onPress} accessibilityLabel="Unavailable">Unavailable</Button>);
+    const control = getByRole(c, 'button', { name: 'Unavailable' });
+    expect(control).toBeDisabled();
+    expect(control).toHaveClass('bloom-btn--glass', 'bloom-btn--refracted');
+    expect(control.style.getPropertyValue('--bloom-btn-disabled-opacity')).toBe('1');
+    act(() => { fireEvent.click(control); });
+    expect(onPress).not.toHaveBeenCalled();
+    const sheet = document.getElementById('bloom-button-web-css')!.textContent!;
+    // The filter applies without interaction predicates; disabled paint must
+    // not clear the optical layers. Actual refraction is checked in Chrome.
+    expect(sheet).toMatch(/\.bloom-btn--refracted::before\s*\{[^}]*filter: url/);
+    const disabledLayer = sheet.match(/\.bloom-btn--glass\[aria-disabled="true"\]:not\(\[aria-busy="true"\]\)::after\s*\{([^}]+)\}/)![1]!;
+    expect(disabledLayer).toContain('background-color');
+    expect(disabledLayer).not.toMatch(/background-image|box-shadow|opacity|filter/);
+  },
+);
+
+
+it('installs refraction when the only mounted button is disabled', () => {
+  document.getElementById('bloom-surface-refraction-v1-defs')?.remove();
+  mount(<Button disabled>Unavailable</Button>);
+  expect(document.getElementById('bloom-surface-refraction-v1')).not.toBeNull();
 });

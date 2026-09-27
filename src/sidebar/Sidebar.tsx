@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import {
   Pressable,
   ScrollView,
+  StyleSheet,
   TextInput,
   View,
   type LayoutChangeEvent,
@@ -15,6 +16,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { withAlpha } from '../theme/color-utils';
 import { Badge } from '../badge';
 import { CloseButton } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -41,7 +44,7 @@ import type { SidebarNavItem, SidebarProps } from './types';
  *   panel      260 wide expanded (p12), 52 collapsed (px7 py12 — with the 1px
  *              border that leaves exactly the 36px item column; 60/px11
  *              reads loose around a pill column), radius 24,
- *              1px border-button-white, shadow-sidebar, background-secondary;
+ *              1px border-button-white, shadow-sidebar, shared glass material;
  *              `flat` drops the chrome onto background-full
  *   top        scroller (−8 margin / 8 padding, so rings and the profile pill
  *              are not clipped), gap 12: account switcher + collapse control
@@ -298,7 +301,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         borderRadius: 24,
         borderWidth: 1,
         borderColor: palette.panelBorder,
-        backgroundColor: palette.panel,
+        backgroundColor: 'transparent',
         boxShadow: palette.panelShadow,
       };
 
@@ -505,7 +508,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             flexShrink: 0,
             flexDirection: 'column',
             justifyContent: 'space-between',
-            overflow: 'hidden',
+            overflow: flat || IS_WEB ? 'hidden' : 'visible',
             paddingTop: 12,
             paddingBottom: 12,
             paddingLeft: collapsed ? COLLAPSED_PADDING_X : 12,
@@ -516,6 +519,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           style,
         ]}
       >
+        {!flat ? <SurfacePaint fill={withAlpha(palette.panel, 0.25)} radius={StyleSheet.flatten(style)?.borderRadius ?? 24} /> : null}
         {hasTree ? (
           // With a tree the header and search stay put; only the rows scroll,
           // 24 between the primary rows and the tree section.

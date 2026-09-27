@@ -75,8 +75,7 @@ one next to it. Worse, on web it is tempting to reach for classes —
 Tailwind pipeline**. That failure is silent: the card renders as an unbordered
 transparent block, nothing throws, and it looks like a spacing bug.
 
-`Card` applies background, border, radius and shadow as resolved inline tokens,
-so the surface paints with or without a consumer's CSS pipeline.
+`Card` resolves its border, radius, shadow and Surface fill from tokens. Surface installs its own web material CSS, so the card paints without a consumer's utility CSS pipeline.
 
 ## Pressable cards
 
@@ -90,13 +89,9 @@ is a `button` (the default).
 
 ## Clipping
 
-`Card` sets `overflow: 'hidden'` so a cover image cannot paint over the corner.
-A surface that must *not* clip — because it has an Android elevation, or
-because a child deliberately overflows — opts out through `style`:
+`Card` paints with the shared Surface material (`material="glass"` by default; `material="solid"` for an opaque fill). It keeps the outer shadow unclipped and clips content in an inner container, so cover images respect the corners on both platforms. Child layout, gap and padding are applied to that container; sizing, position and className-derived layout still belong to the card. `style={{ overflow: 'visible' }}` allows content to overflow deliberately.
 
-```tsx
-<Card style={{ overflow: 'visible' }} />
-```
+`LinkPreviewCard` already composes Card and inherits this material. It owns preview data, its cover and text, and opening the link; it does not paint another surface.
 
 ## Parts
 

@@ -9,6 +9,8 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
+import { useSurfaceRefraction } from '../surface/web-refraction';
+import { surfaceMaterialCss } from '../surface/web-material';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
@@ -43,8 +45,7 @@ export type {
 } from './types';
 
 // ---------------------------------------------------------------------------
-//  Per-state CSS injection — button-press colour transitions for the
-//  primary/danger fills, expressed against per-instance custom properties.
+//  Per-state CSS injection: tint transitions use per-instance custom properties.
 //  A 0.98 press scale is deliberately not used: a press is the active paint
 //  alone.
 //
@@ -52,9 +53,8 @@ export type {
 //  is declared only in the sheet. An inline `background-color` would outrank the
 //  `:hover` rule and silence it (`interactive-web-css.test.tsx` gates that).
 //
-//  The gradient variants cross-fade their hover gradient in through `::before`,
-//  since `background-image` does not transition; the solid variants transition
-//  `background-color` directly.
+//  The optical gradient stays fixed while the tint transitions underneath.
+//  There is no second tint layer or per-instance animation work.
 //
 //  `aria-busy` is excluded from the disabled paint: a loading button keeps its
 //  rest colours under the spinner instead of greying out.
@@ -78,8 +78,8 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
     border-style: solid;
     border-width: var(--bloom-btn-border-width, 0px);
     border-color: var(--bloom-btn-border, transparent);
-    background-color: var(--bloom-btn-bg, transparent);
-    background-image: var(--bloom-btn-bg-image, none);
+    background-color: var(--bloom-btn-container-bg, var(--bloom-btn-bg, transparent));
+    background-image: var(--bloom-btn-container-image, var(--bloom-btn-bg-image, none));
     box-shadow: var(--bloom-btn-shadow, none);
     color: var(--bloom-btn-fg, inherit);
     font-family: var(--bloom-font-sans, inherit);
@@ -88,12 +88,12 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
   transition: `background-color ${T} ease, border-color ${T} ease, box-shadow ${T} ease, color ${T} ease`,
   hover: {
     declarations: `
-      background-color: var(--bloom-btn-bg-hover);
+      background-color: var(--bloom-btn-container-bg, var(--bloom-btn-bg-hover));
       border-color: var(--bloom-btn-border-hover);
     `,
   },
   pressDeclarations: `
-    background-color: var(--bloom-btn-bg-active);
+    background-color: var(--bloom-btn-container-bg, var(--bloom-btn-bg-active));
     border-color: var(--bloom-btn-border-active);
     color: var(--bloom-btn-fg-active, var(--bloom-btn-fg));
   `,
@@ -101,40 +101,31 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
   extraRules: `${DISABLED} {
   opacity: var(--bloom-btn-disabled-opacity, 1);
   cursor: not-allowed;
-  background-color: var(--bloom-btn-bg-disabled);
-  background-image: var(--bloom-btn-bg-image-disabled, none);
+  background-color: var(--bloom-btn-container-bg, var(--bloom-btn-bg-disabled));
+  background-image: var(--bloom-btn-container-image, var(--bloom-btn-bg-image-disabled, none));
   border-color: var(--bloom-btn-border-disabled);
   color: var(--bloom-btn-fg-disabled);
-  box-shadow: none;
+  box-shadow: var(--bloom-btn-shadow, none);
   transform: none;
 }
 .bloom-btn[aria-busy="true"] {
   opacity: 1;
   cursor: progress;
 }
-.bloom-btn--gradient::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: inherit;
-  background-image: var(--bloom-btn-bg-image-hover);
-  opacity: 0;
-  transition: opacity ${T} ease;
+.bloom-btn--glass {
+  --bloom-btn-container-bg: transparent;
+  --bloom-btn-container-image: none;
 }
-.bloom-btn--gradient${NOT_DISABLED}:hover::before {
-  opacity: 1;
+${surfaceMaterialCss('.bloom-btn--refracted', 'var(--bloom-btn-bg)', `background-color ${T} ease`)}
+.bloom-btn--glass${NOT_DISABLED}:hover::after {
+  background-color: var(--bloom-btn-bg-hover);
 }
-.bloom-btn--gradient${NOT_DISABLED}:active {
-  background-image: var(--bloom-btn-bg-image-active);
+.bloom-btn--glass${NOT_DISABLED}:active::after {
+  background-color: var(--bloom-btn-bg-active);
 }
-.bloom-btn--gradient${NOT_DISABLED}:active::before {
-  opacity: 0;
-}
-.bloom-btn--gradient:disabled::before,
-.bloom-btn--gradient[aria-disabled="true"]::before {
-  display: none;
+.bloom-btn--glass:disabled:not([aria-busy="true"])::after,
+.bloom-btn--glass[aria-disabled="true"]:not([aria-busy="true"])::after {
+  background-color: var(--bloom-btn-bg-disabled);
 }
 .bloom-btn--link {
   text-underline-offset: ${LINK_BUTTON_UNDERLINE_OFFSET}px;
@@ -144,7 +135,7 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
 }
 @media (prefers-reduced-motion: reduce) {
 .bloom-btn,
-.bloom-btn--gradient::before {
+.bloom-btn--glass::after {
   transition: none;
 }
 }`,
@@ -169,10 +160,12 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   trailingIcon: TrailingIcon,
   iconOnly = false,
   linkTone = 'primary',
+  colors,
   href,
   target,
   rel,
   loading = false,
+  selected,
   loadingColor,
   accessibilityLabel,
   'aria-label': ariaLabelProp,
@@ -210,17 +203,22 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const iconSize = isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
 
   const palette = useMemo(
-    () => resolveButtonPalette(resolvedVariant, theme, linkTone),
-    [resolvedVariant, theme, linkTone],
+    () => resolveButtonPalette(resolvedVariant, theme, linkTone, colors),
+    [resolvedVariant, theme, linkTone, colors],
   );
   const isGradient = palette.rest.gradient !== null;
+  const hasRefraction = Boolean(palette.rest.glass);
+  useSurfaceRefraction(hasRefraction);
 
   const containerStyle = useMemo((): CSSProperties => {
-    const shadow = palette.shadow ? BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] : 'none';
+    const dropShadow = palette.shadow ? BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] : '';
+    const shadow = dropShadow || 'none';
     const base: CSSProperties = {
       height: geometry.height,
       paddingLeft: geometry.paddingHorizontal,
       paddingRight: geometry.paddingHorizontal,
+      paddingTop: 0,
+      paddingBottom: 0,
       borderRadius: BUTTON_RADIUS,
       fontSize: geometry.fontSize,
       lineHeight: `${geometry.lineHeight}px`,
@@ -238,13 +236,9 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       ['--bloom-btn-fg-active' as string]: palette.active.foreground,
       ['--bloom-btn-fg-disabled' as string]: palette.disabled.foreground,
       ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
-      ['--bloom-btn-bg' as string]: palette.rest.background,
-      ['--bloom-btn-bg-hover' as string]: isGradient
-        ? palette.rest.background
-        : palette.hover.background,
-      ['--bloom-btn-bg-active' as string]: isGradient
-        ? palette.rest.background
-        : palette.active.background,
+      ['--bloom-btn-bg' as string]: (selected ? palette.hover : palette.rest).background,
+      ['--bloom-btn-bg-hover' as string]: palette.hover.background,
+      ['--bloom-btn-bg-active' as string]: palette.active.background,
       ['--bloom-btn-bg-disabled' as string]: palette.disabled.background,
       ['--bloom-btn-border' as string]: palette.rest.border,
       ['--bloom-btn-border-hover' as string]: palette.hover.border,
@@ -283,7 +277,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       (base as Record<string, unknown>)['--bloom-btn-gap'] = `${LINK_BUTTON_GAP}px`;
     }
     return base;
-  }, [geometry, palette, theme.isDark, fullWidth, isSquare, isIconVariant, isText, isLink, isGradient]);
+  }, [geometry, palette, selected, theme.isDark, fullWidth, isSquare, isIconVariant, isText, isLink, isGradient]);
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
@@ -301,6 +295,8 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const composedClassName = ['bloom-btn']
     .concat(isLink ? ['bloom-btn--link'] : [])
     .concat(isGradient ? ['bloom-btn--gradient'] : [])
+.concat(palette.rest.glass ? ['bloom-btn--glass'] : [])
+    .concat(hasRefraction ? ['bloom-btn--refracted'] : [])
     .concat(className ? [className] : [])
     .join(' ');
 
@@ -403,6 +399,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       onClick?: (event: MouseEvent<HTMLElement>) => void;
       'aria-disabled'?: boolean;
       'aria-busy'?: boolean;
+      'aria-pressed'?: boolean;
       'aria-label'?: string;
       title?: string;
       id?: string;
@@ -423,6 +420,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       },
       'aria-disabled': isInteractionBlocked || undefined,
       'aria-busy': loading || undefined,
+      'aria-pressed': selected,
       'aria-label': ariaLabel ?? childProps['aria-label'],
       title: title ?? childProps.title,
       id: childProps.id ?? resolvedId,
@@ -444,6 +442,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
         onClick={handleClick}
         aria-disabled={isInteractionBlocked || undefined}
         aria-busy={loading || undefined}
+        aria-pressed={selected}
         aria-label={ariaLabel}
         title={title ?? accessibilityHint}
         tabIndex={tabIndex}
@@ -466,6 +465,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       disabled={disabled && !loading}
       aria-disabled={isInteractionBlocked || undefined}
       aria-busy={loading || undefined}
+      aria-pressed={selected}
       aria-label={ariaLabel}
       // Forwarded from an anchored family's `asChild` trigger — see
       // `ButtonProps['aria-expanded']`.

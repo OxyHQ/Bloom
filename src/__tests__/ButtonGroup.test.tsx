@@ -31,7 +31,7 @@ describe('ButtonGroup', () => {
     expect(group.borderRadius).toBe(BUTTON_RADIUS);
     expect(group.borderWidth).toBe(1);
     // 3 items + 2 dividers.
-    expect(renderedChildren(toJSON(), 'group')).toHaveLength(5);
+    expect(renderedChildren(toJSON(), 'group-items')).toHaveLength(5);
   });
 
   it('sizes items from the group: 34 medium, 30 small', () => {
@@ -73,9 +73,9 @@ describe('ButtonGroup', () => {
         </ButtonGroupItem>
       </ButtonGroup>,
     );
-    const bg = (id: string) => resolvedStyle(getByTestId(id).props.style).backgroundColor;
-    expect(bg('selected')).not.toBe(bg('rest'));
-    expect(bg('disabled')).not.toBe(bg('rest'));
+    const bg = (id: string) => getByTestId(id).find(node => typeof node.props.fill === 'string' && node.props.glass === true).props.fill;
+    expect(bg('selected')).not.toEqual(bg('rest'));
+    expect(bg('disabled')).not.toEqual(bg('rest'));
     expect(getByTestId('disabled').props.disabled).toBe(true);
   });
 });

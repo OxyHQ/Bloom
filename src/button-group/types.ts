@@ -13,6 +13,7 @@ export interface ButtonGroupProps {
   /** Names the group for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  className?: string;
   testID?: string;
 }
 
@@ -33,5 +34,6 @@ export interface ButtonGroupItemProps {
   trailingIcon?: ButtonIconComponent;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  className?: string;
   testID?: string;
 }

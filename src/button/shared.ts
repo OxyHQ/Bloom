@@ -1,11 +1,12 @@
 import { isValidElement, type ReactNode } from 'react';
 
+import { SURFACE_SHEEN_CSS } from '../surface/shared';
 import { borderRadius } from '../styles/tokens';
 import { parseRgba, withAlpha } from '../theme/color-utils';
 import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import type { Theme } from '../theme/types';
-import type { ButtonIconComponent, ButtonLinkTone, ButtonSize, ButtonVariant } from './types';
+import type { ButtonProps, ButtonIconComponent, ButtonLinkTone, ButtonSize, ButtonVariant } from './types';
 
 /**
  * The geometry and palette both `Button` forks paint from. One table, read by
@@ -172,6 +173,7 @@ export interface ButtonStatePaint {
   /** Solid fill, or the gradient's top colour when `gradient` is set. */
   background: string;
   gradient: ButtonGradient | null;
+  glass?: boolean;
   border: string;
   foreground: string;
 }
@@ -187,7 +189,7 @@ export interface ButtonPalette {
   shadow: boolean;
   /** The keyboard focus ring colour (accent-500). */
   ring: string;
-  /** Opacity of the whole control when disabled (`icon`: 0.6). */
+  /** Optional whole-control opacity; glass keeps its material at full strength. */
   disabledOpacity?: number;
 }
 
@@ -311,52 +313,11 @@ export function mixColor(base: string, top: string, alpha: number): string {
   return `rgb(${ch(b.r, t.r)} ${ch(b.g, t.g)} ${ch(b.b, t.b)})`;
 }
 
-function gradientState(
-  top: string,
-  bottom: string,
-  foreground: string,
-): ButtonStatePaint {
-  return { background: top, gradient: [top, bottom], border: TRANSPARENT, foreground };
-}
-
 function solidState(background: string, border: string, foreground: string): ButtonStatePaint {
   return { background, gradient: null, border, foreground };
 }
 
-/** `bg-button-primary` / `bg-button-danger`, with their disabled gradients. */
-function filledPalette(
-  ramp: Ramp,
-  onFill: string,
-  disabled: { top: string; bottom: string; foreground: string },
-): ButtonPalette {
-  return {
-    rest: gradientState(ramp[500], ramp[600], onFill),
-    hover: gradientState(ramp[400], ramp[500], onFill),
-    active: gradientState(ramp[600], ramp[700], onFill),
-    disabled: gradientState(disabled.top, disabled.bottom, disabled.foreground),
-    borderWidth: 0,
-    shadow: true,
-    ring: ramp[500],
-  };
-}
-
-/**
- * Resolve every state's paint for a variant.
- *
- * Pure — takes the theme rather than calling `useTheme()`, so it can be walked
- * over every preset × mode without rendering.
- *
- * Bloom's variants:
- *   primary              → primary (accent gradient)
- *   destructive          → danger (negative gradient)
- *   secondary | outline  → secondary (bordered surface)
- *   icon                 → secondary surface, dimmed when disabled
- *   ghost                → ghost (tinted accent)
- *   inverse              → white surface, black label (over media)
- *   link                 → label only; `linkTone` primary | secondary
- *   text                 → borderless accent label with a hover wash
- */
-export function resolveButtonPalette(
+function resolveBaseButtonPalette(
   variant: ButtonVariant,
   theme: Theme,
   linkTone: ButtonLinkTone = 'primary',
@@ -366,87 +327,6 @@ export function resolveButtonPalette(
   const { accent, neutral: n } = resolveButtonRamps(theme);
 
   switch (variant) {
-    case 'primary':
-      return filledPalette(
-        accent,
-        c.primaryForeground,
-        dark
-          ? { top: n[700], bottom: n[800], foreground: n[500] }
-          : { top: n[200], bottom: n[300], foreground: n[400] },
-      );
-    case 'destructive': {
-      const red = colorRamp(c.negative, DANGER_TABLE);
-      return filledPalette(
-        red,
-        c.negativeForeground,
-        dark
-          ? { top: red[900], bottom: red[950], foreground: red[400] }
-          : { top: red[100], bottom: red[200], foreground: red[300] },
-      );
-    }
-    case 'icon': {
-      // The secondary surface, `foreground-icon-primary` glyph, and a
-      // disabled state that dims the whole control to 0.6 over
-      // `icon-button-disabled-foreground` (neutral-300 / dark neutral-500).
-      const secondary = resolveButtonPalette('secondary', theme);
-      return {
-        ...secondary,
-        disabled: { ...secondary.disabled, foreground: dark ? n[500] : n[300] },
-        disabledOpacity: 0.6,
-      };
-    }
-    case 'secondary':
-    case 'outline':
-      return dark
-        ? {
-            rest: solidState(n[800], n[700], c.text),
-            // `color-mix(neutral-700 60%, transparent)` — translucent.
-            hover: solidState(withAlpha(n[700], 0.6), n[500], c.text),
-            active: solidState(n[800], n[600], c.text),
-            disabled: solidState(n[800], n[700], n[600]),
-            borderWidth: 1,
-            shadow: true,
-            ring: accent[500],
-          }
-        : {
-            rest: solidState(c.card, n[200], c.text),
-            hover: solidState(n[100], n[300], c.text),
-            active: solidState(n[200], n[400], c.text),
-            disabled: solidState(n[100], n[200], n[400]),
-            borderWidth: 1,
-            shadow: true,
-            ring: accent[500],
-          };
-    case 'ghost':
-      return dark
-        ? {
-            rest: solidState(accent[900], TRANSPARENT, accent[300]),
-            hover: solidState(accent[800], TRANSPARENT, accent[300]),
-            active: solidState(accent[700], TRANSPARENT, accent[300]),
-            disabled: solidState(n[800], TRANSPARENT, n[600]),
-            borderWidth: 0,
-            shadow: false,
-            ring: accent[500],
-          }
-        : {
-            rest: solidState(accent[100], TRANSPARENT, accent[700]),
-            hover: solidState(accent[200], TRANSPARENT, accent[700]),
-            active: solidState(accent[300], TRANSPARENT, accent[700]),
-            disabled: solidState(accent[50], TRANSPARENT, accent[300]),
-            borderWidth: 0,
-            shadow: false,
-            ring: accent[500],
-          };
-    case 'inverse':
-      return {
-        rest: solidState('#FFFFFF', TRANSPARENT, '#000000'),
-        hover: solidState('rgb(247 247 247)', TRANSPARENT, '#000000'),
-        active: solidState('rgb(235 235 235)', TRANSPARENT, '#000000'),
-        disabled: solidState('rgb(247 247 247)', TRANSPARENT, 'rgb(161 161 161)'),
-        borderWidth: 0,
-        shadow: true,
-        ring: accent[500],
-      };
     case 'link':
       // No surface in any state — the underline is the hover cue and only
       // the press darkens the label.
@@ -483,8 +363,56 @@ export function resolveButtonPalette(
   }
 }
 
+/** The button material: tinted glass, no blur views or per-frame work. */
+export function resolveButtonPalette(
+  variant: ButtonVariant,
+  theme: Theme,
+  linkTone: ButtonLinkTone = 'primary',
+  colors?: ButtonProps['colors'],
+): ButtonPalette {
+  if (!['primary', 'destructive', 'secondary', 'outline', 'icon', 'ghost', 'inverse'].includes(variant)) {
+    return resolveBaseButtonPalette(variant, theme, linkTone);
+  }
+  // Surface variants read token pairs directly; there is no per-instance OKLCH
+  // ramp construction or recursive palette resolution on this hot path.
+  const c = theme.colors;
+  const tinted = Boolean(colors) || variant === 'primary' || variant === 'destructive';
+  const fill = colors?.background ?? (variant === 'destructive' ? c.negative : c.primary);
+  const onFill = colors?.foreground ?? (variant === 'destructive' ? c.negativeForeground : c.primaryForeground);
+  const neutral = theme.isDark ? c.background : c.card;
+  const inverse = !colors && variant === 'inverse';
+  const ghost = !colors && variant === 'ghost';
+  const alpha = tinted || inverse ? [0.94, 0.97, 0.99, 0.18] : [0.25, 0.32, 0.4, 0.18];
+  const paint = (index: number): ButtonStatePaint => {
+    const disabled = index === 3;
+    const color = disabled ? neutral : inverse ? '#FFFFFF' : ghost ? c.primarySubtle : tinted ? fill : neutral;
+    // Subtle tokens already carry a paired tint alpha. Preserve that tint;
+    // hover/press increase coverage without turning it into an opaque fill.
+    const coverage = ghost && !disabled
+      ? Math.min(1, (parseRgba(color)?.a ?? 1) * [1, 1.28, 1.6][index]!)
+      : alpha[index]!;
+    const tint = withAlpha(color, coverage);
+    return {
+      background: tint,
+      gradient: [tint, tint],
+      glass: true,
+      border: withAlpha(theme.isDark ? '#ffffff' : '#000000', theme.isDark ? 0.2 : 0.09),
+      // Brand fills keep their saturated colour and on-fill label. Clear
+      // neutral panes take the reading colour from the theme instead.
+      foreground: disabled ? c.textSecondary : inverse ? '#000000' : ghost ? c.primarySubtleForeground : tinted ? onFill : c.text,
+    };
+  };
+  return {
+    rest: paint(0), hover: paint(1), active: paint(2), disabled: paint(3),
+    borderWidth: ['secondary', 'outline', 'icon'].includes(variant) ? 1 : 0,
+    shadow: true,
+    ring: c.primary,
+  };
+}
+
 /** `linear-gradient(180deg, top, bottom)`, or a flat one for a solid state. */
 export function paintToCssImage(paint: ButtonStatePaint): string {
+  if (paint.glass) return SURFACE_SHEEN_CSS;
   const [top, bottom] = paint.gradient ?? [paint.background, paint.background];
   return `linear-gradient(180deg, ${top} 0%, ${bottom} 100%)`;
 }

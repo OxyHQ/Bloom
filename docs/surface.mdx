@@ -1,0 +1,26 @@
+---
+title: Surface
+description: A passive glass or solid container and Bloom's shared material.
+---
+
+# Surface
+
+`Surface` is a passive container. It owns material, not interaction, navigation or spacing. It is distinct from `surfaces`, Bloom's imperative dialog and sheet API.
+
+```tsx
+import { Surface, Button } from '@oxy.so/bloom';
+
+<Surface style={{ padding: 24 }}>
+  <Button>Continue</Button>
+</Surface>
+```
+
+Use `material="glass"` (default) for the refracted web material, or `material="solid"` for a theme card fill. `fill` accepts a resolved colour with its existing alpha; it is never re-tinted. Omit it for the neutral theme material. `radius` defaults to 20. A numeric or percentage `style.borderRadius` also updates the native paint's clipping radius. Use `radius` or `style.borderRadius` to set native clipping, rather than a class utility the inner paint cannot inspect. `className` belongs to the root layout node; padding, size and layout remain caller-owned. `children`, `accessibilityLabel` and `testID` pass through.
+
+`Surface` has no press, disabled, loading or business state. Controls such as Button own those states and consume the **same paint** directly: `SurfacePaint` for universal components and `surfaceMaterialCss` for web roots. These are internal implementation primitives, not alternate public components. Button keeps its single interactive root without wrapping it in another Surface.
+
+The shared implementation lives in `surface/shared.ts`, `SurfacePaint.tsx`, `web-material.ts` and `web-refraction.ts`. Web uses a full-pane blur and SVG displacement beneath the tint, sheen and rim; one filter definition serves all Surface and Button instances in a document. Native uses a single SVG tint/sheen layer, with explicit stop opacity and no blur or displacement. A surface's own shadow belongs on the outer node; do not clip the native outer node if it needs a shadow.
+
+The web material is verified in Chromium. It remains backdrop-dependent and incurs compositor cost per painted surface; large or densely repeated panes need visual and performance checks. A Surface containing another glass control can establish a different backdrop for that control, so inspect nested compositions rather than assuming independent panes. Button, Card and the floating Sidebar share this material; solid and flush variants retain their own contracts. `SurfacePaint` selects web optics at runtime, so universal consumers do not need platform forks merely to paint glass.
+
+Storybook: **Base / Surface / Material**. See [Button](./button.mdx) for the reference comparison and measured stress case.

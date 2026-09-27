@@ -24,6 +24,8 @@ import { RiHomeLine, RiSettings4Line } from '@oxy.so/bloom/icons';
 
 Give it a height (it fills `100%`); its width is its own.
 
+The floating panel uses the shared [Surface](./surface.mdx) material: a 25% neutral tint, sheen and rim, with backdrop refraction on web. Its existing border, shadow and collapse animation remain. Native paints the same tint and sheen without backdrop refraction; its outer panel leaves shadows unclipped. `flat` and `variant="rail"` retain their solid, flush appearance. The `GlassPanel` Storybook example places detail directly behind the panel.
+
 ## Parts
 
 | export | |

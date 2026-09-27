@@ -185,7 +185,7 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
           <BlurView
             intensity={BLUR_INTENSITY}
             tint={theme.isDark ? 'dark' : 'light'}
-            // No Android blur method — same reason as `glass/GlassSurface.tsx`:
+            // No Android blur method — a blur cannot target its own ancestor:
             // `expo-blur` needs a `blurTarget`, and this chip sits INSIDE the
             // content it would blur, which is the topology that crashes. Without
             // a target the native side falls back to "none" anyway and warns

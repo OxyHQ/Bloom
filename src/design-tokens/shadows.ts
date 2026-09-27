@@ -33,7 +33,7 @@ export type ShadowRole = 's' | 'm' | 'glass';
  *
  * It carries the DROP half only. The lit rim along the top edge — the inset
  * highlight that separates a pane of glass from a tinted card — is
- * `GLASS_RIM_HIGHLIGHT` in `theme/glass-colors.ts` instead, and the split is
+ * the component's own rim layer instead, and the split is
  * forced rather than tidy: an inset shadow paints above the element's own
  * background but BELOW its children, so on a surface whose layers are
  * absolutely-positioned children (every glass surface, by construction) an inset

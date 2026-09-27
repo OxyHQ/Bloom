@@ -303,3 +303,17 @@ export const RailItems: Story = {
     </View>
   ),
 };
+
+/** Shared Surface material, with visible detail behind the floating panel. */
+export const GlassPanel: Story = {
+  render: function Render() {
+    const [selected, setSelected] = useState('home');
+    return (
+      <div style={{ padding: 24, minHeight: 800, backgroundImage: 'linear-gradient(115deg, transparent 40%, rgba(255,255,255,.3) 40%, rgba(255,255,255,.3) 44%, transparent 44%), url(https://raw.githubusercontent.com/lucasromerodb/liquid-glass-effect-macos/refs/heads/main/assets/flowers.jpg)', backgroundSize: '100% 100%, 500px auto', borderRadius: 28 }}>
+        <View style={{ height: 760, flexDirection: 'row' }}>
+          <Sidebar testID="sidebar-glass" items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected={selected} onNavigate={(item) => setSelected(item.key)} account={DEMO_ACCOUNT} team={DEMO_TEAM} />
+        </View>
+      </div>
+    );
+  },
+};

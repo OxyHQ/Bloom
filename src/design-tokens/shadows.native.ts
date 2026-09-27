@@ -19,7 +19,7 @@ import { type ViewStyle } from 'react-native';
  * `boxShadow` (string form, multiple layers, and `inset`) as a first-class
  * `ViewStyle` key since 0.76, and `BoxShadowValue.inset` is in the typings of
  * the version this package develops against — which is also what lets
- * `GlassSurface` paint its rim highlight universally.
+ * components paint their own rim highlights.
  *
  * CONSEQUENCE, stated rather than discovered later: Bloom's `react-native` peer
  * floor is lower than 0.76, so on an older consumer this role degrades to NO
@@ -35,7 +35,7 @@ export type ShadowRole = 's' | 'm' | 'glass';
  * The GLASS rung is the DROP shadow of a translucent surface that floats over
  * content — a near-contact `0 0 1px` seat plus a soft `0 4px 8px` lift, a weight
  * that lands between `s` and `m` rather than matching either. The lit rim along
- * its top edge is `GLASS_RIM_HIGHLIGHT` in `theme/glass-colors.ts`, because an
+ * its top edge is the component's own rim layer, because an
  * inset shadow paints below an element's CHILDREN and every glass surface is
  * built out of absolutely-positioned children — see the web file for the full
  * note.

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
+import Svg, { Stop } from 'react-native-svg';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
@@ -206,7 +207,8 @@ describe('layout: the button IS the node its parent lays out', () => {
     const palette = resolveButtonPalette('icon', theme);
     const { getByTestId } = renderWithTheme(<IconButton testID="icon" className="flex-1" />);
     const style = resolvedStyle(getByTestId('icon').props.style);
-    expect(style.backgroundColor).toBe(palette.rest.background);
+    // Tint is painted by the inner SVG; opaque underpaint would erase glass.
+    expect(style.backgroundColor).toBe('transparent');
     expect(style.borderColor).toBe(palette.rest.border);
     expect(style.borderWidth).toBe(1);
     expect(classNamesOn(getByTestId('icon').props.style)).toContain('flex-1');
@@ -401,11 +403,11 @@ describe('button details', () => {
     expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 16, height: 16 });
   });
 
-  it('IconButton dims to 0.6 when disabled', () => {
+  it('IconButton retains material opacity when disabled', () => {
     const { getByTestId } = renderWithTheme(
       <IconButton testID="btn" disabled icon={<View />} accessibilityLabel="More" />,
     );
-    expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBe(0.6);
+    expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBeUndefined();
   });
 
   it('LinkButton has no container: no height, no padding, a 4px gap', () => {
@@ -438,5 +440,35 @@ describe('button details', () => {
     expect(style.width).toBe(box);
     expect(style.height).toBe(box);
     expect(style.borderRadius).toBe(box / 2);
+  });
+});
+
+
+describe('lightweight native button material', () => {
+  it('keeps neutral tint translucent and sends its alpha separately to SVG', () => {
+    const { UNSAFE_getAllByType, getByTestId } = renderWithTheme(
+      <Button variant="secondary" testID="glass">Explore</Button>,
+    );
+    expect(UNSAFE_getAllByType(Svg)).toHaveLength(1);
+    const stops = UNSAFE_getAllByType(Stop);
+    expect(stops).toHaveLength(5);
+    expect(stops[0]!.props.stopOpacity).toBe(0.25);
+    expect(stops[1]!.props.stopOpacity).toBe(0.25);
+    for (const stop of stops) {
+      expect(stop.props.stopColor).toMatch(/^rgb\(/);
+      expect(typeof stop.props.stopOpacity).toBe('number');
+    }
+    const style = resolvedStyle(getByTestId('glass').props.style);
+    expect(style.backgroundColor).toBe('transparent');
+    expect(style.overflow).toBeUndefined();
+  });
+
+  it('gives inverse the same material while retaining a high-coverage white tint', () => {
+    const { UNSAFE_getAllByType, getByTestId } = renderWithTheme(
+      <Button variant="inverse" testID="inverse">Continue</Button>,
+    );
+    expect(UNSAFE_getAllByType(Svg)).toHaveLength(1);
+    expect(UNSAFE_getAllByType(Stop)[0]!.props.stopOpacity).toBe(0.94);
+    expect(resolvedStyle(getByTestId('inverse').props.style).backgroundColor).toBe('transparent');
   });
 });

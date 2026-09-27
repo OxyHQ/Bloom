@@ -30,6 +30,8 @@ export interface CardProps {
   children?: React.ReactNode;
   /** Preset background + border + elevation. Default `elevated`. */
   variant?: CardVariant;
+  /** Shared Surface material. Defaults to glass; solid keeps an opaque fill. */
+  material?: 'glass' | 'solid';
   /** Corner rung. Default `radius-12`. */
   radius?: CardRadius;
   /** Overrides the variant's elevation. */

@@ -205,7 +205,7 @@ describe('no surface picks its own depth', () => {
     'popover/Popover.web.tsx',
     'tooltip/Tooltip.tsx',
     'tooltip/Tooltip.web.tsx',
-    'zoomable-media-gallery/ZoomableMediaGallery.tsx',
+    'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx',
     'media-flight/MediaFlightLayer.tsx',
     'avatar-group/AvatarGroup.web.tsx',
     'toast/ToastHost.tsx',

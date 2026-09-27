@@ -34,10 +34,11 @@ describe('Sidebar', () => {
       paddingTop: 12,
       paddingLeft: 12,
       paddingRight: 12,
-      backgroundColor: neutral[900],
+      backgroundColor: 'transparent',
       borderColor: neutral[800],
     });
     expect(panel.paddingHorizontal).toBeUndefined();
+    expect(screen.UNSAFE_root.findAll((node) => node.props.pointerEvents === 'none' && resolvedStyle(node.props.style).borderRadius === 24 && resolvedStyle(node.props.style).overflow === 'hidden').length).toBeGreaterThan(0);
   });
 
   it('flat drops the panel chrome', () => {

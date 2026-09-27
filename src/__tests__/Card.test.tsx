@@ -14,6 +14,7 @@
  *      tokens rather than classes.
  */
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -25,6 +26,10 @@ import { UserHoverCard } from '../user-hover-card';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { LinkPreviewCard } from '../link-preview';
 import { findHost, resolvedStyle, type HostNode } from './support/rendered-style';
+
+// The shared RN mock stubs flatten as identity; exercise real array flattening.
+beforeAll(() => { jest.spyOn(StyleSheet, 'flatten').mockImplementation(style => resolvedStyle(style)); });
+afterAll(() => { jest.restoreAllMocks(); });
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -128,8 +133,8 @@ describe('Card axes', () => {
         {null}
       </Card>,
     );
-    const filledBg = chromeOf(filled.toJSON(), 'c').backgroundColor;
-    const outlinedBg = chromeOf(outlined.toJSON(), 'c').backgroundColor;
+    const filledBg = filled.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === true).props.fill;
+    const outlinedBg = outlined.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === true).props.fill;
     expect(typeof filledBg).toBe('string');
     expect(filledBg).not.toBe(outlinedBg);
   });
@@ -150,9 +155,19 @@ describe('Card axes', () => {
     expect(findHost(link.toJSON(), 'c')?.props.accessibilityRole).toBe('link');
   });
 
+  it('preserves child layout and padding inside the clip without clipping its shadow', () => {
+    const { toJSON } = renderWithTheme(
+      <Card testID="layout" style={{ width: 240, flexDirection: 'row', gap: 12, padding: 16 }} />,
+    );
+    expect(chromeOf(toJSON(), 'layout')).toMatchObject({ width: 240, overflow: 'visible' });
+    expect(chromeOf(toJSON(), 'layout').padding).toBeUndefined();
+    expect(chromeOf(toJSON(), 'layout-content')).toMatchObject({ flexDirection: 'row', gap: 12, padding: 16, overflow: 'hidden' });
+  });
+
   it('clips its content to the corner by default', () => {
     const { toJSON } = renderWithTheme(<Card testID="c">{null}</Card>);
-    expect(chromeOf(toJSON(), 'c').overflow).toBe('hidden');
+    expect(chromeOf(toJSON(), 'c').overflow).toBe('visible');
+    expect(chromeOf(toJSON(), 'c-content').overflow).toBe('hidden');
   });
 });
 
@@ -167,7 +182,7 @@ describe('the surfaces that compose Card keep their own chrome', () => {
     expect(style.borderRadius).toBe(RADIUS['radius-16']);
     expect(style.borderWidth).toBeUndefined();
     expect(style.boxShadow).toBeUndefined();
-    expect(style.overflow).toBe('hidden');
+    expect(style.overflow).toBe('visible');
   });
 
   it('user-hover-card: floating panel — radius 16, 1px border, shadow-dropdown', () => {
@@ -194,6 +209,6 @@ describe('the surfaces that compose Card keep their own chrome', () => {
     // as an unbordered transparent block with no error anywhere.
     expect(style.borderWidth).toBe(1);
     expect(typeof style.backgroundColor).toBe('string');
-    expect(style.overflow).toBe('hidden');
+    expect(style.overflow).toBe('visible');
   });
 });

@@ -53,8 +53,12 @@ export interface ButtonProps {
   onPress?: () => void;
   children?: React.ReactNode;
   disabled?: boolean;
+  /** Persistent toggle state; uses the hover tint and announces aria-pressed. */
+  selected?: boolean;
 
   variant?: ButtonVariant;
+  /** Resolved fill/on-fill pair for branded surface buttons; ignored by text/link. */
+  colors?: { background: string; foreground: string };
   size?: ButtonSize;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;

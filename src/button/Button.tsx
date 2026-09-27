@@ -10,7 +10,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
@@ -26,7 +26,6 @@ import {
   iconOnlyWidth,
   isIconComponent,
   resolveButtonPalette,
-  type ButtonGradient,
   type ButtonResolvedSize,
 } from './shared';
 import type { ButtonProps, ButtonVariant, LinkButtonProps } from './types';
@@ -46,7 +45,7 @@ export type {
  *
  * The web fork's `outline | link | destructive` are real variants here too:
  * `outline` and `link` share `secondary`/`text`'s palette, `destructive` paints
- * the negative gradient.
+ * the negative material.
  */
 
 /**
@@ -103,46 +102,12 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { style?: StyleProp<ViewStyle>; 'aria-expanded'?: boolean };
+> & { style?: StyleProp<ViewStyle>; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
 
 const ButtonPressable: ComponentType<ButtonPressableProps> = Pressable;
 
 const StyledPressable: ComponentType<ButtonPressableProps> = styled(ButtonPressable, {
   className: 'style',
-});
-
-let buttonGradientIdCounter = 0;
-
-/**
- * The filled variants' top-to-bottom gradient, painted under the label.
- *
- * Every stop `shared.ts` produces for a gradient is an OPAQUE composite, which
- * is what makes `stopColor` safe here: react-native-svg drops any alpha in it.
- */
-const ButtonGradientFill = memo(function ButtonGradientFill({
-  gradient,
-  radius,
-}: {
-  gradient: ButtonGradient;
-  radius: number;
-}) {
-  const id = useMemo(() => `bloom-btn-gradient${buttonGradientIdCounter++}`, []);
-  return (
-    <View
-      pointerEvents="none"
-      style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
-    >
-      <Svg style={StyleSheet.absoluteFill}>
-        <Defs>
-          <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={gradient[0]} />
-            <Stop offset="1" stopColor={gradient[1]} />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
-      </Svg>
-    </View>
-  );
 });
 
 const ButtonComponent: React.FC<ButtonProps> = ({
@@ -159,8 +124,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   trailingIcon: TrailingIcon,
   iconOnly = false,
   linkTone = 'primary',
+  colors,
   href,
   loading = false,
+  selected,
   loadingColor,
   accessibilityLabel,
   accessibilityHint,
@@ -184,8 +151,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const isInteractionBlocked = disabled || loading;
   const iconSize = isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
   const palette = useMemo(
-    () => resolveButtonPalette(variant, theme, linkTone),
-    [variant, theme, linkTone],
+    () => resolveButtonPalette(variant, theme, linkTone, colors),
+    [variant, theme, linkTone, colors],
   );
 
   // Pressed state drives the ACTIVE palette. Tracked through state rather than
@@ -204,7 +171,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     ? palette.disabled
     : pressed && !loading
       ? palette.active
-      : palette.rest;
+      : selected ? palette.hover : palette.rest;
 
   const baseStyles = useMemo((): ViewStyle => {
     const styles: ViewStyle = {
@@ -220,7 +187,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       // The gradient is a child layer, so the box itself stays clear of it.
       backgroundColor: paint.gradient ? 'transparent' : paint.background,
     };
-    if (palette.shadow && !disabled) {
+    if (palette.shadow) {
       styles.boxShadow = BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'];
     }
     if (disabled && palette.disabledOpacity != null) {
@@ -308,6 +275,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       // `aria-busy` matches what `Button.web.tsx` emits; react-native-web never
       // reads `accessibilityState`, React Native folds `aria-busy` back into it.
       aria-busy={loading || undefined}
+      aria-pressed={selected}
+      accessibilityState={{ disabled: isInteractionBlocked, selected }}
       // Forwarded from an anchored family's `asChild` trigger — see
       // `ButtonProps['aria-expanded']`.
       aria-expanded={ariaExpanded}
@@ -315,7 +284,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       testID={testID}
     >
       {paint.gradient ? (
-        <ButtonGradientFill gradient={paint.gradient} radius={BUTTON_RADIUS} />
+        <SurfacePaint fill={paint.background} radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS} glass={paint.glass} />
       ) : null}
       {loading ? (
         <>

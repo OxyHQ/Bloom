@@ -337,3 +337,7 @@ export * as Code from './code';
 
 // Fonts
 export * as Fonts from './fonts';
+
+// Passive material container, distinct from imperative dialog `surfaces`.
+export { Surface } from './surface';
+export type { SurfaceProps } from './surface';

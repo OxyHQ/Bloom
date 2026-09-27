@@ -1,6 +1,6 @@
 /**
  * `Card` — THE card-shaped surface. One place decides what "a card" is made of:
- * the `card` background role, a border colour and width, an elevation, a corner
+ * the shared Surface material, a border colour and width, an elevation, a corner
  * rung, and the clip that keeps content inside those corners.
  *
  * Families used to draw that chrome by hand (`settings-list`'s group and
@@ -19,8 +19,11 @@
  * requires a new variant name.
  */
 import React, { memo, useMemo } from 'react';
-import { Text, View, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { styled } from 'react-native-css';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { withAlpha } from '../theme/color-utils';
 import { useTheme } from '../theme/use-theme';
 import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -62,6 +65,7 @@ const CardRootComponent: React.FC<CardProps> = ({
   radius = 'radius-12',
   elevation,
   border,
+  material = 'glass',
   style,
   className,
   onPress,
@@ -83,10 +87,9 @@ const CardRootComponent: React.FC<CardProps> = ({
     const resolvedElevation = elevation ?? defaults.elevation;
 
     const base: ViewStyle = {
-      backgroundColor:
-        variant === 'filled' ? theme.colors.backgroundSecondary : theme.colors.card,
+      backgroundColor: 'transparent',
       borderRadius: RADIUS[radius],
-      overflow: 'hidden',
+      overflow: 'visible',
     };
 
     if (resolvedBorder !== 'none') {
@@ -101,16 +104,39 @@ const CardRootComponent: React.FC<CardProps> = ({
     return base;
   }, [variant, radius, border, elevation, theme]);
 
+  // Resolve class utilities before splitting layout: the outer node keeps the
+  // parent's sizing/position and shadow; the inner node owns content clipping.
+  const resolved = StyleSheet.flatten([containerStyle, style]) ?? {};
+  const outerStyle: ViewStyle = { ...resolved, overflow: 'visible' };
+  const contentStyle: ViewStyle = {
+    flexGrow: 1, flexShrink: 1, alignSelf: 'stretch',
+    borderRadius: resolved.borderRadius,
+    overflow: resolved.overflow === 'visible' && StyleSheet.flatten(style)?.overflow === 'visible' ? 'visible' : 'hidden',
+  };
+  const contentKeys = [
+    'flexDirection', 'flexWrap', 'alignItems', 'justifyContent', 'alignContent',
+    'gap', 'rowGap', 'columnGap', 'padding', 'paddingHorizontal', 'paddingVertical',
+    'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingStart', 'paddingEnd',
+  ] as const;
+  for (const key of contentKeys) {
+    if (resolved[key] !== undefined) {
+      Object.assign(contentStyle, { [key]: resolved[key] });
+      delete outerStyle[key];
+    }
+  }
+  const baseFill = variant === 'filled' ? theme.colors.backgroundSecondary : theme.colors.card;
+  const fill = StyleSheet.flatten(style)?.backgroundColor ?? (material === 'glass' ? withAlpha(baseFill, 0.25) : baseFill);
+  outerStyle.backgroundColor = 'transparent';
+  const contents = <>
+    <SurfacePaint fill={String(fill)} radius={resolved.borderRadius ?? RADIUS[radius]} glass={material === 'glass'} />
+    <View style={contentStyle} testID={testID ? `${testID}-content` : undefined}>{children}</View>
+  </>;
+
   if (onPress) {
     return (
       <StyledPressable
         className={className}
-        style={[
-          containerStyle,
-          pressed && !disabled && { opacity: 0.85 },
-          disabled && { opacity: 0.5 },
-          style,
-        ]}
+        style={[outerStyle, pressed && !disabled && { opacity: 0.85 }, disabled && { opacity: 0.5 }]}
         onPress={onPress}
         onPressIn={disabled ? undefined : onPressIn}
         onPressOut={disabled ? undefined : onPressOut}
@@ -118,9 +144,10 @@ const CardRootComponent: React.FC<CardProps> = ({
         accessibilityLabel={accessibilityLabel}
         accessibilityRole={accessibilityRole}
         accessibilityState={{ disabled }}
+        aria-disabled={disabled}
         testID={testID}
       >
-        {children}
+        {contents}
       </StyledPressable>
     );
   }
@@ -128,11 +155,11 @@ const CardRootComponent: React.FC<CardProps> = ({
   return (
     <StyledView
       className={className}
-      style={[containerStyle, disabled && { opacity: 0.5 }, style]}
+      style={[outerStyle, disabled && { opacity: 0.5 }]}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
-      {children}
+      {contents}
     </StyledView>
   );
 };
@@ -228,7 +255,7 @@ const CardDescriptionComponent: React.FC<CardDescriptionProps> = ({
   );
 };
 
-export const Card = memo(CardRootComponent);
+export const Card: React.NamedExoticComponent<CardProps> = memo(styled(CardRootComponent, { className: 'style' }));
 Card.displayName = 'Card';
 
 export const CardHeader = memo(CardHeaderComponent);
