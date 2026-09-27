@@ -186,6 +186,50 @@ describe('Carousel', () => {
     // Start offset = x − inset, clamped to [0, content − viewport] (564 − 400).
     expect(track.props.snapToOffsets).toEqual([0, 164, 164]);
   });
+  it('steps back from the far end when several slides share the end offset', () => {
+    // Narrow slides: the last three all clamp to the same end offset (532), so
+    // "the slide before the active one" is where the track already is. The
+    // arrow must step to the previous DISTINCT resting place instead.
+    const api = renderWithTheme(
+      <Carousel accessibilityLabel="Narrow" inset={12} gap={12}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <CarouselItem key={i} testID={`slide-${i}`} width={172}>
+            <></>
+          </CarouselItem>
+        ))}
+      </Carousel>,
+    );
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    const content = 12 + 5 * 172 + 4 * 12 + 12;
+    act(() => {
+      fireEvent(track, 'layout', layout(0, 400));
+      fireEvent(track, 'contentSizeChange', content, 100);
+    });
+    [0, 1, 2, 3, 4].forEach((i) =>
+      act(() => {
+        fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(12 + i * 184, 172));
+      }),
+    );
+    const scroll = (x: number) =>
+      act(() => {
+        fireEvent.scroll(track, {
+          nativeEvent: {
+            contentOffset: { x, y: 0 },
+            contentSize: { width: content, height: 100 },
+            layoutMeasurement: { width: 400, height: 100 },
+          },
+        });
+      });
+
+    scroll(content - 400);
+    fireEvent.press(api.getByLabelText('Previous slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 368, animated: true });
+
+    // And forward from mid-track, the next arrow skips offsets it already sits on.
+    scroll(368);
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 532, animated: true });
+  });
 });
 
 describe('resolveCarouselPaint', () => {
