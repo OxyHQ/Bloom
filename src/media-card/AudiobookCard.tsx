@@ -7,6 +7,8 @@ import { ListenProgress } from './parts';
 import { joinMeta, resolveMediaCardPaint } from './shared';
 import type { AudiobookCardProps } from './types';
 import { clamp01 } from '../styles/clamp';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 /** A book cover is 2:3. */
 export const AUDIOBOOK_ASPECT_RATIO = 2 / 3;
@@ -22,18 +24,26 @@ function AudiobookCardComponent({
   title,
   author,
   narrator,
-  narratorPrefix = 'Narrated by',
+  narratorPrefix,
   duration,
   progress,
-  typeLabel = 'Audiobook',
+  typeLabel: typeLabelProp,
   layout = 'tile',
   testID,
   ...rest
 }: AudiobookCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.audiobook;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const row = layout === 'row';
-  const narratedBy = narrator ? `${narratorPrefix} ${narrator}` : undefined;
+  // A caller's prefix keeps the "<prefix> <narrator>" shape; the catalog's is
+  // a whole phrase, so the name sits where the language puts it.
+  const narratedBy = narrator
+    ? narratorPrefix !== undefined
+      ? `${narratorPrefix} ${narrator}`
+      : messages.narratedBy(narrator)
+    : undefined;
   const heard = clamp01(progress);
   return (
     <MediaCard
@@ -49,7 +59,7 @@ function AudiobookCardComponent({
       placeholderIcon={RiBookOpenFill}
       footer={
         heard > 0 ? (
-          <ListenProgress value={heard} paint={paint} label={`${title} progress`} testID={testID ? `${testID}-progress` : undefined} />
+          <ListenProgress value={heard} paint={paint} label={messages.progressOf(title)} testID={testID ? `${testID}-progress` : undefined} />
         ) : undefined
       }
     />

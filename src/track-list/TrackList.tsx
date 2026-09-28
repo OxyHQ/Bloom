@@ -19,6 +19,8 @@ import {
 import { TrackListHeader } from './TrackListHeader';
 import { TrackRow } from './TrackRow';
 import type { Track, TrackListProps, TrackRowNavigation, TrackRowPressEvent } from './types';
+import { useMessages } from '../locale/messages';
+import { TRACK_LIST_MESSAGES } from './messages';
 
 /**
  * The table of tracks for an album, a playlist, the liked songs or a page of
@@ -77,11 +79,13 @@ export function TrackList({
   stickyHeaderOffset = 0,
   headerBackground,
   width,
-  accessibilityLabel = 'Tracks',
+  accessibilityLabel: accessibilityLabelProp,
   labels,
   style,
   testID,
 }: TrackListProps) {
+  const { messages } = useMessages(TRACK_LIST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.tracks;
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
   const window = useWindowDimensions();

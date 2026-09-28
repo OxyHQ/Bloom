@@ -11,6 +11,8 @@ import { Text } from '../typography';
 import { Cover, HeaderTitle, MediaHeaderFrame, MetaLine, useMediaHeaderPaint } from './parts';
 import { IS_WEB, resolveLikedGradient, selectTitleVariant } from './shared';
 import type { CollectionHeaderProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The header of an album, single, EP, playlist, liked songs or audiobook page.
@@ -46,13 +48,15 @@ function CollectionHeaderComponent({
   saves,
   editable = false,
   onEdit,
-  editLabel = 'Edit details',
+  editLabel: editLabelProp,
   artworkColor,
   actions,
   headingLevel = 1,
   style,
   testID,
 }: CollectionHeaderProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const editLabel = editLabelProp ?? messages.editDetails;
   const theme = useTheme();
   const liked = variant === 'liked';
   const likedStops = useMemo(() => resolveLikedGradient(theme), [theme]);

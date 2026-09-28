@@ -10,6 +10,8 @@ import { DownloadButton, MediaIconButton, MediaMoreButton } from './MediaActionB
 import { Cover, HeaderTitle, InlineLink, MediaHeaderFrame, MetaLine, ProgressBar, useMediaHeaderPaint } from './parts';
 import { selectTitleVariant } from './shared';
 import type { EpisodeHeaderProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The header of one podcast episode.
@@ -36,20 +38,24 @@ function EpisodeHeaderComponent({
   remainingLabel,
   saved = false,
   onSavedChange,
-  saveLabel = 'Save episode',
+  saveLabel: saveLabelProp,
   onSharePress,
-  shareLabel = 'Share',
+  shareLabel: shareLabelProp,
   download = 'idle',
   downloadProgress,
   onDownloadPress,
   onMorePress,
-  typeLabel = 'Podcast episode',
+  typeLabel: typeLabelProp,
   artworkColor,
   actions,
   headingLevel = 1,
   style,
   testID,
 }: EpisodeHeaderProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const saveLabel = saveLabelProp ?? messages.saveEpisode;
+  const shareLabel = shareLabelProp ?? messages.share;
+  const typeLabel = typeLabelProp ?? messages.podcastEpisode;
   const paint = useMediaHeaderPaint(artworkColor);
 
   const row = (
@@ -67,7 +73,7 @@ function EpisodeHeaderComponent({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <ProgressBar
               value={progress}
-              label="Listening progress"
+              label={messages.listeningProgress}
               fill={paint.accent}
               rail={paint.rail}
               width={120}

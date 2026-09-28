@@ -71,6 +71,8 @@ import type {
   ZoomableMediaGalleryHandle,
   ZoomableMediaGalleryProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { ZOOMABLE_MEDIA_GALLERY_MESSAGES } from './messages';
 
 /**
  * The still-frame URI of an item: the image itself, or a video's poster.
@@ -136,9 +138,11 @@ const webUserSelectNoneStyle = Platform.select({
 function NavArrow({
   direction,
   onPress,
+  label,
 }: {
   direction: 'left' | 'right';
   onPress: () => void;
+  label: string;
 }) {
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const isLeft = direction === 'left';
@@ -147,7 +151,7 @@ function NavArrow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={isLeft ? 'Previous item' : 'Next item'}
+      accessibilityLabel={label}
       hitSlop={8}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
@@ -213,7 +217,9 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
  * Without it a video page degrades to its poster, once, with a dev warning.
  */
-const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false }, ref) => {
+const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
+  const { messages } = useMessages(ZOOMABLE_MEDIA_GALLERY_MESSAGES);
+  const labels = useMemo(() => ({ ...messages, ...labelsProp }), [messages, labelsProp]);
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   // The viewer is full-bleed, so its chrome must clear the status bar, the
   // cutout and the home indicator itself — nothing above it applies them.
@@ -957,7 +963,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
             in isolation. */}
         <Backdrop
           onPress={handleDismiss}
-          accessibilityLabel="Close media viewer"
+          accessibilityLabel={labels.close}
           progress={opacity}
         />
 
@@ -1033,7 +1039,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
                         // Same outcome as tapping the media, which already
                         // dismisses through `singleTapDismissGesture`.
                         onPress={handleDismiss}
-                        accessibilityLabel="Close media viewer"
+                        accessibilityLabel={labels.close}
                         style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }, webPointerStyle]}
                       >
                         <GestureDetector gesture={activePageGesture}>
@@ -1060,7 +1066,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
                     <Pressable
                       key={mediaKey(item, idx)}
                       onPress={handleDismiss}
-                      accessibilityLabel="Close media viewer"
+                      accessibilityLabel={labels.close}
                       style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
                     >
                       <MediaPoster
@@ -1096,7 +1102,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
                       key={`thumb-${mediaKey(item, idx)}`}
                       onPress={() => pageTo(idx)}
                       accessibilityRole="button"
-                      accessibilityLabel={`Go to item ${idx + 1} of ${items.length}`}
+                      accessibilityLabel={labels.goTo(idx + 1, items.length)}
                       style={[
                         styles.thumbTile,
                         idx === activeIndex ? styles.thumbTileActive : styles.thumbTileInactive,
@@ -1124,18 +1130,18 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
           )}
 
           {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex > 0 && (
-            <NavArrow direction="left" onPress={() => pageTo(activeIndex - 1)} />
+            <NavArrow direction="left" label={labels.previous} onPress={() => pageTo(activeIndex - 1)} />
           )}
 
           {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex < items.length - 1 && (
-            <NavArrow direction="right" onPress={() => pageTo(activeIndex + 1)} />
+            <NavArrow direction="right" label={labels.next} onPress={() => pageTo(activeIndex + 1)} />
           )}
 
           {canShare && pagerReady && (
             <Pressable
               onPress={handleShare}
               accessibilityRole="button"
-              accessibilityLabel="Share media"
+              accessibilityLabel={labels.share}
               hitSlop={8}
               style={[
                 styles.shareButton,

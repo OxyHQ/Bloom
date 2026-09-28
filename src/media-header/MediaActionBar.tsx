@@ -34,6 +34,8 @@ import type {
   ShuffleButtonProps,
 } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The row of controls under a media header.
@@ -125,9 +127,11 @@ function ShuffleButtonComponent({
   shuffle,
   onShuffleChange,
   size = 28,
-  accessibilityLabel = 'Shuffle',
+  accessibilityLabel: accessibilityLabelProp,
   ...rest
 }: ShuffleButtonProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.shuffle;
   return (
     <MediaIconButton
       icon={RiShuffleLine}
@@ -182,11 +186,14 @@ function DownloadButtonComponent({
   onPress,
   size = 28,
   disabled = false,
-  accessibilityLabel = 'Download',
-  progressLabel = 'Download progress',
+  accessibilityLabel: accessibilityLabelProp,
+  progressLabel: progressLabelProp,
   style,
   testID,
 }: DownloadButtonProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.download;
+  const progressLabel = progressLabelProp ?? messages.downloadProgress;
   const paint = useMediaHeaderPaint();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const box = Math.max(40, size + 12);
@@ -280,8 +287,8 @@ DownloadButton.displayName = 'DownloadButton';
 function FollowButtonComponent({
   following,
   onFollowChange,
-  label = 'Follow',
-  followingLabel = 'Following',
+  label: labelProp,
+  followingLabel: followingLabelProp,
   accessibilityLabel,
   accessibilityHint,
   color,
@@ -294,6 +301,9 @@ function FollowButtonComponent({
   style,
   testID,
 }: FollowButtonProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const label = labelProp ?? messages.follow;
+  const followingLabel = followingLabelProp ?? messages.following;
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(Number(following));
@@ -353,14 +363,17 @@ function MediaActionBarComponent({
   onMorePress,
   more,
   onSearchPress,
-  searchLabel = 'Search in playlist',
-  compactViewLabel = 'Compact view',
+  searchLabel: searchLabelProp,
+  compactViewLabel: compactViewLabelProp,
   view = 'list',
   onViewChange,
   trailing,
   style,
   testID,
 }: MediaActionBarProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const searchLabel = searchLabelProp ?? messages.searchInPlaylist;
+  const compactViewLabel = compactViewLabelProp ?? messages.compactView;
   const hasRight = onSearchPress || onViewChange || trailing;
   return (
     <View

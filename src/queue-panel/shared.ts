@@ -6,6 +6,9 @@ import { resolveMenuPalette } from '../floating/menu-palette';
 import { dragShift, dragTarget, moveItem } from '../hooks/list-reorder';
 import type { Theme } from '../theme/types';
 import type { QueuePanelLabels } from './types';
+import { COMMON_MESSAGES, type CommonMessages } from '../locale/common-messages';
+import { MEDIA_CONTROLS_MESSAGES, type MediaControlsMessages } from '../media-controls/messages';
+import { QUEUE_PANEL_MESSAGES, type QueuePanelMessages } from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -13,27 +16,34 @@ export const IS_WEB = Platform.OS === 'web';
 export const QUEUE_ROW_HEIGHT = 56;
 export const QUEUE_COVER_SIZE = 40;
 
-export const DEFAULT_QUEUE_PANEL_LABELS: QueuePanelLabels = {
-  queueTab: 'Queue',
-  recentTab: 'Recently played',
-  close: 'Close queue',
-  nowPlaying: 'Now playing',
-  nextInQueue: 'Next in queue',
-  nextFrom: (context) => `Next from: ${context}`,
-  nextUp: 'Next up',
-  clearQueue: 'Clear queue',
-  play: 'Play',
-  moreOptions: (title) => `More options for ${title}`,
-  reorder: (title) => `Reorder ${title}`,
-  reorderHint: 'Drag, or use the arrow keys',
-  moveUp: 'Move up',
-  moveDown: 'Move down',
-  remove: 'Remove from queue',
-  moved: (title, position, total) => `${title} moved to position ${position} of ${total}`,
-  emptyQueue: 'Your queue is empty',
-  emptyQueueHint: 'Add songs and episodes to hear them next.',
-  emptyRecent: 'Nothing played yet',
-};
+/** Every `QueuePanelLabels` entry in one language, from the three catalogs the panel speaks through. */
+export function queuePanelLabels(
+  queue: QueuePanelMessages,
+  controls: MediaControlsMessages,
+  common: CommonMessages,
+): QueuePanelLabels {
+  return {
+    ...queue,
+    nowPlaying: controls.nowPlaying,
+    play: controls.play,
+    moreOptions: (title) => common.labelFor(common.moreOptions, title),
+  };
+}
+
+/** The English labels; the panel speaks the locale's (`BloomProvider locale`). */
+export const DEFAULT_QUEUE_PANEL_LABELS: QueuePanelLabels = queuePanelLabels(
+  QUEUE_PANEL_MESSAGES.en,
+  MEDIA_CONTROLS_MESSAGES.en,
+  COMMON_MESSAGES.en,
+);
+
+/**
+ * A row's name. The catalog's is a whole phrase ("Play Night Drive", "${title}を再生");
+ * a caller who replaced the `play` word keeps the old "<play> <title>" shape.
+ */
+export function queuePlayName(play: string, title: string, controls: MediaControlsMessages): string {
+  return play === controls.play ? controls.playSubject(title) : `${play} ${title}`;
+}
 
 /** @deprecated Use `moveItem` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
 export const moveQueueItem = moveItem;

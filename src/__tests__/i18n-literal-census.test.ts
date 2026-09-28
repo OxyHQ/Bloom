@@ -181,11 +181,6 @@ const PENDING: Record<string, number> = {
   'important-alerts-card': 1,
   'job-board': 29,
   'lead-score': 2,
-  'media-card': 24,
-  'media-controls': 9,
-  'media-header': 25,
-  'media-player': 33,
-  'media-shelf': 2,
   'menu-item': 15,
   'offering-badge': 4,
   'order-status': 5,
@@ -196,15 +191,11 @@ const PENDING: Record<string, number> = {
   'price-breakdown': 6,
   'proof-of-delivery': 19,
   'questionnaire': 8,
-  'queue-panel': 20,
   'recent-hires-card': 1,
   'shipment-request': 19,
-  'sortable-media': 12,
   'stat-cards': 2,
-  'track-list': 20,
   'vehicle-picker': 4,
   'vendor-card': 7,
-  'zoomable-media-gallery': 5,
 };
 
 /** `// i18n-exempt:` lines, counted so a new one is a reviewed decision. */

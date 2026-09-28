@@ -9,6 +9,8 @@ import { MediaCard, SUBTITLE_VARIANT } from './MediaCard';
 import { Mosaic } from './parts';
 import { joinMeta, resolveMediaCardPaint } from './shared';
 import type { PlaylistCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 /**
  * Which cover a playlist draws: its own `artwork`, else a 2×2 `mosaic` of up
@@ -34,12 +36,12 @@ export function playlistCoverKind(
 function PlaylistCardComponent({
   title,
   owner,
-  ownerPrefix = 'By',
+  ownerPrefix,
   trackCount,
   mosaic,
   collaborative = false,
-  collaborativeLabel = 'Collaborative',
-  typeLabel = 'Playlist',
+  collaborativeLabel: collaborativeLabelProp,
+  typeLabel: typeLabelProp,
   artwork,
   artworkColor,
   layout = 'tile',
@@ -47,10 +49,13 @@ function PlaylistCardComponent({
   testID,
   ...rest
 }: PlaylistCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const collaborativeLabel = collaborativeLabelProp ?? messages.collaborative;
+  const typeLabel = typeLabelProp ?? messages.playlist;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const row = layout === 'row';
-  const line = joinMeta([row ? typeLabel : undefined, owner ? `${ownerPrefix} ${owner}` : undefined, trackCount]);
+  const line = joinMeta([row ? typeLabel : undefined, owner ? (ownerPrefix !== undefined ? `${ownerPrefix} ${owner}` : messages.ownedBy(owner)) : undefined, trackCount]);
   const kind = playlistCoverKind(artwork, mosaic);
   const variant = row ? 'body-2-regular' : SUBTITLE_VARIANT[size];
 

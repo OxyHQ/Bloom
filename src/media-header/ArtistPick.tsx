@@ -9,6 +9,8 @@ import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { Cover, useMediaHeaderPaint } from './parts';
 import type { ArtistPickProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The item an artist pins to the top of their page.
@@ -26,11 +28,13 @@ function ArtistPickComponent({
   subtitle,
   note,
   avatar,
-  label = 'Artist pick',
+  label: labelProp,
   onPress,
   style,
   testID,
 }: ArtistPickProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const label = labelProp ?? messages.artistPick;
   const paint = useMediaHeaderPaint();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const card: WebCssStyle = {

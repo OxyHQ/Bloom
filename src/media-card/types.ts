@@ -52,7 +52,7 @@ export interface MediaCardCommonProps {
   menuItems?: ReadonlyArray<MediaCardMenuItem>;
   /** Menu content as nodes (`DropdownMenuItem`s …) — takes precedence over `menuItems`. */
   menu?: ReactNode;
-  /** The menu trigger's name. Default `"More options"`. */
+  /** The menu trigger's name (`"More options"` in English). */
   menuLabel?: string;
   /** Default `medium`. */
   size?: MediaCardSize;
@@ -159,7 +159,7 @@ export interface SongCardProps extends MediaCardCommonProps, MediaCardArtworkPro
   /** Row layout: draws a `LikeButton`. */
   liked?: boolean;
   onLikedChange?: (liked: boolean) => void;
-  /** Default `"Song"`. */
+  /** Default `"Song"` in English. */
   typeLabel?: string;
 }
 
@@ -182,9 +182,9 @@ export interface ArtistCardProps extends MediaCardCommonProps, MediaCardArtworkP
   verified?: boolean;
   /** Pre-formatted ("1.2M followers"). */
   followers?: string;
-  /** Default `"Artist"`. */
+  /** Default `"Artist"` in English. */
   typeLabel?: string;
-  /** Default `"Verified"`. */
+  /** Default `"Verified"` in English. */
   verifiedLabel?: string;
 }
 
@@ -192,7 +192,7 @@ export interface PlaylistCardProps extends MediaCardCommonProps, MediaCardArtwor
   title: string;
   /** The owner's display name: "By Maya". */
   owner?: string;
-  /** Default `"By"`. */
+  /** Before the owner: "<prefix> <owner>". Default: "By <owner>" in the locale. */
   ownerPrefix?: string;
   /** Pre-formatted ("42 songs"). */
   trackCount?: string;
@@ -200,9 +200,9 @@ export interface PlaylistCardProps extends MediaCardCommonProps, MediaCardArtwor
   mosaic?: ReadonlyArray<string>;
   /** Draws the shared-playlist glyph before the owner line. */
   collaborative?: boolean;
-  /** Default `"Collaborative"`. */
+  /** Default `"Collaborative"` in English. */
   collaborativeLabel?: string;
-  /** Default `"Playlist"`. */
+  /** Default `"Playlist"` in English. */
   typeLabel?: string;
 }
 
@@ -216,14 +216,14 @@ export interface MixCardProps extends MediaCardCommonProps {
   faces?: ReadonlyArray<string>;
   /** Pre-formatted artists line ("Mara Vell, Juno Park and more"). */
   description?: string;
-  /** Default `"Mix"`. */
+  /** Default `"Mix"` in English. */
   typeLabel?: string;
 }
 
 export interface PodcastCardProps extends MediaCardCommonProps, MediaCardArtworkProps {
   title: string;
   publisher?: string;
-  /** Default `"Podcast"`. */
+  /** Default `"Podcast"` in English. */
   typeLabel?: string;
 }
 
@@ -244,11 +244,11 @@ export interface EpisodeCardProps extends MediaCardCommonProps, MediaCardArtwork
   remaining?: string;
   /** Finished: a check and `playedLabel` replace the bar. */
   played?: boolean;
-  /** Default `"Played"`. */
+  /** Default `"Played"` in English. */
   playedLabel?: string;
   /** Icon buttons after the progress (save, download). */
   actions?: ReactNode;
-  /** Default `"Episode"`. */
+  /** Default `"Episode"` in English. */
   typeLabel?: string;
 }
 
@@ -257,13 +257,13 @@ export interface AudiobookCardProps extends MediaCardCommonProps, MediaCardArtwo
   author?: string;
   /** The narrator's name: "Narrated by Ines Calder". */
   narrator?: string;
-  /** Default `"Narrated by"`. */
+  /** Before the narrator: "<prefix> <narrator>". Default: "Narrated by <narrator>" in the locale. */
   narratorPrefix?: string;
   /** Pre-formatted ("11 h 20 min"). */
   duration?: string;
   /** Listened fraction, `0..1`. */
   progress?: number;
-  /** Default `"Audiobook"`. */
+  /** Default `"Audiobook"` in English. */
   typeLabel?: string;
 }
 
@@ -293,9 +293,9 @@ export interface EventCardProps extends MediaCardCommonProps {
   /** The tickets button. */
   action?: ReactNode;
   soldOut?: boolean;
-  /** Default `"Sold out"`. */
+  /** Default `"Sold out"` in English. */
   soldOutLabel?: string;
-  /** Default `"Event"`. */
+  /** Default `"Event"` in English. */
   typeLabel?: string;
 }
 
@@ -303,9 +303,9 @@ export interface ProfileCardProps extends MediaCardCommonProps, MediaCardArtwork
   name: string;
   /** Adds "Follows you" to the label line. */
   followsYou?: boolean;
-  /** Default `"Profile"`. */
+  /** Default `"Profile"` in English. */
   typeLabel?: string;
-  /** Default `"Follows you"`. */
+  /** Default `"Follows you"` in English. */
   followsYouLabel?: string;
   /** Pre-formatted ("214 followers"). */
   followers?: string;
@@ -331,7 +331,7 @@ export interface FriendActivityCardProps
   live?: boolean;
   /** Pre-formatted ("12 min"). */
   time?: string;
-  /** Default `"Listening now"`. */
+  /** Default `"Listening now"` in English. */
   liveLabel?: string;
 }
 
@@ -377,7 +377,7 @@ export interface RecapCardProps {
   artworkColor?: string;
   highlights?: ReadonlyArray<RecapHighlight>;
   onShare?: () => void;
-  /** Default `"Share"`. */
+  /** Default `"Share"` in English. */
   shareLabel?: string;
   skeleton?: boolean;
   style?: StyleProp<ViewStyle>;

@@ -3,6 +3,8 @@ import { View } from 'react-native';
 
 import { EpisodeRow } from './EpisodeRow';
 import type { EpisodeListProps } from './types';
+import { useMessages } from '../locale/messages';
+import { TRACK_LIST_MESSAGES } from './messages';
 
 /**
  * A `role="list"` of `EpisodeRow`s with hairlines between them. The row of
@@ -12,11 +14,13 @@ export function EpisodeList({
   episodes,
   currentEpisodeId,
   isPlaying = false,
-  accessibilityLabel = 'Episodes',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
   ...rowProps
 }: EpisodeListProps) {
+  const { messages } = useMessages(TRACK_LIST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.episodes;
   return (
     <View role="list" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
       {episodes.map((episode, index) => (

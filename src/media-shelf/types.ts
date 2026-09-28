@@ -20,7 +20,7 @@ export interface ShelfProps {
   onTitlePress?: () => void;
   /** Shows the "Show all" button on the right of the header. */
   onShowAll?: () => void;
-  /** Text of the "Show all" button. Default `"Show all"`. */
+  /** Text of the "Show all" button (`"Show all"` in English). */
   showAllLabel?: string;
   /** Default `row`. */
   layout?: ShelfLayout;
@@ -86,7 +86,7 @@ export interface FilterChipsProps {
   onValueChange: (value: string | undefined) => void;
   /** Pressing the selected chip clears the selection. Default `false`. */
   allowDeselect?: boolean;
-  /** The group's name. Default `"Filters"`. */
+  /** The group's name (`"Filters"` in English). */
   accessibilityLabel?: string;
   /** Horizontal padding inside the scroll track. Default `0`. */
   contentInset?: number;

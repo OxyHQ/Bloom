@@ -4,6 +4,8 @@ import { RiMic2Fill } from '../icons/remix/RiMic2Fill';
 import { MediaCard } from './MediaCard';
 import { joinMeta, PODCAST_RADIUS } from './shared';
 import type { PodcastCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 /**
  * A show: a rounded-square cover — radius 12 (8 in a row), rounder than an
@@ -12,7 +14,9 @@ import type { PodcastCardProps } from './types';
  *
  * Name: "Slow Signals, Podcast, Harbor Audio".
  */
-function PodcastCardComponent({ title, publisher, typeLabel = 'Podcast', layout = 'tile', ...rest }: PodcastCardProps) {
+function PodcastCardComponent({ title, publisher, typeLabel: typeLabelProp, layout = 'tile', ...rest }: PodcastCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.podcast;
   const row = layout === 'row';
   return (
     <MediaCard

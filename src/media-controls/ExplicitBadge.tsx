@@ -6,6 +6,8 @@ import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import { resolveMediaControlsPaint } from './shared';
 import type { ExplicitBadgeProps, ExplicitBadgeSize } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from './messages';
 
 /**
  * The small square "E" beside a track title.
@@ -29,10 +31,12 @@ const SIZE_CONFIG: Record<ExplicitBadgeSize, { box: number; radius: number; type
 function ExplicitBadgeComponent({
   size = 'medium',
   letter = 'E',
-  label = 'Explicit',
+  label: labelProp,
   style,
   testID,
 }: ExplicitBadgeProps) {
+  const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const label = labelProp ?? messages.explicit;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
   const { box, radius, type } = SIZE_CONFIG[size];

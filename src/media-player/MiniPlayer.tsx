@@ -17,6 +17,8 @@ import { artistNames, IS_WEB, resolveArtworkTint } from './shared';
 import type { MiniPlayerProps } from './types';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
+import { useMessages } from '../locale/messages';
+import { MEDIA_PLAYER_MESSAGES } from './messages';
 
 export const MINI_PLAYER_HEIGHT = 56;
 /** Horizontal travel that counts as a swipe (native). */
@@ -62,11 +64,13 @@ function MiniPlayerContent({
   deviceName,
   onNext,
   onPrevious,
-  openLabel = 'Open player',
+  openLabel: openLabelProp,
   testID,
   tinted,
   background,
 }: MiniPlayerProps & MiniPlayerSurface) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const openLabel = openLabelProp ?? messages.openPlayer;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);

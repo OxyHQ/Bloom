@@ -30,8 +30,11 @@ import {
   QUEUE_ROW_HEIGHT,
   resolveQueuePanelPaint,
   type QueuePanelPaint,
+  queuePlayName,
 } from './shared';
 import type { QueuePanelLabels, QueueSection, QueueTrack } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
 /**
  * A reorderable section of the queue.
@@ -109,6 +112,7 @@ function QueueReorderRow({
   removeButton,
   testID,
 }: RowProps) {
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const [menuOpen, setMenuOpen] = useState(false);
   const dragging = drag?.from === index;
   const canUp = index > 0;
@@ -256,7 +260,7 @@ function QueueReorderRow({
         track={track}
         highlighted={menuOpen || dragging}
         webState={dragging ? 'dragging' : menuOpen ? 'active' : undefined}
-        accessibilityLabel={`${labels.play} ${title}`}
+        accessibilityLabel={queuePlayName(labels.play, title, controls)}
         onPress={onPlay ? () => onPlay(section, index, track) : undefined}
         trailing={trailing}
         testID={testID}

@@ -4,8 +4,11 @@ import { View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { QueuePanelRow } from './QueuePanelRow';
-import { DEFAULT_QUEUE_PANEL_LABELS, resolveQueuePanelPaint } from './shared';
+import { queuePlayName, resolveQueuePanelPaint } from './shared';
 import type { RecentlyPlayedListProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { QUEUE_PANEL_MESSAGES } from './messages';
 
 /**
  * The listening history: plain `QueuePanelRow`s, newest first, each pressable to
@@ -22,15 +25,17 @@ function RecentlyPlayedListComponent({
   style,
   testID,
 }: RecentlyPlayedListProps) {
+  const { messages } = useMessages(QUEUE_PANEL_MESSAGES);
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
-  const play = labels?.play ?? DEFAULT_QUEUE_PANEL_LABELS.play;
+  const play = labels?.play ?? controls.play;
 
   if (items.length === 0) {
     return (
       <View style={[{ paddingTop: 24, paddingBottom: 24, alignItems: 'center' }, style]} testID={testID}>
         <Text variant="body-regular" style={{ color: paint.textSecondary }}>
-          {labels?.emptyRecent ?? DEFAULT_QUEUE_PANEL_LABELS.emptyRecent}
+          {labels?.emptyRecent ?? messages.emptyRecent}
         </Text>
       </View>
     );
@@ -44,7 +49,7 @@ function RecentlyPlayedListComponent({
             track={track}
             current={track.id === currentId}
             playing={playing}
-            accessibilityLabel={`${play} ${track.title}`}
+            accessibilityLabel={queuePlayName(play, track.title, controls)}
             onPress={onPlay ? () => onPlay(index, track) : undefined}
             testID={testID ? `${testID}-row-${index}` : undefined}
           />

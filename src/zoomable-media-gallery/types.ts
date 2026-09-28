@@ -75,7 +75,22 @@ export interface ZoomableMediaGalleryHandle {
   open: (items: GalleryMedia[], index: number, rect?: MeasuredRect) => void;
 }
 
+/** Every name the viewer announces. Localised via `BloomProvider locale`; pass any to override. */
+export interface ZoomableMediaGalleryLabels {
+  /** The backdrop and the media's tap-to-close target (`"Close media viewer"` in English). */
+  close: string;
+  /** The web paging arrows (`"Previous item"` / `"Next item"` in English). */
+  previous: string;
+  next: string;
+  /** A thumbnail in the strip: `(index, total) => "Go to item 2 of 5"`, `index` 1-based. */
+  goTo: (index: number, total: number) => string;
+  /** The share button (`"Share media"` in English). */
+  share: string;
+}
+
 export interface ZoomableMediaGalleryProps {
+  /** Overrides any of the viewer's names. */
+  labels?: Partial<ZoomableMediaGalleryLabels>;
   /** Measures any thumbnail by its media subset index, used on dismiss. */
   measureThumb?: MeasureThumb;
   /**
