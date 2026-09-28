@@ -81,4 +81,14 @@ describe('TextFieldInput revealable (web)', () => {
     expect(onBlur).not.toHaveBeenCalled();
     expect(input().type).toBe('text');
   });
+
+  it('keeps a keyboard user on the button: its click never reaches the shell, which would focus the input', () => {
+    act(() => root.render(<Password />));
+    const eye = button('Show password')!;
+    act(() => eye.focus());
+    expect(document.activeElement).toBe(eye);
+    act(() => eye.click());
+    expect(input().type).toBe('text');
+    expect(document.activeElement).toBe(button('Hide password'));
+  });
 });
