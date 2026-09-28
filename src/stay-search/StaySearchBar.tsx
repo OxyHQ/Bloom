@@ -3,7 +3,10 @@ import React, { memo, useMemo } from 'react';
 import { HOME_SEARCH_SEGMENTS } from '../home-search/constants';
 import { HomeSearchBar } from '../home-search/HomeSearchBar';
 import type { HomeSearchSegment } from '../home-search/types';
-import { DEFAULT_STAY_SEARCH_BAR_LABELS } from './constants';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { staySearchBarLabels } from './constants';
+import { STAY_SEARCH_MESSAGES } from './messages';
 import type { StaySearchBarProps, StaySearchSegment } from './types';
 
 /**
@@ -36,9 +39,11 @@ function StaySearchBarComponent({
   style,
   testID,
 }: StaySearchBarProps) {
+  const { messages } = useMessages(STAY_SEARCH_MESSAGES);
+  const common = useCommonMessages();
   const labels = useMemo(
-    () => ({ ...DEFAULT_STAY_SEARCH_BAR_LABELS, ...labelOverrides }),
-    [labelOverrides],
+    () => ({ ...staySearchBarLabels(messages, common.search), ...labelOverrides }),
+    [messages, common.search, labelOverrides],
   );
 
   const datesSummary =

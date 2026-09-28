@@ -3,10 +3,12 @@ import { View, type LayoutChangeEvent } from 'react-native';
 
 import { ActionCardShell } from '../booking/ActionCard';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { Slider } from '../slider';
 import { TextField, TextFieldInput, TextFieldLabel, TextFieldSuffix } from '../text-field';
 import { Text } from '../typography';
-import { MORTGAGE_LABELS, MORTGAGE_SPLIT_FROM, MORTGAGE_TERM_OPTIONS } from './constants';
+import { MORTGAGE_SPLIT_FROM, MORTGAGE_TERM_OPTIONS } from './constants';
+import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { computeMortgage, formatPlainAmount, parseAmount, parseRate } from './mortgage';
 import { PrincipalDonut, SelectChip, resolveDonutTones, useActionPalette } from './parts';
 import type { MortgageCalculatorProps } from './types';
@@ -102,8 +104,9 @@ function MortgageCalculatorComponent({
   style,
   testID,
 }: MortgageCalculatorProps) {
+  const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
   const palette = useActionPalette();
-  const labels = useMemo(() => ({ ...MORTGAGE_LABELS, ...labelsProp }), [labelsProp]);
+  const labels = useMemo(() => ({ ...messages.mortgage, ...labelsProp }), [messages, labelsProp]);
   const tones = useMemo(() => resolveDonutTones(palette.theme), [palette.theme]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
@@ -142,7 +145,7 @@ function MortgageCalculatorComponent({
   const setPercent = (pct: number) => setDown(Math.round((price * Math.min(100, Math.max(0, pct))) / 100));
   const shownDisclaimer =
     disclaimer === undefined
-      ? 'An estimate, not an offer. It leaves out fees, taxes and insurance, and assumes a fixed rate for the whole term.'
+      ? messages.mortgageDisclaimer
       : disclaimer;
 
   const inputs = (
@@ -206,7 +209,7 @@ function MortgageCalculatorComponent({
               shape="slot"
               selected={years === option}
               onPress={() => setYears(option)}
-              accessibilityLabel={`${option} ${labels.years}`}
+              accessibilityLabel={labelsProp?.years != null ? `${option} ${labels.years}` : messages.termYears(option)}
               style={{ flex: 1, minWidth: 0, paddingLeft: 4, paddingRight: 4 }}
               testID={id(`term-${option}`)}
             >

@@ -4,6 +4,8 @@ import { View } from 'react-native';
 import { RiWalkLine } from '../icons/remix/RiWalkLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import { resolveInsightPalette } from './shared';
 import type { NearbyPlacesProps } from './types';
 
@@ -18,7 +20,9 @@ import type { NearbyPlacesProps } from './types';
  * Each row is one `listitem` named "Rossio Metro, Metro station, 4 min walk"
  * (`formatTime`).
  */
-function NearbyPlacesComponent({ items, formatTime = (time) => `${time} walk`, style, testID }: NearbyPlacesProps) {
+function NearbyPlacesComponent({ items, formatTime: formatTimeProp, style, testID }: NearbyPlacesProps) {
+  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const formatTime = formatTimeProp ?? messages.walkTime;
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
 

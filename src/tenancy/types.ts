@@ -51,7 +51,7 @@ export interface TenancyTimelineProps {
   density?: TenancyTimelineDensity;
   /** Names the list. */
   accessibilityLabel?: string;
-  /** Appended to a `current` / `upcoming` event's accessible name. Defaults `"In progress"`, `"Not yet"`. */
+  /** Appended to a `current` / `upcoming` event's accessible name. `"In progress"`, `"Not yet"` in English. */
   stateLabels?: Partial<Record<Exclude<TenancyTimelineEventState, 'complete'>, string>>;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -96,7 +96,7 @@ export interface LeaseSummaryCardProps {
   /** Pre-formatted ("1 Sep 2025"). */
   startDate: string;
   endDate: string;
-  /** Default `"Lease period"`. */
+  /** `"Lease period"` in English. */
   periodLabel?: string;
   /** Pre-formatted ("8 months left"). */
   remainingLabel?: string;
@@ -104,13 +104,13 @@ export interface LeaseSummaryCardProps {
   progress?: number;
   /** Pre-formatted ("€1,150"). */
   rent: string;
-  /** Default `"Monthly rent"`. */
+  /** `"Monthly rent"` in English. */
   rentLabel?: string;
   deposit?: string;
-  /** Default `"Deposit"`. */
+  /** `"Deposit"` in English. */
   depositLabel?: string;
   nextPayment?: LeaseNextPayment;
-  /** Default `"Next payment"`. */
+  /** `"Next payment"` in English. */
   nextPaymentLabel?: string;
   /** Buttons under the card body. */
   actions?: ReactNode;
@@ -150,23 +150,23 @@ export interface RentPaymentListProps {
   title?: string;
   /** Pre-formatted total ("€9,200"). */
   paidThisYear?: string;
-  /** Default `"Paid this year"`. */
+  /** `"Paid this year"` in English. */
   paidThisYearLabel?: string;
   /** Pre-formatted ("€1,150"). */
   outstanding?: string;
-  /** Default `"Outstanding"`. */
+  /** `"Outstanding"` in English. */
   outstandingLabel?: string;
   /** `error` paints the outstanding figure in the error text colour. Default `default`. */
   outstandingTone?: 'default' | 'error';
   /** Overrides the default status words. */
   statusLabels?: Partial<Record<RentPaymentStatus, string>>;
-  /** The receipt button's accessible name. Default `` (p) => `Download receipt for ${p.month}` ``. */
+  /** The receipt button's accessible name. `` (p) => `Download receipt for ${p.month}` `` in English. */
   receiptLabel?: (payment: RentPayment) => string;
   /** The wide layout's column headings. */
   columnLabels?: Partial<Record<'month' | 'dueDate' | 'method' | 'amount' | 'status', string>>;
-  /** Default `(date) => \`Due ${date}\``, the narrow layout's meta line. */
+  /** `(date) => \`Due ${date}\`` in English, the narrow layout's meta line. */
   formatDueDate?: (dueDate: string) => string;
-  /** Drawn when `payments` is empty. Default `"No payments yet"`. */
+  /** Drawn when `payments` is empty. `"No payments yet"` in English. */
   emptyLabel?: string;
   /** `auto` (default) draws columns from 640 wide. */
   layout?: TenancyLayout;
@@ -220,14 +220,14 @@ export interface MaintenanceRequestCardProps {
   /** Draws the timeline. Default `true`. */
   showTimeline?: boolean;
   commentCount?: number;
-  /** Default `(n) => n === 1 ? '1 comment' : \`${n} comments\``. */
+  /** `(n) => n === 1 ? '1 comment' : \`${n} comments\`` in English. */
   commentsLabel?: (count: number) => string;
   /** Makes the comment count a button. */
   onPressComments?: () => void;
   actions?: ReactNode;
   /** Rendition forwarded to the `ImageResolver`. Default `"thumb"`. */
   photoVariant?: string;
-  /** A photo's accessible name. Default `"<alt>, photo 1 of 3"`. */
+  /** A photo's accessible name. `"<alt>, photo 1 of 3"` in English. */
   photoLabel?: (photo: MaintenancePhoto, position: number, total: number) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -263,13 +263,13 @@ export interface DocumentListProps {
   documents: readonly TenancyDocument[];
   /** Overrides the default status words. */
   statusLabels?: Partial<Record<TenancyDocumentStatus, string>>;
-  /** Default `"Sign"`. */
+  /** `"Sign"` in English. */
   signLabel?: string;
-  /** Default `(d) => \`View ${d.name}\``. */
+  /** `(d) => \`View ${d.name}\`` in English. */
   viewLabel?: (document: TenancyDocument) => string;
-  /** Default `(d) => \`Download ${d.name}\``. */
+  /** `(d) => \`Download ${d.name}\`` in English. */
   downloadLabel?: (document: TenancyDocument) => string;
-  /** Drawn when `documents` is empty. Default `"No documents"`. */
+  /** Drawn when `documents` is empty. `"No documents"` in English. */
   emptyLabel?: string;
   /** `auto` (default) puts the status beside the name from 560 wide. */
   layout?: TenancyLayout;

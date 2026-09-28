@@ -11,11 +11,12 @@ import { FilterChip } from '../stay-filters/FilterChip';
 import { StepperRow } from '../stepper';
 import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel } from '../text-field';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
+import { LISTING_EDITOR_MESSAGES } from './messages';
 import { resolveSelectionPaint, SelectionCard } from './SelectionCard';
 import type {
   ListingEditorIcon,
-  OfferingEditorLabels,
   OfferingEditorProps,
   OfferingKind,
   OfferingValue,
@@ -50,29 +51,6 @@ import type {
  * each named by its title with its description as the hint; the pill rows are
  * `radiogroup`s named by their label.
  */
-
-const DEFAULT_LABELS: OfferingEditorLabels = {
-  rent: { title: 'For rent', description: 'Long-term tenancy, priced by the month.' },
-  sale: { title: 'For sale', description: 'Sell the home outright.' },
-  stay: { title: 'Vacation rental', description: 'Short stays, priced by the night.' },
-  swap: { title: 'Home swap', description: 'Exchange homes with other members.' },
-  monthlyRent: 'Monthly rent',
-  deposit: 'Deposit',
-  depositOption: (months) => (months === 0 ? 'None' : `${months} ${months === 1 ? 'month' : 'months'}`),
-  availableFrom: 'Available from',
-  minimumStay: 'Minimum stay',
-  months: (months) => `${months} ${months === 1 ? 'month' : 'months'}`,
-  askingPrice: 'Asking price',
-  pricePerArea: 'Price per m²',
-  pricePerAreaEmpty: 'Add a price',
-  nightlyRate: 'Nightly rate',
-  cleaningFee: 'Cleaning fee',
-  minimumNights: 'Minimum nights',
-  nights: (nights) => `${nights} ${nights === 1 ? 'night' : 'nights'}`,
-  swapMode: 'How would you like to exchange?',
-  swapModes: { swap: 'Swap homes', host: 'Host only', both: 'Either' },
-  group: 'How is the home offered?',
-};
 
 const ICONS: Record<OfferingKind, ListingEditorIcon> = {
   rent: RiKey2Line,
@@ -117,9 +95,10 @@ function OfferingEditorComponent({
   style,
   testID,
 }: OfferingEditorProps) {
+  const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelsProp }), [labelsProp]);
+  const labels = useMemo(() => ({ ...messages.offering, ...labelsProp }), [messages, labelsProp]);
   const [width, setWidth] = useState(0);
   const wide = width >= 480;
   const tid = (suffix: string) => (testID ? `${testID}-${suffix}` : undefined);

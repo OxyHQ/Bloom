@@ -25,6 +25,8 @@ import {
   resolveListingPalette,
   type ListingPalette,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES, type ListingDetailsMessages } from './messages';
 import type { ListingPhoto, ListingPhotoGridProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
 
@@ -48,8 +50,13 @@ const DEFAULT_GRID_RATIO = 2;
 const DEFAULT_CAROUSEL_RATIO = 4 / 3;
 const SCRIM_OPACITY = 0.1;
 
-function defaultPhotoLabel(photo: ListingPhoto, position: number, total: number): string {
-  return photo.alt ? `${photo.alt}, photo ${position} of ${total}` : `Photo ${position} of ${total}`;
+function defaultPhotoLabel(
+  photo: ListingPhoto,
+  position: number,
+  total: number,
+  messages: ListingDetailsMessages = LISTING_DETAILS_MESSAGES.en,
+): string {
+  return photo.alt ? messages.photoWithAlt(photo.alt, position, total) : messages.photoOf(position, total);
 }
 
 interface PhotoTileProps {
@@ -120,17 +127,22 @@ function ListingPhotoGridComponent({
   photos,
   onPressPhoto,
   onShowAll,
-  showAllLabel = 'Show all photos',
+  showAllLabel: showAllLabelProp,
   layout = 'auto',
   aspectRatio = DEFAULT_GRID_RATIO,
   carouselAspectRatio = DEFAULT_CAROUSEL_RATIO,
-  accessibilityLabel = 'Listing photos',
+  accessibilityLabel: accessibilityLabelProp,
   formatCounter,
-  photoLabel = defaultPhotoLabel,
+  photoLabel: photoLabelProp,
   imageVariant = 'large',
   style,
   testID,
 }: ListingPhotoGridProps) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
+  const showAllLabel = showAllLabelProp ?? messages.showAllPhotos;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.listingPhotos;
+  const photoLabel =
+    photoLabelProp ?? ((photo: ListingPhoto, position: number, total: number) => defaultPhotoLabel(photo, position, total, messages));
   const theme = useTheme();
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);

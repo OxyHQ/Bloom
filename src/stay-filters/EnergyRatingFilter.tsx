@@ -8,6 +8,8 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { focusRingShadow } from '../styles/interactive-web-css';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES, type StayFiltersMessages } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -94,10 +96,13 @@ export function resolveEnergyRatingPaint(theme: Theme): Record<EnergyRating, Ene
   return out;
 }
 
-export function defaultEnergySummary(value: EnergyRating | null): string {
-  if (value == null) return 'Any rating';
-  if (value === 'A') return 'A only';
-  return `${value} and better`;
+export function defaultEnergySummary(
+  value: EnergyRating | null,
+  messages: StayFiltersMessages = STAY_FILTERS_MESSAGES.en,
+): string {
+  if (value == null) return messages.anyRating;
+  if (value === 'A') return messages.ratingOnly(value);
+  return messages.ratingAndBetter(value);
 }
 
 interface PillProps {
@@ -164,12 +169,15 @@ function Pill({ rating, paint, included, checked, disabled, name, onPress, testI
 function EnergyRatingFilterComponent({
   value,
   onValueChange,
-  formatSummary = defaultEnergySummary,
-  accessibilityLabel = 'Energy rating',
+  formatSummary: formatSummaryProp,
+  accessibilityLabel: accessibilityLabelProp,
   disabled = false,
   style,
   testID,
 }: EnergyRatingFilterProps) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const formatSummary = formatSummaryProp ?? ((rating: EnergyRating | null) => defaultEnergySummary(rating, messages));
+  const accessibilityLabel = accessibilityLabelProp ?? messages.energyRating;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(STYLE_ID, CSS);

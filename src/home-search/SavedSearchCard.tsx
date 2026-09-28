@@ -13,6 +13,8 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { STAY_SEARCH_TILE_RADIUS } from '../stay-search/constants';
 import { useStaySearchPalette } from '../stay-search/palette';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useMessages } from '../locale/messages';
+import { HOME_SEARCH_MESSAGES } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
@@ -55,9 +57,9 @@ function SavedSearchCardComponent({
   title,
   criteria,
   newCount = 0,
-  formatNewCount = (n) => `${n} new`,
+  formatNewCount: formatNewCountProp,
   alertFrequency,
-  alertsOffLabel = 'Alerts off',
+  alertsOffLabel: alertsOffLabelProp,
   icon: Icon = RiSearchLine,
   onPress,
   onEdit,
@@ -67,6 +69,9 @@ function SavedSearchCardComponent({
   style,
   testID,
 }: SavedSearchCardProps) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES);
+  const formatNewCount = formatNewCountProp ?? messages.newCount;
+  const alertsOffLabel = alertsOffLabelProp ?? messages.alertsOff;
   const common = useCommonMessages();
   const editLabel = editLabelProp ?? common.edit;
   const deleteLabel = deleteLabelProp ?? common.delete;
@@ -189,7 +194,7 @@ function SavedSearchCardComponent({
             variant="secondary"
             size="small"
             onPress={onEdit}
-            accessibilityLabel={`${editLabel} ${title}`}
+            accessibilityLabel={messages.actionOn(editLabel, title)}
             testID={testID ? `${testID}-edit` : undefined}
           >
             {editLabel}
@@ -202,7 +207,7 @@ function SavedSearchCardComponent({
             iconOnly
             icon={RiDeleteBinLine}
             onPress={onDelete}
-            accessibilityLabel={`${deleteLabel} ${title}`}
+            accessibilityLabel={messages.actionOn(deleteLabel, title)}
             testID={testID ? `${testID}-delete` : undefined}
           />
         ) : null}

@@ -6,11 +6,13 @@ import { resolveButtonRamps } from '../button/shared';
 import { StepperRow } from '../stepper';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { DEFAULT_GUEST_DESCRIPTIONS, DEFAULT_GUEST_LABELS, GUEST_KINDS } from './constants';
+import { GUEST_KINDS } from './constants';
+import { STAY_SEARCH_MESSAGES } from './messages';
 import { useGuestPickerClose } from './context';
 import { applyGuestCount, minimumAdults } from './guests';
 import type { GuestKind, GuestPickerProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 
 /** The kinds `maxGuests` counts; infants and pets ride free. */
 const COUNTED: readonly GuestKind[] = ['adults', 'children'];
@@ -51,6 +53,7 @@ function GuestPickerComponent({
   testID,
 }: GuestPickerProps) {
   const common = useCommonMessages();
+  const { messages } = useMessages(STAY_SEARCH_MESSAGES);
   const closeLabel = closeLabelProp ?? common.close;
   const theme = useTheme();
   const contextClose = useGuestPickerClose();
@@ -70,11 +73,11 @@ function GuestPickerComponent({
     <View style={style} testID={testID}>
       {kinds.map((kind, index) => {
         const description =
-          descriptions && kind in descriptions ? descriptions[kind] : DEFAULT_GUEST_DESCRIPTIONS[kind];
+          descriptions && kind in descriptions ? descriptions[kind] : messages.guestDescriptions[kind];
         return (
           <StepperRow
             key={kind}
-            title={labels?.[kind] ?? DEFAULT_GUEST_LABELS[kind]}
+            title={labels?.[kind] ?? messages.guests[kind]}
             description={description ?? undefined}
             value={value[kind]}
             min={kind === 'adults' ? minimumAdults(value) : 0}

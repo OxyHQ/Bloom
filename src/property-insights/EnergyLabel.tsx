@@ -11,6 +11,8 @@ import {
   ENERGY_LABEL_MIN_BAR_RATIO,
   ENERGY_LABEL_ROW_HEIGHT,
 } from './constants';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import { ENERGY_CLASSES, resolveEnergyTones, resolveInsightPalette, type EnergyTone } from './shared';
 import type { EnergyLabelProps, EnergyMeasurement } from './types';
 
@@ -88,15 +90,21 @@ function EnergyLabelComponent({
   consumption,
   emissions,
   pending = false,
-  pendingLabel = 'Certificate in progress',
-  consumptionLabel = 'Consumption',
-  emissionsLabel = 'Emissions',
-  bestLabel = 'More efficient',
-  worstLabel = 'Less efficient',
+  pendingLabel: pendingLabelProp,
+  consumptionLabel: consumptionLabelProp,
+  emissionsLabel: emissionsLabelProp,
+  bestLabel: bestLabelProp,
+  worstLabel: worstLabelProp,
   accessibilityLabel,
   style,
   testID,
 }: EnergyLabelProps) {
+  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const pendingLabel = pendingLabelProp ?? messages.certificateInProgress;
+  const consumptionLabel = consumptionLabelProp ?? messages.consumption;
+  const emissionsLabel = emissionsLabelProp ?? messages.emissions;
+  const bestLabel = bestLabelProp ?? messages.moreEfficient;
+  const worstLabel = worstLabelProp ?? messages.lessEfficient;
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const tones = useMemo(() => resolveEnergyTones(theme), [theme]);
@@ -115,8 +123,8 @@ function EnergyLabelComponent({
   const name =
     accessibilityLabel ??
     (pending
-      ? `Energy rating: ${pendingLabel}`
-      : ['Energy rating', ...columns.map((c) => `${c.label}: ${[c.rating.rating, c.rating.value].filter(Boolean).join(', ')}`)]
+      ? `${messages.energyRating}: ${pendingLabel}`
+      : [messages.energyRating, ...columns.map((c) => `${c.label}: ${[c.rating.rating, c.rating.value].filter(Boolean).join(', ')}`)]
           .join('. ') + '.');
 
   const caption = (text: string, testIDSuffix: string) => (

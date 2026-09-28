@@ -1,7 +1,9 @@
 import React from 'react';
 
-import { FLOOR_OPTIONS, relabelOptions } from './constants';
+import { FLOOR_OPTIONS, localizedOptions } from './constants';
 import { ToggleChipGroup } from './ToggleChipGroup';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { FloorFilterProps, FloorOption, ToggleChipOption } from './types';
 
 /**
@@ -15,14 +17,17 @@ import type { FloorFilterProps, FloorOption, ToggleChipOption } from './types';
 export function FloorFilter<T extends string = FloorOption>({
   options,
   labels,
-  accessibilityLabel = 'Floor',
+  accessibilityLabel: accessibilityLabelProp,
   ...group
 }: FloorFilterProps<T>) {
-  const items = relabelOptions<T, ToggleChipOption<T>>(
-    options ?? (FLOOR_OPTIONS as unknown as readonly ToggleChipOption<T>[]),
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const items = localizedOptions<T, ToggleChipOption<T>>(
+    options,
+    FLOOR_OPTIONS as unknown as readonly ToggleChipOption<T>[],
+    messages.floors as Partial<Record<T, string>>,
     labels,
   );
-  return <ToggleChipGroup {...group} options={items} accessibilityLabel={accessibilityLabel} />;
+  return <ToggleChipGroup {...group} options={items} accessibilityLabel={accessibilityLabelProp ?? messages.floor} />;
 }
 
 FloorFilter.displayName = 'FloorFilter';

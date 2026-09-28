@@ -73,11 +73,11 @@ export interface PriceRangeFilterProps {
    * span evenly. See `PriceRangeFilter`.
    */
   scale?: PriceScale;
-  /** Label of the lower field and the lower thumb's name. Default `"Minimum"`. */
+  /** Label of the lower field and the lower thumb's name. `"Minimum"` in English; follows the locale. */
   minLabel?: string;
-  /** Label of the upper field and the upper thumb's name. Default `"Maximum"`. */
+  /** Label of the upper field and the upper thumb's name. `"Maximum"` in English; follows the locale. */
   maxLabel?: string;
-  /** Names the slider. Default `"Price range"`. */
+  /** Names the slider. `"Price range"` in English; follows the locale. */
   accessibilityLabel?: string;
   /** Height of the tallest histogram bar. Default `64`. */
   histogramHeight?: number;
@@ -113,7 +113,7 @@ export interface CountFilterProps {
   max?: number;
   /** The lowest count after "Any". Default `1`. */
   min?: number;
-  /** Label of the no-preference chip. Default `"Any"`. */
+  /** Label of the no-preference chip. `"Any"` in English; follows the locale. */
   anyLabel?: string;
   /** Formats a count chip. Default: the number, with `+` on `max`. */
   formatCount?: (count: number, isMax: boolean) => string;
@@ -148,9 +148,9 @@ export interface ToggleChipGroupProps<T extends string = string> {
 export interface AmenityFilterProps<T extends string = string> extends ToggleChipGroupProps<T> {
   /** How many options show before "Show more". Default `6`; a list no longer than this has no link. */
   collapsedCount?: number;
-  /** Default `"Show more"`. */
+  /** `"Show more"` in English; follows the locale. */
   showMoreLabel?: string;
-  /** Default `"Show less"`. */
+  /** `"Show less"` in English; follows the locale. */
   showLessLabel?: string;
   /** Start expanded. Uncontrolled after mount. Default `false`. */
   defaultExpanded?: boolean;
@@ -173,7 +173,7 @@ export interface FilterFooterProps {
   resultsLabel: string;
   onApply: () => void;
   onClear: () => void;
-  /** Default `"Clear all"`. */
+  /** `"Clear all"` in English; follows the locale. */
   clearLabel?: string;
   /** Disables "Clear all" — nothing is applied. */
   clearDisabled?: boolean;
@@ -190,10 +190,10 @@ export interface FilterTriggerButtonProps {
   /** How many filters are applied; a badge shows while it is above `0`. */
   count?: number;
   onPress?: () => void;
-  /** Default `"Filters"`. */
+  /** `"Filters"` in English; follows the locale. */
   label?: string;
   /**
-   * The button's name. Default: `label`, plus `", 3 applied"` while `count > 0`
+   * The button's name. Default: `label`, plus `", 3 applied"` (in the locale) while `count > 0`
    * (the badge is a drawn number, so the name has to say it).
    */
   accessibilityLabel?: string;
@@ -221,11 +221,11 @@ export interface AreaRangeFilterProps {
   slider?: boolean;
   /** Formats an area for the fields at rest. Default `` (n) => `${n} m²` ``. */
   formatArea?: (area: number) => string;
-  /** Default `"Minimum"`. */
+  /** `"Minimum"` in English; follows the locale. */
   minLabel?: string;
-  /** Default `"Maximum"`. */
+  /** `"Maximum"` in English; follows the locale. */
   maxLabel?: string;
-  /** Names the group and the slider. Default `"Area"`. */
+  /** Names the group and the slider. `"Area"` in English; follows the locale. */
   accessibilityLabel?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -271,7 +271,7 @@ export interface PropertyTypeTilesProps<T extends string = PropertyType> {
    * tile's minimum width.
    */
   columns?: number;
-  /** Names the group. Default `"Property type"`. */
+  /** Names the group. `"Property type"` in English; follows the locale. */
   accessibilityLabel?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -303,7 +303,7 @@ export interface FeatureFilterProps<T extends string = HousingFeature>
   labels?: Partial<Record<T, string>>;
   /** `chips` (default): filter pills with icons. `checkboxes`: a two-column list of `Checkbox`es. */
   variant?: 'chips' | 'checkboxes';
-  /** Names the group. Default `"Features"`. */
+  /** Names the group. `"Features"` in English; follows the locale. */
   accessibilityLabel?: string;
 }
 
@@ -318,9 +318,9 @@ export interface EnergyRatingFilterProps {
   value: EnergyRating | null;
   /** Pressing the selected letter again clears it (`null`). */
   onValueChange: (value: EnergyRating | null) => void;
-  /** Formats the line under the letters. Default `"C and better"`, `"A only"`, `"Any rating"`. */
+  /** Formats the line under the letters. `"C and better"`, `"A only"`, `"Any rating"` in English; follows the locale. */
   formatSummary?: (value: EnergyRating | null) => string;
-  /** Names the radio group. Default `"Energy rating"`. */
+  /** Names the radio group. `"Energy rating"` in English; follows the locale. */
   accessibilityLabel?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -335,13 +335,13 @@ export interface AvailabilityFilterProps {
   /** Available from this day at the latest; ignored (and the picker disabled) while `availableNow`. */
   date: Date | null;
   onDateChange: (date: Date | null) => void;
-  /** Default `"Available now"`. */
+  /** `"Available now"` in English; follows the locale. */
   availableNowLabel?: string;
-  /** Default `"Ready to move in today"`. */
+  /** `"Ready to move in today"` in English; follows the locale. */
   availableNowDescription?: string;
-  /** The date row's title. Default `"Available from"`. */
+  /** The date row's title. `"Available from"` in English; follows the locale. */
   dateLabel?: string;
-  /** The picker trigger with no day chosen. Default `"Any date"`. */
+  /** The picker trigger with no day chosen. `"Any date"` in English; follows the locale. */
   datePlaceholder?: string;
   /** Days before this can not be picked. */
   minDate?: Date | null;
@@ -358,10 +358,10 @@ export type FloorOption = 'ground' | 'middle' | 'top' | 'elevator';
 
 export interface FloorFilterProps<T extends string = FloorOption>
   extends Omit<ToggleChipGroupProps<T>, 'options' | 'accessibilityLabel'> {
-  /** Default Ground, Middle, Top, With elevator. */
+  /** Default Ground, Middle, Top, With elevator, in the locale. */
   options?: ToggleChipOption<T>[];
   /** Override built-in labels by value. */
   labels?: Partial<Record<T, string>>;
-  /** Names the group. Default `"Floor"`. */
+  /** Names the group. `"Floor"` in English; follows the locale. */
   accessibilityLabel?: string;
 }

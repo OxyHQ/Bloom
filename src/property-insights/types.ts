@@ -28,13 +28,13 @@ export interface EnergyLabelProps {
   emissions?: EnergyMeasurement;
   /** Draws the scale muted with a "Certificate in progress" note instead of the marks. */
   pending?: boolean;
-  /** Default `"Certificate in progress"`. */
+  /** `"Certificate in progress"` in English. */
   pendingLabel?: string;
-  /** Default `"Consumption"`. */
+  /** `"Consumption"` in English. */
   consumptionLabel?: string;
-  /** Default `"Emissions"`. */
+  /** `"Emissions"` in English. */
   emissionsLabel?: string;
-  /** The scale's end captions. Default `"More efficient"` / `"Less efficient"`. */
+  /** The scale's end captions. `"More efficient"` / `"Less efficient"` in English. */
   bestLabel?: string;
   worstLabel?: string;
   /** Overrides the composed name ("Energy rating. Consumption: C, 112 kWh/m²·year. …"). */
@@ -49,13 +49,13 @@ export interface EnergyBadgeProps {
   /** Omit (or set `pending`) for a certificate still in progress. */
   rating?: EnergyClass;
   pending?: boolean;
-  /** The text after the class. Default `"Energy"`; `""` draws the class alone. */
+  /** The text after the class. `"Energy"` in English; `""` draws the class alone. */
   label?: string;
-  /** Drawn in place of the class while pending. Default `"Pending"`. */
+  /** Drawn in place of the class while pending. `"Pending"` in English. */
   pendingLabel?: string;
   /** Default `medium`. */
   size?: EnergyBadgeSize;
-  /** Default `"Energy rating C"` / `"Energy rating pending"`. */
+  /** `"Energy rating C"` / `"Energy rating pending"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -107,7 +107,7 @@ export interface PriceHistoryChartProps {
   onPeriodChange?: (id: string) => void;
   /** Default `step` — an asking price holds until it changes. */
   shape?: PriceHistoryShape;
-  /** Header label at rest. Default `"Current price"`. */
+  /** Header label at rest. `"Current price"` in English. */
   title?: string;
   /** Headline at rest. Default: the last point's value. */
   currentPrice?: number;
@@ -115,11 +115,11 @@ export interface PriceHistoryChartProps {
   format?: (value: number) => string;
   /** Y tick format. Default `€385K`. */
   formatAxisValue?: (value: number) => string;
-  /** The callout at the last point. Default `"Now"`. */
+  /** The callout at the last point. `"Now"` in English. */
   currentLabel?: string;
-  /** Drawn instead of the chart with fewer than two points. Default `"No price history yet"`. */
+  /** Drawn instead of the chart with fewer than two points. `"No price history yet"` in English. */
   emptyLabel?: string;
-  /** Names the switcher. Default `"Price history period"`. */
+  /** Names the switcher. `"Price history period"` in English. */
   periodsLabel?: string;
   /** Overrides the composed chart summary. */
   accessibilityLabel?: string;
@@ -155,28 +155,28 @@ export interface PriceEstimateProps {
   confidenceNote?: string;
   /** Price format. Default `€385,000`. */
   format?: (value: number) => string;
-  /** Default `"Estimated price"`. */
+  /** `"Estimated price"` in English. */
   title?: string;
-  /** Default `"Asking"`. */
+  /** `"Asking"` in English. */
   askingLabel?: string;
-  /** Verdict wording. Default `"Fair price"`, `"Above estimate by 8%"`, `"Below estimate by 6%"`. */
+  /** Verdict wording. `"Fair price"`, `"Above estimate by 8%"`, `"Below estimate by 6%"` in English. */
   formatVerdict?: (verdict: PriceVerdict) => string;
   /** Above the range by more than this is `error`, up to it `warning`. Default `0.1`. */
   highAboveRatio?: number;
-  /** Default `"Low confidence"`, `"Medium confidence"`, `"High confidence"`. */
+  /** `"Low confidence"`, `"Medium confidence"`, `"High confidence"` in English. */
   confidenceLabels?: Partial<Record<EstimateConfidence, string>>;
-  /** Shown in place of the verdict at low confidence. Default `"Not enough data for a verdict"`. */
+  /** Shown in place of the verdict at low confidence. `"Not enough data for a verdict"` in English. */
   lowConfidenceVerdictLabel?: string;
   /** The "Why this estimate" bullets. */
   reasons?: readonly string[];
-  /** Default `"Why this estimate"`. */
+  /** `"Why this estimate"` in English. */
   reasonsLabel?: string;
   /** Controlled expansion of the reasons. */
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
   /** Comparable homes the estimate used. */
   comparables?: number;
-  /** Default `(n) => \`Based on ${n} comparable homes\``. */
+  /** `"Based on 12 comparable homes"` in English. */
   comparablesLabel?: (count: number) => string;
   /** Footer parts, joined with " · " ("Automated valuation", "v3.2", "Updated 2 Sep 2026"). */
   method?: string;
@@ -203,7 +203,7 @@ export interface AreaPriceRow {
 
 export interface PricePerAreaComparisonProps {
   rows: readonly AreaPriceRow[];
-  /** Names the chart and prefixes its summary. Default `"Price per square metre"`. */
+  /** Names the chart and prefixes its summary. `"Price per square metre"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -235,7 +235,7 @@ export interface NeighbourhoodScoresProps {
   variant?: NeighbourhoodScoresVariant;
   /** `auto` (default): 1 column below 560, 2 from 560. */
   columns?: 1 | 2 | 'auto';
-  /** A score's `aria-valuetext`. Default `"8.4 out of 10"`. */
+  /** A score's `aria-valuetext`. `"8.4 out of 10"` in English. */
   formatValueText?: (display: string, max: number) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -254,7 +254,7 @@ export interface NearbyPlace {
 
 export interface NearbyPlacesProps {
   items: readonly NearbyPlace[];
-  /** A row's name suffix. Default `(time) => \`${time} walk\``. */
+  /** A row's name suffix. `"4 min walk"` in English. */
   formatTime?: (time: string) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -279,9 +279,9 @@ export interface RentHistoryEntry {
 
 export interface RentHistoryListProps {
   items: readonly RentHistoryEntry[];
-  /** Drawn when `items` is empty. Default `"No history for this home yet"`. */
+  /** Drawn when `items` is empty. `"No history for this home yet"` in English. */
   emptyLabel?: string;
-  /** Names the list. Default `"Rent history"`. */
+  /** Names the list. `"Rent history"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

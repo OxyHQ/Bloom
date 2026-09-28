@@ -9,6 +9,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { STAY_SEARCH_MESSAGES } from './messages';
 import { STAY_SEARCH_TILE_RADIUS, STAY_SEARCH_TILE_SIZE } from './constants';
 import { useStaySearchPalette } from './palette';
 import type { DestinationSuggestionsProps } from './types';
@@ -76,6 +78,7 @@ function DestinationSuggestionsComponent({
   style,
   testID,
 }: DestinationSuggestionsProps) {
+  const { messages } = useMessages(STAY_SEARCH_MESSAGES);
   const theme = useTheme();
   const palette = useStaySearchPalette();
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
@@ -115,7 +118,7 @@ function DestinationSuggestionsComponent({
   // react-native-web passes both through, so they travel as web-only props.
   const webListProps: Record<string, unknown> = IS_WEB ? { role: 'listbox', tabIndex: 0, onKeyDown } : {};
   const listStyle: WebCssStyle = { gap: 2, '--bloom-destination-ring': accent[500] };
-  const listName = accessibilityLabel ?? heading ?? 'Destinations';
+  const listName = accessibilityLabel ?? heading ?? messages.destinations;
 
   return (
     <View style={style}>

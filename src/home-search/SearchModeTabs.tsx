@@ -5,11 +5,13 @@ import { resolveCategoryBarPaint, type CategoryBarPaint } from '../category-bar/
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useMessages } from '../locale/messages';
+import { HOME_SEARCH_MESSAGES } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { DEFAULT_HOME_SEARCH_MODE_LABELS, HOME_SEARCH_MODES } from './constants';
+import { HOME_SEARCH_MODES } from './constants';
 import type { HomeSearchMode, SearchModeTabsProps } from './types';
 
 /**
@@ -103,16 +105,18 @@ export function SearchModeTabs<K extends string = HomeSearchMode>({
   modes,
   labels,
   variant = 'tabs',
-  accessibilityLabel = 'Search mode',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: SearchModeTabsProps<K>) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.searchMode;
   const theme = useTheme();
   const paint = useMemo(() => resolveCategoryBarPaint(theme), [theme]);
   const keys = modes ?? (HOME_SEARCH_MODES as unknown as readonly K[]);
   const nodes = useRef(new Map<K, View>());
   const labelOf = (key: K) =>
-    labels?.[key] ?? (DEFAULT_HOME_SEARCH_MODE_LABELS as Partial<Record<string, string>>)[key] ?? key;
+    labels?.[key] ?? (messages.modes as Partial<Record<string, string>>)[key] ?? key;
 
   useEffect(() => {
     adoptStyleSheet(STYLE_ID, CSS);

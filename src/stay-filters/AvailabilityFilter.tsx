@@ -5,6 +5,8 @@ import { DatePicker } from '../date-picker';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { SwitchFilterRow } from './SwitchFilterRow';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { AvailabilityFilterProps } from './types';
 
 /**
@@ -22,16 +24,21 @@ function AvailabilityFilterComponent({
   onAvailableNowChange,
   date,
   onDateChange,
-  availableNowLabel = 'Available now',
-  availableNowDescription = 'Ready to move in today',
-  dateLabel = 'Available from',
-  datePlaceholder = 'Any date',
+  availableNowLabel: availableNowLabelProp,
+  availableNowDescription: availableNowDescriptionProp,
+  dateLabel: dateLabelProp,
+  datePlaceholder: datePlaceholderProp,
   minDate,
   locale,
   disabled = false,
   style,
   testID,
 }: AvailabilityFilterProps) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES, locale);
+  const availableNowLabel = availableNowLabelProp ?? messages.availableNow;
+  const availableNowDescription = availableNowDescriptionProp ?? messages.availableNowDescription;
+  const dateLabel = dateLabelProp ?? messages.availableFrom;
+  const datePlaceholder = datePlaceholderProp ?? messages.anyDate;
   const theme = useTheme();
   return (
     <View testID={testID} style={[{ gap: 24 }, style]}>

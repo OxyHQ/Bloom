@@ -18,6 +18,9 @@ import {
   formatEuros,
   resolveInsightPalette,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
+import type { PropertyInsightsMessages } from './messages';
 import type { EstimateConfidence, PriceEstimateProps, PriceVerdict } from './types';
 
 /**
@@ -61,11 +64,6 @@ const LABEL_SLOT = 140;
 
 const WIDEN: Record<EstimateConfidence, number> = { high: 0, medium: 0.25, low: 0.5 };
 const FILLED: Record<EstimateConfidence, number> = { low: 1, medium: 2, high: 3 };
-const DEFAULT_CONFIDENCE_LABELS: Record<EstimateConfidence, string> = {
-  low: 'Low confidence',
-  medium: 'Medium confidence',
-  high: 'High confidence',
-};
 
 /** Where `asking` sits against `[low, high]`, as a share of the nearest edge. */
 export function computePriceVerdict(low: number, high: number, asking: number): PriceVerdict {
@@ -78,10 +76,13 @@ export function computePriceVerdict(low: number, high: number, asking: number): 
 
 const percent = (ratio: number) => `${Math.max(1, Math.round(ratio * 100))}%`;
 
-export function defaultFormatVerdict(verdict: PriceVerdict): string {
-  if (verdict.position === 'above') return `Above estimate by ${percent(verdict.ratio)}`;
-  if (verdict.position === 'below') return `Below estimate by ${percent(verdict.ratio)}`;
-  return 'Fair price';
+export function defaultFormatVerdict(
+  verdict: PriceVerdict,
+  messages: PropertyInsightsMessages = PROPERTY_INSIGHTS_MESSAGES.en,
+): string {
+  if (verdict.position === 'above') return messages.aboveEstimate(percent(verdict.ratio));
+  if (verdict.position === 'below') return messages.belowEstimate(percent(verdict.ratio));
+  return messages.fairPrice;
 }
 
 export function priceVerdictTone(verdict: PriceVerdict, highAboveRatio = 0.1): AccentTone {
@@ -116,24 +117,31 @@ function PriceEstimateComponent({
   confidence,
   confidenceNote,
   format = formatEuros,
-  title = 'Estimated price',
-  askingLabel = 'Asking',
-  formatVerdict = defaultFormatVerdict,
+  title: titleProp,
+  askingLabel: askingLabelProp,
+  formatVerdict: formatVerdictProp,
   highAboveRatio = 0.1,
   confidenceLabels,
-  lowConfidenceVerdictLabel = 'Not enough data for a verdict',
+  lowConfidenceVerdictLabel: lowConfidenceVerdictLabelProp,
   reasons,
-  reasonsLabel = 'Why this estimate',
+  reasonsLabel: reasonsLabelProp,
   expanded: expandedProp,
   onExpandedChange,
   comparables,
-  comparablesLabel = (n) => `Based on ${n} comparable homes`,
+  comparablesLabel: comparablesLabelProp,
   method,
   version,
   updated,
   style,
   testID,
 }: PriceEstimateProps) {
+  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const title = titleProp ?? messages.estimatedPrice;
+  const askingLabel = askingLabelProp ?? messages.asking;
+  const formatVerdict = formatVerdictProp ?? ((v: PriceVerdict) => defaultFormatVerdict(v, messages));
+  const lowConfidenceVerdictLabel = lowConfidenceVerdictLabelProp ?? messages.noVerdict;
+  const reasonsLabel = reasonsLabelProp ?? messages.whyThisEstimate;
+  const comparablesLabel = comparablesLabelProp ?? messages.comparables;
   const theme = useTheme();
   useInteractiveWebCss(PROPERTY_INSIGHTS_STYLE_ID, PROPERTY_INSIGHTS_CSS);
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
@@ -151,7 +159,7 @@ function PriceEstimateComponent({
   const pct = (v: number) => (dMax === dMin ? 0 : ((v - dMin) / (dMax - dMin)) * 100);
 
   const verdict = asking != null ? computePriceVerdict(low, high, asking) : undefined;
-  const confidenceLabel = confidenceLabels?.[confidence] ?? DEFAULT_CONFIDENCE_LABELS[confidence];
+  const confidenceLabel = confidenceLabels?.[confidence] ?? messages.confidence[confidence];
   const rangeText = `${format(Math.min(low, high))} – ${format(Math.max(low, high))}`;
   const footer = [method, version, updated].filter(Boolean).join(' · ');
   const hasReasons = (reasons && reasons.length > 0) || comparables != null;

@@ -10,7 +10,9 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { TRIP_STATUS } from './constants';
+import { BOOKING_MESSAGES } from './messages';
 import {
   BOOKING_STYLE_ID,
   BOOKING_WEB_CSS,
@@ -60,6 +62,7 @@ function TripCardComponent({
   style,
   testID,
 }: TripCardProps) {
+  const { messages } = useMessages(BOOKING_MESSAGES);
   const theme = useTheme();
   const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
   const resolver = useImageResolver();
@@ -79,7 +82,7 @@ function TripCardComponent({
 
   const uri = image ? (isImageUrl(image) ? image : resolver?.(image, imageVariant)) : undefined;
   const statusInfo = status ? TRIP_STATUS[status] : null;
-  const shownStatus = statusLabel ?? statusInfo?.label;
+  const shownStatus = statusLabel ?? (status ? messages.tripStatus[status] : undefined);
   const name =
     accessibilityLabel ?? [title, dates, shownStatus].filter((part) => part != null && part !== '').join(', ');
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);

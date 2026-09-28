@@ -16,7 +16,9 @@ import { HousingCard, HousingToggleButton, useHousingPalette } from '../tenancy/
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { EVICTION_STATUS } from './constants';
+import { EVICTION_MESSAGES } from './messages';
 import type { EvictionReportCardProps } from './types';
 
 /**
@@ -56,17 +58,22 @@ function EvictionReportCardComponent({
   organisationsLabel,
   attending = false,
   onAttendingChange,
-  attendLabel = "I'll be there",
+  attendLabel: attendLabelProp,
   onShare,
-  shareLabel = 'Share',
+  shareLabel: shareLabelProp,
   onContactSupport,
-  contactSupportLabel = 'Contact support group',
+  contactSupportLabel: contactSupportLabelProp,
   verified = false,
-  verifiedLabel = 'Community verified',
+  verifiedLabel: verifiedLabelProp,
   headingLevel = 3,
   style,
   testID,
 }: EvictionReportCardProps) {
+  const { messages } = useMessages(EVICTION_MESSAGES);
+  const attendLabel = attendLabelProp ?? messages.attend;
+  const shareLabel = shareLabelProp ?? messages.share;
+  const contactSupportLabel = contactSupportLabelProp ?? messages.contactSupport;
+  const verifiedLabel = verifiedLabelProp ?? messages.verified;
   const theme = useTheme();
   const palette = useHousingPalette();
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
@@ -87,7 +94,7 @@ function EvictionReportCardComponent({
     <HousingCard style={[{ gap: 16 }, style]} testID={testID}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <Badge
-          content={statusLabel ?? info.label}
+          content={statusLabel ?? messages.status[status]}
           color={info.tone}
           variant={info.fill}
           size="medium"

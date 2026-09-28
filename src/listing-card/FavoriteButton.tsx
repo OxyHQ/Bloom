@@ -15,6 +15,8 @@ import {
   LISTING_CARD_STYLE_ID,
   resolveListingCardPaint,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_CARD_MESSAGES } from './messages';
 import type { FavoriteButtonProps } from './types';
 
 /**
@@ -36,12 +38,15 @@ function FavoriteButtonComponent({
   favorite,
   onFavoriteChange,
   size = 24,
-  saveLabel = 'Save to wishlist',
-  removeLabel = 'Remove from wishlist',
+  saveLabel: saveLabelProp,
+  removeLabel: removeLabelProp,
   disabled = false,
   style,
   testID,
 }: FavoriteButtonProps) {
+  const { messages } = useMessages(LISTING_CARD_MESSAGES);
+  const saveLabel = saveLabelProp ?? messages.saveToWishlist;
+  const removeLabel = removeLabelProp ?? messages.removeFromWishlist;
   const theme = useTheme();
   useInteractiveWebCss(LISTING_CARD_STYLE_ID, LISTING_CARD_CSS);
   const paint = useMemo(() => resolveListingCardPaint(theme), [theme]);

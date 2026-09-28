@@ -40,14 +40,38 @@ export function pluralCategory(language: BloomLanguage, count: number): PluralCa
   }
 }
 
+/** Arabic-Indic, Persian, Devanagari and Bengali digits, as their ASCII values. */
+const NATIVE_DIGITS = /[\u0660-\u0669\u06f0-\u06f9\u0966-\u096f\u09e6-\u09ef]/g;
+
 /**
- * Picks the form for `count`. `other` is required; a category a language
- * uses but the caller left out falls back to it.
+ * The whole number a count reads as, whether it came as a number or already
+ * formatted for display: `1234`, `"1,234"`, `"1.234"`, `"1 234"`, `"١٬٢٣٤"`.
+ * Group marks and spaces are dropped; a fraction is ignored. `NaN` when there
+ * are no digits at all.
+ */
+export function countValue(count: number | string): number {
+  if (typeof count === 'number') return count;
+  const ascii = count.replace(NATIVE_DIGITS, (digit) => {
+    const code = digit.charCodeAt(0);
+    const zero = [0x0660, 0x06f0, 0x0966, 0x09e6].find((base) => code >= base && code <= base + 9) ?? code;
+    return String(code - zero);
+  });
+  // A decimal part only exists after the LAST mark when it is not three digits long.
+  const whole = ascii.replace(/[.,\u066b](\d{1,2}|\d{4,})\s*$/, '');
+  const digits = whole.replace(/\D/g, '');
+  return digits ? Number(digits) : Number.NaN;
+}
+
+/**
+ * Picks the form for `count` and puts the count in it. `other` is required; a
+ * category a language uses but the caller left out falls back to it. A count
+ * given as a string (already formatted: `"1,234"`) is shown exactly as given
+ * and pluralised by the number it reads as.
  */
 export function plural(
   language: BloomLanguage,
-  count: number,
+  count: number | string,
   forms: Partial<Record<PluralCategory, string>> & { other: string },
 ): string {
-  return (forms[pluralCategory(language, count)] ?? forms.other).replace('{n}', String(count));
+  return (forms[pluralCategory(language, countValue(count))] ?? forms.other).replace('{n}', String(count));
 }
