@@ -68,6 +68,8 @@ owns the locale and the timezone.
 </ChatSplitLayout>
 ```
 
+Every fixed string these components draw or announce is localised via `BloomProvider locale`; each `*Label` prop still wins.
+
 ## `ChatHeader`
 
 | prop                                                         | decides                                                        |
@@ -223,7 +225,7 @@ pattern remains the reason for that border; it is not a bubble-text failure.
 | `unreadCount` / `count`| the badge; `0` draws none                                      |
 | `badgeMax`             | `"99+"` past this. Default `99`                                |
 | `size`                 | diameter. Default `44`                                         |
-| `accessibilityLabel`   | default "Scroll to latest messages" / "Jump to mention"        |
+| `accessibilityLabel`   | default "Scroll to latest messages" / "Jump to mention" (localised) |
 
 `visible={false}` unmounts rather than fades. A faded button leaves a focusable
 control in the tab order nobody can see, and a reader announcing "Scroll to
@@ -348,7 +350,8 @@ either way.
 `owner` and `admin` draw a badge; `member` draws none — a badge on every row is a
 badge on nobody. The accessible name is composed as
 `"Ana Restrepo, Owner, last seen recently"`, so a reader hears one stop rather
-than three. `roleLabels` translates the two words.
+than three. The two words are localised via `BloomProvider locale`; `roleLabels`
+rewords them.
 
 ## `ChatSplitLayout`
 

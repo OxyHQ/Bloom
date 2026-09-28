@@ -13,12 +13,14 @@ import { Text } from '../typography';
 import { ChatMemberRow } from './ChatMemberRow';
 import {
   CHAT_INFO_PANE_WIDTH,
-  CHAT_SCREEN_LABELS,
   useChatScreenPaint,
   useResolvedImageSource,
   type ChatScreenPaint,
 } from './shared';
 import type { ChatInfoAction, ChatInfoPanelProps, ChatMember } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 /** Above this the roster gets a search field unless the caller says otherwise. */
 const MEMBER_SEARCH_THRESHOLD = 8;
@@ -109,12 +111,14 @@ function ActionTile({ action, paint }: { action: ChatInfoAction; paint: ChatScre
  */
 function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
   const paint = useChatScreenPaint();
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
+  const common = useCommonMessages();
   const {
     variant = 'pane',
     width = CHAT_INFO_PANE_WIDTH,
-    title = CHAT_SCREEN_LABELS.info,
+    title = messages.info,
     onClose,
-    closeLabel = CHAT_SCREEN_LABELS.close,
+    closeLabel = common.close,
     headerActions,
     cover,
     coverSource,
@@ -135,16 +139,16 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
     onTabChange,
     defaultTab,
     members,
-    membersTitle = CHAT_SCREEN_LABELS.members,
+    membersTitle = messages.members,
     onPressMember,
     roleLabels,
     memberSearch,
     memberQuery,
     onMemberQueryChange,
-    memberSearchPlaceholder = CHAT_SCREEN_LABELS.memberSearch,
+    memberSearchPlaceholder = messages.memberSearch,
     onAddMember,
-    addMemberLabel = CHAT_SCREEN_LABELS.addMember,
-    membersEmptyLabel = CHAT_SCREEN_LABELS.noMembers,
+    addMemberLabel = messages.addMember,
+    membersEmptyLabel = messages.noMembers,
     destructiveActions,
     children,
     scrollable = true,

@@ -14,6 +14,7 @@ import { resolveMenuPalette } from '../floating/menu-palette';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import type { ChatBackgroundVariant } from './types';
+import { CHAT_SCREEN_MESSAGES, type ChatScreenMessages } from './messages';
 
 /** `true` on every platform that is not the web. */
 export const IS_NATIVE = Platform.OS !== 'web';
@@ -288,48 +289,24 @@ export function useResolvedImageSource(
   }, [resolver, source, variant]);
 }
 
-/** Default English strings. Every one of them is overridable by a prop. */
-export const CHAT_SCREEN_LABELS = {
-  back: 'Back',
-  call: 'Call',
-  videoCall: 'Video call',
-  search: 'Search in conversation',
-  more: 'More options',
-  connecting: 'Connecting…',
-  verified: 'Verified',
-  bot: 'Bot',
-  channel: 'Channel',
-  clearSelection: 'Clear selection',
-  forward: 'Forward',
-  delete: 'Delete',
-  copy: 'Copy',
-  pin: 'Pin',
-  pinnedList: 'Show pinned messages',
-  pinnedClose: 'Hide the pinned bar',
-  pinnedUnpin: 'Unpin this message',
-  pinnedSingle: 'Pinned message',
-  scrollToBottom: 'Scroll to latest messages',
-  jumpToMention: 'Jump to mention',
-  emptyTitle: 'No messages yet',
-  info: 'Info',
-  close: 'Close',
-  members: 'Members',
-  addMember: 'Add members',
-  memberSearch: 'Search members',
-  noMembers: 'No members found',
-  owner: 'Owner',
-  admin: 'Admin',
-  resizeList: 'Resize the conversation list',
-} as const;
-
-/** `"Pinned message"` for one pin, `"Pinned message #2"` for several. */
-export function formatPinTitle(index: number, total: number): string {
-  return total <= 1 ? CHAT_SCREEN_LABELS.pinnedSingle : `${CHAT_SCREEN_LABELS.pinnedSingle} #${index + 1}`;
+/**
+ * `"Pinned message"` for one pin, `"Pinned message #2"` for several — in
+ * `messages`' language (English by default).
+ */
+export function formatPinTitle(
+  index: number,
+  total: number,
+  messages: ChatScreenMessages = CHAT_SCREEN_MESSAGES.en,
+): string {
+  return total <= 1 ? messages.pinnedMessage : messages.pinnedMessageNumber(index + 1);
 }
 
-/** `"3 selected"`. */
-export function formatSelectedCount(count: number): string {
-  return `${count} selected`;
+/** `"3 selected"`, in `messages`' language (English by default). */
+export function formatSelectedCount(
+  count: number,
+  messages: ChatScreenMessages = CHAT_SCREEN_MESSAGES.en,
+): string {
+  return messages.selectedCount(count);
 }
 
 /**

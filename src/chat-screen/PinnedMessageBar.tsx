@@ -7,7 +7,6 @@ import { RiListUnordered } from '../icons/remix/RiListUnordered';
 import { RiUnpinLine } from '../icons/remix/RiUnpinLine';
 import { Text } from '../typography';
 import {
-  CHAT_SCREEN_LABELS,
   clamp,
   formatPinTitle,
   MAX_PIN_SEGMENTS,
@@ -15,6 +14,8 @@ import {
   useResolvedImageSource,
 } from './shared';
 import type { ChatPinnedMessage, PinnedMessageBarProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 const BAR_HEIGHT = 52;
 const ACCENT_BAR_HEIGHT = 32;
@@ -104,23 +105,27 @@ function PinnedMessageBarComponent({
   onPressList,
   onDismiss,
   dismissIcon = 'close',
-  formatTitle = formatPinTitle,
-  listLabel = CHAT_SCREEN_LABELS.pinnedList,
+  formatTitle: formatTitleProp,
+  listLabel: listLabelProp,
   dismissLabel,
   accessibilityLabel,
   style,
   testID,
 }: PinnedMessageBarProps) {
   const paint = useChatScreenPaint();
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
   if (pins.length === 0) return null;
+  const listLabel = listLabelProp ?? messages.pinnedList;
 
   const safeIndex = clamp(Math.round(index), 0, pins.length - 1);
   const pin = pins[safeIndex] as ChatPinnedMessage;
-  const title = formatTitle(safeIndex, pins.length);
+  const title = formatTitleProp
+    ? formatTitleProp(safeIndex, pins.length)
+    : formatPinTitle(safeIndex, pins.length, messages);
   const preview = pin.author ? `${pin.author}: ${pin.preview}` : pin.preview;
   const resolvedDismissLabel =
     dismissLabel ??
-    (dismissIcon === 'unpin' ? CHAT_SCREEN_LABELS.pinnedUnpin : CHAT_SCREEN_LABELS.pinnedClose);
+    (dismissIcon === 'unpin' ? messages.pinnedUnpin : messages.pinnedClose);
 
   return (
     <View
