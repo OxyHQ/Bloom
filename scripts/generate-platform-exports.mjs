@@ -108,6 +108,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./notification-center', 'notification-center/index.ts'],
   ['./theme-toggle', 'theme-toggle/index.ts'],
   ['./settings-modal', 'settings-modal/index.ts'],
+  // Rows on a screen should not link the dialog, its pages or the calendar.
+  ['./settings-modal/rows', 'settings-modal/rows.ts'],
   ['./auth-card', 'auth-card/index.ts'],
   ['./agent-thinking', 'agent-thinking/index.ts'],
   ['./agent-log', 'agent-log/index.ts'],
@@ -220,6 +222,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./chat-indicators', 'chat-indicators/index.ts'],
   ['./call-ui', 'call-ui/index.ts'],
   ['./chat-people', 'chat-people/index.ts'],
+  // One person row should not link the lists, group form and story viewer.
+  ['./chat-people/contact-row', 'chat-people/contact-row.ts'],
   ['./chat-screen', 'chat-screen/index.ts'],
   ['./chat-composer', 'chat-composer/index.ts'],
   ['./message-media', 'message-media/index.ts'],
