@@ -12,6 +12,8 @@ import {
 import { CountryCodeSelect } from './CountryCodeSelect';
 import type { PhoneInputProps } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useMessages } from '../locale/messages';
+import { PHONE_INPUT_MESSAGES } from './messages';
 
 /**
  * A phone number field: `Input` with a country-code `Select` in its
@@ -48,6 +50,7 @@ export function PhoneInput({
   testID,
   style,
 }: PhoneInputProps) {
+  const { messages } = useMessages(PHONE_INPUT_MESSAGES);
   // The country select is a SECOND control inside this field, and it is the one
   // a `Field disabled` used to miss: the number input reads the field context
   // itself, the select does not, so the picker stayed operable inside a disabled
@@ -55,7 +58,7 @@ export function PhoneInput({
   const invalid = invalidProp ?? isInvalid;
   const field = useFieldMembership({
     accessibilityLabel,
-    label: label ?? 'Phone number',
+    label: label ?? messages.phoneNumber,
     disabled,
     invalid: invalid,
     required,
@@ -88,7 +91,7 @@ export function PhoneInput({
           />
         }>
         <TextFieldInput
-          label={field.accessibilityLabel ?? 'Phone number'}
+          label={field.accessibilityLabel ?? messages.phoneNumber}
           placeholder={placeholder ?? null}
           value={text}
           onChangeText={setText}

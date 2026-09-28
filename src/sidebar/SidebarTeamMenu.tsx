@@ -30,6 +30,8 @@ import {
   useInSidebar,
 } from './parts';
 import type { SidebarMenuGroup, SidebarMenuItem, SidebarTeamMenuProps } from './types';
+import { useMessages } from '../locale/messages';
+import { SIDEBAR_MESSAGES } from './messages';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -144,6 +146,7 @@ function Group({
 
 const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collapsed = false, style, testID }) => {
   const palette = useSidebarPalette();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
   useSidebarWebCss();
   const [open, setOpen] = useState(false);
   const { width } = useWindowDimensions();
@@ -243,7 +246,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
         </AnimatedPressable>
       </PopoverTrigger>
       <PopoverContent
-        label={team.menuLabel ?? `${team.name} menu`}
+        label={team.menuLabel ?? messages.teamMenu(team.name)}
         // Beside the rail's trailing edge: floating sides are physical, so
         // they are mirrored here rather than by the layout.
         side={mirrorSide(narrow ? 'bottom' : 'right', rtl)}

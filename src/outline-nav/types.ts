@@ -29,11 +29,11 @@ export interface OutlineHeading {
  */
 export type OutlineNavVariant = 'full' | 'compact';
 
-/** The English words `OutlineNav` composes. */
+/** The words `OutlineNav` composes, localised through `BloomProvider locale`; each one given here wins. */
 export interface OutlineNavLabels {
-  /** Names the navigation region AND the progress bar. Default `"On this page"`. */
+  /** Names the navigation region AND the progress bar. `"On this page"` in English. */
   outline?: string;
-  /** The progress bar's spoken reading, given the position and the total. Default ``(at, of) => `Heading ${at} of ${of}` ``. */
+  /** The progress bar's spoken reading, given the position and the total. ``(at, of) => `Heading ${at} of ${of}` `` in English. */
   progress?: (at: number, of: number) => string;
 }
 

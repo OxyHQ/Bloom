@@ -16,10 +16,12 @@ import {
 } from '../button/shared';
 import { Text } from '../typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { pickMessages, useMessages } from '../locale/messages';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { StyledPressable } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SOCIAL_COLOR_LOGOS } from './color-logos';
+import { SOCIAL_BUTTON_MESSAGES } from './messages';
 import { OxyMark } from './OxyMark';
 import { useSvgIdPrefix } from '../styles/svg-id';
 import { SOCIAL_PROVIDERS, type SocialColorLogo, type SocialProvider } from './providers';
@@ -138,15 +140,16 @@ export interface SocialButtonPaint {
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 
-const ACTION_PHRASE: Record<SocialButtonAction, string> = {
-  continue: 'Continue with',
-  signIn: 'Sign in with',
-  signUp: 'Sign up with',
-};
-
-/** The default label and icon-only accessible name: `"Sign in with Oxy"`. */
-export function socialButtonLabel(brandLabel: string, action: SocialButtonAction = 'continue'): string {
-  return `${ACTION_PHRASE[action]} ${brandLabel}`;
+/**
+ * The default label and icon-only accessible name: `"Sign in with Oxy"`, in
+ * `locale`'s language (English when omitted and the runtime is English).
+ */
+export function socialButtonLabel(
+  brandLabel: string,
+  action: SocialButtonAction = 'continue',
+  locale?: string,
+): string {
+  return pickMessages(SOCIAL_BUTTON_MESSAGES, locale).actions[action](brandLabel);
 }
 
 /**
@@ -401,6 +404,7 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   const {size: inheritedSize} = useBloomAppearance({size: scopedSizeProp}, {size: 'md', tone: 'accent'});
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
+  const { messages } = useMessages(SOCIAL_BUTTON_MESSAGES);
   useInteractiveWebCss(STYLE_ID, SOCIAL_BUTTON_CSS);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
@@ -408,6 +412,7 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   const geometry = SOCIAL_BUTTON_GEOMETRY[size];
   const custom = brand === 'custom';
   const meta = custom ? undefined : SOCIAL_PROVIDERS[brand as SocialProvider];
+  // i18n-exempt: "SSO" is the acronym every language's sign-in screens use, not a word to translate
   const label = custom ? (config?.label ?? 'SSO') : meta!.label;
 
   const paint = useMemo(
@@ -513,7 +518,7 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   const isLink = href != null;
   // The visible label already names the brand; when it is hidden the control
   // needs that name back, or it announces as an unlabelled button.
-  const phrase = socialButtonLabel(label, action);
+  const phrase = messages.actions[action](label);
   const name = accessibilityLabel ?? (iconOnly ? phrase : undefined);
 
   return (

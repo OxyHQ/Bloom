@@ -2,6 +2,8 @@ import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useMessages } from '../locale/messages';
+import { ERROR_BOUNDARY_MESSAGES } from './messages';
 import type { ErrorBoundaryProps } from './types';
 
 interface ErrorBoundaryState {
@@ -21,19 +23,25 @@ interface ErrorBoundaryState {
  * the tree above the boundary.
  *
  * Use only literal styles and built-in React Native primitives. No hooks
- * that read context, no upstream theming, no animation libraries.
+ * that read context, no upstream theming, no animation libraries. The one
+ * context it reads is the locale, for its words: a bare `createContext` value
+ * with an `undefined` default, which cannot throw and needs no provider.
  */
 function DefaultFallback({
-  title,
-  message,
-  retryLabel,
+  title: titleProp,
+  message: messageProp,
+  retryLabel: retryLabelProp,
   onRetry,
 }: {
-  title: string;
-  message: string;
-  retryLabel: string;
+  title?: string;
+  message?: string;
+  retryLabel?: string;
   onRetry: () => void;
 }) {
+  const { messages } = useMessages(ERROR_BOUNDARY_MESSAGES);
+  const title = titleProp ?? messages.title;
+  const message = messageProp ?? messages.message;
+  const retryLabel = retryLabelProp ?? messages.retry;
   // Component state rather than `Pressable`'s function-form `style`: css-interop
   // rewrites the `style` prop of every JSX element and swallows the function
   // form, which would drop every base style with it.
@@ -105,9 +113,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       return (
         <DefaultFallback
-          title={this.props.title ?? 'Something went wrong'}
-          message={this.props.message ?? 'An unexpected error occurred'}
-          retryLabel={this.props.retryLabel ?? 'Try Again'}
+          title={this.props.title}
+          message={this.props.message}
+          retryLabel={this.props.retryLabel}
           onRetry={this.handleRetry}
         />
       );

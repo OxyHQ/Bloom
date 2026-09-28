@@ -7,8 +7,10 @@ import { RiAddFill } from '../icons/remix/RiAddFill';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { Z_INDEX } from '../styles/z-index';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { CalendarViewInboxMenu } from './CalendarViewInboxMenu';
 import { CalendarViewMonthSwitcher } from './CalendarViewMonthSwitcher';
+import { CALENDAR_MESSAGES } from './messages';
 import { useBreakpoint } from './shared';
 import type { CalendarViewHeaderProps } from './types';
 
@@ -38,14 +40,16 @@ export function CalendarViewHeader({
   onSelectFeed,
   onAddAccount,
   onNewEvent,
-  newEventLabel = 'New event',
+  newEventLabel: newEventLabelProp,
   onMenuPress,
   monthSwitcherWidth,
   headingLevel = 1,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: CalendarViewHeaderProps) {
+  const { locale, messages } = useMessages(CALENDAR_MESSAGES, localeProp);
+  const newEventLabel = newEventLabelProp ?? messages.newEvent;
   const breakpoint = useBreakpoint();
   const isSm = breakpoint !== 'base';
   const isLg = breakpoint === 'lg' || breakpoint === 'xl' || breakpoint === '2xl';
@@ -73,7 +77,7 @@ export function CalendarViewHeader({
           }}
         >
           {onMenuPress && !isLg ? (
-            <Button size="md" icon={RiMenuLine} accessibilityLabel="Open navigation" onPress={onMenuPress} appearance="plain" tone="neutral" />
+            <Button size="md" icon={RiMenuLine} accessibilityLabel={messages.openNavigation} onPress={onMenuPress} appearance="plain" tone="neutral" />
           ) : null}
           <Text
             role="heading"
@@ -104,6 +108,7 @@ export function CalendarViewHeader({
               accounts={inboxAccounts}
               onSelectFeed={onSelectFeed}
               onAddAccount={onAddAccount}
+              locale={locale}
               testID={testID ? `${testID}-inbox` : undefined}
             />
           ) : null}

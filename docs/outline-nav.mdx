@@ -97,7 +97,7 @@ Native ignores `href`.
 ## Traps
 
 - **The progress bar is a `Meter`**, so it is a real `progressbar` with a name
-  and a `valueText` ("Heading 4 of 10"). Never hand-roll the bar; `hideProgress`
+  and a `valueText` ("Heading 4 of 10" in English; localised via `BloomProvider locale`, as is the "On this page" title). Never hand-roll the bar; `hideProgress`
   is there for a screen that has its own.
 - **Headings truncate to one line.** A TOC that wrapped would reflow every time
   the active row changed weight.

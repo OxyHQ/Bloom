@@ -9,6 +9,7 @@ import { Card } from '../card';
 import { Chip, ChipRow } from '../chip';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
@@ -28,6 +29,7 @@ import {
   CONTACT_TILE_PADDING,
   CONTACT_TILE_RADIUS,
 } from './constants';
+import { CONTACT_CARD_MESSAGES } from './messages';
 import {
   CONTACT_STYLE_ID,
   CONTACT_WEB_CSS,
@@ -75,9 +77,9 @@ import type { ContactProfileCardProps } from './types';
  * `appearance="solid" tone="neutral" size="small"` with the kind's glyph and its ACTION word
  * — so it carries the surface, the border, the hover, the disabled treatment
  * and the focus ring every other Bloom action has. It drops to `iconOnly` only
- * where the card is too narrow to carry the words, and it is NAMED
- * `"${verb} ${label ?? name}"` either way, so losing the label never loses the
- * name.
+ * where the card is too narrow to carry the words, and it is NAMED by the
+ * catalog's per-channel phrase about `label ?? name` ("Call Ana" in English)
+ * either way, so losing the label never loses the name.
  *
  * **The card is not one big button.** `onPress` is bound to the IDENTITY
  * BLOCK, and the channels and `actions` sit outside it — a control inside a
@@ -123,6 +125,7 @@ function ContactProfileCardComponent({
   testID,
 }: ContactProfileCardProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CONTACT_CARD_MESSAGES);
   const comfortable = density === 'comfortable';
   const paint = useContactPaint(comfortable);
   const { width, onLayout } = useContainerWidth();
@@ -246,6 +249,7 @@ function ContactProfileCardComponent({
     <View style={{ flexDirection: 'row', gap: 8, flexShrink: 0 }} testID={id('channels')}>
       {channels.map((channel, index) => {
         const spec = CONTACT_CHANNEL[channel.kind];
+        const copy = messages.channels[channel.kind];
         return (
           <Button
             key={channel.kind + String(index)}
@@ -260,10 +264,10 @@ function ContactProfileCardComponent({
             // number while the card needs the first.
             hitSlop={CONTACT_CHANNEL_HIT}
             // The NAME never depends on whether the label fits.
-            accessibilityLabel={`${spec.verb} ${channel.label ?? name}`}
+            accessibilityLabel={copy.name(channel.label ?? name)}
             testID={channel.testID ?? id(`channel-${channel.kind}`)}
           >
-            {labelled ? spec.action : undefined}
+            {labelled ? copy.action : undefined}
           </Button>
         );
       })}
@@ -468,7 +472,7 @@ function ContactProfileCardComponent({
             <ChipRow
               gap={8}
               fadeColor={paint.surface}
-              accessibilityLabel={`Labels for ${name}`}
+              accessibilityLabel={messages.labelsFor(name)}
               testID={id('chips')}
             >
               {chips}
@@ -528,7 +532,7 @@ function ContactProfileCardComponent({
                     style={{ flexShrink: 1, color: paint.textSecondary }}
                     testID={id('owner')}
                   >
-                    {`${owner.label ?? 'Owner'} · ${owner.name}`}
+                    {`${owner.label ?? messages.owner} · ${owner.name}`}
                   </Text>
                 </View>
               ) : null}

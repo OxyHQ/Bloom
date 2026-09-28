@@ -125,3 +125,4 @@ The event and swatch hues are hardcoded (Tailwind blue, pink, purple, lime, emer
 - The title is a `heading` at `headingLevel`; the grid is a `table` of weekday `columnheader`s (named with the full weekday) and day cells.
 - Event chips are buttons named `title, time`; the switcher title is a button with `aria-expanded`; the switcher's day grid is a `grid` named "Jump to date" whose days carry their full date as name.
 - Icon-only buttons are named: "Inbox", "Previous month", "Next month", "Open navigation", "Edit timezone", "Edit participants", "Edit reminders".
+- These names, "New event", "+N more" and the duration chip are English defaults, localised via `BloomProvider locale`; `newEventLabel`, `addAccountLabel` and the inbox's `accessibilityLabel` still win.

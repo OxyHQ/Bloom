@@ -32,11 +32,11 @@ export interface CarouselProps {
   inset?: number;
   /** Called when the slide in view changes. */
   onIndexChange?: (index: number) => void;
-  /** Accessible name of the previous button. Defaults to `'Previous slide'`. */
+  /** Accessible name of the previous button. Defaults to the localised `'Previous slide'` (in English). */
   previousLabel?: string;
-  /** Accessible name of the next button. Defaults to `'Next slide'`. */
+  /** Accessible name of the next button. Defaults to the localised `'Next slide'` (in English). */
   nextLabel?: string;
-  /** Accessible name of a dot. Defaults to `` n => `Go to slide ${n}` ``. */
+  /** Accessible name of a dot. Defaults to the localised `` n => `Go to slide ${n}` `` (in English). */
   dotLabel?: (slide: number) => string;
   /** Style of the outer column (arrows, track, dots). */
   style?: StyleProp<ViewStyle>;

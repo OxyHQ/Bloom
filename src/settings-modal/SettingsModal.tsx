@@ -40,6 +40,8 @@ import type { SettingsModalProps, SettingsNavGroup, SettingsNavItem } from './ty
 import { useKeyboardReveal } from './use-keyboard-reveal';
 import { IS_WEB, useSettingsWebCss } from './web-css';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { SETTINGS_MODAL_MESSAGES } from './messages';
 
 /**
  * A settings modal.
@@ -136,6 +138,7 @@ export function SettingsModal({
   testID,
 }: SettingsModalProps) {
   const common = useCommonMessages();
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const reducedMotion = useReducedMotion();
@@ -344,7 +347,7 @@ export function SettingsModal({
   if (!mounted) return null;
 
   const pageConfig = currentPage ? pages[currentPage] : undefined;
-  const closeLabel = labels?.close ?? 'Close settings';
+  const closeLabel = labels?.close ?? messages.close;
 
   return (
     <ModalPortal>
@@ -374,7 +377,7 @@ export function SettingsModal({
                 <View
                   role="dialog"
                   aria-modal
-                  aria-label={labels?.dialog ?? 'Settings'}
+                  aria-label={labels?.dialog ?? messages.dialog}
                   testID={testID}
                   {...webDataSet({ bloomSettingsDialog: '' })}
                   style={[
@@ -425,7 +428,7 @@ export function SettingsModal({
                       <View style={styles.content}>
                         <SettingsRail
                           header={{
-                            title: labels?.dialog ?? 'Settings',
+                            title: labels?.dialog ?? messages.dialog,
                             closeLabel,
                             onClose: requestClose,
                           }}
@@ -433,7 +436,7 @@ export function SettingsModal({
                           page={currentPage}
                           onSelect={selectPage}
                           palette={palette}
-                          label={labels?.nav ?? 'Settings sections'}
+                          label={labels?.nav ?? messages.nav}
                           layout="compact"
                           testID={testID}
                         />
@@ -446,7 +449,7 @@ export function SettingsModal({
                         page={currentPage}
                         onSelect={selectPage}
                         palette={palette}
-                        label={labels?.nav ?? 'Settings sections'}
+                        label={labels?.nav ?? messages.nav}
                         layout={layout}
                         testID={testID}
                       />
@@ -471,7 +474,7 @@ export function SettingsModal({
                 </View>
                 <SavedToast
                   phase={savedPhase}
-                  label={labels?.saved ?? 'Saved'}
+                  label={labels?.saved ?? messages.saved}
                   palette={palette}
                   reducedMotion={reducedMotion}
                   testID={testID ? `${testID}-saved` : undefined}

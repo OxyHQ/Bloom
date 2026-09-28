@@ -22,10 +22,13 @@ import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useMenubarMenu } from './context';
 import type { MenubarContentProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
-export function MenubarContent({ children, label = 'Menu', style }: MenubarContentProps) {
+export function MenubarContent({ children, label: labelProp, style }: MenubarContentProps) {
+  const common = useCommonMessages();
+  const label = labelProp ?? common.menu;
   const menu = useMenubarMenu();
   const { control, onSheetClose } = useSheetOpenBridge(menu.open, menu.setOpen);
   const surface = useMemo<MenuSurfaceContextValue>(

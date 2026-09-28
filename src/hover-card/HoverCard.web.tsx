@@ -23,6 +23,8 @@ import { HoverCardProvider, useHoverCard } from './context';
 import { HoverCardPanel } from './HoverCardPanel';
 import type { HoverCardContentProps, HoverCardProps, HoverCardTriggerProps } from './types';
 import { useHoverIntent } from './use-hover-intent';
+import { useMessages } from '../locale/messages';
+import { HOVER_CARD_MESSAGES } from './messages';
 
 export function HoverCard({
   children,
@@ -120,7 +122,7 @@ export function HoverCardTrigger({
 
 export function HoverCardContent({
   children,
-  label = 'Hover card',
+  label: labelProp,
   padded,
   side,
   align,
@@ -130,6 +132,8 @@ export function HoverCardContent({
   style,
   testID,
 }: HoverCardContentProps) {
+  const { messages } = useMessages(HOVER_CARD_MESSAGES);
+  const label = labelProp ?? messages.hoverCard;
   const card = useHoverCard();
   const anchor = useAnchorRect(card.anchorRef, card.open);
   const { setOpen, hold, hide } = card;

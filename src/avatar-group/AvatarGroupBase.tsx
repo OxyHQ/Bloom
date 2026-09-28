@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 
 import { Avatar } from '../avatar';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { fontSize } from '../styles/tokens';
 import { computeClusterLayout } from './cluster-layout';
+import { AVATAR_GROUP_MESSAGES } from './messages';
 import type { AvatarGroupItem, AvatarGroupProps } from './types';
 
 /** Ring (border) thickness around each avatar, in pixels. Matches the
@@ -494,6 +496,7 @@ function OverflowCircle({
   onPress?: () => void;
 }) {
   const theme = useTheme();
+  const { messages } = useMessages(AVATAR_GROUP_MESSAGES);
 
   // A solid "+N" count circle: secondary-text-colored fill with white text,
   // matching the original Mention `ResponsiveAvatarStack` count circle. Layout
@@ -514,7 +517,7 @@ function OverflowCircle({
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
-        accessibilityLabel={`${count} more`}
+        accessibilityLabel={messages.more(count)}
         style={wrapperStyle}
       >
         {circle}

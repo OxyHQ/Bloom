@@ -47,6 +47,8 @@ import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';
 import type { DialogHeaderConfig } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { DIALOG_MESSAGES } from './messages';
 
 export type { DialogHeaderConfig } from './types';
 
@@ -717,6 +719,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
 }) {
   const theme = useTheme();
   const common = useCommonMessages();
+  const { messages } = useMessages(DIALOG_MESSAGES);
   const config = useMergedHeaderConfig(header, controller.store);
   const { largeTitleHeight } = controller;
 
@@ -795,7 +798,7 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
         {config.segments ? (
           <View style={hasLargeTitle || config.search ? styles.extraRow : undefined}>
             <SegmentedControl
-              label={config.title ?? 'View'}
+              label={config.title ?? messages.view}
               type="tabs"
               size="sm"
               // The segmented control sizes to its segments; the header tabs span the row.

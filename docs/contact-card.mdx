@@ -124,9 +124,10 @@ every other Bloom action has. Bare icons floating on a card surface are not an
 affordance anywhere else in this library.
 
 **The label and the NAME are different things.** The label is dropped on a
-narrow card; the name never is. Every control is named `"{verb} {label ?? name}"`
-from `CONTACT_CHANNEL` — "Email Nora Vance", "Open the website of Quillon
-Health" — so an `iconOnly` channel is still named, and a caller cannot ship an
+narrow card; the name never is. Every control is named by its channel's
+phrase about `label ?? name` — "Email Nora Vance", "Open the website of Quillon
+Health" in English; these words, the chips' name and "Owner" are localised via
+`BloomProvider locale` — so an `iconOnly` channel is still named, and a caller cannot ship an
 unnamed one by forgetting a prop. Pass `icon` on a channel to change the glyph;
 the KIND still decides the verb and the word.
 

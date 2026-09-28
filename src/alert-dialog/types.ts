@@ -11,9 +11,9 @@ export interface AlertDialogProps {
   title: string;
   /** Supporting copy. */
   description?: string;
-  /** Confirm button label. Defaults to `'Confirm'`. */
+  /** Confirm button label; `'Confirm'` in English. */
   confirmLabel?: string;
-  /** Cancel button label. Defaults to `'Cancel'`. */
+  /** Cancel button label; `'Cancel'` in English. */
   cancelLabel?: string;
   /** Confirm handler. The dialog closes after it runs (sync). */
   onConfirm?: () => void;

@@ -4,6 +4,7 @@ import { Platform, useWindowDimensions } from 'react-native';
 import { addDays, buildMonthGrid, isSameMonth, startOfDay } from '../date-picker/calendar-grid';
 import type { CalendarViewEvent } from './types';
 import { formatGregorian } from '../locale/format-date';
+import { CALENDAR_MESSAGES, type CalendarMessages } from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -78,16 +79,22 @@ export function visibleEvents(events: readonly CalendarViewEvent[]): {
   return { visible, hidden: events.length - visible.length };
 }
 
-/** `3h`, `45m`, `1h15m` — the time row's duration chip. Wraps past midnight. */
-export function durationLabel(start: string, end: string): string {
+/**
+ * `3h`, `45m`, `1h15m` — the time row's duration chip, in English unless the
+ * caller passes its language's `duration`. Wraps past midnight.
+ */
+export function durationLabel(
+  start: string,
+  end: string,
+  format: CalendarMessages['duration'] = CALENDAR_MESSAGES.en.duration,
+): string {
   const [sh = 0, sm = 0] = start.split(':').map(Number);
   const [eh = 0, em = 0] = end.split(':').map(Number);
   let minutes = eh * 60 + em - (sh * 60 + sm);
   if (minutes < 0) minutes += 24 * 60;
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (h === 0) return `${m}m`;
-  return m > 0 ? `${h}h${m}m` : `${h}h`;
+  return format(h, m);
 }
 
 /** `GMT+2` — the runtime's current offset. */

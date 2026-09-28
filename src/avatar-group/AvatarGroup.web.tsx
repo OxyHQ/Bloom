@@ -6,12 +6,14 @@ import { rectOf } from '../floating/use-anchor-rect';
 import { HOVER_CARD_CLOSE_DELAY } from '../hover-card/constants';
 import { HoverCardPanel } from '../hover-card/HoverCardPanel';
 import { useHoverIntent } from '../hover-card/use-hover-intent';
+import { useMessages } from '../locale/messages';
 import { UserHoverCard } from '../user-hover-card';
 import {
   AvatarGroupBase,
   getItemName,
   type AvatarGroupCellHoverHandlers,
 } from './AvatarGroupBase';
+import { AVATAR_GROUP_MESSAGES } from './messages';
 import type { AvatarGroupItem, AvatarGroupProps } from './types';
 
 interface HoverTarget {
@@ -37,6 +39,7 @@ interface HoverTarget {
  */
 const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
   const { hoverCard, renderItemAction, onPressItem } = props;
+  const { messages } = useMessages(AVATAR_GROUP_MESSAGES);
   const [target, setTarget] = useState<HoverTarget | null>(null);
   const [open, setOpen] = useState(false);
   const cellRefs = useRef<Map<number, View>>(new Map());
@@ -81,7 +84,7 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
           onDismiss={dismiss}
           onPointerEnter={hold}
           onPointerLeave={hide}
-          label={getItemName(target.item) ?? 'Profile'}>
+          label={getItemName(target.item) ?? messages.profile}>
           <UserHoverCard
             avatar={target.item.uri ?? undefined}
             // `UserHoverCardProps.displayName` is contractually an

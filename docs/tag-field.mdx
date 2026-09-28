@@ -114,7 +114,8 @@ decision.
   accepts nothing at all. That is the honest behaviour, not a bug to route
   around.
 - **Each chip's × is `Chip`'s own**, named after the tag through `closeLabel`
-  (`labels.remove`). A row of removable pills whose buttons are all called
+  (`labels.remove`; its default, like `full` and `suggestions`, is localised via
+  `BloomProvider locale`). A row of removable pills whose buttons are all called
   "Remove" gives a screen reader no way to say which one it is about. The ×
   therefore carries a NAME rather than a testID of its own — find it the way
   `mail-compose`'s suite does, inside `<testID>-chip-<tag>` by its label.

@@ -26,7 +26,7 @@ import { ErrorBoundary } from '@oxy.so/bloom/error-boundary';
 
 | prop         | decides                                                     |
 | ------------ | ------------------------------------------------------------ |
-| `title` / `message` / `retryLabel` | the wording of the default fallback    |
+| `title` / `message` / `retryLabel` | the wording of the default fallback (localised via `BloomProvider locale` when unset) |
 | `fallback`   | replaces it entirely — a node, or a function                 |
 | `onError`    | reporting; called with the error and the React error info    |
 

@@ -64,6 +64,8 @@ import type {
   MenuSubTriggerProps,
 } from './types';
 import { useFrameThrottle } from './use-frame-throttle';
+import { useMessages } from '../locale/messages';
+import { FLOATING_MESSAGES } from './messages';
 
 /**
  * How long the panel survives after the pointer leaves the row or the panel.
@@ -486,7 +488,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
 
   function MenuSubContent({
     children,
-    label = 'Submenu',
+    label: labelProp,
     side = 'right',
     align = 'start',
     sideOffset = MENU_SUB_SIDE_OFFSET,
@@ -497,6 +499,8 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     style,
     testID,
   }: MenuSubContentProps) {
+    const { messages } = useMessages(FLOATING_MESSAGES);
+    const label = labelProp ?? messages.submenu;
     const sub = useSubFlyout();
     const anchor = useFlyoutAnchor(sub.triggerRef, sub.open);
     const [node, setNode] = useState<View | null>(null);

@@ -19,6 +19,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { BUTTON_TRANSITION_MS } from '../button/shared';
 import type { Theme } from '../theme/types';
 import type { BreadcrumbItemProps, BreadcrumbProps } from './types';
+import { useMessages } from '../locale/messages';
+import { BREADCRUMB_MESSAGES } from './messages';
 
 /**
  * The breadcrumb, coloured from Bloom's theme through the neutral ramp
@@ -106,10 +108,12 @@ function Chevron({ color, rtl }: { color: string; rtl: boolean }) {
 const BreadcrumbComponent: React.FC<BreadcrumbProps> = ({
   children,
   separator,
-  accessibilityLabel = 'Breadcrumb',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }) => {
+  const { messages } = useMessages(BREADCRUMB_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.breadcrumb;
   const theme = useTheme();
   const rtl = useIsRtl();
   const directionProps = useDirectionProps();

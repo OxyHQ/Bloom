@@ -41,7 +41,7 @@ export interface ContactOwner {
   name: string;
   /** A URL or an `ImageResolver` id. Without it the avatar draws initials. */
   avatar?: string;
-  /** The word before the name. Default `"Owner"`. */
+  /** The word before the name. `"Owner"` in English, localised through `BloomProvider locale`. */
   label?: string;
 }
 

@@ -61,6 +61,8 @@ import type {
   DialogInset,
   DialogProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { DIALOG_MESSAGES } from './messages';
 
 
 /**
@@ -446,6 +448,7 @@ function SideSheet({
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }) {
+  const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
   const { width: viewportWidth } = useWindowDimensions();
 
@@ -557,7 +560,7 @@ function SideSheet({
     >
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-        accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+        accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         progress={progress}

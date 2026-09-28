@@ -15,6 +15,8 @@ import { Button } from '../button';
 import { resolveButtonPalette } from '../button/shared';
 import { Checkbox } from '../checkbox';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { formatGregorian } from '../locale/format-date';
+import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -23,6 +25,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text, TYPE_SCALE } from '../typography';
+import { DATA_TABLE_MESSAGES } from './messages';
 import { clampPage, isSortable, nextSort, pageCount, sortRows } from './sorting';
 import type {
   DataTableColumn,
@@ -65,7 +68,6 @@ import type {
 /** The `sm` breakpoint, applied to the surface's own width. */
 const NARROW_WIDTH = 640;
 const DEFAULT_PAGE_SIZE = 8;
-const DEFAULT_SIZE_LABELS = { md: 'Normal', sm: 'Compact' } as const;
 /** react-aria's `TooltipTrigger delay={200}`. */
 const TOOLTIP_DELAY_MS = 200;
 const IS_WEB = Platform.OS === 'web';
@@ -132,7 +134,7 @@ export function DataTable<T>({
   selectedRowIds,
   defaultSelectedRowIds = [],
   onSelectionChange,
-  selectAllLabel = 'Select all rows on this page',
+  selectAllLabel: selectAllLabelProp,
   getSelectRowLabel,
   pageSize = DEFAULT_PAGE_SIZE,
   page: pageProp,
@@ -142,14 +144,18 @@ export function DataTable<T>({
   defaultSize,
   onSizeChange,
   showSizeToggle = false,
-  sizeToggleLabels = DEFAULT_SIZE_LABELS,
-  sizeToggleAccessibilityLabel = 'Table density',
+  sizeToggleLabels: sizeToggleLabelsProp,
+  sizeToggleAccessibilityLabel: sizeToggleAccessibilityLabelProp,
   emptyState,
   minWidth,
   layout = 'table',
   style,
   testID,
 }: DataTableProps<T>) {
+  const { locale, messages } = useMessages(DATA_TABLE_MESSAGES);
+  const selectAllLabel = selectAllLabelProp ?? messages.selectAll;
+  const sizeToggleLabels = sizeToggleLabelsProp ?? messages.density;
+  const sizeToggleAccessibilityLabel = sizeToggleAccessibilityLabelProp ?? messages.densityLabel;
   const {size: scopedSize} = useBloomAppearance({size: defaultSize}, {size: 'md', tone: 'neutral'});
   const theme = useTheme();
   const palette = useMemo(() => resolveDataTablePalette(theme), [theme]);
@@ -237,7 +243,7 @@ export function DataTable<T>({
   const renderCellContent = (column: DataTableColumn<T>, row: T, id: string, index: number) =>
     column.cell
       ? column.cell({ row, rowId: id, index, size, selected: selectedSet.has(id) })
-      : formatValue(column.accessor?.(row));
+      : formatValue(column.accessor?.(row), locale);
 
   return (
     <View testID={testID} style={[{ width: '100%', alignItems: 'center', gap: 20 }, style]}>
@@ -427,7 +433,7 @@ export function DataTable<T>({
                               <Checkbox
                                 checked={rowSelected}
                                 onCheckedChange={(on) => setSelection(toggleId(selection, id, on))}
-                                accessibilityLabel={getSelectRowLabel?.(row, id) ?? `Select row ${id}`}
+                                accessibilityLabel={getSelectRowLabel?.(row, id) ?? messages.selectRow(id)}
                               />
                               {isTextLike(content) ? (
                                 <Text numberOfLines={1} style={[bodyText, { flexShrink: 1 }]}>
@@ -492,9 +498,14 @@ export function DataTable<T>({
   );
 }
 
-function formatValue(value: ReturnType<NonNullable<DataTableColumn<unknown>['accessor']>>): string {
+function formatValue(
+  value: ReturnType<NonNullable<DataTableColumn<unknown>['accessor']>>,
+  locale: string | undefined,
+): string {
   if (value == null) return '';
-  if (value instanceof Date) return value.toLocaleDateString();
+  // The locale's own short date — `toLocaleDateString()` with no locale would
+  // always speak the runtime's, whatever `BloomProvider locale` says.
+  if (value instanceof Date) return formatGregorian(value, locale, { year: 'numeric', month: 'numeric', day: 'numeric' }) ?? value.toDateString();
   return String(value);
 }
 

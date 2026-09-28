@@ -10,6 +10,8 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { CALENDAR_MESSAGES } from './messages';
 import {
   createHueResolver,
   feedSwatchColors,
@@ -170,10 +172,14 @@ export function CalendarViewInboxMenu({
   accounts,
   onSelectFeed,
   onAddAccount,
-  addAccountLabel = 'Add new account',
-  accessibilityLabel = 'Inbox',
+  addAccountLabel: addAccountLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
+  locale,
   testID,
 }: CalendarViewInboxMenuProps) {
+  const { messages } = useMessages(CALENDAR_MESSAGES, locale);
+  const addAccountLabel = addAccountLabelProp ?? messages.addAccount;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.inbox;
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const hue = useMemo(() => createHueResolver(theme.colors.primary), [theme.colors.primary]);
@@ -202,7 +208,7 @@ export function CalendarViewInboxMenu({
         <Button size="md" icon={RiInbox2Line} accessibilityLabel={accessibilityLabel} testID={testID} appearance="plain" tone="neutral" />
       </PopoverTrigger>
       <PopoverContent
-        label="Inbox menu"
+        label={messages.inboxMenu}
         side="bottom"
         align="end"
         sideOffset={8}
