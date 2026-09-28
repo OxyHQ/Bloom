@@ -34,47 +34,52 @@ export function BloomProvider({
     // `value` is passed unconditionally (null when unset) so toggling a resolver
     // never changes the tree shape and remounts everything below it.
     <ImageResolverProvider value={imageResolver ?? null}>
-      {/* Holds the first paint on the same visual as font loading until a
-          non-English locale's strings have loaded (English never waits). */}
-      <LocaleProvider locale={locale} fallback={themeProps.onFontsLoading ?? null}>
+      {/* The locale for everything below, the font-loading screen included. */}
+      <LocaleProvider locale={locale}>
         <BloomThemeProvider {...themeProps}>
-          <ScrollRestorationProvider adapter={scrollAdapter}>
-            <BloomHapticsProvider enabled={haptics}>
-              {/*
-                A PROVIDER, not an outlet, and the distinction is the one this
-                component's exclusion list encodes. Outlets stay out because a
-                second mount duplicates every surface they render; this renders NO
-                surface — a transparent container on Android and nothing at all
-                elsewhere — so a second mount duplicates nothing, and the nearest
-                one simply becomes the target for its subtree. Nor is its position
-                an app decision the way an outlet's is: it has no z-order and no
-                insets, and it must WRAP the content, which is exactly what this
-                provider already does with `children`.
-              */}
-              <GlassBlurTargetProvider>
+          {/* Holds the first paint on the same screen as font loading until a
+              non-English locale's strings have loaded (English never waits).
+              Inside the theme, like the font wait, because that screen is built
+              from Bloom components that read it. */}
+          <LocaleProvider locale={locale} fallback={themeProps.onFontsLoading ?? null}>
+            <ScrollRestorationProvider adapter={scrollAdapter}>
+              <BloomHapticsProvider enabled={haptics}>
                 {/*
-                  The bottom edge's claim registry. Also a provider, not an outlet:
-                  it renders nothing and holds only the set of surfaces currently
-                  parked at the bottom edge, so a tab bar can publish its footprint
-                  and a FAB or a toast stack can read it without either importing
-                  the other.
+                  A PROVIDER, not an outlet, and the distinction is the one this
+                  component's exclusion list encodes. Outlets stay out because a
+                  second mount duplicates every surface they render; this renders NO
+                  surface — a transparent container on Android and nothing at all
+                  elsewhere — so a second mount duplicates nothing, and the nearest
+                  one simply becomes the target for its subtree. Nor is its position
+                  an app decision the way an outlet's is: it has no z-order and no
+                  insets, and it must WRAP the content, which is exactly what this
+                  provider already does with `children`.
                 */}
-                <BottomEdgeProvider>
+                <GlassBlurTargetProvider>
                   {/*
-                    And the top edge's, for the same reason one edge further up: a
-                    floating `PageHeader` overlays the content rather than sitting
-                    above it, so the content has to be told how much of the edge is
-                    gone. Two registries rather than one keyed by edge, because a
-                    reader of either only ever wants one number and must not
-                    re-render when the other moves.
+                    The bottom edge's claim registry. Also a provider, not an outlet:
+                    it renders nothing and holds only the set of surfaces currently
+                    parked at the bottom edge, so a tab bar can publish its footprint
+                    and a FAB or a toast stack can read it without either importing
+                    the other.
                   */}
-                  <TopEdgeProvider>
-                    <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
-                  </TopEdgeProvider>
-                </BottomEdgeProvider>
-              </GlassBlurTargetProvider>
-            </BloomHapticsProvider>
-          </ScrollRestorationProvider>
+                  <BottomEdgeProvider>
+                    {/*
+                      And the top edge's, for the same reason one edge further up: a
+                      floating `PageHeader` overlays the content rather than sitting
+                      above it, so the content has to be told how much of the edge is
+                      gone. Two registries rather than one keyed by edge, because a
+                      reader of either only ever wants one number and must not
+                      re-render when the other moves.
+                    */}
+                    <TopEdgeProvider>
+                      <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+                    </TopEdgeProvider>
+                  </BottomEdgeProvider>
+                </GlassBlurTargetProvider>
+              </BloomHapticsProvider>
+            </ScrollRestorationProvider>
+          </LocaleProvider>
         </BloomThemeProvider>
       </LocaleProvider>
     </ImageResolverProvider>
