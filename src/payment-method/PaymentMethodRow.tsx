@@ -3,12 +3,14 @@ import { View } from 'react-native';
 
 import { Badge } from '../badge';
 import { Item } from '../item';
+import { useMessages } from '../locale/messages';
 import { RadioIndicator } from '../radio-indicator';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { space } from '../styles/tokens';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { PAYMENT_METHOD_MESSAGES } from './messages';
 import { PaymentMethodMark } from './PaymentMethodMark';
 import { PAYMENT_METHOD_GEOMETRY, PAYMENT_METHOD_STATE_TONE } from './constants';
 import { composePaymentMethodName, paymentMethodStateMessage, resolvePaymentMethodPaint } from './shared';
@@ -48,7 +50,7 @@ function PaymentMethodRowComponent({
   image,
   leading,
   isDefault = false,
-  defaultLabel = 'Default',
+  defaultLabel: defaultLabelProp,
   state = 'ok',
   stateMessage,
   selectable = false,
@@ -62,12 +64,14 @@ function PaymentMethodRowComponent({
   style,
   testID,
 }: PaymentMethodRowProps) {
+  const { messages } = useMessages(PAYMENT_METHOD_MESSAGES);
+  const defaultLabel = defaultLabelProp ?? messages.default;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePaymentMethodPaint(theme, surface), [theme, surface]);
   const g = PAYMENT_METHOD_GEOMETRY[density];
   const tone = PAYMENT_METHOD_STATE_TONE[state];
-  const stateWords = paymentMethodStateMessage(state, stateMessage);
+  const stateWords = paymentMethodStateMessage(state, stateMessage, messages);
   // The state's words are read as TEXT on the row's own surface, so they take
   // the tone's `accent` member (`outlined` foreground) rather than the fill.
   const stateColor = tone ? resolveAccentColors(theme.colors, tone, 'outlined').foreground : undefined;

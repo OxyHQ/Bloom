@@ -5,6 +5,7 @@ import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
+import { PAYMENT_STATUS_MESSAGES } from './messages';
 import type { PaymentStatusState } from './types';
 
 /**
@@ -12,14 +13,10 @@ import type { PaymentStatusState } from './types';
  *
  * `"Payment failed"` rather than `"Failed"` because the strip is read on its
  * own, in a row of other rows, where "Failed" is a word with no subject.
+ * English; the components speak `PAYMENT_STATUS_MESSAGES` in the resolved
+ * locale.
  */
-export const PAYMENT_STATUS_LABELS: Record<PaymentStatusState, string> = {
-  authorising: 'Authorising',
-  paid: 'Paid',
-  failed: 'Payment failed',
-  refunded: 'Refunded',
-  pending: 'Payment pending',
-};
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatusState, string> = PAYMENT_STATUS_MESSAGES.en.states;
 
 /**
  * The tone each state paints.

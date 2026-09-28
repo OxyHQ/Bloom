@@ -3,11 +3,14 @@ import { View } from 'react-native';
 
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { ORDER_STATUS_GEOMETRY, ORDER_STATUS_STATE_LABELS, type OrderStatusGeometry } from './constants';
+import { ORDER_STATUS_GEOMETRY, type OrderStatusGeometry } from './constants';
+import { ORDER_STATUS_MESSAGES } from './messages';
 import { IS_WEB, resolveOrderStatusPaint } from './shared';
 import type { OrderStatusStep, OrderStatusStepState, OrderStatusTimelineProps } from './types';
 
@@ -111,16 +114,19 @@ function OrderStatusTimelineComponent({
   steps,
   orientation = 'vertical',
   density = 'comfortable',
-  accessibilityLabel = 'Status',
+  accessibilityLabel: accessibilityLabelProp,
   stateLabels,
   style,
   testID,
 }: OrderStatusTimelineProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(ORDER_STATUS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.status;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveOrderStatusPaint(theme, surface), [theme, surface]);
   const g = ORDER_STATUS_GEOMETRY[orientation][density];
-  const labels = { ...ORDER_STATUS_STATE_LABELS, ...stateLabels };
+  const labels = { done: common.done, ...messages.states, ...stateLabels };
 
   /** The colour of the rail leading INTO step `index`. */
   const segment = (index: number): string => {

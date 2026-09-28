@@ -4,6 +4,8 @@ import { ScrollView, View } from 'react-native';
 import { Chip, ChipRow } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useContainerWidth } from '../hooks/use-container-width';
+import { useMessages } from '../locale/messages';
+import { PIPELINE_MESSAGES } from './messages';
 import { PipelineColumn } from './PipelineColumn';
 import {
   PIPELINE_COLUMN_WIDTH,
@@ -61,6 +63,7 @@ function PipelineBoardComponent({
   style,
   testID,
 }: PipelineBoardProps) {
+  const { messages } = useMessages(PIPELINE_MESSAGES);
   const { width, onLayout } = useContainerWidth();
   const [selectedId, setSelectedId] = useControllableState<string | undefined>({
     value: stageId,
@@ -97,7 +100,7 @@ function PipelineBoardComponent({
       <View onLayout={onLayout} style={[{ minWidth: 0 }, style]} testID={testID}>
         <ChipRow
           role="tablist"
-          accessibilityLabel={accessibilityLabel ?? 'Pipeline stages'}
+          accessibilityLabel={accessibilityLabel ?? messages.stages}
           gap={6}
           style={{ minWidth: 0 }}
           testID={id('tabs')}
@@ -110,7 +113,7 @@ function PipelineBoardComponent({
               selected={stage.id === current?.id}
               onPress={() => setSelectedId(stage.id)}
               accessibilityLabel={
-                stage.count === undefined ? stage.name : `${stage.name}, ${stage.count} deals`
+                stage.count === undefined ? stage.name : messages.stageWithCount(stage.name, stage.count)
               }
               testID={id(`tab-${stage.id}`)}
             >

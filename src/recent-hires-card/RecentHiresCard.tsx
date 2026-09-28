@@ -8,6 +8,8 @@ import { Button } from '../button';
 import { Chip } from '../chip';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { ChevronDownSmall } from '../sidebar/parts';
 import { resolveDashboardSurfaces } from '../stat-cards/tones';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -15,8 +17,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { RECENT_HIRES_CARD_MESSAGES } from './messages';
 import type { RecentHire, RecentHiresCardProps } from './types';
-import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The "Recent hires" card:
@@ -142,7 +144,7 @@ function HireCard({
 
 const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   hires,
-  title = 'Recent hires',
+  title: titleProp,
   count,
   teamLabel,
   onTeamPress,
@@ -158,6 +160,8 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   testID,
 }) => {
   const common = useCommonMessages();
+  const { messages } = useMessages(RECENT_HIRES_CARD_MESSAGES);
+  const title = titleProp ?? messages.title;
   const previousLabel = previousLabelProp ?? common.previous;
   const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();

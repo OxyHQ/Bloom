@@ -12,7 +12,8 @@
  */
 import { hairlineOn, surfaceFillOn, surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
-import { DELIVERY_DETAIL_SEPARATOR, DELIVERY_SOLD_OUT_LABEL, DELIVERY_TIER_LABELS } from './constants';
+import { DELIVERY_DETAIL_SEPARATOR } from './constants';
+import { DELIVERY_SLOT_MESSAGES, type DeliverySlotMessages } from './messages';
 import type { DeliveryTier, DeliveryWindow } from './types';
 
 export interface DeliverySlotPaint extends SurfaceTextPaint {
@@ -51,10 +52,11 @@ export function joinDeliveryParts(
 export function windowDetail(
   window: DeliveryWindow,
   tierLabels: Partial<Record<DeliveryTier, string>> = {},
-  soldOutLabel: string = DELIVERY_SOLD_OUT_LABEL,
+  soldOutLabel?: string,
+  messages: DeliverySlotMessages = DELIVERY_SLOT_MESSAGES.en,
 ): string | undefined {
-  if (window.soldOut) return soldOutLabel;
-  const words = { ...DELIVERY_TIER_LABELS, ...tierLabels };
+  if (window.soldOut) return soldOutLabel ?? messages.soldOut;
+  const words = { ...messages.tiers, ...tierLabels };
   return joinDeliveryParts([words[window.tier ?? 'standard'], window.capacity, window.note]);
 }
 
@@ -63,10 +65,11 @@ export function windowName(
   window: DeliveryWindow,
   tierLabels?: Partial<Record<DeliveryTier, string>>,
   soldOutLabel?: string,
+  messages: DeliverySlotMessages = DELIVERY_SLOT_MESSAGES.en,
 ): string {
   return (
     window.accessibilityLabel ??
-    joinDeliveryParts([window.label, windowDetail(window, tierLabels, soldOutLabel), window.price]) ??
+    joinDeliveryParts([window.label, windowDetail(window, tierLabels, soldOutLabel, messages), window.price]) ??
     window.label
   );
 }

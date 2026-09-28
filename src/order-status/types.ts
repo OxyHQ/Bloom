@@ -62,11 +62,11 @@ export interface OrderStatusTimelineProps {
   orientation?: OrderStatusOrientation;
   /** Default `comfortable`. */
   density?: OrderStatusDensity;
-  /** Names the list as a whole. Default `"Status"`. */
+  /** Names the list as a whole (`"Status"` in English). */
   accessibilityLabel?: string;
   /**
    * What a screen reader announces for each state, before the step's own label.
-   * Defaults are `"Done"`, `"In progress"`, `"Not yet"`, `"Failed"`.
+   * Defaults are `"Done"`, `"In progress"`, `"Not yet"`, `"Failed"` in English.
    */
   stateLabels?: Partial<Record<OrderStatusStepState, string>>;
   style?: StyleProp<ViewStyle>;

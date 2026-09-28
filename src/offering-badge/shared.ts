@@ -7,18 +7,17 @@ import { RiSuitcaseLine } from '../icons/remix/RiSuitcaseLine';
 import type { Offering } from '../listing-card/types';
 import type { AccentTone } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
+import { OFFERING_BADGE_MESSAGES } from './messages';
 import type { OfferingBadgeSize, OfferingBadgeVariant } from './types';
 
 /** Every offering, in the order a listing lists them. */
 export const OFFERINGS: readonly Offering[] = ['long_term_rent', 'sale', 'short_term_rent', 'exchange'];
 
-/** The English default labels. Apps in other languages pass `label`. */
-export const OFFERING_LABELS: Readonly<Record<Offering, string>> = {
-  long_term_rent: 'For rent',
-  sale: 'For sale',
-  short_term_rent: 'Vacation rental',
-  exchange: 'Swap',
-};
+/**
+ * The English labels. `OfferingBadge` speaks `OFFERING_BADGE_MESSAGES` in the
+ * resolved locale; a caller's `label` still wins.
+ */
+export const OFFERING_LABELS: Readonly<Record<Offering, string>> = OFFERING_BADGE_MESSAGES.en.offerings;
 
 export const OFFERING_ICONS: Readonly<Record<Offering, BloomIconComponent>> = {
   long_term_rent: RiKey2Line,

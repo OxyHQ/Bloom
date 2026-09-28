@@ -52,7 +52,7 @@ export interface VendorCardProps {
   rating?: number | string | null;
   /** The review count, drawn after the rating ("(128)"). */
   reviewCount?: number | string;
-  /** The "New" label of an unrated vendor. Default `"New"`. */
+  /** The "New" label of an unrated vendor (`"New"` in English). */
   newLabel?: string;
   /** Pre-formatted — "25–35 min". */
   deliveryTime?: string;
@@ -64,8 +64,8 @@ export interface VendorCardProps {
   minimumOrder?: string;
   /**
    * The WORD said before each reading in the card's accessible name —
-   * "Delivery time 25–35 min". Defaults are English ("Delivery time",
-   * "Delivery", "Distance", "Minimum order"); a bare "25–35 min" beside a glyph
+   * "Delivery time 25–35 min". Defaults follow the locale ("Delivery time",
+   * "Delivery", "Distance", "Minimum order" in English); a bare "25–35 min" beside a glyph
    * means nothing read aloud, and the glyph is not announced.
    */
   factLabels?: Partial<Record<VendorFactKey, string>>;
@@ -75,7 +75,7 @@ export interface VendorCardProps {
   promoTone?: AccentTone;
   /** Default `open`. */
   availability?: VendorAvailability;
-  /** Replaces the English status label ("Paused", "Closed"). */
+  /** Replaces the localised status label ("Paused", "Closed" in English). */
   availabilityLabel?: string;
   /**
    * When the vendor takes orders again, PRE-FORMATTED by the app — "Opens at
@@ -106,8 +106,8 @@ export interface VendorCardProps {
   density?: VendorCardDensity;
   /**
    * Replaces the composed accessible name ("Fig & Ember, Closed, Japanese,
-   * Sushi, Rated 4.8 out of 5, 214 reviews, Delivery time 25–35 min"), which is
-   * English.
+   * Sushi, Rated 4.8 out of 5, 214 reviews, Delivery time 25–35 min" in
+   * English), which follows the locale.
    */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

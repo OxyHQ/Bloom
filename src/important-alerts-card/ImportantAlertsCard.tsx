@@ -19,11 +19,13 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { BUTTON_SHADOW } from '../button/shared';
+import { useMessages } from '../locale/messages';
 import { resolveDashboardSurfaces, toneColor, type DashboardSurfaces } from '../stat-cards/tones';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { IMPORTANT_ALERTS_CARD_MESSAGES } from './messages';
 import type {
   ImportantAlertsCardAlert,
   ImportantAlertsCardProps,
@@ -164,13 +166,16 @@ function TopFade({ color, visible }: { color: string; visible: boolean }) {
 function ImportantAlertsCardComponent({
   alerts,
   count,
-  title = 'Important alerts',
-  countCaption = 'this week',
+  title: titleProp,
+  countCaption: countCaptionProp,
   rangeLabel,
   height = CARD_HEIGHT,
   style,
   testID,
 }: ImportantAlertsCardProps) {
+  const { messages } = useMessages(IMPORTANT_ALERTS_CARD_MESSAGES);
+  const title = titleProp ?? messages.title;
+  const countCaption = countCaptionProp ?? messages.thisWeek;
   const theme = useTheme();
   const fill = useCardFill(style);
   const surfaces = useMemo(() => resolveDashboardSurfaces(theme, fill), [theme, fill]);

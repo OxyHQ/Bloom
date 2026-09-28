@@ -6,9 +6,11 @@ import { StyleSheet, View } from 'react-native';
 import { Avatar } from '../avatar';
 import { Button } from '../button';
 import { RiAddLine } from '../icons/remix/RiAddLine';
+import { useMessages } from '../locale/messages';
 import { resolveDashboardSurfaces } from '../stat-cards/tones';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { PATIENT_INFO_CARD_MESSAGES } from './messages';
 import type { PatientInfoCardProps } from './types';
 
 /**
@@ -33,12 +35,14 @@ function PatientInfoCardComponent({
   initials,
   details,
   onAddPhoto,
-  addPhotoLabel = 'Add profile photo',
+  addPhotoLabel: addPhotoLabelProp,
   hideAddPhoto = false,
   height = 330,
   style,
   testID,
 }: PatientInfoCardProps) {
+  const { messages } = useMessages(PATIENT_INFO_CARD_MESSAGES);
+  const addPhotoLabel = addPhotoLabelProp ?? messages.addPhoto;
   const theme = useTheme();
   const fill = useCardFill(style);
   const surfaces = useMemo(() => resolveDashboardSurfaces(theme, fill), [theme, fill]);

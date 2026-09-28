@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 
+import { useMessages } from '../locale/messages';
 import { OrderStatusBar } from '../order-status';
+import { PAYMENT_STATUS_MESSAGES } from './messages';
 import { resolvePaymentStatus } from './shared';
 import type { PaymentStatusBarProps } from './types';
 
@@ -45,7 +47,8 @@ function PaymentStatusBarComponent({
   style,
   testID,
 }: PaymentStatusBarProps) {
-  const presentation = resolvePaymentStatus(state, { status, labels, icon });
+  const { messages } = useMessages(PAYMENT_STATUS_MESSAGES);
+  const presentation = resolvePaymentStatus(state, { status, labels, icon }, messages);
 
   return (
     <OrderStatusBar

@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Card } from '../card';
+import { useMessages } from '../locale/messages';
 import { MeterRing } from '../stat-bar';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
@@ -27,6 +28,7 @@ import {
   resolveLeadScoreBand,
   resolveLeadScorePaint,
 } from './shared';
+import { LEAD_SCORE_MESSAGES } from './messages';
 import type { LeadScoreCardProps } from './types';
 
 /**
@@ -67,13 +69,16 @@ function LeadScoreCardComponent({
   bandLabel,
   accessibilityLabel,
   valueText,
-  title = 'Lead score',
+  title: titleProp,
   factors,
-  factorsLabel = 'What it is made of',
+  factorsLabel: factorsLabelProp,
   trend,
   style,
   testID,
 }: LeadScoreCardProps) {
+  const { messages } = useMessages(LEAD_SCORE_MESSAGES);
+  const title = titleProp ?? messages.title;
+  const factorsLabel = factorsLabelProp ?? messages.factors;
   const theme = useTheme();
   const resolvedBand = band ?? resolveLeadScoreBand(score, max);
   const bandSpec = LEAD_SCORE_BAND[resolvedBand];
@@ -139,7 +144,7 @@ function LeadScoreCardComponent({
                     style={{ flexShrink: 1, color: paint.headerText.text }}
                     testID={id('band')}
                   >
-                    {bandLabel ?? bandSpec.label}
+                    {bandLabel ?? messages.bands[resolvedBand]}
                   </Text>
                 </View>
                 {trend && TrendIcon ? (

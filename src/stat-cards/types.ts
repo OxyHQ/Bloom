@@ -31,11 +31,11 @@ export interface StatCardsItem {
   deltaColor: StatCardsDeltaColor;
   /** `footer` only: gradient tint of the icon tile. Defaults to `'blue'`. */
   tone?: StatCardsTone;
-  /** `footer` only: comparison caption in the band. Defaults to `"From last month"`. */
+  /** `footer` only: comparison caption in the band (`"From last month"` in English). */
   caption?: string;
   /** `footer` only: shows an info glyph with this text in a tooltip. */
   hint?: string;
-  /** `footer` only: accessible name of the info glyph. Defaults to `` `About ${label}` ``. */
+  /** `footer` only: accessible name of the info glyph (`` `About ${label}` `` in English). */
   hintLabel?: string;
   /**
    * `plain` only: a node at the top right, level with the icon tile — a

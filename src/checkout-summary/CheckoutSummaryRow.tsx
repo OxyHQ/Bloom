@@ -3,17 +3,17 @@ import { View } from 'react-native';
 
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { Item } from '../item';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   CHECKOUT_ROW_CHEVRON,
   CHECKOUT_ROW_GLYPH,
-  CHECKOUT_ROW_HINT,
-  CHECKOUT_ROW_PLACEHOLDER,
   CHECKOUT_ROW_TEXT_GAP,
   CHECKOUT_ROW_TILE,
 } from './constants';
+import { CHECKOUT_SUMMARY_MESSAGES } from './messages';
 import { checkoutRowName, resolveCheckoutPaint } from './shared';
 import type { CheckoutSummaryRowProps } from './types';
 
@@ -46,7 +46,7 @@ function CheckoutSummaryRowComponent({
   icon: Icon,
   leading,
   value,
-  placeholder = CHECKOUT_ROW_PLACEHOLDER,
+  placeholder: placeholderProp,
   detail,
   badge,
   content,
@@ -57,6 +57,8 @@ function CheckoutSummaryRowComponent({
   style,
   testID,
 }: CheckoutSummaryRowProps) {
+  const { messages } = useMessages(CHECKOUT_SUMMARY_MESSAGES);
+  const placeholder = placeholderProp ?? messages.notChosen;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveCheckoutPaint(theme, surface), [theme, surface]);
@@ -155,7 +157,7 @@ function CheckoutSummaryRowComponent({
       // `docs/checkout-summary.mdx` and pinned in `CheckoutSummary.test.tsx`
       // rather than swapped for an `aria-describedby` that native would then
       // announce twice.
-      accessibilityHint={onPress ? (accessibilityHint ?? CHECKOUT_ROW_HINT) : accessibilityHint}
+      accessibilityHint={onPress ? (accessibilityHint ?? messages.opensPicker) : accessibilityHint}
       style={style}
       testID={testID}
     >

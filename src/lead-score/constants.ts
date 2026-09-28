@@ -9,6 +9,7 @@ import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { RiTempHotLine } from '../icons/remix/RiTempHotLine';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
+import { LEAD_SCORE_MESSAGES } from './messages';
 import type { LeadScoreBand, LeadScoreTrend } from './types';
 
 /**
@@ -28,9 +29,9 @@ export const LEAD_SCORE_BAND: Record<
   LeadScoreBand,
   { tone: AccentTone; label: string; icon: BloomIconComponent }
 > = {
-  cold: { tone: 'info', label: 'Cold', icon: RiSnowflakeLine },
-  warm: { tone: 'warning', label: 'Warm', icon: RiTempHotLine },
-  hot: { tone: 'success', label: 'Hot', icon: RiFireLine },
+  cold: { tone: 'info', label: LEAD_SCORE_MESSAGES.en.bands.cold, icon: RiSnowflakeLine },
+  warm: { tone: 'warning', label: LEAD_SCORE_MESSAGES.en.bands.warm, icon: RiTempHotLine },
+  hot: { tone: 'success', label: LEAD_SCORE_MESSAGES.en.bands.hot, icon: RiFireLine },
 };
 
 /**

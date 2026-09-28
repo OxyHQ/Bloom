@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 
 import { Chip, ChipRow } from '../chip';
-import { ACTIVITY_FEED_KIND } from './constants';
+import { useMessages } from '../locale/messages';
+import { ACTIVITY_FEED_MESSAGES } from './messages';
 import type { ActivityFeedFiltersProps } from './types';
 
 /**
@@ -24,10 +25,12 @@ function ActivityFeedFiltersComponent({
   onToggle,
   counts,
   labels,
-  accessibilityLabel = 'Filter activity',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: ActivityFeedFiltersProps) {
+  const { messages } = useMessages(ACTIVITY_FEED_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.filterActivity;
   return (
     <ChipRow
       role="group"
@@ -39,7 +42,7 @@ function ActivityFeedFiltersComponent({
       testID={testID}
     >
       {kinds.map((kind) => {
-        const label = labels?.[kind] ?? ACTIVITY_FEED_KIND[kind].label;
+        const label = labels?.[kind] ?? messages.kinds[kind];
         const count = counts?.[kind];
         return (
           <Chip

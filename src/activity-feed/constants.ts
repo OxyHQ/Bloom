@@ -6,10 +6,14 @@ import { RiMailLine } from '../icons/remix/RiMailLine';
 import { RiPhoneLine } from '../icons/remix/RiPhoneLine';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
+import { ACTIVITY_FEED_MESSAGES } from './messages';
 import type { ActivityFeedKind } from './types';
 
+const KIND_WORDS = ACTIVITY_FEED_MESSAGES.en.kinds;
+
 /**
- * The glyph, the word and the tone of each kind.
+ * The glyph, the word (in English — the feed speaks `ACTIVITY_FEED_MESSAGES`
+ * in the resolved locale) and the tone of each kind.
  *
  * The WORD is here rather than on the entry because it is also the filter
  * chip's label and the kind mark's accessible name, and three spellings of
@@ -19,12 +23,12 @@ export const ACTIVITY_FEED_KIND: Record<
   ActivityFeedKind,
   { icon: BloomIconComponent; label: string; tone: AccentTone }
 > = {
-  call: { icon: RiPhoneLine, label: 'Call', tone: 'info' },
-  email: { icon: RiMailLine, label: 'Email', tone: 'primary' },
-  meeting: { icon: RiCalendarEventLine, label: 'Meeting', tone: 'primary' },
-  note: { icon: RiDraftLine, label: 'Note', tone: 'default' },
-  'stage-change': { icon: RiExchangeLine, label: 'Stage change', tone: 'warning' },
-  task: { icon: RiCheckboxCircleLine, label: 'Task completed', tone: 'success' },
+  call: { icon: RiPhoneLine, label: KIND_WORDS.call, tone: 'info' },
+  email: { icon: RiMailLine, label: KIND_WORDS.email, tone: 'primary' },
+  meeting: { icon: RiCalendarEventLine, label: KIND_WORDS.meeting, tone: 'primary' },
+  note: { icon: RiDraftLine, label: KIND_WORDS.note, tone: 'default' },
+  'stage-change': { icon: RiExchangeLine, label: KIND_WORDS['stage-change'], tone: 'warning' },
+  task: { icon: RiCheckboxCircleLine, label: KIND_WORDS.task, tone: 'success' },
 };
 
 /** Every kind, in the order a filter row offers them. */

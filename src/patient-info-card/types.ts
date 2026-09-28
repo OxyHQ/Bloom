@@ -25,7 +25,7 @@ export interface PatientInfoCardProps {
   details: readonly PatientInfoCardDetail[];
   /** Press handler of the `+` button pinned to the avatar. */
   onAddPhoto?: () => void;
-  /** Accessible name of the `+` button. Defaults to `"Add profile photo"`. */
+  /** Accessible name of the `+` button (`"Add profile photo"` in English). */
   addPhotoLabel?: string;
   /** Hide the `+` button. */
   hideAddPhoto?: boolean;

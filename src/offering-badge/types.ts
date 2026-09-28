@@ -20,7 +20,7 @@ export type OfferingBadgeIcon = BloomIconComponent;
 export interface OfferingBadgeProps {
   /** What the listing is offered as. Picks the default label, icon and tint. */
   offering: Offering;
-  /** Replaces the default label ("For rent", "For sale", "Vacation rental", "Swap"). */
+  /** Replaces the localised label ("For rent", "For sale", "Vacation rental", "Swap" in English). */
   label?: string;
   /**
    * `true` (default) draws the offering's own icon, `false` none, a component
