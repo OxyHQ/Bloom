@@ -442,3 +442,18 @@ describe('the board counts, filters, orders and refreshes', () => {
     expect(queryTestId('b-refresh')).toBeNull();
   });
 });
+
+
+it('makes replacement job actions inert when disabled and restores them', () => {
+  const actions = <button data-testid="custom">Take</button>;
+  mount(<JobCard job={SOFA} disabled actions={actions} />);
+  expect(byTestId('custom').closest('[inert]')).not.toBeNull();
+  mount(<JobCard job={SOFA} actions={actions} />);
+  expect(byTestId('custom').closest('[inert]')).toBeNull();
+});
+
+
+it.each(['taken', 'expired'] as const)('locks custom actions for a %s job', state => {
+  mount(<JobCard job={{ ...SOFA, state }} actions={<button data-testid="custom">Take</button>} />);
+  expect(byTestId('custom').closest('[inert]')).not.toBeNull();
+});

@@ -208,3 +208,5 @@ Every menu row in Bloom is an `Item`. A select row is not, and the reason is its
 The web option reserves a 30px indicator gutter and paints the indicator into it ABSOLUTELY, so the label's left edge does not move between a selected row and an unselected one; `Item` has an in-flow leading slot and no absolute one. On top of that, `Item` couples `selected` to its OWN selected background, while the select paints its own row wash — the same one hover and focus use — from the menu palette.
 
 Composing would mean flattening one of those two, and both are visible: the first as a label that jumps sideways on selection, the second as a selected row painted in a colour no other menu row uses. So select keeps its own row, and `radio-indicator` stays the one indicator both it and `Radio` draw.
+
+Inside a required Field, the trigger announces the localized required constraint through a description on web and a native accessibility hint. It remains a menu button; `aria-required` is reserved for roles that support it.

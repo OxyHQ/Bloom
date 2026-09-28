@@ -33,7 +33,7 @@ import {
   emojiChar,
   filterEmojiGroups,
   formatRecordingTime,
-} from '../chat-composer';
+} from '../chat-composer/index.web';
 import { ComposerIconButton as WebComposerIconButton } from '../chat-composer/ComposerIconButton.web';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { waveformBars } from '../chat-composer/shared';
@@ -196,6 +196,15 @@ describe('waveformBars', () => {
 // ---------------------------------------------------------------------------
 
 describe('ChatComposer', () => {
+  it('uses the DOM Button for controls reached through the browser barrel', () => {
+    const onSend = jest.fn();
+    mount(<ChatComposer testID="web" value="Hello" onSend={onSend} />);
+    const send = container.querySelector<HTMLButtonElement>('button.bloom-btn[data-testid="web-send"]');
+    expect(send).not.toBeNull();
+    press(send!);
+    expect(onSend).toHaveBeenCalledTimes(1);
+  });
+
   it('shows the mic when there is nothing to send, and hides SEND from assistive tech', () => {
     mount(<ChatComposer testID="c" onMicPress={() => {}} onSend={() => {}} />);
     expect(ariaHidden(byTestId('c-mic'))).toBe(false);

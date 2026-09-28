@@ -37,6 +37,7 @@ const LabelComponent = function Label({
   nativeID,
   htmlFor,
   required = false,
+  requiredLabel,
   disabled = false,
   size: sizeProp,
   style,
@@ -69,7 +70,7 @@ const LabelComponent = function Label({
       {required ? (
         <Text
           variant={SIZE_VARIANT[size]}
-          accessibilityLabel={messages.required}
+          accessibilityLabel={requiredLabel ?? messages.required}
           // `gap-0.5`: an inline margin on web; a nested native
           // `Text` ignores margins, so a thin space stands in for it there.
           style={[{ color: palette.error }, IS_WEB ? { marginLeft: TEXT_FIELD_LEADING_GAP } : null]}>

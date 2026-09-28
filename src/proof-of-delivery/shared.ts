@@ -157,7 +157,7 @@ export function isProofGiven(
     case 'signature':
       return isSignatureGiven(value.signature);
     case 'photo':
-      return value.photos.length > 0;
+      return value.photos.some((photo) => photo.status == null || photo.status === 'uploaded');
     case 'code':
       return value.code.length >= codeLength;
     case 'recipient':

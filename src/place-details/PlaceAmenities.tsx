@@ -1,6 +1,8 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { Button } from '../button';
+import { LISTING_DETAILS_MESSAGES } from '../listing-details/messages';
 import { Chip } from '../chip';
 import { AmenityList } from '../listing-details/AmenityList';
 import type { Amenity } from '../listing-details/types';
@@ -47,6 +49,7 @@ function PlaceAmenitiesComponent({
   testID,
 }: PlaceAmenitiesProps) {
   const { messages } = useMessages(PLACE_DETAILS_MESSAGES);
+  const { messages: listingMessages } = useMessages(LISTING_DETAILS_MESSAGES);
   const unavailableLabel = unavailableLabelProp ?? messages.notAvailable;
   const accessibilityLabel = accessibilityLabelProp ?? messages.amenities;
   const theme = useTheme();
@@ -81,6 +84,7 @@ function PlaceAmenitiesComponent({
   }
 
   const shown = limit != null && limit >= 0 ? items.slice(0, limit) : items;
+  const fullCount = Math.max(total ?? items.length, items.length);
 
   return (
     <View
@@ -119,6 +123,11 @@ function PlaceAmenitiesComponent({
           </Chip>
         </View>
       ))}
+      {onShowAll && fullCount > shown.length ? (
+        <Button variant="secondary" onPress={onShowAll} testID={testID ? `${testID}-show-all` : undefined}>
+          {showAllLabel ? showAllLabel(fullCount) : listingMessages.showAllAmenities(fullCount)}
+        </Button>
+      ) : null}
     </View>
   );
 }

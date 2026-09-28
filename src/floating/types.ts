@@ -167,6 +167,7 @@ export interface FloatingPanelProps extends FloatingPositionProps {
  * is inherent to `asChild` rather than something this type can fix.
  */
 export interface TriggerHandleProps {
+  accessibilityHint?: string;
   onPress: (event: GestureResponderEvent) => void;
   onLongPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;

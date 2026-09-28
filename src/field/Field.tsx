@@ -40,6 +40,7 @@ const FieldComponent = function Field({
   description,
   error,
   required = false,
+  requiredLabel,
   disabled = false,
   multiple = false,
   nativeID,
@@ -94,7 +95,7 @@ const FieldComponent = function Field({
         }
       >
         {label != null ? (
-          <Label nativeID={labelID} htmlFor={multiple ? null : base} required={required} disabled={disabled}>
+          <Label nativeID={labelID} htmlFor={multiple ? null : base} required={required} requiredLabel={requiredLabel} disabled={disabled}>
             {label}
           </Label>
         ) : null}

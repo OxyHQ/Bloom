@@ -210,7 +210,7 @@ function PaymentMethodListComponent({
         state={entry.state}
         stateMessage={entry.stateMessage}
         action={entry.action}
-        disabled={isDisabled || entry.disabled === true}
+        disabled={isDisabled || entry.disabled === true || (picker && entry.state != null && entry.state !== 'ok')}
         density={density}
         accessibilityLabel={entry.accessibilityLabel}
         style={entry.style}
@@ -239,6 +239,7 @@ function PaymentMethodListComponent({
           aria-label={name}
           aria-describedby={field.describedBy}
           aria-invalid={field.invalid || undefined}
+          aria-required={field.required || undefined}
           // A `View` has no `disabled` prop for react-native-web to derive
           // `aria-disabled` from, and it never reads `accessibilityState`.
           aria-disabled={isDisabled || undefined}

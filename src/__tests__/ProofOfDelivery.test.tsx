@@ -331,3 +331,41 @@ describe('the result is the whole value, whatever was controlled', () => {
     });
   });
 });
+
+
+describe('photo upload completion', () => {
+  it.each(['uploading', 'error'] as const)('keeps a %s photo missing', (status) => {
+    const pending = value({ photos: [{ id: 'a', uri: 'x', status }] });
+    expect(isProofGiven('photo', pending, 4)).toBe(false);
+    expect(missingProofs(pending, ['photo'], ['photo'], 4)).toEqual(['photo']);
+  });
+
+  it('accepts any completed photo among failed and pending uploads', () => {
+    expect(isProofGiven('photo', value({ photos: [
+      { id: 'a', uri: 'x', status: 'error' },
+      { id: 'b', uri: 'y', status: 'uploading' },
+      { id: 'c', uri: 'z', status: 'uploaded' },
+    ] }), 4)).toBe(true);
+  });
+});
+
+describe('caller overrides', () => {
+  it('announces the instance required label on every required proof', () => {
+    const container = mount(<ProofOfDelivery
+      proofs={['recipient', 'signature', 'code', 'photo', 'note']}
+      required={['recipient', 'signature', 'code', 'photo', 'note']}
+      labels={{ required: 'Mandatory proof' }}
+    />);
+    expect(container.querySelectorAll('[aria-label="Mandatory proof"]')).toHaveLength(5);
+  });
+
+  it.each([{ disabled: true }, { submitting: true }])(
+    'makes custom actions inert while %j, then restores them', (state) => {
+      const actions = <button data-testid="custom">Confirm</button>;
+      mount(<ProofOfDelivery proofs={[]} {...state} actions={actions} />);
+      expect(byTestId('custom').closest('[inert]')).not.toBeNull();
+      mount(<ProofOfDelivery proofs={[]} actions={actions} />);
+      expect(byTestId('custom').closest('[inert]')).toBeNull();
+    },
+  );
+});
