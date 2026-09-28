@@ -36,12 +36,6 @@ export interface ChatPeopleMessages {
  * abbreviated one ("12.4K") is some large number: 11 picks the "many" form in
  * the languages that have one, and "other" everywhere else.
  */
-function countOf(count: string | number): number {
-  const text = String(count).trim();
-  if (!/^\d[\d,.\s]*$/.test(text)) return 11;
-  const n = Number(text.replace(/[,.\s]/g, ''));
-  return Number.isFinite(n) ? n : 11;
-}
 
 export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
   en: {
@@ -79,8 +73,8 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     share: 'Share',
     postOptions: 'Post options',
     pinned: 'Pinned',
-    views: (c) => plural('en', countOf(c), { one: `${c} view`, other: `${c} views` }),
-    forwards: (c) => plural('en', countOf(c), { one: `${c} forward`, other: `${c} forwards` }),
+    views: (c) => plural('en', c, { one: `${c} view`, other: `${c} views` }),
+    forwards: (c) => plural('en', c, { one: `${c} forward`, other: `${c} forwards` }),
     jumpTo: (letter) => `Jump to ${letter}`,
     add: 'Add',
     added: 'Added',
@@ -121,8 +115,8 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     share: 'Compartir',
     postOptions: 'Opciones de la publicación',
     pinned: 'Fijada',
-    views: (c) => plural('es', countOf(c), { one: `${c} visualización`, other: `${c} visualizaciones` }),
-    forwards: (c) => plural('es', countOf(c), { one: `${c} reenvío`, other: `${c} reenvíos` }),
+    views: (c) => plural('es', c, { one: `${c} visualización`, other: `${c} visualizaciones` }),
+    forwards: (c) => plural('es', c, { one: `${c} reenvío`, other: `${c} reenvíos` }),
     jumpTo: (letter) => `Ir a la ${letter}`,
     add: 'Añadir',
     added: 'Añadido',
@@ -163,8 +157,8 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     share: 'Comparteix',
     postOptions: 'Opcions de la publicació',
     pinned: 'Fixada',
-    views: (c) => plural('ca', countOf(c), { one: `${c} visualització`, other: `${c} visualitzacions` }),
-    forwards: (c) => plural('ca', countOf(c), { one: `${c} reenviament`, other: `${c} reenviaments` }),
+    views: (c) => plural('ca', c, { one: `${c} visualització`, other: `${c} visualitzacions` }),
+    forwards: (c) => plural('ca', c, { one: `${c} reenviament`, other: `${c} reenviaments` }),
     jumpTo: (letter) => `Ves a la ${letter}`,
     add: 'Afegeix',
     added: 'Afegit',
@@ -205,8 +199,8 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     share: 'Teilen',
     postOptions: 'Beitragsoptionen',
     pinned: 'Angeheftet',
-    views: (c) => plural('de', countOf(c), { one: `${c} Aufruf`, other: `${c} Aufrufe` }),
-    forwards: (c) => plural('de', countOf(c), { one: `${c} Weiterleitung`, other: `${c} Weiterleitungen` }),
+    views: (c) => plural('de', c, { one: `${c} Aufruf`, other: `${c} Aufrufe` }),
+    forwards: (c) => plural('de', c, { one: `${c} Weiterleitung`, other: `${c} Weiterleitungen` }),
     jumpTo: (letter) => `Zu ${letter} springen`,
     add: 'Hinzufügen',
     added: 'Hinzugefügt',
@@ -247,8 +241,8 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     share: 'Partager',
     postOptions: 'Options de la publication',
     pinned: 'Épinglé',
-    views: (c) => plural('fr', countOf(c), { one: `${c} vue`, other: `${c} vues` }),
-    forwards: (c) => plural('fr', countOf(c), { one: `${c} transfert`, other: `${c} transferts` }),
+    views: (c) => plural('fr', c, { one: `${c} vue`, other: `${c} vues` }),
+    forwards: (c) => plural('fr', c, { one: `${c} transfert`, other: `${c} transferts` }),
     jumpTo: (letter) => `Aller à ${letter}`,
     add: 'Ajouter',
     added: 'Ajouté',
@@ -289,8 +283,8 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     share: 'Condividi',
     postOptions: 'Opzioni del post',
     pinned: 'Fissato',
-    views: (c) => plural('it', countOf(c), { one: `${c} visualizzazione`, other: `${c} visualizzazioni` }),
-    forwards: (c) => plural('it', countOf(c), { one: `${c} inoltro`, other: `${c} inoltri` }),
+    views: (c) => plural('it', c, { one: `${c} visualizzazione`, other: `${c} visualizzazioni` }),
+    forwards: (c) => plural('it', c, { one: `${c} inoltro`, other: `${c} inoltri` }),
     jumpTo: (letter) => `Vai a ${letter}`,
     add: 'Aggiungi',
     added: 'Aggiunto',
@@ -331,8 +325,8 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     share: 'Compartilhar',
     postOptions: 'Opções da publicação',
     pinned: 'Fixada',
-    views: (c) => plural('pt', countOf(c), { one: `${c} visualização`, other: `${c} visualizações` }),
-    forwards: (c) => plural('pt', countOf(c), { one: `${c} encaminhamento`, other: `${c} encaminhamentos` }),
+    views: (c) => plural('pt', c, { one: `${c} visualização`, other: `${c} visualizações` }),
+    forwards: (c) => plural('pt', c, { one: `${c} encaminhamento`, other: `${c} encaminhamentos` }),
     jumpTo: (letter) => `Ir para ${letter}`,
     add: 'Adicionar',
     added: 'Adicionado',
@@ -375,14 +369,14 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     postOptions: 'Параметры публикации',
     pinned: 'Закреплено',
     views: (c) =>
-      plural('ru', countOf(c), {
+      plural('ru', c, {
         one: `${c} просмотр`,
         few: `${c} просмотра`,
         many: `${c} просмотров`,
         other: `${c} просмотра`,
       }),
     forwards: (c) =>
-      plural('ru', countOf(c), {
+      plural('ru', c, {
         one: `${c} пересылка`,
         few: `${c} пересылки`,
         many: `${c} пересылок`,
@@ -563,14 +557,14 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> = {
     postOptions: 'خيارات المنشور',
     pinned: 'مثبّت',
     views: (c) =>
-      plural('ar', countOf(c), {
+      plural('ar', c, {
         one: 'مشاهدة واحدة',
         two: 'مشاهدتان',
         few: `${c} مشاهدات`,
         other: `${c} مشاهدة`,
       }),
     forwards: (c) =>
-      plural('ar', countOf(c), {
+      plural('ar', c, {
         one: 'إعادة توجيه واحدة',
         two: 'إعادتا توجيه',
         few: `${c} عمليات إعادة توجيه`,

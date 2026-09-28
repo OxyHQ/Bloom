@@ -47,10 +47,13 @@ const NATIVE_DIGITS = /[\u0660-\u0669\u06f0-\u06f9\u0966-\u096f\u09e6-\u09ef]/g;
  * The whole number a count reads as, whether it came as a number or already
  * formatted for display: `1234`, `"1,234"`, `"1.234"`, `"1 234"`, `"١٬٢٣٤"`.
  * Group marks and spaces are dropped; a fraction is ignored. `NaN` when there
- * are no digits at all.
+ * are no digits, or the count is abbreviated (`"2.1K"`).
  */
 export function countValue(count: number | string): number {
   if (typeof count === 'number') return count;
+  // An abbreviated count ("2.1K", "12,5 mil") is no whole number to inflect for:
+  // NaN lands every language on its general plural form.
+  if (/\d\s*[^\d\s.,\u066b\u066c\u202f]/u.test(count.replace(NATIVE_DIGITS, '0'))) return Number.NaN;
   const ascii = count.replace(NATIVE_DIGITS, (digit) => {
     const code = digit.charCodeAt(0);
     const zero = [0x0660, 0x06f0, 0x0966, 0x09e6].find((base) => code >= base && code <= base + 9) ?? code;
