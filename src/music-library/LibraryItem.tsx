@@ -12,8 +12,9 @@ import { useTheme } from '../theme/use-theme';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text } from '../typography';
 import { Cover } from './Cover';
+import { useMessages } from '../locale/messages';
+import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import {
-  DEFAULT_KIND_LABELS,
   IS_WEB,
   MUSIC_LIBRARY_CSS,
   MUSIC_LIBRARY_STYLE_ID,
@@ -56,12 +57,16 @@ function LibraryItemComponent({
   onPress,
   contextMenu,
   kindLabels,
-  pinnedLabel = 'Pinned',
-  downloadedLabel = 'Downloaded',
-  nowPlayingLabel = 'Now playing',
+  pinnedLabel: pinnedLabelProp,
+  downloadedLabel: downloadedLabelProp,
+  nowPlayingLabel: nowPlayingLabelProp,
   style,
   testID,
 }: LibraryItemProps) {
+  const { messages } = useMessages(MUSIC_LIBRARY_MESSAGES);
+  const pinnedLabel = pinnedLabelProp ?? messages.item.pinned;
+  const downloadedLabel = downloadedLabelProp ?? messages.item.downloaded;
+  const nowPlayingLabel = nowPlayingLabelProp ?? messages.item.nowPlaying;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
@@ -71,7 +76,7 @@ function LibraryItemComponent({
   const [pressed, setPressed] = useState(false);
   const [tileWidth, setTileWidth] = useState(0);
 
-  const labels = useMemo(() => ({ ...DEFAULT_KIND_LABELS, ...kindLabels }), [kindLabels]);
+  const labels = useMemo(() => ({ ...messages.kinds, ...kindLabels }), [messages, kindLabels]);
   const meta = libraryMeta(item, labels);
   const round = item.kind === 'artist';
   const name = [

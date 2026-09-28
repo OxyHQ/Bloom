@@ -66,11 +66,11 @@ export interface LibraryItemProps {
   /** Context-menu rows (`ContextMenuItem`s). Right-click on web, long press on native. */
   contextMenu?: ReactNode;
   kindLabels?: Partial<LibraryKindLabels>;
-  /** Appended to the name while pinned. Default `"Pinned"`. */
+  /** Appended to the name while pinned. `"Pinned"` in English (localised). */
   pinnedLabel?: string;
-  /** Appended to the name while downloaded. Default `"Downloaded"`. */
+  /** Appended to the name while downloaded. `"Downloaded"` in English (localised). */
   downloadedLabel?: string;
-  /** Appended to the name while now playing. Default `"Now playing"`. */
+  /** Appended to the name while now playing. `"Now playing"` in English (localised). */
   nowPlayingLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -146,7 +146,7 @@ export interface LibraryPanelProps {
   /** Context-menu rows for an entry. */
   renderContextMenu?: (item: LibraryEntry) => ReactNode;
 
-  /** Every string the panel draws. Merged over the English defaults. */
+  /** Every string the panel draws. Merged over the defaults for the locale. */
   labels?: Partial<Omit<LibraryPanelLabels, 'filter' | 'sort' | 'view' | 'kind'>> & {
     filter?: Partial<Record<LibraryFilter, string>>;
     sort?: Partial<Record<LibrarySort, string>>;
@@ -175,13 +175,13 @@ export interface SearchFieldProps {
   onBrowsePress?: () => void;
   /** The browse page is open: the button is filled and `aria-pressed`. */
   browseActive?: boolean;
-  /** Default `"What do you want to play?"`. */
+  /** `"What do you want to play?"` in English (localised). */
   placeholder?: string;
-  /** The field's name. Default `"Search"`. */
+  /** The field's name. `"Search"` in English (localised). */
   accessibilityLabel?: string;
-  /** Default `"Clear search"`. */
+  /** `"Clear search"` in English (localised). */
   clearLabel?: string;
-  /** Default `"Browse"`. */
+  /** `"Browse"` in English (localised). */
   browseLabel?: string;
   autoFocus?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -194,7 +194,7 @@ export interface TopResultCardProps {
   title: string;
   /** Round cover for `artist` and `profile`. */
   kind: TopResultKind;
-  /** The type pill's text. Default: the kind, capitalised in English ("Artist"). */
+  /** The type pill's text. Default: the kind's name in the locale ("Artist"). */
   kindLabel?: string;
   /** The line beside the pill — an artist, an owner. */
   subtitle?: string;
@@ -220,7 +220,7 @@ export interface SearchResultTabsProps {
   tabs: SearchResultTab[];
   value: string;
   onValueChange: (value: string) => void;
-  /** The tablist's name. Default `"Result types"`. */
+  /** The tablist's name. `"Result types"` in English (localised). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -242,11 +242,11 @@ export interface RecentSearchesProps {
   onRemove?: (item: RecentSearchEntry) => void;
   /** Draws the "Clear recent searches" button. */
   onClearAll?: () => void;
-  /** Default `"Recent searches"`. */
+  /** `"Recent searches"` in English (localised). */
   title?: string;
-  /** Default `"Clear recent searches"`. */
+  /** `"Clear recent searches"` in English (localised). */
   clearAllLabel?: string;
-  /** The remove button's name, given the entry. Default `"Remove <title>"`. */
+  /** The remove button's name, given the entry. `"Remove <title>"` in English (localised). */
   removeLabel?: (item: RecentSearchEntry) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

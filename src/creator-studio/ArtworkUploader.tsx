@@ -12,6 +12,9 @@ import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { CARD_RADIUS, resolveCreatorStudioPaint } from './shared';
 import type { ArtworkUploaderLabels, ArtworkUploaderProps } from './types';
 
@@ -35,14 +38,10 @@ import type { ArtworkUploaderLabels, ArtworkUploaderProps } from './types';
  * small" message.
  */
 
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
 export const ARTWORK_UPLOADER_LABELS: ArtworkUploaderLabels = {
-  title: 'Artwork',
-  requirements: '3000×3000 px, JPG or PNG',
-  replace: 'Replace',
-  remove: 'Remove artwork',
-  cancel: 'Cancel',
-  preview: 'Release artwork',
-  upload: 'Upload artwork',
+  ...CREATOR_STUDIO_MESSAGES.en.artwork,
+  cancel: COMMON_MESSAGES.en.cancel,
 };
 
 const DEFAULT_MAX = 320;
@@ -64,9 +63,11 @@ function ArtworkUploaderComponent({
   style,
   testID,
 }: ArtworkUploaderProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const labels = { ...ARTWORK_UPLOADER_LABELS, ...labelOverrides };
+  const labels: ArtworkUploaderLabels = { ...messages.artwork, cancel: common.cancel, ...labelOverrides };
   const resolver = useImageResolver();
   const [replacing, setReplacing] = useState(false);
 

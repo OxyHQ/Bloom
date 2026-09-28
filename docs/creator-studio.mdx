@@ -26,6 +26,8 @@ import {
 
 Data is props. Numbers that are only displayed (`value`, `delta`, prices, dates) arrive pre-formatted — the app owns currency and locale. Charts take raw numbers and format them with `format` / `formatAxisValue`.
 
+Bloom's own strings — the labels, status names, credit roles, periods and accessible names quoted in English below — are localised via `BloomProvider locale` (see [Locale](/docs/bloom/main/locale)); each `labels` / `*Label` prop still wins. `artworkDimensionsError(width, height, minSize, locale)` takes the locale as its fourth argument.
+
 ## Dashboard
 
 ### AudienceOverview

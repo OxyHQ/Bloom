@@ -11,6 +11,8 @@ import type {
   TrackUploadStatus,
 } from './types';
 import { clamp } from '../styles/clamp';
+import { pickMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES, type CreatorCreditRole, type CreatorStudioMessages } from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -89,20 +91,11 @@ export function resolveCreatorStudioPaint(theme: Theme): CreatorStudioPaint {
 //  Releases
 // ---------------------------------------------------------------------------
 
-export const RELEASE_TYPE_LABELS: Record<ReleaseType, string> = {
-  single: 'Single',
-  ep: 'EP',
-  album: 'Album',
-};
+/** The English release types; components read the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const RELEASE_TYPE_LABELS: Record<ReleaseType, string> = CREATOR_STUDIO_MESSAGES.en.releaseTypes;
 
-export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = {
-  draft: 'Draft',
-  'in-review': 'In review',
-  scheduled: 'Scheduled',
-  live: 'Live',
-  rejected: 'Rejected',
-  takedown: 'Taken down',
-};
+/** The English status names; components read the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = CREATOR_STUDIO_MESSAGES.en.releaseStatuses;
 
 /**
  * The status badge's tone. Each status reads from a distinct role, so the
@@ -129,15 +122,23 @@ export function releaseStatusNeedsReason(status: ReleaseStatus): boolean {
   return status === 'rejected' || status === 'takedown';
 }
 
-export const DEFAULT_CREDIT_ROLES: readonly CreatorOption[] = [
-  { value: 'songwriter', label: 'Songwriter' },
-  { value: 'producer', label: 'Producer' },
-  { value: 'composer', label: 'Composer' },
-  { value: 'performer', label: 'Performer' },
-  { value: 'lyricist', label: 'Lyricist' },
-  { value: 'mixing-engineer', label: 'Mixing engineer' },
-  { value: 'mastering-engineer', label: 'Mastering engineer' },
+const CREDIT_ROLE_ORDER: readonly CreatorCreditRole[] = [
+  'songwriter',
+  'producer',
+  'composer',
+  'performer',
+  'lyricist',
+  'mixing-engineer',
+  'mastering-engineer',
 ];
+
+/** The built-in credit roles, named in `messages`' language. */
+export function creditRoleOptions(messages: CreatorStudioMessages): CreatorOption[] {
+  return CREDIT_ROLE_ORDER.map((value) => ({ value, label: messages.creditRoles[value] }));
+}
+
+/** The built-in credit roles in English; `CreditsEditor` defaults to the localised ones. */
+export const DEFAULT_CREDIT_ROLES: readonly CreatorOption[] = creditRoleOptions(CREATOR_STUDIO_MESSAGES.en);
 
 // ---------------------------------------------------------------------------
 //  Uploads
@@ -210,16 +211,18 @@ export function isValidIsrc(value: string): boolean {
 /**
  * The "too small" message for artwork, or `null` when it is big enough and
  * square. The app measures the image (the component never decodes one).
+ * `locale` picks the language (the runtime's when omitted — a helper has no
+ * `LocaleProvider` to read).
  */
 export function artworkDimensionsError(
   width: number,
   height: number,
   minSize = 3000,
+  locale?: string,
 ): string | null {
-  if (width !== height) return `Artwork must be square — this image is ${width}×${height} px.`;
-  if (width < minSize) {
-    return `Artwork is too small (${width}×${height} px). Upload at least ${minSize}×${minSize} px.`;
-  }
+  const messages = pickMessages(CREATOR_STUDIO_MESSAGES, locale);
+  if (width !== height) return messages.artworkNotSquare(width, height);
+  if (width < minSize) return messages.artworkTooSmall(width, height, minSize);
   return null;
 }
 

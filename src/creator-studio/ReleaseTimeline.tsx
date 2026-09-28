@@ -6,6 +6,8 @@ import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveCreatorStudioPaint, type CreatorStudioPaint } from './shared';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { ReleaseStep, ReleaseStepState, ReleaseTimelineProps } from './types';
 
 /**
@@ -29,12 +31,8 @@ import type { ReleaseStep, ReleaseStepState, ReleaseTimelineProps } from './type
  * "<label>, <state>, <date>"; the current step carries `aria-current="step"`.
  */
 
-export const RELEASE_STEP_STATE_LABELS: Record<ReleaseStepState, string> = {
-  complete: 'complete',
-  current: 'in progress',
-  upcoming: 'not started',
-  error: 'needs attention',
-};
+/** The English state words; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const RELEASE_STEP_STATE_LABELS: Record<ReleaseStepState, string> = CREATOR_STUDIO_MESSAGES.en.timeline.states;
 
 const MARKER = 24;
 /** The narrowest a horizontal step may be before the timeline falls back to vertical. */
@@ -76,14 +74,16 @@ function Marker({ state, paint }: { state: ReleaseStepState; paint: CreatorStudi
 function ReleaseTimelineComponent({
   steps,
   orientation = 'vertical',
-  accessibilityLabel = 'Release progress',
+  accessibilityLabel: accessibilityLabelProp,
   stateLabels: stateOverrides,
   style,
   testID,
 }: ReleaseTimelineProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.timeline.label;
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const stateLabels = { ...RELEASE_STEP_STATE_LABELS, ...stateOverrides };
+  const stateLabels = { ...messages.timeline.states, ...stateOverrides };
   const [width, setWidth] = useState(0);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const next = Math.round(event.nativeEvent.layout.width);

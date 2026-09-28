@@ -17,7 +17,9 @@ import {
 import { TextFieldInput } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { DEFAULT_CREDIT_ROLES, resolveCreatorStudioPaint } from './shared';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
+import { creditRoleOptions, resolveCreatorStudioPaint } from './shared';
 import type { CreditsEditorLabels, CreditsEditorProps, CreatorOption, TrackCredit } from './types';
 
 /**
@@ -26,7 +28,7 @@ import type { CreditsEditorLabels, CreditsEditorProps, CreatorOption, TrackCredi
  *   heading  `body-medium` title + an empty-state line (`body-2-regular`
  *            text-secondary) while there are no credits
  *   rows     8 apart: role `Select` (200 wide) · name `TextFieldInput` (fills) ·
- *            a secondary delete icon button named "Remove credit <n>". Below 480px
+ *            a secondary delete icon button named "Remove credit <n>" (in English). Below 480px
  *            of its own width the role takes its own line over name + delete
  *   add      a secondary "Add credit" button with a plus glyph; the new row
  *            takes the first role and an empty name
@@ -34,14 +36,8 @@ import type { CreditsEditorLabels, CreditsEditorProps, CreatorOption, TrackCredi
  * Controlled: every change calls `onCreditsChange` with the whole list.
  */
 
-export const CREDITS_EDITOR_LABELS: CreditsEditorLabels = {
-  title: 'Credits',
-  role: 'Role',
-  name: 'Name',
-  add: 'Add credit',
-  remove: (index, name) => (name ? `Remove credit ${index + 1}, ${name}` : `Remove credit ${index + 1}`),
-  empty: 'Credit the songwriters, producers and performers on this track.',
-};
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const CREDITS_EDITOR_LABELS: CreditsEditorLabels = CREATOR_STUDIO_MESSAGES.en.credits;
 
 const STACK_BELOW = 480;
 let creditCounter = 0;
@@ -49,16 +45,19 @@ let creditCounter = 0;
 function CreditsEditorComponent({
   credits,
   onCreditsChange,
-  roles = DEFAULT_CREDIT_ROLES,
+  roles: rolesProp,
   createId,
   disabled = false,
   labels: labelOverrides,
   style,
   testID,
 }: CreditsEditorProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const labels = { ...CREDITS_EDITOR_LABELS, ...labelOverrides };
+  const labels = { ...messages.credits, ...labelOverrides };
+  const localRoles = useMemo(() => creditRoleOptions(messages), [messages]);
+  const roles = rolesProp ?? localRoles;
   const [width, setWidth] = useState(0);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const next = Math.round(event.nativeEvent.layout.width);
@@ -98,7 +97,7 @@ function CreditsEditorComponent({
               disabled={disabled}
             >
               <SelectTrigger
-                label={`${labels.role}, credit ${index + 1}`}
+                label={messages.credits.field(labels.role, index + 1)}
                 testID={testID ? `${testID}-role-${index}` : undefined}
               >
                 <SelectValue placeholder={labels.role} />
@@ -121,7 +120,7 @@ function CreditsEditorComponent({
           <View style={styles.nameRow}>
             <View style={styles.name}>
               <TextFieldInput
-                label={`${labels.name}, credit ${index + 1}`}
+                label={messages.credits.field(labels.name, index + 1)}
                 placeholder={labels.name}
                 value={credit.name}
                 onChangeText={(name) => update(credit.id, { name })}

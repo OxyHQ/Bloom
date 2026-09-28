@@ -62,7 +62,7 @@ Colours come from the theme in light and dark: surfaces are the page background 
 | `onCreatePress` | draws the + button |
 | `selectedId`, `nowPlayingId`, `paused` | the open page's fill, the playing entry's accent title and bars |
 | `renderContextMenu` | `ContextMenuItem` rows per entry — right-click on web, long press on native |
-| `labels` | every string, merged over English defaults (nested `filter`, `sort`, `view`, `kind`) |
+| `labels` | every string, merged over the defaults — English ones below, localised via `BloomProvider locale` (nested `filter`, `sort`, `view`, `kind`) |
 | `emptyState` | replaces "Nothing here yet" |
 
 **Controlled or not, per value.** Filter, Downloaded, sort, view and query each follow their prop when it is set and keep their own state when it is not; the change callback fires in both cases. So `sort="alphabetical"` alone pins the sort while the chips stay interactive.
