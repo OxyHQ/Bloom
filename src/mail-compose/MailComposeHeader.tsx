@@ -3,6 +3,7 @@ import { TextInput, View, type TextStyle } from 'react-native';
 
 import { Button } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { resolveMailPaint } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { hairlineOn, useSurfaceFill } from '../styles/surface-levels';
@@ -18,6 +19,7 @@ import {
   copiesOpen,
   mailComposeStrings,
 } from './shared';
+import { MAIL_COMPOSE_MESSAGES } from './messages';
 import type { MailComposeHeaderProps } from './types';
 
 /**
@@ -61,13 +63,14 @@ export function MailComposeHeader({
   style,
   testID,
 }: MailComposeHeaderProps) {
+  const { messages } = useMessages(MAIL_COMPOSE_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   useEffect(() => {
     adoptStyleSheet(MAIL_COMPOSE_STYLE_ID, MAIL_COMPOSE_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const text = useMemo(() => mailComposeStrings(strings), [strings]);
+  const text = useMemo(() => mailComposeStrings(strings, messages), [strings, messages]);
   const geo = MAIL_COMPOSE_GEOMETRY;
 
   const [revealed, setRevealed] = useControllableState<boolean>({

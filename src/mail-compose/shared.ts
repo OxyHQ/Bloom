@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+import { MAIL_COMPOSE_MESSAGES } from './messages';
 import type { MailComposeStrings, MailRecipient, MailRecipientSuggestion } from './types';
 
 export const IS_WEB = Platform.OS === 'web';
@@ -32,31 +33,18 @@ export const MAIL_COMPOSE_GEOMETRY = {
 //  Strings
 // ---------------------------------------------------------------------------
 
-export const DEFAULT_MAIL_COMPOSE_STRINGS: MailComposeStrings = {
-  to: 'To',
-  cc: 'Cc',
-  bcc: 'Bcc',
-  subject: 'Subject',
-  showCopies: 'Cc Bcc',
-  hideCopies: 'Hide Cc and Bcc',
-  removeRecipient: (name) => `Remove ${name}`,
-  suggestions: 'Contacts',
-  send: 'Send',
-  sending: 'Sending',
-  attach: 'Attach a file',
-  discard: 'Discard draft',
-  minimize: 'Minimize',
-  expand: 'Expand',
-  close: 'Close',
-  title: 'New message',
-};
+/**
+ * The English strings. Components speak the LOCALE's (`MAIL_COMPOSE_MESSAGES`,
+ * through `BloomProvider locale`); this stays exported as the English set.
+ */
+export const DEFAULT_MAIL_COMPOSE_STRINGS: MailComposeStrings = MAIL_COMPOSE_MESSAGES.en;
 
+/** `base` (the locale's strings, English by default) with the caller's overrides laid over it. */
 export function mailComposeStrings(
   overrides?: Partial<MailComposeStrings>,
+  base: MailComposeStrings = DEFAULT_MAIL_COMPOSE_STRINGS,
 ): MailComposeStrings {
-  return overrides === undefined
-    ? DEFAULT_MAIL_COMPOSE_STRINGS
-    : { ...DEFAULT_MAIL_COMPOSE_STRINGS, ...overrides };
+  return overrides === undefined ? base : { ...base, ...overrides };
 }
 
 // ---------------------------------------------------------------------------

@@ -16,6 +16,8 @@ export type { AvatarTint } from './initials';
 export {
   AVATAR_SHAPE_PATHS,
   AVATAR_SHAPE_LABELS,
+  AVATAR_SHAPE_ORDER,
+  avatarShapeLabels,
   NAMED_SHAPE_VIEW_BOX,
 } from './shape-paths';
 export type { AvatarShapeName } from './shape-paths';

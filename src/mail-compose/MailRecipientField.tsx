@@ -5,6 +5,7 @@ import { Avatar } from '../avatar';
 import { Chip } from '../chip';
 import { useFieldMembership } from '../field';
 import { Item } from '../item';
+import { useMessages } from '../locale/messages';
 import { resolveMailPaint } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { hairlineOn, useSurfaceFill } from '../styles/surface-levels';
@@ -21,6 +22,7 @@ import {
   recipientName,
   recipientsInvalid,
 } from './shared';
+import { MAIL_COMPOSE_MESSAGES } from './messages';
 import type { MailRecipientFieldProps } from './types';
 
 /**
@@ -69,13 +71,14 @@ export function MailRecipientField({
   style,
   testID,
 }: MailRecipientFieldProps) {
+  const { messages } = useMessages(MAIL_COMPOSE_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   useEffect(() => {
     adoptStyleSheet(MAIL_COMPOSE_STYLE_ID, MAIL_COMPOSE_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const text = useMemo(() => mailComposeStrings(strings), [strings]);
+  const text = useMemo(() => mailComposeStrings(strings, messages), [strings, messages]);
   const geo = MAIL_COMPOSE_GEOMETRY;
 
   const field = useFieldMembership({

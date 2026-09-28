@@ -21,6 +21,7 @@ import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { MailAddressLine } from './MailAddressLine';
 import { MailQuoteToggle } from './MailQuoteToggle';
 import {
@@ -32,6 +33,7 @@ import {
   mailThreadStrings,
   replyLabelsFit,
 } from './shared';
+import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailMessageProps } from './types';
 
 /**
@@ -84,13 +86,14 @@ export function MailMessage({
   style,
   testID,
 }: MailMessageProps) {
+  const { messages } = useMessages(MAIL_THREAD_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   useEffect(() => {
     adoptStyleSheet(MAIL_THREAD_STYLE_ID, MAIL_THREAD_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const text = useMemo(() => mailThreadStrings(strings), [strings]);
+  const text = useMemo(() => mailThreadStrings(strings, messages), [strings, messages]);
   const rowStrings = useMemo(
     () => mailStrings({ starred: text.starred, star: text.star }),
     [text.star, text.starred],

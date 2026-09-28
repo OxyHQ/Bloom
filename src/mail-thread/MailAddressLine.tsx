@@ -8,6 +8,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import {
   MAIL_THREAD_CSS,
   MAIL_THREAD_STYLE_ID,
@@ -15,6 +16,7 @@ import {
   mailThreadStrings,
   visibleAddresses,
 } from './shared';
+import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailAddressLineProps } from './types';
 
 /**
@@ -40,13 +42,14 @@ export function MailAddressLine({
   style,
   testID,
 }: MailAddressLineProps) {
+  const { messages } = useMessages(MAIL_THREAD_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   useEffect(() => {
     adoptStyleSheet(MAIL_THREAD_STYLE_ID, MAIL_THREAD_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const text = useMemo(() => mailThreadStrings(strings), [strings]);
+  const text = useMemo(() => mailThreadStrings(strings, messages), [strings, messages]);
   const [open, setOpen] = useControllableState<boolean>({
     value: expanded,
     defaultValue: false,

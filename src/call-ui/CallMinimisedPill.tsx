@@ -9,9 +9,11 @@ import { RiPhoneFill } from '../icons/remix/RiPhoneFill';
 import { RiVideoOnLine } from '../icons/remix/RiVideoOnLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { CallControlButton } from './CallControls';
 import { CallEndGlyph } from './glyphs';
-import { CALL_CONTROL_LABELS, resolveCallPaint } from './shared';
+import { CALL_UI_MESSAGES } from './messages';
+import { resolveCallPaint } from './shared';
 import type { CallMinimisedPillProps } from './types';
 
 /**
@@ -49,11 +51,12 @@ function CallMinimisedPillComponent({
   style,
   testID,
 }: CallMinimisedPillProps) {
+  const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
   const { state: hovered, onIn, onOut } = useInteractionState();
-  const l = { ...CALL_CONTROL_LABELS, ...labels };
-  const expandLabel = labels?.expand ?? (name === undefined ? 'Return to call' : `Return to call with ${name}`);
+  const l = { ...messages.controls, ...labels };
+  const expandLabel = labels?.expand ?? (name === undefined ? messages.returnToCall : messages.returnToCallWith(name));
   const ModeGlyph = mode === 'video' ? RiVideoOnLine : RiPhoneFill;
   const line = statusText !== undefined && statusText !== '' ? statusText : duration;
 

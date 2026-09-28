@@ -44,7 +44,7 @@ export type CallStatus =
   | 'onHold'
   | 'ended';
 
-/** The English default for each status line. Apps in other languages pass their own. */
+/** Each status line, in the locale (`BloomProvider locale`). `labels` overrides any. */
 export interface CallStatusLabels {
   calling: string;
   ringing: string;
@@ -366,9 +366,9 @@ export interface GroupCallGridProps {
   /** Fixed grid width. Without it the grid measures itself. */
   width?: number;
   onParticipantPress?: (id: string) => void;
-  /** Names the overflow tile. Default `"+3 more"`. */
+  /** Names the overflow tile (`"+3 more"` in English). */
   formatOverflow?: (count: number) => string;
-  /** Names a muted tile for assistive tech. Default `"<name>, muted"`. */
+  /** Names a muted tile for assistive tech (`"<name>, muted"` in English). */
   formatMuted?: (name: string) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

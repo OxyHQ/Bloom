@@ -104,6 +104,10 @@ AVATAR_SHAPE_LABELS.map(({ name, label }) => (
 ));
 ```
 
+`AVATAR_SHAPE_LABELS` is English; `avatarShapeLabels(locale)` gives the same
+rows in the app's language (pass the `BloomProvider locale`). The live badge's
+word is localised via `BloomProvider locale` too; `liveLabel` overrides it.
+
 For anything not in the registry, pass your own outline. `viewBox` is the side
 length of the square space the path is drawn in, so a path written over a
 0–100 grid needs no rescaling:

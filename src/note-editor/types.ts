@@ -16,15 +16,15 @@ import type { BloomIconComponent } from '../icons/icon-component';
  */
 export type NoteSaveState = 'saved' | 'saving' | 'offline' | 'error';
 
-/** The English words the header composes, for an app that is not in English. */
+/** The words the header composes, in the locale (`BloomProvider locale`). Any set here wins. */
 export interface NoteEditorHeaderLabels {
   saved?: string;
   saving?: string;
   offline?: string;
   error?: string;
-  /** The word count, given the count. Default ``(n) => `${n} words` ``. */
+  /** The word count, given the count (``(n) => `${n} words` `` in English). */
   words?: (count: number) => string;
-  /** Names the title input when there is no visible label. Default `"Title"`. */
+  /** Names the title input when there is no visible label (`"Title"` in English). */
   title?: string;
 }
 
@@ -33,7 +33,7 @@ export interface NoteEditorHeaderProps {
   title: string;
   /** Called with every keystroke of the title. */
   onTitleChange?: (title: string) => void;
-  /** Drawn in the title's place while it is empty. Default `"Untitled"`. */
+  /** Drawn in the title's place while it is empty (`"Untitled"` in English). */
   placeholder?: string;
   /**
    * Where the document stands with its store. Omitted, the header draws no
@@ -54,7 +54,7 @@ export interface NoteEditorHeaderProps {
   readOnly?: boolean;
   /** The trailing slot on the title line — a share button, a menu, a `ButtonGroup`. */
   actions?: ReactNode;
-  /** Names the header region. Default `"Note"`. */
+  /** Names the header region (`"Note"` in English). */
   accessibilityLabel?: string;
   labels?: NoteEditorHeaderLabels;
   style?: StyleProp<ViewStyle>;
@@ -89,11 +89,11 @@ export interface NoteEditorAction {
   alwaysVisible?: boolean;
 }
 
-/** The English words the toolbar composes. */
+/** The words the toolbar composes, in the locale (`BloomProvider locale`). Any set here wins. */
 export interface NoteEditorToolbarLabels {
-  /** Names the overflow button. Default `"More formatting"`. */
+  /** Names the overflow button (`"More formatting"` in English). */
   more?: string;
-  /** Names the overflow menu surface. Default `"More formatting"`. */
+  /** Names the overflow menu surface (`"More formatting"` in English). */
   moreMenu?: string;
 }
 

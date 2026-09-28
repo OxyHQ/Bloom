@@ -11,8 +11,10 @@ import {
 } from '../dropdown-menu';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { RiMore2Line } from '../icons/remix/RiMore2Line';
+import { useMessages } from '../locale/messages';
 import { splitToolbarActions, toolbarCapacity } from './shared';
-import type { NoteEditorToolbarLabels, NoteEditorToolbarProps } from './types';
+import { NOTE_EDITOR_MESSAGES } from './messages';
+import type { NoteEditorToolbarProps } from './types';
 
 /**
  * The formatting row around someone else's writing surface.
@@ -43,11 +45,6 @@ import type { NoteEditorToolbarLabels, NoteEditorToolbarProps } from './types';
  * (`docs/composition.mdx`).
  */
 
-const DEFAULT_LABELS: Required<NoteEditorToolbarLabels> = {
-  more: 'More formatting',
-  moreMenu: 'More formatting',
-};
-
 export function NoteEditorToolbar({
   actions,
   size = 'medium',
@@ -57,8 +54,9 @@ export function NoteEditorToolbar({
   style,
   testID,
 }: NoteEditorToolbarProps) {
+  const { messages } = useMessages(NOTE_EDITOR_MESSAGES);
   const { width, onLayout } = useContainerWidth();
-  const labels = { ...DEFAULT_LABELS, ...labelsProp };
+  const labels = { ...messages.toolbar, ...labelsProp };
   const { inline, overflow } = useMemo(
     () => splitToolbarActions(actions, width === null ? null : toolbarCapacity(width, size)),
     [actions, width, size],
