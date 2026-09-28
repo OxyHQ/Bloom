@@ -22,13 +22,16 @@ export type NavigationBannerState = 'guiding' | 'off-route' | 'rerouting';
 
 /** Every word `NavigationBanner` speaks, in one prop. */
 export interface NavigationBannerLabels {
-  /** The headline in the `off-route` state. Default `"Off route"`. */
+  /** The headline in the `off-route` state. `"Off route"` in English. */
   offRoute?: string;
-  /** The headline in the `rerouting` state. Default `"Finding a new route"`. */
+  /** The headline in the `rerouting` state. `"Finding a new route"` in English. */
   rerouting?: string;
-  /** Precedes the following maneuver. Default `"then"`. */
+  /**
+   * Precedes the following maneuver. `"then"` in English. Setting it keeps the
+   * English word order ("<then> <maneuver> <street>"); unset, the locale orders it.
+   */
   then?: string;
-  /** Replaces the English maneuver words used in the announcement. */
+  /** Replaces the maneuver words (Bloom's, in the app's locale) used in the announcement. */
   maneuver?: Partial<Record<DirectionsManeuver, string>>;
 }
 
@@ -106,11 +109,11 @@ export interface NavigationLane {
 }
 
 export interface LaneGuidanceLabels {
-  /** Names the row. Default `"Lane guidance"`. */
+  /** Names the row. `"Lane guidance"` in English. */
   lanes?: string;
-  /** The word before a lane number in the announcement. Default `"lane"`. */
+  /** The word before a lane number (English order and plural, "<n> <lane>s"). `"lane"` in English. */
   lane?: string;
-  /** Precedes the allowed lanes. Default `"use"`. */
+  /** Precedes the allowed lanes (English order). `"use"` in English. */
   use?: string;
 }
 
@@ -139,7 +142,7 @@ export interface SpeedLimitPillProps {
   tone?: AccentTone;
   /** Defaults to `"Speed limit <limit> <unit>"`, plus the over-the-limit word. */
   accessibilityLabel?: string;
-  /** Replaces the English over-the-limit word. Default `"over the limit"`. */
+  /** Replaces the over-the-limit word. `"over the limit"` in English. */
   exceededLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-sign`, `-unit`. */
@@ -148,13 +151,13 @@ export interface SpeedLimitPillProps {
 
 /** Every word `ArrivalBar` speaks. */
 export interface ArrivalBarLabels {
-  /** Over the arrival time. Default `"Arrival"`. */
+  /** Over the arrival time. `"Arrival"` in English. */
   arrival?: string;
-  /** Over the remaining time. Default `"Left"`. */
+  /** Over the remaining time. `"Left"` in English. */
   time?: string;
-  /** Over the remaining distance. Default `"Distance"`. */
+  /** Over the remaining distance. `"Distance"` in English. */
   distance?: string;
-  /** The ending action. Default `"End"`. */
+  /** The ending action. `"End"` in English. */
   end?: string;
 }
 

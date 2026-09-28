@@ -82,7 +82,8 @@ instruction is not a toggle: a screen reader would announce every step as "not p
 
 The state a step carries is "this is where you are", which ARIA has no attribute for on a
 list row, so it travels in the NAME instead (`currentLabel`, default "Current step"),
-where it is certain to be heard.
+where it is certain to be heard. That default, like every word this family draws or
+announces, is localised via `BloomProvider locale`.
 
 ## Where a step's name goes
 

@@ -9,6 +9,8 @@ import { HousingCard, IconTile, useHousingPalette } from '../tenancy/parts';
 import { Text } from '../typography';
 import type { WriteReviewPromptProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { PLACE_REVIEWS_MESSAGES } from './messages';
 
 /**
  * An invitation for a past tenant to review the building.
@@ -24,9 +26,9 @@ import { useCommonMessages } from '../locale/common-messages';
  */
 function WriteReviewPromptComponent({
   buildingTitle,
-  title = 'Did you live here?',
+  title: titleProp,
   description,
-  actionLabel = 'Write a review',
+  actionLabel: actionLabelProp,
   onStart,
   onDismiss,
   dismissLabel: dismissLabelProp,
@@ -35,10 +37,13 @@ function WriteReviewPromptComponent({
   testID,
 }: WriteReviewPromptProps) {
   const common = useCommonMessages();
+  const { messages } = useMessages(PLACE_REVIEWS_MESSAGES);
+  const title = titleProp ?? messages.promptTitle;
+  const actionLabel = actionLabelProp ?? messages.writeReview;
   const dismissLabel = dismissLabelProp ?? common.dismiss;
   const palette = useHousingPalette();
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
-  const body = description ?? `Help future tenants of ${buildingTitle}. Reviews are anonymous.`;
+  const body = description ?? messages.promptDescription(buildingTitle);
 
   return (
     <HousingCard style={style} testID={testID}>

@@ -1,13 +1,9 @@
 import type { AccentTone } from '../theme/accent-colors';
+import { PLACE_CARD_MESSAGES } from './messages';
 import type { PlaceOpenState } from './types';
 
-/** The English default state words. */
-export const PLACE_OPEN_LABELS: Readonly<Record<PlaceOpenState, string>> = {
-  open: 'Open',
-  'closing-soon': 'Closing soon',
-  closed: 'Closed',
-  'opening-soon': 'Opens soon',
-};
+/** The English state words. The card speaks `PLACE_CARD_MESSAGES` in the app's locale. */
+export const PLACE_OPEN_LABELS: Readonly<Record<PlaceOpenState, string>> = PLACE_CARD_MESSAGES.en.openStates;
 
 /**
  * Which tone each state's `Badge` takes. `closing-soon` and `opening-soon` are

@@ -13,7 +13,9 @@ import {
 } from '../dropdown-menu';
 import { GlassIsland } from '../glass';
 import { RiStackLine } from '../icons/remix/RiStackLine';
+import { useMessages } from '../locale/messages';
 import { MAP_CONTROL_BOX } from './constants';
+import { MAP_CONTROLS_MESSAGES } from './messages';
 import type { MapLayerPickerProps } from './types';
 
 /**
@@ -51,9 +53,10 @@ function MapLayerPickerComponent({
   style,
   testID,
 }: MapLayerPickerProps) {
-  const triggerLabel = labels?.trigger ?? 'Map layers';
-  const layersLabel = labels?.layers ?? 'Map';
-  const overlaysLabel = labels?.overlays ?? 'Overlays';
+  const { messages } = useMessages(MAP_CONTROLS_MESSAGES);
+  const triggerLabel = labels?.trigger ?? messages.layerTrigger;
+  const layersLabel = labels?.layers ?? messages.layers;
+  const overlaysLabel = labels?.overlays ?? messages.overlays;
   const active = new Set(activeOverlayIds ?? []);
 
   return (

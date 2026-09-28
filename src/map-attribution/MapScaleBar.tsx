@@ -1,10 +1,12 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MAP_ATTRIBUTION_GEOMETRY } from './constants';
 import { MapAttributionShell } from './MapAttributionShell';
+import { MAP_ATTRIBUTION_MESSAGES } from './messages';
 import { describeScale, resolveMapAttributionPaint } from './shared';
 import type { MapScaleBarProps } from './types';
 
@@ -39,6 +41,7 @@ function MapScaleBarComponent({
   style,
   testID,
 }: MapScaleBarProps) {
+  const { messages } = useMessages(MAP_ATTRIBUTION_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveMapAttributionPaint(theme), [theme]);
   const g = MAP_ATTRIBUTION_GEOMETRY;
@@ -47,7 +50,7 @@ function MapScaleBarComponent({
     <MapAttributionShell variant={variant} style={style} testID={testID}>
       <View
         role="img"
-        accessibilityLabel={accessibilityLabel ?? describeScale(scales, scaleLabel)}
+        accessibilityLabel={accessibilityLabel ?? describeScale(scales, scaleLabel, messages)}
         style={{ gap: g.scaleStack }}
       >
         {scales.map((scale, index) => (

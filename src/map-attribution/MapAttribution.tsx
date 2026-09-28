@@ -2,11 +2,13 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MAP_ATTRIBUTION_GEOMETRY } from './constants';
 import { MapAttributionShell } from './MapAttributionShell';
 import { MapScaleBar } from './MapScaleBar';
+import { MAP_ATTRIBUTION_MESSAGES } from './messages';
 import { resolveMapAttributionPaint } from './shared';
 import type { MapAttributionProps } from './types';
 
@@ -44,10 +46,12 @@ function MapAttributionComponent({
   scaleLabel,
   updated,
   variant = 'island',
-  accessibilityLabel = 'Map data',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: MapAttributionProps) {
+  const { messages } = useMessages(MAP_ATTRIBUTION_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.mapData;
   const theme = useTheme();
   const paint = useMemo(() => resolveMapAttributionPaint(theme), [theme]);
   const g = MAP_ATTRIBUTION_GEOMETRY;

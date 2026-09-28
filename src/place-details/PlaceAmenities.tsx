@@ -4,8 +4,10 @@ import { View } from 'react-native';
 import { Chip } from '../chip';
 import { AmenityList } from '../listing-details/AmenityList';
 import type { Amenity } from '../listing-details/types';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
+import { PLACE_DETAILS_MESSAGES } from './messages';
 import { resolvePlaceDetailsPaint } from './shared';
 import type { PlaceAmenitiesProps } from './types';
 
@@ -39,11 +41,14 @@ function PlaceAmenitiesComponent({
   onShowAll,
   total,
   showAllLabel,
-  unavailableLabel = 'Not available',
-  accessibilityLabel = 'Amenities',
+  unavailableLabel: unavailableLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PlaceAmenitiesProps) {
+  const { messages } = useMessages(PLACE_DETAILS_MESSAGES);
+  const unavailableLabel = unavailableLabelProp ?? messages.notAvailable;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.amenities;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePlaceDetailsPaint(theme, surface), [theme, surface]);

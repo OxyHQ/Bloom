@@ -93,12 +93,12 @@ export interface AddressListProps {
   loadingRows?: number;
   /** Replaces the whole empty block. */
   empty?: ReactNode;
-  /** Default `"Nothing here yet"`. */
+  /** `"Nothing here yet"` in English; localised via `BloomProvider locale`. */
   emptyTitle?: string;
   emptyDescription?: string;
   /** The glyph above the empty text. Default a map pin. */
   emptyIcon?: BloomIconComponent;
-  /** Names the list. Default `"Addresses"`. */
+  /** Names the list. `"Addresses"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

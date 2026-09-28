@@ -27,22 +27,22 @@ export interface PlaceReviewCardProps {
   categories?: readonly PlaceReviewCategoryRating[];
   /** `true`/`false` draw the deposit chip; `undefined` draws nothing (not known, or not asked). */
   depositReturned?: boolean;
-  /** Default `"Deposit returned"`. */
+  /** `"Deposit returned"` in English. */
   depositReturnedLabel?: string;
-  /** Default `"Deposit not returned"`. */
+  /** `"Deposit not returned"` in English. */
   depositNotReturnedLabel?: string;
   /** `true`/`false` draw the recommendation chip. */
   wouldRecommend?: boolean;
-  /** Default `"Would recommend"`. */
+  /** `"Would recommend"` in English. */
   recommendLabel?: string;
-  /** Default `"Wouldn't recommend"`. */
+  /** `"Wouldn't recommend"` in English. */
   notRecommendLabel?: string;
   text: string;
   /** Clamp the text until expanded. Default `4`; `0` never clamps. */
   numberOfLines?: number;
-  /** Default `"Show more"`. */
+  /** `"Show more"` in English. */
   showMoreLabel?: string;
-  /** Default `"Show less"`. */
+  /** `"Show less"` in English. */
   showLessLabel?: string;
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
@@ -51,10 +51,10 @@ export interface PlaceReviewCardProps {
   /** Whether the viewer marked it helpful. Draws the toggle with `onHelpfulChange`. */
   helpful?: boolean;
   onHelpfulChange?: (helpful: boolean) => void;
-  /** Default `"Helpful"`. */
+  /** `"Helpful"` in English. */
   helpfulLabel?: string;
   onReport?: () => void;
-  /** Default `"Report"`. */
+  /** `"Report"` in English. */
   reportLabel?: string;
   /** `auto` (default) draws the categories in 2 columns from 520 wide. */
   layout?: 'auto' | 'wide' | 'narrow';
@@ -69,7 +69,7 @@ export interface PlaceReviewSummaryProps {
   title?: string;
   /** The number of reviews. A string is drawn as given. */
   reviewCount?: number | string;
-  /** Default `(n) => \`${n} reviews\`` (`"1 review"` for 1). */
+  /** `(n) => \`${n} reviews\`` (`"1 review"` for 1) in English; localised via `BloomProvider locale`. */
   formatReviewCount?: (count: number | string) => string;
   /** Housing categories; icons optional. */
   categories?: readonly ReviewCategory[];
@@ -78,11 +78,11 @@ export interface PlaceReviewSummaryProps {
    * computes: it is rounded to a whole percent for the stat line.
    */
   depositReturnedRate?: number;
-  /** Default `(percent) => \`Deposit returned in ${percent}% of tenancies\``. */
+  /** `(percent) => \`Deposit returned in ${percent}% of tenancies\`` in English. */
   formatDepositReturned?: (percent: number) => string;
   /** Share of reviewers who would recommend, 0..1. */
   recommendRate?: number;
-  /** Default `(percent) => \`${percent}% would recommend living here\``. */
+  /** `(percent) => \`${percent}% would recommend living here\`` in English. */
   formatRecommend?: (percent: number) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -91,16 +91,16 @@ export interface PlaceReviewSummaryProps {
 export interface WriteReviewPromptProps {
   /** The building's title ("Calle del Olmo 14"). */
   buildingTitle: string;
-  /** Default `"Did you live here?"`. */
+  /** `"Did you live here?"` in English. */
   title?: string;
-  /** Default `` `Help future tenants of ${buildingTitle}. Reviews are anonymous.` ``. */
+  /** `` `Help future tenants of ${buildingTitle}. Reviews are anonymous.` `` in English. */
   description?: string;
-  /** Default `"Write a review"`. */
+  /** `"Write a review"` in English. */
   actionLabel?: string;
   onStart: () => void;
   /** Draws a close button. */
   onDismiss?: () => void;
-  /** Default `"Dismiss"`. */
+  /** `"Dismiss"` in English. */
   dismissLabel?: string;
   /** Replaces the building icon tile. */
   media?: ReactNode;

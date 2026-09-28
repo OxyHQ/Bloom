@@ -78,7 +78,8 @@ with two stops it lands between them without a magic offset.
 because all of it is copy an app localises and none of it is layout.
 
 `remove` is a FUNCTION of the stop, because "Remove" on five buttons in one list names
-nothing: the default is `Remove ${stop.title}`.
+nothing: the default is `Remove ${stop.title}`. Every default is localised via `BloomProvider locale`; a key in
+`labels` still wins.
 
 ## Accessibility
 

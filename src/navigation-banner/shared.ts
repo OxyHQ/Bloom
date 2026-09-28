@@ -2,7 +2,7 @@
  * What the guidance surfaces paint, and the sentences they announce. Pure, so
  * a gate can walk every preset x mode and every state without rendering.
  */
-import { DIRECTIONS_MANEUVER_LABELS } from '../directions/constants';
+import { DIRECTIONS_MESSAGES, type DirectionsMessages } from '../directions/messages';
 import type { DirectionsManeuver } from '../directions/types';
 import {
   hairlineOn,
@@ -11,7 +11,7 @@ import {
   type SurfaceTextPaint,
 } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
-import { NAVIGATION_STATE_LABELS } from './constants';
+import { NAVIGATION_BANNER_MESSAGES, type NavigationBannerMessages } from './messages';
 import type {
   ArrivalBarLabels,
   LaneGuidanceLabels,
@@ -45,12 +45,47 @@ export function resolveNavigationPaint(theme: Theme): NavigationPaint {
   };
 }
 
-/** The maneuver's word, as drawn or announced. */
+/** The maneuver's word, as drawn or announced — in `directions`' language, English when omitted. */
 export function maneuverWordFor(
   maneuver: DirectionsManeuver,
   labels: NavigationBannerLabels | undefined,
+  directions: DirectionsMessages = DIRECTIONS_MESSAGES.en,
 ): string {
-  return labels?.maneuver?.[maneuver] ?? DIRECTIONS_MANEUVER_LABELS[maneuver];
+  return labels?.maneuver?.[maneuver] ?? directions.maneuvers[maneuver];
+}
+
+/** The exceptional state's headline: the caller's word, else the language's. */
+export function stateHeadlineFor(
+  state: Exclude<NavigationBannerState, 'guiding'>,
+  labels: NavigationBannerLabels | undefined,
+  messages: NavigationBannerMessages = NAVIGATION_BANNER_MESSAGES.en,
+): string {
+  return (state === 'off-route' ? labels?.offRoute : labels?.rerouting) ?? messages.states[state];
+}
+
+/**
+ * The line after the maneuver — "then turn left Carrer del Roure". The
+ * language places its own "then" and cases the maneuver word (written to start
+ * a sentence) for the middle of one; a caller's `labels.then` keeps the
+ * word-joined English shape it always had.
+ */
+export function thenLineFor(options: {
+  thenManeuver?: DirectionsManeuver;
+  then?: string;
+  labels?: NavigationBannerLabels;
+  messages?: NavigationBannerMessages;
+  directions?: DirectionsMessages;
+}): string | undefined {
+  const { labels } = options;
+  if (options.thenManeuver === undefined && !options.then) return undefined;
+  const word =
+    options.thenManeuver !== undefined
+      ? maneuverWordFor(options.thenManeuver, labels, options.directions)
+      : undefined;
+  if (labels?.then !== undefined) {
+    return [labels.then, word?.toLowerCase(), options.then].filter(Boolean).join(' ');
+  }
+  return (options.messages ?? NAVIGATION_BANNER_MESSAGES.en).thenLine(options.then, word);
 }
 
 /**
@@ -74,33 +109,26 @@ export function describeNavigationBanner(options: {
   thenManeuver?: DirectionsManeuver;
   state?: NavigationBannerState;
   labels?: NavigationBannerLabels;
+  /** The language's words; English when omitted. */
+  messages?: NavigationBannerMessages;
+  directions?: DirectionsMessages;
 }): string {
-  const { labels } = options;
+  const { labels, messages, directions } = options;
   const state = options.state ?? 'guiding';
   if (state !== 'guiding') {
-    const headline =
-      (state === 'off-route' ? labels?.offRoute : labels?.rerouting) ??
-      NAVIGATION_STATE_LABELS[state];
+    const headline = stateHeadlineFor(state, labels, messages);
     return [headline, options.instruction].filter(Boolean).join(', ');
   }
-  const thenWord = labels?.then ?? 'then';
-  const thenPart =
-    options.thenManeuver !== undefined || options.then
-      ? [
-          thenWord,
-          options.thenManeuver !== undefined
-            ? // Lowercased, because it lands MID-SENTENCE after "then" — the
-              // maneuver table's words are written to start a sentence.
-              maneuverWordFor(options.thenManeuver, labels).toLowerCase()
-            : undefined,
-          options.then,
-        ]
-          .filter(Boolean)
-          .join(' ')
-      : undefined;
+  const thenPart = thenLineFor({
+    thenManeuver: options.thenManeuver,
+    then: options.then,
+    labels,
+    messages,
+    directions,
+  });
   return [
     options.distance,
-    maneuverWordFor(options.maneuver, labels),
+    maneuverWordFor(options.maneuver, labels, directions),
     options.instruction,
     thenPart,
   ]
@@ -118,16 +146,29 @@ export function describeNavigationBanner(options: {
 export function describeLanes(
   lanes: readonly NavigationLane[],
   labels: LaneGuidanceLabels | undefined,
+  messages: NavigationBannerMessages = NAVIGATION_BANNER_MESSAGES.en,
 ): string {
-  const head = labels?.lanes ?? 'Lane guidance';
-  const laneWord = labels?.lane ?? 'lane';
-  const useWord = labels?.use ?? 'use';
-  const count = `${lanes.length} ${lanes.length === 1 ? laneWord : `${laneWord}s`}`;
+  const head = labels?.lanes ?? messages.laneGuidance;
+  // A caller's own `lane`/`use` words keep the English-shaped sentence they
+  // were written for; otherwise the language builds each piece whole.
+  const laneWord = labels?.lane;
+  const count =
+    laneWord !== undefined
+      ? `${lanes.length} ${lanes.length === 1 ? laneWord : `${laneWord}s`}`
+      : messages.laneCount(lanes.length);
   const allowed = lanes
-    .map((lane, index) => (lane.allowed ? `${laneWord} ${index + 1}` : null))
+    .map((lane, index) =>
+      lane.allowed
+        ? laneWord !== undefined
+          ? `${laneWord} ${index + 1}`
+          : messages.laneNumber(index + 1)
+        : null,
+    )
     .filter((part): part is string => part !== null);
   if (allowed.length === 0) return `${head}, ${count}`;
-  return `${head}, ${count}, ${useWord} ${allowed.join(' and ')}`;
+  const list = allowed.reduce((joined, part) => messages.and(joined, part));
+  const use = labels?.use !== undefined ? `${labels.use} ${list}` : messages.useLanes(list);
+  return `${head}, ${count}, ${use}`;
 }
 
 /** "Speed limit 50 km/h, over the limit". */
@@ -136,10 +177,13 @@ export function describeSpeedLimit(options: {
   unit?: string;
   exceeded?: boolean;
   exceededLabel?: string;
+  /** The language's words; English when omitted. */
+  messages?: NavigationBannerMessages;
 }): string {
-  const base = ['Speed limit', String(options.limit), options.unit].filter(Boolean).join(' ');
+  const messages = options.messages ?? NAVIGATION_BANNER_MESSAGES.en;
+  const base = messages.speedLimit([String(options.limit), options.unit].filter(Boolean).join(' '));
   if (!options.exceeded) return base;
-  return `${base}, ${options.exceededLabel ?? 'over the limit'}`;
+  return `${base}, ${options.exceededLabel ?? messages.overLimit}`;
 }
 
 /** "Arrival 18:42, Left 24 min, Distance 8.2 km" — three readings, one utterance. */
@@ -148,11 +192,14 @@ export function describeArrival(options: {
   remainingTime: string;
   remainingDistance: string;
   labels?: ArrivalBarLabels;
+  /** The language's words; English when omitted. */
+  messages?: NavigationBannerMessages;
 }): string {
   const { labels } = options;
+  const messages = options.messages ?? NAVIGATION_BANNER_MESSAGES.en;
   return [
-    `${labels?.arrival ?? 'Arrival'} ${options.arrival}`,
-    `${labels?.time ?? 'Left'} ${options.remainingTime}`,
-    `${labels?.distance ?? 'Distance'} ${options.remainingDistance}`,
+    `${labels?.arrival ?? messages.arrival} ${options.arrival}`,
+    `${labels?.time ?? messages.left} ${options.remainingTime}`,
+    `${labels?.distance ?? messages.distance} ${options.remainingDistance}`,
   ].join(', ');
 }

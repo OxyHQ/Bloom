@@ -170,47 +170,34 @@ function scan(): { findings: Finding[]; exemptions: number } {
  */
 const PENDING: Record<string, number> = {
   'activity-feed': 2,
-  'address': 2,
   'card-form': 7,
   'carrier-quote': 20,
   'cart-panel': 10,
-  'category-bar': 2,
   'chart-cards': 36,
   'checkout-summary': 3,
   'delivery-slot': 2,
-  'directions': 34,
   'earnings': 12,
   'file-upload': 6,
   'important-alerts-card': 1,
   'job-board': 29,
   'lead-score': 2,
-  'location-puck': 3,
-  'map-attribution': 2,
-  'map-controls': 12,
-  'map-marker': 2,
   'media-card': 24,
   'media-controls': 9,
   'media-header': 25,
   'media-player': 33,
   'media-shelf': 2,
   'menu-item': 15,
-  'navigation-banner': 11,
   'offering-badge': 4,
   'order-status': 5,
   'patient-info-card': 1,
   'payment-method': 5,
   'payment-status': 6,
   'pipeline': 4,
-  'place-card': 10,
-  'place-details': 26,
-  'place-list': 9,
-  'place-reviews': 9,
   'price-breakdown': 6,
   'proof-of-delivery': 19,
   'questionnaire': 8,
   'queue-panel': 20,
   'recent-hires-card': 1,
-  'route-stops': 8,
   'shipment-request': 19,
   'sortable-media': 12,
   'stat-cards': 2,
@@ -221,7 +208,7 @@ const PENDING: Record<string, number> = {
 };
 
 /** `// i18n-exempt:` lines, counted so a new one is a reviewed decision. */
-const EXEMPTIONS = 5;
+const EXEMPTIONS = 6;
 
 const { findings, exemptions } = scan();
 const byFamily = new Map<string, Finding[]>();

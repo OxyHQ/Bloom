@@ -9,6 +9,7 @@ import {
   type SurfaceTextPaint,
 } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
+import { MAP_ATTRIBUTION_MESSAGES, type MapAttributionMessages } from './messages';
 import type { MapScale } from './types';
 
 export interface MapAttributionPaint extends SurfaceTextPaint {
@@ -46,14 +47,20 @@ export function resolveMapAttributionPaint(theme: Theme): MapAttributionPaint {
 }
 
 /**
- * "Scale, 500 m, 1000 ft".
+ * "Scale, 500 m, 1000 ft" — the word in `messages`' language (English by
+ * default).
  *
  * A bar and two ticks say nothing aloud, and the reading beside them is a
  * number with no noun — "500 m" on its own is as likely to be a distance to
  * somewhere as a scale. The word comes first so it is the first thing heard.
  */
-export function describeScale(scales: readonly MapScale[], scaleLabel: string = 'Scale'): string {
+export function describeScale(
+  scales: readonly MapScale[],
+  scaleLabel?: string,
+  messages: MapAttributionMessages = MAP_ATTRIBUTION_MESSAGES.en,
+): string {
+  const label = scaleLabel ?? messages.scale;
   const readings = scales.map((scale) => scale.label).filter(Boolean);
-  if (readings.length === 0) return scaleLabel;
-  return `${scaleLabel}, ${readings.join(', ')}`;
+  if (readings.length === 0) return label;
+  return `${label}, ${readings.join(', ')}`;
 }

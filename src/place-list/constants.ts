@@ -2,14 +2,12 @@ import { RiEarthLine } from '../icons/remix/RiEarthLine';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { RiLockLine } from '../icons/remix/RiLockLine';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { PLACE_LIST_MESSAGES } from './messages';
 import type { PlaceListVisibility } from './types';
 
-/** The English default visibility words. */
-export const PLACE_LIST_VISIBILITY_LABELS: Readonly<Record<PlaceListVisibility, string>> = {
-  private: 'Private',
-  shared: 'Shared',
-  public: 'Public',
-};
+/** The English visibility words. The card speaks `PLACE_LIST_MESSAGES` in the app's locale. */
+export const PLACE_LIST_VISIBILITY_LABELS: Readonly<Record<PlaceListVisibility, string>> =
+  PLACE_LIST_MESSAGES.en.visibility;
 
 /** The glyph each visibility draws on its badge. */
 export const PLACE_LIST_VISIBILITY_ICON: Readonly<Record<PlaceListVisibility, BloomIconComponent>> = {

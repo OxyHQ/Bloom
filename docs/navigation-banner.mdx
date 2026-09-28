@@ -103,7 +103,8 @@ The glyph is the only thing on screen that says which way to turn, and a glyph
 says nothing aloud. So the maneuver row is a single `img` named by
 `describeNavigationBanner` — "400 m, Turn right, Carrer del Roure, then turn
 left onto Passatge de l'Om" — with its drawn text hidden from assistive
-technology so the distance is not read twice.
+technology so the distance is not read twice. Every word in it, and in the lane, speed
+and arrival sentences below, is localised via `BloomProvider locale`; each language places its own "then".
 
 `children` sit OUTSIDE that name. A lane row and a speed sign each announce
 themselves, and folding them into the banner's sentence would make one

@@ -5,9 +5,11 @@ import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MAP_MARKER_CSS, MAP_MARKER_STYLE_ID, mapWebData, resolveMapMarkerPaint } from './shared';
+import { MAP_MARKER_MESSAGES } from './messages';
 import type { MapClusterMarkerProps } from './types';
 
 /**
@@ -32,6 +34,7 @@ function MapClusterMarkerComponent({
   style,
   testID,
 }: MapClusterMarkerProps) {
+  const { messages } = useMessages(MAP_MARKER_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveMapMarkerPaint(theme), [theme]);
   const { state: hovered, onIn, onOut } = useInteractionState();
@@ -60,7 +63,7 @@ function MapClusterMarkerComponent({
     <Pressable
       {...mapWebData({ bloomMapPressable: '', bloomMapCluster: active ? 'active' : 'default' })}
       role="button"
-      accessibilityLabel={accessibilityLabel ?? `${count} stays`}
+      accessibilityLabel={accessibilityLabel ?? messages.stays(count)}
       aria-pressed={active}
       accessibilityState={{ selected: active }}
       onPress={onPress}

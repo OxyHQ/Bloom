@@ -8,21 +8,21 @@ export type MapControlsAlign = 'start' | 'end';
 
 /** Every word the stack speaks, in one prop — all of it copy, none of it layout. */
 export interface MapControlsLabels {
-  /** Names the stack. Default `"Map controls"`. */
+  /** Names the stack. `"Map controls"` in English. */
   group?: string;
-  /** The locate button while it is off. Default `"Show my location"`. */
+  /** The locate button while it is off. `"Show my location"` in English. */
   locate?: string;
-  /** The locate button while the map is following. Default `"Stop following my location"`. */
+  /** The locate button while the map is following. `"Stop following my location"` in English. */
   following?: string;
-  /** Default `"Zoom in"`. */
+  /** `"Zoom in"` in English. */
   zoomIn?: string;
-  /** Default `"Zoom out"`. */
+  /** `"Zoom out"` in English. */
   zoomOut?: string;
-  /** Names the zoom pair, which is a group. Default `"Zoom"`. */
+  /** Names the zoom pair, which is a group. `"Zoom"` in English. */
   zoom?: string;
-  /** The tilt button while the map is flat. Default `"Tilt the map"`. */
+  /** The tilt button while the map is flat. `"Tilt the map"` in English. */
   tilt?: string;
-  /** The tilt button while the map is tilted. Default `"Flatten the map"`. */
+  /** The tilt button while the map is tilted. `"Flatten the map"` in English. */
   tiltOff?: string;
 }
 
@@ -42,9 +42,9 @@ export interface MapCompassProps {
   hideAtNorth?: boolean;
   disabled?: boolean;
   /**
-   * The announced name. Default `` `Facing ${Math.round(heading)} degrees.
-   * Reset to north` `` — pass a translated sentence, since a needle announces
-   * nothing at all.
+   * The announced name. `` `Facing ${Math.round(heading)} degrees. Reset to
+   * north` `` in English, localised via `BloomProvider locale` — a needle
+   * announces nothing at all.
    */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -67,11 +67,11 @@ export interface MapOverlayOption {
 }
 
 export interface MapLayerPickerLabels {
-  /** Names the trigger, which draws no text. Default `"Map layers"`. */
+  /** Names the trigger, which draws no text. `"Map layers"` in English. */
   trigger?: string;
-  /** The heading over the map types. Default `"Map"`. */
+  /** The heading over the map types. `"Map"` in English. */
   layers?: string;
-  /** The heading over the overlays. Default `"Overlays"`. */
+  /** The heading over the overlays. `"Overlays"` in English. */
   overlays?: string;
 }
 

@@ -81,7 +81,9 @@ has only its photograph, so the cover IS the photo and the content starts under 
 
 Four states rather than a boolean, because "closes in fifteen minutes" is a different
 answer from "open" and an app that can only say `true` says the reassuring one. The word
-comes from `PLACE_OPEN_LABELS` (or `openLabel`), the tone from `PLACE_OPEN_TONE`.
+comes from the locale's words (`PLACE_OPEN_LABELS` is the English set; `openLabel`
+replaces it), the tone from `PLACE_OPEN_TONE`. Every default the card draws or announces is
+localised via `BloomProvider locale`.
 
 **The pill and the hours are separate lines.** The pill is a WORD ("Open") and the hours
 are a SENTENCE ("Open until 20:00"). Pushed onto one line the sentence truncates first and

@@ -2,18 +2,25 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { DIRECTIONS_MANEUVER_ICON } from '../directions/maneuvers';
+import { DIRECTIONS_MESSAGES } from '../directions/messages';
 import { GlassIsland } from '../glass';
 import { borderRadius } from '../styles/tokens';
 import { resolveAccentColors } from '../theme/accent-colors';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   NAVIGATION_BANNER_GEOMETRY,
   NAVIGATION_STATE_ICON,
-  NAVIGATION_STATE_LABELS,
   NAVIGATION_STATE_TONE,
 } from './constants';
-import { describeNavigationBanner, maneuverWordFor, resolveNavigationPaint } from './shared';
+import { NAVIGATION_BANNER_MESSAGES } from './messages';
+import {
+  describeNavigationBanner,
+  resolveNavigationPaint,
+  stateHeadlineFor,
+  thenLineFor,
+} from './shared';
 import type { NavigationBannerProps } from './types';
 
 /**
@@ -67,6 +74,8 @@ function NavigationBannerComponent({
   style,
   testID,
 }: NavigationBannerProps) {
+  const { messages } = useMessages(NAVIGATION_BANNER_MESSAGES);
+  const { messages: directions } = useMessages(DIRECTIONS_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveNavigationPaint(theme), [theme]);
   const g = NAVIGATION_BANNER_GEOMETRY;
@@ -76,27 +85,26 @@ function NavigationBannerComponent({
   const accent = resolveAccentColors(theme.colors, tone, 'subtle');
   const Glyph = guiding ? DIRECTIONS_MANEUVER_ICON[maneuver] : NAVIGATION_STATE_ICON[state];
 
-  const stateHeadline = guiding
-    ? undefined
-    : ((state === 'off-route' ? labels?.offRoute : labels?.rerouting) ??
-      NAVIGATION_STATE_LABELS[state]);
+  const stateHeadline = guiding ? undefined : stateHeadlineFor(state, labels, messages);
   const headline = stateHeadline ?? distance;
-  const thenWord = labels?.then ?? 'then';
   const ThenGlyph = thenManeuver !== undefined ? DIRECTIONS_MANEUVER_ICON[thenManeuver] : null;
-  const thenLine =
-    guiding && (thenManeuver !== undefined || then)
-      ? [
-          thenWord,
-          thenManeuver !== undefined ? maneuverWordFor(thenManeuver, labels).toLowerCase() : null,
-          then,
-        ]
-          .filter(Boolean)
-          .join(' ')
-      : null;
+  const thenLine = guiding
+    ? (thenLineFor({ thenManeuver, then, labels, messages, directions }) ?? null)
+    : null;
 
   const name =
     accessibilityLabel ??
-    describeNavigationBanner({ maneuver, distance, instruction, then, thenManeuver, state, labels });
+    describeNavigationBanner({
+      maneuver,
+      distance,
+      instruction,
+      then,
+      thenManeuver,
+      state,
+      labels,
+      messages,
+      directions,
+    });
 
   return (
     <GlassIsland

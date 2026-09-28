@@ -23,6 +23,8 @@ import { Text } from '../typography';
 import { PLACE_REVIEW_CATEGORIES_WIDE_MIN_WIDTH } from './constants';
 import type { PlaceReviewCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { PLACE_REVIEWS_MESSAGES } from './messages';
 
 /**
  * One past tenant's review of a building.
@@ -54,11 +56,11 @@ function PlaceReviewCardComponent({
   rating,
   categories,
   depositReturned,
-  depositReturnedLabel = 'Deposit returned',
-  depositNotReturnedLabel = 'Deposit not returned',
+  depositReturnedLabel: depositReturnedLabelProp,
+  depositNotReturnedLabel: depositNotReturnedLabelProp,
   wouldRecommend,
-  recommendLabel = 'Would recommend',
-  notRecommendLabel = "Wouldn't recommend",
+  recommendLabel: recommendLabelProp,
+  notRecommendLabel: notRecommendLabelProp,
   text,
   numberOfLines = 4,
   showMoreLabel: showMoreLabelProp,
@@ -68,14 +70,21 @@ function PlaceReviewCardComponent({
   helpfulCount,
   helpful = false,
   onHelpfulChange,
-  helpfulLabel = 'Helpful',
+  helpfulLabel: helpfulLabelProp,
   onReport,
-  reportLabel = 'Report',
+  reportLabel: reportLabelProp,
   layout = 'auto',
   style,
   testID,
 }: PlaceReviewCardProps) {
   const common = useCommonMessages();
+  const { messages } = useMessages(PLACE_REVIEWS_MESSAGES);
+  const depositReturnedLabel = depositReturnedLabelProp ?? messages.depositReturned;
+  const depositNotReturnedLabel = depositNotReturnedLabelProp ?? messages.depositNotReturned;
+  const recommendLabel = recommendLabelProp ?? messages.recommend;
+  const notRecommendLabel = notRecommendLabelProp ?? messages.notRecommend;
+  const helpfulLabel = helpfulLabelProp ?? messages.helpful;
+  const reportLabel = reportLabelProp ?? messages.report;
   const showMoreLabel = showMoreLabelProp ?? common.showMore;
   const showLessLabel = showLessLabelProp ?? common.showLess;
   useHousingWebCss();

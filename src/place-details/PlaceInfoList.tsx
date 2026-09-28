@@ -2,9 +2,12 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { SettingsListGroup, SettingsListItem } from '../settings-list';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { PLACE_DETAILS_GEOMETRY, PLACE_INFO_ACTION_ICON } from './constants';
+import { PLACE_DETAILS_MESSAGES } from './messages';
 import { describeInfoItem, resolvePlaceDetailsPaint } from './shared';
 import type { PlaceInfoListProps } from './types';
 
@@ -47,6 +50,12 @@ function PlaceInfoListComponent({
   style,
   testID,
 }: PlaceInfoListProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(PLACE_DETAILS_MESSAGES);
+  const words = useMemo(
+    () => ({ copy: common.copy, ...messages.infoActions, edit: '', none: '' }),
+    [common, messages],
+  );
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePlaceDetailsPaint(theme, surface), [theme, surface]);
@@ -92,7 +101,7 @@ function PlaceInfoListComponent({
               showChevron={action === 'edit' && pressable}
               onPress={pressable ? () => item.onPress?.(item.id) : undefined}
               disabled={item.disabled}
-              accessibilityLabel={describeInfoItem(item, actionLabels)}
+              accessibilityLabel={describeInfoItem(item, actionLabels, words)}
             />
           );
         })}
