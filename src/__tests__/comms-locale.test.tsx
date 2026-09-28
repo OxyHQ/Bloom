@@ -34,6 +34,7 @@ import { NOTE_CARD_MESSAGES } from '../note-card/messages';
 import { NoteEditorHeader } from '../note-editor';
 import { NOTE_EDITOR_MESSAGES } from '../note-editor/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -124,8 +125,8 @@ describe('mail-compose', () => {
   });
 
   it('removes a recipient with a phrase, not a glued word', () => {
-    expect(MAIL_COMPOSE_MESSAGES.de.removeRecipient('Ana')).toBe('Ana entfernen');
-    expect(MAIL_COMPOSE_MESSAGES.ja.removeRecipient('Ana')).toBe('Anaを削除');
+    expect(messagesIn(MAIL_COMPOSE_MESSAGES, 'de').removeRecipient('Ana')).toBe('Ana entfernen');
+    expect(messagesIn(MAIL_COMPOSE_MESSAGES, 'ja').removeRecipient('Ana')).toBe('Anaを削除');
   });
 });
 
@@ -143,8 +144,8 @@ describe('mail-thread', () => {
   it('folds the middle behind a translated, pluralised control', () => {
     mountIn('ru', <MailThread messages={six} testID="t" />);
     expect(byTestId('t-earlier').getAttribute('aria-label')).toBe('3 предыдущих сообщения');
-    expect(MAIL_THREAD_MESSAGES.ru.earlierMessages(5)).toBe('5 предыдущих сообщений');
-    expect(MAIL_THREAD_MESSAGES.ru.earlierMessages(21)).toBe('21 предыдущее сообщение');
+    expect(messagesIn(MAIL_THREAD_MESSAGES, 'ru').earlierMessages(5)).toBe('5 предыдущих сообщений');
+    expect(messagesIn(MAIL_THREAD_MESSAGES, 'ru').earlierMessages(21)).toBe('21 предыдущее сообщение');
   });
 
   it('lets strings win over the locale', () => {
@@ -169,7 +170,7 @@ describe('mail-list', () => {
     act(() => root.render(<div />));
     mountIn('fr', <MailSelectionBar count={3} total={4} onSelectAll={() => undefined} testID="b" />);
     expect(byTestId('b-count').textContent).toBe('3 sélectionnés');
-    expect(MAIL_LIST_MESSAGES.ar.threadCount(2)).toBe('رسالتان');
+    expect(messagesIn(MAIL_LIST_MESSAGES, 'ar').threadCount(2)).toBe('رسالتان');
   });
 
   it('names the day buckets and dates in the locale given', () => {
@@ -213,7 +214,7 @@ describe('note-editor', () => {
     mountIn('ru', <NoteEditorHeader title="" wordCount={5} labels={{ words: (n) => `${n} w` }} placeholder="Новая" testID="h" />);
     expect(byTestId('h-words').textContent).toBe('5 w');
     expect(byTestId('h-title').getAttribute('placeholder')).toBe('Новая');
-    expect(NOTE_EDITOR_MESSAGES.ru.header.words(11)).toBe('11 слов');
+    expect(messagesIn(NOTE_EDITOR_MESSAGES, 'ru').header.words(11)).toBe('11 слов');
   });
 });
 
@@ -224,7 +225,7 @@ describe('note-card', () => {
     act(() => root.render(<div />));
     mountIn('pt', <NoteCard title="Porto" pinned labels={{ pinned: 'No topo' }} onPress={() => undefined} testID="n" />);
     expect(byTestId('n').getAttribute('aria-label')).toBe('Porto, No topo');
-    expect(NOTE_CARD_MESSAGES.fr.attachments(0)).toBe('0 pièce jointe');
-    expect(NOTE_CARD_MESSAGES.ar.attachments(11)).toBe('11 مرفقًا');
+    expect(messagesIn(NOTE_CARD_MESSAGES, 'fr').attachments(0)).toBe('0 pièce jointe');
+    expect(messagesIn(NOTE_CARD_MESSAGES, 'ar').attachments(11)).toBe('11 مرفقًا');
   });
 });

@@ -26,6 +26,7 @@ import { Sidebar, type SidebarAccount } from '../sidebar';
 import { alert, confirm, prompt, SurfaceHost } from '../surfaces';
 import { __resetSurfacesForTests } from '../surfaces/surface-store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
 jest.mock('../settings-modal/modal-portal', () => ({
@@ -300,8 +301,8 @@ describe('sidebar, surfaces and the overlays', () => {
     });
 
     it('keeps the page number in the language’s own order', () => {
-      expect(PAGINATION_MESSAGES.tr.goToPage(4)).toBe('4. sayfaya git');
-      expect(PAGINATION_MESSAGES.ja.goToPage(4)).toBe('4ページへ移動');
+      expect(messagesIn(PAGINATION_MESSAGES, 'tr').goToPage(4)).toBe('4. sayfaya git');
+      expect(messagesIn(PAGINATION_MESSAGES, 'ja').goToPage(4)).toBe('4ページへ移動');
     });
   });
 });
