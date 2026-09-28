@@ -8,6 +8,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { InputOtp } from '../input-otp';
 import { useMessages } from '../locale/messages';
 import { SortablePhotoGrid } from '../sortable-media';
+import { InteractionBoundary } from '../overlay/InteractionBoundary';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { TextFieldInput } from '../text-field';
 import { Textarea } from '../textarea';
@@ -138,6 +139,7 @@ function ProofOfDeliveryComponent({
             key={kind}
             label={labels.recipient}
             required={isRequired(kind)}
+            requiredLabel={labelOverrides?.required}
             error={errorFor(kind)}
             disabled={disabled}
           >
@@ -157,6 +159,7 @@ function ProofOfDeliveryComponent({
             key={kind}
             label={labels.signature}
             required={isRequired(kind)}
+            requiredLabel={labelOverrides?.required}
             error={errorFor(kind)}
             disabled={disabled}
             // The pad AND the typed name: one id on two controls is invalid.
@@ -179,6 +182,7 @@ function ProofOfDeliveryComponent({
             label={labels.code}
             description={labels.codeHint}
             required={isRequired(kind)}
+            requiredLabel={labelOverrides?.required}
             error={errorFor(kind)}
             disabled={disabled}
             multiple
@@ -199,6 +203,7 @@ function ProofOfDeliveryComponent({
             label={labels.photo}
             description={labels.photoHint}
             required={isRequired(kind)}
+            requiredLabel={labelOverrides?.required}
             error={errorFor(kind)}
             disabled={disabled}
             multiple
@@ -224,6 +229,7 @@ function ProofOfDeliveryComponent({
             key={kind}
             label={labels.note}
             required={isRequired(kind)}
+            requiredLabel={labelOverrides?.required}
             error={errorFor(kind)}
             disabled={disabled}
           >
@@ -286,7 +292,9 @@ function ProofOfDeliveryComponent({
 
       {summary}
 
-      {actions ?? (
+      {actions != null ? (
+        <InteractionBoundary disabled={disabled || submitting}>{actions}</InteractionBoundary>
+      ) : (
         <Button
           variant="primary"
           size="large"

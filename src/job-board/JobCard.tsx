@@ -1,3 +1,4 @@
+import { InteractionBoundary } from '../overlay/InteractionBoundary';
 import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable, StyleSheet, View, type TextStyle } from 'react-native';
 
@@ -365,7 +366,9 @@ function JobCardComponent({
 
   const hasOwnActions = onTake !== undefined || onPass !== undefined;
   const actionRow =
-    actions ??
+    actions != null ? (
+      <InteractionBoundary disabled={inert}>{actions}</InteractionBoundary>
+    ) :
     (!hasOwnActions ? null : (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} testID={id('actions')}>
         {onPass && !closed ? (

@@ -43,6 +43,17 @@ function isTextContent(node: React.ReactNode): boolean {
   return React.isValidElement<{ children?: React.ReactNode }>(node) && node.type === React.Fragment && isTextContent(node.props.children);
 }
 
+/** Preserve layout nodes while giving every primitive descendant a Text host. */
+function renderTextContent(node: React.ReactNode, wrap: (text: React.ReactNode) => React.ReactNode): React.ReactNode {
+  if (isTextContent(node)) return wrap(node);
+  return React.Children.map(node, child => {
+    if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.type === React.Fragment) {
+      return React.cloneElement(child, undefined, renderTextContent(child.props.children, wrap));
+    }
+    return typeof child === 'string' || typeof child === 'number' ? wrap(child) : child;
+  });
+}
+
 export type {
   ButtonProps, LinkButtonProps,
   ButtonSize,
@@ -340,16 +351,12 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       )}
       {leading}
       {iconNode}
-      {!isSquare && children != null && (isTextContent(children) ? (
-        <Text
-          variant={textVariant ?? geometry.type}
-          numberOfLines={numberOfLines}
-          style={[computedTextStyle, textStyle]}
-        >
-          {children}
-        </Text>
-      ) : children)}
-      {isSquare && !renderLeadingIcon && !LeadingIcon && !iconNode && children != null ? children : null}
+      {children != null && (!isSquare || (!renderLeadingIcon && !LeadingIcon && !iconNode))
+        ? renderTextContent(children, text => (
+          <Text variant={textVariant ?? geometry.type} numberOfLines={numberOfLines} style={[computedTextStyle, textStyle]}>
+            {text}
+          </Text>
+        )) : null}
       {trailing}
       {!isSquare
         ? resolveIconSlot(renderTrailingIcon, iconSize, paint.foreground, () =>

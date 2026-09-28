@@ -183,3 +183,5 @@ wiring the way every select trigger does — but the country box's own `error` c
 to that trigger's `aria-describedby`, because `SelectTrigger` takes no such prop. The
 message is drawn; it is not announced as part of the control. Put a country message on the
 enclosing `Field` instead. This is a gap in `select`, not one this family can close.
+
+If a scheme change reduces `maxDigits` below the current value, deletion remains available until the value fits. New over-limit digits are still refused.

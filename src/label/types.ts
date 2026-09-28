@@ -24,6 +24,8 @@ export interface LabelProps {
    * after the label text. Defaults to `false`.
    */
   required?: boolean;
+  /** Accessible name of the required marker; defaults to the current locale. */
+  requiredLabel?: string;
   /** Visually subdued label (e.g. for optional fields). Defaults to `false`. */
   disabled?: boolean;
   /**

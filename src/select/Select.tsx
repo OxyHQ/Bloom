@@ -1,3 +1,4 @@
+import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
 import React, {
   createContext,
@@ -149,6 +150,7 @@ export function SelectTrigger({
     accessibilityLabel: label,
     disabled: disabled === true || rootDisabled === true,
   });
+  const requiredDescription = useRequiredDescription(membership.required, membership.describedBy);
   const isDisabled = membership.disabled;
   const t = palette.trigger;
 
@@ -191,11 +193,13 @@ export function SelectTrigger({
           accessibilityRole: 'button',
           'aria-haspopup': SELECT_TRIGGER_POPUP,
           nativeID: membership.nativeID,
-          'aria-describedby': membership.describedBy,
+          'aria-describedby': requiredDescription.describedBy,
+          accessibilityHint: requiredDescription.hint,
           'aria-invalid': membership.invalid || undefined,
         }}>
         {asChild ? children : field}
       </TriggerSlot>
+      {requiredDescription.description}
     </SelectTriggerStateContext.Provider>
   );
 }

@@ -237,4 +237,4 @@ State colours 150ms; the mic ↔ send cross-fade 220ms; the recording dot pulses
 All of them take `style` and `testID`.
 
 
-The composer's accent icon control paints through shared `SurfacePaint`; it does not maintain a second SVG/CSS gradient engine. Its Pressable remains local because `onPressIn`/`onPressOut` drive recording and are not exposed by Button. Plain composer controls keep their unfilled hover/press contract. This is an event-lifecycle boundary, not a separate material recipe.
+The composer controls compose Bloom Button, including its press-in/out recording lifecycle. Each public component has a thin platform binding; shared factories receive Button, Surface, and overlay components explicitly. Web bindings name their `.web` dependencies, so built browser packages work without Metro-style extension resolution. No additional layout wrappers are introduced.

@@ -127,7 +127,7 @@ function PlacePopularTimesComponent({
           type="radio"
           size="small"
           label={daysLabel}
-          value={selected}
+          value={current?.id ?? ''}
           onValueChange={setSelected}
           testID={testID ? `${testID}-days` : undefined}
         >
@@ -242,8 +242,14 @@ function PlacePopularTimesComponent({
                   // centred on a band that starts at the edge, and a 40-wide
                   // slot centred there would hang outside the block.
                   const left = Math.max(0, Math.min((width ?? 0) - LABEL_SLOT, centre - LABEL_SLOT / 2));
+                  if (currentIndex != null && index !== currentIndex) {
+                    const currentCentre = currentIndex * band + band / 2;
+                    const currentLeft = Math.max(0, Math.min((width ?? 0) - LABEL_SLOT, currentCentre - LABEL_SLOT / 2));
+                    if (Math.abs(left - currentLeft) < LABEL_SLOT) return null;
+                  }
                   return (
                     <Text
+                      testID={testID ? `${testID}-hour-${index}` : undefined}
                       key={`label-${index}`}
                       variant="caption-2-regular"
                       numberOfLines={1}

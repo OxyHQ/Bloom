@@ -60,6 +60,8 @@ So it is `scripts/verify-earnings-headline.mjs`: a real Chrome, `page.mouse.move
 
 ## The period is controlled here, and the chart is remounted to follow it
 
+An external change to the controlled `period` clears the active bar before the next headline paints, just like using the period switch. Returning to the previous period starts from its total.
+
 `useChartRange` inside `chart-cards` is uncontrolled: it takes a `defaultRange` and there is no `range`. A period changed from outside the panel therefore cannot reach the chart card's own segmented control, and the switch and the panel would disagree with nothing to say so.
 
 The chart is keyed on the period id, which remounts it with the new default. The cost is that the bars grow in again instead of morphing across the switch. **This is a gap in `chart-cards`, recorded rather than worked around silently** — the fix is a controlled `range` prop on `useChartRange`, and it is not made here.

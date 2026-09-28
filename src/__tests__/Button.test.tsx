@@ -596,3 +596,18 @@ describe('Button underline and the reading tone', () => {
     expect(getByTestId('btn').props.accessibilityRole).toBe('link');
   });
 });
+
+
+describe('native text hosts for composed button children', () => {
+  it.each([false, true])('wraps primitives mixed with layout, including square=%s', iconOnly => {
+    const { getByText, getByTestId } = renderWithTheme(
+      <Button iconOnly={iconOnly} accessibilityLabel="Save changes">
+        Save<View testID="badge" /><>{3}<View testID="nested" /></>
+      </Button>,
+    );
+    expect(getByText('Save')).toBeTruthy();
+    expect(getByText('3')).toBeTruthy();
+    expect(getByTestId('badge').type).toBe('View');
+    expect(getByTestId('nested').type).toBe('View');
+  });
+});

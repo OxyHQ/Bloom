@@ -29,6 +29,10 @@ import { ProofOfDelivery, SignaturePad } from '@oxy.so/bloom/proof-of-delivery';
 
 Every one is a `Field`, so the label, the hint, the required mark, the error and the association with the control are said once (`docs/composition.mdx`). Two of the five draw SEVERAL controls — the signature is a pad and a name, the photo is a grid — so those fields are `multiple`: one id on three inputs is invalid HTML, and one error described by three inputs is announced three times.
 
+A photo counts as proof once its status is `uploaded` (also the default when omitted). Failed and uploading photos remain missing. `labels.required` overrides the accessible required marker for this form.
+
+Custom `actions` inherit the form’s `disabled` and `submitting` interaction lock, including keyboard focus on web.
+
 ### Why the photo is not `FileUpload`
 
 `FileUpload` is a DROP ZONE with an upload lifecycle of its own. That is right for a document on a desktop and wrong at a door: the photo comes from a camera the app opens, and what has to be on screen afterwards is the picture, its upload state and a way to take another. `SortablePhotoGrid` is that — the app owns the picker, the grid owns the order, the per-photo progress and the retry.

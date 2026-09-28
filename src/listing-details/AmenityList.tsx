@@ -5,7 +5,7 @@ import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { AMENITY_LIST_TWO_COLUMN_MIN_WIDTH } from './constants';
-import { resolveListingPalette } from './shared';
+import { surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
 import { useMessages } from '../locale/messages';
 import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { AmenityListProps } from './types';
@@ -39,7 +39,8 @@ function AmenityListComponent({
   const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
   const unavailableLabel = unavailableLabelProp ?? messages.unavailable;
   const theme = useTheme();
-  const palette = useMemo(() => resolveListingPalette(theme), [theme]);
+  const surface = useSurfaceFill();
+  const palette = useMemo(() => surfaceTextOn(theme, surface), [theme, surface]);
   const { width, onLayout } = useContainerWidth();
 
   const count =
@@ -70,7 +71,7 @@ function AmenityListComponent({
             }}
           >
             {Icon ? (
-              <Icon width={24} height={24} fill={available ? palette.text : palette.muted} />
+              <Icon width={24} height={24} fill={available ? palette.text : palette.textTertiary} />
             ) : null}
             <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
               <Text

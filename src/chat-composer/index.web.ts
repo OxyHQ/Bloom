@@ -3,16 +3,16 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
-export { ChatComposer } from './ChatComposer';
-export { ComposerBanner } from './ComposerBanner';
-export { ComposerAttachmentStrip } from './ComposerAttachmentStrip';
+export { ChatComposer } from './ChatComposer.web';
+export { ComposerBanner } from './ComposerBanner.web';
+export { ComposerAttachmentStrip } from './ComposerAttachmentStrip.web';
 export { ComposerIconButton } from './ComposerIconButton.web';
-export { SuggestionList } from './SuggestionList';
-export { VoiceRecorder } from './VoiceRecorder';
-export { AttachmentMenu } from './AttachmentMenu';
-export { EmojiPicker } from './EmojiPicker';
-export { ReactionPicker } from './ReactionPicker';
-export { MessageContextMenu } from './MessageContextMenu';
+export { SuggestionList } from './SuggestionList.web';
+export { VoiceRecorder } from './VoiceRecorder.web';
+export { AttachmentMenu } from './AttachmentMenu.web';
+export { EmojiPicker } from './EmojiPicker.web';
+export { ReactionPicker } from './ReactionPicker.web';
+export { MessageContextMenu } from './MessageContextMenu.web';
 export {
   ATTACHMENT_MENU_ITEMS,
   EMOJI_CATEGORY_ICONS,
