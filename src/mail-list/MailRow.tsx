@@ -210,6 +210,7 @@ function MailRowComponent({
 
   const paperclip = hasAttachment ? (
     <View
+      pointerEvents="none"
       aria-hidden
       importantForAccessibility="no-hide-descendants"
       style={{ flexShrink: 0 }}
@@ -222,6 +223,7 @@ function MailRowComponent({
   const threadBadge =
     (threadCount ?? 0) > 1 ? (
       <View
+        pointerEvents="none"
         aria-hidden
         importantForAccessibility="no-hide-descendants"
         style={{ flexShrink: 0 }}
@@ -233,20 +235,22 @@ function MailRowComponent({
 
   const timeText =
     time === undefined ? null : (
-      <Text
-        variant={geo.timeVariant}
-        numberOfLines={1}
-        style={{ color: timeColor, flexShrink: 0 }}
-        testID={testID ? `${testID}-time` : undefined}
-      >
-        {time}
-      </Text>
+      <View pointerEvents="none" style={{ flexShrink: 0 }}>
+        <Text
+          variant={geo.timeVariant}
+          numberOfLines={1}
+          style={{ color: timeColor, flexShrink: 0 }}
+          testID={testID ? `${testID}-time` : undefined}
+        >
+          {time}
+        </Text>
+      </View>
     );
 
   // --- the leading slot: a checkbox when the list can multi-select ----------
   const leading =
     onCheckedChange !== undefined ? (
-      <View style={{ width: geo.avatar, alignItems: 'center', flexShrink: 0 }}>
+      <View pointerEvents="box-none" style={{ width: geo.avatar, alignItems: 'center', flexShrink: 0 }}>
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
@@ -374,7 +378,7 @@ function MailRowComponent({
   // and every star press would open the thread. Everything else in here is
   // hidden from assistive technology; the row's composed name already says it.
   const states = paperclip || threadBadge || onStarredChange !== undefined ? (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+    <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {paperclip}
       {threadBadge}
       {onStarredChange === undefined ? (starred ? star : null) : star}
@@ -447,6 +451,7 @@ function MailRowComponent({
         testID={testID ? `${testID}-link` : undefined}
       />
       <View
+        pointerEvents="box-none"
         style={{
           flexDirection: 'row',
           alignItems: 'center',
