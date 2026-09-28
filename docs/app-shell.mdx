@@ -151,7 +151,9 @@ canvas that grew the page would pan the page instead of the canvas.
 `ScrollView` (`paneScroll={false}` when the pane's content already scrolls — a
 `FlatList`, a virtualizer). The divider between the first two is `ai-chat`'s
 `AiChatResizeHandle`, reused rather than rewritten: pointer-capture dragging on
-web, a `PanResponder` on native, arrow keys, and the same grip. It is named
+web, a `PanResponder` on native, arrow keys, and the same grip. The grip is its
+own module (`ai-chat/AiChatResizeHandle`), so a `split` shell does not link the
+AI chat shell or its message catalog. It is named
 `resizeLabel` (`"Resize panes"`) with `role="separator"`. `listWidth` (360) is
 the resting width and a drag is clamped to `listMinWidth`/`listMaxWidth`
 (280/520); `onListWidthChange` reports where it settled.

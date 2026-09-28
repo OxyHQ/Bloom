@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useRef, useState } from 'react';
 import { useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 
-import { AiChatResizeHandle } from '../ai-chat/AiChatShell';
+import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { useControllableState } from '../hooks/use-controllable-state';
 import {
   CHAT_LIST_PANE_WIDTH,

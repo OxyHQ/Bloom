@@ -48,6 +48,8 @@ export interface CommonMessages {
   send: string;
   clear: string;
   seeAll: string;
+  /** The divider between two resizable panes (`AiChatResizeHandle`). */
+  resizePanels: string;
 }
 
 export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
@@ -83,6 +85,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Send',
     clear: 'Clear',
     seeAll: 'See all',
+    resizePanels: 'Resize panels',
   },
   es: {
     close: 'Cerrar',
@@ -116,6 +119,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Enviar',
     clear: 'Borrar',
     seeAll: 'Ver todo',
+    resizePanels: 'Cambiar tamaño de los paneles',
   },
   ca: {
     close: 'Tanca',
@@ -149,6 +153,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Envia',
     clear: 'Esborra',
     seeAll: 'Mostra-ho tot',
+    resizePanels: 'Canvia la mida dels taulers',
   },
   de: {
     close: 'Schließen',
@@ -182,6 +187,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Senden',
     clear: 'Leeren',
     seeAll: 'Alle anzeigen',
+    resizePanels: 'Bereichsgröße ändern',
   },
   fr: {
     close: 'Fermer',
@@ -215,6 +221,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Envoyer',
     clear: 'Effacer',
     seeAll: 'Tout afficher',
+    resizePanels: 'Redimensionner les panneaux',
   },
   it: {
     close: 'Chiudi',
@@ -248,6 +255,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Invia',
     clear: 'Cancella',
     seeAll: 'Mostra tutto',
+    resizePanels: 'Ridimensiona pannelli',
   },
   pt: {
     close: 'Fechar',
@@ -281,6 +289,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Enviar',
     clear: 'Limpar',
     seeAll: 'Ver tudo',
+    resizePanels: 'Redimensionar painéis',
   },
   ru: {
     close: 'Закрыть',
@@ -314,6 +323,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Отправить',
     clear: 'Очистить',
     seeAll: 'Показать все',
+    resizePanels: 'Изменить размер панелей',
   },
   tr: {
     close: 'Kapat',
@@ -347,6 +357,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Gönder',
     clear: 'Temizle',
     seeAll: 'Tümünü gör',
+    resizePanels: 'Panelleri yeniden boyutlandır',
   },
   ja: {
     close: '閉じる',
@@ -380,6 +391,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: '送信',
     clear: 'クリア',
     seeAll: 'すべて表示',
+    resizePanels: 'パネルのサイズを変更',
   },
   zh: {
     close: '关闭',
@@ -413,6 +425,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: '发送',
     clear: '清除',
     seeAll: '查看全部',
+    resizePanels: '调整面板大小',
   },
   ar: {
     close: 'إغلاق',
@@ -446,6 +459,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'إرسال',
     clear: 'مسح',
     seeAll: 'عرض الكل',
+    resizePanels: 'تغيير حجم اللوحات',
   },
   hi: {
     close: 'बंद करें',
@@ -479,6 +493,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'भेजें',
     clear: 'साफ़ करें',
     seeAll: 'सभी देखें',
+    resizePanels: 'पैनल का आकार बदलें',
   },
   bn: {
     close: 'বন্ধ করুন',
@@ -512,6 +527,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'পাঠান',
     clear: 'মুছে ফেলুন',
     seeAll: 'সব দেখুন',
+    resizePanels: 'প্যানেলের আকার বদলান',
   },
   id: {
     close: 'Tutup',
@@ -545,6 +561,7 @@ export const COMMON_MESSAGES: MessageCatalog<CommonMessages> = {
     send: 'Kirim',
     clear: 'Bersihkan',
     seeAll: 'Lihat semua',
+    resizePanels: 'Ubah ukuran panel',
   },
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "5.1.1",
+  "version": "5.2.0",
   "packageManager": "bun@1.3.14",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -767,6 +767,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/settings-modal/index.d.ts",
         "default": "./lib/commonjs/settings-modal/index.js"
+      }
+    },
+    "./settings-modal/rows": {
+      "react-native": {
+        "types": "./lib/typescript/module/settings-modal/rows.d.ts",
+        "default": "./src/settings-modal/rows.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/settings-modal/rows.d.ts",
+        "default": "./lib/module/settings-modal/rows.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/settings-modal/rows.d.ts",
+        "default": "./lib/commonjs/settings-modal/rows.js"
       }
     },
     "./auth-card": {
@@ -1964,6 +1978,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/chat-people/index.d.ts",
         "default": "./lib/commonjs/chat-people/index.js"
+      }
+    },
+    "./chat-people/contact-row": {
+      "react-native": {
+        "types": "./lib/typescript/module/chat-people/contact-row.d.ts",
+        "default": "./src/chat-people/contact-row.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chat-people/contact-row.d.ts",
+        "default": "./lib/module/chat-people/contact-row.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chat-people/contact-row.d.ts",
+        "default": "./lib/commonjs/chat-people/contact-row.js"
       }
     },
     "./chat-screen": {
@@ -3659,6 +3687,9 @@
       "settings-modal": [
         "./lib/typescript/module/settings-modal/index.d.ts"
       ],
+      "settings-modal/rows": [
+        "./lib/typescript/module/settings-modal/rows.d.ts"
+      ],
       "auth-card": [
         "./lib/typescript/module/auth-card/index.d.ts"
       ],
@@ -3892,6 +3923,9 @@
       ],
       "chat-people": [
         "./lib/typescript/module/chat-people/index.d.ts"
+      ],
+      "chat-people/contact-row": [
+        "./lib/typescript/module/chat-people/contact-row.d.ts"
       ],
       "chat-screen": [
         "./lib/typescript/module/chat-screen/index.d.ts"

@@ -17,7 +17,7 @@
 import React, { memo, useCallback, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
-import { AiChatResizeHandle } from '../ai-chat/AiChatShell';
+import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 

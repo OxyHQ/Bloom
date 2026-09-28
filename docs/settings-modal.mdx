@@ -103,6 +103,21 @@ Menus, selects, tooltips and the date popover opened inside a page stack above i
 
 **The hairline stops 12px short of the card's left edge** because the padding lives on the card, not the row — rows must be direct children of `SettingsCard` (fragments are flattened). "Last" is derived from the card's children, since React Native has no `:last-child`.
 
+### Rows outside the dialog
+
+A preference card on a screen or in a sheet imports the lightweight entry:
+
+```tsx
+import { SettingsCard, SettingsRow } from '@oxy.so/bloom/settings-modal/rows';
+```
+
+It carries `SettingsCard`, `SettingsRow`, `SettingsSection`,
+`SettingsSectionLabel` and `SettingsValueField` (and their prop types) — the
+same components — without linking `SettingsModal`, the storage/tools/plan pages
+or `SettingsDateField`'s calendar. Metro does not tree-shake barrel exports, so
+one row imported from `@oxy.so/bloom/settings-modal` put the whole dialog in the
+bundle of the screen that drew it. Gate: `lean-entries.test.ts`.
+
 ## Pages
 
 - **`SettingsGeneralPage`** — `plan` (`SettingsPlanCard`) then `sections`. The plan card's artwork is `SettingsPlanArt`: on web, a WebGL "burning flag" shader over `artworkSource` (or Bloom's generated accent/success/warning discs), eased toward the pointer; native, reduced motion and a failed WebGL context get the static discs. A radial fade melts it into the card.

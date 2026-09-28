@@ -53,6 +53,14 @@ with `onSelectedChange`, an action button with `onAction`, nothing otherwise.
 | `size`                  | `'medium'` 44px avatar (default), `'small'` 36 for a picker |
 | `horizontalInset`       | Avatar/text inset, default `10`. Use `0` when the surrounding widget already provides its inset. |
 
+A single row outside a list — a suggestion card, a search result — imports
+the lightweight entry, which links `ContactRow` without the lists, the group
+form or the story viewer (Metro does not tree-shake barrel exports):
+
+```tsx
+import { ContactRow } from '@oxy.so/bloom/chat-people/contact-row';
+```
+
 ### Selection is ONE target
 
 When the row is a checkbox row, the **row itself** carries `role="checkbox"` and
