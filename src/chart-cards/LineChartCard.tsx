@@ -17,6 +17,7 @@ import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { monthNames } from '../locale/format-date';
 /**
  * One series as a line over a soft gradient, a Weekly / Monthly / Yearly
  * switcher, a count-up headline that follows the hovered point, and a
@@ -97,24 +98,16 @@ const TICK_COUNT = 4;
 /** `gap-6` — this card's header-to-chart gap. */
 const CARD_GAP = 24;
 
-const MONTH_NAMES: Record<string, string> = {
-  Jan: 'January',
-  Feb: 'February',
-  Mar: 'March',
-  Apr: 'April',
-  May: 'May',
-  Jun: 'June',
-  Jul: 'July',
-  Aug: 'August',
-  Sep: 'September',
-  Oct: 'October',
-  Nov: 'November',
-  Dec: 'December',
-};
+const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** Maps `"Jul"` → `"July"`, anything else unchanged. */
-export function monthTitle(label: string): string {
-  return MONTH_NAMES[label] ?? label;
+/**
+ * A label that is an English month abbreviation (`"Jul"`, how chart data names
+ * its points) becomes that month's full name in `locale` (`"July"`, `"julio"`);
+ * any other label is the app's own and stays unchanged.
+ */
+export function monthTitle(label: string, locale?: string): string {
+  const month = MONTH_ABBREVIATIONS.indexOf(label);
+  return month === -1 ? label : (monthNames(locale, 'long')[month] ?? label);
 }
 
 /** `$18,240` — `` `$${display.toLocaleString()}` ``. */
@@ -152,7 +145,7 @@ export function LineChartCard({
   style,
   testID,
 }: LineChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const title = titleProp ?? chartText.titles.revenue;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
@@ -186,7 +179,7 @@ export function LineChartCard({
   const hovering = activeIndex !== null;
   const total = headline ?? values.reduce((sum, v) => sum + v, 0);
   const point = hovering ? data[activeIndex] : undefined;
-  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label)) : title;
+  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label, chartLocale)) : title;
 
   const rawId = useId();
   const id = `bloom-line-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;

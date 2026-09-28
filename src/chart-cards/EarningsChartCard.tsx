@@ -124,7 +124,7 @@ export function EarningsChartCard({
   style,
   testID,
 }: EarningsChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const title = titleProp ?? chartText.titles.earnedSoFar;
   const rangesLabel = rangesLabelProp ?? chartText.earningsPeriod;
   const theme = useTheme();
@@ -159,7 +159,7 @@ export function EarningsChartCard({
 
   const hovering = activeIndex !== null;
   const point = hovering ? data[activeIndex] : undefined;
-  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label)) : title;
+  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label, chartLocale)) : title;
   const total = headline ?? values.reduce((sum, v) => sum + v, 0);
 
   return (

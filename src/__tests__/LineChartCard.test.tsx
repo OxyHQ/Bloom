@@ -60,6 +60,8 @@ describe('line chart geometry matches recharts', () => {
   it('names months in full', () => {
     expect(monthTitle('Jul')).toBe('July');
     expect(monthTitle('W12')).toBe('W12');
+    expect(monthTitle('Jul', 'es')).toBe('julio');
+    expect(monthTitle('W12', 'es')).toBe('W12');
   });
 });
 
