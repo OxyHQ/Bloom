@@ -14,10 +14,12 @@ import { RiMore2Line } from '../icons/remix/RiMore2Line';
 import { RiShieldUserLine } from '../icons/remix/RiShieldUserLine';
 import { RiUserMinusLine } from '../icons/remix/RiUserMinusLine';
 import { RiVipCrownLine } from '../icons/remix/RiVipCrownLine';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { MEMBER_LABELS, memberBadgeLabel, resolveChatPeoplePaint } from './shared';
+import { memberBadgeLabel, resolveChatPeoplePaint } from './shared';
 import type { MemberRowProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `MemberRow`: one person inside a group.
@@ -53,9 +55,10 @@ function MemberRowComponent({
   testID,
 }: MemberRowProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
   const { state: hovered, onIn, onOut } = useInteractionState();
-  const l = { ...MEMBER_LABELS, ...labels };
+  const l = { ...messages.member, ...labels };
   const badge = memberBadgeLabel(role, l, roleLabel);
   const owner = role === 'owner';
   const BadgeGlyph = owner ? RiVipCrownLine : RiShieldUserLine;

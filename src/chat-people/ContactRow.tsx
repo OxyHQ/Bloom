@@ -6,8 +6,10 @@ import { AvatarPresence } from '../chat-indicators/AvatarPresence';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 import { resolveChatPeoplePaint } from './shared';
 import type { ContactRowProps, ContactRowTrailing } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
@@ -54,10 +56,10 @@ function ContactRowComponent(props: ContactRowProps) {
     trailingSlot,
     selected = false,
     onSelectedChange,
-    actionLabel = 'Add',
+    actionLabel: actionLabelProp,
     onAction,
     actionDone = false,
-    actionDoneLabel = 'Added',
+    actionDoneLabel: actionDoneLabelProp,
     onPress,
     disabled = false,
     size = 'medium',
@@ -67,6 +69,9 @@ function ContactRowComponent(props: ContactRowProps) {
     testID,
   } = props;
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
+  const actionLabel = actionLabelProp ?? messages.add;
+  const actionDoneLabel = actionDoneLabelProp ?? messages.added;
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const trailing = resolveTrailing(props);
@@ -205,7 +210,7 @@ function ContactRowComponent(props: ContactRowProps) {
             size="small"
             disabled={disabled}
             onPress={onAction}
-            accessibilityLabel={`${actionLabel} ${name}`}
+            accessibilityLabel={messages.actionOn(actionLabel, name)}
             testID={testID ? `${testID}-action` : undefined}
           >
             {actionLabel}

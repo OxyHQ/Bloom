@@ -7,10 +7,12 @@ import { RiCameraLine } from '../icons/remix/RiCameraLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiUserAddLine } from '../icons/remix/RiUserAddLine';
 import { TextFieldInput } from '../text-field';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { NEW_GROUP_LABELS, nameCounterTone, resolveChatPeoplePaint } from './shared';
+import { nameCounterTone, resolveChatPeoplePaint } from './shared';
 import type { NewGroupFormProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `NewGroupForm`: the sheet that turns a pile of selected people into a group.
@@ -53,8 +55,9 @@ function NewGroupFormComponent({
   testID,
 }: NewGroupFormProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
-  const l = { ...NEW_GROUP_LABELS, ...labels };
+  const l = { ...messages.newGroup, ...labels };
   const tone = nameCounterTone(name.length, nameMaxLength);
   const counterColor =
     tone === 'over' ? paint.negative : tone === 'warn' ? paint.owner : paint.textTertiary;

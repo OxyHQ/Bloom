@@ -10,10 +10,12 @@ import { RiMore2Line } from '../icons/remix/RiMore2Line';
 import { RiPushpinFill } from '../icons/remix/RiPushpinFill';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveChatPeoplePaint } from './shared';
 import type { ChannelPostCardProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `ChannelPostCard`: one broadcast in a channel.
@@ -51,20 +53,23 @@ function ChannelPostCardComponent({
   comments,
   onComments,
   onShare,
-  shareLabel = 'Share',
+  shareLabel: shareLabelProp,
   onPress,
   pinned = false,
   onMore,
-  moreLabel = 'Post options',
+  moreLabel: moreLabelProp,
   labels,
   style,
   testID,
 }: ChannelPostCardProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
   const { state: hovered, onIn, onOut } = useInteractionState();
-  const viewsLabel = labels?.views ?? ((count: string) => `${count} views`);
-  const forwardsLabel = labels?.forwards ?? ((count: string) => `${count} forwards`);
+  const viewsLabel = labels?.views ?? messages.views;
+  const forwardsLabel = labels?.forwards ?? messages.forwards;
+  const shareLabel = shareLabelProp ?? messages.share;
+  const moreLabel = moreLabelProp ?? messages.postOptions;
 
   const header = (
     <View
@@ -93,7 +98,7 @@ function ChannelPostCardComponent({
         {verified ? <RiVerifiedBadgeFill width={14} height={14} fill={paint.accent} /> : null}
         {pinned ? (
           <View
-            accessibilityLabel={labels?.pinned ?? 'Pinned'}
+            accessibilityLabel={labels?.pinned ?? messages.pinned}
             testID={testID ? `${testID}-pinned` : undefined}
           >
             <RiPushpinFill width={13} height={13} fill={paint.textTertiary} />
