@@ -1,10 +1,15 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { MediaFailure, MediaImage, MediaOverlay, MediaPressable, MediaProgressRing } from './parts';
 import { resolveMessageMediaPaint } from './shared';
 import type { StickerMessageProps } from './types';
+
+/** No placeholder colour: a sticker's transparent parts must stay transparent. */
+const TRANSPARENT = 'transparent';
 
 /**
  * A sticker: a transparent image and nothing else.
@@ -27,7 +32,7 @@ function StickerMessageComponent({
   source,
   sourceVariant,
   size = 128,
-  accessibilityLabel = 'Sticker',
+  accessibilityLabel: accessibilityLabelProp,
   onPress,
   state = 'idle',
   onRetry,
@@ -38,6 +43,8 @@ function StickerMessageComponent({
   testID,
 }: StickerMessageProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.sticker;
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
@@ -57,7 +64,7 @@ function StickerMessageComponent({
         <MediaImage
           source={source}
           sourceVariant={sourceVariant}
-          placeholder="transparent"
+          placeholder={TRANSPARENT}
           resizeMode="contain"
           testID={testID ? `${testID}-image` : undefined}
         />
@@ -69,7 +76,7 @@ function StickerMessageComponent({
               track={paint.rail}
               fill="transparent"
               glyph="none"
-              accessibilityLabel="Sending sticker"
+              accessibilityLabel={messages.sendingSticker}
               ring={paint.ring}
             />
           </MediaOverlay>

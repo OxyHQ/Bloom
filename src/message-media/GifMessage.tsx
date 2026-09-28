@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import {
   MediaFailure,
@@ -13,6 +14,7 @@ import {
   MediaPressable,
   MediaProgressRing,
 } from './parts';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import {
   fitMedia,
   MESSAGE_MEDIA_RADIUS,
@@ -41,12 +43,14 @@ function GifMessageComponent({
   maxHeight = 260,
   radius = MESSAGE_MEDIA_RADIUS,
   placeholderColor,
+  // i18n-exempt: a file-format name, written the same in every language
   badgeLabel = 'GIF',
   playing = true,
   onPress,
   state = 'idle',
   progress,
   onRetry,
+  // i18n-exempt: a file-format name, written the same in every language
   accessibilityLabel = 'GIF',
   tone = 'incoming',
   onColor,
@@ -55,6 +59,7 @@ function GifMessageComponent({
   testID,
 }: GifMessageProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
@@ -111,7 +116,7 @@ function GifMessageComponent({
               track="rgba(255, 255, 255, 0.3)"
               fill="rgba(0, 0, 0, 0.35)"
               glyph="none"
-              accessibilityLabel="Sending GIF"
+              accessibilityLabel={messages.sendingGif}
               ring={paint.ring}
             />
           </MediaOverlay>

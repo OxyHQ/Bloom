@@ -5,6 +5,7 @@ import { Avatar } from '../avatar';
 import { webDataSet } from '../styles/web-data';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useHovered, useMessageMediaCss } from './parts';
@@ -15,6 +16,7 @@ import {
   resolveMessageMediaPaint,
   type MessageMediaPaint,
 } from './shared';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { ContactMessageProps } from './types';
 
 /** The first letters of the first two words — the same rule `Avatar` uses. */
@@ -94,8 +96,8 @@ function ContactMessageComponent({
   initials,
   onMessage,
   onAdd,
-  messageLabel = 'Message',
-  addLabel = 'Add',
+  messageLabel: messageLabelProp,
+  addLabel: addLabelProp,
   width = MESSAGE_MEDIA_WIDTH,
   radius = MESSAGE_MEDIA_RADIUS,
   accessibilityLabel,
@@ -106,6 +108,9 @@ function ContactMessageComponent({
   testID,
 }: ContactMessageProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const messageLabel = messageLabelProp ?? messages.message;
+  const addLabel = addLabelProp ?? messages.add;
   useMessageMediaCss();
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
@@ -115,7 +120,7 @@ function ContactMessageComponent({
   return (
     <View
       role="group"
-      accessibilityLabel={accessibilityLabel ?? fileMetaLine(['Contact', name, detail])}
+      accessibilityLabel={accessibilityLabel ?? fileMetaLine([messages.contact, name, detail])}
       style={[{ width, borderRadius: radius }, style ?? null]}
       testID={testID}
     >

@@ -3,10 +3,12 @@ import { View } from 'react-native';
 
 import { formatDuration } from '../media-controls';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MediaImage, MediaOverlay, MediaPill, MediaPressable } from './parts';
 import { ALBUM_GAP, resolveMessageMediaPaint } from './shared';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { SharedMediaGridProps } from './types';
 
 /** `total` split into `parts` integers summing to exactly `total`. */
@@ -40,7 +42,7 @@ function SharedMediaGridComponent({
   width = 340,
   gap = ALBUM_GAP,
   maxItems,
-  formatOverflow = (remaining) => `+${remaining} more`,
+  formatOverflow: formatOverflowProp,
   radius = 4,
   onPressItem,
   onPressOverflow,
@@ -49,6 +51,8 @@ function SharedMediaGridComponent({
   testID,
 }: SharedMediaGridProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const formatOverflow = formatOverflowProp ?? messages.moreItems;
   const paint = useMemo(() => resolveMessageMediaPaint(theme, 'incoming'), [theme]);
 
   const cols = Math.max(1, Math.floor(columns));
@@ -60,7 +64,7 @@ function SharedMediaGridComponent({
   const shown = items.slice(0, visible);
 
   const gridName =
-    accessibilityLabel ?? `Shared media, ${items.length} item${items.length === 1 ? '' : 's'}`;
+    accessibilityLabel ?? messages.sharedMedia(items.length);
 
   return (
     <View
@@ -78,7 +82,7 @@ function SharedMediaGridComponent({
           item.durationLabel ??
           (typeof item.duration === 'number' ? formatDuration(item.duration) : undefined);
         const name =
-          item.accessibilityLabel ?? `${isVideo ? 'Video' : 'Photo'} ${index + 1} of ${items.length}`;
+          item.accessibilityLabel ?? (isVideo ? messages.videoOf : messages.photoOf)(index + 1, items.length);
         const cell: WebCssStyle = {
           width: tileWidth,
           height: tileWidth,
