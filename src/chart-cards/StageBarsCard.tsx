@@ -20,6 +20,8 @@ import {
   useMountedAfterDelay,
   type ChartIcon,
 } from './stage-parts';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * `StageBarsCard`: the funnel as a list.
@@ -92,7 +94,7 @@ const BAR_HEIGHT = 20;
 const ICON_SIZE = 14;
 
 export function StageBarsCard({
-  title = 'Pipeline',
+  title: titleProp,
   stages: stagesProp,
   mono = false,
   showIcons = true,
@@ -109,6 +111,8 @@ export function StageBarsCard({
   style,
   testID,
 }: StageBarsCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.pipeline;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();

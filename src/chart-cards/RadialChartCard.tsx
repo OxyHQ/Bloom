@@ -29,6 +29,8 @@ import { useChartCardSurfacePalette, useChartTones } from './primitives/use-char
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /** One ring / segment of a radial chart. */
 export interface RadialDatum {
@@ -150,7 +152,7 @@ interface Arc extends RingBand, SectorAngles {}
  */
 export function RadialChartCard({
   variant = 'rings',
-  title = 'Visitors',
+  title: titleProp,
   data: dataProp,
   max: maxProp,
   headline: headlineProp,
@@ -168,6 +170,8 @@ export function RadialChartCard({
   style,
   testID,
 }: RadialChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.visitors;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { width: viewportWidth } = useWindowDimensions();
@@ -203,7 +207,7 @@ export function RadialChartCard({
 
   let center: { value: number; caption: string } | null = null;
   if (isGauge) {
-    center = { value: pct(data[0]?.value ?? 0), caption: centerCaption ?? 'of goal' };
+    center = { value: pct(data[0]?.value ?? 0), caption: centerCaption ?? chartText.ofGoal };
   } else if (isStacked) {
     const focus = hovering ? activeIndex : 0;
     center = { value: pct(data[focus]?.value ?? 0), caption: centerCaption ?? data[focus]?.label ?? '' };
@@ -266,12 +270,18 @@ export function RadialChartCard({
     setActiveIndex(index !== null && index < data.length ? index : null);
   };
 
-  const kind = isStacked ? 'half gauge' : isGauge ? 'gauge' : 'radial chart';
+  const reading = pct(data[0]?.value ?? 0);
   const a11y =
     accessibilityLabel ??
     (isGauge
-      ? `${title} ${kind}: ${pct(data[0]?.value ?? 0)}% ${centerCaption ?? 'of goal'}`
-      : `${title} ${kind}: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`);
+      ? chartText.gaugeChart(
+          title,
+          centerCaption !== undefined ? `${reading}% ${centerCaption}` : chartText.percentOfGoal(reading),
+        )
+      : (isStacked ? chartText.halfGaugeChart : chartText.radialChart)(
+          title,
+          data.map((d) => `${d.label} ${format(d.value)}`).join(', '),
+        ));
 
   const chart = (
     <PolarSurface

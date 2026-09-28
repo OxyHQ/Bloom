@@ -12,6 +12,8 @@ import { TABULAR } from './primitives/ChartHeader';
 import { useActiveIndex } from './primitives/use-active-index';
 import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /** One goal ring and its stat tile. */
 export interface ActivityRing {
@@ -109,7 +111,7 @@ function useTween(target: readonly number[], ms: number): readonly number[] {
  */
 export function ActivityRingsCard({
   rings,
-  title = 'Activity',
+  title: titleProp,
   height = ACTIVITY_CARD_HEIGHT,
   activeIndex: controlledIndex,
   onActiveIndexChange,
@@ -117,6 +119,8 @@ export function ActivityRingsCard({
   style,
   testID,
 }: ActivityRingsCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.activity;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -169,7 +173,7 @@ export function ActivityRingsCard({
   };
 
   const a11y =
-    accessibilityLabel ?? `${title}: ${shown.map((r) => `${r.label} ${r.value}, ${Math.round(clampPct(r.goalPct))}% of goal`).join('; ')}`;
+    accessibilityLabel ?? `${title}: ${shown.map((r) => chartText.ringItem(r.label, String(r.value), Math.round(clampPct(r.goalPct)))).join('; ')}`;
 
   return (
     <ChartCardSurface radius="radius-20"

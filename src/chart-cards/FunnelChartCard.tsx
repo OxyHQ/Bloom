@@ -25,6 +25,8 @@ import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useSvgEase } from './medical-parts';
 import { StageStatTiles } from './stage-parts';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * A horizontal flow funnel, hand-drawn in SVG.
@@ -204,7 +206,7 @@ export function funnelPill(value: number, top: number, colW: number): { label: s
 export function FunnelChartCard({
   shape = 'curved',
   mono = false,
-  title = 'Sign-up funnel',
+  title: titleProp,
   stages: stagesProp,
   headline: headlineProp,
   delta: deltaProp,
@@ -219,6 +221,8 @@ export function FunnelChartCard({
   style,
   testID,
 }: FunnelChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.signUpFunnel;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();

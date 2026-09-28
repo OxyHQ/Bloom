@@ -31,6 +31,8 @@ import {
 } from './sankey-layout';
 import { svgTextType, textTopForBaseline } from './svg-text';
 import { useEasedValues } from './use-eased-values';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 export interface SankeyNodeDatum {
   name: string;
@@ -142,7 +144,7 @@ const sameItem = (a: SankeyActiveItem | null, b: SankeyActiveItem | null) =>
  * Hover on web, press-and-scrub on native (letting go clears).
  */
 export function SankeyChartCard({
-  title = 'Tracked time',
+  title: titleProp,
   nodes: nodesProp,
   links: linksProp,
   headline: headlineProp,
@@ -161,6 +163,8 @@ export function SankeyChartCard({
   style,
   testID,
 }: SankeyChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.trackedTime;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();

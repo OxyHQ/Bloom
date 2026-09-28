@@ -15,6 +15,8 @@ import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { roundedBarPath, singleBarSlot } from './rounded-bar-geometry';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
@@ -101,14 +103,14 @@ const HOVER_STROKE = 2;
 export const formatEarningsK = (value: number) => (value === 0 ? '$0' : `$${value / 1000}K`);
 
 export function EarningsChartCard({
-  title = 'Earned so far',
+  title: titleProp,
   data: dataProp,
   headline: headlineProp,
   delta: deltaProp,
   ranges,
   defaultRange,
   onRangeChange,
-  rangesLabel = 'Earnings period',
+  rangesLabel: rangesLabelProp,
   yTicks,
   yMax,
   getPointTitle,
@@ -122,6 +124,9 @@ export function EarningsChartCard({
   style,
   testID,
 }: EarningsChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.earnedSoFar;
+  const rangesLabel = rangesLabelProp ?? chartText.earningsPeriod;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);

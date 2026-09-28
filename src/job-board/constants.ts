@@ -2,41 +2,19 @@ import { RADIUS } from '../design-tokens/scales';
 import type { AccentTone } from '../theme/accent-colors';
 import type { VehicleKind } from '../vehicle-picker';
 import type { JobBoardBand, JobBoardLabels, JobBoardSort, JobOfferState } from './types';
+import { JOB_BOARD_MESSAGES } from './messages';
 
-/** Every default word the card and the board draw. */
+/**
+ * Every default word the card and the board draw, in English. The components
+ * speak the locale's (`JOB_BOARD_MESSAGES`, via `BloomProvider locale`).
+ */
 export const JOB_BOARD_LABELS: Required<
   Omit<JobBoardLabels, 'state' | 'sortOptions' | 'filters'>
 > & {
   state: Record<Exclude<JobOfferState, 'open'>, string>;
   sortOptions: Record<JobBoardSort, string>;
   filters: Required<NonNullable<JobBoardLabels['filters']>>;
-} = {
-  take: 'Take the job',
-  pass: 'Pass',
-  distance: 'Distance',
-  duration: 'Time',
-  window: 'Window',
-  pickup: 'Pick-up',
-  dropoff: 'Drop-off',
-  state: { taken: 'Taken', expired: 'Expired' },
-  showPay: 'Show what it pays',
-  hidePay: 'Hide what it pays',
-  payDetails: 'Pay for',
-  sort: 'Sort jobs',
-  filtersToggle: 'Filters',
-  filtersActive: (count: number) => `${count} applied`,
-  sortOptions: {
-    pay: 'Best paid',
-    distance: 'Nearest',
-    soonest: 'Starting soonest',
-    expiring: 'Closing soonest',
-  },
-  filters: { distance: 'Distance', pay: 'Pay', when: 'When', vehicle: 'Vehicle' },
-  clearFilters: 'Clear filters',
-  refresh: 'Refresh the board',
-  count: (count: number) => (count === 1 ? '1 job' : `${count} jobs`),
-  loading: 'Loading jobs',
-};
+} = JOB_BOARD_MESSAGES.en.labels;
 
 /**
  * The tone a closed job is painted in.

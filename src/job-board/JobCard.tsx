@@ -23,7 +23,7 @@ import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { VEHICLE_ICON } from '../vehicle-picker';
-import { JOB_BOARD_GEOMETRY, JOB_BOARD_LABELS, JOB_STATE_TONE } from './constants';
+import { JOB_BOARD_GEOMETRY, JOB_STATE_TONE } from './constants';
 import {
   JOB_BOARD_STYLE_ID,
   JOB_BOARD_WEB_CSS,
@@ -33,6 +33,8 @@ import {
   type JobPaint,
 } from './shared';
 import type { JobCardProps, JobPlace } from './types';
+import { useMessages } from '../locale/messages';
+import { JOB_BOARD_MESSAGES } from './messages';
 
 /**
  * One piece of work, from the side of the person who would do it.
@@ -111,6 +113,7 @@ function JobCardComponent({
   style,
   testID,
 }: JobCardProps) {
+  const { messages: boardText } = useMessages(JOB_BOARD_MESSAGES);
   const theme = useTheme();
   const comfortable = density === 'comfortable';
   const paint = useJobPaint(comfortable);
@@ -118,11 +121,11 @@ function JobCardComponent({
   const labelled = comfortable && jobActionsAreLabelled(width, JOB_BOARD_GEOMETRY.narrowWidth);
   const labels = useMemo(
     () => ({
-      ...JOB_BOARD_LABELS,
+      ...boardText.labels,
       ...labelOverrides,
-      state: { ...JOB_BOARD_LABELS.state, ...labelOverrides?.state },
+      state: { ...boardText.labels.state, ...labelOverrides?.state },
     }),
-    [labelOverrides],
+    [labelOverrides, boardText],
   );
 
   useEffect(() => {
@@ -457,7 +460,7 @@ function JobCardComponent({
               stops={stops}
               density="compact"
               labels={{ origin: labels.pickup, destination: labels.dropoff }}
-              accessibilityLabel={`${labels.pickup} and ${labels.dropoff}`}
+              accessibilityLabel={boardText.route(labels.pickup, labels.dropoff)}
               testID={id('route')}
             />
           ) : null}
@@ -530,7 +533,11 @@ function JobCardComponent({
               defaultExpanded={defaultBreakdownExpanded}
               expandLabel={labels.showPay}
               collapseLabel={labels.hidePay}
-              accessibilityLabel={`${labels.payDetails} ${job.load}`}
+              accessibilityLabel={
+                labelOverrides?.payDetails !== undefined
+                  ? `${labelOverrides.payDetails} ${job.load}`
+                  : boardText.payDetailsFor(job.load)
+              }
               testID={id('breakdown')}
             />
           ) : null}

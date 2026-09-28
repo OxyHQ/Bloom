@@ -32,6 +32,8 @@ import {
   useMountedAfterDelay,
   type ChartIcon,
 } from './stage-parts';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * `BarListCard`: the analytics breakdown list (traffic by country, device,
@@ -124,7 +126,7 @@ export function BarListCard({
   tabs,
   items,
   title,
-  metricLabel = 'Visitors',
+  metricLabel: metricLabelProp,
   metric = 'share',
   format = groupThousands,
   color,
@@ -135,13 +137,15 @@ export function BarListCard({
   style,
   testID,
 }: BarListCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const metricLabel = metricLabelProp ?? chartText.titles.visitors;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();
   const mounted = useMountedAfterDelay();
   // Palette index 1 is chart-6, blue.
   const tone = mono ? monoTone : resolveTone(palettes, 1, color);
-  const lists: readonly BarListTab[] = tabs ?? [{ id: 'list', label: title ?? 'Breakdown', items: items ?? [] }];
+  const lists: readonly BarListTab[] = tabs ?? [{ id: 'list', label: title ?? chartText.titles.breakdown, items: items ?? [] }];
   const [selectedId, setSelectedId] = useState<string>(defaultTab ?? lists[0]?.id ?? 'list');
   const single = lists.length === 1 && !tabs;
   const current = lists.find((l) => l.id === selectedId) ?? lists[0];

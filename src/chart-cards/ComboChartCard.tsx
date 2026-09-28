@@ -16,6 +16,8 @@ import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { roundedBarPath, singleBarSlot } from './rounded-bar-geometry';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * `ComboChartCard`: a bar series on the left axis and a line series on its
@@ -122,7 +124,7 @@ function axisOf(values: readonly number[]): { domain: readonly [number, number];
 }
 
 export function ComboChartCard({
-  title = 'Sessions',
+  title: titleProp,
   data: dataProp,
   bar,
   line,
@@ -141,6 +143,8 @@ export function ComboChartCard({
   style,
   testID,
 }: ComboChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.sessions;
   const palette = useChartCardSurfacePalette(style);
   const tones = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -222,7 +226,7 @@ export function ComboChartCard({
           outside="clear"
           onActiveIndexChange={setActiveIndex}
           palette={palette}
-          accessibilityLabel={accessibilityLabel ?? `${title} chart: ${bar.label} bars against ${line.label} line`}
+          accessibilityLabel={accessibilityLabel ?? chartText.comboChart(title, bar.label, line.label)}
           testID={testID ? `${testID}-plot` : undefined}>
           {({ size, box, x, band, y, yRight }) => {
             const slot = singleBarSlot(band, BAR_CATEGORY_GAP, MAX_BAR_SIZE);
@@ -325,13 +329,13 @@ export function ComboChartCard({
           testID={testID ? `${testID}-tiles` : undefined}
           items={[
             {
-              label: `${bar.label} · total`,
+              label: `${bar.label} · ${chartText.total}`,
               value: barFormat(hovering ? (barValues[activeIndex] ?? 0) : barTotal),
               color: barTone.color,
               activeColor: barTone.activeColor,
             },
             {
-              label: `${line.label} · ${hovering ? 'this month' : 'average'}`,
+              label: `${line.label} · ${hovering ? chartText.thisMonth : chartText.average}`,
               // Not `captionValue`: it holds the BAR total under
               // `headlineFrom="line"` ("83,200%"); the line's own reading is meant.
               value: lineFormat(hovering ? (lineValues[activeIndex] ?? 0) : lineAverage),

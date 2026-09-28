@@ -11,6 +11,8 @@ import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeadline } from './primitives/ChartHeader';
 import { groupThousands } from './primitives/format';
 import type { ChartCardPoint, YearOverYearChartCardProps } from './types';
+import { CHART_CARDS_MESSAGES, type ChartCardsMessages } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * The dashboard variant of the chart card chrome, shared by
@@ -56,9 +58,17 @@ export { groupThousands };
 export { useActiveIndex } from './primitives/use-active-index';
 export { useChartCardPalette } from './primitives/use-chart-palette';
 
-/** `"Revenue chart: this year against last year"`. */
-export function chartAccessibilityLabel(title: string, currentLabel = 'This year', previousLabel = 'Last year'): string {
-  return `${title} chart: ${currentLabel.toLowerCase()} against ${previousLabel.toLowerCase()}`;
+/**
+ * `"Revenue chart: this year against last year"`, in the language of `text`
+ * (English unless the card passes its locale's catalog).
+ */
+export function chartAccessibilityLabel(
+  title: string,
+  currentLabel?: string,
+  previousLabel?: string,
+  text: ChartCardsMessages = CHART_CARDS_MESSAGES.en,
+): string {
+  return text.chartVs(title, currentLabel ?? text.thisYear, previousLabel ?? text.lastYear);
 }
 
 // ---------------------------------------------------------------------------
@@ -87,10 +97,10 @@ export function ChartCardFrame({
   getPointTitle,
   formatValue,
   defaultFormatValue,
-  currentLabel = 'This year',
-  previousLabel = 'Last year',
-  totalComparisonLabel = 'last year',
-  pointComparisonLabel = 'a year earlier',
+  currentLabel: currentLabelProp,
+  previousLabel: previousLabelProp,
+  totalComparisonLabel: totalComparisonLabelProp,
+  pointComparisonLabel: pointComparisonLabelProp,
   seriesColor,
   comparisonColor,
   activeIndex,
@@ -99,6 +109,11 @@ export function ChartCardFrame({
   testID,
   children,
 }: ChartCardFrameProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const currentLabel = currentLabelProp ?? chartText.thisYear;
+  const previousLabel = previousLabelProp ?? chartText.lastYear;
+  const totalComparisonLabel = totalComparisonLabelProp ?? chartText.sinceLastYear;
+  const pointComparisonLabel = pointComparisonLabelProp ?? chartText.aYearEarlier;
   const { width: viewportWidth } = useWindowDimensions();
   const wide = viewportWidth >= BREAKPOINTS.sm;
   const format = formatValue ?? defaultFormatValue;

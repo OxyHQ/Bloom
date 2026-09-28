@@ -25,6 +25,9 @@ import { FadeOnChange } from './primitives/FadeOnChange';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
 import { useCountUp } from './use-count-up';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
+import { formatGregorian } from '../locale/format-date';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
@@ -179,13 +182,13 @@ function useReveal(skip: boolean): number {
 
 export function TokensChartCard({
   data,
-  title = 'Tokens',
+  title: titleProp,
   headline,
   format = defaultFormat,
   getPointTitle,
   delta,
-  startLabel = 'Jun 14',
-  endLabel = 'Today',
+  startLabel: startLabelProp,
+  endLabel: endLabelProp,
   plotHeight = TOKENS_PLOT_HEIGHT,
   color,
   activeColor,
@@ -195,6 +198,12 @@ export function TokensChartCard({
   style,
   testID,
 }: TokensChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.tokens;
+  const endLabel = endLabelProp ?? chartText.today;
+  // The sample range's start (June 14), written the locale's way.
+  const startLabel =
+    startLabelProp ?? formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ?? '6/14';
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();

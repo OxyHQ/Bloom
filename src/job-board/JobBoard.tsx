@@ -19,7 +19,6 @@ import type { VehicleKind } from '../vehicle-picker';
 import { JobCard } from './JobCard';
 import {
   JOB_BOARD_GEOMETRY,
-  JOB_BOARD_LABELS,
   JOB_BOARD_SORTS,
   JOB_DISTANCE_BANDS,
   JOB_VEHICLE_KINDS,
@@ -33,6 +32,8 @@ import {
   toggleJobVehicle,
 } from './shared';
 import type { JobBoardBand, JobBoardFilter, JobBoardProps, JobBoardSort } from './types';
+import { useMessages } from '../locale/messages';
+import { JOB_BOARD_MESSAGES } from './messages';
 
 /**
  * The work on offer, filtered, ordered and counted.
@@ -95,14 +96,18 @@ function JobBoardComponent({
   density = 'comfortable',
   route,
   breakdown,
-  emptyTitle = 'No jobs right now',
-  emptyDescription = 'Nothing matches what you are looking for. Widen a filter, or pull the board again in a minute.',
+  emptyTitle: emptyTitleProp,
+  emptyDescription: emptyDescriptionProp,
   emptyAction,
   labels: labelOverrides,
-  accessibilityLabel = 'Jobs',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: JobBoardProps) {
+  const { messages: boardText } = useMessages(JOB_BOARD_MESSAGES);
+  const emptyTitle = emptyTitleProp ?? boardText.emptyTitle;
+  const emptyDescription = emptyDescriptionProp ?? boardText.emptyDescription;
+  const accessibilityLabel = accessibilityLabelProp ?? boardText.list;
   const theme = useTheme();
   const ambient = useSurfaceLevel(0);
   const paint = useMemo(
@@ -111,12 +116,12 @@ function JobBoardComponent({
   );
   const labels = useMemo(
     () => ({
-      ...JOB_BOARD_LABELS,
+      ...boardText.labels,
       ...labelOverrides,
-      sortOptions: { ...JOB_BOARD_LABELS.sortOptions, ...labelOverrides?.sortOptions },
-      filters: { ...JOB_BOARD_LABELS.filters, ...labelOverrides?.filters },
+      sortOptions: { ...boardText.labels.sortOptions, ...labelOverrides?.sortOptions },
+      filters: { ...boardText.labels.filters, ...labelOverrides?.filters },
     }),
-    [labelOverrides],
+    [labelOverrides, boardText],
   );
   const [sort, setSort] = useControllableState<JobBoardSort>({
     value: sortProp,
