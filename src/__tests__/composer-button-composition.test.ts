@@ -23,5 +23,5 @@ it('composer actions use shared button bases instead of local Pressable implemen
   }
   // An overlay dismissal plane is not a visible action button. Radio/tab/media
   // roles likewise keep their own interaction semantics.
-  expect(localActions).toEqual(['composer-panel/ComposerPopover.tsx:"Dismiss"']);
+  expect(localActions).toEqual(['composer-panel/ComposerPopover.tsx:{common.dismiss}']);
 });
