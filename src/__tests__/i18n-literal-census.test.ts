@@ -286,7 +286,6 @@ const PENDING: Record<string, number> = {
   'swipe-row': 1,
   'tag-field': 3,
   'tenancy': 12,
-  'text-field': 1,
   'theme-toggle': 3,
   'track-list': 20,
   'vehicle-picker': 4,
