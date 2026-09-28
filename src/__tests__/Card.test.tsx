@@ -14,7 +14,7 @@
  *      tokens rather than classes.
  */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Card } from '../card';
@@ -26,6 +26,7 @@ import { UserHoverCard } from '../user-hover-card';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { LinkPreviewCard } from '../link-preview';
 import { findHost, resolvedStyle, type HostNode } from './support/rendered-style';
+
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -66,9 +67,9 @@ function roundedNode(node: unknown): HostNode {
 }
 
 describe('Card axes', () => {
-  it('keeps the existing outlined preset opaque while explicit appearance wins', () => {
-    const opaque = renderWithTheme(<Card variant="outlined" testID="c" />);
-    expect(chromeOf(opaque.toJSON(), 'c').backgroundColor).toBe(buildTheme('oxy', 'light').colors.card);
+  it('keeps the outlined fill on solid material while explicit appearance wins', () => {
+    const opaque = renderWithTheme(<Card material="solid" variant="outlined" testID="c" />);
+    expect(opaque.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === false).props.fill).toBe(buildTheme('oxy', 'light').colors.card);
     const outline = renderWithTheme(<Card variant="outlined" appearance="outline" testID="c" />);
     expect(chromeOf(outline.toJSON(), 'c').backgroundColor).toBe('transparent');
   });
@@ -124,7 +125,7 @@ describe('Card axes', () => {
     expect(chromeOf(removed.toJSON(), 'c').boxShadow).toBeUndefined();
   });
 
-  it('paints filled from backgroundSecondary and every other variant from card', () => {
+  it('uses the contextual page fill for neutral subtle and outline appearances', () => {
     const filled = renderWithTheme(
       <Card appearance="subtle" testID="c">
         {null}
@@ -135,10 +136,11 @@ describe('Card axes', () => {
         {null}
       </Card>,
     );
-    const filledBg = chromeOf(filled.toJSON(), 'c').backgroundColor;
-    const outlinedBg = chromeOf(outlined.toJSON(), 'c').backgroundColor;
+    const filledBg = filled.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === false).props.fill;
+    const outlinedBg = outlined.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === false).props.fill;
     expect(typeof filledBg).toBe('string');
-    expect(filledBg).not.toBe(outlinedBg);
+    expect(filledBg).toBe(buildTheme('oxy', 'light').colors.card);
+    expect(filledBg).toBe(outlinedBg);
   });
 
   it('is a button when pressable and a link when told so', () => {
@@ -159,7 +161,8 @@ describe('Card axes', () => {
 
   it('clips its content to the corner by default', () => {
     const { toJSON } = renderWithTheme(<Card testID="c">{null}</Card>);
-    expect(chromeOf(toJSON(), 'c').overflow).toBe('hidden');
+    expect(chromeOf(toJSON(), 'c').overflow).toBe('visible');
+    expect(chromeOf(toJSON(), 'c-content').overflow).toBe('hidden');
   });
 });
 
@@ -174,7 +177,7 @@ describe('the surfaces that compose Card keep their own chrome', () => {
     expect(style.borderRadius).toBe(RADIUS['radius-16']);
     expect(style.borderWidth).toBeUndefined();
     expect(style.boxShadow).toBeUndefined();
-    expect(style.overflow).toBe('hidden');
+    expect(style.overflow).toBe('visible');
   });
 
   it('user-hover-card: floating panel — radius 16, 1px border, shadow-dropdown', () => {
@@ -201,6 +204,22 @@ describe('the surfaces that compose Card keep their own chrome', () => {
     // as an unbordered transparent block with no error anywhere.
     expect(style.borderWidth).toBe(1);
     expect(typeof style.backgroundColor).toBe('string');
-    expect(style.overflow).toBe('hidden');
+    expect(style.overflow).toBe('visible');
   });
+});
+
+
+it.each([false, true])('forwards ref and measurement to the card host (interactive=%s)', interactive => {
+  const handle = { measure: jest.fn() };
+  const ref = React.createRef<import('react-native').View>();
+  const onLayout = jest.fn();
+  const screen = render(<BloomThemeProvider mode="light" colorPreset="oxy">
+    <Card ref={ref} testID="measured-card" onLayout={onLayout} onPress={interactive ? () => {} : undefined}>Content</Card>
+  </BloomThemeProvider>, { createNodeMock: element => (element.props as { testID?: string }).testID === 'measured-card' ? handle : null });
+  expect(ref.current).toBe(handle);
+  const event = { nativeEvent: { layout: { x: 0, y: 0, width: 310, height: 96 } } };
+  fireEvent(screen.getByTestId('measured-card'), 'layout', event);
+  expect(onLayout).toHaveBeenCalledWith(event);
+  screen.unmount();
+  expect(ref.current).toBeNull();
 });

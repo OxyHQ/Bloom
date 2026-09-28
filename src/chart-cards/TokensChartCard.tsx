@@ -1,3 +1,4 @@
+import { Card } from '../card';
 import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import {
   Easing,
@@ -23,9 +24,9 @@ import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `TokensChartCard`: daily token usage as a sharp line over a fading
  * area, idle stretches drawn as a grey dashed baseline, the plot bleeding to
@@ -195,7 +196,7 @@ export function TokensChartCard({
   testID,
 }: TokensChartCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
@@ -262,7 +263,9 @@ export function TokensChartCard({
     accessibilityLabel ?? `${title} line chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
   return (
-    <View
+    <Card
+      radius="radius-20"
+      elevation="none"
       testID={testID}
       style={[
         {
@@ -270,7 +273,6 @@ export function TokensChartCard({
           minWidth: 0,
           flexDirection: 'column',
           borderRadius: 20,
-          backgroundColor: palette.surface,
           paddingTop: 12,
           paddingBottom: 12,
         },
@@ -399,6 +401,6 @@ export function TokensChartCard({
           {endLabel}
         </Text>
       </View>
-    </View>
+    </Card>
   );
 }

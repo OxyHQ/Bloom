@@ -468,7 +468,6 @@ describe('ProOfferCard', () => {
       insetInlineStart: 12,
       bottom: 12,
       borderRadius: 16,
-      borderWidth: 1,
       padding: 16,
       gap: 12,
     });

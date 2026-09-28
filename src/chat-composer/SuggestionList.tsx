@@ -1,3 +1,6 @@
+import { useSurfaceFill } from '../styles/surface-levels';
+import { useCardFill } from '../card/use-card-fill';
+import { Surface } from '../surface';
 /**
  * The anchored list above the composer: `@mention`, `/command` and `:shortcode`
  * are ONE part with a `kind`, because the row geometry, the keyboard model and
@@ -42,7 +45,7 @@ function Leading({
   suggestion: ChatComposerSuggestion;
 }) {
   const theme = useTheme();
-  const palette = resolveChatComposerPalette(theme);
+  const palette = resolveChatComposerPalette(theme, useSurfaceFill());
   const resolveImage = useImageResolver();
 
   if (kind === 'emoji') {
@@ -109,7 +112,7 @@ export function SuggestionList({
   accessibilityLabel,
 }: SuggestionListProps) {
   const theme = useTheme();
-  const palette = resolveChatComposerPalette(theme);
+  const palette = resolveChatComposerPalette(theme, useCardFill(style));
   if (suggestions.length === 0) return null;
 
   // React Native's `Role` union has no `listbox`; react-native-web passes the
@@ -118,19 +121,14 @@ export function SuggestionList({
 
   const panel: WebCssStyle = {
     borderRadius: PANEL_RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    boxShadow: palette.shadowPanel,
     paddingTop: 6,
     paddingBottom: 6,
     paddingLeft: 6,
     paddingRight: 6,
-    overflow: 'hidden',
   };
 
   return (
-    <View style={[panel, style]} testID={testID}>
+    <Surface style={[panel, style]} testID={testID}>
       {header ? (
         <Text
           variant="caption-1-medium"
@@ -211,6 +209,6 @@ export function SuggestionList({
           );
         })}
       </ScrollView>
-    </View>
+    </Surface>
   );
 }

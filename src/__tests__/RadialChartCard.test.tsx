@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -205,7 +206,7 @@ describe('RadialChartCard', () => {
 
   it('puts tiles under the chart and lets the card grow', () => {
     const { getByTestId, queryByTestId } = renderCard(<RadialChartCard testID="radial" data={RINGS} tiles activeIndex={2} />);
-    expect(resolvedStyle(getByTestId('radial').props.style).height).toBeUndefined();
+    expect(cardLayout(getByTestId('radial')).height).toBeUndefined();
     expect(queryByTestId('radial-legend')).toBeNull();
     expect(resolvedStyle(getByTestId('radial-tiles-tile-0').props.style).opacity).toBe(0.4);
   });

@@ -36,7 +36,8 @@ the same pixels. `AreaChartCard.tsx` is the reference implementation — read it
 | `CartesianPlot` | recharts `ResponsiveContainer` + axes + `CartesianGrid` + headless tooltip, rebuilt: measures itself, grid, culled tick labels, pointer tracking, `role="img"` surface |
 | `FadeOnChange` | |
 | `useActiveIndex(count, controlled, onChange)` | hovered index, controlled or tracked; every card takes `activeIndex` / `onActiveIndexChange` |
-| `useChartCardPalette()` | chrome colours (surface, text ramps, cursor, track, chips, `inner` tiles, `pill`) |
+| `useChartCardSurfacePalette(style)` | root chrome, resolved for the upcoming card and explicit style backing |
+| `useChartCardPalette()` | inherited chrome colours (surface, text ramps, cursor, track, chips, `inner` tiles, `pill`) |
 | `useWebTransition(prop, ms)` | CSS `transition` on web only, `null` on native and under reduced motion |
 
 ## Skeleton of a card
@@ -45,7 +46,7 @@ the same pixels. `AreaChartCard.tsx` is the reference implementation — read it
 export function FooChartCard({ data, series, ranges, range, defaultRange, onRangeChange, delta, title = 'Foo',
   format = formatNumber, tiles = false, activeIndex: controlled, onActiveIndexChange, accessibilityLabel, style, testID,
 }: FooChartCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
   const rows = selected?.data ?? data ?? [];
@@ -142,3 +143,9 @@ data encodings retain ramps: Contributions maps magnitude to accent intensity;
 stat-card categorical hues and ProOffer artwork gradients retain their color
 scales. Stage glyphs choose black or white for AA against their actual series
 fill, including caller-provided colors; they are not shell text.
+
+## Shared material and nesting
+
+`ChartCardSurface` composes Bloom `Card`; Tokens, Agents and Contributions use the same Card base with their own geometry. The default is solid material with the shared gradient and rim, and no elevation unless requested by the shell. Caller styles still override geometry and backing.
+
+A component about to render its card uses the internal `useChartCardSurfacePalette(style)` to resolve chrome against the exact fill that Card will publish, including alpha overrides against the real parent. Primitives already inside a card use `useChartCardPalette()` to read that published fill without advancing another layer. Tracks, inner tiles, borders and quiet labels follow that backing; chart series retain their semantic colors.

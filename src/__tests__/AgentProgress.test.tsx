@@ -32,13 +32,7 @@ function renderProgress(ui: React.ReactElement, mode: 'light' | 'dark' = 'light'
   );
 }
 
-function hex(color: string): string {
-  const m = color.match(/\d+(\.\d+)?/g)!.map(Number);
-  return `#${m
-    .slice(0, 3)
-    .map((v) => Math.round(v).toString(16).padStart(2, '0'))
-    .join('')}`;
-}
+
 
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => {
@@ -58,13 +52,13 @@ describe('AgentProgress', () => {
       width: 341,
       maxWidth: '100%',
       borderRadius: 16,
-      borderWidth: 1,
       overflow: 'hidden',
       height: 235,
-      backgroundColor: theme.colors.card,
-      borderColor: hex(theme.colors.borderLight),
+      backgroundColor: 'transparent',
       boxShadow: BUTTON_SHADOW.light,
     });
+    expect(getByTestId('agent-progress').findAll(n => n.props.fill === theme.colors.card && n.props.radius === 16).length).toBeGreaterThan(0);
+    expect(card.borderWidth).toBeUndefined();
     expect(agentProgressExpandedHeight(0)).toBe(45);
     expect(agentProgressExpandedHeight(3)).toBe(159);
   });
@@ -73,10 +67,10 @@ describe('AgentProgress', () => {
     const { getByTestId } = renderProgress(<AgentProgress />, 'dark');
     const theme = buildTheme('teal', 'dark');
     expect(resolvedStyle(getByTestId('agent-progress').props.style)).toMatchObject({
-      backgroundColor: theme.colors.card,
-      borderColor: hex(theme.colors.borderLight),
+      backgroundColor: 'transparent',
       boxShadow: BUTTON_SHADOW.dark,
     });
+    expect(getByTestId('agent-progress').findAll(n => n.props.fill === theme.colors.card && n.props.radius === 16).length).toBeGreaterThan(0);
   });
 
   it('lists every step and counts the ones left', () => {

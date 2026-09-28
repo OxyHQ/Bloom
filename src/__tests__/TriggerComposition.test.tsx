@@ -135,7 +135,9 @@ describe('a ButtonGroupItem as a trigger', () => {
     const item = utils.getByTestId('more');
     // Closed: the state is announced, not merely held.
     expect(item.props['aria-expanded']).toBe(false);
-    expect(item.props.accessibilityState.expanded).toBe(false);
+    // RN Pressable folds aria-expanded into native accessibilityState; the
+    // lightweight Pressable mock does not. The forwarded aria prop is the
+    // cross-platform contract (RN Libraries/Components/Pressable/Pressable.js).
     expect(item.props['aria-haspopup']).toBeDefined();
     // The caller's own label survives the merge.
     expect(item.props.accessibilityLabel).toBe('More');

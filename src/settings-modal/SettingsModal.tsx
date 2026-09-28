@@ -28,6 +28,8 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import {
   SettingsModalContext,
   settingsLayoutFor,
@@ -394,11 +396,14 @@ export function SettingsModal({
                         },
                     {
                       backgroundColor: palette.full,
+                      ...surfaceFillVars(palette.full),
                       boxShadow: palette.shadowXs,
                     },
                     ringVars(palette),
                   ]}
                 >
+                  <SurfacePaint radius={layout === 'compact' ? 0 : 24} />
+                  <SurfaceLevelProvider level={1} fill={palette.full}>
                   {layout === 'compact' ? (
                     compactPageOpen && pageConfig ? (
                       <View style={styles.content}>
@@ -466,6 +471,7 @@ export function SettingsModal({
                       </View>
                     </>
                   )}
+                  </SurfaceLevelProvider>
                 </View>
                 <SavedToast
                   phase={savedPhase}
@@ -521,6 +527,7 @@ function SettingsRail({
     scrollY.value = Math.max(0, event.contentOffset.y);
   }, [scrollY]);
   return (
+    <SurfaceLevelProvider level={1} fill={palette.secondary}>
     <Animated.ScrollView
       role="navigation"
       aria-label={label}
@@ -530,6 +537,7 @@ function SettingsRail({
           : [styles.rail, { width: layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH }],
         {
           backgroundColor: palette.secondary,
+          ...surfaceFillVars(palette.secondary),
           borderRightColor: palette.separator,
         },
       ]}
@@ -578,6 +586,7 @@ function SettingsRail({
         ))}
       </View>
     </Animated.ScrollView>
+    </SurfaceLevelProvider>
   );
 }
 

@@ -1,3 +1,6 @@
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Platform,
@@ -10,7 +13,6 @@ import {
 } from 'react-native';
 
 import { Button } from '../button';
-import { BUTTON_SHADOW } from '../button/shared';
 import { Checkbox } from '../checkbox';
 import { Divider } from '../divider';
 import { useInteractionStates } from '../hooks/use-interaction-state';
@@ -109,10 +111,7 @@ ${LINK_SELECTOR}:focus-visible {
 const LINK_DATASET: Record<string, unknown> = IS_WEB ? { dataSet: { bloomAuthLink: '' } } : {};
 
 interface AuthPalette {
-  surface: string;
-  border: string;
   mediaSurface: string;
-  shadow: string;
   text: string;
   textSecondary: string;
   textTertiary: string;
@@ -126,10 +125,7 @@ interface AuthPalette {
 function resolveAuthPalette(theme: Theme): AuthPalette {
   const c = theme.colors;
   return {
-    surface: c.card,
-    border: c.borderLight,
     mediaSurface: c.backgroundSecondary,
-    shadow: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     text: c.text,
     textSecondary: c.textSecondary,
     textTertiary: c.textTertiary,
@@ -294,7 +290,8 @@ function AuthCardComponent({
 }: AuthCardProps) {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, AUTH_CARD_WEB_CSS);
-  const palette = useMemo(() => resolveAuthPalette(theme), [theme]);
+  const fill = useCardFill(footnote ? undefined : style);
+  const palette = useMemo(() => ({ ...resolveAuthPalette(theme), mediaSurface: surfaceFillOn(theme, fill) }), [theme, fill]);
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
   const split = media != null && viewport >= BREAKPOINTS.md;
@@ -541,15 +538,11 @@ function AuthCardComponent({
     width: '100%',
     maxWidth: media != null ? 880 : 400,
     borderRadius: 24,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    boxShadow: palette.shadow,
   };
 
   const card =
     media != null ? (
-      <View
+      <Card
         testID={testID}
         style={[shell, { flexDirection: 'row', overflow: 'hidden' }, footnote ? null : style]}>
         {/* Padding on an inner box: a padded flex item cannot shrink its base
@@ -565,11 +558,11 @@ function AuthCardComponent({
             {media}
           </View>
         ) : null}
-      </View>
+      </Card>
     ) : (
-      <View testID={testID} style={[shell, { padding }, footnote ? null : style]}>
+      <Card testID={testID} style={[shell, { padding }, footnote ? null : style]}>
         {body}
-      </View>
+      </Card>
     );
 
   if (!footnote) return card;

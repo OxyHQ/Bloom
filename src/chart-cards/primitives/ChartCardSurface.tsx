@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { type StyleProp, type ViewStyle } from 'react-native';
 
-import { useChartCardPalette } from './use-chart-palette';
+import { Card } from '../../card';
 
 /** `ChartCard`: `h-[329px]`. */
 export const CHART_CARD_HEIGHT = 329;
@@ -37,9 +37,10 @@ export function ChartCardSurface({
   testID,
   children,
 }: ChartCardSurfaceProps) {
-  const palette = useChartCardPalette();
   return (
-    <View
+    <Card
+      radius="radius-16"
+      elevation="none"
       testID={testID}
       style={[
         {
@@ -48,7 +49,6 @@ export function ChartCardSurface({
           flexDirection: 'column',
           gap,
           borderRadius: CHART_CARD_RADIUS,
-          backgroundColor: palette.surface,
           paddingTop: 16,
           paddingLeft: 16,
           paddingRight: 16,
@@ -57,6 +57,6 @@ export function ChartCardSurface({
         style,
       ]}>
       {children}
-    </View>
+    </Card>
   );
 }

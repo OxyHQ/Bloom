@@ -8,13 +8,13 @@ import {
   chartAccessibilityLabel,
   groupThousands,
   useActiveIndex,
-  useChartCardPalette,
 } from './ChartCard';
 import { bandSize, barPositions, topRoundedBarPath, yScale } from './geometry';
 import { ordersSeriesTone } from './palette';
 import type { OrdersChartCardProps } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `OrdersChartCard`: a year of orders as paired bars, last year beside
  * this year in every month.
@@ -54,7 +54,7 @@ export function OrdersChartCard({
   ...frame
 }: OrdersChartCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => ordersSeriesTone(theme), [theme]);
   // This year's bars are filled with the `-active` step itself.
   const fill = activeColor ?? color ?? tone.activeColor;

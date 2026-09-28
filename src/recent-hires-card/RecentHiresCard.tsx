@@ -1,3 +1,5 @@
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useEffect, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
@@ -56,8 +58,8 @@ interface RecentHiresPalette {
   ring: string;
 }
 
-export function resolveRecentHiresPalette(theme: Theme): RecentHiresPalette {
-  const surfaces = resolveDashboardSurfaces(theme);
+export function resolveRecentHiresPalette(theme: Theme, fill = theme.colors.card): RecentHiresPalette {
+  const surfaces = resolveDashboardSurfaces(theme, fill);
   return {
     surface: surfaces.secondary,
     inner: surfaces.inner,
@@ -155,7 +157,8 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const palette = useMemo(() => resolveRecentHiresPalette(theme), [theme]);
+  const fill = useCardFill(style);
+  const palette = useMemo(() => resolveRecentHiresPalette(theme, fill), [theme, fill]);
 
   useEffect(() => {
     if (IS_WEB) adoptStyleSheet(STYLE_ID, RECENT_HIRES_CSS);
@@ -166,7 +169,7 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   const teamHook: WebDataSet = IS_WEB ? { dataSet: { bloomRecentHiresTeam: '' } } : {};
 
   return (
-    <View
+    <Card elevation="none"
       testID={testID}
       style={[
         {
@@ -177,7 +180,6 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
           paddingBottom: 8,
           paddingLeft: 8,
           paddingRight: 8,
-          backgroundColor: palette.surface,
         },
         style,
       ]}
@@ -251,7 +253,7 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
           {nextLabel}
         </Button>
       </View>
-    </View>
+    </Card>
   );
 };
 

@@ -11,7 +11,7 @@ import { compactNumber, describeDeltaRatio, formatNumber } from './primitives/fo
 import { MultiAxisPlot } from './primitives/MultiAxisPlot';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { roundedBarPath, singleBarSlot } from './rounded-bar-geometry';
@@ -141,7 +141,7 @@ export function ComboChartCard({
   style,
   testID,
 }: ComboChartCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const tones = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
   const data = selected?.data ?? dataProp ?? [];

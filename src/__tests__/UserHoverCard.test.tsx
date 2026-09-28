@@ -10,6 +10,8 @@
  * 404s and every avatar in the ecosystem falls back to its initial. Nothing
  * throws; the card just shows a letter.
  */
+import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import { HoverCardSurfaceProvider } from '../hover-card/context';
 import React from 'react';
 import { Pressable, Text } from 'react-native';
 import { render, fireEvent, within } from '@testing-library/react-native';
@@ -32,7 +34,24 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
+function SurfaceProbe() {
+  return <Text testID="surface-probe">{`${useSurfaceLevelValue()}:${useSurfaceFill()}`}</Text>;
+}
+
 describe('UserHoverCard', () => {
+  it('publishes its custom paint while transparent and embedded cards inherit their parent', () => {
+    for (const kind of ['painted', 'transparent', 'bare'] as const) {
+      const card = <UserHoverCard displayName="Nate" style={kind === 'bare' ? undefined : { backgroundColor: kind === 'painted' ? '#123456' : 'transparent' }} footer={<SurfaceProbe />} />;
+      const screen = renderWithTheme(
+        <SurfaceLevelProvider level={2} fill="#abcdef">
+          {kind === 'bare' ? <HoverCardSurfaceProvider value>{card}</HoverCardSurfaceProvider> : card}
+        </SurfaceLevelProvider>,
+      );
+      expect(screen.getByTestId('surface-probe').props.children).toBe(kind === 'painted' ? '1:#123456' : '2:#abcdef');
+      screen.unmount();
+    }
+  });
+
   it('renders the identity: display name, handle with its @, and bio', () => {
     const { getByText } = renderWithTheme(
       <UserHoverCard displayName="Nate Isern" username="nate" bio="Building Oxy." />,

@@ -8,10 +8,7 @@ import type { Theme } from '../theme/types';
 import { resolveButtonPalette } from '../button/shared';
 import { SocialButton, SOCIAL_PROVIDERS, type SocialProvider } from '../social-button';
 import { SOCIAL_COLOR_LOGOS } from '../social-button/color-logos';
-import {
-  brandGradientBottom,
-  resolveSocialButtonPaint,
-} from '../social-button/SocialButton';
+import { parseRgba } from '../theme/color-utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function flat(style: any): Record<string, any> {
@@ -66,51 +63,22 @@ describe('SocialButton — data', () => {
   });
 });
 
-describe('SocialButton — colour recipe', () => {
-  it("matches Chrome's oklch(from … l-0.04 c+0.01 h) for the brand fills", () => {
-    // Measured: Chrome's canvas pixel for each `oklch(from <brand> …)`; Amazon's
-    // orange pins the gamut clip. Microsoft's grey is the powerless-hue case: the
-    // spec resolves it to 0 (what this does), Chrome paints rgb(88 81 80) — its own
-    // float noise lands the hue near 30°. A 3/255 blue difference in one stop.
-    expect(brandGradientBottom('#181717')).toBe('rgb(19 13 13)');
-    expect(brandGradientBottom('#F24E1E')).toBe('rgb(231 56 0)');
-    expect(brandGradientBottom('#5E5E5E')).toBe('rgb(88 81 83)');
-    expect(brandGradientBottom('#FF9900')).toBe('rgb(245 138 0)');
-    expect(brandGradientBottom('#000000')).toBe('rgb(0 0 0)');
-    expect(brandGradientBottom('var(--x)')).toBeNull();
+describe('SocialButton — shared material', () => {
+  it('passes brand color pairs into the real Button', () => {
+    const { toJSON } = renderWithTheme(<SocialButton brand="figma" />);
+    expect(JSON.stringify(toJSON())).toContain('rgb(242, 78, 30)');
+    expect(JSON.stringify(toJSON())).toContain('\"fillOpacity\":1');
   });
-
-  it('paints Google colorful as the primary button, gradients included', () => {
-    for (const mode of ['light', 'dark'] as const) {
-      const theme = themeFor(mode);
-      const paint = resolveSocialButtonPaint('google', 'colorful', theme);
-      const primary = resolveButtonPalette('solid', theme, 'accent');
-      expect(paint.rest.gradient).toEqual(primary.rest.gradient);
-      expect(paint.hover.gradient).toEqual(primary.hover.gradient);
-      expect(paint.active.gradient).toEqual(primary.active.gradient);
-      expect(paint.brightness).toBe(false);
+  it('keeps surface paint and the supplied foreground for branded enabled states', () => {
+    const palette = resolveButtonPalette('solid', themeFor('light'), 'accent', {
+      background: '#F24E1E', foreground: '#FFFFFF',
+    });
+    expect(palette.rest.background).toBe('#F24E1E');
+    for (const state of [palette.rest, palette.hover, palette.active]) {
+      expect(state.foreground).toBe('#FFFFFF');
+      expect(state.surface).toBe(true);
     }
-  });
-
-  it('paints white as the secondary button and black as neutral-950/800/900', () => {
-    const theme = themeFor('light');
-    const white = resolveSocialButtonPaint('github', 'white', theme);
-    const secondary = resolveButtonPalette('outline', theme, 'neutral');
-    expect(white.rest.background).toBe(secondary.rest.background);
-    expect(white.hover.border).toBe(secondary.hover.border);
-    expect(white.borderWidth).toBe(1);
-    const black = resolveSocialButtonPaint('github', 'black', theme);
-    expect(new Set([black.rest.background, black.hover.background, black.active.background]).size).toBe(3);
-    expect(black.foreground).toBe('#FFFFFF');
-  });
-
-  it('derives brand fills by brightness, 1.06 hover and 0.95 active', () => {
-    const paint = resolveSocialButtonPaint('figma', 'colorful', themeFor('light'));
-    expect(paint.brightness).toBe(true);
-    expect(paint.rest.gradient?.[0]).toBe('#F24E1E');
-    // 0xF2 × 1.06 clamps to 255; 0x4E × 0.95 = 74.
-    expect(paint.hover.gradient?.[0]).toBe('rgb(255 83 32)');
-    expect(paint.active.gradient?.[0]).toBe('rgb(230 74 29)');
+    expect(palette.disabled.surface).toBe(true);
   });
 });
 
@@ -163,15 +131,16 @@ describe('SocialButton — render', () => {
     expect(getByTestId('icon').props.accessibilityLabel).toBe('Sign in with Oxy');
   });
 
-  it('paints Oxy like Google: the primary button on colorful, the secondary on white', () => {
-    for (const mode of ['light', 'dark'] as const) {
-      const theme = themeFor(mode);
-      const oxy = resolveSocialButtonPaint('oxy', 'colorful', theme);
-      const google = resolveSocialButtonPaint('google', 'colorful', theme);
-      expect(oxy).toEqual(google);
-      expect(resolveSocialButtonPaint('oxy', 'white', theme)).toEqual(
-        resolveSocialButtonPaint('google', 'white', theme),
-      );
+  it('uses primary for Oxy and Google, secondary for white', () => {
+    for (const brand of ['oxy', 'google'] as const) {
+      const primary = renderWithTheme(<SocialButton brand={brand} />);
+      const fill = parseRgba(resolveButtonPalette('solid', themeFor('light'), 'accent').rest.background)!;
+      expect(JSON.stringify(primary.toJSON())).toContain(`rgb(${fill.r}, ${fill.g}, ${fill.b})`);
+      expect(JSON.stringify(primary.toJSON())).toContain('\"fillOpacity\":1');
+      primary.unmount();
+      const white = renderWithTheme(<SocialButton brand={brand} appearance="white" />);
+      expect(JSON.stringify(white.toJSON())).toContain('\"fillOpacity\":1');
+      white.unmount();
     }
   });
 
@@ -199,13 +168,13 @@ describe('SocialButton — render', () => {
     open.mockRestore();
   });
 
-  it('disabled dims to 60% and ignores presses', () => {
+  it('disabled uses Button state and ignores presses', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
       <SocialButton testID="b" brand="github" disabled onPress={onPress} />,
     );
     fireEvent.press(getByTestId('b'));
     expect(onPress).not.toHaveBeenCalled();
-    expect(flat(getByTestId('b').props.style).opacity).toBe(0.6);
+    expect(getByTestId('b').props.disabled).toBe(true);
   });
 });

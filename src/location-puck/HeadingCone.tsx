@@ -35,7 +35,7 @@ interface HeadingConeProps {
 }
 
 function HeadingConeComponent({ length, halfAngle, color, testID }: HeadingConeProps) {
-  // Per instance, for the reason `GlassSurface` gives: two cones in one
+  // Per instance, for the reason `SurfacePaint` gives: two cones in one
   // document would otherwise share a gradient id, and the survivor of an
   // unmount would reference one that is gone.
   const gradientId = useMemo(() => `bloom-heading-cone${coneIdCounter++}`, []);

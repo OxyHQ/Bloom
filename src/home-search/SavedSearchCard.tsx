@@ -1,3 +1,6 @@
+import { useCardFill } from '../card/use-card-fill';
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
 import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -67,7 +70,10 @@ function SavedSearchCardComponent({
   testID,
 }: SavedSearchCardProps) {
   const theme = useTheme();
-  const palette = useStaySearchPalette();
+  const basePalette = useStaySearchPalette();
+  const fill = useCardFill(style);
+  const inner = surfaceFillOn(theme, fill);
+  const palette = { ...basePalette, barSurface: fill, tile: inner, rowHighlight: inner };
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hover = useInteractionState();
   const hasNew = newCount > 0;
@@ -78,9 +84,6 @@ function SavedSearchCardComponent({
 
   const card: WebCssStyle = {
     borderRadius: SAVED_SEARCH_CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.barSurface,
     paddingTop: 16,
     paddingBottom: 12,
     paddingLeft: 16,
@@ -136,7 +139,7 @@ function SavedSearchCardComponent({
   const name = hasNew ? `${title}, ${formatNewCount(newCount)}` : title;
 
   return (
-    <View testID={testID} style={[card, style]}>
+    <Card elevation="none" testID={testID} style={[card, style]}>
       {onPress ? (
         <Pressable
           {...webDataSet({ bloomSavedSearchOpen: '' })}
@@ -203,7 +206,7 @@ function SavedSearchCardComponent({
           />
         ) : null}
       </View>
-    </View>
+    </Card>
   );
 }
 

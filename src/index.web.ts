@@ -161,7 +161,9 @@ export * from './appearance';
 export * from './screen';
 export * from './bottom-bar/index.web';
 export * from './button/index.web';
-export * from './button-group';
+export { Surface } from './surface/index.web';
+export type { SurfaceProps } from './surface/index.web';
+export * from './button-group/index.web';
 export * from './control-surface';
 export {
   EDGE_GAP,
@@ -192,8 +194,8 @@ export { Carousel, CarouselItem } from './carousel';
 export type { CarouselProps, CarouselItemProps } from './carousel';
 export { FileUpload, formatFileSize } from './file-upload';
 export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';
-export { SocialButton, SOCIAL_PROVIDERS } from './social-button';
-export type { SocialBrand, SocialBrandConfig, SocialButtonAppearance, SocialButtonProps, SocialButtonSize, SocialProvider } from './social-button';
+export { SocialButton, SOCIAL_PROVIDERS } from './social-button/index.web';
+export type { SocialBrand, SocialBrandConfig, SocialButtonAppearance, SocialButtonProps, SocialButtonSize, SocialProvider } from './social-button/index.web';
 export * from './notification';
 export * from './announcement';
 export * from './data-table';
@@ -515,7 +517,7 @@ export {
   emojiChar,
   filterEmojiGroups,
   formatRecordingTime,
-} from './chat-composer';
+} from './chat-composer/index.web';
 export type {
   AttachmentMenuItem,
   AttachmentMenuProps,
@@ -542,7 +544,7 @@ export type {
   VoiceRecorderLabels,
   VoiceRecorderProps,
   VoiceRecorderState,
-} from './chat-composer';
+} from './chat-composer/index.web';
 export {
   albumLayout,
   albumRows,

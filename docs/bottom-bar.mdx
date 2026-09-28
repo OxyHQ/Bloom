@@ -1,7 +1,7 @@
 # BottomBar
 
 `BottomBar` composes navigation and an optional action in a single bottom region.
-Its blur paints behind both siblings. The action is outside the navigation's
+Its optional screen-edge blur paints behind both siblings. The action is outside the navigation's
 scrub detector, so pressing it never selects a tab.
 
 ```tsx
@@ -26,8 +26,7 @@ screen chrome; otherwise it reads the nearest `TabBarMinimizeProvider`.
 The root occupies its expanded footprint, including the bottom safe area.
 `Screen.bottomBar` positions it and reserves that footprint for scrolling content.
 `actionBehavior="hide"` (the default) fades out the accessory and releases its width and gap while minimizing, centering the navigation. Upward scroll brings it back. `visible` keeps the accessory available. An action without navigation always stays visible. Hidden accessories are removed from hit testing and accessibility; web also marks the subtree inert to prevent keyboard focus. Reduced motion snaps the geometry. Native keyboard visibility hides
-this bottom region. `material="solid"` removes blur; `translucent` uses the
-available platform material. `maxWidth` defaults to 560 points.
+this bottom region. BottomBar always uses the shared translucent `SurfacePaint`: tint, sheen and rim on every platform, with refraction on web. There is no material variant. Native uses the same translucent paint without requiring Apple-only glass peers or a per-control blur. Add `blur` explicitly for the separate screen-edge band; it is off by default. `maxWidth` defaults to 560 points.
 
 The universal entry uses no Apple-only peers. The specialized `tab-bar` subpath
 continues to provide its native enhancements independently.
@@ -47,3 +46,5 @@ themselves. Setup: [`AppShell`, Right-to-left](/docs/bloom/main/app-shell).
 `activeProgress` accepts a shared continuous item index from a swipe pager. `value` remains the settled semantic destination; use an unmatched value when a pushed route has no selection. `onValueLongPress(value)` handles destination actions such as account switching.
 
 Inside an `AppShell` bottom-bar slot, the shell owns measurement and the bottom safe area. `BottomBar` automatically consumes that ownership, so the inset is applied once. Standalone bars retain their own edge claim and inset.
+
+Navigation publishes its tint composited against the parent as an estimated backing to nested surface consumers; custom tab-bar theme fills are preserved. Surface painting does not add a hit target or change navigation geometry.

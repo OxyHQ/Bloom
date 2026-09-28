@@ -31,7 +31,6 @@ import {
   type StaySearchSegment,
 } from '../../src/stay-search';
 import { StepperRow } from '../../src/stepper';
-import { useTheme } from '../../src/theme/use-theme';
 import {
   AREAS,
   DESTINATIONS,
@@ -334,7 +333,6 @@ interface MobileStep {
 }
 
 export function MobileSearch({ search, onFilterPress }: { search: HomeSearchState; onFilterPress?: () => void }) {
-  const theme = useTheme();
   const { height } = useWindowDimensions();
   const control = useDialogControl();
   const [open, setOpen] = useState('location');
@@ -466,7 +464,7 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
         scrollable={false}
         testID="housing-mobile-search"
       >
-        <View style={{ height: Math.min(760, height * 0.88), backgroundColor: theme.colors.backgroundSecondary }}>
+        <View style={{ height: Math.min(760, height * 0.88) }}>
           <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingTop: 16, paddingBottom: 16, paddingLeft: 12, paddingRight: 12, gap: 12 }}
@@ -496,7 +494,6 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
               paddingBottom: 12,
               paddingLeft: 20,
               paddingRight: 16,
-              backgroundColor: theme.colors.card,
             }}
           >
             <Button

@@ -6,6 +6,10 @@ order: 97
 
 # ComposerPanel
 
+Painted containers publish their actual base fill to descendants and `--bloom-surface`. Unpainted embedded variants inherit the enclosing surface instead of resetting its level.
+
+The card and surfaced pill use the shared Surface material. A plain pill paints no container; explicit glass chips use the same shared glass paint.
+
 A two-row agent composer: a radius-24 card with the prompt on its first row and the controls on its second, a grey status tab hanging off its top edge, and a strip of 56px attachment tiles that draw an upload ring while a file lands.
 
 ```tsx
@@ -245,3 +249,8 @@ that could not have held the line anyway. An input method's Enter
 `busy`.
 
 `ComposerAttachments` takes the same props plus `attachments` (required), `uploadDuration` (1100), `uploadGap` (240), `onAttachmentsChange`, `onUploadComplete`, `onAllUploaded`. `ModelPicker` takes `providers`, `value`/`defaultValue`/`onValueChange`, the effort trio, `effortLevels`, `labels`, `style`, `testID`.
+
+
+Mic, send and stop are Button compositions. They share the base material, keyboard focus, press lifecycle and disabled handling rather than maintaining a second gradient or hover engine. The microphone keeps only its voice-specific equalizer/swap animation. Send and stop use the semantic action tone; stop deliberately has no disabled input so cancellation remains available during a blocked draft. Platform entry points bind the actual native or DOM Button through the family context, including forwarded refs and measured layout for menu triggers.
+
+Composer action buttons compose Bloom Button: send, stop, voice, add, model/effort/permission triggers, folder/status actions, search, attachment retry/remove and the help link. Platform bindings inject the matching Button fork alongside the popover. The family keeps only content, measured geometry and icon animation; Button owns state paint, focus, disabled behavior, refs and layout callbacks. Radio options and tabs retain their selection roles.

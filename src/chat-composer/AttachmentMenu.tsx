@@ -8,15 +8,16 @@
  * gated for.
  */
 import React from 'react';
-import { Pressable, View, type DimensionValue } from 'react-native';
+import { View, type DimensionValue } from 'react-native';
 
+import { Button } from '../button';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ATTACHMENT_MENU_ITEMS, resolveChatComposerPalette } from './shared';
 import type { AttachmentMenuItem, AttachmentMenuProps } from './types';
-import { dataHook, useChatComposerWebCss } from './web-hooks';
+import { useChatComposerWebCss } from './web-hooks';
 
 /** A 48px tinted disc with its label under it. */
 function GridCell({
@@ -32,33 +33,32 @@ function GridCell({
 }) {
   const theme = useTheme();
   const palette = resolveChatComposerPalette(theme);
-  const [hovered, setHovered] = React.useState(false);
   const tint = item.color ?? palette.accent;
   const cell: WebCssStyle = {
     width,
+    height: 'auto',
+    minHeight: 0,
+    minWidth: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
     alignItems: 'center',
     gap: 6,
     paddingTop: 8,
     paddingBottom: 8,
     borderRadius: 12,
     opacity: item.disabled ? 0.45 : 1,
-    backgroundColor: hovered && !item.disabled ? palette.hover : 'transparent',
     cursor: item.disabled ? 'auto' : 'pointer',
-    '--bloom-chat-composer-ring': palette.focusRing,
   };
   return (
-    <Pressable
-      {...dataHook('bloomChatComposerRow')}
-      accessibilityRole="button"
+    <Button
+      appearance="plain"
+      tone="neutral"
       accessibilityLabel={item.label}
-      aria-disabled={item.disabled || undefined}
-      accessibilityState={{ disabled: item.disabled }}
       disabled={item.disabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
       style={cell}
       testID={testID}>
+      <View style={{ alignItems: 'center', gap: 6 }}>
       <View
         style={{
           width: 48,
@@ -73,7 +73,8 @@ function GridCell({
       <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
         {item.label}
       </Text>
-    </Pressable>
+      </View>
+    </Button>
   );
 }
 
@@ -89,36 +90,33 @@ function ListRow({
 }) {
   const theme = useTheme();
   const palette = resolveChatComposerPalette(theme);
-  const [hovered, setHovered] = React.useState(false);
   const tint = item.color ?? palette.accent;
   const row: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     minHeight: 40,
+    height: 'auto',
+    minWidth: 0,
+    width: '100%',
     borderRadius: 10,
     paddingLeft: 8,
     paddingRight: 8,
     paddingTop: 6,
     paddingBottom: 6,
     opacity: item.disabled ? 0.45 : 1,
-    backgroundColor: hovered && !item.disabled ? palette.hover : 'transparent',
     cursor: item.disabled ? 'auto' : 'pointer',
-    '--bloom-chat-composer-ring': palette.focusRing,
   };
   return (
-    <Pressable
-      {...dataHook('bloomChatComposerRow')}
-      accessibilityRole="button"
+    <Button
+      appearance="plain"
+      tone="neutral"
       accessibilityLabel={item.label}
-      aria-disabled={item.disabled || undefined}
-      accessibilityState={{ disabled: item.disabled }}
       disabled={item.disabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
       style={row}
       testID={testID}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' }}>
       <View
         style={{
           width: 32,
@@ -133,7 +131,8 @@ function ListRow({
       <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
         {item.label}
       </Text>
-    </Pressable>
+      </View>
+    </Button>
   );
 }
 

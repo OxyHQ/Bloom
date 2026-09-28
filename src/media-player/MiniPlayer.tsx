@@ -1,3 +1,6 @@
+import { useCardFill } from '../card/use-card-fill';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
+import { Surface } from '../surface';
 import React, { memo, useContext, useMemo, useRef } from 'react';
 import { PanResponder, Pressable, View } from 'react-native';
 
@@ -154,7 +157,6 @@ function MiniPlayerContent({
           bottom: 0,
           height: 2,
           borderRadius: 1,
-          overflow: 'hidden',
           // The rail is the text colour composited at 24% over the bar's own fill.
           backgroundColor: mixColor(background, paint.text, 0.24),
         }}
@@ -193,8 +195,10 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
     () => resolveMiniPlayerSurface(theme, ctx?.colorPreset ?? 'oxy', props.artworkColor),
     [theme, ctx?.colorPreset, props.artworkColor],
   );
+  const neutralFill = useCardFill(props.style);
+  const backing = useSurfaceBacking(surface.tinted ? surface.background : neutralFill, props.style);
   return (
-    <View
+    <Surface
       {...webDataSet({ bloomMiniPlayer: surface.tinted ? 'tinted' : 'neutral' })}
       style={[
         {
@@ -202,22 +206,19 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
           marginLeft: 8,
           marginRight: 8,
           borderRadius: 12,
-          overflow: 'hidden',
           flexDirection: 'row',
           alignItems: 'center',
           gap: 4,
-          backgroundColor: surface.background,
-          borderWidth: surface.border ? 1 : 0,
-          borderColor: surface.border ?? undefined,
+          ...(surface.tinted ? { backgroundColor: surface.background } : null),
         },
         props.style,
       ]}
       testID={props.testID}
     >
       <ImmersiveTheme enabled={surface.tinted}>
-        <MiniPlayerContent {...props} {...surface} />
+        <MiniPlayerContent {...props} {...surface} background={backing.fill} />
       </ImmersiveTheme>
-    </View>
+    </Surface>
   );
 }
 

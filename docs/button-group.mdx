@@ -103,3 +103,5 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 ## Compatibility
 
 The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.
+
+Each `ButtonGroupItem` now composes the actual `Button`, including icon render slots, toggle state, disabled state and trigger events. The group owns joining, dividers and inherited material/density. Glass groups keep one `GlassIsland` pane and plain Buttons flush inside it; joined groups use each Button’s Surface paint.

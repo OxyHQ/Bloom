@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -34,7 +35,7 @@ describe('currentMonthAt', () => {
 describe('MostActiveDaysCard', () => {
   it('keeps the medical card shell and the inner panel', () => {
     const { getByTestId, getByText } = renderCard(<MostActiveDaysCard testID="days" year={2026} headline={32459} rings={rings} />);
-    expect(resolvedStyle(getByTestId('days').props.style)).toMatchObject({ height: 330, borderRadius: 20, paddingTop: 10 });
+    expect(cardLayout(getByTestId('days'))).toMatchObject({ height: 330, borderRadius: 20, paddingTop: 10 });
     expect(getByTestId('days-headline').props.children).toBe('32,459');
     expect(getByText('Most active days')).toBeTruthy();
     expect(getByText('total steps')).toBeTruthy();

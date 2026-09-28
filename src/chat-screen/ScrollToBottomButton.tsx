@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Button } from '../button/Button';
 
 import { UnreadBadge } from '../chat-indicators/UnreadBadge';
 import { RiArrowDownLine } from '../icons/remix/RiArrowDownLine';
@@ -55,7 +56,6 @@ function RoundJumpButton({
     borderRadius: size / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: paint.floatingSurface,
     borderWidth: 1,
     borderColor: paint.floatingBorder,
     boxShadow: paint.floatingShadow,
@@ -63,15 +63,19 @@ function RoundJumpButton({
 
   return (
     <View testID={testID} style={[{ alignItems: 'center' }, style]}>
-      <Pressable
+      <Button
+        appearance="solid"
+        tone="neutral"
+        colors={{ background: paint.floatingSurface, foreground: paint.textSecondary }}
+        icon={Icon}
+        iconOnly
+        iconSize={22}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={circle}
         testID={testID ? `${testID}-button` : undefined}
-      >
-        <Icon width={22} height={22} fill={paint.textSecondary} />
-      </Pressable>
+      />
       {count > 0 ? (
         <View
           pointerEvents="none"

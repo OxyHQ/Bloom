@@ -65,6 +65,25 @@
         "default": "./lib/commonjs/surfaces/index.js"
       }
     },
+    "./surface": {
+      "react-native": {
+        "types": "./lib/typescript/module/surface/index.d.ts",
+        "default": "./src/surface/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/surface/index.web.d.ts",
+        "import": "./lib/module/surface/index.web.js",
+        "require": "./lib/commonjs/surface/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/surface/index.d.ts",
+        "default": "./lib/module/surface/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/surface/index.d.ts",
+        "default": "./lib/commonjs/surface/index.js"
+      }
+    },
     "./image-resolver": {
       "react-native": {
         "types": "./lib/typescript/module/image-resolver/index.d.ts",
@@ -338,6 +357,11 @@
         "types": "./lib/typescript/module/button-group/index.d.ts",
         "default": "./src/button-group/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/button-group/index.web.d.ts",
+        "import": "./lib/module/button-group/index.web.js",
+        "require": "./lib/commonjs/button-group/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/button-group/index.d.ts",
         "default": "./lib/module/button-group/index.js"
@@ -487,6 +511,11 @@
       "react-native": {
         "types": "./lib/typescript/module/social-button/index.d.ts",
         "default": "./src/social-button/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/social-button/index.web.d.ts",
+        "import": "./lib/module/social-button/index.web.js",
+        "require": "./lib/commonjs/social-button/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/social-button/index.d.ts",
@@ -1195,6 +1224,11 @@
         "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
         "default": "./src/zoomable-media-gallery/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/zoomable-media-gallery/index.web.d.ts",
+        "import": "./lib/module/zoomable-media-gallery/index.web.js",
+        "require": "./lib/commonjs/zoomable-media-gallery/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
         "default": "./lib/module/zoomable-media-gallery/index.js"
@@ -1208,6 +1242,11 @@
       "react-native": {
         "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
         "default": "./src/zoomable-media-gallery/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/zoomable-media-gallery/index.web.d.ts",
+        "import": "./lib/module/zoomable-media-gallery/index.web.js",
+        "require": "./lib/commonjs/zoomable-media-gallery/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
@@ -1931,6 +1970,11 @@
       "react-native": {
         "types": "./lib/typescript/module/chat-composer/index.d.ts",
         "default": "./src/chat-composer/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/chat-composer/index.web.d.ts",
+        "import": "./lib/module/chat-composer/index.web.js",
+        "require": "./lib/commonjs/chat-composer/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/chat-composer/index.d.ts",
@@ -3462,6 +3506,9 @@
       ],
       "surfaces": [
         "./lib/typescript/module/surfaces/index.d.ts"
+      ],
+      "surface": [
+        "./lib/typescript/module/surface/index.d.ts"
       ],
       "image-resolver": [
         "./lib/typescript/module/image-resolver/index.d.ts"

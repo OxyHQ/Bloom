@@ -1,3 +1,6 @@
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -139,7 +142,8 @@ function PitchCardComponent({
   testID,
 }: PitchCardProps) {
   const theme = useTheme();
-  const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
+  const fill = useCardFill(style);
+  const paint = useMemo(() => ({ ...resolveCreatorStudioPaint(theme), surface: fill, inner: surfaceFillOn(theme, fill) }), [theme, fill]);
   const labels = {
     ...PITCH_CARD_LABELS,
     ...labelOverrides,
@@ -170,7 +174,7 @@ function PitchCardComponent({
     const Icon = status === 'accepted' ? RiCheckboxCircleFill : status === 'declined' ? RiCloseCircleLine : RiTimeLine;
     const iconColor = status === 'accepted' ? paint.positive : status === 'declined' ? paint.negative : paint.accent;
     return (
-      <View testID={testID} style={[styles.card, { backgroundColor: paint.surface }, style]}>
+      <Card elevation="none" testID={testID} style={[styles.card, style]}>
         {heading}
         <View
           testID={id('status')}
@@ -197,12 +201,12 @@ function PitchCardComponent({
             {labels.edit}
           </Button>
         ) : null}
-      </View>
+      </Card>
     );
   }
 
   return (
-    <View testID={testID} style={[styles.card, { backgroundColor: paint.surface }, style]}>
+    <Card elevation="none" testID={testID} style={[styles.card, style]}>
       {heading}
 
       <View style={styles.group}>
@@ -271,7 +275,7 @@ function PitchCardComponent({
       >
         {labels.submit}
       </Button>
-    </View>
+    </Card>
   );
 }
 

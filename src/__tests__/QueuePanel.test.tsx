@@ -361,3 +361,12 @@ describe('resolveQueuePanelPaint', () => {
     expect(dark.buttonHover).not.toBe(dark.rowHover);
   });
 });
+
+it('publishes the actual panel fill to CSS, leaving unpainted sheet surfaces inherited', () => {
+  mount(<QueuePanel testID="surface-panel" variant="panel" style={{ backgroundColor: '#123456' }} />);
+  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe('#123456');
+  mount(<QueuePanel testID="surface-panel" variant="sheet" />);
+  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe('');
+  mount(<QueuePanel testID="surface-panel" variant="panel" style={{ backgroundColor: 'transparent' }} />);
+  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe('');
+});

@@ -22,7 +22,6 @@ import { chartHueTone, resolveTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { groupThousands } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import {
   MEDICAL_CARD_HEIGHT,
   MEDICAL_CARD_STYLE,
@@ -33,6 +32,7 @@ import {
 } from './medical-parts';
 import { lerp, useChartProgress } from './use-chart-progress';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `StepsCard`: a week of step counts as rounded bars over a neutral track.
  *
@@ -164,7 +164,7 @@ export function StepsCard({
   testID,
 }: StepsCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const tone = useMemo(
     () => (color ? resolveTone([], 0, color, activeColor) : chartHueTone(theme, 1)),
     [theme, color, activeColor],

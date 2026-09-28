@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
@@ -594,17 +596,19 @@ export function AiChatShell({
     backgroundColor: surface ? palette.full : 'transparent',
   };
 
+  const backing = useSurfaceBacking(surface ? palette.full : undefined, style, !background);
   const veil = palette.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)';
 
   return (
     <AiChatShellContext.Provider value={shellState}>
+      <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
       <AiChatDocumentGutterContext.Provider value={documentScroll && surface ? palette.full : null}>
       <View
         {...dataHook('bloomAiChatDragging', dragging ? 'on' : '')}
         {...(navSwipeArmed ? navSwipe.panHandlers : null)}
         testID={testID}
         onLayout={(event: LayoutChangeEvent) => setShellWidth(event.nativeEvent.layout.width)}
-        style={[rootStyle, style]}>
+        style={[rootStyle, style, backing.vars]}>
         {background ? (
           <View pointerEvents="none" style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0 }}>
             {background}
@@ -641,6 +645,7 @@ export function AiChatShell({
           </View>
         ) : null}
 
+        <SurfaceLevelProvider level={backing.level} fill={surface ? palette.full : backing.fill}>
         <Animated.View
           style={[
             {
@@ -654,6 +659,7 @@ export function AiChatShell({
               backgroundColor: surface ? palette.full : 'transparent',
             },
             navInFlow ? null : workspaceStyle,
+            surfaceFillVars(surface ? palette.full : undefined),
           ]}>
           {!navInFlow ? (
             <Animated.View
@@ -701,6 +707,7 @@ export function AiChatShell({
             ) : null}
           </View>
         </Animated.View>
+        </SurfaceLevelProvider>
 
         {!wide && panel ? (
           <View
@@ -716,6 +723,7 @@ export function AiChatShell({
                 style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
               />
             </Animated.View>
+            <SurfaceLevelProvider level={backing.level} fill={palette.full}>
             <Animated.View
               ref={panelRef}
               role="dialog"
@@ -735,6 +743,7 @@ export function AiChatShell({
                   boxShadow: palette.shadowSidebar,
                 },
                 drawerStyle,
+                surfaceFillVars(palette.full),
               ]}>
               <View
                 style={{
@@ -753,10 +762,12 @@ export function AiChatShell({
               </View>
               <View style={{ minHeight: 0, flex: 1 }}>{panel('100%')}</View>
             </Animated.View>
+            </SurfaceLevelProvider>
           </View>
         ) : null}
       </View>
       </AiChatDocumentGutterContext.Provider>
+      </SurfaceLevelProvider>
     </AiChatShellContext.Provider>
   );
 }

@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -34,7 +35,7 @@ type Node = { props: Record<string, unknown> };
 describe('ActivityRingsCard', () => {
   it('keeps the card geometry: 330 tall, radius 20, padding 10, tiles 57 tall with radius 10', () => {
     const { getByTestId, getByText } = renderCard(<ActivityRingsCard testID="activity" rings={RINGS} />);
-    expect(resolvedStyle(getByTestId('activity').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('activity'))).toMatchObject({
       height: 330,
       borderRadius: 20,
       paddingTop: 10,
@@ -109,7 +110,7 @@ describe('ActivityRingsCard', () => {
   it('caps the drawing at 210 tall and centres it in a taller area', () => {
     const { getByTestId, UNSAFE_getByType } = renderCard(<ActivityRingsCard testID="activity" rings={RINGS} height={420} />);
     layout(getByTestId, 460, 290);
-    const svg = UNSAFE_getByType('Svg' as never) as unknown as Node;
+    const svg = getByTestId('activity-plot').findByType('Svg' as never) as unknown as Node;
     expect(svg.props.height).toBe(210);
     expect(resolvedStyle(svg.props.style as never).top).toBe(40);
   });

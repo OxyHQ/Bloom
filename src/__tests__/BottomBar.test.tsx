@@ -25,8 +25,18 @@ it('shares one progress signal and reports semantic destinations', () => {
   expect(view.getByText('Compose', { includeHiddenElements: true })).toBeTruthy();
   expect(resolvedStyle(view.getByTestId('bar').props.style).height).toBeGreaterThanOrEqual(58);
 });
-it('removes the blur in solid mode and hides on the native keyboard', () => {
-  const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={items} value="home" onValueChange={() => {}} material="solid" testID="bar" />);
+it('always uses shared translucent material without a default screen blur band', () => {
+  const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={items} value="home" onValueChange={() => {}} />);
+  expect(Navigation.mock.calls[Navigation.mock.calls.length - 1]![0].material).toBe('translucent');
+  expect(view.queryByTestId('blur')).toBeNull();
+});
+it('enables the optional screen blur independently of the capsule', () => {
+  const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={items} value="home" onValueChange={() => {}} blur />);
+  expect(Navigation.mock.calls[Navigation.mock.calls.length - 1]![0].material).toBe('translucent');
+  expect(view.getByTestId('blur')).toBeTruthy();
+});
+it('omits the blur by default and hides on the native keyboard', () => {
+  const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={items} value="home" onValueChange={() => {}} testID="bar" />);
   expect(view.queryByTestId('blur')).toBeNull();
   const calls = (Keyboard.addListener as jest.Mock).mock.calls;
   const show = [...calls].reverse().find((call: unknown[]) => call[0] === 'keyboardDidShow')?.[1];

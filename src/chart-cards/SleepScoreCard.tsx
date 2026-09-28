@@ -11,7 +11,7 @@ import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useChartProgress } from './use-chart-progress';
 
@@ -113,7 +113,7 @@ export function SleepScoreCard({
   testID,
 }: SleepScoreCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const colors = useMemo(
     () =>

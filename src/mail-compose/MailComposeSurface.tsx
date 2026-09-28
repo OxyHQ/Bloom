@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
-import { View } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { resolveSurfaceFill } from '../surface/shared';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { StyleSheet, View } from 'react-native';
 
 import { Button, GlyphButton } from '../button';
 import { ComposerAttachmentStrip } from '../chat-composer/ComposerAttachmentStrip';
@@ -15,7 +18,8 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import {
   SurfaceLevelProvider,
   hairlineOn,
-  resolveSurfaceLevel,
+  surfaceFillVars,
+  useSurfaceLevelValue,
   useSurfaceFill,
 } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
@@ -79,15 +83,17 @@ export function MailComposeSurface({
 }: MailComposeSurfaceProps) {
   const theme = useTheme();
   const parent = useSurfaceFill();
+  const parentLevel = useSurfaceLevelValue();
+  const layer = useSurfaceLayer();
   useEffect(() => {
     adoptStyleSheet(MAIL_COMPOSE_STYLE_ID, MAIL_COMPOSE_CSS);
   }, []);
   const geo = MAIL_COMPOSE_GEOMETRY;
   const docked = variant === 'docked';
-  // A docked panel PAINTS the card rung, so it publishes that fill and
-  // everything inside it (the chips, the hairlines, the quiet text) steps off
-  // what is really behind them. A sheet paints nothing and publishes nothing.
-  const fill = docked ? resolveSurfaceLevel(theme, 1).background : parent;
+  const customFrame = StyleSheet.flatten(style);
+  const paintsSurface = docked;
+  const customFill = customFrame?.backgroundColor;
+  const fill = resolveSurfaceFill(String(customFill ?? (docked ? layer.fill : parent)), false, parent);
   const paint = useMemo(() => resolveMailPaint(theme, fill), [theme, fill]);
   const text = useMemo(() => mailComposeStrings(strings), [strings]);
 
@@ -224,13 +230,13 @@ export function MailComposeSurface({
   );
 
   return (
-    <SurfaceLevelProvider level={docked ? 1 : 0} fill={fill}>
+    <SurfaceLevelProvider level={docked ? layer.level : parentLevel} fill={fill}>
       <View
         accessibilityLabel={accessibilityLabel ?? heading}
         style={[
           docked
             ? {
-                backgroundColor: fill,
+                backgroundColor: paintsSurface ? 'transparent' : fill,
                 borderWidth: 1,
                 borderColor: hairlineOn(theme, fill),
                 borderRadius: geo.radius,
@@ -238,9 +244,11 @@ export function MailComposeSurface({
               }
             : { flex: 1, minHeight: 0 },
           style,
+          { backgroundColor: docked ? 'transparent' : customFill == null ? 'transparent' : fill, ...surfaceFillVars(fill) },
         ]}
         testID={testID}
       >
+        {paintsSurface ? <SurfacePaint fill={fill} radius={customFrame?.borderRadius ?? geo.radius} /> : null}
         {bar}
         {folded ? null : body}
       </View>

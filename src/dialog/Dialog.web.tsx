@@ -1,3 +1,5 @@
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { resolveSurfaceFill } from '../surface/shared';
 /**
  * `Dialog` — WEB: a pure-DOM modal overlay rendered into Bloom's `Portal`.
  *
@@ -24,6 +26,7 @@ import React, {
 import {
   Pressable,
   ScrollView,
+  StyleSheet,
   useWindowDimensions,
   View,
   type StyleProp,
@@ -470,6 +473,7 @@ function DialogPanel({
   const headerController = useDialogHeaderController();
   const { height: viewportHeight } = useWindowDimensions();
   const heightRatio = maxHeightRatio ?? DEFAULT_MAX_HEIGHT_RATIO;
+  const surfaceFill = resolveSurfaceFill(String(StyleSheet.flatten(style)?.backgroundColor ?? theme.colors.background), false, theme.colors.background);
 
   // Size morphing across an in-place content swap. The centered card is the one
   // placement whose width can vary too, so `maxWidth` is handed over as well.
@@ -490,13 +494,11 @@ function DialogPanel({
       description={description}
       actions={actions}
     >
-      {/* The dialog paints the PAGE colour, so it RESETS the ambient surface.
+      {/* The dialog uses the PAGE token as its tint and nominal surface.
           On web a portal keeps React context from where the dialog was
           rendered, so without this a dialog opened from inside a `ContentPanel`
           would tell its content it is sitting on the panel's card. */}
-      <SurfaceLevelProvider level={0} fill={theme.colors.background}>
-        {children}
-      </SurfaceLevelProvider>
+{children}
     </DialogBody>
   );
 
@@ -528,11 +530,11 @@ function DialogPanel({
           // own height cap / ScrollView. `overflow: hidden` clips to the radius.
           maxHeight: `${Math.round(heightRatio * 100)}%`,
           overflow: 'hidden',
-          backgroundColor: theme.colors.background,
+          backgroundColor: 'transparent',
           // `--bloom-surface` on the element that carries the fill, so web CSS
           // inside the dialog reads the dialog's colour and not the colour of
           // whatever surface it was opened over.
-          ...surfaceFillVars(theme.colors.background),
+          ...surfaceFillVars(surfaceFill),
           borderWidth: 1,
           borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
           // Design-system overlay elevation (`shadow-m`) as a `boxShadow` — RN-Web
@@ -551,8 +553,11 @@ function DialogPanel({
         // before `style` so a consumer's explicit size still wins.
         morphState.panelStyle,
         style,
+        { backgroundColor: 'transparent' },
       ]}
     >
+      <SurfacePaint fill={surfaceFill} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />
+      <SurfaceLevelProvider level={0} fill={surfaceFill}>
       {header ? (
         // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
         // collapsing title over its own scroll content (see `DialogHeader`). The
@@ -608,6 +613,7 @@ function DialogPanel({
           <DialogMorphContent morph={morphState}>{body}</DialogMorphContent>
         </ScrollView>
       )}
+      </SurfaceLevelProvider>
     </Animated.View>
   );
 }
@@ -739,13 +745,13 @@ function SheetSurface({
     if (dismissOnBackdrop) onDismiss();
   }, [dismissOnBackdrop, onDismiss]);
 
-  // The drawer paints the PAGE colour, so it RESETS the ambient surface for its
+  const surfaceFill = resolveSurfaceFill(String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), false, theme.colors.background);
+
+  // The drawer uses the PAGE token as its tint and nominal surface for its
   // content — see `DialogPanel`'s own wrap for why a portal does not do that on
   // its own.
   const surfaceChildren = (
-    <SurfaceLevelProvider level={0} fill={theme.colors.background}>
-      {children}
-    </SurfaceLevelProvider>
+<>{children}</>
   );
 
   return (
@@ -779,9 +785,9 @@ function SheetSurface({
         className={panelClassName}
         style={[
           sheetStyles.panel,
-          surfaceFillVars(theme.colors.background),
+          surfaceFillVars(surfaceFill),
           {
-            backgroundColor: theme.colors.background,
+            backgroundColor: 'transparent',
             // Above this surface's OWN backdrop, and nothing more: `OverlayRoot`
             // sets a z-index and a fixed position, so it is a stacking context and
             // this value is scoped inside it. Where this dialog sits relative to
@@ -796,8 +802,11 @@ function SheetSurface({
           panelTransition,
           panelStyle,
           style,
+          { backgroundColor: 'transparent' },
         ]}
       >
+        <SurfacePaint fill={surfaceFill} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? PANEL_RADIUS} />
+        <SurfaceLevelProvider level={0} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer
           // body does not own a Dialog scroll offset to drive a collapse) over
@@ -845,6 +854,7 @@ function SheetSurface({
             </DialogBody>
           </View>
         )}
+        </SurfaceLevelProvider>
       </StyledView>
     </OverlayRoot>
   );

@@ -83,3 +83,6 @@ import { Sparkline } from '@oxy.so/bloom/chart-cards';
 `hint` adds a 20px info glyph (named `` `About ${label}` ``, or `hintLabel`). The tooltip opens on hover after 200ms, on keyboard focus, and on press — a glyph this small reads as a button and gets tapped.
 
 **Hazard (web):** the web `Tooltip` mounts a full-page dismiss layer over its trigger while open, so the trigger receives a hover-out the moment the bubble appears, with the pointer still on it. Closing on that event made the tooltip flash open and shut. On web the card instead tracks `pointermove` while hovered and closes when the pointer leaves the glyph's box.
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

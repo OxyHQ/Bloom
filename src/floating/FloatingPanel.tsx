@@ -73,9 +73,10 @@ import {
   resolveDropdownPlacement,
   type DropdownPlacement,
 } from '../overlay/dropdown-placement';
+import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
-import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import {
   DEFAULT_ALIGN_OFFSET,
@@ -88,6 +89,7 @@ import {
   MENU_PANEL_CLASS,
   VIEWPORT_GUTTER,
 } from './constants';
+import { parseRgba } from '../theme/color-utils';
 import { useMenuPalette } from './menu-palette';
 import { pushFloatingEscape } from './escape-stack';
 import { cx } from './shared';
@@ -201,9 +203,14 @@ export function FloatingPanel({
   surface = 'popover',
   panelRef,
 }: FloatingPanelProps) {
+  const materialStyle = useSurfaceMaterial('.bloom-floating-surface', 'bloom-floating-surface-css');
   const chrome = SURFACE[surface];
   const isMenuSurface = surface !== 'popover';
   const palette = useMenuPalette();
+  const ownFill = StyleSheet.flatten(style)?.backgroundColor ?? (isMenuSurface ? palette.surface : undefined);
+  const parsedFill = typeof ownFill === 'string' ? parseRgba(ownFill) : null;
+  const publishedFill = typeof ownFill === 'string' && parsedFill?.a === 1 ? ownFill : undefined;
+  const transparentFill = ownFill === 'transparent' || parsedFill?.a === 0;
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
   // and `Portal` renders null on its first pass (it resolves its host in its own
   // layout effect), so the node lands one render after the panel mounts. An
@@ -501,9 +508,11 @@ export function FloatingPanel({
           role={role}
           aria-label={label}
           testID={testID}
-          className={cx(chrome.className, className)}
+          className={cx('bloom-floating-surface', chrome.className, className)}
           style={[
             styles.panel,
+            materialStyle,
+            surfaceFillVars(publishedFill),
             // `bg-background-primary-default border-border-button-default
             // shadow-dropdown`, resolved from the theme. Inline, and BEFORE the
             // caller's `style`, which still overrides it.
@@ -557,7 +566,7 @@ export function FloatingPanel({
             it published level 0 inside a popover, which is the case the ladder
             exists for.
           */}
-          <SurfaceLevelProvider level={1}>{children}</SurfaceLevelProvider>
+          <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>{children}</SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>
     </Portal>

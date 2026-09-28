@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -76,13 +77,12 @@ describe('TokensChartCard', () => {
   it('keeps the card shell: radius 20, 12 top and bottom only, the header over the plot', () => {
     const { getByTestId } = renderCard(<TokensChartCard testID="tokens" data={DATA} headline={667.7} delta="+9.4%" />);
     const theme = buildTheme('teal', 'light');
-    expect(resolvedStyle(getByTestId('tokens').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('tokens'))).toMatchObject({
       borderRadius: 20,
       paddingTop: 12,
       paddingBottom: 12,
-      backgroundColor: resolveChartCardPalette(theme).surface,
     });
-    expect(resolvedStyle(getByTestId('tokens').props.style).paddingLeft).toBeUndefined();
+    expect(cardLayout(getByTestId('tokens')).paddingLeft).toBeUndefined();
     expect(resolvedStyle(getByTestId('tokens-plot').props.style)).toMatchObject({ height: 200 });
     expect(getByTestId('tokens-headline').props.children).toBe('667.7M tokens');
     const chip = purpleChip(theme, resolveChartCardPalette(theme).surface);

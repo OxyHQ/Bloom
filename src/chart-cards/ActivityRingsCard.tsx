@@ -10,7 +10,7 @@ import { PolarSurface, svgTransition } from './PolarSurface';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { TABULAR } from './primitives/ChartHeader';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 
 /** One goal ring and its stat tile. */
@@ -118,7 +118,7 @@ export function ActivityRingsCard({
   testID,
 }: ActivityRingsCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const shown = useMemo(() => rings.slice(0, RING_RADII.length), [rings]);
   const tones = useMemo(

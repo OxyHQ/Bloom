@@ -1,3 +1,5 @@
+import { surfaceFillOn } from '../styles/surface-levels';
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -25,7 +27,7 @@ function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 describe('RecentHiresCard', () => {
   it('keeps the card geometry in longhands: 329 tall, radius 16, padding 8', () => {
     const { getByTestId } = renderIn(<RecentHiresCard testID="card" count={56} hires={HIRES} />);
-    const card = resolvedStyle(getByTestId('card').props.style);
+    const card = cardLayout(getByTestId('card'));
     expect(card).toMatchObject({
       height: 329,
       borderRadius: 16,
@@ -108,7 +110,7 @@ describe('RecentHiresCard', () => {
       <RecentHiresCard testID="card" count={3} hires={HIRES.slice(0, 3)} height="auto" />,
     );
     expect(queryByTestId('card-team')).toBeNull();
-    expect(resolvedStyle(getByTestId('card').props.style).height).toBeUndefined();
+    expect(cardLayout(getByTestId('card')).height).toBeUndefined();
     expect(queryByTestId('card-hire-3')).toBeNull();
   });
 });
@@ -116,5 +118,5 @@ describe('RecentHiresCard', () => {
 
 it.each(['light', 'dark'] as const)('RecentHires shares card and inset roles in %s', (mode) => {
   const theme = buildTheme('teal', mode);
-  expect(resolveRecentHiresPalette(theme)).toMatchObject({ surface: theme.colors.card, inner: theme.colors.backgroundSecondary, textSecondary: theme.colors.textSecondary, ring: theme.colors.primary });
+  expect(resolveRecentHiresPalette(theme)).toMatchObject({ surface: theme.colors.card, inner: surfaceFillOn(theme, theme.colors.card), textSecondary: theme.colors.textSecondary, ring: theme.colors.primary });
 });

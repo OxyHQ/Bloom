@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -48,7 +49,7 @@ describe('scatter geometry matches recharts', () => {
 describe('ScatterChartCard', () => {
   it('headlines the rounded average and lists series averages in the legend', () => {
     const { getByTestId, getByText } = renderCard(<ScatterChartCard testID="scatter" series={SERIES} delta={0.068} range="This quarter" />);
-    expect(resolvedStyle(getByTestId('scatter').props.style)).toMatchObject({ height: 329 });
+    expect(cardLayout(getByTestId('scatter'))).toMatchObject({ height: 329 });
     expect(getByTestId('scatter-headline').props.children).toBe('742');
     for (const t of ['+6.8%', 'Starter', '270', 'Growth', '783', 'Scale', '1,388']) expect(getByText(t)).toBeTruthy();
   });
@@ -105,7 +106,7 @@ describe('ScatterChartCard', () => {
     const { getByTestId, getByText, queryByTestId } = renderCard(
       <ScatterChartCard testID="scatter" series={SERIES} tiles axisLabels={['Seats', 'MRR']} activePoint={{ series: 2, index: 0 }} />,
     );
-    expect(resolvedStyle(getByTestId('scatter').props.style).height).toBeUndefined();
+    expect(cardLayout(getByTestId('scatter')).height).toBeUndefined();
     expect(queryByTestId('scatter-legend')).toBeNull();
     const captions = getByTestId('scatter-axis-labels');
     expect(captions.children.map((c) => (c as unknown as { props: { children: string } }).props.children)).toEqual(['MRR', 'Seats']);

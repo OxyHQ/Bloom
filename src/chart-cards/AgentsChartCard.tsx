@@ -1,3 +1,4 @@
+import { Card } from '../card';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -22,9 +23,9 @@ import { WeekRangePill } from './medical-parts';
 import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * A month of daily agent runs as plain rounded bars, with a month switcher
  * pill and a count-up headline that follows the hovered day.
@@ -153,7 +154,7 @@ export function AgentsChartCard({
   testID,
 }: AgentsChartCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
   const [width, setWidth] = useState(0);
@@ -232,7 +233,9 @@ export function AgentsChartCard({
     accessibilityLabel ?? `${title} bar chart: ${data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', ')}`;
 
   return (
-    <View
+    <Card
+      radius="radius-20"
+      elevation="none"
       testID={testID}
       style={[
         {
@@ -242,7 +245,6 @@ export function AgentsChartCard({
           flexDirection: 'column',
           gap: 10,
           borderRadius: 20,
-          backgroundColor: palette.surface,
           paddingTop: 12,
           paddingBottom: 12,
           paddingLeft: 10,
@@ -340,6 +342,6 @@ export function AgentsChartCard({
           {endLabel}
         </Text>
       </View>
-    </View>
+    </Card>
   );
 }

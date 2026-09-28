@@ -189,6 +189,8 @@ export interface ChatComposerProps extends PartProps {
  * these needs the button to carry the popup state it is handed, not drop it.
  */
 export interface ComposerIconButtonProps extends PartProps {
+  /** Keeps anchored menus positioned when the control lays out. */
+  onLayout?: import('react-native').ViewProps['onLayout'];
   icon: ChatComposerIcon;
   accessibilityLabel: string;
   onPress?: (event?: unknown) => void;

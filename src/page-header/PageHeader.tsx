@@ -21,7 +21,6 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
-import { ButtonGroupItem } from '../button-group';
 import { ControlSurface } from '../control-surface';
 import { GlassIsland } from '../glass';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
@@ -319,13 +318,15 @@ function PageHeaderComponent({
     floating ? (
       // Its own island: a back action is not a member of the page's action
       // group, and a `role="group"` of one is noise a screen reader reads out.
-      // The control inside is a `ButtonGroupItem` because that is Bloom's
-      // island-aware control — it reads the material `GlassIsland` publishes
-      // and paints flush — rather than a second implementation of the same
-      // hover, press, focus and disabled behaviour.
+      // One shared pane; the back action is plain so it adds no second material.
       <GlassIsland testID={testID ? `${testID}-back-island` : undefined}>
-        <ButtonGroupItem
+        <Button
+          appearance="plain"
+          tone="neutral"
+          size="md"
           iconOnly
+          iconSize={16}
+          style={{ width: 34, minWidth: 34, height: 34, paddingLeft: 0, paddingRight: 0, borderWidth: 0, boxShadow: 'none' }}
           leadingIcon={RiArrowLeftLine}
           accessibilityLabel={backLabel}
           onPress={onBack}

@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BottomBar } from './BottomBar.web';
 import { Fab } from '../fab/index.web';
 import * as Icons from '../icons';
-const meta: Meta<typeof BottomBar> = { title: 'Navigation/BottomBar', component: BottomBar, args: { value: 'home', material: 'translucent', actionBehavior: 'hide', actionPlacement: 'auto' }, argTypes: { actionPlacement: { control: 'select', options: ['auto','beside','above'] },
+const meta: Meta<typeof BottomBar> = { title: 'Navigation/BottomBar', component: BottomBar, args: { value: 'home', actionBehavior: 'hide', actionPlacement: 'auto' }, argTypes: { actionPlacement: { control: 'select', options: ['auto','beside','above'] },
     "value": { control: 'select', options: ['home', 'search'] },
     "blur": { control: 'boolean' },
-    "maxWidth": { control: 'number' }, actionBehavior: { control: 'select', options: ['hide', 'visible'] }, material: { control: 'select', options: ['solid', 'translucent'] } } };
+    "maxWidth": { control: 'number' }, actionBehavior: { control: 'select', options: ['hide', 'visible'] } } };
 export default meta;
 type Story = StoryObj<typeof BottomBar>;
 function Demo(props: Partial<React.ComponentProps<typeof BottomBar>>) {
@@ -17,14 +17,14 @@ function Demo(props: Partial<React.ComponentProps<typeof BottomBar>>) {
   </View>;
 }
 export const Default: Story = {
-  parameters: { controls: { include: ['value', 'blur', 'maxWidth', 'material', 'actionBehavior', 'actionPlacement'] } },
+  parameters: { controls: { include: ['value', 'blur', 'maxWidth', 'actionBehavior', 'actionPlacement'] } },
   render: function Render(args) {
     const [, updateArgs] = useArgs();
     return <Demo {...args} onValueChange={value => updateArgs({ value })} />;
   },
 };
 export const ActionOnly: Story = {
-  parameters: { controls: { include: ['blur', 'material'] } },
+  parameters: { controls: { include: ['blur'] } },
   render: args => <Demo {...args} items={[]} />,
 };
 
@@ -37,3 +37,6 @@ export const NarrowWithAction: Story = {
     ]} onValueChange={value=>updateArgs({value})} action={<Fab icon={Icons.RiAddLine} accessibilityLabel="Create"/>}/></View>;
   },
 };
+
+/** The optional screen-edge band is separate from the translucent capsule. */
+export const WithBlurBand: Story = { args: { blur: true }, render: args => <Demo {...args} /> };

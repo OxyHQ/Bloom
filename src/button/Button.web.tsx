@@ -1,6 +1,12 @@
+import { useButtonLayout } from './use-button-layout.web';
+import { useLongPress } from './use-long-press.web';
+import { resolveSurfaceOptics } from '../surface/shared';
+import type { GestureResponderEvent, View } from 'react-native';
+import { surfaceMaterialCss } from '../surface/web-material';
 import type { LinkButtonProps } from './types';
 import React, {
   memo,
+  forwardRef,
   useCallback,
   useId,
   useMemo,
@@ -27,7 +33,6 @@ import {
   LINK_BUTTON_GAP,
   LINK_BUTTON_UNDERLINE_OFFSET,
   isIconComponent,
-  paintToCssImage,
   resolveButtonGeometry,
   resolveButtonRecipe,
   BUTTON_SIZE_ALIAS,
@@ -53,9 +58,7 @@ export type {
 //  is declared only in the sheet. An inline `background-color` would outrank the
 //  `:hover` rule and silence it (`interactive-web-css.test.tsx` gates that).
 //
-//  The gradient variants cross-fade their hover gradient in through `::before`,
-//  since `background-image` does not transition; the solid variants transition
-//  `background-color` directly.
+//  Glass paints the backdrop in ::before and its state tint in ::after.
 //
 //  `aria-busy` is excluded from the disabled paint: a loading button keeps its
 //  rest colours under the spinner instead of greying out.
@@ -119,30 +122,13 @@ export const BLOOM_BUTTON_CSS = interactiveWebCss({
   opacity: 1;
   cursor: progress;
 }
-.bloom-btn--gradient::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: inherit;
-  background-image: var(--bloom-btn-bg-image-hover);
-  opacity: 0;
-  transition: opacity ${T} ease;
-}
-.bloom-btn--gradient${NOT_DISABLED}:hover::before {
-  opacity: 1;
-}
-.bloom-btn--gradient${NOT_DISABLED}:active {
-  background-image: var(--bloom-btn-bg-image-active);
-}
-.bloom-btn--gradient${NOT_DISABLED}:active::before {
-  opacity: 0;
-}
-.bloom-btn--gradient:disabled::before,
-.bloom-btn--gradient[aria-disabled="true"]::before {
-  display: none;
-}
+${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-color ${T} ease`)}
+.bloom-btn--surface { background: transparent !important; }
+.bloom-btn--surface${NOT_DISABLED}:hover::after { background-color: var(--bloom-btn-bg-hover); }
+.bloom-btn--surface${NOT_DISABLED}:active::after { background-color: var(--bloom-btn-bg-active); }
+.bloom-btn--surface:disabled:not([aria-busy="true"])::after,
+.bloom-btn--surface[aria-disabled="true"]:not([aria-busy="true"])::after { background-color: var(--bloom-btn-bg-disabled); }
+.bloom-btn--surface:disabled, .bloom-btn--surface[aria-disabled="true"] { box-shadow: var(--bloom-btn-shadow); }
 .bloom-btn--underline-rest,
 .bloom-btn--underline-hover {
   text-underline-offset: ${LINK_BUTTON_UNDERLINE_OFFSET}px;
@@ -155,7 +141,7 @@ export const BLOOM_BUTTON_CSS = interactiveWebCss({
 }
 @media (prefers-reduced-motion: reduce) {
 .bloom-btn,
-.bloom-btn--gradient::before {
+.bloom-btn--surface::after {
   transition: none;
 }
 }`,
@@ -165,8 +151,16 @@ export const BLOOM_BUTTON_CSS = interactiveWebCss({
 //  Component
 // ---------------------------------------------------------------------------
 
-const ButtonWebComponent: React.FC<ButtonProps> = ({
+const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebComponent({
   onPress,
+  onLayout,
+  'aria-hidden': ariaHidden,
+  accessibilityElementsHidden,
+  importantForAccessibility,
+  onLongPress,
+  onPressIn,
+  onPressOut,
+  colors,
   children,
   disabled = false,
   pressed: togglePressed,
@@ -210,8 +204,11 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   title,
   autoFocus,
   tabIndex,
-}) => {
+}, ref) {
   useInteractiveWebCss(STYLE_ID, BLOOM_BUTTON_CSS);
+  const childRef = asChild && React.isValidElement(children) ? (children.props as {ref?: React.Ref<HTMLElement>}).ref : undefined;
+  const setRoot = useButtonLayout(ref, onLayout, childRef);
+  const hidden = ariaHidden ?? (accessibilityElementsHidden || importantForAccessibility === 'no-hide-descendants' ? true : undefined);
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-btn-${reactId}`;
@@ -224,13 +221,13 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const isIconVariant = isSquare;
   const isLink = appearance === 'plain' && (href != null || variantProp === 'link');
   const isInteractionBlocked = disabled || loading;
+  const longPress = useLongPress(onLongPress, isInteractionBlocked, onPressIn, onPressOut);
   const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
 
   const palette = useMemo(
-    () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone),
-    [appearance, theme, tone, variantProp, appearanceProp, toneProp, linkTone],
+    () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone, colors),
+    [appearance, theme, tone, variantProp, appearanceProp, toneProp, linkTone, colors],
   );
-  const isGradient = palette.rest.gradient !== null;
   const underlineMode = resolveButtonUnderline(isLink ? 'link' : 'primary', underline);
 
   const containerStyle = useMemo((): CSSProperties => {
@@ -245,38 +242,28 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       fontWeight: Number(geometry.fontWeight),
       letterSpacing: geometry.letterSpacing || undefined,
       // CSS custom props consumed by the static stylesheet — see its header.
+      ['--bloom-surface-rim' as string]: resolveSurfaceOptics(theme.isDark).rim,
+      ['--bloom-surface-sheen' as string]: resolveSurfaceOptics(theme.isDark).sheenCss,
       ['--bloom-btn-gap' as string]: `${geometry.gap}px`,
       ['--bloom-btn-ring' as string]: palette.ring,
       // No press scale — the pressed state is the active paint alone.
       ['--bloom-btn-press-scale' as string]: 1,
       ['--bloom-btn-shadow' as string]: shadow,
       ['--bloom-btn-border-width' as string]: `${palette.borderWidth}px`,
-      ['--bloom-btn-fg' as string]: palette.rest.foreground,
+      ['--bloom-btn-fg' as string]: (togglePressed && !loading ? palette.active : palette.rest).foreground,
       ['--bloom-btn-fg-hover' as string]: palette.hover.foreground,
       ['--bloom-btn-fg-active' as string]: palette.active.foreground,
       ['--bloom-btn-fg-disabled' as string]: palette.disabled.foreground,
       ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
-      ['--bloom-btn-bg' as string]: palette.rest.background,
-      ['--bloom-btn-bg-hover' as string]: isGradient
-        ? palette.rest.background
-        : palette.hover.background,
-      ['--bloom-btn-bg-active' as string]: isGradient
-        ? palette.rest.background
-        : palette.active.background,
+      ['--bloom-btn-bg' as string]: (togglePressed && !loading ? palette.active : palette.rest).background,
+      ['--bloom-btn-bg-hover' as string]: palette.hover.background,
+      ['--bloom-btn-bg-active' as string]: palette.active.background,
       ['--bloom-btn-bg-disabled' as string]: palette.disabled.background,
       ['--bloom-btn-border' as string]: palette.rest.border,
       ['--bloom-btn-border-hover' as string]: palette.hover.border,
       ['--bloom-btn-border-active' as string]: palette.active.border,
       ['--bloom-btn-border-disabled' as string]: palette.disabled.border,
     };
-    if (isGradient) {
-      Object.assign(base, {
-        '--bloom-btn-bg-image': paintToCssImage(palette.rest),
-        '--bloom-btn-bg-image-hover': paintToCssImage(palette.hover),
-        '--bloom-btn-bg-image-active': paintToCssImage(palette.active),
-        '--bloom-btn-bg-image-disabled': paintToCssImage(palette.disabled),
-      });
-    }
     if (isSquare) {
       base.width = geometry.height;
       base.paddingLeft = 0;
@@ -292,25 +279,26 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       (base as Record<string, unknown>)['--bloom-btn-gap'] = `${LINK_BUTTON_GAP}px`;
     }
     return base;
-  }, [geometry, palette, theme.isDark, isSquare, isIconVariant, isLink, isGradient]);
+  }, [geometry, palette, theme.isDark, isSquare, isIconVariant, isLink, togglePressed, loading]);
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
+      if (longPress.suppressClick(event)) return;
       if (stopPropagation) event.stopPropagation();
       if (isInteractionBlocked) {
         event.preventDefault();
         return;
       }
-      onPress?.();
+      onPress?.(event as unknown as GestureResponderEvent);
     },
-    [isInteractionBlocked, onPress, stopPropagation],
+    [isInteractionBlocked, onPress, stopPropagation, longPress.suppressClick],
   );
 
   const ariaLabel = accessibilityLabel;
   const composedClassName = ['bloom-btn']
     .concat(isLink ? ['bloom-btn--link'] : [])
     .concat(underlineMode === 'none' ? [] : [`bloom-btn--underline-${underlineMode}`])
-    .concat(isGradient ? ['bloom-btn--gradient'] : [])
+    .concat(palette.rest.surface ? ['bloom-btn--surface'] : [])
     .concat(className ? [className] : [])
     .join(' ');
 
@@ -438,9 +426,17 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   // the button styling and handlers merged in. Used for link-buttons.
   if (asChild && React.isValidElement(children)) {
     const child = children as ReactElement<{
+      ref?: React.Ref<HTMLElement>;
+      'aria-hidden'?: boolean;
       className?: string;
       style?: CSSProperties;
       onClick?: (event: MouseEvent<HTMLElement>) => void;
+      onPointerDown?: React.PointerEventHandler<HTMLElement>;
+      onPointerLeave?: React.PointerEventHandler<HTMLElement>;
+      onBlur?: React.FocusEventHandler<HTMLElement>;
+      onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
+      onKeyUp?: React.KeyboardEventHandler<HTMLElement>;
+      onContextMenu?: React.MouseEventHandler<HTMLElement>;
       'aria-disabled'?: boolean;
       'aria-busy'?: boolean;
       'aria-pressed'?: boolean;
@@ -451,16 +447,25 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
     }>;
     const childProps = child.props;
     return React.cloneElement(child, {
+      ref: setRoot,
+      'aria-hidden': hidden,
       className: [composedClassName, childProps.className].filter(Boolean).join(' '),
       style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
+      onPointerDown: event => { childProps.onPointerDown?.(event); longPress.onPointerDown(event); },
+      onPointerLeave: event => { childProps.onPointerLeave?.(event); longPress.onPointerLeave(); },
+      onBlur: event => { childProps.onBlur?.(event); longPress.onBlur(); },
+      onKeyDown: event => { childProps.onKeyDown?.(event); longPress.onKeyDown(event); },
+      onKeyUp: event => { childProps.onKeyUp?.(event); longPress.onKeyUp(event); },
+      onContextMenu: event => { childProps.onContextMenu?.(event); longPress.onContextMenu(event); },
       onClick: (event: MouseEvent<HTMLElement>) => {
-        if (stopPropagation) event.stopPropagation();
+        if (longPress.suppressClick(event)) return;
+      if (stopPropagation) event.stopPropagation();
         if (isInteractionBlocked) {
           event.preventDefault();
           return;
         }
         childProps.onClick?.(event);
-          onPress?.();
+        onPress?.(event as unknown as GestureResponderEvent);
       },
       'aria-disabled': isInteractionBlocked || undefined,
       'aria-busy': loading || undefined,
@@ -477,12 +482,20 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   if (href != null && !asChild) {
     return (
       <a
+        ref={setRoot}
+        aria-hidden={hidden}
         id={resolvedId}
         href={isInteractionBlocked ? undefined : href}
         target={target}
         rel={rel}
         className={composedClassName}
         style={{ ...containerStyle, ...resolvedStyle }}
+        onPointerDown={longPress.onPointerDown}
+        onPointerLeave={longPress.onPointerLeave}
+        onBlur={longPress.onBlur}
+        onKeyDown={longPress.onKeyDown}
+        onKeyUp={longPress.onKeyUp}
+        onContextMenu={longPress.onContextMenu}
         onClick={handleClick}
         aria-disabled={isInteractionBlocked || undefined}
         aria-busy={loading || undefined}
@@ -499,12 +512,20 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
 
   return (
     <button
+      ref={setRoot}
+      aria-hidden={hidden}
       id={resolvedId}
       type={type}
       name={name}
       value={value}
       className={composedClassName}
       style={{ ...containerStyle, ...resolvedStyle }}
+      onPointerDown={longPress.onPointerDown}
+      onPointerLeave={longPress.onPointerLeave}
+      onBlur={longPress.onBlur}
+      onKeyDown={longPress.onKeyDown}
+      onKeyUp={longPress.onKeyUp}
+      onContextMenu={longPress.onContextMenu}
       onClick={handleClick}
       role={accessibilityRole}
       disabled={disabled && !loading}
@@ -524,7 +545,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       {body}
     </button>
   );
-};
+});
 
 export const Button = memo(ButtonWebComponent);
 Button.displayName = 'Button';

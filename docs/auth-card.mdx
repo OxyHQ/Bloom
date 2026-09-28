@@ -87,3 +87,6 @@ Fills its (positioned) parent and advances on its own, every `interval` ms (3200
 - `translateZ` has no React Native equivalent: the carousel expresses the depth as the projection it produces (`perspective(850) translateX(t·k) scale(k)`, k = 850/1070), which is exact and runs on native.
 
 The auth palette reads `card`, `backgroundSecondary`, `borderLight`, `textSecondary`, and `textTertiary` directly from the theme. Focus uses `primary`; links use its legible subtle foreground. The submit action uses `tone="action"`; social-provider logos retain their own brand colors.
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

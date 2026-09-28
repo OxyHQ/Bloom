@@ -1,5 +1,5 @@
 import { quietTextOver } from '../styles/color-contrast';
-import { AA_TEXT, AA_TEXT_STRONG } from '../styles/surface-levels';
+import { AA_TEXT, AA_TEXT_STRONG, surfaceFillOn, hairlineOn } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { BUTTON_SHADOW, mixColor } from '../button/shared';
 import { resolveThemeChartColors } from '../theme/chart-colors';
@@ -29,21 +29,23 @@ export interface ChartSeriesTone {
   activeColor: string;
 }
 
-export function resolveChartCardPalette(theme: Theme): ChartCardPalette {
+export function resolveChartCardPalette(theme: Theme, surface = theme.colors.card): ChartCardPalette {
   const c = theme.colors;
+  const inner = surfaceFillOn(theme, surface);
+  const raised = surfaceFillOn(theme, inner);
   return {
-    surface: c.card,
+    surface,
     text: c.text,
-    textSecondary: quietTextOver([c.card, c.backgroundSecondary], c.text, AA_TEXT_STRONG),
-    textTertiary: quietTextOver([c.card, c.backgroundSecondary], c.text, AA_TEXT),
+    textSecondary: quietTextOver([surface, inner], c.text, AA_TEXT_STRONG),
+    textTertiary: quietTextOver([surface, inner], c.text, AA_TEXT),
     neutralSeries: c.textTertiary,
-    cursor: c.border,
-    track: c.contrast50,
+    cursor: hairlineOn(theme, surface),
+    track: inner,
     positive: resolveAccentColors(c, 'success', 'subtle'),
     negative: resolveAccentColors(c, 'error', 'subtle'),
     neutral: resolveAccentColors(c, 'default', 'subtle'),
-    inner: c.backgroundSecondary,
-    pill: { background: c.backgroundSecondary, hover: c.contrast50, border: c.borderLight, shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] },
+    inner,
+    pill: { background: inner, hover: raised, border: hairlineOn(theme, inner), shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] },
   };
 }
 

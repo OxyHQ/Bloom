@@ -1,7 +1,13 @@
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import { resolveSurfaceFill } from '../surface/shared';
+import { useTheme } from '../theme/use-theme';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { parseRgba, withAlpha } from '../theme/color-utils';
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
+  StyleSheet,
   TextInput,
   View,
   type LayoutChangeEvent,
@@ -190,6 +196,14 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   testID,
 }) => {
   const palette = useSidebarPalette();
+  const theme = useTheme();
+  const parentFill = useSurfaceFill();
+  const parentLevel = useSurfaceLevelValue();
+  const customSurface = StyleSheet.flatten(style);
+  const surfaceFill = customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : withAlpha(palette.panel, 0.25));
+  const hasFill = typeof surfaceFill === 'string' && surfaceFill !== 'transparent' && parseRgba(surfaceFill)?.a !== 0;
+  const paintsSurface = surface !== 'plain' && hasFill;
+  const publishedFill = hasFill ? resolveSurfaceFill(surfaceFill, false, paintsSurface ? theme.colors.card : parentFill) : undefined;
   const canonicalSize = sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp === 'large' ? 'lg' : sizeProp;
   const {size: scopedSize} = useBloomAppearance({size: canonicalSize}, {size: 'md', tone: 'neutral'});
   const size = scopedSize === 'xs' ? 'sm' : scopedSize;
@@ -398,10 +412,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // would draw two lines nobody can see and one they can.
   const chrome: WebCssStyle =
     surface === 'plain'
-      ? { backgroundColor: palette.flat }
+      ? { backgroundColor: 'transparent' }
       : surface === 'docked'
         ? {
-            backgroundColor: palette.panel,
+            backgroundColor: 'transparent',
             borderEndWidth: 1,
             borderEndColor: palette.dockedEdge,
           }
@@ -409,7 +423,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             borderRadius: 24,
             borderWidth: 1,
             borderColor: palette.panelBorder,
-            backgroundColor: palette.panel,
+            backgroundColor: 'transparent',
             boxShadow: palette.panelShadow,
           };
 
@@ -643,7 +657,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     </>
   );
 
-  return (
+  const sidebar = (
     <SidebarSizeProvider value={size}>
     <SidebarGeometryProvider value={geometry}>
     <CollapseProvider value={progress}>
@@ -659,15 +673,18 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             flexShrink: 0,
             flexDirection: 'column',
             justifyContent: 'space-between',
-            overflow: 'hidden',
+            overflow: surface === 'plain' ? 'hidden' : 'visible',
             paddingTop: metrics.padding,
             paddingBottom: metrics.padding,
           },
           chrome,
           panelStyle,
           style,
+          paintsSurface ? { backgroundColor: 'transparent' } : undefined,
+          surfaceFillVars(publishedFill),
         ]}
       >
+        {paintsSurface ? <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? (surface === 'card' ? 24 : 0)} /> : null}
         <View testID={`${testID ?? 'sidebar'}-main-region`} style={{ width: '100%', minHeight: 0, flexShrink: 1, ...(contentAlignment === 'center' ? { flex: 1, justifyContent: 'center' as const } : {}) }}>
         <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
           {/* Fixed chrome shares the panel's morph, never the destination scroll.
@@ -684,7 +701,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             {showSearch && !flatMobile ? searchButton : null}
           </View>
           <SidebarScrollArea
-            fadeColor={plain ? palette.flat : palette.panel}
+            fadeColor={publishedFill ?? parentFill}
             testID={`${testID ?? 'sidebar'}-scroll`}
             {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
             style={{ marginTop: -headerOverlap, marginBottom: -8, marginLeft: -8, marginRight: -8, flexGrow: 0, flexShrink: 1, minHeight: 0 }}
@@ -778,6 +795,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     </SidebarGeometryProvider>
     </SidebarSizeProvider>
   );
+  return publishedFill ? <SurfaceLevelProvider level={plain ? parentLevel : 1} fill={publishedFill}>{sidebar}</SurfaceLevelProvider> : sidebar;
 };
 
 // Two component types, so switching `variant` remounts instead of changing the hook order.

@@ -1,3 +1,6 @@
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
@@ -744,7 +747,8 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const palette = useMemo(() => resolvePalette(theme), [theme]);
+  const fill = useCardFill(style);
+  const palette = useMemo(() => ({ ...resolvePalette(theme), surface: fill, hover: surfaceFillOn(theme, fill) }), [theme, fill]);
   const [expanded, setExpanded] = useControllableState({
     value: expandedProp,
     defaultValue: defaultExpanded,
@@ -760,7 +764,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   const planHeading = `${labels?.planUsageLimits ?? 'Plan usage limits'}${plan ? ` · ${plan}` : ''}`;
 
   return (
-    <View
+    <Card elevation="none"
       testID={testID}
       style={[
         {
@@ -768,7 +772,6 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
           minWidth: 0,
           flexDirection: 'column',
           borderRadius: 16,
-          backgroundColor: palette.surface,
           paddingLeft: 16,
           paddingRight: 16,
           paddingTop: 10,
@@ -829,7 +832,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
           ) : null}
         </>
       ) : null}
-    </View>
+    </Card>
   );
 };
 

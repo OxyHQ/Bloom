@@ -27,7 +27,7 @@ import { ChartStatTiles } from './primitives/ChartStatTiles';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
@@ -219,7 +219,7 @@ export function RadarChartCard({
   testID,
 }: RadarChartCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 

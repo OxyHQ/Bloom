@@ -1,3 +1,7 @@
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import { resolveSurfaceFill } from '../surface/shared';
+import { parseRgba } from '../theme/color-utils';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -188,6 +192,11 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   // the same entrance and an exit. Drawing them again would put a card inside a
   // card and play the entrance twice.
   const bare = useInsideHoverCardSurface();
+  const parentFill = useSurfaceFill();
+  const parentLevel = useSurfaceLevelValue();
+  const background = StyleSheet.flatten(style)?.backgroundColor ?? (bare ? undefined : palette.surface);
+  const publishedFill = typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
+    ? resolveSurfaceFill(background, false, parentFill) : undefined;
   const entrance = useEntrance(animateIn && !bare);
 
   const hasCover = typeof cover === 'string' && cover.length > 0;
@@ -213,6 +222,8 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         overflow: 'visible',
         transformOrigin: 'top',
       };
+
+  const material = bare || !publishedFill ? null : <SurfacePaint radius={StyleSheet.flatten(style)?.borderRadius ?? RADIUS} />;
 
   // Where the avatar's visible band sits, so the action can centre on it.
   const avatarOuter = hasCover ? AVATAR_SIZE + AVATAR_RING * 2 : AVATAR_SIZE;
@@ -268,13 +279,14 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   );
 
   if (loading) {
-    return (
+    const content = (
       <Animated.View
         testID={testID}
         aria-busy
         accessibilityState={{ busy: true }}
-        style={[cardStyle, entrance, style]}
+        style={[cardStyle, entrance, style, surfaceFillVars(publishedFill)]}
       >
+        {material}
         {coverView}
         {avatarView}
         <View style={styles.identityText}>
@@ -301,6 +313,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         </View>
       </Animated.View>
     );
+    return publishedFill ? <SurfaceLevelProvider level={!bare ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
   }
 
   const identity = (
@@ -344,11 +357,12 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
     </View>
   );
 
-  return (
+  const content = (
     <Animated.View
       testID={testID}
-      style={[cardStyle, entrance, style]}
+      style={[cardStyle, entrance, style, surfaceFillVars(publishedFill)]}
     >
+      {material}
       {coverView}
       {onPressProfile ? (
         <Pressable
@@ -406,6 +420,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
       {footer != null ? <View style={styles.footer}>{footer}</View> : null}
     </Animated.View>
   );
+  return publishedFill ? <SurfaceLevelProvider level={!bare ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
 };
 
 const styles = StyleSheet.create({

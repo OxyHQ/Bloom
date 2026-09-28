@@ -20,7 +20,7 @@ import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useSvgEase } from './medical-parts';
@@ -219,7 +219,7 @@ export function FunnelChartCard({
   style,
   testID,
 }: FunnelChartCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);

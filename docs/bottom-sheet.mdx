@@ -60,7 +60,8 @@ On web the open sheet owns the keyboard like a dialog does (`overlay/ModalKeyboa
 | `detached?` | `boolean` | `false` | Float with horizontal margins and rounded corners on all sides. |
 | `showHandle?` | `boolean` | `true` | Toggle the drag handle pill. |
 | `backdropOpacity?` | `number` | `0.5` | Opacity (0–1) of the dimming backdrop once fully visible. |
-| `backgroundComponent?` | `ReactNode` | — | Custom background renderer. |
+| `backgroundComponent?` | `(props) => ReactElement \| null` | — | Custom background renderer. |
+| `backgroundFill?` | `string` | page or style fill | Actual backing painted by the custom renderer. |
 | `backdropComponent?` | `ReactNode` | — | Custom backdrop renderer. |
 | `style?` | `StyleProp<ViewStyle>` | — | |
 | `scrollable?` | `boolean` | `true` | When `false`, renders `children` directly without an internal `Animated.ScrollView` wrapper. Required when the sheet's content owns its own scrolling primitive (e.g. `FlatList`). |
@@ -108,3 +109,7 @@ Combine `manualActivation` (so the inner photo grid keeps scroll ownership) with
 <Callout variant="info" title="Dialog vs BottomSheet">
 If you just need a confirmation flow or a small custom panel, prefer [Dialog](/docs/bloom/main/dialog) — it cross-platforms to a centered modal on web. Reach for `BottomSheet` only when you need direct gesture / scroll control on native.
 </Callout>
+
+The default panel uses Bloom’s shared solid `SurfacePaint` with its gradient and rim. The paint is absolute inside the existing measured panel, so gestures, focus, imperative controls and layout retain their hosts. Explicit caller backgrounds and BottomSheet’s `backgroundComponent` remain overrides. The actual resolved surface color supplies descendant tokens; the default fill is opaque and independent of the backdrop.
+
+The sheet publishes level 0 using the same resolved opaque fill as its material and web variables. A custom `backgroundComponent` must declare its backing with `backgroundFill`; omitted, the backing defaults to `style.backgroundColor` or the page token. The custom renderer remains responsible for matching that declared color.

@@ -6,6 +6,8 @@ order: 64
 
 # Chat Screen
 
+PinnedMessageBar publishes its docked backing without adding another raised panel.
+
 ```tsx
 import {
   ChatBackground,
@@ -393,3 +395,10 @@ keeps two families of surface apart:
 variant can paint, and `chatBackgroundReferenceSurfaces(paint)` the two bubble
 fills it is measured against. Both are exported so an app that invents its own
 wallpaper can measure it the same way.
+
+
+`ScrollToBottomButton` and `JumpToMentionButton` compose Button for their circular action and shared material. Their floating border/shadow, explicit diameter and 22px glyph remain; the separately named unread badge stays outside the button clip. Hidden controls still unmount rather than leaving a phantom tab stop.
+
+ChatInfoPanel distinguishes a docked pane from sheet content: the pane publishes its contextual opaque backing; sheet content inherits the surrounding backing and depth without painting a second panel. Explicit backgrounds are resolved and published in either placement.
+
+ChatInfoPanel’s `pane` is docked screen chrome, not a floating card: it keeps its dividing edge and shared backing context without a decorative Surface rim. Its `screen` placement inherits its host (including sheets), so it does not add a second surface.

@@ -1,3 +1,6 @@
+import { buildTheme } from '../theme/build-theme';
+import { resolveToastColors } from '../toast/use-toast-colors';
+import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -43,12 +46,19 @@ const pressablesOf = ({ UNSAFE_root }: ReturnType<typeof renderContent>) =>
 
 /** Bloom icons render as `Svg` hosts. */
 const iconsOf = ({ UNSAFE_root }: ReturnType<typeof renderContent>) =>
-  UNSAFE_root.findAll((node) => hostName(node) === 'Svg');
+  UNSAFE_root.findAll((node) => hostName(node) === 'Svg' && node.props.width !== '100%');
 
 const spinnersOf = ({ UNSAFE_root }: ReturnType<typeof renderContent>) =>
   UNSAFE_root.findAll((node) => hostName(node) === 'ActivityIndicator');
 
 describe('ToastContent', () => {
+  it('uses one shared material for the default frame, none for unstyled or custom backgrounds', () => {
+    const paints = (screen: ReturnType<typeof renderContent>) => screen.UNSAFE_root.findAll(node => typeof node.props.fill === 'string' && node.props.radius === 16);
+    expect(paints(renderContent()).length).toBeGreaterThan(0);
+    expect(paints(renderContent({ unstyled: true }))).toHaveLength(0);
+    expect(paints(renderContent({ backgroundComponent: <Text>Custom backing</Text> }))).toHaveLength(0);
+  });
+
   it('renders the title', () => {
     const { getByText } = renderContent();
     expect(getByText('Saved')).toBeTruthy();
@@ -248,4 +258,17 @@ describe('ToastContent', () => {
       undefined,
     ]);
   });
+});
+
+function ToastSurfaceProbe() {
+  return <Text testID="toast-surface-probe">{useSurfaceFill()}</Text>;
+}
+it('publishes the default toast base while custom background renderers keep parent context', () => {
+  for (const custom of [false, true]) {
+    const screen = render(<BloomThemeProvider mode="light" colorPreset="teal"><SurfaceLevelProvider level={2} fill="#123456"><ToastContent id={1} title="Probe" action={<ToastSurfaceProbe />} unstyled={false} icons={{}} onDismiss={() => {}} backgroundComponent={custom ? <Text>Background</Text> : undefined} /></SurfaceLevelProvider></BloomThemeProvider>);
+    const actual = screen.getByTestId('toast-surface-probe').props.children;
+    if (custom) expect(actual).toBe('#123456');
+    else expect(actual).toBe(resolveToastColors({ theme: buildTheme('teal', 'light'), variant: undefined, richColors: false }).surface);
+    screen.unmount();
+  }
 });

@@ -6,6 +6,10 @@ order: 64
 
 # Chat Composer
 
+Emoji, suggestion and recording panels share Surface's next neutral layer above their actual parent; ReactionPicker with `surface={false}` keeps its enclosing material. Surface fill overrides publish the same backing to descendants.
+
+`ComposerIconButton` is a sizing adapter over Bloom's `Button`: focus, disabled state, press preview and long press use the shared implementation. Reaction and emoji actions and the recorder's cancel action also use `Button`; tabs, options and menu items retain their own roles.
+
 ```tsx
 import {
   ChatComposer,
@@ -231,3 +235,6 @@ State colours 150ms; the mic ↔ send cross-fade 220ms; the recording dot pulses
 `MessageContextMenu` — `items`, `onSelect`, `reactions`, `selectedReaction`, `onSelectReaction`, `onMoreReactions`, `open`/`defaultOpen`/`onOpenChange`, `label`.
 
 All of them take `style` and `testID`.
+
+
+The composer's accent icon control paints through shared `SurfacePaint`; it does not maintain a second SVG/CSS gradient engine. Its Pressable remains local because `onPressIn`/`onPressOut` drive recording and are not exposed by Button. Plain composer controls keep their unfilled hover/press contract. This is an event-lifecycle boundary, not a separate material recipe.

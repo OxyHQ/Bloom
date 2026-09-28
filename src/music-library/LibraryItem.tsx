@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
@@ -66,7 +67,8 @@ function LibraryItemComponent({
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
-  const paint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
+  const parentFill = useSurfaceFill();
+  const paint = useMemo(() => resolveMusicLibraryPaint(theme, parentFill), [theme, parentFill]);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
   const [tileWidth, setTileWidth] = useState(0);

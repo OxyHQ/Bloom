@@ -207,7 +207,7 @@ describe('LeaseSummaryCard', () => {
     mount(<LeaseSummaryCard {...base} layout="wide" testID="l" />, 'dark');
     const card = getComputedStyle(byTestId('l'));
     expect(card.borderTopLeftRadius).toBe('20px');
-    expect(card.backgroundColor).toBe(normalise(resolveHousingPalette(theme).surface));
+    expect(byTestId('l').querySelector('.bloom-surface-paint--solid')).not.toBeNull();
     expect(card.paddingLeft).toBe('20px');
   });
 });

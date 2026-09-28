@@ -116,3 +116,5 @@ Same layout, paint and motion; no hover (a held press paints the pressed state),
 | `labels?` | `{ previous?, next?, complete?, other?, otherPlaceholder?, dismiss?, steps? }` | English | Fixed strings. |
 | `style?` | `StyleProp<ViewStyle>` | — | Card style. Override padding with longhands. |
 | `testID?` | `string` | — | Also derives `-option-<value>`, `-other`, `-other-input`, `-other-toggle`, `-dismiss`, `-step-<i>`, `-previous`, `-next`. |
+
+The questionnaire paints the shared solid Surface material on its existing keyboard/ref host. Contextual fill, custom background overrides and the published surface variable agree; keyboard navigation and question transitions keep their original nodes.

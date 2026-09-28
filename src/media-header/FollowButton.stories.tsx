@@ -32,6 +32,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const Following: Story = { args: { following: true } };
 export const IconOnly: Story = { args: { iconOnly: true } };
 export const ColorComparison: Story = {
   globals: { colorPreset: 'olive' },

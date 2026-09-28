@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { resolveSurfaceFill } from '../surface/shared';
 /**
  * The composer's anchored panel — NATIVE.
  *
@@ -15,14 +17,17 @@
  * Motion is the popover entry without the blur (no filter on native):
  * 150ms `ease-out` fade + `scale(0.95 → 1)`, snapped under reduced motion.
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { BloomThemeContext } from '../theme/BloomThemeProvider';
+import { parseRgba } from '../theme/color-utils';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   Modal,
   Pressable,
   StyleSheet,
   useWindowDimensions,
   type LayoutChangeEvent,
-  type View,
+  View,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -58,6 +63,13 @@ export function ComposerPopover({
   testID,
   children,
 }: ComposerPopoverProps) {
+  const theme = useContext(BloomThemeContext)?.theme;
+  const panelStyle = StyleSheet.flatten(style);
+  const fill = panelStyle?.backgroundColor ?? theme?.colors.card;
+  const paintsSurface = Boolean(theme) && typeof fill === 'string' && fill !== 'transparent' && parseRgba(fill)?.a !== 0;
+
+  const publishedFill = paintsSurface ? resolveSurfaceFill(fill as string, false, theme!.colors.card) : undefined;
+  const content = publishedFill ? <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider> : children;
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
@@ -146,10 +158,15 @@ export function ComposerPopover({
         style={[
           { position: 'absolute', left, top, maxWidth: window.width - 32 },
           style,
+          paintsSurface ? { backgroundColor: 'transparent', overflow: 'visible' } : undefined,
           animatedStyle,
+          surfaceFillVars(publishedFill),
           placed ? null : { opacity: 0 },
         ]}>
-        {children}
+        {paintsSurface ? <SurfacePaint fill={fill as string} radius={panelStyle?.borderRadius ?? 16} /> : null}
+        {paintsSurface && panelStyle?.overflow === 'hidden' ? (
+          <View style={{ overflow: 'hidden', borderRadius: panelStyle.borderRadius }}>{content}</View>
+        ) : content}
       </Animated.View>
     </Modal>
   );

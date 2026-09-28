@@ -36,15 +36,17 @@ Pass `children` to write the label yourself (a localized string, say).
 
 `brand="oxy"` is Oxy's own mark, drawn two-tone — the mark, and its letters in the colour behind it. It follows Google's treatment: `colorful` is Bloom's **primary button** painted with the theme accent, so it matches the app it sits in; `white` is the secondary button with the mark in the accent; `black` draws it white on near-black. The Oxy SDK's `OxySignInButton` is this button with `action="signIn"`.
 
+SocialButton composes the real `Button`: material, focus, press, disabled and links share its implementation. Provider metadata supplies the logo, label and resolved brand fill/on-fill pair. Scoped `sm`/`md` sizing and unique SVG gradient identifiers are preserved.
+
 ## Appearance
 
 | `appearance` | Look |
 | --- | --- |
-| `colorful` (default) | A top-to-bottom gradient from the brand colour into a stop 0.04 darker and 0.01 more chromatic in OKLCH, white glyph. Hover brightens 6%, press darkens 5%. |
-| `black` | Solid near-black (`neutral-950`, hover 800, press 900), white label. |
+| `colorful` (default) | Saturated brand glass with a white glyph and Button’s shared sheen and interaction tints. |
+| `black` | Near-black glass, white label. |
 | `white` | The secondary button — surface, 1px border and its hover/press — with the provider's **real multi-colour mark**. What most sign-in screens use. |
 
-Google's `colorful` button is Bloom's **primary button**, gradients and states included, painted with the theme's accent rather than Google's own `#4285F4` (the two side by side read as a mistake). Its multi-colour G under `white` stays Google's own.
+Google's `colorful` button is Bloom's **primary button**, material and states included, painted with the theme's accent rather than Google's own `#4285F4` (the two side by side read as a mistake). Its multi-colour G under `white` stays Google's own.
 
 Apple, GitHub and X draw their marks in near-black, which vanishes on a dark surface, so in dark mode the `white` appearance repaints those marks white — the treatment both publish for dark backgrounds. Amazon has no colour mark upstream; its `white` button uses the monochrome glyph tinted with the brand colour.
 
@@ -66,7 +68,7 @@ The fixed width lines a column of providers up without a wrapper; `fullWidth` fi
 />
 ```
 
-`color` must be `#rrggbb` or `rgb()` to get the derived gradient; anything else paints flat. The icon is rendered as given — colour it yourself for the appearance.
+`color` is a resolved `#rrggbb` or `rgb()` brand fill. The icon is rendered as given — colour it yourself for the appearance.
 
 ## Links
 
@@ -74,7 +76,7 @@ The fixed width lines a column of providers up without a wrapper; `fullWidth` fi
 
 ## Accessibility
 
-The visible label names the button. With `iconOnly` there is no visible label, so the button is named `"Continue with <Brand>"` — override with `accessibilityLabel`. On web a keyboard user gets a 2px accent `:focus-visible` ring with a 2px offset. `disabled` dims the whole button to 60% and ignores presses.
+The visible label names the button. With `iconOnly` there is no visible label, so the button is named `"Continue with <Brand>"` — override with `accessibilityLabel`. On web a keyboard user gets a 2px accent `:focus-visible` ring with a 2px offset. `disabled` uses Button’s shared disabled tint, retains its glass and ignores presses.
 
 ## Trademarks
 

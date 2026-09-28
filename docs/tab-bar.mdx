@@ -392,7 +392,7 @@ Overrides are coalesced key by key, so an explicit `undefined` in a partial can 
 |----------|-----------------|---------------------|
 | iOS 26 | Real `UIGlassEffect` liquid glass under `glassTint`, with the native corner configuration (true squircle + rim lighting) tracking the animated height. | Ten thin stacked `BlurView`s — iOS has no public variable-blur API, so the falloff is built from layer coverage. |
 | iOS &lt; 26, Android | Solid `solidFallback` fill. `isLiquidGlassAvailable()` reports `false`, so `GlassView` is never mounted. | Same ten-layer stack. |
-| Web | `backdrop-filter: blur(24px) saturate(180%)` under `glassTint`. Browsers without `backdrop-filter` simply skip it and keep the translucent tint. | One `backdrop-filter` faded with a `mask-image` — an order of magnitude cheaper than ten composited backdrop passes, and it traces the same curve as the native stack. |
+| Web | Shared `SurfacePaint` glass optics under `glassTint`, with the same sheen and rim as other Bloom surfaces. | One `backdrop-filter` faded with a `mask-image` — an order of magnitude cheaper than ten composited backdrop passes, and it traces the same curve as the native stack. |
 
 The capsule radius rides on the surface itself rather than on a clipping parent: iOS 26 glass renders its own native corner configuration, which an RN mask would flatten.
 
@@ -463,3 +463,9 @@ Types: `TabBarItem`, `TabBarProps`, `TabBarButtonProps`, `TabBarTheme`, `Minimiz
 <Callout variant="info" title="TabBar vs Tabs">
 `TabBar` is app-level navigation chrome: floating, minimize-on-scroll, one per screen tree. For switching between panels *inside* a screen, reach for `Tabs` from `@oxy.so/bloom/tabs` instead — an inline, underlined control with no gestures and no surface of its own.
 </Callout>
+
+## Shared surface material
+
+The solid capsule and native glass fallback now use `SurfacePaint`, sharing its opaque fill, sheen and rim instead of a separate flat fill. Neutral solid fills follow the surrounding surface; `theme.solidFallback` remains an explicit override. The bar publishes the renderer's actual fill (or the composited tint estimate for explicit glass) to nested surfaces, including native solid fallbacks. Animated capsule sizing and gestures stay on their existing hosts.
+
+The standalone `TabBar` retains its translucent material and screen-edge blur defaults. `BottomBar` always uses the universal translucent surface, with the optional blur band off. Explicit iOS liquid glass remains platform-provided; web translucent material uses the shared Surface optics.

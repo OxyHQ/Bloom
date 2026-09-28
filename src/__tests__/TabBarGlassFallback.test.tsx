@@ -83,6 +83,8 @@ function renderNativeSurface(glassEffect: GlassEffectModule, times = 1): ReactTe
 
   jest.isolateModules(() => {
     jest.doMock('expo-glass-effect', () => glassEffect);
+    // Isolate capability detection without introducing a second React hook registry.
+    jest.doMock('../surface/SurfacePaint', () => ({ SurfacePaint: (props: object) => React.createElement('SurfacePaint', props) }));
 
     const { TabBarSurface } = require('../tab-bar/surface.native') as {
       TabBarSurface: React.ComponentType<TabBarSurfaceProps>;
@@ -102,7 +104,8 @@ function expectSolidFallback(root: ReactTestInstance): void {
   expect(hosts(root, GLASS_HOST)).toHaveLength(0);
   const surface = hosts(root, 'Animated.View')[0];
   expect(surface).toBeTruthy();
-  expect(flattenStyle(surface?.props.style).backgroundColor).toBe(THEME.solidFallback);
+  expect(hosts(root, 'SurfacePaint')[0]?.props.fill).toBe(THEME.solidFallback);
+  expect(flattenStyle(surface?.props.style).backgroundColor).toBeUndefined();
   // The animated capsule radius must survive the fallback — the pill still
   // reshapes as the bar minimizes.
   expect(flattenStyle(surface?.props.style).borderRadius).toBe(STYLE.borderRadius);

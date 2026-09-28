@@ -22,7 +22,7 @@ import { resolveTone, type ChartSeriesTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { TABULAR } from './primitives/ChartHeader';
 import { groupThousands } from './primitives/format';
-import { useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useChartFocusRing, useMedicalPalette } from './medical-parts';
 import {
@@ -135,7 +135,7 @@ export function BarListCard({
   style,
   testID,
 }: BarListCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();
   const mounted = useMountedAfterDelay();

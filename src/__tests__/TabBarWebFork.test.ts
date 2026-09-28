@@ -53,6 +53,7 @@ const NEUTRAL_AND_WEB_FILES = [
   'tab-bar/surface.tsx',
   'tab-bar/surface-solid.tsx',
   'tab-bar/surface.web.tsx',
+  'tab-bar/surface-translucent.tsx',
   'tab-bar/glyph.tsx',
   'progressive-blur/ProgressiveBlur.web.tsx',
   'progressive-blur/shared.ts',
@@ -241,4 +242,13 @@ describe('tab-bar published surface', () => {
     // `assertWebSourceExists()` throws for this one — it has no `.web` sibling.
     expect(listed).not.toContain('./tab-bar/expo-router');
   });
+});
+
+
+it('binds both BottomBar entries to the universal translucent material', () => {
+  for (const entry of ['bottom-bar/BottomBar.tsx', 'bottom-bar/BottomBar.web.tsx']) {
+    const imports = moduleSpecifiers(read(entry));
+    expect(imports).toContain('../tab-bar/surface-translucent');
+    expect(imports).not.toContain('../tab-bar/surface-solid');
+  }
 });

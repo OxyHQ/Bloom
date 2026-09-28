@@ -527,7 +527,9 @@ describe('the jump buttons', () => {
     const style = getComputedStyle(byTestId('jump-button'));
     expect(parseFloat(style.borderTopWidth)).toBeGreaterThanOrEqual(1);
     expect(normalise(style.borderTopColor)).toBe(normalise(paint().floatingBorder));
-    expect(normalise(style.backgroundColor)).toBe(normalise(paint().floatingSurface));
+    const material = byTestId('jump-button').querySelector('.bloom-surface-paint') as HTMLElement;
+    expect(material).not.toBeNull();
+    expect(normalise(material.style.getPropertyValue('--bloom-surface-paint-fill'))).toBe(normalise(paint().floatingSurface));
   });
 
   it('fires', () => {

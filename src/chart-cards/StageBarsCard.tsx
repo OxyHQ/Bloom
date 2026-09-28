@@ -9,7 +9,7 @@ import { ChartCardSurface, CHART_CARD_HEIGHT } from './primitives/ChartCardSurfa
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import {
@@ -109,7 +109,7 @@ export function StageBarsCard({
   style,
   testID,
 }: StageBarsCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();
   const mounted = useMountedAfterDelay();

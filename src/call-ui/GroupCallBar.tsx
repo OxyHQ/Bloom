@@ -1,3 +1,4 @@
+import { Surface } from '../surface';
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -155,7 +156,7 @@ function GroupCallBarComponent({
   };
 
   return (
-    <View
+    <Surface
       style={[
         {
           flexDirection: 'row',
@@ -164,7 +165,6 @@ function GroupCallBarComponent({
           borderRadius: CALL_UI_RADIUS.card,
           borderWidth: 1,
           borderColor: paint.border,
-          backgroundColor: paint.surfaceRaised,
           paddingTop: 10,
           paddingRight: 10,
           paddingBottom: 10,
@@ -242,7 +242,7 @@ function GroupCallBarComponent({
           {labels?.join ?? 'Join'}
         </Button>
       )}
-    </View>
+    </Surface>
   );
 }
 

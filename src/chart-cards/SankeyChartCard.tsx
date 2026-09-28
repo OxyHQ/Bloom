@@ -19,7 +19,7 @@ import { chartHueTone, resolveTone, type ChartHue, type ChartSeriesTone } from '
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio } from './primitives/format';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import {
   hitTestSankey,
@@ -162,7 +162,7 @@ export function SankeyChartCard({
   testID,
 }: SankeyChartCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 

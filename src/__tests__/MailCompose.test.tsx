@@ -33,6 +33,7 @@ import {
   recipientsInvalid,
 } from '../mail-compose/shared';
 import type { MailRecipient } from '../mail-compose/types';
+import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -389,4 +390,14 @@ describe('MailComposeSurface', () => {
       'Remove survey.pdf',
     );
   });
+});
+
+
+it('publishes custom docked backing and preserves sheet depth', () => {
+  function Probe() { return <span data-testid="surface-probe">{useSurfaceFill()}|{useSurfaceLevelValue()}</span>; }
+  mount(<SurfaceLevelProvider level={2} fill="#0000ff"><MailComposeSurface variant="docked" style={{ backgroundColor: 'rgba(255,0,0,.5)' }} testID="s"><Probe /></MailComposeSurface></SurfaceLevelProvider>);
+  expect(byTestId('surface-probe').textContent).toBe('rgb(128, 0, 128)|3');
+  expect(byTestId('s').style.getPropertyValue('--bloom-surface')).toBe('rgb(128, 0, 128)');
+  mount(<SurfaceLevelProvider level={2} fill="#0000ff"><MailComposeSurface variant="sheet" testID="s"><Probe /></MailComposeSurface></SurfaceLevelProvider>);
+  expect(byTestId('surface-probe').textContent).toBe('#0000ff|2');
 });

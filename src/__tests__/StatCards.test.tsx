@@ -1,3 +1,5 @@
+import { surfaceFillOn } from '../styles/surface-levels';
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
@@ -27,7 +29,7 @@ function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 describe('StatCards', () => {
   it('keeps the plain card geometry in longhands: 132 tall, radius 16, padding 16', () => {
     const { getByTestId } = renderIn(<StatCard testID="card" stat={STATS[0]!} />);
-    const card = resolvedStyle(getByTestId('card').props.style);
+    const card = cardLayout(getByTestId('card'));
     expect(card).toMatchObject({
       height: 132,
       borderRadius: 16,
@@ -40,23 +42,22 @@ describe('StatCards', () => {
     expect(card.padding).toBeUndefined();
   });
 
-  it('renders the footer band with the card shadow and a delta pill in the status pair', () => {
+  it('renders the footer as a raised surface with the semantic delta pair', () => {
     const { getByTestId, getByText } = renderIn(
       <StatCard testID="card" variant="footer" stat={STATS[1]!} />,
       'dark',
     );
     const theme = buildTheme('teal', 'dark');
     const surfaces = resolveDashboardSurfaces(theme);
-    const band = resolvedStyle(getByTestId('card-band').props.style);
+    const band = cardLayout(getByTestId('card-band'));
     expect(band).toMatchObject({
       borderRadius: 10,
       paddingTop: 6,
       paddingBottom: 6,
       paddingRight: 6,
       paddingLeft: 10,
-      boxShadow: '0 1px 1px 0 rgb(0 0 0 / 0.14)',
-      backgroundColor: surfaces.inner,
     });
+    expect(cardFill(getByTestId('card-band'))).toBe(surfaces.inner);
     const pill = resolvedStyle(getByTestId('card-delta').props.style);
     expect(pill.backgroundColor).toBe(statusPair(theme, 'rose', surfaces.inner).background);
     expect(pill).toMatchObject({ paddingLeft: 4, paddingRight: 8, paddingTop: 2, paddingBottom: 2 });
@@ -97,7 +98,7 @@ describe('StatCards', () => {
 it.each(['light', 'dark'] as const)('dashboard chrome and status pairs follow canonical roles in %s', (mode) => {
   const theme = buildTheme('teal', mode);
   const c = theme.colors;
-  expect(resolveDashboardSurfaces(theme)).toMatchObject({ secondary: c.card, inner: c.backgroundSecondary, primary: c.card, buttonBorder: c.borderLight, textSecondary: c.textSecondary, iconSecondary: c.textSecondary, focusRing: c.primary });
+  expect(resolveDashboardSurfaces(theme)).toMatchObject({ secondary: c.card, inner: surfaceFillOn(theme, c.card), primary: c.card, buttonBorder: c.borderLight, textSecondary: c.textSecondary, iconSecondary: c.textSecondary, focusRing: c.primary });
   expect(statusPair(theme, 'lime', c.card)).toEqual({ background: c.successSubtle, foreground: c.successSubtleForeground });
   expect(statusPair(theme, 'rose', c.card)).toEqual({ background: c.errorSubtle, foreground: c.errorSubtleForeground });
 });
