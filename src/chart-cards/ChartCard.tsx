@@ -13,6 +13,7 @@ import { groupThousands } from './primitives/format';
 import type { ChartCardPoint, YearOverYearChartCardProps } from './types';
 import { CHART_CARDS_MESSAGES, type ChartCardsMessages } from './messages';
 import { useMessages } from '../locale/messages';
+import { monthNames } from '../locale/format-date';
 
 /**
  * The dashboard variant of the chart card chrome, shared by
@@ -34,24 +35,16 @@ export const CARD_HEIGHT = 344;
 const CARD_GAP = 24;
 const LEGEND_DOT = 8;
 
-const MONTHS: Record<string, string> = {
-  Jan: 'January',
-  Feb: 'February',
-  Mar: 'March',
-  Apr: 'April',
-  May: 'May',
-  Jun: 'June',
-  Jul: 'July',
-  Aug: 'August',
-  Sep: 'September',
-  Oct: 'October',
-  Nov: 'November',
-  Dec: 'December',
-};
+const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** `"Jul"` → `"July"`, anything else unchanged. */
-export function defaultPointTitle(point: ChartCardPoint): string {
-  return MONTHS[point.label] ?? point.label;
+/**
+ * A point labelled with an English month abbreviation (`"Jul"`) is titled with
+ * that month's full name in `locale` (`"July"`, `"julio"`); any other label is
+ * the app's own and stays unchanged.
+ */
+export function defaultPointTitle(point: ChartCardPoint, locale?: string): string {
+  const month = MONTH_ABBREVIATIONS.indexOf(point.label);
+  return month === -1 ? point.label : (monthNames(locale, 'long')[month] ?? point.label);
 }
 
 export { groupThousands };
@@ -109,7 +102,7 @@ export function ChartCardFrame({
   testID,
   children,
 }: ChartCardFrameProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const currentLabel = currentLabelProp ?? chartText.thisYear;
   const previousLabel = previousLabelProp ?? chartText.lastYear;
   const totalComparisonLabel = totalComparisonLabelProp ?? chartText.sinceLastYear;
@@ -124,7 +117,7 @@ export function ChartCardFrame({
   const headlineValue = point ? point.current : totalCurrent;
   const comparison = point ? point.previous : totalPrevious;
   const delta = describeDelta(headlineValue, comparison);
-  const label = point ? (getPointTitle ?? defaultPointTitle)(point, activeIndex ?? 0) : (title ?? defaultTitle);
+  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex ?? 0) : defaultPointTitle(point, chartLocale)) : (title ?? defaultTitle);
 
   return (
     <ChartCardSurface height={CARD_HEIGHT} gap={CARD_GAP} style={style} testID={testID}>

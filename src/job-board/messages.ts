@@ -39,6 +39,15 @@ export interface JobBoardMessages {
   payDetailsFor: (load: string) => string;
   /** Names the pick-up/drop-off pair, joined the language's way. */
   route: (pickup: string, dropoff: string) => string;
+  /** The default filter bands' words. */
+  bands: {
+    anyDistance: string;
+    underKm: (km: number) => string;
+    anyTime: string;
+    withinHour: string;
+    nextHours: (hours: number) => string;
+    today: string;
+  };
 }
 
 export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
@@ -75,6 +84,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Jobs',
     payDetailsFor: (load) => `Pay for ${load}`,
     route: (pickup, dropoff) => `${pickup} and ${dropoff}`,
+    bands: {
+      anyDistance: 'Any distance',
+      underKm: (km) => `Under ${km} km`,
+      anyTime: 'Any time',
+      withinHour: 'Within the hour',
+      nextHours: (hours) => `Next ${hours} hours`,
+      today: 'Today',
+    },
   },
   es: {
     labels: {
@@ -109,6 +126,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Trabajos',
     payDetailsFor: (load) => `Pago por ${load}`,
     route: (pickup, dropoff) => `${pickup} y ${dropoff}`,
+    bands: {
+      anyDistance: 'Cualquier distancia',
+      underKm: (km) => `A menos de ${km} km`,
+      anyTime: 'Cualquier momento',
+      withinHour: 'En la próxima hora',
+      nextHours: (hours) => `En las próximas ${hours} horas`,
+      today: 'Hoy',
+    },
   },
   ca: {
     labels: {
@@ -143,6 +168,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Feines',
     payDetailsFor: (load) => `Pagament per ${load}`,
     route: (pickup, dropoff) => `${pickup} i ${dropoff}`,
+    bands: {
+      anyDistance: 'Qualsevol distància',
+      underKm: (km) => `A menys de ${km} km`,
+      anyTime: 'Qualsevol moment',
+      withinHour: 'En la pròxima hora',
+      nextHours: (hours) => `En les pròximes ${hours} hores`,
+      today: 'Avui',
+    },
   },
   de: {
     labels: {
@@ -177,6 +210,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Aufträge',
     payDetailsFor: (load) => `Vergütung für ${load}`,
     route: (pickup, dropoff) => `${pickup} und ${dropoff}`,
+    bands: {
+      anyDistance: 'Beliebige Entfernung',
+      underKm: (km) => `Unter ${km} km`,
+      anyTime: 'Jederzeit',
+      withinHour: 'Innerhalb einer Stunde',
+      nextHours: (hours) => `In den nächsten ${hours} Stunden`,
+      today: 'Heute',
+    },
   },
   fr: {
     labels: {
@@ -211,6 +252,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Missions',
     payDetailsFor: (load) => `Rémunération pour ${load}`,
     route: (pickup, dropoff) => `${pickup} et ${dropoff}`,
+    bands: {
+      anyDistance: 'Toute distance',
+      underKm: (km) => `Moins de ${km} km`,
+      anyTime: 'N\'importe quand',
+      withinHour: 'Dans l\'heure',
+      nextHours: (hours) => `Dans les ${hours} prochaines heures`,
+      today: 'Aujourd\'hui',
+    },
   },
   it: {
     labels: {
@@ -245,6 +294,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Lavori',
     payDetailsFor: (load) => `Compenso per ${load}`,
     route: (pickup, dropoff) => `${pickup} e ${dropoff}`,
+    bands: {
+      anyDistance: 'Qualsiasi distanza',
+      underKm: (km) => `Meno di ${km} km`,
+      anyTime: 'In qualsiasi momento',
+      withinHour: 'Entro un\'ora',
+      nextHours: (hours) => `Nelle prossime ${hours} ore`,
+      today: 'Oggi',
+    },
   },
   pt: {
     labels: {
@@ -279,6 +336,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Fretes',
     payDetailsFor: (load) => `Pagamento por ${load}`,
     route: (pickup, dropoff) => `${pickup} e ${dropoff}`,
+    bands: {
+      anyDistance: 'Qualquer distância',
+      underKm: (km) => `Menos de ${km} km`,
+      anyTime: 'Qualquer horário',
+      withinHour: 'Na próxima hora',
+      nextHours: (hours) => `Nas próximas ${hours} horas`,
+      today: 'Hoje',
+    },
   },
   ru: {
     labels: {
@@ -313,6 +378,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Заказы',
     payDetailsFor: (load) => `Оплата: ${load}`,
     route: (pickup, dropoff) => `${pickup} и ${dropoff}`,
+    bands: {
+      anyDistance: 'Любое расстояние',
+      underKm: (km) => `До ${km} км`,
+      anyTime: 'В любое время',
+      withinHour: 'В течение часа',
+      nextHours: (hours) => `В ближайшие ${hours} ${plural('ru', hours, { one: 'час', few: 'часа', many: 'часов', other: 'часа' })}`,
+      today: 'Сегодня',
+    },
   },
   tr: {
     labels: {
@@ -347,6 +420,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'İşler',
     payDetailsFor: (load) => `${load} için ödeme`,
     route: (pickup, dropoff) => `${pickup} ve ${dropoff}`,
+    bands: {
+      anyDistance: 'Her mesafe',
+      underKm: (km) => `${km} km'den az`,
+      anyTime: 'Her zaman',
+      withinHour: 'Bir saat içinde',
+      nextHours: (hours) => `Sonraki ${hours} saat`,
+      today: 'Bugün',
+    },
   },
   ja: {
     labels: {
@@ -381,6 +462,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: '仕事',
     payDetailsFor: (load) => `${load}の報酬`,
     route: (pickup, dropoff) => `${pickup}と${dropoff}`,
+    bands: {
+      anyDistance: '距離指定なし',
+      underKm: (km) => `${km}km以内`,
+      anyTime: 'いつでも',
+      withinHour: '1時間以内',
+      nextHours: (hours) => `今後${hours}時間以内`,
+      today: '今日',
+    },
   },
   zh: {
     labels: {
@@ -415,6 +504,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: '订单',
     payDetailsFor: (load) => `${load}的报酬`,
     route: (pickup, dropoff) => `${pickup}和${dropoff}`,
+    bands: {
+      anyDistance: '任意距离',
+      underKm: (km) => `${km} 公里以内`,
+      anyTime: '任意时间',
+      withinHour: '一小时内',
+      nextHours: (hours) => `接下来 ${hours} 小时`,
+      today: '今天',
+    },
   },
   ar: {
     labels: {
@@ -449,6 +546,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'المهام',
     payDetailsFor: (load) => `أجر ${load}`,
     route: (pickup, dropoff) => `${pickup} و${dropoff}`,
+    bands: {
+      anyDistance: 'أي مسافة',
+      underKm: (km) => `أقل من ${km} كم`,
+      anyTime: 'في أي وقت',
+      withinHour: 'خلال الساعة',
+      nextHours: (hours) => `خلال الساعات الـ${hours} القادمة`,
+      today: 'اليوم',
+    },
   },
   hi: {
     labels: {
@@ -483,6 +588,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'काम',
     payDetailsFor: (load) => `${load} का भुगतान`,
     route: (pickup, dropoff) => `${pickup} और ${dropoff}`,
+    bands: {
+      anyDistance: 'कोई भी दूरी',
+      underKm: (km) => `${km} किमी से कम`,
+      anyTime: 'कभी भी',
+      withinHour: 'एक घंटे के भीतर',
+      nextHours: (hours) => `अगले ${hours} घंटे`,
+      today: 'आज',
+    },
   },
   bn: {
     labels: {
@@ -517,6 +630,14 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'কাজ',
     payDetailsFor: (load) => `${load}-এর পারিশ্রমিক`,
     route: (pickup, dropoff) => `${pickup} এবং ${dropoff}`,
+    bands: {
+      anyDistance: 'যেকোনো দূরত্ব',
+      underKm: (km) => `${km} কিমির কম`,
+      anyTime: 'যেকোনো সময়',
+      withinHour: 'এক ঘণ্টার মধ্যে',
+      nextHours: (hours) => `পরের ${hours} ঘণ্টা`,
+      today: 'আজ',
+    },
   },
   id: {
     labels: {
@@ -551,5 +672,13 @@ export const JOB_BOARD_MESSAGES: MessageCatalog<JobBoardMessages> = {
     list: 'Pekerjaan',
     payDetailsFor: (load) => `Bayaran untuk ${load}`,
     route: (pickup, dropoff) => `${pickup} dan ${dropoff}`,
+    bands: {
+      anyDistance: 'Jarak berapa pun',
+      underKm: (km) => `Kurang dari ${km} km`,
+      anyTime: 'Kapan saja',
+      withinHour: 'Dalam satu jam',
+      nextHours: (hours) => `${hours} jam ke depan`,
+      today: 'Hari ini',
+    },
   },
 };

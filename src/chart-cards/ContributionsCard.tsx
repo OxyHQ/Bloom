@@ -303,11 +303,6 @@ export interface ContributionsCardProps {
   testID?: string;
 }
 
-const DEFAULT_PERIODS: readonly ContributionsPeriod[] = [
-  { id: 'weekly', label: 'Weekly' },
-  { id: 'monthly', label: 'Monthly' },
-  { id: 'yearly', label: 'Yearly' },
-];
 const NO_CELLS: readonly ContributionCell[] = [];
 /** Index rows of two — a `grid-cols-2` layout below `sm`. */
 function pairsOf(count: number): number[][] {
@@ -345,7 +340,7 @@ export function ContributionsCard({
   cells: cellsProp,
   columns = CONTRIBUTION_COLUMNS,
   color,
-  periods = DEFAULT_PERIODS,
+  periods: periodsProp,
   defaultPeriod,
   onPeriodChange,
   activityLabel: activityLabelProp,
@@ -359,6 +354,15 @@ export function ContributionsCard({
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const title = titleProp ?? chartText.titles.contributionsThisYear;
   const activityLabel = activityLabelProp ?? chartText.titles.activity;
+  const periods = useMemo<readonly ContributionsPeriod[]>(
+    () =>
+      periodsProp ?? [
+        { id: 'weekly', label: chartText.weekly },
+        { id: 'monthly', label: chartText.monthly },
+        { id: 'yearly', label: chartText.yearly },
+      ],
+    [periodsProp, chartText],
+  );
   const months = useMemo(() => monthsProp ?? localMonthNames(chartLocale, 'short'), [monthsProp, chartLocale]);
   const palette = useChartCardSurfacePalette(style);
   const theme = useTheme();

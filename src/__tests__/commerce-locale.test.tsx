@@ -23,6 +23,7 @@ import { OfferingBadge } from '../offering-badge';
 import { OFFERING_BADGE_MESSAGES } from '../offering-badge/messages';
 import { PaymentStatusBar } from '../payment-status';
 import { PAYMENT_STATUS_MESSAGES } from '../payment-status/messages';
+import { VEHICLE_PICKER_MESSAGES } from '../vehicle-picker/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { VendorCard } from '../vendor-card';
 import { VENDOR_CARD_MESSAGES } from '../vendor-card/messages';
@@ -110,6 +111,16 @@ describe('job-board and carrier-quote', () => {
     expect(CARRIER_QUOTE_MESSAGES.ja.priceDetailsFor('Rápido')).toBe('Rápidoの料金の内訳');
   });
 
+  it("draws the board's default filter bands and vehicle names in the locale (review of #235)", () => {
+    const board = renderIn('es', <JobBoard jobs={[]} defaultFiltersOpen />);
+    expect(board.getAllByText(JOB_BOARD_MESSAGES.es.bands.anyDistance).length).toBeGreaterThan(0);
+    expect(board.getAllByText(JOB_BOARD_MESSAGES.es.bands.underKm(10)).length).toBeGreaterThan(0);
+    expect(board.getAllByText(JOB_BOARD_MESSAGES.es.bands.nextHours(4)).length).toBeGreaterThan(0);
+    expect(board.getAllByText(VEHICLE_PICKER_MESSAGES.es.vehicles.van.label).length).toBeGreaterThan(0);
+    expect(board.queryByText('Any distance')).toBeNull();
+    expect(JOB_BOARD_MESSAGES.ru.bands.nextHours(4)).toBe('В ближайшие 4 часа');
+  });
+
   it('keep a caller empty title over the catalog', () => {
     expect(renderIn('es', <JobBoard jobs={[]} emptyTitle="Nada por aquí" />).getByText('Nada por aquí')).toBeTruthy();
   });
@@ -148,6 +159,15 @@ describe('chart-cards', () => {
   it("draws the locale's month names when the caller passes none", () => {
     const { getByText } = renderIn('es', <ContributionsCard cells={[]} />);
     expect(getByText('ene')).toBeTruthy();
+  });
+
+  it("names the contribution periods and a selected month in the locale (review of #235)", () => {
+    const card = renderIn('es', <ContributionsCard cells={[]} />);
+    expect(card.getAllByText(CHART_CARDS_MESSAGES.es.monthly).length).toBeGreaterThan(0);
+    expect(card.queryByText('Monthly')).toBeNull();
+    const selected = renderIn('es', <RevenueChartCard data={REVENUE} activeIndex={0} />);
+    expect(selected.getAllByText('enero').length).toBeGreaterThan(0);
+    expect(renderIn(undefined as unknown as string, <RevenueChartCard data={REVENUE} activeIndex={0} />).getAllByText('January').length).toBeGreaterThan(0);
   });
 
   it('lets a caller title win', () => {
