@@ -55,6 +55,8 @@ import type {
   EmojiGroup,
   VoiceRecorderLabels,
 } from './types';
+import { COMMON_MESSAGES } from '../locale/common-messages';
+import { CHAT_COMPOSER_MESSAGES, type AttachmentMenuItemId, type ChatComposerMessages } from './messages';
 
 // ---------------------------------------------------------------------------
 //  Palette
@@ -308,16 +310,28 @@ export function waveformBars(
 //  Default data
 // ---------------------------------------------------------------------------
 
-/** The plus menu's seven rows. Apps drop what does not apply. */
-export const ATTACHMENT_MENU_ITEMS: ReadonlyArray<AttachmentMenuItem> = [
-  { id: 'gallery', label: 'Gallery', icon: RiGalleryLine },
-  { id: 'camera', label: 'Camera', icon: RiCameraLine },
-  { id: 'file', label: 'File', icon: RiFileTextLine },
-  { id: 'location', label: 'Location', icon: RiMapPinLine },
-  { id: 'contact', label: 'Contact', icon: RiContactsBookLine },
-  { id: 'poll', label: 'Poll', icon: RiBarChartHorizontalLine },
-  { id: 'music', label: 'Music', icon: RiMusic2Line },
+const ATTACHMENT_MENU_ICONS: ReadonlyArray<readonly [AttachmentMenuItemId, ChatComposerIcon]> = [
+  ['gallery', RiGalleryLine],
+  ['camera', RiCameraLine],
+  ['file', RiFileTextLine],
+  ['location', RiMapPinLine],
+  ['contact', RiContactsBookLine],
+  ['poll', RiBarChartHorizontalLine],
+  ['music', RiMusic2Line],
 ];
+
+/** The plus menu's seven rows, named in `messages`' language. */
+export function attachmentMenuItems(
+  messages: ChatComposerMessages = CHAT_COMPOSER_MESSAGES.en,
+): ReadonlyArray<AttachmentMenuItem> {
+  return ATTACHMENT_MENU_ICONS.map(([id, icon]) => ({ id, label: messages.attachmentItems[id], icon }));
+}
+
+/**
+ * The plus menu's seven rows, in English. Apps drop what does not apply;
+ * `AttachmentMenu` without `items` draws them in the app's locale.
+ */
+export const ATTACHMENT_MENU_ITEMS: ReadonlyArray<AttachmentMenuItem> = attachmentMenuItems();
 
 /** The quick reaction bar's six defaults. */
 export const REACTION_PICKER_EMOJIS: ReadonlyArray<string> = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -351,27 +365,43 @@ export const BANNER_ICONS: Record<ComposerBannerKind, ChatComposerIcon> = {
   note: RiTimeLine,
 };
 
-export const CHAT_COMPOSER_LABELS: ChatComposerLabels = {
-  attach: 'Attach',
-  emoji: 'Emoji',
-  camera: 'Camera',
-  mic: 'Record a voice message',
-  send: 'Send',
-  input: 'Message',
-  enterHint: 'Enter to send · Shift + Enter for a new line',
-  modEnterHint: '⌘ + Enter to send · Enter for a new line',
-};
+/** `ChatComposer`'s strings in `messages`' language; `send` is the common word. */
+export function chatComposerLabels(
+  messages: ChatComposerMessages = CHAT_COMPOSER_MESSAGES.en,
+  send: string = COMMON_MESSAGES.en.send,
+): ChatComposerLabels {
+  return {
+    attach: messages.attach,
+    emoji: messages.emoji,
+    camera: messages.camera,
+    mic: messages.mic,
+    send,
+    input: messages.message,
+    enterHint: messages.enterHint,
+    modEnterHint: messages.modEnterHint,
+  };
+}
 
-export const VOICE_RECORDER_LABELS: VoiceRecorderLabels = {
-  cancel: 'Cancel recording',
-  send: 'Send voice message',
-  delete: 'Delete recording',
-  play: 'Play recording',
-  pause: 'Pause recording',
-  lock: 'Lock recording',
-  slideToCancel: 'Slide to cancel',
-  recording: 'Recording',
-};
+/** `VoiceRecorder`'s strings in `messages`' language. */
+export function voiceRecorderLabels(
+  messages: ChatComposerMessages = CHAT_COMPOSER_MESSAGES.en,
+): VoiceRecorderLabels {
+  return {
+    cancel: messages.cancelRecording,
+    send: messages.sendVoice,
+    delete: messages.deleteRecording,
+    play: messages.playRecording,
+    pause: messages.pauseRecording,
+    lock: messages.lockRecording,
+    slideToCancel: messages.slideToCancel,
+    recording: messages.recording,
+  };
+}
+
+/** The English strings, kept for callers that import them. */
+export const CHAT_COMPOSER_LABELS: ChatComposerLabels = chatComposerLabels();
+
+export const VOICE_RECORDER_LABELS: VoiceRecorderLabels = voiceRecorderLabels();
 
 // ---------------------------------------------------------------------------
 //  Web stylesheet

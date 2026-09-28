@@ -327,7 +327,7 @@ export interface AttachmentMenuProps {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Defaults to {@link ATTACHMENT_MENU_ITEMS}. */
+  /** Defaults to {@link ATTACHMENT_MENU_ITEMS}, named in the app's locale. */
   items?: ReadonlyArray<AttachmentMenuItem>;
   /** `'grid'` (default) draws icon discs in `columns`; `'list'` draws rows. */
   layout?: 'grid' | 'list';

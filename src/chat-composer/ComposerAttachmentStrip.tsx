@@ -19,13 +19,11 @@ import { ComposerIconButton } from './ComposerIconButton';
 import { TILE, TILE_RADIUS, resolveChatComposerPalette } from './shared';
 import type { ChatComposerAttachment, ComposerAttachmentStripProps } from './types';
 import { dataHook } from './web-hooks';
+import { useMessages } from '../locale/messages';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 function isUrl(value: string): boolean {
   return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('file:');
-}
-
-function defaultRemoveLabel(attachment: ChatComposerAttachment): string {
-  return `Remove ${attachment.name}`;
 }
 
 function Tile({
@@ -160,12 +158,15 @@ export function ComposerAttachmentStrip({
   onRemove,
   onOpen,
   size = TILE,
-  removeLabel = defaultRemoveLabel,
+  removeLabel: removeLabelProp,
   openLabel,
   style,
   testID,
-  accessibilityLabel = 'Attachments',
+  accessibilityLabel: accessibilityLabelProp,
 }: ComposerAttachmentStripProps) {
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
+  const removeLabel = removeLabelProp ?? ((attachment: ChatComposerAttachment) => messages.removeAttachment(attachment.name));
+  const accessibilityLabel = accessibilityLabelProp ?? messages.attachments;
   if (attachments.length === 0) return null;
   return (
     <ScrollView

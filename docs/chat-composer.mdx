@@ -185,7 +185,7 @@ The viewer's own reaction is marked with **both** `aria-pressed` and `accessibil
 
 ## Accessibility
 
-Every control is named (`Attach`, `Emoji`, `Camera`, `Record a voice message`, `Send`), and `labels` translates all of them — a glyph-only button has no other name.
+Every control is named (`Attach`, `Emoji`, `Camera`, `Record a voice message`, `Send` in English) — a glyph-only button has no other name. The family's strings are localised via `BloomProvider locale`; `labels` and the `*Label` props still win, one key at a time.
 
 **The mic and the send disc both stay mounted for the cross-fade**, so the hidden one leaves the accessibility tree: `aria-hidden` for react-native-web and `importantForAccessibility="no-hide-descendants"` for React Native. Setting one of the two hides it on one platform only, and the symptom is a composer that announces "Send" and "Record a voice message" side by side while only one of them does anything.
 
