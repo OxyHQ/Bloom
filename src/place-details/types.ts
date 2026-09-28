@@ -180,7 +180,7 @@ export interface PlaceAmenitiesProps {
   onShowAll?: () => void;
   /** The full count when `items` is already a subset. Default `items.length`. */
   total?: number;
-  /** Default `(n) => \`Show all ${n} amenities\``. */
+  /** `(n) => "Show all n amenities"` in English, localised via `BloomProvider locale`. */
   showAllLabel?: (total: number) => string;
   /** Prefixed to an unavailable amenity's name. `"Not available"` in English. */
   unavailableLabel?: string;

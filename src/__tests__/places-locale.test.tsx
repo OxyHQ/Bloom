@@ -328,6 +328,8 @@ describe('place-card', () => {
     mount(<PlaceCard {...place} onPress={noop} testID="p" />);
     expect(hasName('Forner de la Plaça, Panadería, Valoración de 4.6 sobre 5, 318 reseñas, Cierra pronto')).toBe(true);
     expect(text()).toContain('Cierra pronto');
+    // The card's own Rating speaks the locale too: no English sentence left.
+    expect(names().filter((name) => /out of|review/i.test(name))).toEqual([]);
   });
 
   it('pluralises the review count per language', () => {
@@ -468,6 +470,19 @@ describe('place-details', () => {
     );
     expect(hasName('Servicios')).toBe(true);
     expect(hasName('No disponible: Wifi')).toBe(true);
+    // The list layout's expansion button comes from the listing-details
+    // catalog, so it reads in the locale too.
+    mount(
+      <PlaceAmenities
+        layout="list"
+        items={[{ label: 'Wifi' }, { label: 'Terraza' }, { label: 'Parking' }]}
+        limit={1}
+        onShowAll={noop}
+      />,
+      'es',
+    );
+    expect(text()).not.toMatch(/Show all/);
+    expect(text()).toMatch(/3/);
     const day = {
       id: 'tue',
       label: 'Martes',
