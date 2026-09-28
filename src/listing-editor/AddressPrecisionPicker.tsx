@@ -5,7 +5,9 @@ import { mixColor, resolveButtonRamps } from '../button/shared';
 import { RiMapPin2Fill } from '../icons/remix/RiMapPin2Fill';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
+import { LISTING_EDITOR_MESSAGES, type ListingEditorMessages } from './messages';
 import { resolveSelectionPaint, SelectionCard } from './SelectionCard';
 import type { AddressPrecision, AddressPrecisionOption, AddressPrecisionPickerProps } from './types';
 
@@ -33,26 +35,19 @@ import type { AddressPrecision, AddressPrecisionOption, AddressPrecisionPickerPr
  * its title with the explanation as its hint. The map previews are decorative.
  */
 
-export const DEFAULT_ADDRESS_PRECISION_OPTIONS: ReadonlyArray<AddressPrecisionOption> = [
-  {
-    value: 'exact',
-    title: 'Exact address',
-    description: 'The pin sits on the building. Best for homes that are easy to find anyway.',
-  },
-  {
-    value: 'street',
-    title: 'Street only',
-    description: 'Shows the street, not the number. The exact address is shared after booking or signing.',
-  },
-  {
-    value: 'approximate',
-    title: 'Approximate area',
-    description: 'Shows a circle of about 500 m. The most private option.',
-  },
-];
+const PRECISIONS: ReadonlyArray<AddressPrecision> = ['exact', 'street', 'approximate'];
 
-const DEFAULT_FOOTNOTE =
-  'The published map follows this choice. Your exact address is only shared with people you confirm.';
+function precisionOptions(copy: ListingEditorMessages['addressPrecision']): ReadonlyArray<AddressPrecisionOption> {
+  return PRECISIONS.map((value) => ({ value, ...copy[value] }));
+}
+
+/**
+ * The three cards' English copy. The picker's own default speaks the locale;
+ * this stays for callers that build on it.
+ */
+export const DEFAULT_ADDRESS_PRECISION_OPTIONS: ReadonlyArray<AddressPrecisionOption> = precisionOptions(
+  LISTING_EDITOR_MESSAGES.en.addressPrecision,
+);
 
 interface MapPaint {
   ground: string;
@@ -149,13 +144,19 @@ function AddressPrecisionPickerComponent({
   value,
   onValueChange,
   renderMap,
-  options = DEFAULT_ADDRESS_PRECISION_OPTIONS,
-  footnote = DEFAULT_FOOTNOTE,
-  accessibilityLabel = 'Address precision',
+  options: optionsProp,
+  footnote: footnoteProp,
+  accessibilityLabel: accessibilityLabelProp,
   disabled = false,
   style,
   testID,
 }: AddressPrecisionPickerProps) {
+  const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
+  const localizedOptions = useMemo(() => precisionOptions(messages.addressPrecision), [messages]);
+  const options = optionsProp ?? localizedOptions;
+  // `undefined` only: `null` still hides the footnote.
+  const footnote = footnoteProp === undefined ? messages.addressPrecisionFootnote : footnoteProp;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.addressPrecisionLabel;
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
   const [width, setWidth] = useState(0);

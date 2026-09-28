@@ -12,6 +12,8 @@ import {
   TextFieldLabel,
 } from '../text-field';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { addUnique, formatIsrc, isValidIsrc, normalizeIsrc, pressDataSet, resolveCreatorStudioPaint } from './shared';
 import type { ArtistChipsInputProps, IsrcFieldProps } from './types';
 
@@ -33,13 +35,19 @@ function ArtistChipsInputComponent({
   placeholder,
   hint,
   max,
-  removeLabel = (name) => `Remove ${name}`,
-  addLabel = 'Add',
+  removeLabel: removeLabelProp,
+  addLabel: addLabelProp,
   disabled = false,
   required = false,
   style,
   testID,
 }: ArtistChipsInputProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const removeLabel = removeLabelProp ?? messages.artists.remove;
+  const addLabel = addLabelProp ?? messages.artists.add;
+  // A caller's own `addLabel` keeps the name it always composed; Bloom's own
+  // wording is a whole phrase per language.
+  const addName = addLabelProp !== undefined ? `${addLabelProp} ${label.toLowerCase()}` : messages.artists.addTo(label);
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const [draft, setDraft] = useState('');
@@ -103,7 +111,7 @@ function ArtistChipsInputComponent({
           leadingIcon={RiAddLine}
           disabled={blocked || draft.trim() === ''}
           onPress={commit}
-          accessibilityLabel={`${addLabel} ${label.toLowerCase()}`}
+          accessibilityLabel={addName}
           testID={testID ? `${testID}-add` : undefined}
         >
           {addLabel}
@@ -127,13 +135,17 @@ ArtistChipsInput.displayName = 'ArtistChipsInput';
 function IsrcFieldComponent({
   value,
   onChangeText,
+  // i18n-exempt: the code's own name, the same in every language
   label = 'ISRC',
-  hint = 'Format: CC-XXX-YY-NNNNN',
-  invalidMessage = 'That is not a valid ISRC',
+  hint: hintProp,
+  invalidMessage: invalidMessageProp,
   disabled = false,
   style,
   testID,
 }: IsrcFieldProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const hint = hintProp ?? messages.isrc.hint;
+  const invalidMessage = invalidMessageProp ?? messages.isrc.invalid;
   const complete = normalizeIsrc(value).length === 12;
   const invalid = complete && !isValidIsrc(value);
   return (
@@ -144,6 +156,7 @@ function IsrcFieldComponent({
           label={label}
           value={value}
           onChangeText={(text) => onChangeText(formatIsrc(text))}
+          // i18n-exempt: a format example, not copy
           placeholder="GB-XXX-26-00001"
           autoCapitalize="characters"
           autoCorrect={false}

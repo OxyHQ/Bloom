@@ -4,9 +4,11 @@ import React, { useRef, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useComposerPopover } from './context';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { PERMISSION_PANEL_WIDTH, type ComposerPalette } from './shared';
 import type { ComposerPanelLabels, ComposerPanelPermissionOption } from './types';
 import { dataHook } from './web-hooks';
@@ -50,6 +52,7 @@ export function PermissionMenu({
   testID,
 }: PermissionMenuProps) {
   const Button = useComposerButton();
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
@@ -79,7 +82,7 @@ export function PermissionMenu({
         ref={triggerRef}
         testID={testID}
         accessibilityRole="button"
-        accessibilityLabel={`Permission: ${current.label}`}
+        accessibilityLabel={messages.permissionTrigger(current.label)}
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}

@@ -1,3 +1,4 @@
+import { LOCATION_PUCK_MESSAGES } from './messages';
 import type { LocationPuckState } from './types';
 
 export interface LocationPuckGeometry {
@@ -62,9 +63,9 @@ export const LOCATION_PUCK_STALE_OPACITY = 0.5;
 /** One full breath of the `locating` pulse. */
 export const LOCATION_PUCK_PULSE_MS = 1600;
 
-/** The English default state words, in the order a sentence wants them. */
-export const LOCATION_PUCK_STATE_LABELS: Readonly<Record<LocationPuckState, string>> = {
-  locating: 'Finding your location',
-  located: 'Your location',
-  stale: 'Your last known location',
-};
+/**
+ * The English state words. The puck itself speaks `LOCATION_PUCK_MESSAGES` in
+ * the app's locale; this stays for callers that read the English set.
+ */
+export const LOCATION_PUCK_STATE_LABELS: Readonly<Record<LocationPuckState, string>> =
+  LOCATION_PUCK_MESSAGES.en.states;

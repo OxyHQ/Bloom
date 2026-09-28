@@ -6,6 +6,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PROPERTY_FACTS_FOUR_COLUMN_MIN_WIDTH, PROPERTY_FACTS_THREE_COLUMN_MIN_WIDTH } from './constants';
 import { resolveListingPalette } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { PropertyFactsProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
 
@@ -41,10 +43,12 @@ function PropertyFactsComponent({
   onShowAll,
   total,
   showAllLabel,
-  accessibilityLabel = 'Property features',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PropertyFactsProps) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.propertyFeatures;
   const theme = useTheme();
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
   const { width, onLayout } = useContainerWidth();
@@ -53,7 +57,7 @@ function PropertyFactsComponent({
   const shown = limit != null && limit >= 0 ? items.slice(0, limit) : items;
   const fullCount = Math.max(total ?? items.length, items.length);
   const hasMore = fullCount > shown.length;
-  const buttonLabel = showAllLabel ? showAllLabel(fullCount) : `Show all ${fullCount} features`;
+  const buttonLabel = showAllLabel ? showAllLabel(fullCount) : messages.showAllFeatures(fullCount);
 
   return (
     <View onLayout={onLayout} style={[{ width: '100%', gap: 24 }, style]} testID={testID}>

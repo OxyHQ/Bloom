@@ -14,11 +14,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE, Text } from '../typography';
+import { AGENT_THINKING_MESSAGES } from './messages';
 import type { AgentThinkingProps, AgentThinkingTone, AgentThinkingVariant } from './types';
 
 /**
@@ -428,13 +430,15 @@ function ElapsedTimer({ color }: { color: string }) {
 
 function AgentThinkingComponent({
   variant = 'wave',
-  label = 'Thinking',
+  label: labelProp,
   tone,
   shimmer = true,
   showTimer = true,
   style,
   testID,
 }: AgentThinkingProps) {
+  const { messages } = useMessages(AGENT_THINKING_MESSAGES);
+  const label = labelProp ?? messages.thinking;
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const color = resolveTone(theme, tone ?? VARIANT_TONE[variant]);

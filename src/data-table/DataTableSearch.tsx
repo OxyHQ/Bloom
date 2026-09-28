@@ -6,6 +6,7 @@ import { BREAKPOINTS } from '../styles/breakpoints';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { TYPE_SCALE } from '../typography';
 import type { DataTableSearchProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /** `w-[153px]` / `min-w-[153px]`. */
 const SEARCH_WIDTH = 153;
@@ -20,9 +21,11 @@ export function DataTableSearch({
   label,
   value,
   onValueChange,
-  placeholder = 'Search',
+  placeholder: placeholderProp,
   testID,
 }: DataTableSearchProps) {
+  const common = useCommonMessages();
+  const placeholder = placeholderProp ?? common.search;
   const { width } = useWindowDimensions();
   const narrow = width < BREAKPOINTS.sm;
   return (

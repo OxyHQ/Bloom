@@ -6,6 +6,8 @@ import { RangeFields } from '../stay-filters/RangeFields';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { DEFAULT_BUDGET_PRESETS } from './constants';
+import { useMessages } from '../locale/messages';
+import { HOME_SEARCH_MESSAGES, type HomeSearchMessages } from './messages';
 import type { BudgetPickerProps, BudgetPreset } from './types';
 
 /**
@@ -29,12 +31,16 @@ import type { BudgetPickerProps, BudgetPreset } from './types';
  */
 
 /** A preset's chip label from the amount formatter. Pure; exported for the tests. */
-export function budgetPresetLabel(preset: BudgetPreset, format: (n: number) => string): string {
+export function budgetPresetLabel(
+  preset: BudgetPreset,
+  format: (n: number) => string,
+  messages: HomeSearchMessages = HOME_SEARCH_MESSAGES.en,
+): string {
   if (preset.label) return preset.label;
-  if (preset.min == null && preset.max != null) return `Up to ${format(preset.max)}`;
+  if (preset.min == null && preset.max != null) return messages.upTo(format(preset.max));
   if (preset.max == null && preset.min != null) return `${format(preset.min)}+`;
   if (preset.min != null && preset.max != null) return `${format(preset.min)} – ${format(preset.max)}`;
-  return 'Any';
+  return messages.any;
 }
 
 function BudgetPickerComponent({
@@ -45,18 +51,22 @@ function BudgetPickerComponent({
   formatAmount = String,
   title,
   description,
-  minLabel = 'Minimum',
-  maxLabel = 'Maximum',
+  minLabel: minLabelProp,
+  maxLabel: maxLabelProp,
   step,
-  presetsLabel = 'Budget presets',
+  presetsLabel: presetsLabelProp,
   style,
   testID,
 }: BudgetPickerProps) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES);
+  const minLabel = minLabelProp ?? messages.minimum;
+  const maxLabel = maxLabelProp ?? messages.maximum;
+  const presetsLabel = presetsLabelProp ?? messages.budgetPresets;
   const theme = useTheme();
   const items = presets ?? DEFAULT_BUDGET_PRESETS[period];
-  const heading = title ?? (period === 'month' ? 'Monthly budget' : 'Price');
+  const heading = title ?? (period === 'month' ? messages.monthlyBudget : messages.price);
   const sub =
-    description === undefined ? (period === 'month' ? 'Rent per month, before bills' : 'Total price') : description;
+    description === undefined ? (period === 'month' ? messages.monthlyBudgetDescription : messages.totalPriceDescription) : description;
 
   const onCommit = useCallback(
     (next: [number | null, number | null]) => {
@@ -102,7 +112,7 @@ function BudgetPickerComponent({
                 // `paddingHorizontal`, the spelling Chip's base uses — a longhand would lose on web.
                 style={{ paddingHorizontal: 12, height: 32 }}
               >
-                {budgetPresetLabel(preset, formatAmount)}
+                {budgetPresetLabel(preset, formatAmount, messages)}
               </Chip>
             );
           })}

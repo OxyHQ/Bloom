@@ -7,8 +7,10 @@ import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiBox3Line } from '../icons/remix/RiBox3Line';
 import { RiFocus3Line } from '../icons/remix/RiFocus3Line';
 import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
+import { useMessages } from '../locale/messages';
 import { MAP_CONTROL_BOX, MAP_CONTROLS_GEOMETRY } from './constants';
 import { MapCompass } from './MapCompass';
+import { MAP_CONTROLS_MESSAGES } from './messages';
 import type { MapControlsProps } from './types';
 
 /**
@@ -61,14 +63,15 @@ function MapControlsComponent({
   style,
   testID,
 }: MapControlsProps) {
+  const { messages } = useMessages(MAP_CONTROLS_MESSAGES);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
-  const zoomLabel = labels?.zoom ?? 'Zoom';
+  const zoomLabel = labels?.zoom ?? messages.zoom;
   const zoomable = onZoomIn !== undefined && onZoomOut !== undefined;
 
   return (
     <View
       role="group"
-      accessibilityLabel={labels?.group ?? 'Map controls'}
+      accessibilityLabel={labels?.group ?? messages.group}
       testID={testID}
       style={[
         {
@@ -85,7 +88,7 @@ function MapControlsComponent({
             leadingIcon={RiFocus3Line}
             selected={following}
             accessibilityLabel={
-              following ? (labels?.following ?? 'Stop following my location') : (labels?.locate ?? 'Show my location')
+              following ? (labels?.following ?? messages.following) : (labels?.locate ?? messages.locate)
             }
             onPress={onLocate}
             style={MAP_CONTROL_BOX}
@@ -113,7 +116,7 @@ function MapControlsComponent({
           <ButtonGroupItem
             iconOnly
             leadingIcon={RiAddLine}
-            accessibilityLabel={labels?.zoomIn ?? 'Zoom in'}
+            accessibilityLabel={labels?.zoomIn ?? messages.zoomIn}
             onPress={onZoomIn}
             disabled={!canZoomIn}
             style={MAP_CONTROL_BOX}
@@ -122,7 +125,7 @@ function MapControlsComponent({
           <ButtonGroupItem
             iconOnly
             leadingIcon={RiSubtractLine}
-            accessibilityLabel={labels?.zoomOut ?? 'Zoom out'}
+            accessibilityLabel={labels?.zoomOut ?? messages.zoomOut}
             onPress={onZoomOut}
             disabled={!canZoomOut}
             style={MAP_CONTROL_BOX}
@@ -138,7 +141,7 @@ function MapControlsComponent({
             leadingIcon={RiBox3Line}
             selected={tilted ?? false}
             accessibilityLabel={
-              tilted ? (labels?.tiltOff ?? 'Flatten the map') : (labels?.tilt ?? 'Tilt the map')
+              tilted ? (labels?.tiltOff ?? messages.tiltOff) : (labels?.tilt ?? messages.tilt)
             }
             onPress={() => onTiltChange(!tilted)}
             style={MAP_CONTROL_BOX}

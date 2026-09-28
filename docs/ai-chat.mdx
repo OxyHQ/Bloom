@@ -230,6 +230,10 @@ carry no handlers). A host with no browser preview or no style presets passes
 `browser={null}` or `stylePresets={null}` and the tab is gone, so the panel
 never presents a preview or a style editor that does not exist.
 
+### Language
+
+Every default name and label (the feedback row, the panels, the default panel actions and `panelLabel`, the shell's drawer buttons, the image countdown) is localised via `BloomProvider locale`; each `labels` key still wins.
+
 ### Panel keyboard ownership
 
 An open `AiChatShell` panel closes on Escape (web) or Android back — on web

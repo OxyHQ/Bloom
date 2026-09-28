@@ -44,15 +44,15 @@ export interface SettingsModalPage {
 }
 
 export interface SettingsModalLabels {
-  /** Dialog name. Default `Settings`. */
+  /** Dialog name (`Settings` in English; the defaults follow `BloomProvider locale`). */
   dialog?: string;
-  /** Rail landmark name. Default `Settings sections`. */
+  /** Rail landmark name (`Settings sections` in English). */
   nav?: string;
-  /** Close button and backdrop. Default `Close settings`. */
+  /** Close button and backdrop (`Close settings` in English). */
   close?: string;
-  /** The saved toast. Default `Saved`. */
+  /** The saved toast (`Saved` in English). */
   saved?: string;
-  /** Compact layout: the back button from a page to the section list. Default `Back`. */
+  /** Compact layout: the back button from a page to the section list (`Back` in English). */
   back?: string;
 }
 
@@ -151,7 +151,7 @@ export interface SettingsDateFieldProps {
   label: string;
   value: Date;
   onChange: (date: Date) => void;
-  /** Default `28 July 1997` style (`day month year`). */
+  /** Defaults to the locale's long date (`28 July 1997` in en-GB, `July 28, 1997` in en-US). */
   formatDate?: (date: Date) => string;
   minDate?: Date;
   maxDate?: Date;
@@ -164,7 +164,7 @@ export interface SettingsDateFieldProps {
 // ---------------------------------------------------------------------------
 
 export interface SettingsPlanCardProps {
-  /** Chip over the title. Default `Current plan`. */
+  /** Chip over the title (`Current plan` in English). */
   badge?: string;
   title: string;
   description?: string;

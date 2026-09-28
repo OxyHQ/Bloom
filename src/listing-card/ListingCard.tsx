@@ -60,6 +60,9 @@ import {
   type ListingCardPaint,
 } from './shared';
 import type { ListingCardLayout, ListingCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A home in a results grid — a stay, a rental, a home for sale or a swap.
@@ -295,9 +298,9 @@ function BadgePill({ label, paint }: { label: string; paint: ListingCardPaint })
 //  Text
 // ---------------------------------------------------------------------------
 
-function composeName(props: ListingCardProps): string {
+function composeName(props: ListingCardProps, messages: ListingCardMessages): string {
   const parts: string[] = [props.title];
-  const status = statusLabelFor(props.status, props.statusLabel);
+  const status = statusLabelFor(props.status, props.statusLabel, messages.statuses);
   if (status) parts.push(status);
   if (typeof props.badge === 'string' && props.badge) parts.push(props.badge);
   for (const offering of uniqueOfferings(props.offerings)) {
@@ -306,18 +309,25 @@ function composeName(props: ListingCardProps): string {
   if (props.rating !== undefined) {
     const rated = props.rating !== null && props.rating !== '';
     if (rated) {
-      const count =
-        props.reviewCount != null && props.reviewCount !== '' ? `, ${props.reviewCount} reviews` : '';
-      parts.push(`Rated ${formatRatingValue(props.rating as number | string)} out of 5${count}`);
+      const value = formatRatingValue(props.rating as number | string);
+      parts.push(
+        props.reviewCount != null && props.reviewCount !== ''
+          ? messages.ratedWithReviews(value, String(props.reviewCount))
+          : messages.rated(value),
+      );
     } else {
-      parts.push(props.newLabel ?? 'New');
+      parts.push(props.newLabel ?? messages.newListing);
     }
   }
   if (props.subtitle) parts.push(props.subtitle);
-  const location = locationText(props.address, props.approximateLocation, props.approximateLocationLabel);
+  const location = locationText(
+    props.address,
+    props.approximateLocation,
+    props.approximateLocationLabel ?? messages.approximateLocation,
+  );
   if (location) parts.push(location);
   if (props.dates) parts.push(props.dates);
-  for (const line of resolvePriceLines(props)) parts.push(describePriceLine(line));
+  for (const line of resolvePriceLines(props)) parts.push(describePriceLine(line, messages));
   if (props.total) parts.push(props.total);
   const facts = describeFacts(props.facts);
   if (facts) parts.push(facts);
@@ -326,9 +336,14 @@ function composeName(props: ListingCardProps): string {
 
 function Details(props: ListingCardProps & { paint: ListingCardPaint; horizontal: boolean }) {
   const { title, subtitle, dates, rating, reviewCount, newLabel, total, facts, paint } = props;
+  const { messages } = useMessages(LISTING_CARD_MESSAGES);
   const secondary = { color: paint.textSecondary };
   const lines = resolvePriceLines(props);
-  const location = locationText(props.address, props.approximateLocation, props.approximateLocationLabel);
+  const location = locationText(
+    props.address,
+    props.approximateLocation,
+    props.approximateLocationLabel ?? messages.approximateLocation,
+  );
   const testID = props.testID;
   return (
     <View
@@ -407,12 +422,13 @@ function ListingCardSkeleton({
   style,
   testID,
 }: Pick<ListingCardProps, 'style' | 'testID'> & { layout: ListingCardLayout; compact: boolean }) {
+  const common = useCommonMessages();
   const horizontal = layout === 'horizontal';
   if (compact) {
     return (
       <View
         aria-busy
-        accessibilityLabel="Loading"
+        accessibilityLabel={common.loading}
         style={[{ flexDirection: 'row', alignItems: 'center' }, style]}
         testID={testID}
       >
@@ -434,7 +450,7 @@ function ListingCardSkeleton({
   return (
     <View
       aria-busy
-      accessibilityLabel="Loading"
+      accessibilityLabel={common.loading}
       style={[{ flexDirection: horizontal ? 'row' : 'column', alignItems: 'flex-start' }, style]}
       testID={testID}
     >
@@ -505,10 +521,15 @@ function CompactRow(props: CompactRowProps) {
     style,
     testID,
   } = props;
+  const { messages } = useMessages(LISTING_CARD_MESSAGES);
   const resolver = useImageResolver();
   const cover = photos[0] ? resolvePhoto(photos[0], resolver, photoVariant) : undefined;
   const lines = resolvePriceLines(props);
-  const location = locationText(props.address, props.approximateLocation, props.approximateLocationLabel);
+  const location = locationText(
+    props.address,
+    props.approximateLocation,
+    props.approximateLocationLabel ?? messages.approximateLocation,
+  );
   const offeringList = uniqueOfferings(offerings);
   const secondary = { color: paint.textSecondary };
 
@@ -653,14 +674,17 @@ function ListingCardComponent(props: ListingCardProps) {
     status,
     statusLabel,
     accessibilityLabel,
-    previousPhotoLabel = 'Previous photo',
-    nextPhotoLabel = 'Next photo',
+    previousPhotoLabel: previousPhotoLabelProp,
+    nextPhotoLabel: nextPhotoLabelProp,
     saveLabel,
     removeLabel,
     onPhotoIndexChange,
     style,
     testID,
   } = props;
+  const { messages } = useMessages(LISTING_CARD_MESSAGES);
+  const previousPhotoLabel = previousPhotoLabelProp ?? messages.previousPhoto;
+  const nextPhotoLabel = nextPhotoLabelProp ?? messages.nextPhoto;
   const theme = useTheme();
   useInteractiveWebCss(LISTING_CARD_STYLE_ID, LISTING_CARD_CSS);
   const paint = useMemo(() => resolveListingCardPaint(theme), [theme]);
@@ -722,8 +746,8 @@ function ListingCardComponent(props: ListingCardProps) {
   if (loading) return <ListingCardSkeleton layout={layout} compact={compact} style={style} testID={testID} />;
 
   const horizontal = layout === 'horizontal';
-  const name = accessibilityLabel ?? composeName(props);
-  const shownStatus = statusLabelFor(status, statusLabel);
+  const name = accessibilityLabel ?? composeName(props, messages);
+  const shownStatus = statusLabelFor(status, statusLabel, messages.statuses);
   const hasBadge = badge != null && badge !== '';
   const offeringList = uniqueOfferings(offerings);
 

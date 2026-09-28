@@ -1,9 +1,11 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { FileMessage } from './FileMessage';
 import { resolveMessageMediaPaint } from './shared';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { DocumentGridProps } from './types';
 
 /**
@@ -33,10 +35,11 @@ function DocumentGridComponent({
   testID,
 }: DocumentGridProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const paint = useMemo(() => resolveMessageMediaPaint(theme, 'incoming'), [theme]);
 
   const listName =
-    accessibilityLabel ?? `Shared files, ${items.length} item${items.length === 1 ? '' : 's'}`;
+    accessibilityLabel ?? messages.sharedFiles(items.length);
 
   return (
     <View role="list" accessibilityLabel={listName} style={style ?? null} testID={testID}>

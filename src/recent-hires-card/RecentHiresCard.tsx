@@ -16,6 +16,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { RecentHire, RecentHiresCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The "Recent hires" card:
@@ -146,8 +147,8 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   teamLabel,
   onTeamPress,
   teamAccessibilityLabel,
-  previousLabel = 'Previous',
-  nextLabel = 'Next',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   onPreviousPress,
   onNextPress,
   previousDisabled,
@@ -156,6 +157,9 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   style,
   testID,
 }) => {
+  const common = useCommonMessages();
+  const previousLabel = previousLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
   const fill = useCardFill(style);
   const palette = useMemo(() => resolveRecentHiresPalette(theme, fill), [theme, fill]);
@@ -169,13 +173,12 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   const teamHook: WebDataSet = IS_WEB ? { dataSet: { bloomRecentHiresTeam: '' } } : {};
 
   return (
-    <Card elevation="none"
+    <Card radius="radius-16" elevation="none"
       testID={testID}
       style={[
         {
           height: height === 'auto' ? undefined : height,
           minWidth: 0,
-          borderRadius: 16,
           paddingTop: 8,
           paddingBottom: 8,
           paddingLeft: 8,

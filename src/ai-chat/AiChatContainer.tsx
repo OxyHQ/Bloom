@@ -52,13 +52,11 @@ import {
   useAiChatWebCss,
 } from './shared';
 import { WEB_POSITION_STICKY, webViewportHeightMinus } from '../styles/web-view-style';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatContainerProps, AiChatThreadHandle, AiChatThreadProps } from './types';
 
-const DEFAULT_LABELS = {
-  breadcrumb: 'Chat location',
-  share: 'Share chat',
-  more: 'More options',
-};
 
 /** The thread's own top padding: the gap between the header and the first turn. */
 const THREAD_PAD_TOP = 16;
@@ -137,7 +135,9 @@ export function AiChatContainerBase({
 }: AiChatContainerProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const common = useCommonMessages();
+  const l = useMemo(() => ({ ...messages.container, more: common.moreOptions, ...labels }), [messages, common, labels]);
   const documentScroll = useAiChatShell()?.documentScroll ?? false;
   const gutterColor = useContext(AiChatDocumentGutterContext);
 

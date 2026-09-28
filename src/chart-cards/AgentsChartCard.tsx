@@ -244,7 +244,6 @@ export function AgentsChartCard({
           minWidth: 0,
           flexDirection: 'column',
           gap: 10,
-          borderRadius: 20,
           paddingTop: 12,
           paddingBottom: 12,
           paddingLeft: 10,

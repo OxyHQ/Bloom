@@ -7,8 +7,10 @@ import { BOOKING_FIELD_RADIUS } from '../booking/shared';
 import { Button } from '../button';
 import { Chip } from '../chip';
 import { RiArrowLeftRightLine } from '../icons/remix/RiArrowLeftRightLine';
+import { useMessages } from '../locale/messages';
 import { borderRadius } from '../styles/tokens';
-import { EXCHANGE_MODE_LABELS, EXCHANGE_STACK_BELOW } from './constants';
+import { EXCHANGE_STACK_BELOW } from './constants';
+import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { HomeTile, useActionPalette, useFocusSheet } from './parts';
 import type { ExchangeMode, ExchangeProposalCardProps } from './types';
 
@@ -37,21 +39,21 @@ const ALL_MODES: readonly ExchangeMode[] = ['swap', 'host', 'both'];
 function ExchangeProposalCardComponent({
   yourHome,
   theirHome,
-  yourHomeLabel = 'Your home',
-  theirHomeLabel = 'Their home',
+  yourHomeLabel: yourHomeLabelProp,
+  theirHomeLabel: theirHomeLabelProp,
   dates,
   onPressDates,
   guests,
   onPressGuests,
-  datesLabel = 'Dates',
-  guestsLabel = 'Guests',
-  datesPlaceholder = 'Add dates',
-  guestsPlaceholder = 'Add guests',
+  datesLabel: datesLabelProp,
+  guestsLabel: guestsLabelProp,
+  datesPlaceholder: datesPlaceholderProp,
+  guestsPlaceholder: guestsPlaceholderProp,
   mode,
   onModeChange,
   modes = ALL_MODES,
   modeLabels,
-  proposeLabel = 'Propose a swap',
+  proposeLabel: proposeLabelProp,
   onPropose,
   proposeDisabled = false,
   loading = false,
@@ -61,6 +63,14 @@ function ExchangeProposalCardComponent({
   style,
   testID,
 }: ExchangeProposalCardProps) {
+  const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
+  const yourHomeLabel = yourHomeLabelProp ?? messages.yourHome;
+  const theirHomeLabel = theirHomeLabelProp ?? messages.theirHome;
+  const datesLabel = datesLabelProp ?? messages.dates;
+  const guestsLabel = guestsLabelProp ?? messages.guests;
+  const datesPlaceholder = datesPlaceholderProp ?? messages.addDates;
+  const guestsPlaceholder = guestsPlaceholderProp ?? messages.addGuests;
+  const proposeLabel = proposeLabelProp ?? messages.proposeSwap;
   const palette = useActionPalette();
   useFocusSheet();
   const [width, setWidth] = useState<number | null>(null);
@@ -74,7 +84,7 @@ function ExchangeProposalCardComponent({
   const stacked =
     layout === 'vertical' || (layout === 'auto' && width != null && width < EXCHANGE_STACK_BELOW);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
-  const labels = useMemo(() => ({ ...EXCHANGE_MODE_LABELS, ...modeLabels }), [modeLabels]);
+  const labels = useMemo(() => ({ ...messages.exchangeModes, ...modeLabels }), [messages, modeLabels]);
 
   // Side by side, the glyph sits on the photos' centre line: the label (15 +
   // 8 gap) plus half a 4:3 photo as wide as one tile.

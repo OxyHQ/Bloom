@@ -6,11 +6,13 @@ import { Badge } from '../badge';
 import { Card, CardBody } from '../card';
 import { useImageResolver } from '../image-resolver/context';
 import { resolvePhoto } from '../listing-card/shared';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { PLACE_LIST_GEOMETRY, PLACE_LIST_VISIBILITY_ICON, PLACE_LIST_VISIBILITY_LABELS } from './constants';
-import { composePlaceListName, placeListCountLabel, placeListSharedWithLabel, resolvePlaceListPaint } from './shared';
+import { PLACE_LIST_GEOMETRY, PLACE_LIST_VISIBILITY_ICON } from './constants';
+import { PLACE_LIST_MESSAGES } from './messages';
+import { composePlaceListName, resolvePlaceListPaint } from './shared';
 import type { PlaceListCardProps } from './types';
 
 /**
@@ -41,7 +43,7 @@ function PlaceListCardComponent(props: PlaceListCardProps) {
   const {
     name,
     count,
-    countLabel = placeListCountLabel,
+    countLabel: countLabelProp,
     photos,
     photoVariant,
     empty,
@@ -50,13 +52,16 @@ function PlaceListCardComponent(props: PlaceListCardProps) {
     visibility = 'private',
     visibilityLabel,
     collaborators,
-    sharedWithLabel = placeListSharedWithLabel,
+    sharedWithLabel: sharedWithLabelProp,
     onPress,
     accessibilityLabel,
     style,
     testID,
   } = props;
 
+  const { messages } = useMessages(PLACE_LIST_MESSAGES);
+  const countLabel = countLabelProp ?? messages.places;
+  const sharedWithLabel = sharedWithLabelProp ?? messages.sharedWith;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePlaceListPaint(theme, surface), [theme, surface]);
@@ -93,7 +98,7 @@ function PlaceListCardComponent(props: PlaceListCardProps) {
     <Card
       radius="radius-16"
       onPress={onPress}
-      accessibilityLabel={accessibilityLabel ?? composePlaceListName(props)}
+      accessibilityLabel={accessibilityLabel ?? composePlaceListName(props, messages)}
       style={style}
       testID={testID}
     >
@@ -167,7 +172,7 @@ function PlaceListCardComponent(props: PlaceListCardProps) {
           ) : null}
 
           <Badge
-            content={visibilityLabel ?? PLACE_LIST_VISIBILITY_LABELS[visibility]}
+            content={visibilityLabel ?? messages.visibility[visibility]}
             icon={VisibilityIcon}
             variant="subtle"
             color="default"

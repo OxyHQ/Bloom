@@ -41,6 +41,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TRANSITION_MS } from './shared';
 import type { ComposerPopoverProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 const GUTTER = 8;
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
@@ -70,6 +71,7 @@ export function ComposerPopover({
 
   const publishedFill = paintsSurface ? resolveSurfaceFill(fill as string, false, theme!.colors.card) : undefined;
   const content = publishedFill ? <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider> : children;
+  const common = useCommonMessages();
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
@@ -148,7 +150,7 @@ export function ComposerPopover({
         style={StyleSheet.absoluteFill}
         onPress={close}
         accessibilityRole="button"
-        accessibilityLabel="Dismiss"
+        accessibilityLabel={common.dismiss}
       />
       <Animated.View
         testID={testID}

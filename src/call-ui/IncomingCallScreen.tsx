@@ -16,12 +16,13 @@ import { RiPhoneFill } from '../icons/remix/RiPhoneFill';
 import { RiTimerLine } from '../icons/remix/RiTimerLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { CallControlButton } from './CallControls';
 import { CallEndGlyph } from './glyphs';
 import { CallStageBackdrop } from './parts';
+import { CALL_UI_MESSAGES } from './messages';
 import {
   CALL_UI_RADIUS,
-  INCOMING_CALL_LABELS,
   resolveCallPaint,
   slideAnswers,
   type CallPaint,
@@ -142,10 +143,11 @@ function IncomingCallScreenComponent({
   style,
   testID,
 }: IncomingCallScreenProps) {
+  const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
   const reduced = useReducedMotion();
-  const l = { ...INCOMING_CALL_LABELS, ...labels };
+  const l = { ...messages.incoming, ...labels };
   const line = subtitle ?? (mode === 'video' ? l.video : l.voice);
 
   const [offset, setOffset] = useState(0);

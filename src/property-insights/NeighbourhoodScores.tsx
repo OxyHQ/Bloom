@@ -6,6 +6,8 @@ import { Meter, MeterRing } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { NEIGHBOURHOOD_SCORES_TWO_COLUMN_MIN_WIDTH } from './constants';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import { resolveInsightPalette, type InsightPalette } from './shared';
 import type { NeighbourhoodScore, NeighbourhoodScoresProps } from './types';
 
@@ -116,10 +118,12 @@ function NeighbourhoodScoresComponent({
   max: maxProp = 10,
   variant = 'bars',
   columns = 'auto',
-  formatValueText = (display, max) => `${display} out of ${max}`,
+  formatValueText: formatValueTextProp,
   style,
   testID,
 }: NeighbourhoodScoresProps) {
+  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const formatValueText = formatValueTextProp ?? messages.scoreOutOf;
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const { width, onLayout } = useContainerWidth();

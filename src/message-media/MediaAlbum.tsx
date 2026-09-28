@@ -3,6 +3,8 @@ import { View } from 'react-native';
 
 import { formatDuration } from '../media-controls';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -22,6 +24,7 @@ import {
   MESSAGE_MEDIA_WIDTH,
   resolveMessageMediaPaint,
 } from './shared';
+import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';
 import type { MediaAlbumItem, MediaAlbumProps } from './types';
 
 /**
@@ -47,6 +50,7 @@ function AlbumCell({
   onPress,
   overflow,
   formatOverflow,
+  messages,
   testID,
 }: {
   item: MediaAlbumItem;
@@ -57,6 +61,7 @@ function AlbumCell({
   onPress?: (index: number) => void;
   overflow: number;
   formatOverflow: (remaining: number) => string;
+  messages: MessageMediaMessages;
   testID?: string;
 }) {
   const [revealed, setRevealed] = useState(false);
@@ -66,7 +71,7 @@ function AlbumCell({
     item.durationLabel ?? (typeof item.duration === 'number' ? formatDuration(item.duration) : undefined);
 
   const name =
-    item.accessibilityLabel ?? `${isVideo ? 'Video' : 'Photo'} ${index + 1} of ${total}`;
+    item.accessibilityLabel ?? (isVideo ? messages.videoOf : messages.photoOf)(index + 1, total);
 
   const handlePress = useCallback(() => {
     if (hidden) {
@@ -103,7 +108,7 @@ function AlbumCell({
         radii={rect.radii}
         placeholder={item.placeholderColor ?? paint.placeholder}
       />
-      {hidden ? <SpoilerCover label="Tap to view" paint={paint} radii={rect.radii} /> : null}
+      {hidden ? <SpoilerCover label={messages.tapToView} paint={paint} radii={rect.radii} /> : null}
       {!hidden && isVideo && duration ? (
         <MediaPill label={duration} paint={paint} leadingPlay position={{ left: 6, bottom: 6 }} />
       ) : null}
@@ -138,6 +143,8 @@ function MediaAlbumComponent({
   testID,
 }: MediaAlbumProps) {
   const theme = useTheme();
+  const common = useCommonMessages();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
@@ -149,7 +156,7 @@ function MediaAlbumComponent({
 
   const sending = state === 'sending';
   const groupName =
-    accessibilityLabel ?? `Album, ${items.length} item${items.length === 1 ? '' : 's'}`;
+    accessibilityLabel ?? messages.album(items.length);
 
   return (
     <View style={[{ width }, style ?? null]} testID={testID}>
@@ -173,6 +180,7 @@ function MediaAlbumComponent({
               onPress={onPress}
               overflow={last ? layout.overflow : 0}
               formatOverflow={formatOverflow}
+              messages={messages}
               testID={testID ? `${testID}-cell-${rect.index}` : undefined}
             />
           );
@@ -186,7 +194,7 @@ function MediaAlbumComponent({
               fill="rgba(0, 0, 0, 0.35)"
               glyph={onCancel ? 'cancel' : 'none'}
               onPress={onCancel}
-              accessibilityLabel={onCancel ? 'Cancel' : 'Sending album'}
+              accessibilityLabel={onCancel ? common.cancel : messages.sendingAlbum}
               ring={paint.ring}
               testID={testID ? `${testID}-progress` : undefined}
             />

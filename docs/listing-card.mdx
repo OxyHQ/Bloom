@@ -173,8 +173,9 @@ draws a matching row skeleton.
 
 **Accessible name.** The link is named for the stay — "Alvora, Coast of Merin,
 Guest favourite, Rated 4.92 out of 5, 128 reviews, Hosted by Ilse, 12 – 17 Oct,
-€124 night, originally €150". That sentence is English; apps in other languages
-pass `accessibilityLabel`. A home adds, in order: the status after the title,
+€124 night, originally €150". Its words are localised via `BloomProvider locale`
+(the app's own strings — title, prices, dates — pass through); `accessibilityLabel`
+replaces it outright. A home adds, in order: the status after the title,
 the offerings after the badge, the address after the subtitle, each price line
 ("€240,000, €3,200/m², originally €255,000") and the facts last.
 

@@ -3,9 +3,11 @@ import { Platform, View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useDirectionProps } from '../hooks/use-is-rtl';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
+import { RATING_MESSAGES } from './messages';
 import type { RatingProps, RatingSize } from './types';
 
 /**
@@ -139,8 +141,8 @@ function RatingComponent({
   value,
   count,
   countStyle = 'parenthesis',
-  reviewsLabel = 'reviews',
-  newLabel = 'New',
+  reviewsLabel,
+  newLabel: newLabelProp,
   size = 'medium',
   variant = 'compact',
   color,
@@ -153,6 +155,8 @@ function RatingComponent({
   testID,
 }: RatingProps) {
   const theme = useTheme();
+  const { messages } = useMessages(RATING_MESSAGES);
+  const newLabel = newLabelProp ?? messages.newRating;
   const directionProps = useDirectionProps();
   const textColor = color ?? theme.colors.text;
   const starPaint = starColor ?? textColor;
@@ -161,15 +165,23 @@ function RatingComponent({
   const rated = value != null && value !== '';
   const shownValue = rated ? formatRatingValue(value) : newLabel;
   const hasCount = rated && count != null && count !== '';
+  // The caller's word follows the count as given; the catalog's is pluralised.
+  const reviewsText = hasCount
+    ? reviewsLabel != null
+      ? `${count} ${reviewsLabel}`
+      : messages.reviews(count as number | string)
+    : '';
   const countText = hasCount
     ? countStyle === 'reviews'
-      ? `· ${count} ${reviewsLabel}`
+      ? `· ${reviewsText}`
       : `(${count})`
     : null;
   const name =
     accessibilityLabel ??
     (rated
-      ? `Rated ${shownValue} out of 5${hasCount ? `, ${count} ${reviewsLabel}` : ''}`
+      ? hasCount
+        ? messages.ratedWithReviews(shownValue, reviewsText)
+        : messages.rated(shownValue)
       : newLabel);
 
   return (

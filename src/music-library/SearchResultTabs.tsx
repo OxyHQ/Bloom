@@ -3,6 +3,8 @@ import { Platform, View } from 'react-native';
 
 import { Chip, ChipRow } from '../chip';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useMessages } from '../locale/messages';
+import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import { MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID } from './shared';
 import type { SearchResultTabsProps } from './types';
 
@@ -31,10 +33,12 @@ function SearchResultTabsComponent({
   tabs,
   value,
   onValueChange,
-  accessibilityLabel = 'Result types',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: SearchResultTabsProps) {
+  const { messages } = useMessages(MUSIC_LIBRARY_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.resultTypes;
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);

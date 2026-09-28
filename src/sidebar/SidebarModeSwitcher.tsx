@@ -19,6 +19,8 @@ import { useSidebarGeometry } from './geometry';
 import { useSidebarMetrics } from './metrics';
 import { Collapsible, IS_WEB, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss, webHook } from './parts';
 import type { SidebarMode, SidebarModeSwitcherProps } from './types';
+import { useMessages } from '../locale/messages';
+import { SIDEBAR_MESSAGES } from './messages';
 
 /**
  * `SidebarModeSwitcher`: a vertical segmented control for the modes a sidebar
@@ -133,11 +135,13 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   value,
   onValueChange,
   collapsed = false,
-  accessibilityLabel = 'Mode',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }) => {
   const palette = useSidebarPalette();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.mode;
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
   const metrics = useSidebarMetrics();

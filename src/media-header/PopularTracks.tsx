@@ -11,6 +11,9 @@ import { Text } from '../typography';
 import { useImageUri, useMediaHeaderPaint } from './parts';
 import { type MediaHeaderPaint } from './shared';
 import type { PopularTrack, PopularTracksProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * An artist's most played tracks: five rows, "See more" shows ten.
@@ -123,19 +126,24 @@ function TrackRow({
 
 function PopularTracksComponent({
   tracks,
-  title = 'Popular',
+  title: titleProp,
   collapsedCount = 5,
   expandedCount = 10,
   expanded: expandedProp,
   onExpandedChange,
-  showMoreLabel = 'See more',
-  showLessLabel = 'Show less',
+  showMoreLabel: showMoreLabelProp,
+  showLessLabel: showLessLabelProp,
   activeTrackId,
   playing = false,
   onTrackPress,
   style,
   testID,
 }: PopularTracksProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const title = titleProp ?? messages.popular;
+  const showMoreLabel = showMoreLabelProp ?? messages.seeMore;
+  const common = useCommonMessages();
+  const showLessLabel = showLessLabelProp ?? common.showLess;
   const paint = useMediaHeaderPaint();
   const [expandedState, setExpandedState] = useState(false);
   const expanded = expandedProp ?? expandedState;

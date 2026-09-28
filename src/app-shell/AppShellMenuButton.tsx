@@ -3,7 +3,9 @@ import React, { memo } from 'react';
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
+import { useMessages } from '../locale/messages';
 import { useAppShell } from './context';
+import { APP_SHELL_MESSAGES } from './messages';
 import type { AppShellMenuButtonProps } from './types';
 
 /**
@@ -13,10 +15,12 @@ import type { AppShellMenuButtonProps } from './types';
  * `AppShellHeader` shows — swapping to a close glyph while the drawer is open.
  */
 const AppShellMenuButtonComponent: React.FC<AppShellMenuButtonProps> = ({
-  accessibilityLabel = 'Open navigation',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }) => {
+  const { messages } = useMessages(APP_SHELL_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.openNavigation;
   const shell = useAppShell();
   if (!shell.drawerAvailable) return null;
   return (

@@ -14,6 +14,8 @@ import { RiCastLine } from '../icons/remix/RiCastLine';
 import { RiMicOffFill } from '../icons/remix/RiMicOffFill';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { CALL_UI_MESSAGES } from './messages';
 import { CALL_SPEAKING_PULSE_MS, CALL_UI_RADIUS, resolveCallPaint } from './shared';
 import type { GroupCallTileProps } from './types';
 
@@ -78,6 +80,7 @@ function GroupCallTileComponent({
   style,
   testID,
 }: GroupCallTileProps) {
+  const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(
     () => resolveCallPaint(theme, participant.accentColor),
@@ -86,7 +89,7 @@ function GroupCallTileComponent({
   const { id, name, avatar, avatarVariant, video, muted, speaking, presenting, label } = participant;
   const caption = label ?? name;
   const avatarSize = Math.max(28, Math.min(prominent ? 112 : 64, Math.floor(Math.min(width, height) * 0.42)));
-  const accessibleName = muted === true ? (formatMuted ?? ((n: string) => `${n}, muted`))(caption) : caption;
+  const accessibleName = muted === true ? (formatMuted ?? messages.muted)(caption) : caption;
 
   const content = (
     <>

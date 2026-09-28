@@ -30,6 +30,8 @@ import type {
   ContextMenuProps,
   ContextMenuTriggerProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { CONTEXT_MENU_MESSAGES } from './messages';
 
 export function ContextMenu({ children, onOpenChange }: ContextMenuProps) {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
@@ -124,7 +126,7 @@ export function ContextMenuTrigger({
 
 export function ContextMenuContent({
   children,
-  label = 'Context menu',
+  label: labelProp,
   side,
   align = 'start',
   // A context menu opens AT the cursor, not offset from it: the anchor is the
@@ -139,6 +141,8 @@ export function ContextMenuContent({
   style,
   testID,
 }: ContextMenuContentProps) {
+  const { messages } = useMessages(CONTEXT_MENU_MESSAGES);
+  const label = labelProp ?? messages.contextMenu;
   const menu = useContextMenu();
   const surface = useMemo<MenuSurfaceContextValue>(
     () => ({ close: menu.close, presentation: 'dropdown' }),

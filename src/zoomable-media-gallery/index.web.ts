@@ -6,6 +6,7 @@
 export { ZoomableMediaGallery, ZoomableMediaGallery as default } from './ZoomableMediaGallery.web';
 export type {
   ZoomableMediaGalleryHandle,
+  ZoomableMediaGalleryLabels,
   ZoomableMediaGalleryProps,
   GalleryImage,
   GalleryVideo,

@@ -22,24 +22,20 @@ import { Text } from '../typography';
 import {
   CHAT_COMPACT_BREAKPOINT,
   CHAT_HEADER_HEIGHT,
-  CHAT_SCREEN_LABELS,
   formatSelectedCount,
   IS_NATIVE,
   useChatScreenPaint,
   type ChatScreenPaint,
 } from './shared';
 import type { ChatHeaderMarker, ChatHeaderProps, ChatIconComponent } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 const MARKER_ICON: Record<ChatHeaderMarker, ChatIconComponent> = {
   verified: RiVerifiedBadgeFill,
   bot: RiRobot2Line,
   channel: RiMegaphoneLine,
-};
-
-const MARKER_LABEL: Record<ChatHeaderMarker, string> = {
-  verified: CHAT_SCREEN_LABELS.verified,
-  bot: CHAT_SCREEN_LABELS.bot,
-  channel: CHAT_SCREEN_LABELS.channel,
 };
 
 /** The marker's tint: only `verified` earns the accent. */
@@ -109,6 +105,8 @@ function HeaderIconButton({
 function ChatHeaderComponent(props: ChatHeaderProps) {
   const paint = useChatScreenPaint();
   const { width } = useWindowDimensions();
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
+  const common = useCommonMessages();
   const {
     title,
     marker,
@@ -117,7 +115,7 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
     statusTone = 'muted',
     typingLabel,
     connecting = false,
-    connectingLabel = CHAT_SCREEN_LABELS.connecting,
+    connectingLabel = messages.connecting,
     avatar,
     avatarSource,
     avatarName,
@@ -126,17 +124,17 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
     avatarSize = 40,
     onPressBack,
     showBack,
-    backLabel = CHAT_SCREEN_LABELS.back,
+    backLabel = common.back,
     onPressHeader,
     openInfoLabel,
     onPressCall,
     onPressVideoCall,
     onPressSearch,
     onPressMore,
-    callLabel = CHAT_SCREEN_LABELS.call,
-    videoCallLabel = CHAT_SCREEN_LABELS.videoCall,
-    searchLabel = CHAT_SCREEN_LABELS.search,
-    moreLabel = CHAT_SCREEN_LABELS.more,
+    callLabel = messages.call,
+    videoCallLabel = messages.videoCall,
+    searchLabel = messages.searchInConversation,
+    moreLabel = common.moreOptions,
     renderMore,
     actions,
     selectionCount = 0,
@@ -145,13 +143,13 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
     onDelete,
     onCopy,
     onPin,
-    clearSelectionLabel = CHAT_SCREEN_LABELS.clearSelection,
-    forwardLabel = CHAT_SCREEN_LABELS.forward,
-    deleteLabel = CHAT_SCREEN_LABELS.delete,
-    copyLabel = CHAT_SCREEN_LABELS.copy,
-    pinLabel = CHAT_SCREEN_LABELS.pin,
+    clearSelectionLabel = messages.clearSelection,
+    forwardLabel = messages.forward,
+    deleteLabel = common.delete,
+    copyLabel = common.copy,
+    pinLabel = messages.pin,
     selectionActions,
-    formatSelectionCount = formatSelectedCount,
+    formatSelectionCount = (count: number) => formatSelectedCount(count, messages),
     compact: compactProp,
     divider = true,
     style,
@@ -242,7 +240,7 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
 
   // ---- Identity ----------------------------------------------------------
   const MarkerIcon = marker ? MARKER_ICON[marker] : null;
-  const resolvedMarkerLabel = marker ? (markerLabel ?? MARKER_LABEL[marker]) : undefined;
+  const resolvedMarkerLabel = marker ? (markerLabel ?? messages[marker]) : undefined;
 
   const identity = (
     <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>

@@ -66,7 +66,7 @@ export interface LocationPuckProps {
    * heading — a coloured dot says nothing aloud.
    */
   accessibilityLabel?: string;
-  /** Replaces the English state words. */
+  /** Replaces the state words (Bloom's, in the app's locale), one state at a time. */
   stateLabels?: Partial<Record<LocationPuckState, string>>;
   /**
    * Force the pulse off regardless of the OS preference. Omitted, the puck

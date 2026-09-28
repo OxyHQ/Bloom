@@ -3,8 +3,10 @@ import { View } from 'react-native';
 
 import { RiLock2Line } from '../icons/remix/RiLock2Line';
 import { Text } from '../typography';
-import { CHAT_SCREEN_LABELS, useChatScreenPaint } from './shared';
+import { useChatScreenPaint } from './shared';
 import type { ChatEmptyStateProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 /**
  * What a conversation with nothing in it shows.
@@ -19,7 +21,7 @@ import type { ChatEmptyStateProps } from './types';
  * fact this component can see for itself.
  */
 function ChatEmptyStateComponent({
-  title = CHAT_SCREEN_LABELS.emptyTitle,
+  title: titleProp,
   description,
   illustration,
   notice,
@@ -29,6 +31,8 @@ function ChatEmptyStateComponent({
   testID,
 }: ChatEmptyStateProps) {
   const paint = useChatScreenPaint();
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
+  const title = titleProp ?? messages.emptyTitle;
   const NoticeIcon = noticeIcon === false ? null : (noticeIcon ?? RiLock2Line);
 
   return (

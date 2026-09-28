@@ -2,8 +2,11 @@ import React, { useCallback, useState } from 'react';
 import { View } from 'react-native';
 
 import { ActionRow } from '../dialog/DialogContent';
+import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
+import { pickMessages, useMessages } from '../locale/messages';
 import type { DialogAction } from '../dialog/types';
 import { TextFieldInput } from '../text-field';
+import { SURFACES_MESSAGES } from './messages';
 import { present } from './surface-store';
 import type {
   AlertButton,
@@ -65,17 +68,19 @@ export function alert(
   message?: string,
   buttons?: AlertButton[],
 ): void {
-  const resolved: AlertButton[] =
-    buttons && buttons.length > 0 ? buttons : [{ text: 'OK', style: 'default' }];
-
-  // The surface is pure chrome — no children at all.
+  // The surface is pure chrome — no children at all. The default button's
+  // word is resolved where the surface renders, in the locale in effect there.
   void present(() => null, {
     placement: 'center',
     title,
     description: message,
     label: title,
-    actions: (surface) =>
-      resolved.map((button) => ({
+    actions: (surface, locale) => {
+      const resolved: AlertButton[] =
+        buttons && buttons.length > 0
+          ? buttons
+          : [{ text: pickMessages(SURFACES_MESSAGES, locale).ok, style: 'default' }];
+      return resolved.map((button) => ({
         label: button.text,
         color: actionColor(button.style),
         shouldCloseOnPress: false,
@@ -83,7 +88,8 @@ export function alert(
           surface.dismiss();
           button.onPress?.();
         },
-      })),
+      }));
+    },
   });
 }
 
@@ -98,10 +104,13 @@ export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
     title: options.title,
     description: options.description,
     label: options.title,
-    actions: (surface) => {
+    actions: (surface, locale) => {
+      // Defaults resolve here, as the surface renders — `confirm()` itself runs
+      // outside React and cannot read the provider's locale.
+      const messages = pickMessages(SURFACES_MESSAGES, locale);
       const actions: DialogAction[] = [
         {
-          label: options.confirmLabel ?? 'Confirm',
+          label: options.confirmLabel ?? messages.confirm,
           color: options.destructive ? 'destructive' : 'default',
           shouldCloseOnPress: false,
           onPress: () => surface.dismiss(true),
@@ -110,7 +119,7 @@ export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
       ];
       if (!options.hideCancel) {
         actions.push({
-          label: options.cancelLabel ?? 'Cancel',
+          label: options.cancelLabel ?? pickMessages(COMMON_MESSAGES, locale).cancel,
           color: 'cancel',
           shouldCloseOnPress: false,
           onPress: () => surface.dismiss(false),
@@ -137,19 +146,21 @@ function PromptSurface({
   options: SurfacePromptOptions;
   surface: SurfaceControls;
 }) {
+  const { messages } = useMessages(SURFACES_MESSAGES);
+  const common = useCommonMessages();
   const [value, setValue] = useState(options.defaultValue ?? '');
   const onSubmit = useCallback(() => surface.dismiss(value), [surface, value]);
 
   const actions: DialogAction[] = [
     {
-      label: options.confirmLabel ?? 'OK',
+      label: options.confirmLabel ?? messages.ok,
       color: 'default',
       shouldCloseOnPress: false,
       onPress: onSubmit,
       testID: 'bloom-surface-prompt-confirm',
     },
     {
-      label: options.cancelLabel ?? 'Cancel',
+      label: options.cancelLabel ?? common.cancel,
       color: 'cancel',
       shouldCloseOnPress: false,
       onPress: () => surface.dismiss(null),

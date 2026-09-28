@@ -4,6 +4,8 @@ import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { BarListCard } from '../chart-cards/BarListCard';
 import { RadialChartCard } from '../chart-cards/RadialChartCard';
 import { groupThousands } from '../chart-cards/primitives/format';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { AudienceBreakdownLabels, AudienceBreakdownProps } from './types';
 
 /**
@@ -19,15 +21,8 @@ import type { AudienceBreakdownLabels, AudienceBreakdownProps } from './types';
  * keeps its own hover, motion and accessible summary.
  */
 
-export const AUDIENCE_BREAKDOWN_LABELS: AudienceBreakdownLabels = {
-  locations: 'Top locations',
-  cities: 'Cities',
-  countries: 'Countries',
-  age: 'Age',
-  gender: 'Gender',
-  sources: 'Listening sources',
-  metric: 'Listeners',
-};
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const AUDIENCE_BREAKDOWN_LABELS: AudienceBreakdownLabels = CREATOR_STUDIO_MESSAGES.en.breakdown;
 
 const TWO_COLUMNS_FROM = 720;
 const GAP = 16;
@@ -45,7 +40,8 @@ function AudienceBreakdownComponent({
   style,
   testID,
 }: AudienceBreakdownProps) {
-  const labels = { ...AUDIENCE_BREAKDOWN_LABELS, ...labelOverrides };
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const labels = { ...messages.breakdown, ...labelOverrides };
   const [width, setWidth] = useState(0);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const next = Math.round(event.nativeEvent.layout.width);

@@ -18,6 +18,9 @@ import {
   resolvePlayVisibility,
 } from './shared';
 import type { QuickAccessTileProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
 /**
  * The compact home-screen shortcut, laid out 2–4 to a row.
@@ -55,13 +58,15 @@ function QuickAccessTileComponent({
   style,
   testID,
 }: QuickAccessTileProps) {
+  const common = useCommonMessages();
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
   useMediaCardCss();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
 
   if (skeleton) {
     return (
-      <View aria-busy accessibilityLabel="Loading" style={style} testID={testID}>
+      <View aria-busy accessibilityLabel={common.loading} style={style} testID={testID}>
         <SkeletonBox width="100%" height={QUICK_TILE_HEIGHT} borderRadius={QUICK_TILE_RADIUS} />
       </View>
     );
@@ -71,7 +76,7 @@ function QuickAccessTileComponent({
   // On web the current tile shows the bars at rest and swaps them for the
   // pause button under the pointer or keyboard focus — one slot, never both.
   const swap = IS_WEB && current && visibility !== 'none' && !loading;
-  const name = accessibilityLabel ?? composeName([title, typeLabel, current && playing ? 'Now playing' : undefined]);
+  const name = accessibilityLabel ?? composeName([title, typeLabel, current && playing ? controls.nowPlaying : undefined]);
 
   const rootStyle: WebCssStyle = {
     position: 'relative',

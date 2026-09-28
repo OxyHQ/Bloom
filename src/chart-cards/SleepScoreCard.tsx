@@ -162,10 +162,10 @@ export function SleepScoreCard({
     `${title}: ${total} of ${totalMax}, ${verdict}. ${metrics.map((m) => `${m.label} ${m.score} of ${m.max}`).join(', ')}`;
 
   return (
-    <ChartCardSurface
+    <ChartCardSurface radius="radius-20"
       height={height}
       testID={testID}
-      style={[{ borderRadius: 20, paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
+      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
       <View
         style={{
           width: '100%',

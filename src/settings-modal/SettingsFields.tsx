@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
+import { formatGregorian } from '../locale/format-date';
+import { useBloomLocale } from '../locale';
 import { borderRadius } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import { Calendar } from '../date-picker';
@@ -78,20 +80,23 @@ export function SettingsTextField({
   );
 }
 
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+const BIRTH_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 
-function formatBirthDate(date: Date): string {
-  return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+/** The locale's long date ("28 July 1997", "July 28, 1997", "28 de julio de 1997"). */
+function formatBirthDate(date: Date, locale: string | undefined): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    formatGregorian(date, locale, BIRTH_DATE) ??
+    // A runtime with no usable `Intl`: an ISO date reads in every language.
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  );
 }
 
 export function SettingsDateField({
   label,
   value,
   onChange,
-  formatDate = formatBirthDate,
+  formatDate,
   minDate,
   maxDate,
   showSavedToast = true,
@@ -100,9 +105,10 @@ export function SettingsDateField({
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const showSaved = useSettingsSavedToast();
+  const locale = useBloomLocale();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const text = formatDate(value);
+  const text = formatDate ? formatDate(value) : formatBirthDate(value, locale);
 
   const panel: ViewStyle =
     Platform.OS === 'web'

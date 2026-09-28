@@ -12,6 +12,9 @@ The default docked frame uses the shared Surface material. The sheet variant pai
 them plus the subject, and `MailComposeSurface` is the frame around the whole
 thing.
 
+Every fixed string (To, Subject, "New message"…) is localised via
+`BloomProvider locale`; the `strings` prop overrides any of them.
+
 ```tsx
 import { MailComposeHeader, MailComposeSurface } from '@oxy.so/bloom';
 

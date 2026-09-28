@@ -196,6 +196,8 @@ On web every control takes the same keyboard focus ring: one stylesheet rule on 
 
 The pill button (or ⌘L / Ctrl+L on web; `searchShortcut={false}` to unbind) opens a field that filters every row by label; "No results" shows when nothing matches. Escape, the clear button, or a press outside the field (web) closes it and clears the query. Activating search on a collapsed rail expands it.
 
+The sidebar's default names and words ("Sidebar", "Quick Search", "No results", "Upgrade", the account menu's rows…) are localised via `BloomProvider locale`; every `*Label` prop still wins.
+
 ## Menus
 
 Both menus are `Popover`s: beside the rail (team bottom-aligned, account top-aligned) and below the trigger under `sm`. On native, `Popover` presents as a bottom sheet. `Popover`'s own motion runs here.

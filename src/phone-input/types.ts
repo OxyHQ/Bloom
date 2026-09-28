@@ -35,7 +35,7 @@ export interface CountryCodeSelectProps {
   onValueChange?: (iso2: string, country: Country) => void;
   /** The choosable countries. Default: every vendored country, by name. */
   countries?: readonly Country[];
-  /** Accessible name of the trigger and the list. Default `Country code`. */
+  /** Accessible name of the trigger and the list (`Country code` in English). */
   label?: string;
   disabled?: boolean;
 }
@@ -43,7 +43,7 @@ export interface CountryCodeSelectProps {
 export interface PhoneInputProps {
   /** Visible label above the field; also the input's accessible name. */
   label?: string;
-  /** The input's accessible name when there is no visible `label`. Default `Phone number`. */
+  /** The input's accessible name when there is no visible `label` (`Phone number` in English). */
   accessibilityLabel?: string;
   placeholder?: string;
   /** Caption under the field. */
@@ -71,7 +71,7 @@ export interface PhoneInputProps {
   onCountryChange?: (iso2: string, country: Country) => void;
   /** The choosable countries. Default: every vendored country, by name. */
   countries?: readonly Country[];
-  /** Accessible name of the country-code select. Default `Country code`. */
+  /** Accessible name of the country-code select (`Country code` in English). */
   countrySelectLabel?: string;
 
   /** A 20px icon after the input (`trailingIcon`). */

@@ -1,8 +1,10 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
-import { PRESENCE_DOT_SIZES, PRESENCE_LABELS, resolveChatIndicatorPaint } from './shared';
+import { PRESENCE_DOT_SIZES, resolveChatIndicatorPaint } from './shared';
+import { CHAT_INDICATORS_MESSAGES } from './messages';
 import type { PresenceDotProps, PresenceStatus } from './types';
 
 /**
@@ -44,6 +46,7 @@ function PresenceDotComponent({
   testID,
 }: PresenceDotProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_INDICATORS_MESSAGES);
   const paint = useMemo(() => resolveChatIndicatorPaint(theme), [theme]);
 
   const dot = PRESENCE_DOT_SIZES[size] ?? PRESENCE_DOT_SIZES.medium;
@@ -55,7 +58,7 @@ function PresenceDotComponent({
   // 2x screen, so it scales with the dot and never goes under 1.5.
   const strokeWidth = Math.max(1.5, Math.round(dot * 0.2 * 2) / 2);
 
-  const label = accessibilityLabel ?? PRESENCE_LABELS[status];
+  const label = accessibilityLabel ?? messages.presence[status];
   const hidden = label === '';
 
   return (

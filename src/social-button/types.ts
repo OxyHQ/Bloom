@@ -50,7 +50,7 @@ export interface SocialButtonProps {
   fullWidth?: boolean;
   /** The verb of the default label and accessible name. Defaults to `'continue'`. */
   action?: SocialButtonAction;
-  /** The label. Defaults to the `action` phrase, e.g. `"Continue with <Brand>"`. */
+  /** The label. Defaults to the `action` phrase in the app's locale, e.g. `"Continue with <Brand>"` in English. */
   children?: ReactNode;
   onPress?: () => void;
   /**

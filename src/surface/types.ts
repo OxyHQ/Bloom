@@ -1,3 +1,4 @@
+import type { CornerCurve } from '../shapes/corner-types';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle, ViewProps } from 'react-native';
 
@@ -9,6 +10,8 @@ export interface SurfaceProps extends Omit<ViewProps, 'style' | 'children'> {
   fill?: string;
   /** Radius shared by the layout box and its clipped paint. Defaults to 20. */
   radius?: number;
+  /** Platform-adaptive corners shared by the host and material. */
+  cornerCurve?: CornerCurve;
   style?: StyleProp<ViewStyle>;
   className?: string;
   accessibilityLabel?: string;

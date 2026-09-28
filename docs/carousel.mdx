@@ -33,7 +33,7 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | `gap` | `16` | Space between slides, px. |
 | `inset` | `0` | Horizontal padding of the header row, the dots and the track's two ends. Slides scroll under it to the edges, and a start-aligned slide snaps to the inset rather than flush. |
 | `onIndexChange` | | The slide in view changed. |
-| `previousLabel` / `nextLabel` / `dotLabel` | English | Localised button names. |
+| `previousLabel` / `nextLabel` / `dotLabel` | Localised via `BloomProvider locale` | Override the button names. |
 
 `CarouselItem` fills the track by default, so exactly one slide is in view. Pass a smaller `width` to peek the next slide (pair it with `align="center"` for a centred gallery).
 

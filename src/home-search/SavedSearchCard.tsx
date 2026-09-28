@@ -16,11 +16,14 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { STAY_SEARCH_TILE_RADIUS } from '../stay-search/constants';
 import { useStaySearchPalette } from '../stay-search/palette';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useMessages } from '../locale/messages';
+import { HOME_SEARCH_MESSAGES } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { SavedSearchCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * One saved search in a list: what it looks for, how much is new, and how
@@ -57,18 +60,24 @@ function SavedSearchCardComponent({
   title,
   criteria,
   newCount = 0,
-  formatNewCount = (n) => `${n} new`,
+  formatNewCount: formatNewCountProp,
   alertFrequency,
-  alertsOffLabel = 'Alerts off',
+  alertsOffLabel: alertsOffLabelProp,
   icon: Icon = RiSearchLine,
   onPress,
   onEdit,
   onDelete,
-  editLabel = 'Edit',
-  deleteLabel = 'Delete',
+  editLabel: editLabelProp,
+  deleteLabel: deleteLabelProp,
   style,
   testID,
 }: SavedSearchCardProps) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES);
+  const formatNewCount = formatNewCountProp ?? messages.newCount;
+  const alertsOffLabel = alertsOffLabelProp ?? messages.alertsOff;
+  const common = useCommonMessages();
+  const editLabel = editLabelProp ?? common.edit;
+  const deleteLabel = deleteLabelProp ?? common.delete;
   const theme = useTheme();
   const basePalette = useStaySearchPalette();
   const fill = useCardFill(style);
@@ -83,7 +92,6 @@ function SavedSearchCardComponent({
   }, []);
 
   const card: WebCssStyle = {
-    borderRadius: SAVED_SEARCH_CARD_RADIUS,
     paddingTop: 16,
     paddingBottom: 12,
     paddingLeft: 16,
@@ -139,7 +147,7 @@ function SavedSearchCardComponent({
   const name = hasNew ? `${title}, ${formatNewCount(newCount)}` : title;
 
   return (
-    <Card elevation="none" testID={testID} style={[card, style]}>
+    <Card radius="radius-16" elevation="none" testID={testID} style={[card, style]}>
       {onPress ? (
         <Pressable
           {...webDataSet({ bloomSavedSearchOpen: '' })}
@@ -188,7 +196,7 @@ function SavedSearchCardComponent({
             variant="secondary"
             size="small"
             onPress={onEdit}
-            accessibilityLabel={`${editLabel} ${title}`}
+            accessibilityLabel={messages.actionOn(editLabel, title)}
             testID={testID ? `${testID}-edit` : undefined}
           >
             {editLabel}
@@ -201,7 +209,7 @@ function SavedSearchCardComponent({
             iconOnly
             icon={RiDeleteBinLine}
             onPress={onDelete}
-            accessibilityLabel={`${deleteLabel} ${title}`}
+            accessibilityLabel={messages.actionOn(deleteLabel, title)}
             testID={testID ? `${testID}-delete` : undefined}
           />
         ) : null}

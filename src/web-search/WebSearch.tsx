@@ -42,12 +42,14 @@ import {
 } from '../agent-log';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { SOCIAL_PROVIDERS } from '../social-button/providers';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
+import { WEB_SEARCH_MESSAGES } from './messages';
 import type {
   WebSearchBrand,
   WebSearchProps,
@@ -918,18 +920,20 @@ function WebSearchComponent({
   stepInterval = 850,
   startDelay = 320,
   revealed: controlledRevealed,
-  working = 'Working',
+  working: workingProp,
   onComplete,
   reduce: reduceProp,
   labels,
   style,
   testID,
 }: WebSearchProps) {
+  const { messages } = useMessages(WEB_SEARCH_MESSAGES);
+  const working = workingProp ?? messages.working;
   const theme = useTheme();
   const palette = useMemo(() => resolveWebSearchPalette(theme), [theme]);
   const systemReduce = useAgentLogMotion();
   const reduce = reduceProp ?? systemReduce;
-  const sourcesLabel = labels?.sources ?? 'Sources';
+  const sourcesLabel = labels?.sources ?? messages.sources;
 
   // Every row is a unit, so a step that found sources contributes two and the
   // log can pause between them.

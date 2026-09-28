@@ -31,9 +31,11 @@ import { RiSunLine } from '../icons/remix/RiSunLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import type { Theme } from '../theme/types';
 import { useBloomTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { THEME_TOGGLE_MESSAGES } from './messages';
 import type { ThemeToggleVariant, ThemeToggleProps } from './types';
 import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './view-transition';
 
@@ -300,6 +302,7 @@ function SegmentButton({
   palette: TogglePalette;
   onSelect: (mode: 'light' | 'dark', event: GestureResponderEvent, node: unknown) => void;
 }) {
+  const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
   const ref = useRef<View>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = mode === 'light' ? RiSunLine : RiMoonLine;
@@ -321,12 +324,12 @@ function SegmentButton({
     zIndex: 1,
     '--bloom-theme-toggle-ring': palette.ring,
   };
-  const label = mode === 'light' ? 'Use light mode' : 'Use dark mode';
+  const label = mode === 'light' ? messages.useLightMode : messages.useDarkMode;
   return (
     <Pressable
       ref={ref}
       {...webHook('ring')}
-      {...webTitle(mode === 'light' ? 'Light mode' : 'Dark mode')}
+      {...webTitle(mode === 'light' ? messages.lightMode : messages.darkMode)}
       role="button"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
@@ -427,6 +430,7 @@ function SegmentedToggle({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
   const glass = variant === 'glass-segmented';
   const progress = useSharedValue(dark ? 1 : 0);
   useEffect(() => {
@@ -438,7 +442,7 @@ function SegmentedToggle({
   return (
     <View
       role="group"
-      accessibilityLabel="Theme"
+      accessibilityLabel={messages.theme}
       testID={testID}
       style={[
         {
@@ -492,6 +496,7 @@ function CollapsedToggle({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
   const ref = useRef<View>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = dark ? RiSunLine : RiMoonLine;
@@ -508,9 +513,9 @@ function CollapsedToggle({
     <Pressable
       ref={ref}
       {...webHook('ring')}
-      {...webTitle(dark ? 'Light mode' : 'Dark mode')}
+      {...webTitle(dark ? messages.lightMode : messages.darkMode)}
       role="button"
-      accessibilityLabel={dark ? 'Use light mode' : 'Use dark mode'}
+      accessibilityLabel={dark ? messages.useLightMode : messages.useDarkMode}
       accessibilityState={{ selected: dark }}
       aria-pressed={dark}
       onHoverIn={onIn}
@@ -539,6 +544,7 @@ function SidebarRowToggle({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const { messages } = useMessages(THEME_TOGGLE_MESSAGES);
   const ref = useRef<View>(null);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const row: WebCssStyle = {
@@ -556,7 +562,7 @@ function SidebarRowToggle({
       ref={ref}
       {...webHook('inset')}
       role="switch"
-      accessibilityLabel="Dark mode"
+      accessibilityLabel={messages.darkMode}
       aria-checked={dark}
       onHoverIn={onIn}
       onHoverOut={onOut}
@@ -567,7 +573,7 @@ function SidebarRowToggle({
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 }}>
         <RiMoonLine width={20} height={20} fill={palette.icon} />
         <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
-          Dark mode
+          {messages.darkMode}
         </Text>
       </View>
       <SwitchTrackSm on={dark} palette={palette} reducedMotion={reducedMotion} />

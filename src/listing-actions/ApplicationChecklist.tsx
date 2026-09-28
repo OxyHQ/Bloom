@@ -10,10 +10,12 @@ import { RiCloseCircleFill } from '../icons/remix/RiCloseCircleFill';
 import { RiEyeLine } from '../icons/remix/RiEyeLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { RiUploadLine } from '../icons/remix/RiUploadLine';
+import { useMessages } from '../locale/messages';
 import { Meter } from '../stat-bar';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { Text } from '../typography';
-import { APPLICATION_CHECKLIST_MAX_WIDTH, APPLICATION_ITEM_STATUS } from './constants';
+import { APPLICATION_CHECKLIST_MAX_WIDTH, APPLICATION_ITEM_ACTION, APPLICATION_ITEM_STATUS } from './constants';
+import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { useActionPalette } from './parts';
 import type { ApplicationChecklistProps, ApplicationItem, ApplicationItemStatus } from './types';
 
@@ -44,22 +46,24 @@ export function isApplicationItemReady(item: ApplicationItem): boolean {
  *              (Upload / View / Replace) on the right
  */
 function ApplicationChecklistComponent({
-  title = 'Your application',
+  title: titleProp,
   items,
   onItemAction,
-  formatProgress = (done, total) => `${done} of ${total} ready`,
+  formatProgress,
   statusLabels,
   footer,
   maxWidth = APPLICATION_CHECKLIST_MAX_WIDTH,
   style,
   testID,
 }: ApplicationChecklistProps) {
+  const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
+  const title = titleProp === undefined ? messages.yourApplication : titleProp;
   const palette = useActionPalette();
   const { theme } = palette;
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const done = items.filter(isApplicationItemReady).length;
   const total = items.length;
-  const progressText = formatProgress(done, total);
+  const progressText = (formatProgress ?? messages.progressReady)(done, total);
 
   const glyphColor = (status: ApplicationItemStatus) =>
     status === 'missing'
@@ -100,7 +104,7 @@ function ApplicationChecklistComponent({
         value={done}
         max={total}
         height={6}
-        accessibilityLabel={title ?? 'Application progress'}
+        accessibilityLabel={title ?? messages.applicationProgress}
         valueText={progressText}
         testID={id('progress')}
         style={{ marginTop: 12 }}
@@ -110,7 +114,7 @@ function ApplicationChecklistComponent({
         {items.map((item, index) => {
           const info = APPLICATION_ITEM_STATUS[item.status];
           const Glyph = STATUS_ICON[item.status];
-          const actionLabel = item.actionLabel === undefined ? info.action : item.actionLabel;
+          const actionLabel = item.actionLabel === undefined ? messages.applicationAction[APPLICATION_ITEM_ACTION[item.status]] : item.actionLabel;
           const onAction = item.onAction ?? (onItemAction ? () => onItemAction(item) : undefined);
           const rejected = item.status === 'rejected';
           const detail = rejected && item.reason ? item.reason : item.description;
@@ -140,7 +144,7 @@ function ApplicationChecklistComponent({
                     variant="subtle"
                     color={info.tone}
                     size="small"
-                    content={statusLabels?.[item.status] ?? info.label}
+                    content={statusLabels?.[item.status] ?? messages.applicationStatus[item.status]}
                     testID={id(`item-${item.key}-status`)}
                   />
                 </View>
@@ -160,7 +164,7 @@ function ApplicationChecklistComponent({
                   size="small"
                   leadingIcon={item.status === 'missing' || rejected ? RiUploadLine : RiEyeLine}
                   onPress={onAction}
-                  accessibilityLabel={`${actionLabel} ${item.title}`}
+                  accessibilityLabel={messages.itemAction(actionLabel, item.title)}
                   testID={id(`item-${item.key}-action`)}
                 >
                   {actionLabel}

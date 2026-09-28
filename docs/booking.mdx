@@ -80,6 +80,8 @@ const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0, pets:
 | `breakdown`                                   | `PriceBreakdown` props, drawn 24 below                                                    |
 | `footer`                                      | anything centred at the bottom                                                            |
 
+The default labels, button texts, note, trip statuses and spoken price are English here; they are localised via `BloomProvider locale`, and each `*Label` prop still wins.
+
 **What it looks like.** The chrome every listing action card shares (the rental,
 sale and swap cards in [Listing actions](/docs/bloom/main/listing-actions) draw
 the same shell). Up to 372 wide (`width: 100%`), radius 16, the shared material rim, `shadow-m`, padding 24 on the card surface. The

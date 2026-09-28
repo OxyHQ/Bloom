@@ -11,6 +11,9 @@ itself. Bloom does not ship a rich-text engine and this family does not pretend
 to: the editable node is the app's — a `Textarea`, a web contenteditable, a
 native rich-text view — and these two components are the chrome it sits between.
 
+Their words ("Saved", "Untitled", the word count) are localised via
+`BloomProvider locale`; `labels` and `placeholder` override them.
+
 ```tsx
 import { NoteEditorHeader, NoteEditorToolbar, Textarea } from '@oxy.so/bloom';
 

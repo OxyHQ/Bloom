@@ -21,6 +21,8 @@ import {
   resolveQueuePanelPaint,
 } from './shared';
 import type { QueuePanelRowProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
 /**
  * One track row, 56 tall:
@@ -76,6 +78,7 @@ function QueuePanelRowComponent({
   style,
   testID,
 }: QueuePanelRowProps & { webState?: 'active' | 'dragging' }) {
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
   useQueuePanelCss();
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
@@ -102,7 +105,7 @@ function QueuePanelRowComponent({
       <Pressable
         {...webDataSet({ bloomQueueFocusable: '' })}
         role="button"
-        accessibilityLabel={accessibilityLabel ?? `Play ${track.title}`}
+        accessibilityLabel={accessibilityLabel ?? controls.playSubject(track.title)}
         onPress={onPress}
         style={{
           flex: 1,

@@ -6,15 +6,11 @@ import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiThumbDownLine } from '../icons/remix/RiThumbDownLine';
 import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
 import { SurfaceAction, SwapGlyph, TurnActionButton, turnActionSurface } from './AiChatControls';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES } from './messages';
 import { CONFIRM_MS, useAiChatPalette, useAiChatWebCss } from './shared';
 import type { AiChatCopyResult, AiChatFeedbackRowProps } from './types';
 
-const DEFAULT_LABELS = {
-  like: 'Good response',
-  dislike: 'Bad response',
-  copy: 'Copy response',
-  copied: 'Copied!',
-};
 
 /**
  * `FeedbackRow`: the actions under an assistant turn.
@@ -34,7 +30,8 @@ const DEFAULT_LABELS = {
 export function AiChatFeedbackRowBase({ onLike, onDislike, onCopy, actions, labels, style, testID }: AiChatFeedbackRowProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const l = useMemo(() => ({ ...messages.feedback, ...labels }), [messages, labels]);
   const [copied, setCopied] = useState(false);
   const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);

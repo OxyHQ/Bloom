@@ -168,7 +168,7 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 | Housing | `home-search`, `listing-actions`, `listing-editor`, `offering-badge`, `place-reviews`, `property-insights`, `tenancy`, `eviction` |
 | Stays and booking | `listing-card`, `listing-details`, `stay-search`, `stay-filters`, `booking`, `category-bar`, `map-marker` |
 | AI and agents | `agent-chat`, `ai-chat`, `composer-panel`, `composer-loader`, `agent-thinking`, `agent-log`, `agent-progress`, `task-list`, `web-search`, `questionnaire` |
-| Identity and media | `avatar`, `avatar-group`, `hover-card`, `user-hover-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `zoomable-media-gallery`, `media-flight`, `media-inset-border`, `progressive-blur`, `fill` |
+| Identity and media | `shapes`, `avatar`, `avatar-group`, `hover-card`, `user-hover-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `zoomable-media-gallery`, `media-flight`, `media-inset-border`, `progressive-blur`, `fill` |
 | Chat | `chat-list`, `chat-screen`, `chat-composer`, `chat-people`, `chat-indicators`, `message-bubble`, `message-media`, `call-ui` |
 | Feedback | `toast`, `notification`, `notification-center`, `announcement`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
 | Motion and assets | `motion`, `animated-check`, `icon-circle`, `radio-indicator`, `icons`, `typography`, `fonts` |

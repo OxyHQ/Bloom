@@ -17,6 +17,7 @@
  * palette cannot drift from each other.
  */
 
+import { SURFACE_SHAPES } from './shapes';
 import {
   COLOR_PRESET_REGISTRY,
   type AppColorName,
@@ -75,6 +76,7 @@ export interface BloomDesignTokens {
   spacing: { $type: 'dimension'; $description: string } & Record<string, unknown>;
   radius: { $type: 'dimension'; $description: string } & Record<string, unknown>;
   borderWidth: { $type: 'dimension'; $description: string } & Record<string, unknown>;
+  shape: { $description: string } & Record<string, unknown>;
   typography: { $description: string } & Record<string, unknown>;
 }
 
@@ -202,6 +204,25 @@ function typographyGroup(): BloomDesignTokens['typography'] {
   return group as BloomDesignTokens['typography'];
 }
 
+/** Curves are platform policies, recorded as DTCG extensions rather than fake dimensions. */
+function shapeGroup(): BloomDesignTokens['shape'] {
+  const group: BloomDesignTokens['shape'] = {
+    $description: 'Surface policies. Curve is platform-adaptive; radii are dimensions.',
+  };
+  for (const [name, shape] of Object.entries(SURFACE_SHAPES)) {
+    const entry: Record<string, unknown> = {
+      $extensions: { 'so.oxy.bloom': { curve: shape.curve } },
+    };
+    if ('radius' in shape) {
+      entry.radius = typeof shape.radius === 'number'
+        ? { $type: 'dimension', $value: `${shape.radius}px` }
+        : dimensionGroup('Logical corner radii; omitted corners are square.', shape.radius);
+    }
+    group[name] = entry;
+  }
+  return group;
+}
+
 /** The whole token file, as a plain object. */
 export function bloomDesignTokens(): BloomDesignTokens {
   return {
@@ -219,6 +240,7 @@ export function bloomDesignTokens(): BloomDesignTokens {
       'Border widths. hairline is the 0.5px rule that pairs with the border-image colour role.',
       BORDER_WIDTH,
     ),
+    shape: shapeGroup(),
     typography: typographyGroup(),
   };
 }

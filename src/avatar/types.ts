@@ -1,45 +1,17 @@
 import type { ReactNode } from 'react';
-import type { ImageSourcePropType, StyleProp, ViewStyle, ImageStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 // Referenced by the `variant` prop docs below.
 import type { ImageResolver } from '../image-resolver/context';
 
-import type { AvatarShapeName } from './shape-paths';
-
-/**
- * Built-in avatar outlines: the two originals plus the named registry in
- * `shape-paths.ts`. Any of these can be passed as a plain string.
- */
-export type AvatarShape = 'circle' | 'squircle' | AvatarShapeName;
-
-/**
- * A caller-supplied outline, for shapes that are not in the built-in registry.
- *
- * The path is clipped against the avatar box, so it should fill its coordinate
- * space edge to edge; anything outside is cut off rather than scaled to fit.
- */
-export interface AvatarShapePath {
-  /** SVG path data (the `d` attribute) describing a closed outline. */
-  d: string;
-  /**
-   * Side length of the square coordinate space `d` is drawn in — 100 for a
-   * path written over a 0–100 grid, 1 for one written over a 0–1 grid.
-   * Defaults to 1.
-   */
-  viewBox?: number;
-}
-
-/** Gradient sweep direction for a multi-color {@link AvatarRingConfig}. */
-export type AvatarRingGradientDirection = 'diagonal' | 'horizontal' | 'vertical';
+import type { Shape, GradientDirection, ImageSource } from '../shapes';
 
 export interface AvatarRingConfig {
   /** Solid ring: one color. Gradient ring: 2+ colors. */
   colors: string | string[];
   /** Ring stroke width in px. Default: size > 16 ? 2 : 1. */
   width?: number;
-  /** Gap between avatar edge and ring. Default 0 (ring overlays the edge). */
-  gap?: number;
   /** Gradient sweep direction for multi-color rings. Default 'diagonal'. */
-  gradientDirection?: AvatarRingGradientDirection;
+  gradientDirection?: GradientDirection;
 }
 
 /**
@@ -57,11 +29,11 @@ export type AvatarColor = 'neutral' | 'blue' | 'lime' | 'pink';
 
 export interface AvatarProps {
   /**
-   * Flexible image source — accepts a URL string, an ImageSourcePropType
+   * Flexible image source — accepts a URL string, an ImageSource
    * (e.g. require('./img.png') or { uri: '...' }), or null/undefined.
    * Takes precedence over the `uri` prop when both are provided.
    */
-  source?: string | ImageSourcePropType | null;
+  source?: string | ImageSource | null;
   /** Direct URI string. Use `source` for more flexible input. */
   uri?: string;
   /**
@@ -73,8 +45,8 @@ export interface AvatarProps {
    * `source` is already a full URL/`{uri}` or when no resolver is registered.
    */
   variant?: string;
-  /** Fallback image source when source/uri is missing or errors (defaults to colored circle) */
-  fallbackSource?: ImageSourcePropType;
+  /** Fallback image source when source/uri is missing or errors (defaults to colored shape) */
+  fallbackSource?: ImageSource;
   /**
    * Avatar size: a diameter in pixels, or one of the size rungs
    * (`'xs'` 20, `'sm'` 24, `'md'` 32, `'lg'` 36). Defaults to 40.
@@ -99,26 +71,18 @@ export interface AvatarProps {
   verified?: boolean;
   /** Custom verified badge icon (rendered at bottom-right) */
   verifiedIcon?: ReactNode;
-  /**
-   * Shape of the avatar (defaults to `'circle'`). Accepts a built-in name —
-   * `'squircle'`, `'heart'`, `'pentagon'`, … see {@link AvatarShapeName} — or an
-   * {@link AvatarShapePath} with your own outline. Everything except `'circle'`
-   * clips through `react-native-svg`; a name that does not resolve falls back to
-   * a circle.
-   */
-  shape?: AvatarShape | AvatarShapePath;
+  /** Shared Shapes name or SVG outline. Images and fallback fills preserve the same silhouette. */
+  shape?: Shape;
   /** Container style */
   style?: StyleProp<ViewStyle>;
-  /** Image style (circle shape only) */
-  imageStyle?: StyleProp<ImageStyle>;
-  /** Custom background color for the placeholder circle (overrides the tint) */
+  /** Custom background color for the placeholder shape (overrides the tint) */
   placeholderColor?: string;
-  /** Custom icon rendered inside the placeholder circle when no image is available */
+  /** Custom icon rendered inside the placeholder shape when no image is available */
   placeholderIcon?: ReactNode;
   /**
    * Contact/user name used to derive a deterministic initial and tint.
    * When no image resolves (missing `source`/`uri` or image error), the Avatar renders
-   * a tinted initials disc with the first letter of the name.
+   * a tinted initials shape with the first letter of the name.
    * Consumers can still override via `placeholderColor` / `placeholderIcon`.
    */
   name?: string;
@@ -134,9 +98,9 @@ export interface AvatarProps {
   /** Suppress the "LIVE" pill badge while keeping the live ring (ring only). */
   hideLiveBadge?: boolean;
   /**
-   * Text shown inside the live badge. Defaults to `'LIVE'`. Provide a localized
-   * string for i18n — keep it extremely short (≈4 characters) as there is very
-   * little room.
+   * Text shown inside the live badge — the locale's word (`'LIVE'` in English),
+   * via `BloomProvider locale`. Set it to override; keep it extremely short
+   * (≈4 characters) as there is very little room.
    */
   liveLabel?: string;
   /**
@@ -145,23 +109,7 @@ export interface AvatarProps {
    * live treatments.
    */
   liveColor?: string;
-  /**
-   * Decorative ring drawn around the avatar. Pass a single color string for a
-   * solid ring, or an array of 2+ colors for a gradient ring (e.g. an
-   * Instagram-stories ring). The gradient form requires `react-native-svg`
-   * (falls back to a solid ring of the first color if it is not installed).
-   *
-   * When `gap` is 0 (default) the ring overlays the avatar edge and the
-   * component's footprint is unchanged. When `gap` > 0 the ring is drawn OUTSIDE
-   * the avatar and the rendered footprint grows to `size + 2*(width + gap)` with
-   * the avatar centered inside (matching how Instagram-stories rings sit outside
-   * the avatar).
-   *
-   * `live` is sugar over this same primitive: when set (and no explicit `ring`
-   * is passed) it renders a solid theme-`negative` ring plus the "LIVE" badge.
-   * An explicit `ring` always wins for geometry and colors; the badge stays
-   * controlled by `live`/`hideLiveBadge`.
-   */
+  /** Decorative inner border: one color or a gradient. Does not change layout size. */
   ring?: AvatarRingConfig;
   testID?: string;
 }

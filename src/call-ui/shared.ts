@@ -18,6 +18,7 @@ import type {
   GroupCallParticipant,
   IncomingCallLabels,
 } from './types';
+import { CALL_UI_MESSAGES } from './messages';
 
 // ---------------------------------------------------------------------------
 //  The stage palette
@@ -144,15 +145,8 @@ export function resolveCallPaint(theme: Theme, accentColor?: string): CallPaint 
 //  Status line
 // ---------------------------------------------------------------------------
 
-export const CALL_STATUS_LABELS: CallStatusLabels = {
-  calling: 'Calling…',
-  ringing: 'Ringing',
-  connecting: 'Connecting…',
-  active: 'Connected',
-  reconnecting: 'Reconnecting…',
-  onHold: 'On hold',
-  ended: 'Call ended',
-};
+/** The English status lines; components speak the locale's (`CALL_UI_MESSAGES`). */
+export const CALL_STATUS_LABELS: CallStatusLabels = CALL_UI_MESSAGES.en.status;
 
 /**
  * The ONE line under the name, resolved by precedence rather than by five
@@ -189,19 +183,8 @@ export function callIsLive(status: CallStatusLineInput['status']): boolean {
 //  Controls
 // ---------------------------------------------------------------------------
 
-export const CALL_CONTROL_LABELS: CallControlLabels = {
-  mute: 'Mute',
-  unmute: 'Unmute',
-  speakerOn: 'Turn speaker on',
-  speakerOff: 'Turn speaker off',
-  videoOn: 'Turn camera on',
-  videoOff: 'Turn camera off',
-  flipCamera: 'Flip camera',
-  screenShareOn: 'Share screen',
-  screenShareOff: 'Stop sharing screen',
-  addParticipant: 'Add participant',
-  endCall: 'End call',
-};
+/** The English control names; components speak the locale's (`CALL_UI_MESSAGES`). */
+export const CALL_CONTROL_LABELS: CallControlLabels = CALL_UI_MESSAGES.en.controls;
 
 /** The order a bar draws its toggles in, whichever subset is present. */
 export const CALL_CONTROL_ORDER: readonly CallControlKey[] = [
@@ -223,20 +206,10 @@ export const CALL_CONTROL_GEOMETRY: Record<
   large: { size: 56, glyph: 26, gap: 16 },
 };
 
-export const CALL_SCREEN_LABELS: CallScreenLabels = {
-  ...CALL_STATUS_LABELS,
-  minimise: 'Minimise call',
-  chat: 'Open chat',
-  participants: 'Participants',
-  movePip: (corner) => `Move self view (now ${CALL_PIP_CORNER_NAMES[corner]})`,
-};
+/** The English `CallScreen` words; components speak the locale's (`CALL_UI_MESSAGES`). */
+export const CALL_SCREEN_LABELS: CallScreenLabels = { ...CALL_UI_MESSAGES.en.status, ...CALL_UI_MESSAGES.en.screen };
 
-export const CALL_PIP_CORNER_NAMES: Record<CallPipCorner, string> = {
-  'top-left': 'top left',
-  'top-right': 'top right',
-  'bottom-left': 'bottom left',
-  'bottom-right': 'bottom right',
-};
+export const CALL_PIP_CORNER_NAMES: Record<CallPipCorner, string> = CALL_UI_MESSAGES.en.pipCorners;
 
 /**
  * The corner the PiP moves to next — clockwise from wherever it is.
@@ -325,13 +298,8 @@ export const CALL_SPEAKING_PULSE_MS = 900;
 //  Call history
 // ---------------------------------------------------------------------------
 
-export const CALL_HISTORY_LABELS: CallHistoryLabels = {
-  incoming: 'Incoming',
-  outgoing: 'Outgoing',
-  missed: 'Missed',
-  declined: 'Declined',
-  callBack: (name) => `Call ${name} back`,
-};
+/** The English history words; components speak the locale's (`CALL_UI_MESSAGES`). */
+export const CALL_HISTORY_LABELS: CallHistoryLabels = CALL_UI_MESSAGES.en.history;
 
 /** A missed or declined call is the only one drawn in the negative colour. */
 export function isNegativeDirection(direction: string): boolean {
@@ -351,15 +319,8 @@ export const CALL_UI_RADIUS = {
 //  Incoming
 // ---------------------------------------------------------------------------
 
-export const INCOMING_CALL_LABELS: IncomingCallLabels = {
-  accept: 'Accept',
-  decline: 'Decline',
-  message: 'Message',
-  remind: 'Remind me',
-  slideToAnswer: 'Slide to answer',
-  voice: 'Incoming voice call',
-  video: 'Incoming video call',
-};
+/** The English incoming-call words; components speak the locale's (`CALL_UI_MESSAGES`). */
+export const INCOMING_CALL_LABELS: IncomingCallLabels = CALL_UI_MESSAGES.en.incoming;
 
 /**
  * How far along the track the knob has to be RELEASED for the call to answer.

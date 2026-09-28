@@ -30,7 +30,7 @@ export interface ListingPhotoGridProps {
   onPressPhoto?: (index: number) => void;
   /** Draws the "Show all photos" button (grid layout) when set. */
   onShowAll?: () => void;
-  /** Default `"Show all photos"`. */
+  /** `"Show all photos"` in English. */
   showAllLabel?: string;
   /** Default `auto`. */
   layout?: ListingPhotoGridLayout;
@@ -38,11 +38,11 @@ export interface ListingPhotoGridProps {
   aspectRatio?: number;
   /** Carousel slide width / height. Default `4 / 3`. */
   carouselAspectRatio?: number;
-  /** Names the photos region. Default `"Listing photos"`. */
+  /** Names the photos region. `"Listing photos"` in English. */
   accessibilityLabel?: string;
   /** Default `(n, total) => \`${n} / ${total}\``, the carousel's counter pill. */
   formatCounter?: (position: number, total: number) => string;
-  /** A photo's accessible name. Default `"<alt>, photo 3 of 24"` (or `"Photo 3 of 24"`). */
+  /** A photo's accessible name. `"<alt>, photo 3 of 24"` (or `"Photo 3 of 24"`) in English. */
   photoLabel?: (photo: ListingPhoto, position: number, total: number) => string;
   /** Rendition forwarded to the `ImageResolver` for an id `source`. Default `"large"`. */
   imageVariant?: string;
@@ -135,9 +135,9 @@ export interface AmenityListProps {
   onShowAll?: () => void;
   /** The full amenity count for the button, when `items` is already a subset. Default `items.length`. */
   total?: number;
-  /** Default `(n) => \`Show all ${n} amenities\``. */
+  /** `"Show all 42 amenities"` in English. */
   showAllLabel?: (total: number) => string;
-  /** Prefixed to an unavailable amenity's accessible name. Default `"Unavailable"`. */
+  /** Prefixed to an unavailable amenity's accessible name. `"Unavailable"` in English. */
   unavailableLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -167,7 +167,7 @@ export interface HostCardProps {
   avatar?: string;
   /** Draws the check badge on the avatar. */
   verified?: boolean;
-  /** The badge's accessible name. Default `"Verified"`. */
+  /** The badge's accessible name. `"Verified"` in English. */
   verifiedLabel?: string;
   /** A short label under the name ("Top host"). */
   label?: string;
@@ -180,7 +180,7 @@ export interface HostCardProps {
   responseLines?: readonly string[];
   /** Draws the message button when set. */
   onMessage?: () => void;
-  /** Default `"Message host"`. */
+  /** `"Message host"` in English. */
   messageLabel?: string;
   /** Makes the card pressable. */
   onPressProfile?: () => void;
@@ -221,7 +221,7 @@ export interface ReviewSummaryProps {
   description?: string;
   categories?: readonly ReviewCategory[];
   distribution?: readonly ReviewDistributionRow[];
-  /** The distribution's heading. Default `"Overall rating"`. */
+  /** The distribution's heading. `"Overall rating"` in English. */
   distributionLabel?: string;
   /** Overrides the composed name of the big number ("Rated 4.92 out of 5"). */
   accessibilityLabel?: string;
@@ -252,9 +252,9 @@ export interface ReviewCardProps {
   text: string;
   /** Clamp the text to this many lines until expanded. Default `4`; `0` never clamps. */
   numberOfLines?: number;
-  /** Default `"Show more"`. */
+  /** `"Show more"` in English. */
   showMoreLabel?: string;
-  /** Default `"Show less"`. */
+  /** `"Show less"` in English. */
   showLessLabel?: string;
   /** Controlled expansion. */
   expanded?: boolean;
@@ -309,9 +309,9 @@ export interface PropertyFactsProps {
   onShowAll?: () => void;
   /** The full fact count, when `items` is already a subset. Default `items.length`. */
   total?: number;
-  /** Default `(n) => \`Show all ${n} features\``. */
+  /** `"Show all 42 features"` in English. */
   showAllLabel?: (total: number) => string;
-  /** Names the list. Default `"Property features"`. */
+  /** Names the list. `"Property features"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -344,7 +344,7 @@ export interface ContactCardProps extends Omit<HostCardProps, 'messageLabel'> {
   responseTime?: string;
   /** Active listings, counted ("12 active listings"). */
   activeListings?: number;
-  /** Default `(n) => n === 1 ? '1 active listing' : \`${n} active listings\``. */
+  /** `"1 active listing"` / `"3 active listings"` in English. */
   activeListingsLabel?: (count: number) => string;
   /** Pressing the active-listings row (open the contact's other listings). */
   onPressListings?: () => void;
@@ -354,13 +354,13 @@ export interface ContactCardProps extends Omit<HostCardProps, 'messageLabel'> {
   phoneRevealed?: boolean;
   /** Called with `true` when "Show phone" is pressed (log the lead). */
   onPhoneRevealedChange?: (revealed: boolean) => void;
-  /** Default `"Show phone"`. */
+  /** `"Show phone"` in English. */
   showPhoneLabel?: string;
   /** Draws the "Call" button when set. */
   onCall?: () => void;
-  /** Default `"Call"`. */
+  /** `"Call"` in English. */
   callLabel?: string;
-  /** Default `"Message"` (`"Message host"` for a host). */
+  /** `"Message"` (`"Message host"` for a host) in English. */
   messageLabel?: string;
 }
 
@@ -387,7 +387,7 @@ export interface FloorPlanProps {
   columns?: 1 | 2 | 'auto';
   /** Tile width / height. Default `4 / 3`. */
   aspectRatio?: number;
-  /** A tile's accessible name. Default `"<alt>, floor plan 1 of 2"`. */
+  /** A tile's accessible name. `"<alt>, floor plan 1 of 2"` in English. */
   planLabel?: (plan: FloorPlanItem, position: number, total: number) => string;
   /** Rendition forwarded to the `ImageResolver` for an id `source`. Default `"large"`. */
   imageVariant?: string;

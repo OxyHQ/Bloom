@@ -12,6 +12,9 @@ import { Text } from '../typography';
 import { Artwork, CoverGradient, useMediaCardCss } from './parts';
 import { IS_WEB, RECAP_RADIUS, resolveCoverTint, resolveMediaCardPaint, type CoverTint } from './shared';
 import type { RecapCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 /**
  * The share pill over a generated cover. Not `Button`: its fill is the cover's
@@ -71,11 +74,14 @@ function RecapCardComponent({
   artworkColor,
   highlights,
   onShare,
-  shareLabel = 'Share',
+  shareLabel: shareLabelProp,
   skeleton = false,
   style,
   testID,
 }: RecapCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const shareLabel = shareLabelProp ?? messages.share;
+  const common = useCommonMessages();
   const theme = useTheme();
   useMediaCardCss();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
@@ -83,7 +89,7 @@ function RecapCardComponent({
 
   if (skeleton) {
     return (
-      <View aria-busy accessibilityLabel="Loading" style={style} testID={testID}>
+      <View aria-busy accessibilityLabel={common.loading} style={style} testID={testID}>
         <SkeletonBox width="100%" height={360} borderRadius={RECAP_RADIUS} />
       </View>
     );

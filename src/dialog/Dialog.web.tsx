@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceFill } from '../surface/shared';
 /**
@@ -71,7 +73,6 @@ import {
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
-  PANEL_RADIUS,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
   physicalDialogSide,
@@ -83,6 +84,8 @@ import type {
   DialogInset,
   DialogProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { DIALOG_MESSAGES } from './messages';
 
 const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
 
@@ -210,6 +213,7 @@ function CenterOrSideDialog({
   // stylesheet is present by the time the animated surface mounts).
   useDialogCss();
 
+  const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
   const isControlled = controlledOpen !== undefined;
@@ -360,7 +364,7 @@ function CenterOrSideDialog({
               <Backdrop
                 onPress={() => close()}
                 disabled={!dismissOnBackdrop}
-                accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+                accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
                 // The fade rides on the LAYERS, never on the press target: an
                 // opacity animation on the blur's ancestor composites the group in
                 // isolation and leaves `backdrop-filter` nothing to sample.
@@ -520,7 +524,7 @@ function DialogPanel({
       style={[
         {
           position: 'relative',
-          borderRadius: 20,
+          ...surfaceStyle(SURFACE_SHAPES.panel),
           width: '100%',
           maxWidth,
           // The Dialog OWNS the size cap + scroll boundary (its content renders
@@ -556,7 +560,7 @@ function DialogPanel({
         { backgroundColor: 'transparent' },
       ]}
     >
-      <SurfacePaint fill={surfaceFill} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />
+      <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />
       <SurfaceLevelProvider level={0} fill={surfaceFill}>
       {header ? (
         // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
@@ -673,6 +677,7 @@ function SheetSurface({
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }) {
+  const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
   const titleId = useId();
   const descriptionId = useId();
@@ -735,7 +740,7 @@ function SheetSurface({
       bottom: insetBottom,
       [edge]: anchorInset,
       width: cappedWidth,
-      borderRadius: PANEL_RADIUS,
+      ...surfaceStyle(SURFACE_SHAPES.panel),
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
     };
@@ -759,7 +764,7 @@ function SheetSurface({
       <ModalKeyboard panelRef={panelRef} closing={!shown} dismissible={dismissOnBackdrop} dismiss={onDismiss} />
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-        accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+        accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         // Same reason as the centred dialog: the transition and the opacity it
@@ -805,7 +810,7 @@ function SheetSurface({
           { backgroundColor: 'transparent' },
         ]}
       >
-        <SurfacePaint fill={surfaceFill} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? PANEL_RADIUS} />
+        <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius} />
         <SurfaceLevelProvider level={0} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer

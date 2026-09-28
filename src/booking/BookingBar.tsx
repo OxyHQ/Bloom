@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 
+import { useMessages } from '../locale/messages';
 import { ActionBarView, type ActionBarIds } from '../listing-actions/ActionBar';
+import { BOOKING_MESSAGES } from './messages';
 import type { BookingBarProps } from './types';
 
 /**
@@ -24,17 +26,18 @@ const BOOKING_BAR_IDS: ActionBarIds = { subtitle: 'dates', primary: 'reserve' };
 function BookingBarComponent({
   dates,
   onPressDates,
-  reserveLabel = 'Reserve',
+  reserveLabel,
   onReserve,
   reserveDisabled = false,
   ...rest
 }: BookingBarProps) {
+  const { messages } = useMessages(BOOKING_MESSAGES);
   return (
     <ActionBarView
       {...rest}
       subtitle={dates}
       onPressSubtitle={onPressDates}
-      primaryLabel={reserveLabel}
+      primaryLabel={reserveLabel ?? messages.reserve}
       onPrimary={onReserve}
       primaryDisabled={reserveDisabled}
       ids={BOOKING_BAR_IDS}

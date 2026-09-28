@@ -73,7 +73,7 @@ The modal's base size is a fixed 871×614 panel. Bloom adapts it to the window w
 | `medium` | 640–899px | Same panel inside a 16px gutter; rail 220px, insets 24px. |
 | `compact` | < 640px | Full screen (no radius or gutter, content inside the safe area). Two levels: the section list with chevrons, then the page pushed over it with the shared `PageHeader` back island. Android's back button returns to the list before it closes. The panel rises 16px instead of scaling from .85. |
 
-In `compact`, `SettingsRow` lets its control wrap under the label when both do not fit (a switch stays beside it, a `SettingsValueField` drops below and fills the row), and the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`).
+In `compact`, `SettingsRow` lets its control wrap under the label when both do not fit (a switch stays beside it, a `SettingsValueField` drops below and fills the row), and the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`). Every default string — the modal's `labels`, the Storage and Tools pages' copy, the plan chip — is localised via `BloomProvider locale`, and `SettingsDateField` formats its date in that locale.
 
 ## Shared header
 

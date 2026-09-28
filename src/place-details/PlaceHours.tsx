@@ -6,11 +6,14 @@ import { Badge } from '../badge';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { PLACE_OPEN_TONE } from '../place-card/constants';
+import { PLACE_CARD_MESSAGES } from '../place-card/messages';
 import { openLabelFor } from '../place-card/shared';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PLACE_DETAILS_GEOMETRY } from './constants';
+import { PLACE_DETAILS_MESSAGES } from './messages';
 import { describeHoursDay, formatHoursDay, resolvePlaceDetailsPaint, type HoursFormat } from './shared';
 import type { PlaceHoursProps } from './types';
 
@@ -52,14 +55,19 @@ function PlaceHoursComponent({
   expanded,
   defaultExpanded = false,
   onExpandedChange,
-  todayLabel = 'Today',
-  closedLabel = 'Closed',
+  todayLabel: todayLabelProp,
+  closedLabel: closedLabelProp,
   intervalSeparator = ' – ',
   splitSeparator = ', ',
-  accessibilityLabel = 'Opening hours',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PlaceHoursProps) {
+  const { messages } = useMessages(PLACE_DETAILS_MESSAGES);
+  const { messages: placeCard } = useMessages(PLACE_CARD_MESSAGES);
+  const todayLabel = todayLabelProp ?? messages.today;
+  const closedLabel = closedLabelProp ?? messages.closed;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.openingHours;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePlaceDetailsPaint(theme, surface), [theme, surface]);
@@ -79,7 +87,7 @@ function PlaceHoursComponent({
     [setOpen],
   );
 
-  const word = openLabelFor(state, stateLabel);
+  const word = openLabelFor(state, stateLabel, placeCard);
 
   return (
     <View

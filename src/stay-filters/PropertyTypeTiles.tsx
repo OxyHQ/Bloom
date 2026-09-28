@@ -6,10 +6,12 @@ import { webDataSet } from '../styles/web-data';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { PROPERTY_TYPE_OPTIONS, relabelOptions } from './constants';
+import { PROPERTY_TYPE_OPTIONS, localizedOptions } from './constants';
 import type { FilterIconComponent, PropertyType, PropertyTypeOption, PropertyTypeTilesProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
 
@@ -146,16 +148,20 @@ export function PropertyTypeTiles<T extends string = PropertyType>({
   options,
   labels,
   columns,
-  accessibilityLabel = 'Property type',
+  accessibilityLabel: accessibilityLabelProp,
   disabled = false,
   size,
   style,
   testID,
 }: PropertyTypeTilesInternalProps<T>) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.propertyType;
   useInteractiveWebCss(STYLE_ID, CSS);
   const [width, setWidth] = useState(0);
-  const items = relabelOptions<T, PropertyTypeOption<T>>(
-    options ?? (PROPERTY_TYPE_OPTIONS as unknown as readonly PropertyTypeOption<T>[]),
+  const items = localizedOptions<T, PropertyTypeOption<T>>(
+    options,
+    PROPERTY_TYPE_OPTIONS as unknown as readonly PropertyTypeOption<T>[],
+    messages.propertyTypes as Partial<Record<T, string>>,
     labels,
   );
   const perRow = columns ?? tileColumns(width, TILE_GEOMETRY[size].minWidth);

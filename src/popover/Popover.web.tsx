@@ -24,6 +24,8 @@ import {
   resolvePopoverSurfaceStyle,
 } from './surface';
 import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './types';
+import { useMessages } from '../locale/messages';
+import { POPOVER_MESSAGES } from './messages';
 
 export function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
@@ -70,7 +72,7 @@ export function PopoverTrigger({
 
 export function PopoverContent({
   children,
-  label = 'Popover',
+  label: labelProp,
   side,
   align = 'center',
   sideOffset = POPOVER_SIDE_OFFSET,
@@ -82,6 +84,8 @@ export function PopoverContent({
   style,
   testID,
 }: PopoverContentProps) {
+  const { messages } = useMessages(POPOVER_MESSAGES);
+  const label = labelProp ?? messages.popover;
   const popover = usePopover();
   const anchor = useAnchorRect(popover.anchorRef, popover.open);
   const close = useCallback(() => popover.setOpen(false), [popover]);

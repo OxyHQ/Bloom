@@ -96,6 +96,10 @@ On **native**:
 - Copy and read aloud render only when `onCopyMessage` / `onReadAloud` are given (web defaults to `navigator.clipboard` and `speechSynthesis`). Share defaults to the Web Share sheet or the clipboard on web and does nothing on native without `onShare`.
 - The header frost is a 20% wash without the backdrop blur, and message lines animate without the blur.
 
+## Language
+
+Every default string — names, placeholders, the empty state and its suggestions, the error line, the status row, "3 minutes ago" and the rail's compact ages, the transcript's speaker names — is localised via `BloomProvider locale`. Each `labels` key, `suggestions`, `formatTime` and `formatAge` still win.
+
 ## Design notes
 
 - **Pill rule** — the header, message and row-menu icon buttons are circles, per Bloom's full-radius rule for button-like controls. Rows, cards and the model chip keep a smaller corner radius.

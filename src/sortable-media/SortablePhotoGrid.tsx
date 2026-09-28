@@ -25,6 +25,9 @@ import { moveItem } from '../hooks/list-reorder';
 import { slotAtPoint, sortableGridColumns } from './reorder';
 import type { SortablePhoto, SortablePhotoGridLabels, SortablePhotoGridProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { useMessages } from '../locale/messages';
+import { useCommonMessages } from '../locale/common-messages';
+import { SORTABLE_MEDIA_MESSAGES } from './messages';
 
 /**
  * An editable, reorderable grid of uploaded photos. The first photo is the
@@ -62,19 +65,6 @@ const IS_WEB = Platform.OS === 'web';
 const RADIUS = 12;
 const DRAG_THRESHOLD = 5;
 
-const DEFAULT_LABELS: SortablePhotoGridLabels = {
-  photo: (position, total) => `Photo ${position} of ${total}`,
-  cover: 'Cover',
-  moveEarlier: (position) => `Move photo ${position} earlier`,
-  moveLater: (position) => `Move photo ${position} later`,
-  remove: (position) => `Remove photo ${position}`,
-  retry: (position) => `Retry uploading photo ${position}`,
-  retryAction: 'Retry',
-  uploading: (position) => `Uploading photo ${position}`,
-  failed: 'Upload failed',
-  add: 'Add photos',
-  moved: (position, total) => `Moved to position ${position} of ${total}`,
-};
 
 const STYLE_ID = 'bloom-sortable-photo-grid-web-css';
 const GRID = '[data-bloom-sortable-grid]';
@@ -199,15 +189,34 @@ function SortablePhotoGridComponent({
   photoVariant,
   disabled = false,
   labels: labelsProp,
-  accessibilityLabel = 'Photos',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: SortablePhotoGridProps) {
+  const { messages } = useMessages(SORTABLE_MEDIA_MESSAGES);
+  const common = useCommonMessages();
+  const accessibilityLabel = accessibilityLabelProp ?? messages.photos;
+  const labels: SortablePhotoGridLabels = useMemo(
+    () => ({
+      photo: messages.photo,
+      cover: messages.cover,
+      moveEarlier: messages.moveEarlier,
+      moveLater: messages.moveLater,
+      remove: messages.remove,
+      retry: messages.retry,
+      retryAction: common.retry,
+      uploading: messages.uploading,
+      failed: messages.failed,
+      add: messages.add,
+      moved: messages.moved,
+      ...labelsProp,
+    }),
+    [messages, common, labelsProp],
+  );
   const theme = useTheme();
   const ringOffset = useRingOffsetStyle();
   const resolver = useImageResolver();
   const paint = useMemo(() => resolveGridPaint(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelsProp }), [labelsProp]);
   useEffect(() => {
     if (IS_WEB) adoptStyleSheet(STYLE_ID, CSS);
   }, []);

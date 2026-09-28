@@ -101,6 +101,10 @@ describe('tokens.json shape contract', () => {
     }
   });
 
+  it('exports shape radii as dimensions and adaptive curves as metadata', () => {
+    expect(tokens.shape.card).toEqual({ $extensions: { 'so.oxy.bloom': { curve: 'smooth' } }, radius: { $type: 'dimension', $value: '12px' } });
+  });
+
   it('emits the numeric scales as px dimensions', () => {
     expect(tokens.spacing['space-8']).toEqual({ $value: '8px' });
     expect(tokens.radius['radius-max']).toEqual({ $value: '9999px' });

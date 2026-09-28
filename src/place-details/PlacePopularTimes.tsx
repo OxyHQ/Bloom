@@ -8,6 +8,7 @@ import { roundedBarPath, singleBarSlot } from '../chart-cards/rounded-bar-geomet
 import { useContainerWidth } from '../hooks/use-container-width';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -19,6 +20,7 @@ import {
   hourLabelStep,
   resolvePlaceDetailsPaint,
 } from './shared';
+import { PLACE_DETAILS_MESSAGES } from './messages';
 import type { PlacePopularTimesProps } from './types';
 
 const IS_WEB = Platform.OS === 'web';
@@ -82,12 +84,15 @@ function PlacePopularTimesComponent({
   onDayChange,
   height = PLACE_DETAILS_GEOMETRY.chartHeight,
   hue = 1,
-  daysLabel = 'Day',
+  daysLabel: daysLabelProp,
   accessibilityLabel,
-  emptyLabel = 'No data for this day',
+  emptyLabel: emptyLabelProp,
   style,
   testID,
 }: PlacePopularTimesProps) {
+  const { messages } = useMessages(PLACE_DETAILS_MESSAGES);
+  const daysLabel = daysLabelProp ?? messages.day;
+  const emptyLabel = emptyLabelProp ?? messages.noDataForDay;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePlaceDetailsPaint(theme, surface), [theme, surface]);
@@ -109,7 +114,7 @@ function PlacePopularTimesComponent({
     current?.currentHourIndex != null && current.currentHourIndex >= 0 && current.currentHourIndex < count
       ? current.currentHourIndex
       : null;
-  const trend = current ? busyTrendLabel(current) : null;
+  const trend = current ? busyTrendLabel(current, messages) : null;
 
   const band = count > 0 && width != null && width > 0 ? width / count : 0;
   const slot = band > 0 ? singleBarSlot(band, PLACE_DETAILS_GEOMETRY.barCategoryGap) : null;
@@ -165,7 +170,7 @@ function PlacePopularTimesComponent({
         <View
           onLayout={onLayout}
           accessible
-          accessibilityLabel={accessibilityLabel ?? (current ? describeBusyChart(current) : undefined)}
+          accessibilityLabel={accessibilityLabel ?? (current ? describeBusyChart(current, messages) : undefined)}
           {...(IS_WEB ? { role: 'img' as const } : null)}
           testID={testID ? `${testID}-chart` : undefined}
         >

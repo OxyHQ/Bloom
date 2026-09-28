@@ -2,12 +2,14 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { RiMapPin2Line } from '../icons/remix/RiMapPin2Line';
+import { useMessages } from '../locale/messages';
 import * as Skeleton from '../skeleton';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { AddressRow } from './AddressRow';
 import { ADDRESS_GEOMETRY, ADDRESS_SECTION_GAP, ADDRESS_SECTIONS_GAP } from './constants';
+import { ADDRESS_MESSAGES } from './messages';
 import { resolveAddressPaint } from './shared';
 import type { AddressListEntry, AddressListProps } from './types';
 
@@ -39,13 +41,16 @@ function AddressListComponent({
   loading = false,
   loadingRows = 3,
   empty,
-  emptyTitle = 'Nothing here yet',
+  emptyTitle: emptyTitleProp,
   emptyDescription,
   emptyIcon: EmptyIcon = RiMapPin2Line,
-  accessibilityLabel = 'Addresses',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: AddressListProps) {
+  const { messages } = useMessages(ADDRESS_MESSAGES);
+  const emptyTitle = emptyTitleProp ?? messages.emptyTitle;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.addresses;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveAddressPaint(theme, surface), [theme, surface]);

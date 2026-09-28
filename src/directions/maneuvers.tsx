@@ -44,6 +44,7 @@ function mirror(Icon: BloomIconComponent): BloomIconComponent {
       <Icon width={width} height={height} fill={fill} />
     </View>
   );
+  // i18n-exempt: a devtools displayName, never drawn or announced
   Mirrored.displayName = `Mirrored(${Icon.displayName ?? Icon.name ?? 'Icon'})`;
   return Mirrored;
 }

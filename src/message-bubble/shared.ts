@@ -14,6 +14,7 @@ import type {
   MessageListItem,
   MessagePosition,
 } from './types';
+import { MESSAGE_BUBBLE_MESSAGES, type MessageBubbleMessages } from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -434,19 +435,27 @@ export function sidePaint(paint: MessageBubblePaint, direction: MessageDirection
 //  Labels
 // ---------------------------------------------------------------------------
 
-export const DEFAULT_MESSAGE_LABELS: MessageBubbleLabels = {
-  forwardedFrom: 'Forwarded from',
-  deleted: 'This message was deleted',
-  retry: 'Retry sending',
-  addReaction: 'Add a reaction',
-  replyTo: 'Go to the quoted message',
-  selected: 'Selected',
-  pending: 'Sending',
-  failed: 'Not sent',
-};
-
-export function resolveLabels(labels?: Partial<MessageBubbleLabels>): MessageBubbleLabels {
-  return labels === undefined ? DEFAULT_MESSAGE_LABELS : { ...DEFAULT_MESSAGE_LABELS, ...labels };
+/**
+ * The bubble's strings: `messages` (the family's catalog in the resolved
+ * locale, English by default) under the caller's `labels`. A caller's
+ * `forwardedFrom` is a PREFIX ("Forwarded from" + name); the catalog's is the
+ * whole phrase, because not every language puts the name last.
+ */
+export function resolveLabels(
+  labels?: Partial<MessageBubbleLabels>,
+  messages: MessageBubbleMessages = MESSAGE_BUBBLE_MESSAGES.en,
+): Omit<MessageBubbleLabels, 'forwardedFrom'> & { forwardedFrom: (name: string) => string } {
+  const prefix = labels?.forwardedFrom;
+  return {
+    deleted: labels?.deleted ?? messages.deleted,
+    retry: labels?.retry ?? messages.retry,
+    addReaction: labels?.addReaction ?? messages.addReaction,
+    replyTo: labels?.replyTo ?? messages.replyTo,
+    selected: labels?.selected ?? messages.selected,
+    pending: labels?.pending ?? messages.pending,
+    failed: labels?.failed ?? messages.failed,
+    forwardedFrom: prefix === undefined ? messages.forwardedFrom : (name) => `${prefix} ${name}`,
+  };
 }
 
 /**
@@ -465,9 +474,14 @@ export function bubbleAccessibleName(parts: {
     .join(', ');
 }
 
-/** The default name of a reaction pill. */
-export function reactionLabel(emoji: string, count: number, mine: boolean): string {
-  return `${emoji}, ${count}${mine ? ', selected' : ''}`;
+/** The default name of a reaction pill; `selected` is the catalog's lower-case word. */
+export function reactionLabel(
+  emoji: string,
+  count: number,
+  mine: boolean,
+  selected: string = MESSAGE_BUBBLE_MESSAGES.en.reactionSelected,
+): string {
+  return `${emoji}, ${count}${mine ? `, ${selected}` : ''}`;
 }
 
 // ---------------------------------------------------------------------------

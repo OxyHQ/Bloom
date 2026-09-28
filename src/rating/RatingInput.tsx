@@ -9,6 +9,8 @@ import { DISABLED_OPACITY } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { RATING_MESSAGES } from './messages';
 import type { RatingInputProps, RatingInputSize } from './types';
 import { useFieldMembership } from '../field/membership';
 
@@ -73,9 +75,9 @@ const BLOOM_RATING_INPUT_CSS = interactiveWebCss({
 }`,
 });
 
-/** `1 star`, `4 stars`. English — `formatStarLabel` replaces it. */
+/** `1 star`, `4 stars` — the English entry; the component speaks the locale's. */
 export function defaultStarLabel(value: number): string {
-  return value === 1 ? '1 star' : `${value} stars`;
+  return RATING_MESSAGES.en.star(value, 5);
 }
 
 function RatingInputComponent({
@@ -85,11 +87,13 @@ function RatingInputComponent({
   size = 'medium',
   disabled: disabledProp = false,
   accessibilityLabel,
-  formatStarLabel = defaultStarLabel,
+  formatStarLabel: formatStarLabelProp,
   style,
   testID,
 }: RatingInputProps) {
   const theme = useTheme();
+  const { messages } = useMessages(RATING_MESSAGES);
+  const formatStarLabel = formatStarLabelProp ?? messages.star;
   // A row of stars draws no words, so the `radiogroup`'s name is a prop or the
   // enclosing `Field`'s label; the field's `disabled` freezes the whole row.
   const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });

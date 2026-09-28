@@ -18,6 +18,8 @@ import {
   resolveChatListPaint,
 } from './shared';
 import type { ArchivedRowProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * The archive folder, above the conversations.
@@ -30,7 +32,7 @@ import type { ArchivedRowProps } from './types';
 
 function ArchivedRowComponent({
   count,
-  label = 'Archived',
+  label: labelProp,
   icon,
   onPress,
   href,
@@ -40,6 +42,8 @@ function ArchivedRowComponent({
   testID,
 }: ArchivedRowProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
+  const label = labelProp ?? messages.archived;
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
@@ -48,7 +52,7 @@ function ArchivedRowComponent({
   const geo = CHAT_ROW_GEOMETRY[density];
   const showCount = (count ?? 0) > 0;
   const name = showCount
-    ? `${label}, ${count} ${count === 1 ? 'chat' : 'chats'}`
+    ? messages.archivedName(label, count ?? 0)
     : label;
 
   const rowStyle: WebCssStyle = {

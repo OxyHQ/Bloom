@@ -119,7 +119,7 @@ export interface DestinationSuggestionsProps {
   /** Controlled highlight. Default: internal (hover and arrow keys). */
   highlightedIndex?: number;
   onHighlightedIndexChange?: (index: number) => void;
-  /** Names the listbox. Default: `heading`, else `"Destinations"`. */
+  /** Names the listbox. Default: `heading`, else `"Destinations"` (in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Derives `-<index>` for each row. */
@@ -167,7 +167,7 @@ export interface GuestPickerProps {
    * closes the popover by default; elsewhere it renders only when this is set.
    */
   onClose?: () => void;
-  /** Default `"Close"`. */
+  /** `"Close"` in English; follows the locale. */
   closeLabel?: string;
   /** Stepper size. Default `'medium'`; `'small'` for a popover. */
   size?: StepperSize;
@@ -187,7 +187,7 @@ export interface DateFlexibilityChipsProps {
   onChange: (value: string) => void;
   /** Default: exact, ± 1, ± 2, ± 3, ± 7 days (values `exact`, `1`, `2`, `3`, `7`). */
   options?: readonly DateFlexibilityOption[];
-  /** Names the group. Default `"Date flexibility"`. */
+  /** Names the group. `"Date flexibility"` in English; follows the locale. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Derives `-<value>` per chip. */
@@ -196,13 +196,13 @@ export interface DateFlexibilityChipsProps {
 
 export interface StaySearchCompactProps {
   onPress: () => void;
-  /** Default `"Where to?"`. */
+  /** `"Where to?"` in English; follows the locale. */
   title?: string;
   /** The secondary line, e.g. `"Anywhere · Any week · Add guests"`. */
   summary?: string;
   /** Shows a round filter button at the right end when set. */
   onFilterPress?: () => void;
-  /** The filter button's name. Default `"Filters"`. */
+  /** The filter button's name. `"Filters"` in English; follows the locale. */
   filterLabel?: string;
   /** The filter glyph. Default `RiEqualizer3Line`. */
   filterIcon?: ButtonIconComponent;

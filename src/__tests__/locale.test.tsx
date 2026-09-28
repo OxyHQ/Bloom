@@ -8,7 +8,7 @@ import { DATE_PICKER_MESSAGES } from '../date-picker/messages';
 import { BLOOM_LANGUAGES, LocaleProvider, resolveBloomLanguage, useBloomLocale } from '../locale';
 import { formatGregorian } from '../locale/format-date';
 import { pickMessages } from '../locale/messages';
-import { plural, pluralCategory } from '../locale/plural';
+import { countValue, plural, pluralCategory } from '../locale/plural';
 
 describe('resolveBloomLanguage', () => {
   it('reads the primary subtag of any BCP 47 spelling', () => {
@@ -49,6 +49,22 @@ describe('pluralCategory (CLDR cardinals, whole numbers)', () => {
   it('Japanese and Chinese never inflect', () => {
     expect(pluralCategory('ja', 1)).toBe('other');
     expect(pluralCategory('zh', 2)).toBe('other');
+  });
+
+  it('reads a count that arrives already formatted, and shows it as given', () => {
+    expect(countValue('1,234')).toBe(1234);
+    expect(countValue('1.234')).toBe(1234);
+    expect(countValue('1\u202f234')).toBe(1234);
+    expect(countValue('٢١')).toBe(21);
+    expect(countValue('२१')).toBe(21);
+    expect(countValue('২১')).toBe(21);
+    expect(countValue('4.5')).toBe(4);
+    expect(countValue('—')).toBeNaN();
+    expect(countValue('2.1K')).toBeNaN();
+    expect(countValue('12,5 mil')).toBeNaN();
+    expect(plural('ru', '2.1K', { one: '{n} просмотр', few: '{n} просмотра', many: '{n} просмотров', other: '{n} просмотра' })).toBe('2.1K просмотров');
+    expect(plural('ru', '1,021', { one: '{n} отзыв', few: '{n} отзыва', many: '{n} отзывов', other: '{n} отзыва' })).toBe('1,021 отзыв');
+    expect(plural('en', '1,234', { one: '{n} review', other: '{n} reviews' })).toBe('1,234 reviews');
   });
 
   it('falls back to other for a category the forms leave out', () => {

@@ -38,17 +38,21 @@ import {
   useMenubarMenu,
 } from './context';
 import type { MenubarMenuProps, MenubarProps, MenubarTriggerProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MENUBAR_MESSAGES } from './messages';
 
 export function Menubar({
   children,
   value,
   defaultValue,
   onValueChange,
-  label = 'Menu bar',
+  label: labelProp,
   className,
   style,
   testID,
 }: MenubarProps) {
+  const { messages } = useMessages(MENUBAR_MESSAGES);
+  const label = labelProp ?? messages.menuBar;
   const [openValue, setValue] = useControllableState<string | undefined>({
     value,
     defaultValue,

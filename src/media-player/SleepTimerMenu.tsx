@@ -15,9 +15,11 @@ import { useTheme } from '../theme/use-theme';
 import { PlayerIconButton } from './PlayerIconButton';
 import { parseSleepTimerKey, SLEEP_TIMER_MINUTES, sleepTimerKey, TRANSPORT_GEOMETRY } from './shared';
 import type { SleepTimerMenuProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_PLAYER_MESSAGES, type MediaPlayerMessages } from './messages';
 
-const defaultMinutes = (m: number) => (m === 60 ? '1 hour' : `${m} minutes`);
-const defaultRemaining = (r: string) => `Stops in ${r}`;
+const defaultMinutes = (messages: MediaPlayerMessages) => (m: number) =>
+  m === 60 ? messages.oneHour : messages.minutes(m);
 
 /** The heading, the time left and the radio rows. */
 export function SleepTimerRows({
@@ -25,13 +27,19 @@ export function SleepTimerRows({
   onValueChange,
   minutes = SLEEP_TIMER_MINUTES,
   remaining,
-  label = 'Sleep timer',
-  offLabel = 'Off',
-  endLabel = 'End of episode',
-  formatMinutes = defaultMinutes,
-  formatRemaining = defaultRemaining,
+  label: labelProp,
+  offLabel: offLabelProp,
+  endLabel: endLabelProp,
+  formatMinutes: formatMinutesProp,
+  formatRemaining: formatRemainingProp,
   testID,
 }: Omit<SleepTimerMenuProps, 'children' | 'open' | 'onOpenChange' | 'size' | 'disabled'>) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const label = labelProp ?? messages.sleepTimer;
+  const offLabel = offLabelProp ?? messages.sleepOff;
+  const endLabel = endLabelProp ?? messages.endOfEpisode;
+  const formatMinutes = formatMinutesProp ?? defaultMinutes(messages);
+  const formatRemaining = formatRemainingProp ?? messages.stopsIn;
   const theme = useTheme();
   const check = <RiCheckLine width={16} height={16} fill={theme.colors.text} />;
   const row = (key: string, text: string) => (
@@ -78,12 +86,13 @@ function SleepTimerMenuComponent({
   disabled,
   ...rows
 }: SleepTimerMenuProps) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const g = TRANSPORT_GEOMETRY[size];
-  const label = rows.label ?? 'Sleep timer';
+  const label = rows.label ?? messages.sleepTimer;
   const active = rows.value !== 'off';
   const name =
     active && rows.remaining
-      ? `${label}, ${(rows.formatRemaining ?? defaultRemaining)(rows.remaining)}`
+      ? `${label}, ${(rows.formatRemaining ?? messages.stopsIn)(rows.remaining)}`
       : label;
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>

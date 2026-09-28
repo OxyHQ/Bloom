@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
   label: { flexShrink: 1, fontSize: 13, fontWeight: '500' },
   percent: { fontSize: 14, fontWeight: '700', letterSpacing: -0.2, fontVariant: ['tabular-nums'] },
   icon: { marginLeft: 8 },
-  track: { width: '100%', flexDirection: 'row', borderCurve: 'continuous' },
+  track: { width: '100%', flexDirection: 'row', ...surfaceStyle(SURFACE_SHAPES.chart) },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',

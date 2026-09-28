@@ -54,6 +54,8 @@ import {
 
 Everything is data in props: counts, durations, dates and listener figures arrive pre-formatted as strings — the app owns locale and plurals. Images are a URL or an ImageResolver id. Every header is controlled: it draws what it is given and reports what the user did.
 
+The English defaults below are localised: each is drawn in the app's language via `BloomProvider locale` ([Locale](/docs/locale)), and a prop you pass still wins.
+
 ## The band
 
 Each header paints a gradient band from `artworkColor` — the artwork's dominant colour, as a hex or `rgb()` string from the backend. Components never sample images.

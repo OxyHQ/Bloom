@@ -103,8 +103,11 @@ export interface SurfacePresentation {
    * the surface: the store then resolves IMMEDIATELY on the press and flips the
    * entry to `'closing'`, so the exit animation plays without the caller
    * waiting on it.
+   *
+   * The second argument is the locale in effect where the surface renders
+   * (`BloomProvider locale`), so default button words can follow it.
    */
-  actions?: (surface: SurfaceControls) => DialogAction[];
+  actions?: (surface: SurfaceControls, locale?: string) => DialogAction[];
 }
 
 /** Options accepted by `present` / `SurfaceControls.present`. */
@@ -182,9 +185,9 @@ export interface SurfaceConfirmOptions {
   title: string;
   /** Supporting copy. */
   description?: string;
-  /** Confirm button label. Defaults to `'Confirm'`. */
+  /** Confirm button label (`'Confirm'` in English). */
   confirmLabel?: string;
-  /** Cancel button label. Defaults to `'Cancel'`. */
+  /** Cancel button label (`'Cancel'` in English). */
   cancelLabel?: string;
   /** Style the confirm button as destructive (negative color). */
   destructive?: boolean;
@@ -211,9 +214,9 @@ export interface SurfacePromptOptions {
   defaultValue?: string;
   /** Accessibility label for the input. Defaults to the `title`. */
   inputLabel?: string;
-  /** Submit button label. Defaults to `'OK'`. */
+  /** Submit button label (`'OK'` in English). */
   confirmLabel?: string;
-  /** Cancel button label. Defaults to `'Cancel'`. */
+  /** Cancel button label (`'Cancel'` in English). */
   cancelLabel?: string;
   /**
    * Backdrop / Escape / back dismiss (resolving `null`). Defaults to `true`;

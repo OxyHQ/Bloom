@@ -15,6 +15,7 @@ import { Image, Pressable, ScrollView, View } from 'react-native';
 
 import { RiHashtag } from '../icons/remix/RiHashtag';
 import { useImageResolver } from '../image-resolver/context';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
@@ -24,14 +25,9 @@ import {
   SUGGESTION_ROW_HEIGHT,
   resolveChatComposerPalette,
 } from './shared';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
 import type { ChatComposerSuggestion, SuggestionKind, SuggestionListProps } from './types';
 import { dataHook, IS_WEB } from './web-hooks';
-
-const DEFAULT_NAMES: Record<SuggestionKind, string> = {
-  mention: 'People',
-  command: 'Commands',
-  emoji: 'Emoji',
-};
 
 function isUrl(value: string): boolean {
   return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('file:');
@@ -113,6 +109,7 @@ export function SuggestionList({
 }: SuggestionListProps) {
   const theme = useTheme();
   const palette = resolveChatComposerPalette(theme, useCardFill(style));
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
   if (suggestions.length === 0) return null;
 
   // React Native's `Role` union has no `listbox`; react-native-web passes the
@@ -145,7 +142,7 @@ export function SuggestionList({
       <ScrollView
         {...dataHook('bloomChatComposerScroll')}
         {...listRole}
-        accessibilityLabel={accessibilityLabel ?? DEFAULT_NAMES[kind]}
+        accessibilityLabel={accessibilityLabel ?? messages.suggestions[kind]}
         style={{ maxHeight }}
         showsVerticalScrollIndicator={false}>
         {suggestions.map((suggestion, index) => {

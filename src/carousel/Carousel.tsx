@@ -26,6 +26,7 @@ import { resolveButtonRamps } from '../button/shared';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useMessages } from '../locale/messages';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -33,6 +34,7 @@ import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { CarouselContext, CarouselItemIndexContext } from './context';
+import { CAROUSEL_MESSAGES } from './messages';
 import type { CarouselItemProps, CarouselProps } from './types';
 
 /**
@@ -153,6 +155,7 @@ const CarouselItemComponent = function CarouselItem({
 }: CarouselItemProps) {
   const ctx = useContext(CarouselContext);
   const index = useContext(CarouselItemIndexContext);
+  const { messages } = useMessages(CAROUSEL_MESSAGES);
   const reportOffset = ctx?.reportOffset;
 
   const onLayout = useCallback(
@@ -169,8 +172,8 @@ const CarouselItemComponent = function CarouselItem({
     <View
       {...webDataSet({ bloomCarouselItem: '' })}
       role="group"
-      {...(IS_WEB ? { 'aria-roledescription': 'slide' } : {})}
-      accessibilityLabel={accessibilityLabel ?? (ctx ? `${index + 1} of ${ctx.count}` : undefined)}
+      {...(IS_WEB ? { 'aria-roledescription': messages.slideRole } : {})}
+      accessibilityLabel={accessibilityLabel ?? (ctx ? messages.slideOf(index + 1, ctx.count) : undefined)}
       onLayout={onLayout}
       style={[{ flexShrink: 0 }, slideWidth != null ? { width: slideWidth } : null, style]}
       testID={testID}
@@ -304,12 +307,15 @@ const CarouselComponent = function Carousel({
   gap = 16,
   inset = 0,
   onIndexChange,
-  previousLabel = 'Previous slide',
-  nextLabel = 'Next slide',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   dotLabel,
   style,
   testID,
 }: CarouselProps) {
+  const { messages } = useMessages(CAROUSEL_MESSAGES);
+  const previousLabel = previousLabelProp ?? messages.previousSlide;
+  const nextLabel = nextLabelProp ?? messages.nextSlide;
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, BLOOM_CAROUSEL_CSS);
   const reducedMotion = useReducedMotion();
@@ -459,7 +465,7 @@ const CarouselComponent = function Carousel({
   return (
     <View
       role="group"
-      {...(IS_WEB ? { 'aria-roledescription': 'carousel' } : {})}
+      {...(IS_WEB ? { 'aria-roledescription': messages.carouselRole } : {})}
       accessibilityLabel={accessibilityLabel}
       style={[{ width: '100%', flexDirection: 'column', gap: 16 }, style]}
       testID={testID}
@@ -515,7 +521,7 @@ const CarouselComponent = function Carousel({
                 key={index}
                 active={index === active}
                 paint={paint}
-                label={dotLabel ? dotLabel(slide + 1) : `Go to slide ${slide + 1}`}
+                label={dotLabel ? dotLabel(slide + 1) : messages.goToSlide(slide + 1)}
                 reducedMotion={reducedMotion}
                 onPress={() => scrollToStop(stops[index])}
               />

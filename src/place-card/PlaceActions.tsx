@@ -2,7 +2,9 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
+import { useMessages } from '../locale/messages';
 import { PLACE_CARD_GEOMETRY } from './constants';
+import { PLACE_CARD_MESSAGES } from './messages';
 import type { PlaceActionsProps } from './types';
 
 /**
@@ -28,10 +30,12 @@ import type { PlaceActionsProps } from './types';
 function PlaceActionsComponent({
   actions,
   size = 'small',
-  accessibilityLabel = 'Actions',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PlaceActionsProps) {
+  const { messages } = useMessages(PLACE_CARD_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.actions;
   if (actions.length === 0) return null;
   return (
     <View

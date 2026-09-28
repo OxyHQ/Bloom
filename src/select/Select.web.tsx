@@ -64,6 +64,8 @@ import type {
   SelectValueProps,
 } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useMessages } from '../locale/messages';
+import { SELECT_MESSAGES } from './messages';
 import { isSpaceKey, rovingItems, rovingMove, rovingTarget } from '../hooks/roving-focus';
 import { hostElement, useReturnFocusOnClose } from '../floating/menu-keyboard';
 
@@ -423,12 +425,14 @@ export function SelectIcon({ style }: SelectIconProps) {
 export function SelectContent<T>({
   items,
   renderItem,
-  label = 'Select an option',
+  label: labelProp,
   valueExtractor = defaultItemValueExtractor,
   maxHeight = SELECT_MAX_HEIGHT,
   width,
   className,
 }: SelectContentProps<T>) {
+  const { messages } = useMessages(SELECT_MESSAGES);
+  const label = labelProp ?? messages.selectOption;
   const ctx = useSelectContext();
   const [, setStoredItem] = useContext(ValueStoreContext);
   // Resolve the item behind the value on every change — including while closed,

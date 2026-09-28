@@ -188,7 +188,8 @@ function ImportantAlertsCardComponent({
   const feedHook: WebDataSet = IS_WEB ? { dataSet: { bloomAlertsFeed: '' } } : {};
 
   return (
-    <Card elevation="none"
+    <Card radius="radius-20" elevation="none" clipContent
+      contentStyle={styles.cardContent}
       testID={testID}
       style={[
         styles.card,
@@ -288,9 +289,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     minWidth: 0,
+  },
+  cardContent: {
     gap: 16,
-    overflow: 'hidden',
-    borderRadius: 20,
     paddingTop: 10,
     paddingLeft: 10,
     paddingRight: 10,

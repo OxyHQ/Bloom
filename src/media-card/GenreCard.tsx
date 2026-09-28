@@ -19,6 +19,7 @@ import {
   TILE_ARTWORK,
 } from './shared';
 import type { GenreCardProps, MediaCardSize } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 const TITLE: Record<MediaCardSize, TypeScaleVariant> = {
   large: 'title-2-bold',
@@ -51,6 +52,7 @@ function GenreCardComponent({
   style,
   testID,
 }: GenreCardProps) {
+  const common = useCommonMessages();
   const theme = useTheme();
   useMediaCardCss();
   const resolver = useImageResolver();
@@ -62,7 +64,7 @@ function GenreCardComponent({
 
   if (skeleton) {
     return (
-      <View aria-busy accessibilityLabel="Loading" style={[{ width: side, aspectRatio: 1 }, style]} testID={testID}>
+      <View aria-busy accessibilityLabel={common.loading} style={[{ width: side, aspectRatio: 1 }, style]} testID={testID}>
         <SkeletonBox width="100%" height="100%" borderRadius={GENRE_RADIUS} />
       </View>
     );

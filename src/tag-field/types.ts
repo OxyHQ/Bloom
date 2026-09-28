@@ -16,13 +16,13 @@ export interface TagSuggestion {
   meta?: string;
 }
 
-/** The English words `TagField` composes. */
+/** The words `TagField` composes. Each defaults to the locale's (`BloomProvider locale`); one given here wins. */
 export interface TagFieldLabels {
-  /** Names a tag's × button, given the tag. Default ``(tag) => `Remove ${tag}` ``. */
+  /** Names a tag's × button, given the tag. English: ``(tag) => `Remove ${tag}` ``. */
   remove?: (tag: string) => string;
-  /** The hint under a full field, given the max. Default ``(max) => `${max} maximum` ``. */
+  /** The hint under a full field, given the max. English: ``(max) => `${max} maximum` ``. */
   full?: (max: number) => string;
-  /** Names the suggestion list. Default `"Suggestions"`. */
+  /** Names the suggestion list (`"Suggestions"` in English). */
   suggestions?: string;
 }
 

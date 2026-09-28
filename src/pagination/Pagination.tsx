@@ -13,6 +13,9 @@ import { RiArrowLeftLine as ArrowLeft } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightLine as ArrowRight } from '../icons/remix/RiArrowRightLine';
 import type { Theme } from '../theme/types';
 import type { PaginationProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { PAGINATION_MESSAGES } from './messages';
 
 /**
  * The pagination, coloured from Bloom's theme through the ramps
@@ -177,13 +180,18 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   totalPages,
   onChange,
   siblingCount = 1,
-  previousLabel = 'Previous',
-  nextLabel = 'Next',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   getPageLabel,
-  accessibilityLabel = 'Pagination',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }) => {
+  const { messages } = useMessages(PAGINATION_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.pagination;
+  const common = useCommonMessages();
+  const previousLabel = previousLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, PAGINATION_CSS);
   const palette = useMemo(() => resolvePaginationPalette(theme), [theme]);
@@ -235,7 +243,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
               page={item}
               current={item === page}
               palette={palette}
-              label={getPageLabel ? getPageLabel(item) : `Go to page ${item}`}
+              label={getPageLabel ? getPageLabel(item) : messages.goToPage(item)}
               onChange={onChange}
             />
           ),

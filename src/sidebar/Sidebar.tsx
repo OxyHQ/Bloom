@@ -3,6 +3,8 @@ import { resolveSurfaceFill } from '../surface/shared';
 import { useTheme } from '../theme/use-theme';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { parseRgba, withAlpha } from '../theme/color-utils';
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -50,6 +52,9 @@ import { SidebarTeamMenu } from './SidebarTeamMenu';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
 import type { SidebarNavItem, SidebarProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { SIDEBAR_MESSAGES } from './messages';
 
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
@@ -158,7 +163,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   modes,
   mode,
   onModeChange,
-  modesLabel,
+  modesLabel: modesLabelProp,
   selected,
   onNavigate,
   collapsed: collapsedProp,
@@ -166,10 +171,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   onCollapsedChange,
   mobile = false,
   onClose,
-  accessibilityLabel = 'Sidebar',
-  collapseLabel = 'Collapse sidebar',
-  expandLabel = 'Expand sidebar',
-  closeLabel = 'Close sidebar',
+  accessibilityLabel: accessibilityLabelProp,
+  collapseLabel: collapseLabelProp,
+  expandLabel: expandLabelProp,
+  closeLabel: closeLabelProp,
   fluid = false,
   surface = 'card',
   size: sizeProp,
@@ -179,12 +184,12 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   searchShortcut = true,
   searchQuery,
   onSearchQueryChange,
-  searchLabel = 'Quick Search',
-  searchButtonLabel = 'Search',
+  searchLabel: searchLabelProp,
+  searchButtonLabel: searchButtonLabelProp,
   searchPlaceholder,
-  filterLabel = 'Filter navigation',
-  clearSearchLabel = 'Clear navigation search',
-  noResultsLabel = 'No results',
+  filterLabel: filterLabelProp,
+  clearSearchLabel: clearSearchLabelProp,
+  noResultsLabel: noResultsLabelProp,
   logo,
   account,
   team,
@@ -195,6 +200,18 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   style,
   testID,
 }) => {
+  const common = useCommonMessages();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
+  const searchButtonLabel = searchButtonLabelProp ?? common.search;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.sidebar;
+  const collapseLabel = collapseLabelProp ?? messages.collapse;
+  const expandLabel = expandLabelProp ?? messages.expand;
+  const closeLabel = closeLabelProp ?? messages.close;
+  const searchLabel = searchLabelProp ?? messages.quickSearch;
+  const filterLabel = filterLabelProp ?? messages.filter;
+  const clearSearchLabel = clearSearchLabelProp ?? messages.clearSearch;
+  const noResultsLabel = noResultsLabelProp ?? messages.noResults;
+  const modesLabel = modesLabelProp ?? messages.mode;
   const palette = useSidebarPalette();
   const theme = useTheme();
   const parentFill = useSurfaceFill();
@@ -420,7 +437,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             borderEndColor: palette.dockedEdge,
           }
         : {
-            borderRadius: 24,
+            ...surfaceStyle(SURFACE_SHAPES.sidebar),
             borderWidth: 1,
             borderColor: palette.panelBorder,
             backgroundColor: 'transparent',
@@ -434,7 +451,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // `var(--bloom-sidebar-ring)`, which resolves to nothing — no ring at all —
   // on a node that does not set it.
   const iconButtonRing = { borderRadius: 6, '--bloom-sidebar-ring': palette.ring } as WebCssStyle;
-  const placeholder = searchPlaceholder ?? (flatMobile ? 'Search...' : 'Search navigation…');
+  const placeholder = searchPlaceholder ?? (flatMobile ? messages.searchPlaceholderCompact : messages.searchPlaceholder);
 
   const toggleCollapse = () => {
     const expanding = collapsedState;
@@ -684,7 +701,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           surfaceFillVars(publishedFill),
         ]}
       >
-        {paintsSurface ? <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? (surface === 'card' ? 24 : 0)} /> : null}
+        {paintsSurface ? <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.sidebar.curve }} radius={customSurface?.borderRadius ?? (surface === 'card' ? 24 : 0)} /> : null}
         <View testID={`${testID ?? 'sidebar'}-main-region`} style={{ width: '100%', minHeight: 0, flexShrink: 1, ...(contentAlignment === 'center' ? { flex: 1, justifyContent: 'center' as const } : {}) }}>
         <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
           {/* Fixed chrome shares the panel's morph, never the destination scroll.

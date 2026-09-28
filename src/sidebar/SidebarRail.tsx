@@ -10,6 +10,8 @@ import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarRailItem } from './SidebarRailItem';
 import type { SidebarNavItem, SidebarProps } from './types';
+import { useMessages } from '../locale/messages';
+import { SIDEBAR_MESSAGES } from './messages';
 
 /** The rail's fixed width. */
 export const SIDEBAR_RAIL_WIDTH = 80;
@@ -35,11 +37,13 @@ export function SidebarRail({
   secondaryItems = [],
   selected,
   onNavigate,
-  accessibilityLabel = 'Sidebar',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: SidebarProps) {
   const palette = useSidebarPalette();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.sidebar;
   // The badges sit on logical insets; react-native-web resolves those against a
   // `dir` prop, not `<html dir>` (see `useDirectionProps`).
   const dirProps = useDirectionProps();

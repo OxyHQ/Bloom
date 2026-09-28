@@ -25,6 +25,8 @@ import Animated, {
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { RadioIndicator } from '../radio-indicator';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -34,15 +36,15 @@ import { MicButton, SendButton, StopButton } from './ComposerControls';
 import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
 import {
-  COMPOSER_PANEL_ADD_MENU,
+  composerAddMenu,
   CONTROL_SIZE,
   DEFAULT_EFFORT,
   EFFORT_WIDTH,
-  MODEL_PICKER_EFFORT_LEVELS,
   resolveComposerPalette,
   type ComposerPalette,
 } from './shared';
-import type { ComposerPillLabels, ComposerPillProps, ModelPickerModel } from './types';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
+import type { ComposerPanelLabels, ComposerPillLabels, ComposerPillProps, ModelPickerModel } from './types';
 import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -54,22 +56,6 @@ const COMPACT_WIDTH = 640;
 const PILL_HEIGHT = 52;
 /** One line of `body-regular`, which is what the field was fixed at. */
 const LINE_HEIGHT = 20;
-
-const DEFAULT_LABELS: Required<ComposerPillLabels> = {
-  message: 'Message',
-  add: 'Add attachment',
-  addMenu: 'Add to chat',
-  modelSettings: 'Model settings',
-  models: 'Models',
-  modelGroup: 'Model',
-  effort: 'Effort',
-  effortAuto: 'Auto',
-  faster: 'Faster',
-  smarter: 'Smarter',
-  voice: 'Voice input',
-  send: 'Send message',
-  stop: 'Stop generating',
-};
 
 /** Shared glass paint behind an explicitly glass control; fades with its existing transition. */
 function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; dark: boolean }) {
@@ -388,9 +374,9 @@ export function ComposerPillBase({
   onStop,
   busy = false,
   disabled = false,
-  placeholder = 'Ask me anything',
-  compactPlaceholder = 'Ask me',
-  addMenu = COMPOSER_PANEL_ADD_MENU,
+  placeholder: placeholderProp,
+  compactPlaceholder: compactPlaceholderProp,
+  addMenu: addMenuProp,
   onAddMenuSelect,
   models,
   model,
@@ -399,7 +385,7 @@ export function ComposerPillBase({
   effort,
   defaultEffort = DEFAULT_EFFORT,
   onEffortChange,
-  effortLevels = MODEL_PICKER_EFFORT_LEVELS,
+  effortLevels: effortLevelsProp,
   listening,
   defaultListening = false,
   onListeningChange,
@@ -416,7 +402,48 @@ export function ComposerPillBase({
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
+  const common = useCommonMessages();
+  const labels = useMemo<Required<ComposerPillLabels>>(
+    () => ({
+      message: messages.message,
+      add: messages.add,
+      addMenu: messages.addMenu,
+      modelSettings: messages.modelSettings,
+      models: messages.models,
+      modelGroup: messages.modelGroup,
+      effort: messages.effort,
+      effortAuto: messages.effortAuto,
+      faster: messages.faster,
+      smarter: messages.smarter,
+      voice: messages.voice,
+      send: messages.send,
+      stop: messages.stop,
+      ...labelOverrides,
+    }),
+    [messages, labelOverrides],
+  );
+  // `AddMenu` reads the panel's label set; only `add` and `addMenu` reach it.
+  const addMenuLabels = useMemo<Required<ComposerPanelLabels>>(
+    () => ({
+      message: labels.message,
+      add: labels.add,
+      addMenu: labels.addMenu,
+      permissions: messages.permissions,
+      permissionMode: messages.permissionMode,
+      learnMore: messages.learnMore,
+      voice: labels.voice,
+      send: labels.send,
+      stop: labels.stop,
+      remove: common.remove,
+      retry: common.retry,
+    }),
+    [labels, messages, common],
+  );
+  const placeholder = placeholderProp ?? messages.pillPlaceholder;
+  const compactPlaceholder = compactPlaceholderProp ?? messages.pillCompactPlaceholder;
+  const addMenu = useMemo(() => addMenuProp ?? composerAddMenu(messages), [addMenuProp, messages]);
+  const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
   const compact = useWindowDimensions().width < COMPACT_WIDTH;
 
   const [text, setText] = useControllableState<string>({ value, defaultValue, onChange: onValueChange });
@@ -600,7 +627,7 @@ export function ComposerPillBase({
             palette={palette}
             groups={addMenu}
             onSelect={onAddMenuSelect}
-            labels={{ ...DEFAULT_PANEL_LABELS, add: labels.add, addMenu: labels.addMenu }}
+            labels={addMenuLabels}
             testID={testID ? `${testID}-add` : undefined}
           />
         </View>
@@ -695,19 +722,6 @@ export function ComposerPillBase({
   return publishedFill ? <SurfaceLevelProvider level={surface ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
 
 }
-const DEFAULT_PANEL_LABELS = {
-  message: 'Message',
-  add: 'Add attachment',
-  addMenu: 'Add to chat',
-  permissions: 'Permissions',
-  permissionMode: 'Permission mode',
-  learnMore: 'Learn more',
-  voice: 'Voice input',
-  send: 'Send message',
-  stop: 'Stop generating',
-  remove: 'Remove',
-  retry: 'Retry',
-};
 
 /**
  * A bare string entry is its own id: the shorthand stays exact, and an `{ id,

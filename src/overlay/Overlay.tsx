@@ -61,6 +61,7 @@ import { useHardwareBack } from './use-hardware-back';
 import { useModalOverlayRegistration } from './use-modal-overlay-active';
 import { useOverlayLayer } from './use-overlay-layer';
 import type { OverlayRootProps, BackdropProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -390,9 +391,11 @@ export const Backdrop = memo(function Backdrop({
   style,
   layerStyle,
   children,
-  accessibilityLabel = 'Dismiss',
+  accessibilityLabel: accessibilityLabelProp,
   testID,
 }: BackdropProps) {
+  const common = useCommonMessages();
+  const accessibilityLabel = accessibilityLabelProp ?? common.dismiss;
   const inert = disabled || !onPress;
   // `undefined` unless this backdrop is inside a declared separate native
   // window. On Android that is the difference between a real blur and a crash.

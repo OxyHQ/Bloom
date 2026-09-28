@@ -7,9 +7,11 @@ import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { RENT_PAYMENT_LIST_WIDE_MIN_WIDTH, RENT_PAYMENT_STATUS } from './constants';
 import { FigureLabel, HousingCard, useHousingPalette } from './parts';
+import { TENANCY_MESSAGES } from './messages';
 import type { RentPayment, RentPaymentListProps } from './types';
 
 /**
@@ -39,33 +41,32 @@ function RentPaymentListComponent({
   payments,
   title,
   paidThisYear,
-  paidThisYearLabel = 'Paid this year',
+  paidThisYearLabel: paidThisYearLabelProp,
   outstanding,
-  outstandingLabel = 'Outstanding',
+  outstandingLabel: outstandingLabelProp,
   outstandingTone = 'default',
   statusLabels,
-  receiptLabel = (payment: RentPayment) => `Download receipt for ${payment.month}`,
+  receiptLabel: receiptLabelProp,
   columnLabels,
-  formatDueDate = (dueDate: string) => `Due ${dueDate}`,
-  emptyLabel = 'No payments yet',
+  formatDueDate: formatDueDateProp,
+  emptyLabel: emptyLabelProp,
   layout = 'auto',
   style,
   testID,
 }: RentPaymentListProps) {
+  const { messages } = useMessages(TENANCY_MESSAGES);
+  const paidThisYearLabel = paidThisYearLabelProp ?? messages.paidThisYear;
+  const outstandingLabel = outstandingLabelProp ?? messages.outstanding;
+  const receiptLabel = receiptLabelProp ?? ((payment: RentPayment) => messages.downloadReceipt(payment.month));
+  const formatDueDate = formatDueDateProp ?? messages.dueOn;
+  const emptyLabel = emptyLabelProp ?? messages.noPayments;
   const theme = useTheme();
   const palette = useHousingPalette();
   const { width, onLayout } = useContainerWidth();
   const wide =
     layout === 'wide' || (layout === 'auto' && width != null && width >= RENT_PAYMENT_LIST_WIDE_MIN_WIDTH);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
-  const columns = {
-    month: 'Month',
-    dueDate: 'Due date',
-    method: 'Method',
-    amount: 'Amount',
-    status: 'Status',
-    ...columnLabels,
-  };
+  const columns = { ...messages.columns, ...columnLabels };
   const outstandingColor =
     outstandingTone === 'error'
       ? resolveAccentColors(theme.colors, 'error', 'outlined').foreground
@@ -92,7 +93,7 @@ function RentPaymentListComponent({
     const info = RENT_PAYMENT_STATUS[payment.status];
     return (
       <Badge
-        content={payment.statusLabel ?? statusLabels?.[payment.status] ?? info.label}
+        content={payment.statusLabel ?? statusLabels?.[payment.status] ?? messages.rentPaymentStatus[payment.status]}
         color={info.tone}
         variant="subtle"
         size="medium"

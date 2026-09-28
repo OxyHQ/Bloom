@@ -16,7 +16,10 @@ import {
   resolveListingPalette,
   type ListingPalette,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { ReviewCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * One guest review.
@@ -38,11 +41,12 @@ import type { ReviewCardProps } from './types';
 const STAR_SIZE = 10;
 
 function Stars({ rating, palette, testID }: { rating: number; palette: ListingPalette; testID?: string }) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
   const filled = Math.max(0, Math.min(5, Math.round(rating)));
   return (
     <View
       accessible
-      accessibilityLabel={`Rated ${filled} out of 5`}
+      accessibilityLabel={messages.ratedOutOf5(String(filled))}
       {...(IS_WEB ? { role: 'img' as const } : null)}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
       testID={testID}
@@ -67,8 +71,8 @@ function ReviewCardComponent({
   date,
   text,
   numberOfLines = 4,
-  showMoreLabel = 'Show more',
-  showLessLabel = 'Show less',
+  showMoreLabel: showMoreLabelProp,
+  showLessLabel: showLessLabelProp,
   expanded: expandedProp,
   onExpandedChange,
   hostResponse,
@@ -76,6 +80,9 @@ function ReviewCardComponent({
   style,
   testID,
 }: ReviewCardProps) {
+  const common = useCommonMessages();
+  const showMoreLabel = showMoreLabelProp ?? common.showMore;
+  const showLessLabel = showLessLabelProp ?? common.showLess;
   const theme = useTheme();
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);

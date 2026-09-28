@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * Internal bottom-sheet shell shared by `Menu`, `Select` and `ContextMenu`.
  *
@@ -20,6 +22,7 @@ import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Context } from './context';
 import type { DialogControlProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 export interface SheetShellProps {
   control: DialogControlProps;
@@ -103,7 +106,7 @@ export function SheetShell({
     () => ({
       maxWidth: 500,
       backgroundColor: 'transparent',
-      borderRadius: 20,
+      ...surfaceStyle(SURFACE_SHAPES.panel),
     }),
     [theme.colors.background],
   );
@@ -150,12 +153,13 @@ export function SheetShell({
 
 function SheetHandle({ onPress }: { onPress: () => void }) {
   const theme = useTheme();
+  const common = useCommonMessages();
   return (
     <View style={styles.handleContainer}>
       <Pressable
         onPress={onPress}
-        accessibilityLabel="Dismiss"
-        accessibilityHint="Tap to close"
+        accessibilityLabel={common.dismiss}
+        accessibilityHint={common.tapToClose}
         hitSlop={{ top: 10, bottom: 10, left: 40, right: 40 }}
       >
         <View style={[styles.handleBar, { backgroundColor: theme.colors.text }]} />

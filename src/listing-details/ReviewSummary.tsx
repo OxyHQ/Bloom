@@ -8,6 +8,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { REVIEW_SUMMARY_WIDE_MIN_WIDTH } from './constants';
 import { IS_WEB, resolveListingPalette } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { ReviewSummaryProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
 
@@ -34,11 +36,13 @@ function ReviewSummaryComponent({
   description,
   categories,
   distribution,
-  distributionLabel = 'Overall rating',
+  distributionLabel: distributionLabelProp,
   accessibilityLabel,
   style,
   testID,
 }: ReviewSummaryProps) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
+  const distributionLabel = distributionLabelProp ?? messages.overallRating;
   const theme = useTheme();
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
   const { width, onLayout } = useContainerWidth();
@@ -50,7 +54,7 @@ function ReviewSummaryComponent({
       accessible
       accessibilityLabel={
         accessibilityLabel ??
-        [`Rated ${shown} out of 5`, title, description].filter(Boolean).join(', ')
+        [messages.ratedOutOf5(shown), title, description].filter(Boolean).join(', ')
       }
       {...(IS_WEB ? { role: 'img' as const } : null)}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}

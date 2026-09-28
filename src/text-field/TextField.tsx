@@ -57,6 +57,8 @@ import type {
 } from './types';
 import { useInheritedControl } from '../control-surface';
 import { useFieldMembership } from '../field/membership';
+import { useMessages } from '../locale/messages';
+import { TEXT_FIELD_MESSAGES } from './messages';
 
 interface TextFieldContextValue {
   inputRef: React.RefObject<TextInput | null>;
@@ -722,6 +724,7 @@ export function TextFieldLabel({
 }: TextFieldLabelProps) {
   const theme = useTheme();
   const palette = useTextFieldPalette();
+  const { messages } = useMessages(TEXT_FIELD_MESSAGES);
   return (
     <View
       style={[
@@ -734,7 +737,7 @@ export function TextFieldLabel({
         {children}
       </Text>
       {required ? (
-        <Text variant="body-medium" accessibilityLabel="required" style={{ color: palette.error }}>
+        <Text variant="body-medium" accessibilityLabel={messages.required} style={{ color: palette.error }}>
           *
         </Text>
       ) : null}

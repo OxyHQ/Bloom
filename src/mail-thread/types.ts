@@ -28,7 +28,7 @@ export interface MailThreadAttachment {
   onPress?: () => void;
 }
 
-/** Every string this family draws that is not app data. */
+/** Every string this family draws that is not app data — in the locale (`BloomProvider locale`); `strings` overrides any. */
 export interface MailThreadStrings {
   to: string;
   cc: string;

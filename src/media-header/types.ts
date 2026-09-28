@@ -56,7 +56,7 @@ export interface CollectionHeaderProps extends HeaderBase {
   /** Shows an edit affordance on the cover and makes the title press to `onEdit`. */
   editable?: boolean;
   onEdit?: () => void;
-  /** Name of the edit affordance. Default `"Edit details"`. */
+  /** Name of the edit affordance (`"Edit details"` in English). */
   editLabel?: string;
 }
 
@@ -86,9 +86,9 @@ export interface MediaActionBarProps {
   /** Draws the outline pill when `onFollowChange` is given ("Follow"/"Following", "Save"/"Saved"). */
   following?: boolean;
   onFollowChange?: (following: boolean) => void;
-  /** Default `"Follow"`. Also the pill's accessible name, in both states. */
+  /** Default `"Follow"` in English. Also the pill's accessible name, in both states. */
   followLabel?: string;
-  /** Default `"Following"`. */
+  /** Default `"Following"` in English. */
   followingLabel?: string;
 
   /** Draws the download toggle when `onDownloadPress` is given. Default `idle`. */
@@ -104,12 +104,12 @@ export interface MediaActionBarProps {
 
   /** Right side: a search button when given. */
   onSearchPress?: () => void;
-  /** Default `"Search in playlist"`. */
+  /** Default `"Search in playlist"` in English. */
   searchLabel?: string;
   /** Right side: a list / compact view toggle when `onViewChange` is given. */
   view?: MediaViewMode;
   onViewChange?: (view: MediaViewMode) => void;
-  /** The view toggle's name; `aria-pressed` is `true` in compact view. Default `"Compact view"`. */
+  /** The view toggle's name; `aria-pressed` is `true` in compact view (`"Compact view"` in English). */
   compactViewLabel?: string;
   /** Extra controls at the far right. */
   trailing?: ReactNode;
@@ -132,7 +132,7 @@ export interface ShuffleButtonProps extends ToggleBase {
   onShuffleChange: (shuffle: boolean) => void;
   /** Glyph size. Default `28`. */
   size?: number;
-  /** Fixed name; `aria-pressed` carries the state. Default `"Shuffle"`. */
+  /** Fixed name; `aria-pressed` carries the state (`"Shuffle"` in English). */
   accessibilityLabel?: string;
 }
 
@@ -143,9 +143,9 @@ export interface DownloadButtonProps extends ToggleBase {
   onPress: () => void;
   /** Glyph size. Default `28`. */
   size?: number;
-  /** Fixed name; `aria-pressed` is `true` once downloaded. Default `"Download"`. */
+  /** Fixed name; `aria-pressed` is `true` once downloaded (`"Download"` in English). */
   accessibilityLabel?: string;
-  /** The progress ring's name. Default `"Download progress"`. */
+  /** The progress ring's name (`"Download progress"` in English). */
   progressLabel?: string;
 }
 
@@ -156,9 +156,9 @@ export interface FollowButtonProps extends ToggleBase {
   iconOnly?: boolean;
   following: boolean;
   onFollowChange: (following: boolean) => void;
-  /** Default `"Follow"`. The name in both states. */
+  /** Default `"Follow"` in English. The name in both states. */
   label?: string;
-  /** Default `"Following"`. */
+  /** Default `"Following"` in English. */
   followingLabel?: string;
   /**
    * Accessible name, instead of `label`. Pass one that follows the state when
@@ -195,7 +195,7 @@ export interface MediaIconButtonProps extends ToggleBase {
 
 export interface MediaMoreButtonProps extends ToggleBase {
   onPress?: () => void;
-  /** Default `"More options"`. */
+  /** Default `"More options"` in English. */
   accessibilityLabel?: string;
   size?: number;
 }
@@ -242,7 +242,7 @@ export interface ArtistHeroProps extends HeaderBase {
   banner?: MediaImageSource;
   avatar?: MediaImageSource;
   verified?: boolean;
-  /** Default `"Verified artist"`. */
+  /** Default `"Verified artist"` in English. */
   verifiedLabel?: string;
   /** "1,234,567 monthly listeners". */
   listeners?: string;
@@ -261,7 +261,7 @@ export interface PopularTrack {
 
 export interface PopularTracksProps {
   tracks: readonly PopularTrack[];
-  /** Default `"Popular"`. */
+  /** Default `"Popular"` in English. */
   title?: string;
   /** Rows shown collapsed. Default `5`. */
   collapsedCount?: number;
@@ -291,10 +291,10 @@ export interface DiscographyFilterProps {
   onValueChange: (value: string) => void;
   /** Default: Albums / Singles and EPs / Compilations (`albums`, `singles`, `compilations`). */
   options?: readonly DiscographyFilterOption[];
-  /** Default `"Discography"`. Pass `null` for no heading. */
+  /** Default `"Discography"` in English. Pass `null` for no heading. */
   title?: string | null;
   onShowAll?: () => void;
-  /** Default `"Show all"`. */
+  /** Default `"Show all"` in English. */
   showAllLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -309,7 +309,7 @@ export interface ArtistPickProps {
   note?: string;
   /** Round avatar beside the note. */
   avatar?: MediaImageSource;
-  /** Default `"Artist pick"`. */
+  /** Default `"Artist pick"` in English. */
   label?: string;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
@@ -342,7 +342,7 @@ export interface ArtistAboutProps {
   bioLines?: number;
   stats?: readonly ArtistStat[];
   cities?: readonly ArtistCity[];
-  /** Default `"About"`. */
+  /** Default `"About"` in English. */
   title?: string;
   /** Default `"Show more"` / `"Show less"`. */
   showMoreLabel?: string;
@@ -383,9 +383,9 @@ export interface PodcastShowHeaderProps extends HeaderBase {
   /** Lines of description before "Show more". Default `3`. */
   descriptionLines?: number;
   latestEpisode?: LatestEpisode;
-  /** Default `"Podcast"`. */
+  /** Default `"Podcast"` in English. */
   typeLabel?: string;
-  /** Default `"Latest episode"`. */
+  /** Default `"Latest episode"` in English. */
   latestEpisodeLabel?: string;
   showMoreLabel?: string;
   showLessLabel?: string;
@@ -408,16 +408,16 @@ export interface EpisodeHeaderProps extends HeaderBase {
   remainingLabel?: string;
   saved?: boolean;
   onSavedChange?: (saved: boolean) => void;
-  /** Default `"Save episode"`. */
+  /** Default `"Save episode"` in English. */
   saveLabel?: string;
   onSharePress?: () => void;
-  /** Default `"Share"`. */
+  /** Default `"Share"` in English. */
   shareLabel?: string;
   download?: DownloadState;
   downloadProgress?: number;
   onDownloadPress?: () => void;
   onMorePress?: () => void;
-  /** Default `"Podcast episode"`. */
+  /** Default `"Podcast episode"` in English. */
   typeLabel?: string;
 }
 
@@ -430,7 +430,7 @@ export interface ProfileStat {
 export interface ProfileHeaderProps extends HeaderBase {
   name: string;
   avatar?: MediaImageSource;
-  /** Default `"Profile"`. */
+  /** Default `"Profile"` in English. */
   typeLabel?: string;
   stats?: readonly ProfileStat[];
   /** Another listener's profile: the follow pill. */
@@ -438,7 +438,7 @@ export interface ProfileHeaderProps extends HeaderBase {
   onFollowChange?: (following: boolean) => void;
   /** Your own profile: an "Edit profile" button. */
   onEditPress?: () => void;
-  /** Default `"Edit profile"`. */
+  /** Default `"Edit profile"` in English. */
   editLabel?: string;
   onMorePress?: () => void;
 }
@@ -446,7 +446,7 @@ export interface ProfileHeaderProps extends HeaderBase {
 export interface AudiobookHeaderProps extends HeaderBase {
   title: string;
   cover?: MediaImageSource;
-  /** Default `"Audiobook"`. */
+  /** Default `"Audiobook"` in English. */
   typeLabel?: string;
   /** "Wren Calloway". */
   author?: string;

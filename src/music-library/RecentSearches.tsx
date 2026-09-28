@@ -9,7 +9,9 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { Cover } from './Cover';
+import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import { IS_WEB, MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID, resolveMusicLibraryPaint, type MusicLibraryPaint } from './shared';
 import type { RecentSearchEntry, RecentSearchesProps } from './types';
 
@@ -129,12 +131,16 @@ function RecentSearchesComponent({
   onItemPress,
   onRemove,
   onClearAll,
-  title = 'Recent searches',
-  clearAllLabel = 'Clear recent searches',
-  removeLabel = (item) => `Remove ${item.title}`,
+  title: titleProp,
+  clearAllLabel: clearAllLabelProp,
+  removeLabel: removeLabelProp,
   style,
   testID,
 }: RecentSearchesProps) {
+  const { messages } = useMessages(MUSIC_LIBRARY_MESSAGES);
+  const title = titleProp ?? messages.recent.title;
+  const clearAllLabel = clearAllLabelProp ?? messages.recent.clearAll;
+  const removeLabel = removeLabelProp ?? ((item: RecentSearchEntry) => messages.recent.remove(item.title));
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);

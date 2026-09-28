@@ -257,7 +257,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
   if (variant === 'footer') {
     const gradient = tileGradient(theme, stat.tone ?? 'blue');
     return (
-      <Card elevation="none"
+      <Card radius="radius-16" elevation="none"
         testID={testID}
         style={[styles.footerCard, style]}
       >
@@ -292,7 +292,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
           </Text>
         </View>
 
-        <Card elevation="none"
+        <Card radius="radius-12" elevation="none"
           testID={testID ? `${testID}-band` : undefined}
           style={styles.band}
         >
@@ -316,7 +316,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
   }
 
   return (
-    <Card elevation="none"
+    <Card radius="radius-16" elevation="none"
       testID={testID}
       style={[styles.plainCard, style]}
     >
@@ -424,7 +424,6 @@ const styles = StyleSheet.create({
   plainCard: {
     height: 132,
     minWidth: 0,
-    borderRadius: 16,
     paddingTop: 16,
     paddingBottom: 16,
     paddingLeft: 16,
@@ -459,7 +458,6 @@ const styles = StyleSheet.create({
   },
   footerCard: {
     minWidth: 0,
-    borderRadius: 16,
     paddingTop: 8,
     paddingBottom: 8,
     paddingLeft: 8,

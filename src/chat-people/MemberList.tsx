@@ -4,11 +4,13 @@ import { Pressable, View } from 'react-native';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiUserAddLine } from '../icons/remix/RiUserAddLine';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MemberRow } from './MemberRow';
-import { MEMBER_LABELS, resolveChatPeoplePaint } from './shared';
+import { resolveChatPeoplePaint } from './shared';
 import type { MemberListProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `MemberList`: a group's people, with a search field and an "Add members" row.
@@ -25,7 +27,7 @@ function MemberListComponent({
   members,
   search,
   onSearchChange,
-  searchPlaceholder = 'Search members',
+  searchPlaceholder: searchPlaceholderProp,
   onAddMembers,
   addMembersLabel,
   onMemberPress,
@@ -39,9 +41,11 @@ function MemberListComponent({
   testID,
 }: MemberListProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
-  const l = { ...MEMBER_LABELS, ...labels };
-  const addLabel = addMembersLabel ?? 'Add members';
+  const l = { ...messages.member, ...labels };
+  const addLabel = addMembersLabel ?? messages.newGroup.addMembers;
+  const searchPlaceholder = searchPlaceholderProp ?? messages.searchMembers;
 
   return (
     <View style={[{ gap: 6 }, style]} testID={testID}>

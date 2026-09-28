@@ -5,6 +5,8 @@ import { chartHueTone, resolveChartCardPalette } from '../chart-cards/palette';
 import { Meter } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import { resolveInsightPalette } from './shared';
 import type { PricePerAreaComparisonProps } from './types';
 
@@ -39,10 +41,12 @@ import type { PricePerAreaComparisonProps } from './types';
  */
 function PricePerAreaComparisonComponent({
   rows,
-  accessibilityLabel = 'Price per square metre',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PricePerAreaComparisonProps) {
+  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.pricePerSquareMetre;
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const series = useMemo(

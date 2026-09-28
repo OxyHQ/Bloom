@@ -5,6 +5,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { MailListSkeleton } from './MailListSkeleton';
 import { MailRow } from './MailRow';
 import { MailSelectionBar } from './MailSelectionBar';
@@ -17,6 +18,7 @@ import {
   mailStrings,
   resolveMailPaint,
 } from './shared';
+import { MAIL_LIST_MESSAGES } from './messages';
 import type { MailListProps, MailListSection } from './types';
 
 /**
@@ -71,17 +73,19 @@ function MailListComponent({
   header,
   footer,
   strings,
-  accessibilityLabel = 'Mail',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: MailListProps) {
+  const { messages } = useMessages(MAIL_LIST_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   useEffect(() => {
     adoptStyleSheet(MAIL_LIST_STYLE_ID, MAIL_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const text = useMemo(() => mailStrings(strings), [strings]);
+  const text = useMemo(() => mailStrings(strings, messages), [strings, messages]);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.list;
   const geo = MAIL_ROW_GEOMETRY[density];
 
   const resolved: readonly MailListSection[] = useMemo(() => {

@@ -34,6 +34,9 @@ import { PLACE_CARD_GEOMETRY, PLACE_OPEN_TONE } from './constants';
 import { PlaceActions } from './PlaceActions';
 import { composePlaceName, openLabelFor, resolvePlaceCardPaint, type PlaceCardPaint } from './shared';
 import type { PlaceCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { PLACE_CARD_MESSAGES } from './messages';
 
 /**
  * A place on the map — the result you scroll past, and the header of the sheet
@@ -120,6 +123,7 @@ function NameLine({
   ratingSize: 'small' | 'medium';
 }) {
   const { name, rating, reviewCount, newLabel, testID } = props;
+  const { messages } = useMessages(PLACE_CARD_MESSAGES);
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <Text
@@ -135,7 +139,7 @@ function NameLine({
           size={ratingSize}
           value={rating}
           count={reviewCount}
-          newLabel={newLabel}
+          newLabel={newLabel ?? messages.new}
           style={{ flexShrink: 0 }}
           testID={testID ? `${testID}-rating` : undefined}
         />
@@ -165,7 +169,8 @@ function StateLines({
   badgeSize: 'label-small' | 'label-medium';
 }) {
   const { category, openState, openLabel, hours, testID } = props;
-  const state = openLabelFor(openState, openLabel);
+  const { messages } = useMessages(PLACE_CARD_MESSAGES);
+  const state = openLabelFor(openState, openLabel, messages);
   if (!category && !state && !hours) return null;
   return (
     <>
@@ -219,11 +224,12 @@ function PlaceCardSkeleton({
   style,
   testID,
 }: Pick<PlaceCardProps, 'style' | 'testID'> & { density: 'row' | 'detail' }) {
+  const common = useCommonMessages();
   if (density === 'row') {
     return (
       <View
         aria-busy
-        accessibilityLabel="Loading"
+        accessibilityLabel={common.loading}
         style={[{ flexDirection: 'row', alignItems: 'flex-start' }, style]}
         testID={testID}
       >
@@ -243,7 +249,7 @@ function PlaceCardSkeleton({
     );
   }
   return (
-    <View aria-busy accessibilityLabel="Loading" style={style} testID={testID}>
+    <View aria-busy accessibilityLabel={common.loading} style={style} testID={testID}>
       <SkeletonBox width="100%" height={G.cover} borderRadius={G.radius} />
       <View style={{ gap: 8, paddingTop: G.padding }}>
         <SkeletonBox width="55%" height={20} borderRadius={4} />
@@ -277,9 +283,10 @@ function PlaceRow({ props, paint }: { props: PlaceCardProps; paint: PlaceCardPai
     style,
     testID,
   } = props;
+  const { messages } = useMessages(PLACE_CARD_MESSAGES);
   const resolver = useImageResolver();
   const uri = photo ? resolvePhoto(photo, resolver, photoVariant) : undefined;
-  const name = accessibilityLabel ?? composePlaceName(props);
+  const name = accessibilityLabel ?? composePlaceName(props, messages);
 
   const handlePress = (event: GestureResponderEvent) => {
     if (onPress) {
@@ -385,7 +392,7 @@ function PlaceRow({ props, paint }: { props: PlaceCardProps; paint: PlaceCardPai
       {actions && actions.length > 0 ? (
         <PlaceActions
           actions={actions}
-          accessibilityLabel={`${props.name} actions`}
+          accessibilityLabel={messages.actionsFor(props.name)}
           style={{ marginTop: TEXT_GAP }}
           testID={testID ? `${testID}-actions` : undefined}
         />
@@ -425,6 +432,7 @@ function PlaceDetail({ props, paint }: { props: PlaceCardProps; paint: PlaceCard
     style,
     testID,
   } = props;
+  const { messages } = useMessages(PLACE_CARD_MESSAGES);
   const resolver = useImageResolver();
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
@@ -604,7 +612,7 @@ function PlaceDetail({ props, paint }: { props: PlaceCardProps; paint: PlaceCard
         {actions && actions.length > 0 ? (
           <PlaceActions
             actions={actions}
-            accessibilityLabel={`${props.name} actions`}
+            accessibilityLabel={messages.actionsFor(props.name)}
             testID={testID ? `${testID}-actions` : undefined}
           />
         ) : null}

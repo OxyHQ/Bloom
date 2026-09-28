@@ -309,7 +309,7 @@ export function SocialWidgets(_props: { authenticated?: boolean }) {
         <Search label="Search Mention" value={query} onValueChange={setQuery} onClearText={() => setQuery('')} />
       </View>
 
-      <Card testID="social-trending" appearance="plain" style={{ borderRadius: 0, marginBottom: 16 }}>
+      <Card testID="social-trending" appearance="plain" radius="radius-0" style={{ marginBottom: 16 }}>
       <Text style={[styles.widgetTitle, { color: palette.text }]}>Trending</Text>
       <TrendRow rank={1} title="Earth" meta="Trending · 4 people" palette={palette} />
       <TrendRow rank={2} title="Elon Musk" meta="Trending · 5 people" palette={palette} />

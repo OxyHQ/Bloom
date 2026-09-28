@@ -37,6 +37,9 @@ import {
 } from './shared';
 import type { MediaCardMenuItem } from './types';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 export function useMediaCardCss(): void {
   React.useEffect(() => {
@@ -221,7 +224,7 @@ export function Mosaic({
 export function ListenProgress({
   value,
   paint,
-  label = 'Listened',
+  label: labelProp,
   width,
   style,
   testID,
@@ -233,6 +236,8 @@ export function ListenProgress({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const label = labelProp ?? messages.listened;
   const pct = Math.round(clamp01(value) * 100);
   return (
     <Meter
@@ -324,7 +329,7 @@ export function hasMenu(menu: React.ReactNode, items?: ReadonlyArray<MediaCardMe
 export function CardMenu({
   items,
   menu,
-  label = 'More options',
+  label: labelProp,
   subject,
   open,
   onOpenChange,
@@ -340,7 +345,9 @@ export function CardMenu({
   reveal: boolean;
   testID?: string;
 }) {
-  const name = `${label} for ${subject}`;
+  const common = useCommonMessages();
+  const label = labelProp ?? common.moreOptions;
+  const name = common.labelFor(label, subject);
   return (
     <View
       {...webDataSet({ bloomMediaCardMenu: '', ...(reveal ? { bloomMediaCardReveal: 'hover' } : null) })}

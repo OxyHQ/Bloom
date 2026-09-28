@@ -32,6 +32,9 @@ import {
   uploadBarKind,
   type CreatorStudioPaint,
 } from './shared';
+import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { TrackUploadRowLabels, TrackUploadRowProps } from './types';
 
 /**
@@ -52,14 +55,10 @@ import type { TrackUploadRowLabels, TrackUploadRowProps } from './types';
  *   remove    secondary icon button, "Remove <file>"
  */
 
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
 export const TRACK_UPLOAD_LABELS: TrackUploadRowLabels = {
-  queued: 'Queued',
-  processing: 'Transcoding…',
-  ready: 'Ready',
-  failed: 'Upload failed',
-  retry: 'Retry',
-  remove: (name) => `Remove ${name}`,
-  progress: (name) => `Uploading ${name}`,
+  ...CREATOR_STUDIO_MESSAGES.en.upload,
+  retry: COMMON_MESSAGES.en.retry,
 };
 
 const BAR_HEIGHT = 4;
@@ -148,10 +147,12 @@ function TrackUploadRowComponent({
   style,
   testID,
 }: TrackUploadRowProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   useInteractiveWebCss(CREATOR_STUDIO_STYLE_ID, CREATOR_STUDIO_CSS);
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const labels = { ...TRACK_UPLOAD_LABELS, ...labelOverrides };
+  const labels: TrackUploadRowLabels = { ...messages.upload, retry: common.retry, ...labelOverrides };
   const bar = uploadBarKind(status);
   const percent = clampProgress(progress);
   const sizeLabel = typeof size === 'number' ? formatFileSize(size) : size;

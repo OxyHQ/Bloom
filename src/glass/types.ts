@@ -1,3 +1,4 @@
+import type { CornerCurve } from '../shapes/corner-types';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
@@ -14,6 +15,9 @@ export interface GlassBlurWindowProps {
   children?: ReactNode;
 }
 
+/** Geometry is controlled by radius and cornerCurve; material owns clipping. */
+type GlassStyle = Omit<ViewStyle, Extract<keyof ViewStyle, `border${string}Radius` | `border${string}Width` | 'borderCurve' | 'overflow'>>;
+
 export interface GlassIslandProps {
   /** Shared solid material by default; glass explicitly enables translucent optics. */
   material?: 'solid' | 'glass';
@@ -24,6 +28,8 @@ export interface GlassIslandProps {
    * groups rather than as one bar.
    */
   radius?: number;
+  /** Curve for non-capsule islands. */
+  cornerCurve?: CornerCurve;
   /**
    * `'group'` when the island holds several RELATED actions the consumer has
    * declared as one group. Omitted for a single control in its own capsule: a
@@ -35,6 +41,6 @@ export interface GlassIslandProps {
   accessibilityLabel?: string;
   /** Forwarded to the material. Controls the shared sheen gradient. */
   sheen?: boolean;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<GlassStyle>;
   testID?: string;
 }

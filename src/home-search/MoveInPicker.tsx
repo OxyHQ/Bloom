@@ -5,7 +5,9 @@ import { Chip } from '../chip';
 import { Calendar } from '../date-picker';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { DEFAULT_CONTRACT_LENGTHS, DEFAULT_MOVE_IN_LABELS } from './constants';
+import { contractLengthOptions } from './constants';
+import { useMessages } from '../locale/messages';
+import { HOME_SEARCH_MESSAGES } from './messages';
 import type { MoveInPickerProps, MoveInTiming } from './types';
 
 /**
@@ -27,7 +29,7 @@ import type { MoveInPickerProps, MoveInTiming } from './types';
 function MoveInPickerComponent({
   value,
   onValueChange,
-  contractLengths = DEFAULT_CONTRACT_LENGTHS,
+  contractLengths: contractLengthsProp,
   labels: labelOverrides,
   defaultMonth,
   minDate,
@@ -38,8 +40,10 @@ function MoveInPickerComponent({
   style,
   testID,
 }: MoveInPickerProps) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES, locale);
   const theme = useTheme();
-  const labels = { ...DEFAULT_MOVE_IN_LABELS, ...labelOverrides };
+  const labels = { ...messages.moveInLabels, ...labelOverrides };
+  const contractLengths = contractLengthsProp ?? contractLengthOptions(messages);
 
   const heading = (text: string) => (
     <Text variant="body-semibold" role="heading" style={{ color: theme.colors.text }}>

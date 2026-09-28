@@ -31,6 +31,8 @@ import { AuthCard, AuthMediaCarousel } from '@oxy.so/bloom/auth-card';
 | `signup` | Full name, Email (with hint), Password — or Password + Confirm password with `confirmPassword` | "Already have an account? Sign in" |
 | `verify` | OTP boxes (`codeLength`, grouped in halves when even); no providers | "Code not arriving? Send a new one" → `onResend` |
 
+The words above are the English defaults; every label, placeholder and link is localised via `BloomProvider locale`, and `title`/`description` still win.
+
 `verify` shows a 32px mail-check mark when no `logo` is passed, and puts `email` into the description. `onComplete` fires once the last box fills.
 
 `onSubmit` receives an `AuthCardValues` object with only the fields the mode renders (`name`, `email`, `password`, `confirmPassword`, `remember`, `code`) — a typed stand-in for `FormData`, since React Native has no form element. Enter in the last password field submits too.

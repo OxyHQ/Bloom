@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailThreadMessage, MailAddress, MailThreadStrings } from './types';
 
 export const IS_WEB = Platform.OS === 'web';
@@ -59,31 +60,18 @@ export const MAIL_BODY_INSET =
 //  Strings
 // ---------------------------------------------------------------------------
 
-export const DEFAULT_MAIL_THREAD_STRINGS: MailThreadStrings = {
-  to: 'To',
-  cc: 'Cc',
-  bcc: 'Bcc',
-  reply: 'Reply',
-  replyAll: 'Reply all',
-  forward: 'Forward',
-  more: 'More',
-  moreAddresses: (count) => `${count} more`,
-  earlierMessages: (count) => (count === 1 ? '1 earlier message' : `${count} earlier messages`),
-  showTrimmed: 'Show trimmed content',
-  hideTrimmed: 'Hide trimmed content',
-  unread: 'Unread',
-  starred: 'Starred',
-  star: 'Star',
-  attachments: 'Attachments',
-  attachmentCount: (count) => (count === 1 ? '1 attachment' : `${count} attachments`),
-  expand: 'Expand message',
-  collapse: 'Collapse message',
-};
+/**
+ * The English strings. Components speak the LOCALE's (`MAIL_THREAD_MESSAGES`,
+ * through `BloomProvider locale`); this stays exported as the English set.
+ */
+export const DEFAULT_MAIL_THREAD_STRINGS: MailThreadStrings = MAIL_THREAD_MESSAGES.en;
 
-export function mailThreadStrings(overrides?: Partial<MailThreadStrings>): MailThreadStrings {
-  return overrides === undefined
-    ? DEFAULT_MAIL_THREAD_STRINGS
-    : { ...DEFAULT_MAIL_THREAD_STRINGS, ...overrides };
+/** `base` (the locale's strings, English by default) with the caller's overrides laid over it. */
+export function mailThreadStrings(
+  overrides?: Partial<MailThreadStrings>,
+  base: MailThreadStrings = DEFAULT_MAIL_THREAD_STRINGS,
+): MailThreadStrings {
+  return overrides === undefined ? base : { ...base, ...overrides };
 }
 
 // ---------------------------------------------------------------------------

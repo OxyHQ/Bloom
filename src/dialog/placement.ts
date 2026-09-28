@@ -78,7 +78,6 @@ export const DEFAULT_CENTER_MAX_WIDTH = 480;
 export const DEFAULT_MAX_HEIGHT_RATIO = 0.9;
 
 /** Corner radius shared by the side-sheet panel and the bottom-sheet top. */
-export const PANEL_RADIUS = 20;
 
 /**
  * Default inner padding (px) of the dialog content container, applied uniformly

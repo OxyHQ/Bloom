@@ -18,6 +18,8 @@ import { Text } from '../typography';
 import { REACTION_PICKER_EMOJIS, resolveChatComposerPalette } from './shared';
 import type { ReactionPickerProps } from './types';
 import { useChatComposerWebCss } from './web-hooks';
+import { useMessages } from '../locale/messages';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 const BOX = { small: 30, medium: 36 } as const;
 const GLYPH = { small: 'title-3-regular', medium: 'title-2-regular' } as const;
@@ -27,18 +29,21 @@ export function ReactionPicker({
   selected,
   onSelectEmoji,
   onMorePress,
-  moreLabel = 'More reactions',
+  moreLabel: moreLabelProp,
   size = 'medium',
   surface = true,
   style,
   testID,
-  accessibilityLabel = 'Quick reactions',
+  accessibilityLabel: accessibilityLabelProp,
   emojiLabel,
 }: ReactionPickerProps) {
   const theme = useTheme();
   const raisedFill = useCardFill(style);
   const parentFill = useSurfaceFill();
   const palette = resolveChatComposerPalette(theme, surface ? raisedFill : parentFill);
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
+  const moreLabel = moreLabelProp ?? messages.moreReactions;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.quickReactions;
   useChatComposerWebCss();
   const box = BOX[size];
 

@@ -10,6 +10,7 @@ import { RiRouteLine } from '../icons/remix/RiRouteLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { RouteStops } from '../route-stops';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -18,6 +19,7 @@ import {
   DIRECTIONS_MODE_ICON,
   DIRECTIONS_TRAFFIC_TONE,
 } from './constants';
+import { DIRECTIONS_MESSAGES } from './messages';
 import { describeRoute, modeLabelFor, resolveDirectionsPaint, trafficLabelFor, type DirectionsPaint } from './shared';
 import { TransitLineBadge } from './TransitLineBadge';
 import type { DirectionsRoute, DirectionsSummaryProps } from './types';
@@ -94,10 +96,12 @@ function DirectionsSummaryComponent({
   onModeChange,
   onStart,
   labels,
-  accessibilityLabel = 'Directions',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: DirectionsSummaryProps) {
+  const { messages } = useMessages(DIRECTIONS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.directions;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveDirectionsPaint(theme, surface), [theme, surface]);
@@ -107,11 +111,11 @@ function DirectionsSummaryComponent({
   const alternates = routes.filter((route) => route.id !== chosen?.id);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
-  const figureLabel = labels?.figure ?? modeLabelFor(mode, labels);
-  const alternatesLabel = labels?.alternates ?? 'Other routes';
+  const figureLabel = labels?.figure ?? modeLabelFor(mode, labels, messages);
+  const alternatesLabel = labels?.alternates ?? messages.otherRoutes;
   const ModeIcon = DIRECTIONS_MODE_ICON[mode];
 
-  const traffic = chosen ? trafficLabelFor(chosen.traffic, chosen.trafficLabel, labels) : null;
+  const traffic = chosen ? trafficLabelFor(chosen.traffic, chosen.trafficLabel, labels, messages) : null;
 
   return (
     <View
@@ -130,7 +134,7 @@ function DirectionsSummaryComponent({
 
       {modes && modes.length > 0 && onModeChange ? (
         <SegmentedControl
-          label={labels?.modes ?? 'Travel mode'}
+          label={labels?.modes ?? messages.travelMode}
           type="radio"
           value={mode}
           onChange={onModeChange}
@@ -138,7 +142,7 @@ function DirectionsSummaryComponent({
         >
           {modes.map((item) => (
             <SegmentedControlItem key={item} value={item} testID={id(`mode-${item}`)}>
-              <SegmentedControlItemText>{modeLabelFor(item, labels)}</SegmentedControlItemText>
+              <SegmentedControlItemText>{modeLabelFor(item, labels, messages)}</SegmentedControlItemText>
             </SegmentedControlItem>
           ))}
         </SegmentedControl>
@@ -216,7 +220,7 @@ function DirectionsSummaryComponent({
           onPress={onStart}
           testID={id('start')}
         >
-          {labels?.start ?? 'Start'}
+          {labels?.start ?? messages.start}
         </Button>
       ) : null}
 
@@ -227,7 +231,7 @@ function DirectionsSummaryComponent({
           </Text>
           <View role="list" accessibilityLabel={alternatesLabel}>
             {alternates.map((route, index) => {
-              const routeTraffic = trafficLabelFor(route.traffic, route.trafficLabel, labels);
+              const routeTraffic = trafficLabelFor(route.traffic, route.trafficLabel, labels, messages);
               return (
                 <View key={route.id} role="listitem">
                   <AddressRow
@@ -254,7 +258,7 @@ function DirectionsSummaryComponent({
                       ) : undefined
                     }
                     onPress={onSelectRoute ? () => onSelectRoute(route.id) : undefined}
-                    accessibilityLabel={describeRoute(route, labels)}
+                    accessibilityLabel={describeRoute(route, labels, messages)}
                     testID={id(`route-${index}`)}
                   />
                 </View>

@@ -20,6 +20,8 @@ import { Sidebar } from '../sidebar';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { webViewportHeightMinus, WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { APP_SHELL_MESSAGES } from './messages';
 import { AppShellBottomBar, AppShellFloatingAction, AppShellTopBar, useShellInsets } from './AppShellBars';
 import { AppShellHeader } from './AppShellHeader';
 import { AppShellSplitPanes } from './AppShellSplit';
@@ -137,7 +139,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   splitFrom = D.splitFrom,
   infoFrom = D.infoFrom,
   resizable = true,
-  resizeLabel = 'Resize panes',
+  resizeLabel: resizeLabelProp,
   paneScroll = true,
   topBar,
   topBarVisibility = 'compact',
@@ -149,12 +151,16 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   overlay,
   drawerOpen,
   onDrawerOpenChange,
-  drawerOpenLabel = 'Open navigation',
-  drawerCloseLabel = 'Close navigation',
+  drawerOpenLabel: drawerOpenLabelProp,
+  drawerCloseLabel: drawerCloseLabelProp,
   scroll = 'document',
   style,
   testID,
 }) => {
+  const { messages } = useMessages(APP_SHELL_MESSAGES);
+  const resizeLabel = resizeLabelProp ?? messages.resizePanes;
+  const drawerOpenLabel = drawerOpenLabelProp ?? messages.openNavigation;
+  const drawerCloseLabel = drawerCloseLabelProp ?? messages.closeNavigation;
   const theme = useTheme();
   const { height: viewportHeight } = useWindowDimensions();
   const [asideHeight, setAsideHeight] = useState(0);

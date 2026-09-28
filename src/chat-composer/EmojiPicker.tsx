@@ -41,17 +41,11 @@ import {
 } from './shared';
 import type { EmojiEntry, EmojiGroup, EmojiPickerProps } from './types';
 import { dataHook, useChatComposerWebCss } from './web-hooks';
+import { useMessages } from '../locale/messages';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 const HEADER_HEIGHT = 26;
 const EMOJI_TAB = '__emoji';
-
-const DEFAULT_LABELS = {
-  search: 'Search emoji',
-  empty: 'No emoji found',
-  frequent: 'Frequently used',
-  skinTone: 'Skin tone',
-  emojiTab: 'Emoji',
-};
 
 type Row =
   | { kind: 'header'; key: string; label: string }
@@ -89,12 +83,21 @@ export function EmojiPicker({
   labels: labelOverrides,
   style,
   testID,
-  accessibilityLabel = 'Emoji picker',
+  accessibilityLabel: accessibilityLabelProp,
 }: EmojiPickerProps) {
   const theme = useTheme();
   const palette = resolveChatComposerPalette(theme, useCardFill(style));
   useChatComposerWebCss();
-  const labels = { ...DEFAULT_LABELS, ...labelOverrides };
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.emojiPicker;
+  const labels = {
+    search: messages.searchEmoji,
+    empty: messages.noEmoji,
+    frequent: messages.frequentlyUsed,
+    skinTone: messages.skinTone,
+    emojiTab: messages.emoji,
+    ...labelOverrides,
+  };
 
   const [search, setSearch] = useControllableState<string>({
     value: query,

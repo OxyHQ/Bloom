@@ -52,7 +52,7 @@ export interface PlaceInfoItem {
   accessibilityLabel?: string;
   /**
    * The word for what pressing does, said at the end of the name. Defaults to
-   * the action's own English word ({@link PLACE_INFO_ACTION_LABELS}); `''`
+   * the action's own word ({@link PLACE_INFO_ACTION_LABELS} in English); `''`
    * says nothing.
    */
   actionLabel?: string;
@@ -65,7 +65,7 @@ export interface PlaceInfoListProps {
   title?: string;
   /** A quiet line under the card. */
   footer?: string;
-  /** Replaces the English action words for every row that does not carry its own. */
+  /** Replaces the action words for every row that does not carry its own. */
   actionLabels?: Partial<Record<PlaceInfoAction, string>>;
   style?: StyleProp<ViewStyle>;
   /** Each row gets `<testID>-<item id>`. */
@@ -115,7 +115,7 @@ export interface PlaceHoursProps {
    * cannot be "Open" on the header and "Closing soon" here.
    */
   state?: PlaceOpenState;
-  /** Replaces the English state word ("Open", "Closing soon", …). */
+  /** Replaces the state word ("Open", "Closing soon", … in English). */
   stateLabel?: string;
   /**
    * TODAY'S LINE, pre-formatted and whole: "Open until 20:00", "Closes soon",
@@ -129,16 +129,16 @@ export interface PlaceHoursProps {
   /** Default `false`. */
   defaultExpanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
-  /** The word added to today's row. Default `"Today"`. */
+  /** The word added to today's row. `"Today"` in English. */
   todayLabel?: string;
-  /** A day with no intervals. Default `"Closed"`. */
+  /** A day with no intervals. `"Closed"` in English. */
   closedLabel?: string;
   /** Between the two ends of an interval. Default `" – "` (an en dash). */
   intervalSeparator?: string;
   /** Between two intervals of a split day. Default `", "`. */
   splitSeparator?: string;
   /**
-   * Names the block. Default `"Opening hours"`.
+   * Names the block. `"Opening hours"` in English.
    *
    * The TOGGLE takes no name of its own: it is named by the state word and the
    * summary it draws, which is the better button name ("Open, Open until
@@ -180,11 +180,11 @@ export interface PlaceAmenitiesProps {
   onShowAll?: () => void;
   /** The full count when `items` is already a subset. Default `items.length`. */
   total?: number;
-  /** Default `(n) => \`Show all ${n} amenities\``. */
+  /** `(n) => "Show all n amenities"` in English, localised via `BloomProvider locale`. */
   showAllLabel?: (total: number) => string;
-  /** Prefixed to an unavailable amenity's name. Default `"Not available"`. */
+  /** Prefixed to an unavailable amenity's name. `"Not available"` in English. */
   unavailableLabel?: string;
-  /** Names the block. `chips` only — the list names each row instead. Default `"Amenities"`. */
+  /** Names the block. `chips` only — the list names each row instead. `"Amenities"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -230,7 +230,7 @@ export interface PlacePopularTimesDay {
   currentHourIndex?: number;
   /** How the current hour compares with its usual. Draws the live line. */
   trend?: PlaceBusyTrend;
-  /** Replaces the English trend sentence for this day. */
+  /** Replaces the trend sentence for this day. */
   trendLabel?: string;
 }
 
@@ -245,7 +245,7 @@ export interface PlacePopularTimesProps {
   height?: number;
   /** Which of the nine chart hues the bars take. Default `1`, the theme's own seed hue. */
   hue?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-  /** Names the day switch. Default `"Day"`. */
+  /** Names the day switch. `"Day"` in English. */
   daysLabel?: string;
   /**
    * Names the chart, which is ONE image: the bars are not tab stops and each
@@ -253,7 +253,7 @@ export interface PlacePopularTimesProps {
    * hour and the current one.
    */
   accessibilityLabel?: string;
-  /** A day whose `hours` is empty. Default `"No data for this day"`. */
+  /** A day whose `hours` is empty. `"No data for this day"` in English. */
   emptyLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-days`, `-chart`, `-live`, `-bar-<n>`. */
@@ -314,11 +314,11 @@ export interface PlaceTransitProps {
   onPressStop?: (id: string) => void;
   /** Draw only this many departures per stop. Default: all of them. */
   departureLimit?: number;
-  /** The word added to a live departure's name. Default `"live"`. */
+  /** The word added to a live departure's name. `"live"` in English. */
   realtimeLabel?: string;
-  /** A stop with no departures. Default `"No departures right now"`. */
+  /** A stop with no departures. `"No departures right now"` in English. */
   emptyLabel?: string;
-  /** Names the list. Default `"Nearby transit"`. */
+  /** Names the list. `"Nearby transit"` in English. */
   accessibilityLabel?: string;
   /** Extra content under the stops — a "see all stops" button. */
   footer?: ReactNode;

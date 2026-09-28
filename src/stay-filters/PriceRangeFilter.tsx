@@ -4,6 +4,8 @@ import { View } from 'react-native';
 import { RangeSlider } from '../slider';
 import { PriceHistogram } from './PriceHistogram';
 import { parseAmountInput, RangeFields, snapToStep } from './RangeFields';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { PriceRangeFilterProps, PriceScale } from './types';
 
 /**
@@ -90,14 +92,18 @@ function PriceRangeFilterComponent({
   formatPrice = String,
   step = 1,
   scale = 'linear',
-  minLabel = 'Minimum',
-  maxLabel = 'Maximum',
-  accessibilityLabel = 'Price range',
+  minLabel: minLabelProp,
+  maxLabel: maxLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   histogramHeight = 64,
   disabled = false,
   style,
   testID,
 }: PriceRangeFilterProps) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const minLabel = minLabelProp ?? messages.minimum;
+  const maxLabel = maxLabelProp ?? messages.maximum;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.priceRange;
   const hasHistogram = buckets != null && buckets.length > 0;
   const mapping = useMemo(() => priceScaleMapping(scale, min, max, step), [scale, min, max, step]);
   const linear = scale !== 'log';

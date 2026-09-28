@@ -172,10 +172,10 @@ export function ActivityRingsCard({
     accessibilityLabel ?? `${title}: ${shown.map((r) => `${r.label} ${r.value}, ${Math.round(clampPct(r.goalPct))}% of goal`).join('; ')}`;
 
   return (
-    <ChartCardSurface
+    <ChartCardSurface radius="radius-20"
       height={height}
       testID={testID}
-      style={[{ borderRadius: 20, paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
+      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
       <View style={{ width: '100%', flexDirection: 'column', gap: 11 }}>
         <Text
           variant="body-medium"

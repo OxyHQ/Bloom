@@ -272,7 +272,6 @@ export function TokensChartCard({
           width: '100%',
           minWidth: 0,
           flexDirection: 'column',
-          borderRadius: 20,
           paddingTop: 12,
           paddingBottom: 12,
         },

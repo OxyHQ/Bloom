@@ -29,6 +29,7 @@ import type {
   DropdownMenuProps,
   DropdownMenuTriggerProps,
 } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 export function DropdownMenu({
   children,
@@ -80,11 +81,13 @@ export function DropdownMenuTrigger({
 
 export function DropdownMenuContent({
   children,
-  label = 'Menu',
+  label: labelProp,
   className,
   style,
   testID,
 }: DropdownMenuContentProps) {
+  const common = useCommonMessages();
+  const label = labelProp ?? common.menu;
   const menu = useDropdownMenu();
   const { control, onSheetClose } = useSheetOpenBridge(menu.open, menu.setOpen);
   const surface = useMemo<MenuSurfaceContextValue>(

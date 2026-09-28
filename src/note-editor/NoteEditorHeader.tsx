@@ -9,10 +9,12 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { typeScale } from '../typography/scale';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveNoteStatusPaint } from './shared';
-import type { NoteEditorHeaderLabels, NoteEditorHeaderProps, NoteSaveState } from './types';
+import { NOTE_EDITOR_MESSAGES } from './messages';
+import type { NoteEditorHeaderProps, NoteSaveState } from './types';
 
 /**
  * The chrome above a writing surface: the document's title, and the quiet line
@@ -38,15 +40,6 @@ import type { NoteEditorHeaderLabels, NoteEditorHeaderProps, NoteSaveState } fro
  * mounts it — a header that measured scroll itself would follow the wrong
  * scroller in a split view, silently.
  */
-
-const DEFAULT_LABELS: Required<NoteEditorHeaderLabels> = {
-  saved: 'Saved',
-  saving: 'Saving…',
-  offline: 'Offline — changes are held',
-  error: 'Not saved',
-  words: (count) => `${count} ${count === 1 ? 'word' : 'words'}`,
-  title: 'Title',
-};
 
 const STATE_ICON = {
   saved: RiCheckLine,
@@ -95,22 +88,25 @@ function Reading({
 export function NoteEditorHeader({
   title,
   onTitleChange,
-  placeholder = 'Untitled',
+  placeholder: placeholderProp,
   saveState,
   edited,
   wordCount,
   disabled = false,
   readOnly = false,
   actions,
-  accessibilityLabel = 'Note',
+  accessibilityLabel: accessibilityLabelProp,
   labels: labelsProp,
   style,
   titleStyle,
   testID,
 }: NoteEditorHeaderProps) {
+  const { messages } = useMessages(NOTE_EDITOR_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
-  const labels = { ...DEFAULT_LABELS, ...labelsProp };
+  const labels = { ...messages.header, ...labelsProp };
+  const placeholder = placeholderProp ?? messages.untitled;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.note;
   const paint = useMemo(
     () => resolveNoteStatusPaint(theme, surface, saveState),
     [theme, surface, saveState],

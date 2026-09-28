@@ -1,9 +1,11 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveMessageBubblePaint } from './shared';
+import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import type { UnreadSeparatorProps } from './types';
 
 /**
@@ -16,11 +18,13 @@ import type { UnreadSeparatorProps } from './types';
  * as it was seen, which is the one moment it is useful.
  */
 function UnreadSeparatorComponent({
-  label = 'Unread messages',
+  label: labelProp,
   style,
   testID,
 }: UnreadSeparatorProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_BUBBLE_MESSAGES);
+  const label = labelProp ?? messages.unread;
   const paint = useMemo(() => resolveMessageBubblePaint(theme), [theme]);
   return (
     <View

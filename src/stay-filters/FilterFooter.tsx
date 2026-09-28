@@ -4,6 +4,8 @@ import { View } from 'react-native';
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { FilterFooterProps } from './types';
 
 /**
@@ -23,13 +25,15 @@ function FilterFooterComponent({
   resultsLabel,
   onApply,
   onClear,
-  clearLabel = 'Clear all',
+  clearLabel: clearLabelProp,
   clearDisabled = false,
   loading = false,
   applyDisabled = false,
   style,
   testID,
 }: FilterFooterProps) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const clearLabel = clearLabelProp ?? messages.clearAll;
   const theme = useTheme();
 
   return (

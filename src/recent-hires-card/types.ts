@@ -1,4 +1,5 @@
-import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
+import type { ImageSource } from '../shapes';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AvatarColor } from '../avatar/types';
 
@@ -12,7 +13,7 @@ export interface RecentHire {
   /** The role chip's label (`"Backend Engineer"`). */
   role: string;
   /** Photo. Without one the avatar shows `initials` on `avatarColor`. */
-  avatar?: string | ImageSourcePropType;
+  avatar?: string | ImageSource;
   /** Defaults to the first letters of the first two words of `name`. */
   initials?: string;
   avatarColor?: AvatarColor;

@@ -293,3 +293,7 @@ export const BackHandler = {
     remove: jest.fn(),
   })),
 };
+
+// Use the actual web color normalizer, including ARGB alpha, for SVG stop tests.
+export const processColor: typeof import('react-native')['processColor'] =
+  require('react-native-web/dist/cjs/exports/processColor');

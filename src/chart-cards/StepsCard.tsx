@@ -233,7 +233,7 @@ export function StepsCard({
     `${title} bar chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
   return (
-    <ChartCardSurface height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
+    <ChartCardSurface radius="radius-20" height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
       <MedicalHeader>
         <MedicalHeadline
           label={label}

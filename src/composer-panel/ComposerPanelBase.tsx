@@ -28,11 +28,14 @@ import { AttachmentStrip } from './AttachmentStrip';
 import { MicButton, SendButton, StopButton } from './ComposerControls';
 import { ModelPickerBase } from './ModelPickerBase';
 import { PermissionMenu } from './PermissionMenu';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
 import {
   CARD_PADDING,
   CARD_RADIUS,
-  COMPOSER_PANEL_ADD_MENU,
-  COMPOSER_PANEL_PERMISSIONS,
+  composerAddMenu,
+  composerPermissions,
   PROMPT_LINE,
   PROMPT_MAX_HEIGHT,
   resolveComposerPalette,
@@ -41,20 +44,6 @@ import type { ComposerPanelLabels, ComposerPanelProps } from './types';
 import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
-
-const DEFAULT_LABELS: Required<ComposerPanelLabels> = {
-  message: 'Message',
-  add: 'Add attachment',
-  addMenu: 'Add to chat',
-  permissions: 'Permissions',
-  permissionMode: 'Permission mode',
-  learnMore: 'Learn more',
-  voice: 'Voice input',
-  send: 'Send message',
-  stop: 'Stop generating',
-  remove: 'Remove',
-  retry: 'Retry',
-};
 
 /**
  * `AnimatePresence` + `height: 0 ↔ auto` and opacity, 250ms `ease-out`: the
@@ -125,13 +114,13 @@ export function ComposerPanelBase({
   onStop,
   busy = false,
   disabled = false,
-  placeholder = 'Hi, what do you need today?',
-  permissions = COMPOSER_PANEL_PERMISSIONS,
+  placeholder: placeholderProp,
+  permissions: permissionsProp,
   permission,
   defaultPermission,
   onPermissionChange,
   onLearnMore,
-  addMenu = COMPOSER_PANEL_ADD_MENU,
+  addMenu: addMenuProp,
   onAddMenuSelect,
   providers,
   model,
@@ -159,7 +148,40 @@ export function ComposerPanelBase({
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
+  const common = useCommonMessages();
+  const labels = useMemo<Required<ComposerPanelLabels>>(
+    () => ({
+      message: messages.message,
+      add: messages.add,
+      addMenu: messages.addMenu,
+      permissions: messages.permissions,
+      permissionMode: messages.permissionMode,
+      learnMore: messages.learnMore,
+      voice: messages.voice,
+      send: messages.send,
+      stop: messages.stop,
+      remove: common.remove,
+      retry: common.retry,
+      ...labelOverrides,
+    }),
+    [messages, common, labelOverrides],
+  );
+  // A caller's `remove` / `retry` stays a prefix to the file name, as it always
+  // was; Bloom's own wording is the language's whole phrase.
+  const removeOverride = labelOverrides?.remove;
+  const retryOverride = labelOverrides?.retry;
+  const removeFileLabel = useMemo(
+    () => (removeOverride !== undefined ? (name: string) => `${removeOverride} ${name}` : messages.removeFile),
+    [removeOverride, messages],
+  );
+  const retryFileLabel = useMemo(
+    () => (retryOverride !== undefined ? (name: string) => `${retryOverride} ${name}` : messages.retryFile),
+    [retryOverride, messages],
+  );
+  const placeholder = placeholderProp ?? messages.panelPlaceholder;
+  const permissions = useMemo(() => permissionsProp ?? composerPermissions(messages), [permissionsProp, messages]);
+  const addMenu = useMemo(() => addMenuProp ?? composerAddMenu(messages), [addMenuProp, messages]);
 
   const [text, setText] = useControllableState<string>({ value, defaultValue, onChange: onValueChange });
   const [isListening, setListening] = useControllableState<boolean>({
@@ -240,8 +262,8 @@ export function ComposerPanelBase({
               palette={palette}
               onRemove={onRemoveAttachment}
               onRetry={onAttachmentRetry}
-              removeLabel={labels.remove}
-              retryLabel={labels.retry}
+              removeLabel={removeFileLabel}
+              retryLabel={retryFileLabel}
             />
           </View>
         </Collapse>

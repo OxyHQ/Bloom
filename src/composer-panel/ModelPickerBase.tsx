@@ -21,17 +21,18 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
+import { useMessages } from '../locale/messages';
 import { RadioIndicator } from '../radio-indicator';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { InlineAside } from './InlineAside';
 import {
   DEFAULT_EFFORT,
   EFFORT_WIDTH,
-  MODEL_PICKER_EFFORT_LEVELS,
   PICKER_HEIGHT,
   PICKER_WIDTH,
   resolveComposerPalette,
@@ -52,19 +53,6 @@ const MARK_GAP = 6;
 const ROW_HEIGHT = 36;
 /** The model chip's widest: past this a name truncates even with room to spare. */
 const MODEL_TRIGGER_MAX_WIDTH = 240;
-
-const DEFAULT_LABELS: Required<ModelPickerLabels> = {
-  models: 'Models',
-  quickSearch: 'Quick Search',
-  searchPlaceholder: 'Search models',
-  closeSearch: 'Close search',
-  noMatches: 'No models match',
-  providers: 'Providers',
-  effort: 'Effort',
-  effortAuto: 'Auto',
-  faster: 'Faster',
-  smarter: 'Smarter',
-};
 
 interface Match {
   provider: ModelPickerProvider;
@@ -442,7 +430,7 @@ export function ModelPickerBase({
   effort,
   defaultEffort = DEFAULT_EFFORT,
   onEffortChange,
-  effortLevels = MODEL_PICKER_EFFORT_LEVELS,
+  effortLevels: effortLevelsProp,
   labels: labelOverrides,
   style,
   testID,
@@ -451,7 +439,24 @@ export function ModelPickerBase({
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
+  const labels = useMemo<Required<ModelPickerLabels>>(
+    () => ({
+      models: messages.models,
+      quickSearch: messages.quickSearch,
+      searchPlaceholder: messages.searchModels,
+      closeSearch: messages.closeSearch,
+      noMatches: messages.noMatches,
+      providers: messages.providers,
+      effort: messages.effort,
+      effortAuto: messages.effortAuto,
+      faster: messages.faster,
+      smarter: messages.smarter,
+      ...labelOverrides,
+    }),
+    [messages, labelOverrides],
+  );
+  const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
   const Popover = useComposerPopover();
   const reducedMotion = useReducedMotion();
 
@@ -715,7 +720,7 @@ export function ModelPickerBase({
               ref={listRef}
               {...dataHook('bloomComposerScroll')}
               accessibilityRole="radiogroup"
-              accessibilityLabel={searching ? 'Matching models' : `${activeProvider?.name ?? ''} models`}
+              accessibilityLabel={searching ? messages.matchingModels : messages.providerModels(activeProvider?.name ?? '')}
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={16}
               onScroll={(event) => setScrolled(event.nativeEvent.contentOffset.y > 0)}

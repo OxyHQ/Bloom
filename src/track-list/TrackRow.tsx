@@ -29,7 +29,6 @@ import { Text } from '../typography';
 import { TrackCover, TrackMenu } from './parts';
 import {
   CELL,
-  DEFAULT_LABELS,
   IS_WEB,
   isNarrow,
   resolveTrackListPaint,
@@ -38,8 +37,12 @@ import {
   rowGeometry,
   TRACK_LIST_CSS,
   TRACK_LIST_STYLE_ID,
+  trackListLabels,
 } from './shared';
 import type { TrackMenuItem, TrackRowPressEvent, TrackRowProps } from './types';
+import { useMessages } from '../locale/messages';
+import { useCommonMessages } from '../locale/common-messages';
+import { TRACK_LIST_MESSAGES } from './messages';
 
 /**
  * One track in a table: the row `TrackList` maps, usable on its own inside a
@@ -118,12 +121,14 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
   },
   ref,
 ) {
+  const { messages } = useMessages(TRACK_LIST_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(TRACK_LIST_STYLE_ID, TRACK_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
-  const labels = { ...DEFAULT_LABELS, ...labelsProp };
+  const labels = { ...trackListLabels(messages, common), ...labelsProp };
   const window = useWindowDimensions();
   const layoutWidth = width ?? window.width;
   const narrow = isNarrow(layoutWidth);
@@ -461,7 +466,7 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
   const showLike = showLikeSlot && (liked || (IS_WEB ? active && !unavailable : false));
   const showMore = has('actions') && hasMenu && (narrow || !IS_WEB || active || selected);
 
-  const menuLabel = `${labels.moreOptions} for ${track.title}`;
+  const menuLabel = common.labelFor(labels.moreOptions, track.title);
 
   return (
     <Pressable

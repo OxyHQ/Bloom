@@ -92,7 +92,8 @@ Two decisions of its own:
   said it could be pressed, while native read it correctly. Same class as
   `accessibilityState`, same fix: the name is the one spelling that reaches both. It goes
   last ("Address: Plaça de les Bruixes 4, Copy"), because the fact is what the reader came
-  for. `PLACE_INFO_ACTION_LABELS` holds the English words; `actionLabels` replaces them.
+  for. `PLACE_INFO_ACTION_LABELS` holds the English words, the list speaks them localised via `BloomProvider locale`;
+  `actionLabels` replaces them.
 
 `action` is a closed list rather than a slot for the same reason: one row, one action.
 Nothing here touches the clipboard, the dialler or the browser — `onPress` is handed the
@@ -173,7 +174,7 @@ is not a reading of anything. The axis labels every hour that fits and every sec
 below that — twenty-four labels across a phone is sixteen pixels each — and the current
 hour keeps its label whatever the step.
 
-`PLACE_BUSY_LABELS` holds the three English trend sentences; `trendLabel` replaces one.
+`PLACE_BUSY_LABELS` holds the three English trend sentences (the chart speaks them localised via `BloomProvider locale`); `trendLabel` replaces one.
 
 ## `PlaceTransit` reuses the line badge
 

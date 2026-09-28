@@ -4,6 +4,8 @@ import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { atoms as a, tokens } from '../styles';
 import { StyledView } from '../styles/styled-primitives';
 import type { ConnectionDotsProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CONNECTION_DOTS_MESSAGES } from './messages';
 
 export interface ConnectionDotsBaseProps
   extends Pick<
@@ -28,10 +30,12 @@ export function ConnectionDotsBase({
   left,
   right,
   dots,
-  accessibilityLabel = 'Connecting',
+  accessibilityLabel: accessibilityLabelProp,
   className,
   style,
 }: ConnectionDotsBaseProps) {
+  const { messages } = useMessages(CONNECTION_DOTS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.connecting;
   const rowStyle: StyleProp<ViewStyle> = [
     a.flex_row,
     a.align_center,

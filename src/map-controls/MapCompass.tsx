@@ -5,8 +5,10 @@ import { ButtonGroupItem } from '../button-group';
 import { GlassIsland } from '../glass';
 import { RiCompass3Line } from '../icons/remix/RiCompass3Line';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { useMessages } from '../locale/messages';
 import { MAP_CONTROL_BOX, MAP_CONTROLS_GEOMETRY } from './constants';
 import { MapHeadingContext } from './context';
+import { MAP_CONTROLS_MESSAGES } from './messages';
 import type { MapCompassProps } from './types';
 
 /**
@@ -51,10 +53,11 @@ function MapCompassComponent({
   style,
   testID,
 }: MapCompassProps) {
+  const { messages } = useMessages(MAP_CONTROLS_MESSAGES);
   const pointsNorth = Math.abs(((heading % 360) + 360) % 360) <= MAP_CONTROLS_GEOMETRY.northTolerance;
   if (hideAtNorth && pointsNorth) return null;
 
-  const name = accessibilityLabel ?? `Facing ${Math.round(heading)} degrees. Reset to north`;
+  const name = accessibilityLabel ?? messages.compass(Math.round(heading));
 
   return (
     <MapHeadingContext.Provider value={heading}>

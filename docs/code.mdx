@@ -97,7 +97,7 @@ tokenizeCode(source, 'tsx').map((line) =>
 | --- | --- | --- | --- |
 | `CodeBlock` | `code`, `language`, `languageLabel`, `filename`, `additions`, `deletions`, `highlight` | — | Content and header. The chip is `languageLabel` or the upper-cased `language`. |
 | | `lineNumbers` / `wrap` / `copyable` | `true` / `false` / `true` | |
-| | `onCopy`, `headerAccessory`, `labels` (`copy`, `copied`) | — | |
+| | `onCopy`, `headerAccessory`, `labels` (`copy`, `copied`) | Localised via `BloomProvider locale` | `labels` wins. |
 | `CodeLines` | `code`, `language`, `highlight`, `lineNumbers` (`true`), `wrap` (`false`), `size` (`'sm'`) | | `style` is the scroll box — padding there scrolls with the code. |
 | `Pre` | `children`, `language`, `lineNumbers` (`false`), `containerStyle`, `style` | | A string child is laid out as lines; any other child renders as monospace text in the same card. |
 | `Code` | Text props | | |

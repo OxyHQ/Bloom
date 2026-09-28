@@ -1,3 +1,5 @@
+import { COMMON_MESSAGES } from '../locale/common-messages';
+import { STAY_SEARCH_MESSAGES, type StaySearchMessages } from './messages';
 import type { DateFlexibilityOption, GuestKind, StaySearchBarLabels } from './types';
 
 /**
@@ -21,38 +23,32 @@ export const STAY_SEARCH_STEP_RADIUS = 20;
 export const STAY_SEARCH_TILE_SIZE = 48;
 export const STAY_SEARCH_TILE_RADIUS = 12;
 
-export const DEFAULT_STAY_SEARCH_BAR_LABELS: StaySearchBarLabels = {
-  where: 'Where',
-  checkIn: 'Check in',
-  checkOut: 'Check out',
-  when: 'When',
-  who: 'Who',
-  destinationPlaceholder: 'Search destinations',
-  datesPlaceholder: 'Add dates',
-  guestsPlaceholder: 'Add guests',
-  search: 'Search',
-};
+/** A bar's labels in one language; the search button's word comes from the common catalog. */
+export function staySearchBarLabels(messages: StaySearchMessages, search: string): StaySearchBarLabels {
+  const { where, checkIn, checkOut, when, who, destinationPlaceholder, datesPlaceholder, guestsPlaceholder } = messages;
+  return { where, checkIn, checkOut, when, who, destinationPlaceholder, datesPlaceholder, guestsPlaceholder, search };
+}
 
-export const DEFAULT_GUEST_LABELS: Record<GuestKind, string> = {
-  adults: 'Adults',
-  children: 'Children',
-  infants: 'Infants',
-  pets: 'Pets',
-};
+/** The English labels. The components read the locale's catalog instead. */
+export const DEFAULT_STAY_SEARCH_BAR_LABELS: StaySearchBarLabels = staySearchBarLabels(
+  STAY_SEARCH_MESSAGES.en,
+  COMMON_MESSAGES.en.search,
+);
 
-export const DEFAULT_GUEST_DESCRIPTIONS: Record<GuestKind, string> = {
-  adults: 'Ages 13 or above',
-  children: 'Ages 2 – 12',
-  infants: 'Under 2',
-  pets: 'Bringing a service animal?',
-};
+export const DEFAULT_GUEST_LABELS: Record<GuestKind, string> = STAY_SEARCH_MESSAGES.en.guests;
+
+export const DEFAULT_GUEST_DESCRIPTIONS: Record<GuestKind, string> = STAY_SEARCH_MESSAGES.en.guestDescriptions;
 
 export const GUEST_KINDS: readonly GuestKind[] = ['adults', 'children', 'infants', 'pets'];
 
-export const DEFAULT_DATE_FLEXIBILITY_OPTIONS: readonly DateFlexibilityOption[] = [
-  { value: 'exact', label: 'Exact dates' },
-  { value: '1', label: '± 1 day' },
-  { value: '2', label: '± 2 days' },
-  { value: '3', label: '± 3 days' },
-  { value: '7', label: '± 7 days' },
-];
+/** Exact, ± 1, ± 2, ± 3, ± 7 days in one language. */
+export function dateFlexibilityOptions(messages: StaySearchMessages): DateFlexibilityOption[] {
+  return [
+    { value: 'exact', label: messages.exactDates },
+    ...[1, 2, 3, 7].map((n) => ({ value: String(n), label: messages.plusMinusDays(n) })),
+  ];
+}
+
+export const DEFAULT_DATE_FLEXIBILITY_OPTIONS: readonly DateFlexibilityOption[] = dateFlexibilityOptions(
+  STAY_SEARCH_MESSAGES.en,
+);

@@ -10,6 +10,8 @@ import { MediaCard } from './MediaCard';
 import { CoverGradient } from './parts';
 import { joinMeta, resolveArtworkUri, resolveCoverTint } from './shared';
 import type { MixCardProps, MediaCardSize } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 const COVER_TITLE: Record<MediaCardSize, TypeScaleVariant> = {
   large: 'title-2-bold',
@@ -33,12 +35,14 @@ function MixCardComponent({
   coverTitle,
   faces,
   description,
-  typeLabel = 'Mix',
+  typeLabel: typeLabelProp,
   layout = 'tile',
   size = 'medium',
   testID,
   ...rest
 }: MixCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.mix;
   const theme = useTheme();
   const resolver = useImageResolver();
   const tint = useMemo(() => resolveCoverTint(theme, artworkColor), [theme, artworkColor]);

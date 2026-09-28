@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
 import { forwardRef, useImperativeHandle, useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import {
@@ -616,6 +618,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     const surfaceFill = resolveSurfaceFill(String(backgroundFill ?? flatSurfaceStyle?.backgroundColor ?? colors.background), false, colors.background);
     const surfaceRadius = flatSurfaceStyle?.borderRadius ?? flatSurfaceStyle?.borderTopLeftRadius ?? 24;
     const surfaceCorners: ViewStyle = {
+        ...surfaceStyle({ curve: SURFACE_SHAPES.panel.curve }),
         borderTopLeftRadius: flatSurfaceStyle?.borderTopLeftRadius ?? surfaceRadius,
         borderTopRightRadius: flatSurfaceStyle?.borderTopRightRadius ?? surfaceRadius,
         borderBottomLeftRadius: flatSurfaceStyle?.borderBottomLeftRadius ?? (detached ? surfaceRadius : 0),
@@ -763,7 +766,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         {backgroundComponent ? backgroundComponent({ style: styles.background }) : (
                             <View pointerEvents="none" style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}>
                                 <View pointerEvents="none" style={[StyleSheet.absoluteFill, { bottom: detached ? 0 : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24) }]}>
-                                    <SurfacePaint fill={surfaceFill} radius={surfaceRadius} />
+                                    <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={surfaceRadius} />
                                 </View>
                             </View>
                         )}
@@ -804,13 +807,12 @@ const styles = StyleSheet.create({
     sheetDetached: {
         left: 16,
         right: 16,
-        borderRadius: 24,
+        ...surfaceStyle({ ...SURFACE_SHAPES.panel, radius: 24 }),
     },
     sheetNormal: {
         left: 0,
         right: 0,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        ...surfaceStyle(SURFACE_SHAPES.sheet),
     },
     /** Legacy (non-manualActivation) handle: decorative overlay only. */
     handle: {

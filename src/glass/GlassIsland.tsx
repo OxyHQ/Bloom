@@ -1,6 +1,9 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { ControlSurface } from '../control-surface';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { SurfaceLevelProvider, surfaceFillVars, hairlineOn } from '../styles/surface-levels';
@@ -20,6 +23,7 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
   children,
   material = 'solid',
   radius = borderRadius.full,
+  cornerCurve = SURFACE_SHAPES.glass.curve,
   role,
   accessibilityLabel,
   sheen = true,
@@ -27,37 +31,42 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const directionProps = useDirectionProps();
+  const direction = useIsRtl() ? 'rtl' : 'ltr';
   const layer = useSurfaceLayer();
   const customStyle = StyleSheet.flatten(style);
   const glass = material === 'glass';
   const tint = String(customStyle?.backgroundColor ?? (glass ? withAlpha(layer.fill, 0.25) : layer.fill));
   const fill = resolveSurfaceFill(tint, glass, layer.parentFill);
   const publishedFill = resolveSurfaceFill(fill, false, layer.parentFill);
-  const effectiveRadius = customStyle?.borderRadius ?? radius;
+  const shape = { radius, curve: radius === borderRadius.full ? 'round' as const : cornerCurve };
 
   return (
     <ControlSurface material={material}>
       <View
+        {...directionProps}
         role={role}
         accessibilityLabel={accessibilityLabel}
         testID={testID}
         style={[
           styles.island,
           {
-            borderRadius: radius,
+            ...surfaceStyle(shape, direction),
             borderWidth: BORDER_WIDTH.hairline,
             borderColor: hairlineOn(theme, publishedFill),
           },
           bloomShadowStyle('glass'),
           style,
-          { backgroundColor: 'transparent', ...surfaceFillVars(publishedFill) },
+          { backgroundColor: 'transparent', ...surfaceFillVars(publishedFill), ...surfaceStyle(shape, direction), borderWidth: BORDER_WIDTH.hairline },
         ]}
       >
         <SurfacePaint
           fill={fill}
           backdrop={layer.parentFill}
           glass={glass}
-          radius={effectiveRadius}
+          radius={radius}
+          shape={shape}
+          direction={direction}
           sheen={sheen}
           testID={testID ? `${testID}-material` : undefined}
         />

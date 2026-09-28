@@ -18,6 +18,9 @@ import {
   resolveChatListPaint,
 } from './shared';
 import type { ChatSearchFieldProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * The search pill above the conversations.
@@ -66,14 +69,19 @@ function ChatSearchFieldComponent({
   onSubmit,
   onFocus,
   onBlur,
-  placeholder = 'Search',
-  accessibilityLabel = 'Search chats',
-  clearLabel = 'Clear search',
+  placeholder: placeholderProp,
+  accessibilityLabel: accessibilityLabelProp,
+  clearLabel: clearLabelProp,
   trailing,
   autoFocus,
   style,
   testID,
 }: ChatSearchFieldProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
+  const placeholder = placeholderProp ?? common.search;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.searchChats;
+  const clearLabel = clearLabelProp ?? messages.clearSearch;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);

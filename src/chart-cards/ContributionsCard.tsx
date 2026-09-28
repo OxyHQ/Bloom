@@ -390,6 +390,8 @@ export function ContributionsCard({
   return (
     <Card
       radius="radius-16"
+      clipContent
+      contentStyle={styles.cardContent}
       elevation="none"
       testID={testID}
       style={[
@@ -468,10 +470,10 @@ export function ContributionsCard({
 const styles = StyleSheet.create({
   card: {
     minWidth: 0,
+  },
+  cardContent: {
     flexDirection: 'column',
     gap: 16,
-    overflow: 'hidden',
-    borderRadius: 16,
     paddingTop: 16,
     paddingBottom: 16,
     paddingLeft: 16,

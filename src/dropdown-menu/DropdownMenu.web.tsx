@@ -30,6 +30,7 @@ import type {
   DropdownMenuProps,
   DropdownMenuTriggerProps,
 } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 export function DropdownMenu({
   children,
@@ -96,7 +97,7 @@ export function DropdownMenuTrigger({
 
 export function DropdownMenuContent({
   children,
-  label = 'Menu',
+  label: labelProp,
   side,
   align = 'start',
   sideOffset,
@@ -108,6 +109,8 @@ export function DropdownMenuContent({
   style,
   testID,
 }: DropdownMenuContentProps) {
+  const common = useCommonMessages();
+  const label = labelProp ?? common.menu;
   const menu = useDropdownMenu();
   const anchor = useAnchorRect(menu.anchorRef, menu.open);
   const close = useCallback(() => menu.setOpen(false), [menu]);

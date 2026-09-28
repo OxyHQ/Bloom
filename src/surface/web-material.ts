@@ -13,12 +13,14 @@ ${selector}::after {
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  corner-shape: inherit;
   pointer-events: none;
 }
 ${glass ? `${selector}::before {
   content: "";
   position: absolute;
   border-radius: inherit;
+  corner-shape: inherit;
   pointer-events: none;
   z-index: -2;
   /* Larger panes collect nearby backdrop pixels before the rounded crop. */

@@ -17,8 +17,10 @@ import { RiFileZipLine } from '../icons/remix/RiFileZipLine';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { MediaFailure, MediaProgressRing, useHovered, useMessageMediaCss } from './parts';
 import {
   fileKindFor,
@@ -30,6 +32,7 @@ import {
   resolveMessageMediaPaint,
 } from './shared';
 import type { FileKind, FileMessageProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /** One glyph per kind. The colour is `resolveFileKindPaint`'s job, not this map's. */
 const KIND_ICONS: Record<FileKind, typeof RiFileTextLine> = {
@@ -83,14 +86,18 @@ function FileMessageComponent({
   radius = MESSAGE_MEDIA_RADIUS,
   width,
   accessibilityLabel,
-  downloadLabel = 'Download',
-  cancelLabel = 'Cancel',
+  downloadLabel: downloadLabelProp,
+  cancelLabel: cancelLabelProp,
   tone = 'incoming',
   onColor,
   bubbleColor,
   style,
   testID,
 }: FileMessageProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const cancelLabel = cancelLabelProp ?? common.cancel;
+  const downloadLabel = downloadLabelProp ?? messages.download;
   const theme = useTheme();
   useMessageMediaCss();
   const paint = useMemo(
@@ -105,7 +112,7 @@ function FileMessageComponent({
   const [hovered, handlers] = useHovered();
 
   const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes) : undefined);
-  const type = typeLabel ?? fileTypeLabel(name, mimeType);
+  const type = typeLabel ?? fileTypeLabel(name, mimeType, messages);
   const meta = fileMetaLine([size, type, metaLabel]);
 
   const disc = DISC_SIZE[variant];
@@ -198,7 +205,7 @@ function FileMessageComponent({
       ) : done ? (
         <View
           role="img"
-          accessibilityLabel="Downloaded"
+          accessibilityLabel={messages.downloaded}
           style={{
             width: 32,
             height: 32,

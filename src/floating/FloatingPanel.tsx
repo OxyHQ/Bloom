@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * The anchored surface every WEB fork of `Popover`, `DropdownMenu`,
  * `ContextMenu`, `Menubar` and `Select` renders. WEB ONLY — imported by
@@ -95,6 +97,7 @@ import { pushFloatingEscape } from './escape-stack';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
 import { useFrameThrottle } from './use-frame-throttle';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The one node: the panel's own chrome, the caller's classes, the computed
@@ -102,6 +105,8 @@ import { useFrameThrottle } from './use-frame-throttle';
  * because an element type constructed during render remounts its subtree every
  * time. Same pattern, and the same reason, as `button/Button.tsx`.
  */
+const PANEL_CURVE = surfaceStyle({ curve: SURFACE_SHAPES.menu.curve });
+
 const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
 
 /** Tailwind v4 `ease-out`, the menu curve. */
@@ -203,6 +208,7 @@ export function FloatingPanel({
   surface = 'popover',
   panelRef,
 }: FloatingPanelProps) {
+  const common = useCommonMessages();
   const materialStyle = useSurfaceMaterial('.bloom-floating-surface', 'bloom-floating-surface-css');
   const chrome = SURFACE[surface];
   const isMenuSurface = surface !== 'popover';
@@ -500,7 +506,7 @@ export function FloatingPanel({
             // contract, which is the whole reason it is not a bare Pressable.
             blurIntensity={0}
             dimOpacity={0}
-            accessibilityLabel="Dismiss"
+            accessibilityLabel={common.dismiss}
           />
         ) : null}
         <AnimatedPanel
@@ -512,6 +518,7 @@ export function FloatingPanel({
           style={[
             styles.panel,
             materialStyle,
+            PANEL_CURVE,
             surfaceFillVars(publishedFill),
             // `bg-background-primary-default border-border-button-default
             // shadow-dropdown`, resolved from the theme. Inline, and BEFORE the

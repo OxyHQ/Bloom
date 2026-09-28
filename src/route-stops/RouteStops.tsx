@@ -6,10 +6,12 @@ import { Button, GlyphButton } from '../button';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiArrowUpDownLine } from '../icons/remix/RiArrowUpDownLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { useMessages } from '../locale/messages';
 import { hairlineOn, useSurfaceFill } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
-import { ROUTE_STOPS_GEOMETRY, ROUTE_STOP_STATE_LABELS, ROUTE_STOPS_SWAP_COLUMN, ROUTE_STOPS_SWAP_SIZE } from './constants';
+import { ROUTE_STOPS_GEOMETRY, ROUTE_STOPS_SWAP_COLUMN, ROUTE_STOPS_SWAP_SIZE } from './constants';
+import { ROUTE_STOPS_MESSAGES } from './messages';
 import type { RouteStop, RouteStopState, RouteStopsProps } from './types';
 
 /**
@@ -51,10 +53,12 @@ function RouteStopsComponent({
   density = 'comfortable',
   labels,
   addIcon = RiAddLine,
-  accessibilityLabel = 'Route stops',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: RouteStopsProps) {
+  const { messages } = useMessages(ROUTE_STOPS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.routeStops;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveAddressPaint(theme, surface), [theme, surface]);
@@ -64,11 +68,11 @@ function RouteStopsComponent({
   const accent = resolveAccentColors(theme.colors, 'primary', 'solid');
   const halo = resolveAccentColors(theme.colors, 'primary', 'subtle').background;
 
-  const stateWords = { ...ROUTE_STOP_STATE_LABELS, ...labels?.state };
-  const originWord = labels?.origin ?? 'Origin';
-  const destinationWord = labels?.destination ?? 'Destination';
-  const stopWord = labels?.stop ?? ((position: number) => `Stop ${position}`);
-  const removeWord = labels?.remove ?? ((stop: RouteStop) => `Remove ${stop.title}`);
+  const stateWords = { ...messages.state, ...labels?.state };
+  const originWord = labels?.origin ?? messages.origin;
+  const destinationWord = labels?.destination ?? messages.destination;
+  const stopWord = labels?.stop ?? messages.stop;
+  const removeWord = labels?.remove ?? ((stop: RouteStop) => messages.removeStop(stop.title));
 
   const travelled = (index: number): boolean => {
     const stop = stops[index];
@@ -236,7 +240,7 @@ function RouteStopsComponent({
               color={paint.textSecondary}
               hoverColor={paint.text}
               onPress={onSwap}
-              accessibilityLabel={labels?.swap ?? 'Swap origin and destination'}
+              accessibilityLabel={labels?.swap ?? messages.swap}
               testID={testID ? `${testID}-swap` : undefined}
             />
           </View>
@@ -252,7 +256,7 @@ function RouteStopsComponent({
             disabled={!canAddStop}
             testID={testID ? `${testID}-add` : undefined}
           >
-            {labels?.addStop ?? 'Add a stop'}
+            {labels?.addStop ?? messages.addStop}
           </Button>
         </View>
       ) : null}

@@ -11,8 +11,10 @@ import { StatCards } from '../stat-cards/StatCards';
 import type { StatCardsDeltaColor, StatCardsItem } from '../stat-cards/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES, type CreatorStudioMessages } from './messages';
 import { resolveCreatorStudioPaint } from './shared';
-import type { AudienceMetricKind, AudienceOverviewProps, CreatorOption, CreatorTrend } from './types';
+import type { AudienceMetricKind, AudienceOverviewProps, AudiencePeriod, CreatorOption, CreatorTrend } from './types';
 
 /**
  * `AudienceOverview`: the dashboard's opening row — a heading with a period
@@ -29,12 +31,14 @@ import type { AudienceMetricKind, AudienceOverviewProps, CreatorOption, CreatorT
  *            value and delta chip already say it
  */
 
-export const AUDIENCE_PERIODS: readonly CreatorOption[] = [
-  { value: '7d', label: '7 days' },
-  { value: '28d', label: '28 days' },
-  { value: '12m', label: '12 months' },
-  { value: 'all', label: 'All time' },
-];
+const PERIOD_ORDER: readonly AudiencePeriod[] = ['7d', '28d', '12m', 'all'];
+
+function periodOptions(messages: CreatorStudioMessages): CreatorOption[] {
+  return PERIOD_ORDER.map((value) => ({ value, label: messages.periods[value] }));
+}
+
+/** The default periods in English; the component defaults to the localised ones. */
+export const AUDIENCE_PERIODS: readonly CreatorOption[] = periodOptions(CREATOR_STUDIO_MESSAGES.en);
 
 const KIND_ICONS: Record<AudienceMetricKind, StatCardsItem['icon']> = {
   listeners: RiHeadphoneLine,
@@ -59,13 +63,18 @@ function AudienceOverviewComponent({
   metrics,
   period,
   onPeriodChange,
-  periods = AUDIENCE_PERIODS,
-  title = 'Audience',
+  periods: periodsProp,
+  title: titleProp,
   caption,
-  periodLabel = 'Period',
+  periodLabel: periodLabelProp,
   style,
   testID,
 }: AudienceOverviewProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const localPeriods = useMemo(() => periodOptions(messages), [messages]);
+  const periods = periodsProp ?? localPeriods;
+  const title = titleProp ?? messages.audience.title;
+  const periodLabel = periodLabelProp ?? messages.audience.period;
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const [width, setWidth] = useState(0);

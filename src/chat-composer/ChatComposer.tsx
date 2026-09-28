@@ -41,7 +41,7 @@ import { ComposerIconButton } from './ComposerIconButton';
 import {
   BAR_PADDING,
   BAR_RADIUS,
-  CHAT_COMPOSER_LABELS,
+  chatComposerLabels,
   CONTROL_SIZE,
   DEFAULT_MAX_LINES,
   LINE_HEIGHT,
@@ -51,6 +51,9 @@ import {
 import { SuggestionList } from './SuggestionList';
 import type { ChatComposerProps } from './types';
 import { dataHook, IS_WEB, useChatComposerWebCss } from './web-hooks';
+import { useMessages } from '../locale/messages';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
+import { useCommonMessages } from '../locale/common-messages';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 
@@ -106,7 +109,7 @@ export function ChatComposer({
   value,
   defaultValue = '',
   onValueChange,
-  placeholder = 'Message',
+  placeholder: placeholderProp,
   onSend,
   sendOn = 'enter',
   maxLines = DEFAULT_MAX_LINES,
@@ -144,12 +147,15 @@ export function ChatComposer({
   accessibilityLabel,
 }: ChatComposerProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
+  const common = useCommonMessages();
   const palette = resolveChatComposerPalette(theme);
   useChatComposerWebCss();
   const labels = useMemo(
-    () => ({ ...CHAT_COMPOSER_LABELS, ...labelOverrides }),
-    [labelOverrides],
+    () => ({ ...chatComposerLabels(messages, common.send), ...labelOverrides }),
+    [common.send, labelOverrides, messages],
   );
+  const placeholder = placeholderProp ?? messages.message;
 
   const [text, setText] = useControllableState<string>({
     value,

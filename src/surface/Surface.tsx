@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { forwardRef, memo } from 'react';
 import { styled } from 'react-native-css';
 import { Platform, StyleSheet, type View } from 'react-native';
@@ -12,7 +14,7 @@ import type { SurfaceProps } from './types';
 
 /** Layout-neutral container: callers supply their own padding and content. */
 const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponent({
-  children, material = 'solid', fill, radius = borderRadius.xl,
+  children, material = 'solid', fill, radius = borderRadius.xl, cornerCurve = SURFACE_SHAPES.panel.curve,
   style, className, accessibilityLabel, testID, ...hostProps
 }, ref) {
   const glass = material === 'glass';
@@ -30,9 +32,9 @@ const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponen
       className={className}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      style={[{ position: 'relative', borderRadius: effectiveRadius }, style, { backgroundColor: 'transparent', ...surfaceFillVars(painted ? publishedFill : undefined) }]}
+      style={[{ position: 'relative', borderRadius: effectiveRadius, ...surfaceStyle({ curve: cornerCurve }) }, style, { backgroundColor: 'transparent', ...surfaceFillVars(painted ? publishedFill : undefined) }]}
     >
-      {painted ? <SurfacePaint fill={color} backdrop={layer.parentFill} radius={effectiveRadius} glass={glass} /> : null}
+      {painted ? <SurfacePaint fill={color} backdrop={layer.parentFill} radius={effectiveRadius} shape={{ curve: cornerCurve }} glass={glass} /> : null}
       <SurfaceLevelProvider level={painted ? layer.level : layer.parentLevel} fill={publishedFill}>{children}</SurfaceLevelProvider>
     </StyledView>
   );

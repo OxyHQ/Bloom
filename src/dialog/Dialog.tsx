@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceFill } from '../surface/shared';
 import React, {
@@ -51,7 +53,6 @@ import {
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
-  PANEL_RADIUS,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
   physicalDialogSide,
@@ -63,6 +64,8 @@ import type {
   DialogInset,
   DialogProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { DIALOG_MESSAGES } from './messages';
 
 
 /**
@@ -264,7 +267,7 @@ function CenteredOrSideDialog({
         // All four corners rounded — bloom's BottomSheet defaults to top-only
         // radius in flush mode, but we use `detached` so the whole card is
         // floating and rounded uniformly.
-        borderRadius: 20,
+        ...surfaceStyle(SURFACE_SHAPES.panel),
       },
       // Drives the card's `height` only while a morph is in flight; at rest it
       // resolves to `height: 'auto'` — the card's normal content sizing.
@@ -448,6 +451,7 @@ function SideSheet({
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }) {
+  const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
   const { width: viewportWidth } = useWindowDimensions();
 
@@ -528,12 +532,12 @@ function SideSheet({
         bottom: insetBottom,
         [anchorKey]: anchorInset,
         width: sideWidth,
-        borderRadius: PANEL_RADIUS,
+        ...surfaceStyle(SURFACE_SHAPES.panel),
       }),
     [insetTop, insetBottom, anchorKey, anchorInset, sideWidth],
   );
 
-  const panelRadius = StyleSheet.flatten([panelStyle, style])?.borderRadius ?? PANEL_RADIUS;
+  const panelRadius = StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius;
   const surfaceFill = resolveSurfaceFill(String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), false, theme.colors.background);
   if (!mounted) return null;
 
@@ -559,7 +563,7 @@ function SideSheet({
     >
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-        accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+        accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         progress={progress}
@@ -586,7 +590,7 @@ function SideSheet({
           { backgroundColor: 'transparent' },
         ]}
       >
-        <SurfacePaint fill={surfaceFill} radius={panelRadius} />
+        <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />
         <SurfaceLevelProvider level={0} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer body

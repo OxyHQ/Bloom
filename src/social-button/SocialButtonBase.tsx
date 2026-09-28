@@ -1,3 +1,5 @@
+import { pickMessages, useMessages } from '../locale/messages';
+import { SOCIAL_BUTTON_MESSAGES } from './messages';
 import React, { memo, useCallback, useMemo, type ComponentType } from 'react';
 import { Linking, Platform, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
@@ -16,11 +18,8 @@ export const SOCIAL_BUTTON_GEOMETRY = {
   sm: { height: 32, width: 250, paddingHorizontal: 10, glyph: 16 },
 } as const;
 const DARK_INVERTED_BRANDS = new Set<SocialBrand>(['apple', 'github', 'x']);
-const ACTION_PHRASE: Record<SocialButtonAction, string> = {
-  continue: 'Continue with', signIn: 'Sign in with', signUp: 'Sign up with',
-};
-export function socialButtonLabel(brandLabel: string, action: SocialButtonAction = 'continue'): string {
-  return `${ACTION_PHRASE[action]} ${brandLabel}`;
+export function socialButtonLabel(brandLabel: string, action: SocialButtonAction = 'continue', locale?: string): string {
+  return pickMessages(SOCIAL_BUTTON_MESSAGES, locale).actions[action](brandLabel);
 }
 
 /** A provider's real multi-colour mark. */
@@ -78,9 +77,11 @@ const SocialButton = memo(function SocialButton({
   const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'accent' });
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
+  const { messages } = useMessages(SOCIAL_BUTTON_MESSAGES);
   const geometry = SOCIAL_BUTTON_GEOMETRY[size];
   const custom = brand === 'custom';
   const meta = custom ? undefined : SOCIAL_PROVIDERS[brand as SocialProvider];
+  // i18n-exempt: "SSO" is the shared sign-in acronym.
   const label = custom ? (config?.label ?? 'SSO') : meta!.label;
   const fill = custom ? (config?.color ?? '#000000') : meta!.brand;
   const buttonAppearance = appearance === 'white' ? 'outline' : 'solid';
@@ -130,7 +131,7 @@ const SocialButton = memo(function SocialButton({
     // Social navigation keeps its existing contract: notify, then open the URL.
     if (href != null && Platform.OS !== 'web') void Linking.openURL(href).catch(() => {});
   }, [disabled, onPress, href]);
-  const phrase = socialButtonLabel(label, action);
+  const phrase = messages.actions[action](label);
   return (
     <Button
       appearance={buttonAppearance}

@@ -85,6 +85,8 @@ is the one place this family departs from the library's usual spelling, and it
 departs deliberately: `labels={['Work']}` reading as translation strings would
 be worse than the inconsistency.
 
+Those strings are localised via `BloomProvider locale`; `strings` overrides any.
+
 A label's colour is an `AccentTone`, never a hex. The chip resolves it through
 `resolveAccentColors`, so a label reads the way a status badge reads and
 survives a preset change.
@@ -196,6 +198,9 @@ untitled bucket rather than being dropped.
 It takes `now` and the formatter as parameters because a component that read the
 clock is a component whose sections cannot be pinned by a test — the same call
 has to be the same sections in June and in December.
+
+Pass the app's `locale` (the one given to `BloomProvider`) for the bucket names
+and the default date format — a pure function cannot read the provider.
 
 ## What this family does not do
 

@@ -12,7 +12,6 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   HOUSING_CARD_PADDING,
-  HOUSING_CARD_RADIUS,
   HOUSING_STYLE_ID,
   HOUSING_WEB_CSS,
   resolveHousingPalette,
@@ -60,7 +59,6 @@ export function HousingCard({
       testID={testID}
       style={[
         {
-          borderRadius: HOUSING_CARD_RADIUS,
           ...(padded
             ? {
                 paddingTop: HOUSING_CARD_PADDING,

@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { forwardRef, memo } from 'react';
 import { StyleSheet, type View } from 'react-native';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
@@ -25,7 +27,7 @@ ${surfaceMaterialCss('.bloom-surface--glass', 'var(--bloom-surface-fill)', 'none
 `;
 
 const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponent({
-  children, material = 'solid', fill, radius = borderRadius.xl,
+  children, material = 'solid', fill, radius = borderRadius.xl, cornerCurve = SURFACE_SHAPES.panel.curve,
   style, className, accessibilityLabel, testID, ...hostProps
 }, ref) {
   const theme = useTheme();
@@ -43,6 +45,7 @@ const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponen
     '--bloom-surface-rim': optics.rim,
     '--bloom-surface-sheen': optics.sheenCss,
     borderRadius: radius,
+    ...surfaceStyle({ curve: cornerCurve }),
     backgroundColor: 'transparent',
     '--bloom-surface-fill': color,
   };

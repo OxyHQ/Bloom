@@ -26,3 +26,7 @@ SVG stops require separate `stopColor` and `stopOpacity`: native SVG can discard
 `GlassIsland` keeps its grouping and geometry and paints with the same Surface material. Explicit glass groups share one translucent pane with flush controls. Plain sidebar surfaces and navigation rails keep their existing semantics.
 
 GlassIsland defaults to shared solid material and publishes its actual fill and contextual level. `material="glass"` explicitly enables translucent optics and publishes the tint composited against its parent as an estimate. Its ControlSurface material matches the selected material; glass groups pass that option explicitly.
+
+## Shared geometry
+
+SurfacePaint replaces GlassSurface and accepts `shape` plus `direction` for logical corners. The host and material share the same Shapes policy, including CSS smooth corners, native continuous curves where supported, clipped paint and the rim. GlassIsland exposes `cornerCurve` for non-capsule shapes; capsules remain round. There is no separate glass geometry implementation.

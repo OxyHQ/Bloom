@@ -17,7 +17,7 @@ it.each([false, true])('publishes the actual solid material past level3 in dark=
   expect(JSON.parse(screen.getByTestId('probe').props.children)).toEqual({ fill: surfaceFillOn(mockTheme, '#445566'), level: 3, material: 'solid' });
 });
 it('preserves explicit glass and publishes its tint estimate against its parent', () => {
-  const screen = render(<SurfaceLevelProvider level={1} fill="#0000ff"><GlassIsland material="glass" style={{ backgroundColor: 'rgba(255,0,0,.5)', borderRadius: 8 }}><Probe /></GlassIsland></SurfaceLevelProvider>);
+  const screen = render(<SurfaceLevelProvider level={1} fill="#0000ff"><GlassIsland material="glass" radius={8} style={{ backgroundColor: 'rgba(255,0,0,.5)' }}><Probe /></GlassIsland></SurfaceLevelProvider>);
   expect(JSON.parse(screen.getByTestId('probe').props.children)).toEqual({ fill: 'rgb(128, 0, 128)', level: 2, material: 'glass' });
   expect(screen.UNSAFE_root.findAll(n => n.props.glass === true && n.props.radius === 8 && n.props.fill === 'rgba(255,0,0,.5)').length).toBeGreaterThan(0);
 });

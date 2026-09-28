@@ -24,17 +24,17 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  CARD_RADIUS,
   COVER_RADIUS,
   CREATOR_STUDIO_CSS,
   CREATOR_STUDIO_STYLE_ID,
   pressDataSet,
-  RELEASE_STATUS_LABELS,
   RELEASE_STATUS_TONES,
-  RELEASE_TYPE_LABELS,
   releaseStatusNeedsReason,
   resolveCreatorStudioPaint,
 } from './shared';
+import { COMMON_MESSAGES, useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { ReleaseCardLabels, ReleaseCardProps, ReleaseStatusBadgeProps } from './types';
 
 /**
@@ -50,23 +50,25 @@ import type { ReleaseCardLabels, ReleaseCardProps, ReleaseStatusBadgeProps } fro
  * `small`/`medium`, both 24 tall; the label rungs are 20 and 24.
  */
 export function ReleaseStatusBadge({ status, label, size = 'small', testID }: ReleaseStatusBadgeProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const { tone, fill } = RELEASE_STATUS_TONES[status];
   return (
     <Badge
       size={size === 'small' ? 'label-small' : 'label-medium'}
       color={tone}
       variant={fill}
-      content={label ?? RELEASE_STATUS_LABELS[status]}
+      content={label ?? messages.releaseStatuses[status]}
       testID={testID}
     />
   );
 }
 
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
 export const RELEASE_CARD_LABELS: ReleaseCardLabels = {
-  types: RELEASE_TYPE_LABELS,
-  statuses: RELEASE_STATUS_LABELS,
-  tracks: (count) => `${count} ${count === 1 ? 'track' : 'tracks'}`,
-  actions: (title) => `More actions for ${title}`,
+  types: CREATOR_STUDIO_MESSAGES.en.releaseTypes,
+  statuses: CREATOR_STUDIO_MESSAGES.en.releaseStatuses,
+  tracks: CREATOR_STUDIO_MESSAGES.en.tracks,
+  actions: (title) => COMMON_MESSAGES.en.labelFor(COMMON_MESSAGES.en.moreActions, title),
 };
 
 /**
@@ -94,6 +96,8 @@ function ReleaseCardComponent({
   style,
   testID,
 }: ReleaseCardProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   useInteractiveWebCss(CREATOR_STUDIO_STYLE_ID, CREATOR_STUDIO_CSS);
   const fill = useCardFill(style);
@@ -101,7 +105,13 @@ function ReleaseCardComponent({
   const hoverSurface = useMemo(() => {
     return surfaceFillOn(theme, paint.surface);
   }, [theme, paint.surface]);
-  const labels = { ...RELEASE_CARD_LABELS, ...labelOverrides };
+  const labels: ReleaseCardLabels = {
+    types: messages.releaseTypes,
+    statuses: messages.releaseStatuses,
+    tracks: messages.tracks,
+    actions: (title) => common.labelFor(common.moreActions, title),
+    ...labelOverrides,
+  };
   const { state: hovered, onIn, onOut } = useInteractionState();
   const resolver = useImageResolver();
 
@@ -214,7 +224,7 @@ function ReleaseCardComponent({
   );
 
   return (
-    <Card elevation="none"
+    <Card radius="radius-16" elevation="none"
       testID={testID}
       style={[
         styles.card,
@@ -259,7 +269,6 @@ ReleaseCard.displayName = 'ReleaseCard';
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: CARD_RADIUS,
     paddingTop: 12,
     paddingBottom: 12,
     paddingLeft: 12,

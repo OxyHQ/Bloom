@@ -6,13 +6,14 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import {
   CHAT_LIST_PANE_WIDTH,
   CHAT_INFO_PANE_WIDTH,
-  CHAT_SCREEN_LABELS,
   CHAT_SPLIT_BREAKPOINT,
   clamp,
   dataHook,
   useChatScreenPaint,
 } from './shared';
 import type { ChatPane, ChatSplitLayoutProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 /**
  * The desktop frame: conversation list, conversation, and optionally an info
@@ -52,13 +53,15 @@ function ChatSplitLayoutComponent({
   maxWidth = 480,
   infoWidth = CHAT_INFO_PANE_WIDTH,
   resizable = true,
-  resizeLabel = CHAT_SCREEN_LABELS.resizeList,
+  resizeLabel: resizeLabelProp,
   breakpoint = CHAT_SPLIT_BREAKPOINT,
   compact: compactProp,
   style,
   testID,
 }: ChatSplitLayoutProps) {
   const paint = useChatScreenPaint();
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
+  const resizeLabel = resizeLabelProp ?? messages.resizeList;
   const { width: windowWidth } = useWindowDimensions();
   const [measured, setMeasured] = useState<number | null>(null);
   const compact = compactProp ?? (measured ?? windowWidth) < breakpoint;

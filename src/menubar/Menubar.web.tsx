@@ -27,12 +27,13 @@ import { cx } from '../floating/shared';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useMenubarMenu } from './context';
 import type { MenubarContentProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 export { Menubar, MenubarMenu, MenubarTrigger } from './MenubarBase';
 
 export function MenubarContent({
   children,
-  label = 'Menu',
+  label: labelProp,
   side,
   align = 'start',
   // `alignOffset={-4} sideOffset={8}` — upstream's own defaults, which pull the
@@ -47,6 +48,8 @@ export function MenubarContent({
   style,
   testID,
 }: MenubarContentProps) {
+  const common = useCommonMessages();
+  const label = labelProp ?? common.menu;
   const menu = useMenubarMenu();
   const anchor = useAnchorRect(menu.anchorRef, menu.open);
   const close = useCallback(() => menu.setOpen(false), [menu]);

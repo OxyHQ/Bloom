@@ -10,6 +10,8 @@ import Animated, {
 import Svg, { Path } from 'react-native-svg';
 
 import { Avatar } from '../avatar';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiDownloadLine } from '../icons/remix/RiDownloadLine';
 import { RiGlobalLine } from '../icons/remix/RiGlobalLine';
@@ -34,6 +36,7 @@ import {
   useAgentChatWebCss,
   type AgentChatPalette,
 } from './shared';
+import { AGENT_CHAT_MESSAGES, type AgentChatMessages } from './messages';
 import type { AgentChatHistoryProps, AgentChatThread } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
 
@@ -65,24 +68,11 @@ import { DISABLED_OPACITY } from '../styles/tokens';
  * "Log out".
  */
 
-const DEFAULT_LABELS = {
-  region: 'Chat history',
-  newChat: 'New chat',
-  recent: 'Recent',
-  empty: 'Chats you start show up here.',
-  rename: 'Rename',
-  renameField: 'Rename chat',
-  markUnread: 'Mark as unread',
-  delete: 'Delete',
-  unread: 'Unread',
-  moreFor: (title: string) => `More actions for ${title}`,
-  exportCount: (count: number) => (count === 0 ? 'No chats to export' : `Export ${count} chats`),
-  accountMenu: (name: string) => `${name} account menu`,
-  usageLeft: 'Usage left',
-  upgrade: 'Upgrade to Max',
-  logOut: 'Log out',
+type Labels = AgentChatMessages['history'] & {
+  newChat: string;
+  delete: string;
+  moreFor: (title: string) => string;
 };
-type Labels = typeof DEFAULT_LABELS;
 
 // ---------------------------------------------------------------------------
 //  Small pieces
@@ -666,14 +656,29 @@ export function AgentChatHistoryBase({
   onUpgrade,
   accountItems,
   onLogOut,
-  formatAge = relativeTime,
+  formatAge: formatAgeProp,
   labels,
   style,
   testID,
 }: AgentChatHistoryProps) {
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
-  const l = useMemo<Labels>(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AGENT_CHAT_MESSAGES);
+  const common = useCommonMessages();
+  const l = useMemo<Labels>(
+    () => ({
+      ...messages.history,
+      newChat: messages.chat.newChat,
+      delete: common.delete,
+      moreFor: (title: string) => common.labelFor(common.moreActions, title),
+      ...labels,
+    }),
+    [messages, common, labels],
+  );
+  const formatAge = useMemo(
+    () => formatAgeProp ?? ((at: number) => relativeTime(at, Date.now(), messages.age)),
+    [formatAgeProp, messages],
+  );
   const count = threads.length;
   const exportLabel = l.exportCount(count);
 

@@ -11,6 +11,7 @@ import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * Chrome shared by the medical dashboard cards (`StepsCard`,
@@ -21,7 +22,6 @@ import { useCountUp } from './use-count-up';
 /** `h-[330px] rounded-[20px] p-2.5 gap-4`. */
 export const MEDICAL_CARD_HEIGHT = 330;
 export const MEDICAL_CARD_STYLE: ViewStyle = {
-  borderRadius: 20,
   paddingTop: 10,
   paddingBottom: 10,
   paddingLeft: 10,
@@ -347,12 +347,15 @@ export function WeekRangePill({
   label,
   onPrev,
   onNext,
-  prevLabel = 'Previous',
-  nextLabel = 'Next',
+  prevLabel: prevLabelProp,
+  nextLabel: nextLabelProp,
   width = 151,
   style,
   testID,
 }: WeekRangePillProps) {
+  const common = useCommonMessages();
+  const prevLabel = prevLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const palette = useChartCardPalette();
   const interactive = !!(onPrev || onNext);
   const noop = () => {};

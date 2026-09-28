@@ -35,7 +35,7 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
 | `size`                              | `'small'` (32px buttons, body text) or `'medium'` (default, 36px, headline text) |
 | `formatValue`                       | the drawn and announced text, e.g. `(n) => (n === 8 ? '8+' : String(n))` |
 | `accessibilityLabel`                | **required** — what is being counted                                     |
-| `decrementLabel` / `incrementLabel` | the buttons' names, default `"Decrease"` / `"Increase"` — translate them  |
+| `decrementLabel` / `incrementLabel` | the buttons' names, `"Decrease"` / `"Increase"` in English, localised via `BloomProvider locale` |
 | `onRemove` / `removeLabel`          | opt-in: at `min` the `−` becomes a trash button named `removeLabel` (default `"Remove"`) that calls `onRemove`; without it the button disables at `min` |
 | `style`, `testID`                   | the row; `testID` also derives `-decrement`, `-value`, `-increment`      |
 

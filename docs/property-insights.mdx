@@ -64,7 +64,9 @@ and a rental page at 1280 and 390, light and dark, and every part alone.
 
 ## What arrives formatted, and what the parts compute
 
-Labels, dates, units, `display` values and deltas are pre-formatted strings. Three
+Labels, dates, units, `display` values and deltas are pre-formatted strings. The parts'
+own words ("Energy", "Why this estimate", "Fair price", …) are localised via
+`BloomProvider locale`; every `*Label` prop still wins. Three
 parts must do arithmetic, so they take NUMBERS plus a `format` function (the app owns
 currency and locale; the default is `€385,000`):
 

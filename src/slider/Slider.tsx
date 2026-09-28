@@ -25,6 +25,8 @@ import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { RangeSliderProps, SliderProps } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useMessages } from '../locale/messages';
+import { SLIDER_MESSAGES } from './messages';
 
 function quantize(raw: number, min: number, max: number, step: number): number {
   if (step <= 0) return clamp(raw, min, max);
@@ -202,6 +204,7 @@ function SliderBase({
   testID,
 }: SliderBaseProps) {
   const theme = useTheme();
+  const { messages } = useMessages(SLIDER_MESSAGES);
   // A slider draws no text of its own — its `label` is rendered but hidden from
   // assistive technology, which is why the name has to be a prop. Inside a
   // `Field` the field's label is that name (STACKED placement), and the field's
@@ -543,7 +546,7 @@ function SliderBase({
               {...(isRange
                 ? {
                     accessibilityRole: 'adjustable' as const,
-                    accessibilityLabel: thumbLabels[index] ?? `Value ${index + 1}`,
+                    accessibilityLabel: thumbLabels[index] ?? messages.value(index + 1),
                     'aria-valuemin': index > 0 ? (values[index - 1] as number) : min,
                     'aria-valuemax': index < values.length - 1 ? (values[index + 1] as number) : max,
                     'aria-valuenow': value,
@@ -715,12 +718,14 @@ const RangeSliderComponent = function RangeSlider({
   label,
   showTooltip = true,
   formatValue,
-  thumbLabels = ['Minimum', 'Maximum'],
+  thumbLabels: thumbLabelsProp,
   style,
   accessibilityLabel,
   testID,
 }: RangeSliderProps) {
   const theme = useTheme();
+  const { messages } = useMessages(SLIDER_MESSAGES);
+  const thumbLabels = thumbLabelsProp ?? [messages.minimum, messages.maximum];
   const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const geometry = {xs: [4, 14], sm: [4, 16], md: [6, 20], lg: [8, 24]} as const;
   const trackHeight = trackHeightProp ?? geometry[size][0];

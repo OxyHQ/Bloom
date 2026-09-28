@@ -31,6 +31,9 @@ import {
   type ShelfScroll,
 } from './shared';
 import type { ShelfProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_SHELF_MESSAGES } from './messages';
 
 /**
  * A section of a home or search page: a header over a run of items.
@@ -61,7 +64,7 @@ function ShelfComponent({
   eyebrowAvatar,
   onTitlePress,
   onShowAll,
-  showAllLabel = 'Show all',
+  showAllLabel: showAllLabelProp,
   layout = 'row',
   itemWidth,
   minItemWidth = 160,
@@ -69,12 +72,17 @@ function ShelfComponent({
   gap = SHELF_GAP,
   contentInset = 0,
   headingLevel = 2,
-  previousLabel = 'Previous',
-  nextLabel = 'Next',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   children,
   style,
   testID,
 }: ShelfProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(MEDIA_SHELF_MESSAGES);
+  const showAllLabel = showAllLabelProp ?? messages.showAll;
+  const previousLabel = previousLabelProp ?? common.previous;
+  const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   useEffect(() => {

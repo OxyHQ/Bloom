@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { CardForegroundContext } from './context';
 import { useBloomAppearance, type BloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
@@ -22,7 +24,7 @@ import { resolveBloomColors } from '../appearance/colors';
  * requires a new appearance name.
  */
 import React, { memo, useMemo, useContext } from 'react';
-import { Platform, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { styled } from 'react-native-css';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -47,14 +49,18 @@ import type {
   CardDescriptionProps,
 } from './types';
 
-/** The width each border role resolves to. `none` is expressed by omitting the border. */
+/** The width each border role resolves to. `none` resolves to zero. */
 const BORDER_PX: Record<Exclude<CardBorder, 'none'>, number> = {
   hairline: BORDER_WIDTH.hairline,
   thin: 1,
+  medium: 2,
 };
 
 /** What each preset means on the two axes an explicit prop can override. */
-const VARIANT_DEFAULTS: Record<BloomAppearance, { border: CardBorder; elevation: CardElevation }> = {
+const VARIANT_DEFAULTS: Record<
+  BloomAppearance,
+  { border: CardBorder; elevation: CardElevation }
+> = {
   plain: { border: 'none', elevation: 'none' },
   // `shadow-s` IS the "subtle raise — cards, chips" role, and the token is
   // already platform-forked, so a hand-rolled `Platform.OS` branch would be one
@@ -70,6 +76,9 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   variant,
   tone: toneProp,
   radius = 'radius-12',
+  cornerCurve = SURFACE_SHAPES.card.curve,
+  clipContent = false,
+  contentStyle,
   elevation,
   border,
   material = 'solid',
@@ -91,24 +100,31 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   // Drive the press-opacity via state instead of Pressable's function-form
   // `style`, which NativeWind v4's css-interop swallows (dropping the base
   // container style: background, radius, border, shadow).
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
-    useInteractionState();
+  const {
+    state: pressed,
+    onIn: onPressIn,
+    onOut: onPressOut,
+  } = useInteractionState();
 
   const containerStyle = useMemo((): ViewStyle => {
     const defaults = VARIANT_DEFAULTS[appearance];
     const resolvedBorder = border ?? defaults.border;
-    const resolvedElevation = elevation ?? (variant === 'plain' && appearanceProp == null ? 'none' : defaults.elevation);
+    const resolvedElevation =
+      elevation ??
+      (variant === 'plain' && appearanceProp == null
+        ? 'none'
+        : defaults.elevation);
 
     const base: ViewStyle = {
       backgroundColor:
         tone === 'neutral' && appearance !== 'plain' ? layer.fill : paint.background,
-      borderRadius: RADIUS[radius],
-      overflow: 'hidden',
+      ...surfaceStyle({ radius: RADIUS[radius], curve: radius === 'radius-max' ? 'round' : cornerCurve }),
     };
 
     if (resolvedBorder !== 'none') {
       base.borderWidth = BORDER_PX[resolvedBorder];
-      base.borderColor = tone === 'neutral' ? theme.colors.border : paint.border;
+      base.borderColor =
+        tone === 'neutral' ? theme.colors.border : paint.border;
     }
 
     if (resolvedElevation !== 'none') {
@@ -116,45 +132,31 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
     }
 
     return base;
-  }, [appearance, appearanceProp, variant, tone, paint, radius, border, elevation, theme, layer.fill]);
+  }, [appearance, appearanceProp, variant, tone, paint, radius, cornerCurve, border, elevation, theme, layer.fill]);
 
-  // Resolve class utilities before splitting layout: the outer node keeps the
-  // parent's sizing/position and shadow; the inner node owns content clipping.
-  const resolved = StyleSheet.flatten([containerStyle, style]) ?? {};
-  const isWeb = Platform.OS === 'web';
-  // Web overflow clips children without clipping the CSS box shadow. Keep one
-  // layout node there so utility classes still lay out the actual content.
-  const outerStyle: ViewStyle = { ...resolved, overflow: isWeb ? resolved.overflow : 'visible' };
-  const contentStyle: ViewStyle = {
-    flexGrow: 1, flexShrink: 1, alignSelf: 'stretch',
-    borderRadius: resolved.borderRadius,
-    overflow: resolved.overflow === 'visible' && StyleSheet.flatten(style)?.overflow === 'visible' ? 'visible' : 'hidden',
-  };
-  const contentKeys = [
-    'flexDirection', 'flexWrap', 'alignItems', 'justifyContent', 'alignContent',
-    'gap', 'rowGap', 'columnGap', 'padding', 'paddingHorizontal', 'paddingVertical',
-    'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingStart', 'paddingEnd',
-  ] as const;
-  for (const key of isWeb ? [] : contentKeys) {
-    if (resolved[key] !== undefined) {
-      Object.assign(contentStyle, { [key]: resolved[key] });
-      delete outerStyle[key];
-    }
-  }
+  // Resolve class utilities on the actual layout host. Geometry remains owned
+  // by the public shape axes; clipping is explicit and keeps shadows outside.
+  const shape = { radius: RADIUS[radius], curve: radius === 'radius-max' ? 'round' as const : cornerCurve };
+  const geometry = { ...surfaceStyle(shape), borderWidth: containerStyle.borderWidth ?? 0 };
+  const resolved = StyleSheet.flatten([containerStyle, style, geometry]) ?? {};
+  const outerStyle: ViewStyle = { ...resolved };
   const baseFill = String(containerStyle.backgroundColor);
   const fill = StyleSheet.flatten(style)?.backgroundColor ?? (material === 'glass' ? withAlpha(baseFill, tone !== 'neutral' && appearance === 'solid' ? 0.94 : 0.25) : baseFill);
   const paintsSurface = appearance !== 'plain';
-  // Solid paint is exact; glass publishes the tint's estimate over its known parent,
-  // not a claim about the refracted pixels underneath it.
   const publishedFill = resolveSurfaceFill(String(paintsSurface ? fill : resolved.backgroundColor ?? 'transparent'), false, layer.parentFill);
-  const content = <SurfaceLevelProvider level={paintsSurface ? layer.level : parentLevel} fill={publishedFill}>
-    <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>{children}</CardForegroundContext.Provider>
-  </SurfaceLevelProvider>;
   Object.assign(outerStyle, surfaceFillVars(publishedFill));
   if (paintsSurface) outerStyle.backgroundColor = 'transparent';
   const contents = <>
-    {paintsSurface ? <SurfacePaint fill={material === 'glass' ? String(fill) : publishedFill} backdrop={layer.parentFill} radius={resolved.borderRadius ?? RADIUS[radius]} glass={material === 'glass'} /> : null}
-    {isWeb ? content : <View style={contentStyle} testID={testID ? `${testID}-content` : undefined}>{content}</View>}
+    {paintsSurface ? <SurfacePaint fill={material === 'glass' ? String(fill) : publishedFill} backdrop={layer.parentFill} radius={shape.radius} shape={shape} glass={material === 'glass'} /> : null}
+    <SurfaceLevelProvider level={paintsSurface ? layer.level : parentLevel} fill={publishedFill}>
+      <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>
+        {clipContent ? <View
+          testID={testID ? `${testID}-clip` : undefined}
+          style={[contentStyle, surfaceStyle({ ...shape, radius: Math.max(0, RADIUS[radius] - geometry.borderWidth) }),
+            { overflow: 'hidden', alignSelf: 'stretch', flexGrow: 1, flexShrink: 1 }]}
+        >{children}</View> : children}
+      </CardForegroundContext.Provider>
+    </SurfaceLevelProvider>
   </>;
 
   if (onPress) {
@@ -193,7 +195,10 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   );
 });
 
-const CardHeaderComponent: React.FC<CardHeaderProps> = ({ children, style }) => (
+const CardHeaderComponent: React.FC<CardHeaderProps> = ({
+  children,
+  style,
+}) => (
   <View
     style={[
       {
@@ -222,7 +227,10 @@ const CardBodyComponent: React.FC<CardBodyProps> = ({ children, style }) => (
   </View>
 );
 
-const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => (
+const CardFooterComponent: React.FC<CardFooterProps> = ({
+  children,
+  style,
+}) => (
   <View
     style={[
       {
@@ -241,7 +249,11 @@ const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => 
   </View>
 );
 
-const CardTitleComponent: React.FC<CardTitleProps> = ({ children, style, numberOfLines }) => {
+const CardTitleComponent: React.FC<CardTitleProps> = ({
+  children,
+  style,
+  numberOfLines,
+}) => {
   const theme = useTheme();
   const foreground = useContext(CardForegroundContext);
   return (

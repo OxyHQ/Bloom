@@ -4,10 +4,12 @@ import { View } from 'react-native';
 import { AddressRow } from '../address';
 import { ADDRESS_SECTION_GAP, ADDRESS_SECTIONS_GAP } from '../address/constants';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { DIRECTIONS_LEG_GLYPH, DIRECTIONS_MODE_ICON } from './constants';
 import { DIRECTIONS_MANEUVER_ICON } from './maneuvers';
+import { DIRECTIONS_MESSAGES } from './messages';
 import { describeStep, describeTransitLine, resolveDirectionsPaint } from './shared';
 import { TransitLineBadge } from './TransitLineBadge';
 import type { DirectionsStepsProps } from './types';
@@ -45,11 +47,14 @@ function DirectionsStepsComponent({
   currentStepId,
   onPressStep,
   density = 'comfortable',
-  currentLabel = 'Current step',
-  accessibilityLabel = 'Directions',
+  currentLabel: currentLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: DirectionsStepsProps) {
+  const { messages } = useMessages(DIRECTIONS_MESSAGES);
+  const currentLabel = currentLabelProp ?? messages.currentStep;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.directions;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveDirectionsPaint(theme, surface), [theme, surface]);
@@ -63,7 +68,7 @@ function DirectionsStepsComponent({
       {legs.map((leg, legIndex) => {
         const legId = testID ? `${testID}-leg-${legIndex}` : undefined;
         const LegIcon = DIRECTIONS_MODE_ICON[leg.mode ?? 'drive'];
-        const legName = [leg.title, leg.line ? describeTransitLine(leg.line) : undefined, leg.meta]
+        const legName = [leg.title, leg.line ? describeTransitLine(leg.line, messages) : undefined, leg.meta]
           .filter((part): part is string => typeof part === 'string' && part !== '')
           .join(', ');
 
@@ -110,7 +115,7 @@ function DirectionsStepsComponent({
             <View role="list" accessibilityLabel={legName || accessibilityLabel}>
               {leg.steps.map((step, stepIndex) => {
                 const current = currentStepId !== undefined && step.id === currentStepId;
-                const name = describeStep(step, { current, currentWord: currentLabel });
+                const name = describeStep(step, { current, currentWord: currentLabel, messages });
                 const stepId = legId ? `${legId}-step-${stepIndex}` : undefined;
                 return (
                   <View

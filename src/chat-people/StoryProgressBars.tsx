@@ -9,14 +9,15 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import {
   STORY_DURATION_MS,
-  STORY_VIEWER_LABELS,
   resolveChatPeoplePaint,
   storyProgressFill,
 } from './shared';
 import type { StoryProgressBarsProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `StoryProgressBars`: the segmented strip at the top of a story.
@@ -129,6 +130,7 @@ function StoryProgressBarsComponent({
   testID,
 }: StoryProgressBarsProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
   const reduced = useReducedMotion();
   const controlled = progress !== undefined;
@@ -151,7 +153,7 @@ function StoryProgressBarsComponent({
 
   return (
     <View
-      accessibilityLabel={accessibilityLabel ?? STORY_VIEWER_LABELS.progress(index, bars)}
+      accessibilityLabel={accessibilityLabel ?? messages.story.progress(index, bars)}
       style={[{ flexDirection: 'row', gap }, style]}
       testID={testID}
     >

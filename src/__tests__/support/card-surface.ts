@@ -2,11 +2,11 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { SurfacePaint } from '../../surface/SurfacePaint';
 import { resolvedStyle } from './rendered-style';
 
-/** Card splits native content layout from its shadow host. Inspect both real nodes. */
+/** Card may opt into a content clip; inspect its layout without replacing host geometry. */
 export function cardLayout(root: ReactTestInstance) {
   const id = root.props.testID;
-  const content = root.findAll(node => node.props.testID === `${id}-content`)[0];
-  return { ...resolvedStyle(root.props.style), ...(content ? resolvedStyle(content.props.style) : {}) };
+  const content = root.findAll(node => node.props.testID === `${id}-clip`)[0];
+  return { ...(content ? resolvedStyle(content.props.style) : {}), ...resolvedStyle(root.props.style) };
 }
 
 /** The material's fill contract, independent of its transparent host. Not a pixel test. */

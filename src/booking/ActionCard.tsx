@@ -8,7 +8,6 @@ import { BookingPrice } from './BookingPrice';
 import {
   BOOKING_CARD_MAX_WIDTH,
   BOOKING_CARD_PADDING,
-  BOOKING_CARD_RADIUS,
   resolveBookingPalette,
 } from './shared';
 import type { BookingPriceProps } from './types';
@@ -50,7 +49,6 @@ export function ActionCardShell({
     paddingBottom: BOOKING_CARD_PADDING,
     paddingLeft: BOOKING_CARD_PADDING,
     paddingRight: BOOKING_CARD_PADDING,
-    borderRadius: BOOKING_CARD_RADIUS,
   };
 
   return (

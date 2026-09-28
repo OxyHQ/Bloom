@@ -16,6 +16,8 @@ import {
 import { PauseGlyph } from './PauseGlyph';
 import { SpinnerRing } from './SpinnerRing';
 import type { PlayButtonProps, PlayButtonSize } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from './messages';
 
 /**
  * The round play / pause button.
@@ -63,12 +65,13 @@ function PlayButtonComponent({
   loading = false,
   disabled = false,
   subject,
-  playLabel = 'Play',
-  pauseLabel = 'Pause',
+  playLabel,
+  pauseLabel,
   accessibilityLabel,
   style,
   testID,
 }: PlayButtonProps) {
+  const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);
@@ -78,8 +81,13 @@ function PlayButtonComponent({
   const [pressed, setPressed] = useState(false);
   const { box, glyph } = SIZE_CONFIG[size];
 
-  const action = playing ? pauseLabel : playLabel;
-  const name = accessibilityLabel ?? (subject ? `${action} ${subject}` : action);
+  // A caller's word keeps the old "<word> <subject>" shape; the catalog's is a
+  // whole phrase per language, so the subject sits where the language puts it.
+  const custom = playing ? pauseLabel : playLabel;
+  const action = custom ?? (playing ? messages.pause : messages.play);
+  const withSubject = (s: string) =>
+    custom !== undefined ? `${custom} ${s}` : playing ? messages.pauseSubject(s) : messages.playSubject(s);
+  const name = accessibilityLabel ?? (subject ? withSubject(subject) : action);
 
   const active = !disabled && (pressed || hovered);
   let fill: string | undefined;

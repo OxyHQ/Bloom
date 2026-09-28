@@ -6,12 +6,14 @@ import { UnreadBadge } from '../chat-indicators/UnreadBadge';
 import { RiArrowDownLine } from '../icons/remix/RiArrowDownLine';
 import { RiAtLine } from '../icons/remix/RiAtLine';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { CHAT_SCREEN_LABELS, useChatScreenPaint } from './shared';
+import { useChatScreenPaint } from './shared';
 import type {
   ChatIconComponent,
   JumpToMentionButtonProps,
   ScrollToBottomButtonProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 /**
  * The shared body of the two round jump buttons.
@@ -95,11 +97,12 @@ function ScrollToBottomButtonComponent({
   unreadCount = 0,
   badgeMax,
   onPress,
-  accessibilityLabel = CHAT_SCREEN_LABELS.scrollToBottom,
+  accessibilityLabel,
   size,
   style,
   testID,
 }: ScrollToBottomButtonProps) {
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
   return (
     <RoundJumpButton
       visible={visible}
@@ -107,7 +110,7 @@ function ScrollToBottomButtonComponent({
       badgeMax={badgeMax}
       icon={RiArrowDownLine}
       onPress={onPress}
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? messages.scrollToBottom}
       size={size}
       style={style}
       testID={testID}
@@ -126,11 +129,12 @@ function JumpToMentionButtonComponent({
   count = 0,
   badgeMax,
   onPress,
-  accessibilityLabel = CHAT_SCREEN_LABELS.jumpToMention,
+  accessibilityLabel,
   size,
   style,
   testID,
 }: JumpToMentionButtonProps) {
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
   return (
     <RoundJumpButton
       visible={visible}
@@ -138,7 +142,7 @@ function JumpToMentionButtonComponent({
       badgeMax={badgeMax}
       icon={RiAtLine}
       onPress={onPress}
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? messages.jumpToMention}
       size={size}
       style={style}
       testID={testID}

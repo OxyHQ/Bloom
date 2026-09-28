@@ -55,9 +55,9 @@ import {
 Everything is data in props. Counts, prices, dates and ratings arrive pre-formatted
 as strings, except where a part must compute: `ReviewSummary` and `Rating` format a
 numeric rating (4.92, 5.0), `ReviewCard` rounds `rating` to whole stars, and
-`AmenityList` fills the count into its "Show all" label. The default English strings
-(`"Show all photos"`, `"Show more"`, `"Unavailable"`, `"Rated 4 out of 5"`, …) are all
-props — translate them.
+`AmenityList` fills the count into its "Show all" label. The default strings
+(`"Show all photos"`, `"Show more"`, `"Unavailable"`, `"Rated 4 out of 5"`, …) are
+localised via `BloomProvider locale`; each is also a prop, which wins.
 
 ## Each part picks its layout from its OWN width
 

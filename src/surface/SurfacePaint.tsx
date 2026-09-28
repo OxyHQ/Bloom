@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import type { SurfaceShape } from '../shapes/corner-types';
 import React, { memo, useEffect } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -27,6 +29,8 @@ export const SurfacePaint = memo(function SurfacePaint({
   fill,
   backdrop,
   radius,
+  shape,
+  direction = 'ltr',
   glass = false,
   sheen = true,
   testID,
@@ -38,8 +42,12 @@ export const SurfacePaint = memo(function SurfacePaint({
   fill?: string;
   /** Actual parent fill when compositing a solid material. */
   backdrop?: string;
-  radius: NonNullable<ViewStyle['borderRadius']>;
+  radius?: NonNullable<ViewStyle['borderRadius']>;
+  /** Same policy as the host; radius can remain owned by an animated host. */
+  shape?: SurfaceShape;
+  direction?: 'ltr' | 'rtl';
 }) {
+  const geometry = { ...(radius === undefined ? {} : { borderRadius: radius }), ...surfaceStyle(shape ?? { curve: 'round' }, direction) };
   const theme = useTheme();
   const optics = resolveSurfaceOptics(theme.isDark);
   const resolvedFill = fill === undefined ? 'transparent' : resolveSurfaceFill(fill, glass, backdrop ?? theme.colors.card);
@@ -53,7 +61,7 @@ export const SurfacePaint = memo(function SurfacePaint({
     const paintStyle: WebCssStyle = {
       position: 'absolute',
       top: 0, right: 0, bottom: 0, left: 0,
-      borderRadius: radius,
+      ...geometry,
       backgroundColor: 'transparent',
       '--bloom-surface-paint-fill': resolvedFill,
       '--bloom-surface-rim': optics.rim,
@@ -66,7 +74,7 @@ export const SurfacePaint = memo(function SurfacePaint({
     <View
       testID={testID}
       pointerEvents="none"
-      style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
+      style={[StyleSheet.absoluteFill, geometry, { overflow: 'hidden' }]}
     >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
@@ -77,7 +85,7 @@ export const SurfacePaint = memo(function SurfacePaint({
         {fill !== undefined ? <Rect x="0" y="0" width="100%" height="100%" fill={base.color} fillOpacity={base.opacity} /> : null}
         {sheen ? <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}-sheen)`} /> : null}
       </Svg>
-      <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius, boxShadow: optics.rim }]} />
+      <View pointerEvents="none" style={[StyleSheet.absoluteFill, geometry, { boxShadow: optics.rim }]} />
     </View>
   );
 });

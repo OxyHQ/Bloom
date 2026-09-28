@@ -178,6 +178,8 @@ Every control is named: the triggers announce their current value ("Permission: 
 
 ## Props
 
+The English defaults below — strings, placeholders, and the default permission modes, effort stops and add-menu rows — are localised via `BloomProvider locale` (see [Locale](/docs/locale)); the exported `COMPOSER_PANEL_*` / `MODEL_PICKER_EFFORT_LEVELS` constants stay English.
+
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `value` / `defaultValue` / `onValueChange` | `string` | `''` | The draft. |
@@ -199,7 +201,7 @@ Every control is named: the triggers announce their current value ("Permission: 
 | `onAttachmentRetry` | `(id) => void` | — | Draws a retry button on every failed (`error`) tile. |
 | `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
 | `inputRef` | `RefObject<TextInput>` | — | The prompt field. |
-| `labels`, `modelPickerLabels` | objects | English | Localisation. |
+| `labels`, `modelPickerLabels` | objects | the locale's | Your own wording; a key here wins over Bloom's. |
 | `style`, `testID` | | | |
 
 `ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface`, `glass` and `maxLines`.

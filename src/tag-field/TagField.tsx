@@ -45,6 +45,8 @@ import {
   TAG_FIELD_OPTION_RADIUS,
   TAG_FIELD_SHELL_INSET,
 } from './constants';
+import { useMessages } from '../locale/messages';
+import { TAG_FIELD_MESSAGES } from './messages';
 import { commitTag, filterSuggestions, normalizeTag } from './shared';
 import type { TagFieldLabels, TagFieldProps } from './types';
 
@@ -121,11 +123,6 @@ const WEB_INPUT_DISABLED_CURSOR: TextStyle | undefined = IS_WEB
   ? ({ cursor: 'not-allowed' } as unknown as TextStyle)
   : undefined;
 
-const DEFAULT_LABELS: Required<TagFieldLabels> = {
-  remove: (tag) => `Remove ${tag}`,
-  full: (max) => `${max} maximum`,
-  suggestions: 'Suggestions',
-};
 
 export function TagField({
   value,
@@ -156,7 +153,8 @@ export function TagField({
   const size = useInheritedControl('density', normalizeBloomSize(sizeProp), 'md');
   const palette = useTextFieldPalette();
   const menu = useMenuPalette();
-  const labels = { ...DEFAULT_LABELS, ...labelsProp };
+  const { messages } = useMessages(TAG_FIELD_MESSAGES);
+  const labels: Required<TagFieldLabels> = { ...messages, ...labelsProp };
   const inputRef = useRef<TextInput | null>(null);
   const reactId = useId();
   const listId = `${nativeID ?? reactId}-suggestions`;

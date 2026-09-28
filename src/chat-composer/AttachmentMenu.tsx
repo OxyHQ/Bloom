@@ -15,9 +15,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { ATTACHMENT_MENU_ITEMS, resolveChatComposerPalette } from './shared';
+import { attachmentMenuItems, resolveChatComposerPalette } from './shared';
 import type { AttachmentMenuItem, AttachmentMenuProps } from './types';
 import { useChatComposerWebCss } from './web-hooks';
+import { useMessages } from '../locale/messages';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 /** A 48px tinted disc with its label under it. */
 function GridCell({
@@ -141,16 +143,20 @@ export function AttachmentMenu({
   open,
   defaultOpen,
   onOpenChange,
-  items = ATTACHMENT_MENU_ITEMS,
+  items: itemsProp,
   layout = 'grid',
   columns = 4,
   onSelect,
   recent,
-  label = 'Attach',
+  label: labelProp,
   style,
   testID,
 }: AttachmentMenuProps) {
   useChatComposerWebCss();
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
+  const localizedItems = React.useMemo(() => attachmentMenuItems(messages), [messages]);
+  const items = itemsProp ?? localizedItems;
+  const label = labelProp ?? messages.attach;
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen ?? false);
   const isOpen = open ?? uncontrolledOpen;
 

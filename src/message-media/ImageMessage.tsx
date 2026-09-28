@@ -3,6 +3,8 @@ import { View } from 'react-native';
 
 import { space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -19,6 +21,7 @@ import {
   MESSAGE_MEDIA_WIDTH,
   resolveMessageMediaPaint,
 } from './shared';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { ImageMessageProps } from './types';
 
 /**
@@ -49,14 +52,14 @@ function ImageMessageComponent({
   placeholderColor,
   caption,
   spoiler = false,
-  spoilerLabel = 'Tap to view',
+  spoilerLabel: spoilerLabelProp,
   onReveal,
   state = 'idle',
   progress,
   onPress,
   onCancel,
   onRetry,
-  accessibilityLabel = 'Photo',
+  accessibilityLabel: accessibilityLabelProp,
   tone = 'incoming',
   onColor,
   bubbleColor,
@@ -64,6 +67,10 @@ function ImageMessageComponent({
   testID,
 }: ImageMessageProps) {
   const theme = useTheme();
+  const common = useCommonMessages();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const spoilerLabel = spoilerLabelProp ?? messages.tapToView;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.photo;
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
@@ -126,7 +133,7 @@ function ImageMessageComponent({
               fill="rgba(0, 0, 0, 0.35)"
               glyph={onCancel ? 'cancel' : 'none'}
               onPress={onCancel}
-              accessibilityLabel={onCancel ? 'Cancel' : 'Sending photo'}
+              accessibilityLabel={onCancel ? common.cancel : messages.sendingPhoto}
               ring={paint.ring}
               testID={testID ? `${testID}-progress` : undefined}
             />

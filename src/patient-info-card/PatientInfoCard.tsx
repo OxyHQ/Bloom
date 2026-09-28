@@ -45,7 +45,7 @@ function PatientInfoCardComponent({
   const letters = initials ?? name.trim().charAt(0).toUpperCase();
 
   return (
-    <Card elevation="none"
+    <Card radius="radius-20" elevation="none"
       testID={testID}
       style={[styles.card, { height }, style]}
     >
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     minWidth: 0,
     alignItems: 'center',
     gap: 15,
-    borderRadius: 20,
     paddingTop: 24,
     paddingBottom: 10,
     paddingLeft: 10,

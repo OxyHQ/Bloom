@@ -17,6 +17,8 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { HOVER_CARD_TRIGGER_POPUP } from './constants';
 import { HoverCardProvider, useHoverCard } from './context';
 import type { HoverCardContentProps, HoverCardProps, HoverCardTriggerProps } from './types';
+import { useMessages } from '../locale/messages';
+import { HOVER_CARD_MESSAGES } from './messages';
 
 const noop = () => {};
 
@@ -74,7 +76,9 @@ export function HoverCardTrigger({
   );
 }
 
-export function HoverCardContent({ children, label = 'Hover card', style }: HoverCardContentProps) {
+export function HoverCardContent({ children, label: labelProp, style }: HoverCardContentProps) {
+  const { messages } = useMessages(HOVER_CARD_MESSAGES);
+  const label = labelProp ?? messages.hoverCard;
   const card = useHoverCard();
   const { control, onSheetClose } = useSheetOpenBridge(card.open, card.setOpen);
 

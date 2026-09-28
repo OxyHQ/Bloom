@@ -7,6 +7,8 @@ import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { APP_SHELL_MESSAGES } from './messages';
 import type { AppShellHeaderProps } from './types';
 
 /**
@@ -26,10 +28,12 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
   onMenuPress,
   menuOpen = false,
   showMenu: showMenuProp,
-  menuLabel = 'Open navigation',
+  menuLabel: menuLabelProp,
   style,
   testID,
 }) => {
+  const { messages } = useMessages(APP_SHELL_MESSAGES);
+  const menuLabel = menuLabelProp ?? messages.openNavigation;
   const theme = useTheme();
   // Standalone, the header has no shell to ask, so it falls back to the window
   // being narrower than `lg`. Inside an `AppShell` it is TOLD, from the shell's

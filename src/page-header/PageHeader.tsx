@@ -32,6 +32,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * `PageHeader`: a screen's top chrome.
@@ -119,7 +120,7 @@ function PageHeaderComponent({
   presentation = 'floating',
   placement = 'inline',
   onBack,
-  backLabel = 'Back',
+  backLabel: backLabelProp,
   leading,
   actions,
   border = 'auto',
@@ -133,6 +134,8 @@ function PageHeaderComponent({
   style,
   testID,
 }: PageHeaderProps) {
+  const common = useCommonMessages();
+  const backLabel = backLabelProp ?? common.back;
   const isWeb = Platform.OS === 'web';
   const floating = presentation === 'floating';
   const overlay = placement === 'overlay';

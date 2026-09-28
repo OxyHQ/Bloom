@@ -15,6 +15,9 @@ import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import type { StepperProps, StepperSize } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { STEPPER_MESSAGES } from './messages';
 
 /**
  * Bloom's numeric counter: a round `−` button, the value, a round `+` button.
@@ -90,13 +93,18 @@ function StepperComponent({
   size = 'medium',
   formatValue,
   accessibilityLabel,
-  decrementLabel = 'Decrease',
-  incrementLabel = 'Increase',
+  decrementLabel: decrementLabelProp,
+  incrementLabel: incrementLabelProp,
   onRemove,
-  removeLabel = 'Remove',
+  removeLabel: removeLabelProp,
   style,
   testID,
 }: StepperProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(STEPPER_MESSAGES);
+  const decrementLabel = decrementLabelProp ?? messages.decrease;
+  const incrementLabel = incrementLabelProp ?? messages.increase;
+  const removeLabel = removeLabelProp ?? common.remove;
   const theme = useTheme();
   const ringOffset = useRingOffsetStyle();
   // The digits are not a name, so the stepper is named by a prop or by the

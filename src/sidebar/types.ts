@@ -55,7 +55,7 @@ export interface SidebarModeSwitcherProps {
   onValueChange: (key: string) => void;
   /** Collapses the labels and hints, leaving the icons. */
   collapsed?: boolean;
-  /** The radio group's accessible name. Defaults to `"Mode"`. */
+  /** The radio group's accessible name (`"Mode"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -219,7 +219,7 @@ export interface SidebarAccount {
   onManage?: () => void;
   addUserLabel?: string;
   manageLabel?: string;
-  /** Names the menu the switcher opens. Default `"Account menu"`. */
+  /** Names the menu the switcher opens (`"Account menu"` in English). */
   menuLabel?: string;
 }
 
@@ -280,7 +280,7 @@ export interface SidebarProps {
   /** Key of the selected mode. */
   mode?: string;
   onModeChange?: (key: string) => void;
-  /** The mode group's accessible name. Defaults to `"Mode"`. */
+  /** The mode group's accessible name (`"Mode"` in English). */
   modesLabel?: string;
   /** Rows pinned to the bottom above the team card (Support, Settings). */
   secondaryItems?: SidebarNavItem[];
@@ -301,13 +301,13 @@ export interface SidebarProps {
   mobile?: boolean;
   onClose?: () => void;
 
-  /** The landmark's accessible name. Default `"Sidebar"`. */
+  /** The landmark's accessible name (`"Sidebar"` in English). */
   accessibilityLabel?: string;
-  /** Names the collapse control while expanded. Default `"Collapse sidebar"`. */
+  /** Names the collapse control while expanded (`"Collapse sidebar"` in English). */
   collapseLabel?: string;
-  /** Names the same control while collapsed. Default `"Expand sidebar"`. */
+  /** Names the same control while collapsed (`"Expand sidebar"` in English). */
   expandLabel?: string;
-  /** Names the `mobile` close button. Default `"Close sidebar"`. */
+  /** Names the `mobile` close button (`"Close sidebar"` in English). */
   closeLabel?: string;
   /** Expanded width fills the container instead of the size's own width. */
   fluid?: boolean;
@@ -327,17 +327,17 @@ export interface SidebarProps {
   searchShortcutLabel?: string;
   /** Binds ⌘L / Ctrl+L on web. Defaults to true. */
   searchShortcut?: boolean;
-  /** Names the quick-search button. Default `"Quick Search"`. */
+  /** Names the quick-search button (`"Quick Search"` in English). */
   searchLabel?: string;
-  /** Names the search button in a flat `mobile` header. Default `"Search"`. */
+  /** Names the search button in a flat `mobile` header (`"Search"` in English). */
   searchButtonLabel?: string;
   /** Placeholder. Defaults `"Search navigation…"`, or `"Search..."` in a flat `mobile` header. */
   searchPlaceholder?: string;
-  /** Names the search field. Default `"Filter navigation"`. */
+  /** Names the search field (`"Filter navigation"` in English). */
   filterLabel?: string;
-  /** Names the button that clears and closes the search. Default `"Clear navigation search"`. */
+  /** Names the button that clears and closes the search (`"Clear navigation search"` in English). */
   clearSearchLabel?: string;
-  /** Default `"No results"`. */
+  /** (`"No results"` in English). */
   noResultsLabel?: string;
 
   /**
@@ -420,7 +420,7 @@ export interface SidebarPlan {
   /** The plan line under the name, e.g. `Pro Plan`. */
   plan: string;
   avatar?: SidebarAvatar;
-  /** Default `'Upgrade'`. */
+  /** (`'Upgrade'` in English). */
   actionLabel?: string;
   onAction?: () => void;
 }

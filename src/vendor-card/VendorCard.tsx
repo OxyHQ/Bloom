@@ -42,6 +42,7 @@ import {
   vendorFacts,
 } from './shared';
 import type { VendorCardDensity, VendorCardProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A restaurant or a shop in a list.
@@ -245,11 +246,12 @@ function VendorCardSkeleton({
   style,
   testID,
 }: Pick<VendorCardProps, 'style' | 'testID'> & { density: VendorCardDensity }) {
+  const common = useCommonMessages();
   const compact = density === 'compact';
   return (
     <View
       aria-busy
-      accessibilityLabel="Loading"
+      accessibilityLabel={common.loading}
       style={[{ flexDirection: compact ? 'row' : 'column', alignItems: 'flex-start' }, style]}
       testID={testID}
     >
