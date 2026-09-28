@@ -134,9 +134,9 @@ export interface AvatarProps {
   /** Suppress the "LIVE" pill badge while keeping the live ring (ring only). */
   hideLiveBadge?: boolean;
   /**
-   * Text shown inside the live badge. Defaults to `'LIVE'`. Provide a localized
-   * string for i18n — keep it extremely short (≈4 characters) as there is very
-   * little room.
+   * Text shown inside the live badge — the locale's word (`'LIVE'` in English),
+   * via `BloomProvider locale`. Set it to override; keep it extremely short
+   * (≈4 characters) as there is very little room.
    */
   liveLabel?: string;
   /**

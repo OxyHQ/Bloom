@@ -12,6 +12,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import {
   MailGlyphButton,
   MailLabelChips,
@@ -34,6 +35,7 @@ import {
   toSwipeActions,
   visibleLabels,
 } from './shared';
+import { MAIL_LIST_MESSAGES } from './messages';
 import type { MailAction, MailRowProps } from './types';
 
 /**
@@ -108,6 +110,7 @@ function MailRowComponent({
   style,
   testID,
 }: MailRowProps) {
+  const { messages } = useMessages(MAIL_LIST_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   const swipeAvailable = useSwipeAvailable();
@@ -117,7 +120,7 @@ function MailRowComponent({
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
   const [pressed, setPressed] = useState(false);
 
-  const text = useMemo(() => mailStrings(strings), [strings]);
+  const text = useMemo(() => mailStrings(strings, messages), [strings, messages]);
   const geo = MAIL_ROW_GEOMETRY[density];
   const compact = density === 'compact';
   const placement = actionsPlacement ?? (IS_WEB ? 'hover' : 'none');

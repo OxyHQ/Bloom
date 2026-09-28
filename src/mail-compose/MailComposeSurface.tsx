@@ -10,6 +10,7 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiExpandDiagonalSLine } from '../icons/remix/RiExpandDiagonalSLine';
 import { RiSendPlaneLine } from '../icons/remix/RiSendPlaneLine';
 import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
+import { useMessages } from '../locale/messages';
 import { resolveMailPaint } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import {
@@ -26,6 +27,7 @@ import {
   MAIL_COMPOSE_STYLE_ID,
   mailComposeStrings,
 } from './shared';
+import { MAIL_COMPOSE_MESSAGES } from './messages';
 import type { MailComposeSurfaceProps } from './types';
 
 /**
@@ -77,6 +79,7 @@ export function MailComposeSurface({
   style,
   testID,
 }: MailComposeSurfaceProps) {
+  const { messages } = useMessages(MAIL_COMPOSE_MESSAGES);
   const theme = useTheme();
   const parent = useSurfaceFill();
   useEffect(() => {
@@ -89,7 +92,7 @@ export function MailComposeSurface({
   // what is really behind them. A sheet paints nothing and publishes nothing.
   const fill = docked ? resolveSurfaceLevel(theme, 1).background : parent;
   const paint = useMemo(() => resolveMailPaint(theme, fill), [theme, fill]);
-  const text = useMemo(() => mailComposeStrings(strings), [strings]);
+  const text = useMemo(() => mailComposeStrings(strings, messages), [strings, messages]);
 
   const [collapsed, setCollapsed] = useControllableState<boolean>({
     value: minimized,

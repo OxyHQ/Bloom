@@ -35,7 +35,7 @@ export interface MailRecipientSuggestion {
   avatar?: string;
 }
 
-/** Every string this family draws that is not app data. */
+/** Every string this family draws that is not app data — in the locale (`BloomProvider locale`); `strings` overrides any. */
 export interface MailComposeStrings {
   to: string;
   cc: string;

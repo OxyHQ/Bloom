@@ -6,11 +6,13 @@ import type { TextStyle } from 'react-native';
 import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { Z_INDEX } from '../styles/z-index';
 import { useAvatarPlaceholder } from './context';
+import { AVATAR_MESSAGES } from './messages';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing, getRingOuterSize } from './AvatarRing';
 import { resolveAvatarShape } from './resolve-shape';
@@ -183,7 +185,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   onPress,
   live = false,
   hideLiveBadge = false,
-  liveLabel = 'LIVE',
+  liveLabel: liveLabelProp,
   liveColor,
   ring,
   testID,
@@ -194,6 +196,8 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   // the one the reduced-motion / pointer-type guards live behind.
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const theme = useTheme();
+  const { messages } = useMessages(AVATAR_MESSAGES);
+  const liveLabel = liveLabelProp ?? messages.live;
   const placeholderConfig = useAvatarPlaceholder();
   const scope = useContext(BloomAppearanceContext);
   const size = resolveAvatarSize(sizeProp ?? scope.size);

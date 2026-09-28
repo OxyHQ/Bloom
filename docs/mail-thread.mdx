@@ -10,6 +10,9 @@ The reading half of a mail client. `MailMessage` is one message, collapsed or
 open; `MailThread` is the stack; `MailAddressLine` is a `to`/`cc` line with its
 overflow; `MailQuoteToggle` is the "show trimmed content" control.
 
+Every fixed string (Reply, Forward, "3 earlier messages"…) is localised via
+`BloomProvider locale`; the `strings` prop overrides any of them.
+
 ```tsx
 import { MailThread } from '@oxy.so/bloom';
 

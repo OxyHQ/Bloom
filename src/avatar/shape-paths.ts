@@ -12,6 +12,9 @@
  * `borderRadius` and never reaches the SVG renderer.
  */
 
+import { pickMessages } from '../locale/messages';
+import { AVATAR_MESSAGES } from './messages';
+
 /** Side length of the coordinate space every path below is drawn in. */
 export const NAMED_SHAPE_VIEW_BOX = 100;
 
@@ -107,44 +110,57 @@ export const AVATAR_SHAPE_PATHS: Record<AvatarShapeName, string> = {
     'M50 90C25 70 2 55 2 32Q2 10 24 6Q40 2 50 18Q60 2 76 6Q98 10 98 32Q98 55 75 70Z',
 };
 
-/**
- * Display labels for the named shapes, in the order a picker should show them.
- * Exported so consumers building a shape picker do not re-derive the order (or
- * the capitalisation) themselves.
- */
-export const AVATAR_SHAPE_LABELS: { name: AvatarShapeName; label: string }[] = [
-  { name: 'square', label: 'Square' },
-  { name: 'slanted', label: 'Slanted' },
-  { name: 'arch', label: 'Arch' },
-  { name: 'semicircle', label: 'Semicircle' },
-  { name: 'oval', label: 'Oval' },
-  { name: 'pill', label: 'Pill' },
-  { name: 'triangle', label: 'Triangle' },
-  { name: 'arrow', label: 'Arrow' },
-  { name: 'fan', label: 'Fan' },
-  { name: 'diamond', label: 'Diamond' },
-  { name: 'clamshell', label: 'Clamshell' },
-  { name: 'pentagon', label: 'Pentagon' },
-  { name: 'gem', label: 'Gem' },
-  { name: 'very-sunny', label: 'Very Sunny' },
-  { name: 'sunny', label: 'Sunny' },
-  { name: '4-sided-cookie', label: '4-Sided Cookie' },
-  { name: '6-sided-cookie', label: '6-Sided Cookie' },
-  { name: '7-sided-cookie', label: '7-Sided Cookie' },
-  { name: '9-sided-cookie', label: '9-Sided Cookie' },
-  { name: '12-sided-cookie', label: '12-Sided Cookie' },
-  { name: '4-leaf-clover', label: '4-Leaf Clover' },
-  { name: '8-leaf-clover', label: '8-Leaf Clover' },
-  { name: 'burst', label: 'Burst' },
-  { name: 'soft-burst', label: 'Soft Burst' },
-  { name: 'boom', label: 'Boom' },
-  { name: 'soft-boom', label: 'Soft Boom' },
-  { name: 'flower', label: 'Flower' },
-  { name: 'puffy', label: 'Puffy' },
-  { name: 'puffy-diamond', label: 'Puffy Diamond' },
-  { name: 'ghost-ish', label: 'Ghost-ish' },
-  { name: 'pixel-circle', label: 'Pixel Circle' },
-  { name: 'pixel-triangle', label: 'Pixel Triangle' },
-  { name: 'bun', label: 'Bun' },
-  { name: 'heart', label: 'Heart' },
+/** The named shapes, in the order a picker should show them. */
+export const AVATAR_SHAPE_ORDER: readonly AvatarShapeName[] = [
+  'square',
+  'slanted',
+  'arch',
+  'semicircle',
+  'oval',
+  'pill',
+  'triangle',
+  'arrow',
+  'fan',
+  'diamond',
+  'clamshell',
+  'pentagon',
+  'gem',
+  'very-sunny',
+  'sunny',
+  '4-sided-cookie',
+  '6-sided-cookie',
+  '7-sided-cookie',
+  '9-sided-cookie',
+  '12-sided-cookie',
+  '4-leaf-clover',
+  '8-leaf-clover',
+  'burst',
+  'soft-burst',
+  'boom',
+  'soft-boom',
+  'flower',
+  'puffy',
+  'puffy-diamond',
+  'ghost-ish',
+  'pixel-circle',
+  'pixel-triangle',
+  'bun',
+  'heart',
 ];
+
+/**
+ * A shape picker's rows — each named shape and its display name in `locale`
+ * (the app's, from `BloomProvider locale`; the runtime's when omitted), in
+ * {@link AVATAR_SHAPE_ORDER}. So a consumer re-derives neither the order nor
+ * the words.
+ */
+export function avatarShapeLabels(locale?: string): { name: AvatarShapeName; label: string }[] {
+  const { shapes } = pickMessages(AVATAR_MESSAGES, locale);
+  return AVATAR_SHAPE_ORDER.map((name) => ({ name, label: shapes[name] }));
+}
+
+/**
+ * The shape picker's rows in English. {@link avatarShapeLabels} gives them in
+ * the app's language.
+ */
+export const AVATAR_SHAPE_LABELS: { name: AvatarShapeName; label: string }[] = avatarShapeLabels('en');

@@ -9,12 +9,12 @@ import { render } from '@testing-library/react-native';
 
 import { AvatarGroup } from '../avatar-group';
 import { AVATAR_GROUP_MESSAGES } from '../avatar-group/messages';
-import { Carousel,CarouselItem } from '../carousel';
+import { Carousel, CarouselItem } from '../carousel';
 import { CodeBlock } from '../code';
 import { ContactProfileCard } from '../contact-card';
 import { LocaleProvider } from '../locale';
 import { OutlineNav } from '../outline-nav';
-import { SocialButton,socialButtonLabel } from '../social-button';
+import { SocialButton, socialButtonLabel } from '../social-button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 // The web portal is a react-dom portal (no DOM here); render in place.

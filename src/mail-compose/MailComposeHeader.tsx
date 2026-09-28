@@ -3,13 +3,15 @@ import { TextInput, View, type TextStyle } from 'react-native';
 
 import { Button } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { resolveMailPaint } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { hairlineOn, useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
+import { MailGutterContext, useMailGutterState } from './context';
+import { MailGutterLabel } from './MailGutterLabel';
 import { MailRecipientField } from './MailRecipientField';
 import {
   MAIL_COMPOSE_CSS,
@@ -18,6 +20,7 @@ import {
   copiesOpen,
   mailComposeStrings,
 } from './shared';
+import { MAIL_COMPOSE_MESSAGES } from './messages';
 import type { MailComposeHeaderProps } from './types';
 
 /**
@@ -61,13 +64,15 @@ export function MailComposeHeader({
   style,
   testID,
 }: MailComposeHeaderProps) {
+  const { messages } = useMessages(MAIL_COMPOSE_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   useEffect(() => {
     adoptStyleSheet(MAIL_COMPOSE_STYLE_ID, MAIL_COMPOSE_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const text = useMemo(() => mailComposeStrings(strings), [strings]);
+  const text = useMemo(() => mailComposeStrings(strings, messages), [strings, messages]);
+  const gutter = useMailGutterState([text.to, text.cc, text.bcc, text.subject]);
   const geo = MAIL_COMPOSE_GEOMETRY;
 
   const [revealed, setRevealed] = useControllableState<boolean>({
@@ -89,94 +94,88 @@ export function MailComposeHeader({
   };
 
   return (
-    <View style={style} testID={testID}>
-      <MailRecipientField
-        label={text.to}
-        recipients={to}
-        onRecipientsChange={onToChange}
-        value={query}
-        onChangeText={onQueryChange}
-        onSubmit={(value) => onQuerySubmit?.('to', value)}
-        suggestions={suggestions}
-        onSuggestionPress={(suggestion) => onSuggestionPress?.('to', suggestion)}
-        disabled={disabled}
-        strings={strings}
-        trailing={
-          copies ? undefined : (
-            <Button
-              variant="link"
-              size="xs"
-              linkTone="secondary"
-              onPress={() => setRevealed(true)}
-              accessibilityLabel={text.showCopies}
-              testID={testID ? `${testID}-copies` : undefined}
-            >
-              {text.showCopies}
-            </Button>
-          )
-        }
-        testID={testID ? `${testID}-to` : undefined}
-      />
-      {copies ? (
+    <MailGutterContext.Provider value={gutter}>
+      <View style={style} testID={testID}>
         <MailRecipientField
-          label={text.cc}
-          recipients={cc ?? []}
-          onRecipientsChange={onCcChange ?? (() => undefined)}
-          onSubmit={(value) => onQuerySubmit?.('cc', value)}
-          onSuggestionPress={(suggestion) => onSuggestionPress?.('cc', suggestion)}
+          label={text.to}
+          recipients={to}
+          onRecipientsChange={onToChange}
+          value={query}
+          onChangeText={onQueryChange}
+          onSubmit={(value) => onQuerySubmit?.('to', value)}
+          suggestions={suggestions}
+          onSuggestionPress={(suggestion) => onSuggestionPress?.('to', suggestion)}
           disabled={disabled}
           strings={strings}
-          testID={testID ? `${testID}-cc` : undefined}
+          trailing={
+            copies ? undefined : (
+              <Button
+                variant="link"
+                size="xs"
+                linkTone="secondary"
+                onPress={() => setRevealed(true)}
+                accessibilityLabel={text.showCopies}
+                testID={testID ? `${testID}-copies` : undefined}
+              >
+                {text.showCopies}
+              </Button>
+            )
+          }
+          testID={testID ? `${testID}-to` : undefined}
         />
-      ) : null}
-      {copies ? (
-        <MailRecipientField
-          label={text.bcc}
-          recipients={bcc ?? []}
-          onRecipientsChange={onBccChange ?? (() => undefined)}
-          onSubmit={(value) => onQuerySubmit?.('bcc', value)}
-          onSuggestionPress={(suggestion) => onSuggestionPress?.('bcc', suggestion)}
-          disabled={disabled}
-          strings={strings}
-          testID={testID ? `${testID}-bcc` : undefined}
-        />
-      ) : null}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          minHeight: geo.rowMinHeight,
-          paddingTop: 6,
-          paddingBottom: 6,
-          paddingLeft: geo.paddingHorizontal,
-          paddingRight: geo.paddingHorizontal,
-          gap: 8,
-          borderBottomWidth: 1,
-          borderBottomColor: hairlineOn(theme, surface),
-        }}
-      >
-        <Text
-          variant="body-regular"
-          numberOfLines={1}
+        {copies ? (
+          <MailRecipientField
+            label={text.cc}
+            recipients={cc ?? []}
+            onRecipientsChange={onCcChange ?? (() => undefined)}
+            onSubmit={(value) => onQuerySubmit?.('cc', value)}
+            onSuggestionPress={(suggestion) => onSuggestionPress?.('cc', suggestion)}
+            disabled={disabled}
+            strings={strings}
+            testID={testID ? `${testID}-cc` : undefined}
+          />
+        ) : null}
+        {copies ? (
+          <MailRecipientField
+            label={text.bcc}
+            recipients={bcc ?? []}
+            onRecipientsChange={onBccChange ?? (() => undefined)}
+            onSubmit={(value) => onQuerySubmit?.('bcc', value)}
+            onSuggestionPress={(suggestion) => onSuggestionPress?.('bcc', suggestion)}
+            disabled={disabled}
+            strings={strings}
+            testID={testID ? `${testID}-bcc` : undefined}
+          />
+        ) : null}
+        <View
           style={{
-            width: geo.labelWidth,
-            color: paint.textTertiary,
-            flexShrink: 0,
+            flexDirection: 'row',
+            alignItems: 'center',
+            minHeight: geo.rowMinHeight,
+            paddingTop: 6,
+            paddingBottom: 6,
+            paddingLeft: geo.paddingHorizontal,
+            paddingRight: geo.paddingHorizontal,
+            gap: 8,
+            borderBottomWidth: 1,
+            borderBottomColor: hairlineOn(theme, surface),
           }}
         >
-          {text.subject}
-        </Text>
-        <TextInput
-          {...webDataSet({ bloomMailComposeInput: '' })}
-          accessibilityLabel={text.subject}
-          editable={disabled !== true}
-          value={subject}
-          onChangeText={onSubjectChange}
-          placeholderTextColor={paint.textTertiary}
-          style={subjectStyle}
-          testID={testID ? `${testID}-subject` : undefined}
-        />
+          <MailGutterLabel id="subject" color={paint.textTertiary}>
+            {text.subject}
+          </MailGutterLabel>
+          <TextInput
+            {...webDataSet({ bloomMailComposeInput: '' })}
+            accessibilityLabel={text.subject}
+            editable={disabled !== true}
+            value={subject}
+            onChangeText={onSubjectChange}
+            placeholderTextColor={paint.textTertiary}
+            style={subjectStyle}
+            testID={testID ? `${testID}-subject` : undefined}
+          />
+        </View>
       </View>
-    </View>
+    </MailGutterContext.Provider>
   );
 }

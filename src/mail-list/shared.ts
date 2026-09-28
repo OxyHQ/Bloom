@@ -1,6 +1,8 @@
 import { Platform } from 'react-native';
 
 import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
+import { formatGregorian } from '../locale/format-date';
+import { pickMessages } from '../locale/messages';
 import {
   hairlineOn,
   surfaceFillOn,
@@ -21,6 +23,7 @@ import type {
   MailSummary,
   MailSwipeActions,
 } from './types';
+import { MAIL_LIST_MESSAGES } from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -232,26 +235,15 @@ export function mailActionColor(action: MailAction, paint: MailPaint): string {
 //  Strings
 // ---------------------------------------------------------------------------
 
-export const DEFAULT_MAIL_STRINGS: MailStrings = {
-  draft: 'Draft:',
-  unread: 'Unread',
-  starred: 'Starred',
-  star: 'Star',
-  attachment: 'Has attachment',
-  select: 'Select',
-  threadCount: (count) => `${count} messages`,
-  moreLabels: (count) => `${count} more labels`,
-  selectedCount: (count) => (count === 1 ? '1 selected' : `${count} selected`),
-  selectAll: 'Select all',
-  clearSelection: 'Clear selection',
-  emptyTitle: 'Nothing here',
-  emptyDescription: 'New mail lands in this folder.',
-  today: 'Today',
-  yesterday: 'Yesterday',
-};
+/**
+ * The English strings. Components speak the LOCALE's (`MAIL_LIST_MESSAGES`,
+ * through `BloomProvider locale`); this stays exported as the English set.
+ */
+export const DEFAULT_MAIL_STRINGS: MailStrings = (({ list: _list, ...strings }) => strings)(MAIL_LIST_MESSAGES.en);
 
-export function mailStrings(overrides?: Partial<MailStrings>): MailStrings {
-  return overrides === undefined ? DEFAULT_MAIL_STRINGS : { ...DEFAULT_MAIL_STRINGS, ...overrides };
+/** `base` (the locale's strings, English by default) with the caller's overrides laid over it. */
+export function mailStrings(overrides?: Partial<MailStrings>, base: MailStrings = DEFAULT_MAIL_STRINGS): MailStrings {
+  return overrides === undefined ? base : { ...base, ...overrides };
 }
 
 // ---------------------------------------------------------------------------
@@ -375,6 +367,17 @@ function dayIndex(at: number): number {
 }
 
 /**
+ * The LOCAL midnight of a `dayIndex`. The index counts calendar days as UTC
+ * dates, so `new Date(day * 86_400_000)` is UTC midnight — the previous
+ * evening anywhere west of UTC, which a formatter in local time printed as
+ * the day before.
+ */
+function localMidnight(day: number): Date {
+  const utc = new Date(day * 86_400_000);
+  return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
+}
+
+/**
  * A flat list bucketed into day sections, newest bucket first, keeping each
  * bucket's input order.
  *
@@ -394,12 +397,14 @@ export function groupMailByDay(
   const {
     now = Date.now(),
     strings,
+    locale,
     formatDate = (date: Date) =>
-      date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      formatGregorian(date, locale, { month: 'short', day: 'numeric' }) ?? date.toISOString().slice(0, 10),
   } = options;
   const today = dayIndex(now);
-  const todayLabel = strings?.today ?? DEFAULT_MAIL_STRINGS.today;
-  const yesterdayLabel = strings?.yesterday ?? DEFAULT_MAIL_STRINGS.yesterday;
+  const messages = pickMessages(MAIL_LIST_MESSAGES, locale);
+  const todayLabel = strings?.today ?? messages.today;
+  const yesterdayLabel = strings?.yesterday ?? messages.yesterday;
 
   const buckets = new Map<number, MailSummary[]>();
   const undated: MailSummary[] = [];
@@ -422,7 +427,7 @@ export function groupMailByDay(
           ? todayLabel
           : day === today - 1
             ? yesterdayLabel
-            : formatDate(new Date(day * 86_400_000));
+            : formatDate(localMidnight(day));
       return { key: `day-${day}`, title, mails: buckets.get(day) as MailSummary[] };
     });
   if (undated.length > 0) sections.push({ key: 'undated', mails: undated });

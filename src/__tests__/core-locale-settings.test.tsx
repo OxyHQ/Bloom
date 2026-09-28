@@ -12,7 +12,7 @@ import { render } from '@testing-library/react-native';
 import { ErrorBoundary } from '../error-boundary';
 import { RiSettings6Line } from '../icons/remix';
 import { LocaleProvider } from '../locale';
-import { SettingsDateField,SettingsModal,SettingsPlanCard,SettingsServerList,SettingsStoragePage,SettingsToolsPage } from '../settings-modal';
+import { SettingsDateField, SettingsModal, SettingsPlanCard, SettingsServerList, SettingsStoragePage, SettingsToolsPage } from '../settings-modal';
 import { SETTINGS_MODAL_MESSAGES } from '../settings-modal/messages';
 import { ThemeToggle } from '../theme-toggle';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

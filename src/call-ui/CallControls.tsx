@@ -13,9 +13,9 @@ import { RiVolumeDownLine } from '../icons/remix/RiVolumeDownLine';
 import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { CALL_UI_MESSAGES } from './messages';
 import {
   CALL_CONTROL_GEOMETRY,
-  CALL_CONTROL_LABELS,
   CALL_CONTROL_ORDER,
   resolveCallPaint,
   type CallPaint,
@@ -23,6 +23,7 @@ import {
 import { CallEndGlyph } from './glyphs';
 import type { CallControlButtonProps, CallControlKey, CallControlsProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { useMessages } from '../locale/messages';
 
 /**
  * `CallControlButton`: one round control on a call stage.
@@ -173,7 +174,8 @@ function CallControlsComponent({
   style,
   testID,
 }: CallControlsProps) {
-  const l = useMemo(() => ({ ...CALL_CONTROL_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(CALL_UI_MESSAGES);
+  const l = useMemo(() => ({ ...messages.controls, ...labels }), [messages, labels]);
   const geometry = CALL_CONTROL_GEOMETRY[size];
 
   const byKey: Partial<Record<CallControlKey, CallControlButtonProps>> = {
