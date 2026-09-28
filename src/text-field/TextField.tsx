@@ -26,6 +26,11 @@ import {
   type TextStyleProp,
 } from '../styles';
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
+import { RiEyeLine } from '../icons/remix/RiEyeLine';
+import { RiEyeOffLine } from '../icons/remix/RiEyeOffLine';
+import { GlyphButton } from '../button/GlyphButton';
+import { useMessages } from '../locale/messages';
+import { TEXT_FIELD_MESSAGES } from './messages';
 import { Text } from '../typography';
 import {
   SANS_FONT_FAMILY,
@@ -54,11 +59,10 @@ import type {
   TextFieldInputProps,
   TextFieldLabelProps,
   TextFieldProps,
+  TextFieldRevealLabels,
 } from './types';
 import { useInheritedControl } from '../control-surface';
 import { useFieldMembership } from '../field/membership';
-import { useMessages } from '../locale/messages';
-import { TEXT_FIELD_MESSAGES } from './messages';
 
 interface TextFieldContextValue {
   inputRef: React.RefObject<TextInput | null>;
@@ -354,10 +358,19 @@ export function TextFieldInput({
   inputRef,
   style,
   floatingLabel = false,
+  secureTextEntry,
+  revealable = false,
+  revealLabels,
+  locale,
   ...rest
 }: TextFieldInputProps) {
   const theme = useTheme();
   const invalidProp = invalidNew ?? isInvalid;
+  // Hidden until asked. Only a secure field can be revealed; for any other the
+  // prop is inert, so `secureTextEntry` passes through untouched.
+  const [revealed, setRevealed] = useState(false);
+  const canReveal = revealable && secureTextEntry === true;
+  const secure = secureTextEntry === true && !(canReveal && revealed);
   const onValueChange = onValueChangeProp ?? onChangeText;
   // Read directly rather than through `useTextFieldContext`: a missing root is
   // not an error here, it is the branch below.
@@ -403,6 +416,10 @@ export function TextFieldInput({
           inputRef={inputRef}
           onFocus={onFocus}
           onBlur={onBlur}
+          secureTextEntry={secureTextEntry}
+          revealable={revealable}
+          revealLabels={revealLabels}
+          locale={locale}
           {...rest}
         />
       </TextField>
@@ -448,6 +465,14 @@ export function TextFieldInput({
   // at all and this prop is the only name the control has.
   const accessibleName = field?.labelText ?? label;
   const webDisabled = IS_WEB && fieldDisabled ? ({ disabled: true } as Record<string, unknown>) : undefined;
+  const reveal = canReveal ? (
+    <RevealButton
+      revealed={revealed}
+      onToggle={() => setRevealed((current) => !current)}
+      labels={revealLabels}
+      locale={locale}
+    />
+  ) : null;
 
   if (floatingLabel) {
     // The ids and the described-by still travel, so the error is announced —
@@ -456,20 +481,24 @@ export function TextFieldInput({
     // alternatives, not layers: use one or the other. `docs/field.mdx` says so
     // where a caller will read it.
     return (
-      <FloatingLabelInput
-        label={accessibleName}
-        value={value}
-        onValueChange={onValueChange}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        invalid={invalid}
-        refs={refs}
-        style={style}
-        {...rest}
-        {...fieldProps}
-        {...disabledProps}
-        {...webDisabled}
-      />
+      <>
+        <FloatingLabelInput
+          label={accessibleName}
+          value={value}
+          onValueChange={onValueChange}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          invalid={invalid}
+          refs={refs}
+          style={style}
+          {...rest}
+          {...fieldProps}
+          {...disabledProps}
+          {...webDisabled}
+          secureTextEntry={secure}
+        />
+        {reveal}
+      </>
     );
   }
 
@@ -541,11 +570,84 @@ export function TextFieldInput({
         placeholder={placeholder === null ? undefined : placeholder || label}
         placeholderTextColor={resolvePlaceholderColor(ctx.palette, state)}
         keyboardAppearance={theme.mode === 'light' ? 'light' : 'dark'}
+        secureTextEntry={secure}
         style={flattened}
       />
 
+      {reveal}
+
       <Chrome invalid={invalid} />
     </>
+  );
+}
+
+/**
+ * The reveal button's box sits 4px inside the shell's height (28 in the 36px
+ * `md` shell, 24 in the 32px `sm`); its glyph is the 20px icon size, less
+ * where the box would crowd it (18 in 24).
+ */
+function revealGeometry(size: TextFieldSize): { box: number; glyph: number } {
+  const box = TEXT_FIELD_GEOMETRY[size].height - 8;
+  return { box, glyph: Math.min(TEXT_FIELD_ICON_SIZE, box - 6) };
+}
+
+/** `preventDefault` on mousedown: the press never takes focus from the input (web). */
+const KEEP_INPUT_FOCUS = IS_WEB
+  ? ({ onMouseDown: (event: { preventDefault: () => void }) => event.preventDefault() } as Record<string, unknown>)
+  : undefined;
+
+/**
+ * The eye / eye-off after a `revealable` secure input. It sits where a trailing
+ * `TextFieldIcon` would, its GLYPH on the icon's 8px gap and the shell's
+ * padding — the round hover wash reaches past both, into the padding.
+ *
+ * Focus stays in the input. On web the mousedown is cancelled, so the input
+ * never blurs (and a caller's `onBlur` validation never runs mid-typing); on
+ * native a tap on a sibling does not blur a `TextInput`, and if something did
+ * (a parent `ScrollView` handling the tap), the input is focused again. A
+ * keyboard user who tabbed to the button keeps focus on the button.
+ */
+function RevealButton({
+  revealed,
+  onToggle,
+  labels,
+  locale,
+}: {
+  revealed: boolean;
+  onToggle: () => void;
+  labels?: TextFieldRevealLabels;
+  locale?: string;
+}) {
+  const ctx = useTextFieldContext();
+  const { messages } = useMessages(TEXT_FIELD_MESSAGES, locale);
+  const inputWasFocused = useRef(false);
+  const { box: size, glyph } = revealGeometry(ctx.size);
+  const inset = (size - glyph) / 2;
+  const label = revealed ? (labels?.hide ?? messages.hidePassword) : (labels?.show ?? messages.showPassword);
+
+  return (
+    <View
+      style={[a.z_20, { marginLeft: TEXT_FIELD_TRAILING_GAP - inset, marginRight: -inset }]}
+      onTouchStart={() => {
+        inputWasFocused.current = ctx.inputRef.current?.isFocused() ?? false;
+      }}
+      {...KEEP_INPUT_FOCUS}>
+      <GlyphButton
+        size={size}
+        glyphSize={glyph}
+        icon={revealed ? RiEyeOffLine : RiEyeLine}
+        accessibilityLabel={label}
+        color={resolveIconColor(ctx.palette, { invalid: ctx.invalid, disabled: ctx.disabled })}
+        hoverColor={ctx.palette.text}
+        disabled={ctx.disabled}
+        onPress={() => {
+          onToggle();
+          const input = ctx.inputRef.current;
+          if (!IS_WEB && inputWasFocused.current && input && !input.isFocused()) input.focus();
+          inputWasFocused.current = false;
+        }}
+      />
+    </View>
   );
 }
 

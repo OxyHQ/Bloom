@@ -14,4 +14,5 @@ export type {
   TextFieldHintProps,
   TextFieldIconProps,
   TextFieldSize,
+  TextFieldRevealLabels,
 } from './types';

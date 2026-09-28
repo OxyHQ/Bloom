@@ -38,6 +38,7 @@ Each family keeps its `labels` prop. A key passed there wins over Bloom's string
 
 - **The common words**, everywhere they are a fixed string or a default: Close, Dismiss, Back, Loading, More options, Cancel, Done, Save, Delete, Edit, Remove, Retry, Search, Show more / less, Next, Previous, Menu… That covers `Dialog` (close, back, overflow menu, step progress), the sheet handle, `Toast`'s close, `Backdrop`, `FloatingPanel`, `AlertDialog`'s cancel, `DropdownMenu`, `Pagination`, `PageHeader`, `Wizard`, `Stepper`, `DataTable`, the card skeletons ("Loading") and about thirty more families' `*Label` defaults. A caller's own `*Label` prop still wins.
 - **date-picker** in full (`DatePicker`, `DateRangePicker`, `Calendar`, `RangeCalendar`, `MeetingScheduler`).
+- **text-field** in full: the password reveal's "Show password" / "Hide password" and the name of `TextFieldLabel`'s required asterisk.
 
 Strings particular to other families (and the common words inside their `labels` objects) still default to English; they move onto catalogs family by family.
 
