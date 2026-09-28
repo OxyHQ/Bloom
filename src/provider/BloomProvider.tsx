@@ -34,7 +34,9 @@ export function BloomProvider({
     // `value` is passed unconditionally (null when unset) so toggling a resolver
     // never changes the tree shape and remounts everything below it.
     <ImageResolverProvider value={imageResolver ?? null}>
-      <LocaleProvider locale={locale}>
+      {/* Holds the first paint on the same visual as font loading until a
+          non-English locale's strings have loaded (English never waits). */}
+      <LocaleProvider locale={locale} fallback={themeProps.onFontsLoading ?? null}>
         <BloomThemeProvider {...themeProps}>
           <ScrollRestorationProvider adapter={scrollAdapter}>
             <BloomHapticsProvider enabled={haptics}>

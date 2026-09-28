@@ -84,9 +84,19 @@ function platformSiblings(file: string): string[] {
   return out;
 }
 
-/** STATIC specifiers only: `import … from 'x'` and `export … from 'x'`. */
+/**
+ * STATIC specifiers only: `import … from 'x'` and `export … from 'x'`. A
+ * whole-statement `import type` / `export type` links nothing — every bundler
+ * erases it — so it does not count; an inline `import { type X, y }` still
+ * does, since `y` is a value. (`locale/translations/types.ts` names every
+ * catalog with `import type`, and counting that would put every family on
+ * every graph.)
+ */
 function staticSpecifiers(text: string): string[] {
-  const stripped = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const stripped = text
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+    .replace(/^\s*(?:import|export)\s+type\s[\s\S]*?from\s+['"][^'"]+['"];?/gm, '');
   const out: string[] = [];
   const re = /^\s*(?:import|export)\b[\s\S]*?from\s+['"]([^'"]+)['"]/gm;
   for (const match of stripped.matchAll(re)) {

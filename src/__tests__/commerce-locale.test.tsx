@@ -27,6 +27,7 @@ import { VEHICLE_PICKER_MESSAGES } from '../vehicle-picker/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { VendorCard } from '../vendor-card';
 import { VENDOR_CARD_MESSAGES } from '../vendor-card/messages';
+import { messagesIn } from './support/messages-in';
 
 function renderIn(locale: string, ui: React.ReactElement) {
   return render(
@@ -55,9 +56,9 @@ describe('vendor-card', () => {
   });
 
   it('pluralises the review count per language', () => {
-    expect(VENDOR_CARD_MESSAGES.ru.rated('4.8', 1)).toBe('Оценка 4.8 из 5, 1 отзыв');
-    expect(VENDOR_CARD_MESSAGES.ru.rated('4.8', 3)).toBe('Оценка 4.8 из 5, 3 отзыва');
-    expect(VENDOR_CARD_MESSAGES.ru.rated('4.8', 25)).toBe('Оценка 4.8 из 5, 25 отзывов');
+    expect(messagesIn(VENDOR_CARD_MESSAGES, 'ru').rated('4.8', 1)).toBe('Оценка 4.8 из 5, 1 отзыв');
+    expect(messagesIn(VENDOR_CARD_MESSAGES, 'ru').rated('4.8', 3)).toBe('Оценка 4.8 из 5, 3 отзыва');
+    expect(messagesIn(VENDOR_CARD_MESSAGES, 'ru').rated('4.8', 25)).toBe('Оценка 4.8 из 5, 25 отзывов');
     expect(VENDOR_CARD_MESSAGES.en.rated('4.8', 1)).toBe('Rated 4.8 out of 5, 1 review');
   });
 
@@ -73,14 +74,14 @@ describe('vendor-card', () => {
 
 describe('payment-status, checkout-summary, offering-badge', () => {
   it('draw their words in the locale', () => {
-    expect(renderIn('es', <PaymentStatusBar state="failed" />).getByText(PAYMENT_STATUS_MESSAGES.es.states.failed)).toBeTruthy();
-    expect(renderIn('de', <PaymentStatusBar state="paid" />).getByText(PAYMENT_STATUS_MESSAGES.de.states.paid)).toBeTruthy();
+    expect(renderIn('es', <PaymentStatusBar state="failed" />).getByText(messagesIn(PAYMENT_STATUS_MESSAGES, 'es').states.failed)).toBeTruthy();
+    expect(renderIn('de', <PaymentStatusBar state="paid" />).getByText(messagesIn(PAYMENT_STATUS_MESSAGES, 'de').states.paid)).toBeTruthy();
     expect(
       renderIn('es', <CheckoutConfirm amount="49,62 €" onConfirm={() => {}} />).getAllByText(
-        new RegExp(CHECKOUT_SUMMARY_MESSAGES.es.placeOrder),
+        new RegExp(messagesIn(CHECKOUT_SUMMARY_MESSAGES, 'es').placeOrder),
       ).length,
     ).toBeGreaterThan(0);
-    expect(renderIn('fr', <OfferingBadge offering="sale" />).getByText(OFFERING_BADGE_MESSAGES.fr.offerings.sale)).toBeTruthy();
+    expect(renderIn('fr', <OfferingBadge offering="sale" />).getByText(messagesIn(OFFERING_BADGE_MESSAGES, 'fr').offerings.sale)).toBeTruthy();
   });
 });
 
@@ -90,35 +91,35 @@ describe('listing-card offerings (review of #226)', () => {
       'es',
       <ListingCard title="Alvora" photos={['https://example.com/a.jpg']} offerings={['long_term_rent']} onPress={() => {}} />,
     );
-    expect(getByLabelText(new RegExp(`Alvora, ${OFFERING_BADGE_MESSAGES.es.offerings.long_term_rent}`))).toBeTruthy();
+    expect(getByLabelText(new RegExp(`Alvora, ${messagesIn(OFFERING_BADGE_MESSAGES, 'es').offerings.long_term_rent}`))).toBeTruthy();
   });
 });
 
 describe('job-board and carrier-quote', () => {
   it('draw their empty states and names in the locale', () => {
     const board = renderIn('es', <JobBoard jobs={[]} />);
-    expect(board.getByText(JOB_BOARD_MESSAGES.es.emptyTitle)).toBeTruthy();
-    expect(board.getByText(JOB_BOARD_MESSAGES.es.emptyDescription)).toBeTruthy();
+    expect(board.getByText(messagesIn(JOB_BOARD_MESSAGES, 'es').emptyTitle)).toBeTruthy();
+    expect(board.getByText(messagesIn(JOB_BOARD_MESSAGES, 'es').emptyDescription)).toBeTruthy();
     const quotes = renderIn('ru', <CarrierQuoteList quotes={[]} />);
-    expect(quotes.getByText(CARRIER_QUOTE_MESSAGES.ru.emptyTitle)).toBeTruthy();
+    expect(quotes.getByText(messagesIn(CARRIER_QUOTE_MESSAGES, 'ru').emptyTitle)).toBeTruthy();
   });
 
   it('pluralise their counts per language, and join phrases without an English connector', () => {
-    expect(JOB_BOARD_MESSAGES.ru.labels.count(3)).toBe('3 заказа');
-    expect(JOB_BOARD_MESSAGES.ru.labels.count(5)).toBe('5 заказов');
-    expect(CARRIER_QUOTE_MESSAGES.ar.labels.count(2)).toBe('عرضان');
-    expect(JOB_BOARD_MESSAGES.es.route('Recogida', 'Entrega')).toBe('Recogida y Entrega');
-    expect(CARRIER_QUOTE_MESSAGES.ja.priceDetailsFor('Rápido')).toBe('Rápidoの料金の内訳');
+    expect(messagesIn(JOB_BOARD_MESSAGES, 'ru').labels.count(3)).toBe('3 заказа');
+    expect(messagesIn(JOB_BOARD_MESSAGES, 'ru').labels.count(5)).toBe('5 заказов');
+    expect(messagesIn(CARRIER_QUOTE_MESSAGES, 'ar').labels.count(2)).toBe('عرضان');
+    expect(messagesIn(JOB_BOARD_MESSAGES, 'es').route('Recogida', 'Entrega')).toBe('Recogida y Entrega');
+    expect(messagesIn(CARRIER_QUOTE_MESSAGES, 'ja').priceDetailsFor('Rápido')).toBe('Rápidoの料金の内訳');
   });
 
   it("draws the board's default filter bands and vehicle names in the locale (review of #235)", () => {
     const board = renderIn('es', <JobBoard jobs={[]} defaultFiltersOpen />);
-    expect(board.getAllByText(JOB_BOARD_MESSAGES.es.bands.anyDistance).length).toBeGreaterThan(0);
-    expect(board.getAllByText(JOB_BOARD_MESSAGES.es.bands.underKm(10)).length).toBeGreaterThan(0);
-    expect(board.getAllByText(JOB_BOARD_MESSAGES.es.bands.nextHours(4)).length).toBeGreaterThan(0);
-    expect(board.getAllByText(VEHICLE_PICKER_MESSAGES.es.vehicles.van.label).length).toBeGreaterThan(0);
+    expect(board.getAllByText(messagesIn(JOB_BOARD_MESSAGES, 'es').bands.anyDistance).length).toBeGreaterThan(0);
+    expect(board.getAllByText(messagesIn(JOB_BOARD_MESSAGES, 'es').bands.underKm(10)).length).toBeGreaterThan(0);
+    expect(board.getAllByText(messagesIn(JOB_BOARD_MESSAGES, 'es').bands.nextHours(4)).length).toBeGreaterThan(0);
+    expect(board.getAllByText(messagesIn(VEHICLE_PICKER_MESSAGES, 'es').vehicles.van.label).length).toBeGreaterThan(0);
     expect(board.queryByText('Any distance')).toBeNull();
-    expect(JOB_BOARD_MESSAGES.ru.bands.nextHours(4)).toBe('В ближайшие 4 часа');
+    expect(messagesIn(JOB_BOARD_MESSAGES, 'ru').bands.nextHours(4)).toBe('В ближайшие 4 часа');
   });
 
   it('keep a caller empty title over the catalog', () => {
@@ -141,7 +142,7 @@ describe('chart-cards', () => {
 
   it('titles and announces a chart in the locale', () => {
     const { screen, name } = surfaceName('es');
-    expect(screen.getByText(CHART_CARDS_MESSAGES.es.titles.revenue)).toBeTruthy();
+    expect(screen.getByText(messagesIn(CHART_CARDS_MESSAGES, 'es').titles.revenue)).toBeTruthy();
     expect(name).toBe('Gráfico de ingresos: este año frente al año pasado');
   });
 
@@ -150,10 +151,10 @@ describe('chart-cards', () => {
   });
 
   it('pluralises contributions and dates the grid the locale\'s way', () => {
-    expect(contributionLabel({ count: 1, date: '26 abr' }, CHART_CARDS_MESSAGES.es)).toBe('1 contribución el 26 abr');
-    expect(contributionLabel({ count: 0 }, CHART_CARDS_MESSAGES.es)).toBe('Sin contribuciones');
-    expect(CHART_CARDS_MESSAGES.ru.contributions(22, undefined)).toBe('22 вклада');
-    expect(CHART_CARDS_MESSAGES.tr.ringItem('Hareket', '300', 60)).toBe('Hareket 300, hedefin %60 kadarı');
+    expect(contributionLabel({ count: 1, date: '26 abr' }, messagesIn(CHART_CARDS_MESSAGES, 'es'))).toBe('1 contribución el 26 abr');
+    expect(contributionLabel({ count: 0 }, messagesIn(CHART_CARDS_MESSAGES, 'es'))).toBe('Sin contribuciones');
+    expect(messagesIn(CHART_CARDS_MESSAGES, 'ru').contributions(22, undefined)).toBe('22 вклада');
+    expect(messagesIn(CHART_CARDS_MESSAGES, 'tr').ringItem('Hareket', '300', 60)).toBe('Hareket 300, hedefin %60 kadarı');
   });
 
   it("draws the locale's month names when the caller passes none", () => {
@@ -163,7 +164,7 @@ describe('chart-cards', () => {
 
   it("names the contribution periods and a selected month in the locale (review of #235)", () => {
     const card = renderIn('es', <ContributionsCard cells={[]} />);
-    expect(card.getAllByText(CHART_CARDS_MESSAGES.es.monthly).length).toBeGreaterThan(0);
+    expect(card.getAllByText(messagesIn(CHART_CARDS_MESSAGES, 'es').monthly).length).toBeGreaterThan(0);
     expect(card.queryByText('Monthly')).toBeNull();
     const selected = renderIn('es', <RevenueChartCard data={REVENUE} activeIndex={0} />);
     expect(selected.getAllByText('enero').length).toBeGreaterThan(0);
