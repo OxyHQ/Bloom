@@ -40,6 +40,8 @@ import {
   resolveCheckboxPaint,
   type CheckboxPaint,
 } from '../checkbox/shared';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -48,6 +50,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
+import { QUESTIONNAIRE_MESSAGES } from './messages';
 import type {
   QuestionnaireAnswer,
   QuestionnaireAnswers,
@@ -173,16 +176,6 @@ const BODY_REGULAR: TextStyle = TYPE_SCALE['body-regular'];
 const BODY_2_MEDIUM: TextStyle = TYPE_SCALE['body-2-medium'];
 
 const EMPTY_ANSWER: QuestionnaireAnswer = { values: [] };
-
-const DEFAULT_LABELS: Required<QuestionnaireLabels> = {
-  previous: 'Previous',
-  next: 'Next',
-  complete: 'Done',
-  other: 'Other',
-  otherPlaceholder: 'Enter your custom answer here',
-  dismiss: 'Dismiss',
-  steps: 'Steps',
-};
 
 // ---------------------------------------------------------------------------
 //  Web CSS: focus rings, colour transitions, the check draw-in. Every hook is a
@@ -637,6 +630,7 @@ function StepPills({
   testID?: string;
 }) {
   const reducedMotion = useReducedMotion();
+  const { messages } = useMessages(QUESTIONNAIRE_MESSAGES);
   const [boxes, setBoxes] = useState<Record<number, PillBox>>({});
   const x = useSharedValue(0);
   const y = useSharedValue(0);
@@ -696,7 +690,7 @@ function StepPills({
       {questions.map((entry, index) => (
         <StepPill
           key={entry.id}
-          label={entry.stepLabel ?? `Step ${index + 1}`}
+          label={entry.stepLabel ?? messages.step(index + 1)}
           selected={index === step}
           onPress={() => onSelect(index)}
           onLayout={(event) => {
@@ -811,6 +805,8 @@ function QuestionnaireComponent({
   style,
   testID,
 }: QuestionnaireProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(QUESTIONNAIRE_MESSAGES);
   const theme = useTheme();
   const surfaceLayer = useSurfaceLayer();
   const customSurface = StyleSheet.flatten(style);
@@ -818,7 +814,16 @@ function QuestionnaireComponent({
   const palette = useMemo(() => resolveQuestionnairePalette(theme, surfaceFill), [theme, surfaceFill]);
   const reducedMotion = useReducedMotion();
   const headingId = `bloom-questionnaire-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  const text = { ...DEFAULT_LABELS, ...labels };
+  const text: Required<QuestionnaireLabels> = {
+    previous: common.previous,
+    next: common.next,
+    complete: common.done,
+    other: messages.other,
+    otherPlaceholder: messages.otherPlaceholder,
+    dismiss: common.dismiss,
+    steps: messages.steps,
+    ...labels,
+  };
   const total = questions.length;
   const lastIndex = Math.max(total - 1, 0);
 

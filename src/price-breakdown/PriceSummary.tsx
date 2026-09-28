@@ -6,6 +6,7 @@ import { Divider } from '../divider';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine } from '../icons/remix/RiArrowUpSLine';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -13,8 +14,8 @@ import {
   PRICE_LINE_GAP,
   PRICE_PENDING_PLACEHOLDER,
   PRICE_RULE_SPACING,
-  PRICE_STATE_LABELS,
 } from './constants';
+import { PRICE_BREAKDOWN_MESSAGES } from './messages';
 import { PriceSummaryLine } from './PriceSummaryLine';
 import { resolvePricePaint } from './shared';
 import type { PriceSummaryProps } from './types';
@@ -45,14 +46,18 @@ function PriceSummaryComponent({
   expanded,
   defaultExpanded = false,
   onExpandedChange,
-  expandLabel = 'Show price details',
-  collapseLabel = 'Hide price details',
+  expandLabel: expandLabelProp,
+  collapseLabel: collapseLabelProp,
   stateLabels,
   pendingPlaceholder = PRICE_PENDING_PLACEHOLDER,
-  accessibilityLabel = 'Price breakdown',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PriceSummaryProps) {
+  const { messages } = useMessages(PRICE_BREAKDOWN_MESSAGES);
+  const expandLabel = expandLabelProp ?? messages.showDetails;
+  const collapseLabel = collapseLabelProp ?? messages.hideDetails;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.breakdown;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePricePaint(theme, surface), [theme, surface]);
@@ -63,7 +68,7 @@ function PriceSummaryComponent({
   });
   const toggle = useCallback(() => setOpen(!open), [open, setOpen]);
 
-  const words = { ...PRICE_STATE_LABELS, ...stateLabels };
+  const words = { ...messages.states, ...stateLabels };
   const totalCaveat = total && total.state && total.state !== 'final' ? words[total.state] : undefined;
   const showLines = !collapsible || open;
 

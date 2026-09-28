@@ -3,10 +3,8 @@ import { View } from 'react-native';
 
 import { ActionCardNote } from '../booking/ActionCard';
 import { Button } from '../button';
-import {
-  CHECKOUT_CONFIRM_BUSY_LABEL,
-  CHECKOUT_CONFIRM_LABEL,
-} from './constants';
+import { useMessages } from '../locale/messages';
+import { CHECKOUT_SUMMARY_MESSAGES } from './messages';
 import { checkoutConfirmLabel } from './shared';
 import type { CheckoutConfirmProps } from './types';
 
@@ -45,18 +43,21 @@ import type { CheckoutConfirmProps } from './types';
  * inert for the whole flight.
  */
 function CheckoutConfirmComponent({
-  label = CHECKOUT_CONFIRM_LABEL,
+  label: labelProp,
   amount,
   secondaryAmount,
   terms,
   onConfirm,
   disabled = false,
   busy = false,
-  busyLabel = CHECKOUT_CONFIRM_BUSY_LABEL,
+  busyLabel: busyLabelProp,
   footer,
   style,
   testID,
 }: CheckoutConfirmProps) {
+  const { messages } = useMessages(CHECKOUT_SUMMARY_MESSAGES);
+  const label = labelProp ?? messages.placeOrder;
+  const busyLabel = busyLabelProp ?? messages.placingOrder;
   const latch = useRef(false);
   const [latched, setLatched] = useState(false);
 

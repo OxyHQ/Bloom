@@ -24,6 +24,9 @@ import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useActiveIndex } from './primitives/use-active-index';
 import { useCountUp } from './use-count-up';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
+import { formatGregorian } from '../locale/format-date';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
@@ -131,7 +134,7 @@ export function agentsColumnAt(x: number, width: number, count: number, gap = AG
 
 export function AgentsChartCard({
   data,
-  title = 'Agents',
+  title: titleProp,
   headline,
   format = defaultFormat,
   getPointTitle,
@@ -140,8 +143,8 @@ export function AgentsChartCard({
   onNextRange,
   prevRangeLabel,
   nextRangeLabel,
-  startLabel = 'Jun 14',
-  endLabel = 'Today',
+  startLabel: startLabelProp,
+  endLabel: endLabelProp,
   trackHeight = AGENTS_TRACK_HEIGHT,
   maxBarHeight = AGENTS_MAX_BAR,
   max,
@@ -153,6 +156,12 @@ export function AgentsChartCard({
   style,
   testID,
 }: AgentsChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.agents;
+  const endLabel = endLabelProp ?? chartText.today;
+  // The sample range's start (June 14), written the locale's way.
+  const startLabel =
+    startLabelProp ?? formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ?? '6/14';
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();
@@ -230,7 +239,7 @@ export function AgentsChartCard({
       : null;
 
   const summary =
-    accessibilityLabel ?? `${title} bar chart: ${data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', ')}`;
+    accessibilityLabel ?? chartText.barChart(title, data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', '));
 
   return (
     <Card

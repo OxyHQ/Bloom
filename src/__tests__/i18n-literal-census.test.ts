@@ -37,6 +37,12 @@ import ts from 'typescript';
 const SRC = join(__dirname, '..');
 
 const TEXT_ATTRIBUTES = new Set([
+  'defaultTitle',
+  'emptyTitle',
+  'emptyDescription',
+  'description',
+  'subtitle',
+  'caption',
   'accessibilityLabel',
   'accessibilityHint',
   'aria-label',
@@ -49,7 +55,7 @@ const TEXT_ATTRIBUTES = new Set([
 ]);
 
 /** Parameter names whose default is copy. */
-const TEXT_PARAMETER = /(label|Label|placeholder|Placeholder|title|Title|hint|Hint|text|Text|message|Message)$/;
+const TEXT_PARAMETER = /(label|Label|placeholder|Placeholder|title|Title|hint|Hint|text|Text|message|Message|description|Description|caption|Caption|subtitle|Subtitle|suffix|Suffix)$/;
 
 /** Variables whose object literal holds copy. */
 const COPY_OBJECT = /(labels?|LABELS?|copy|COPY|strings|STRINGS)$/;
@@ -169,37 +175,10 @@ function scan(): { findings: Finding[]; exemptions: number } {
  * Remove a family when it migrates; never add one.
  */
 const PENDING: Record<string, number> = {
-  'activity-feed': 2,
-  'card-form': 7,
-  'carrier-quote': 20,
-  'cart-panel': 10,
-  'chart-cards': 36,
-  'checkout-summary': 3,
-  'delivery-slot': 2,
-  'earnings': 12,
-  'file-upload': 6,
-  'important-alerts-card': 1,
-  'job-board': 29,
-  'lead-score': 2,
-  'menu-item': 15,
-  'offering-badge': 4,
-  'order-status': 5,
-  'patient-info-card': 1,
-  'payment-method': 5,
-  'payment-status': 6,
-  'pipeline': 4,
-  'price-breakdown': 6,
-  'proof-of-delivery': 19,
-  'questionnaire': 8,
-  'recent-hires-card': 1,
-  'shipment-request': 19,
-  'stat-cards': 2,
-  'vehicle-picker': 4,
-  'vendor-card': 7,
 };
 
 /** `// i18n-exempt:` lines, counted so a new one is a reviewed decision. */
-const EXEMPTIONS = 6;
+const EXEMPTIONS = 7;
 
 const { findings, exemptions } = scan();
 const byFamily = new Map<string, Finding[]>();

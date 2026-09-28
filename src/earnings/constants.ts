@@ -1,24 +1,22 @@
 import { RADIUS } from '../design-tokens/scales';
 import type { AccentTone } from '../theme/accent-colors';
+import { EARNINGS_MESSAGES } from './messages';
 import type { EarningsLabels, EarningsPayoutState } from './types';
 
-/** Every default word the family draws. */
+/**
+ * Every default word the family draws, in English. The components speak
+ * `EARNINGS_MESSAGES` in the resolved locale.
+ */
 export const EARNINGS_LABELS: Required<Omit<EarningsLabels, 'payoutState'>> & {
   payoutState: Record<EarningsPayoutState, string>;
 } = {
-  earned: 'Earned',
-  period: 'Earnings period',
-  breakdown: 'What it came from',
-  payout: 'Next payout',
-  payoutState: {
-    scheduled: 'Scheduled',
-    processing: 'On its way',
-    paid: 'Paid',
-    held: 'On hold',
-    failed: 'Failed',
-  },
-  chart: (label: string) => `${label} earnings, by period`,
-  empty: 'Nothing earned yet',
+  earned: EARNINGS_MESSAGES.en.earned,
+  period: EARNINGS_MESSAGES.en.period,
+  breakdown: EARNINGS_MESSAGES.en.breakdown,
+  payout: EARNINGS_MESSAGES.en.payout,
+  payoutState: EARNINGS_MESSAGES.en.payoutState,
+  chart: EARNINGS_MESSAGES.en.chart,
+  empty: EARNINGS_MESSAGES.en.empty,
 };
 
 /**

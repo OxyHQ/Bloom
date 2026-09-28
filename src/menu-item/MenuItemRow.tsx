@@ -6,6 +6,7 @@ import { Button } from '../button';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { Item } from '../item';
 import { ListingPriceLines } from '../listing-card/parts';
+import { useMessages } from '../locale/messages';
 import { Stepper } from '../stepper';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { space } from '../styles/tokens';
@@ -13,6 +14,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MENU_ITEM_GEOMETRY } from './constants';
 import { MenuItemDiets, MenuItemSpice, MenuItemThumb } from './parts';
+import { MENU_ITEM_MESSAGES } from './messages';
 import { composeMenuItemName, resolveMenuItemPaint, spiceLevel } from './shared';
 import type { MenuItemRowProps } from './types';
 
@@ -66,7 +68,7 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
     onAdd,
     addLabel,
     unavailable = false,
-    unavailableLabel = 'Sold out',
+    unavailableLabel: unavailableLabelProp,
     onPress,
     density = 'comfortable',
     accessibilityLabel,
@@ -74,6 +76,8 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
     testID,
   } = props;
 
+  const { messages } = useMessages(MENU_ITEM_MESSAGES);
+  const unavailableLabel = unavailableLabelProp ?? messages.soldOut;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveMenuItemPaint(theme, surface), [theme, surface]);
@@ -98,7 +102,7 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
       size="small"
       iconOnly
       leadingIcon={RiAddLine}
-      accessibilityLabel={addLabel ?? `Add ${name}`}
+      accessibilityLabel={addLabel ?? messages.addItem(name)}
       onPress={onAdd}
       testID={testID ? `${testID}-add` : undefined}
     />
@@ -212,7 +216,7 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
       onPress={unavailable ? undefined : onPress}
       disabled={unavailable}
       density={density}
-      accessibilityLabel={accessibilityLabel ?? composeMenuItemName(props)}
+      accessibilityLabel={accessibilityLabel ?? composeMenuItemName(props, messages)}
       // `paddingRight`, never `paddingHorizontal`: `Item` writes the longhand
       // for the reason its own file records, and a shorthand here would outrank
       // it on web and not on native.

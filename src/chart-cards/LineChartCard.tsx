@@ -13,6 +13,8 @@ import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
@@ -131,7 +133,7 @@ export function closedAreaPath(points: readonly Point[], baseY: number, shape: '
 
 export function LineChartCard({
   shape = 'curved',
-  title = 'Revenue',
+  title: titleProp,
   data: dataProp,
   headline: headlineProp,
   delta: deltaProp,
@@ -150,6 +152,8 @@ export function LineChartCard({
   style,
   testID,
 }: LineChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.revenue;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
@@ -212,7 +216,7 @@ export function LineChartCard({
           outside="keep"
           onActiveIndexChange={setActiveIndex}
           palette={palette}
-          accessibilityLabel={accessibilityLabel ?? `${title} line chart`}
+          accessibilityLabel={accessibilityLabel ?? chartText.lineChart(title)}
           testID={testID ? `${testID}-plot` : undefined}>
           {({ size, box, x, y }) => {
             const points: Point[] = values.map((v, i) => ({

@@ -5,12 +5,14 @@ import { GlyphButton } from '../button';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { Item } from '../item';
 import { ListingPriceLines } from '../listing-card/parts';
+import { useMessages } from '../locale/messages';
 import { MenuItemThumb } from '../menu-item/parts';
 import { Stepper } from '../stepper';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CART_GEOMETRY } from './constants';
+import { CART_PANEL_MESSAGES } from './messages';
 import { composeCartLineName, optionsLine, resolveCartPaint } from './shared';
 import type { CartLineProps } from './types';
 
@@ -58,7 +60,7 @@ function CartLineComponent(props: CartLineProps) {
     photo,
     photoVariant,
     unavailable = false,
-    unavailableLabel = 'Sold out',
+    unavailableLabel: unavailableLabelProp,
     onQuantityChange,
     onRemove,
     removeLabel,
@@ -69,13 +71,15 @@ function CartLineComponent(props: CartLineProps) {
     testID,
   } = props;
 
+  const { messages } = useMessages(CART_PANEL_MESSAGES);
+  const unavailableLabel = unavailableLabelProp ?? messages.soldOut;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveCartPaint(theme, surface), [theme, surface]);
   const g = CART_GEOMETRY[density];
   const compact = density === 'compact';
   const chosen = optionsLine(options);
-  const removeName = removeLabel ?? `Remove ${name}`;
+  const removeName = removeLabel ?? messages.removeItem(name);
   // The stepper carries removal only when it is live; a disabled stepper
   // (sold out) cannot, and the line still needs its remove control.
   const stepperRemoves = removeInStepper && onRemove !== undefined && onQuantityChange !== undefined && !unavailable;
@@ -84,7 +88,7 @@ function CartLineComponent(props: CartLineProps) {
     <Item
       role="listitem"
       density={density}
-      accessibilityLabel={accessibilityLabel ?? composeCartLineName(props)}
+      accessibilityLabel={accessibilityLabel ?? composeCartLineName(props, messages)}
       leading={
         <MenuItemThumb
           photo={photo}

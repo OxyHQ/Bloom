@@ -6,6 +6,7 @@ import { Badge } from '../badge';
 import { GlyphButton } from '../button';
 import { Card } from '../card';
 import { RiArrowLeftRightLine } from '../icons/remix/RiArrowLeftRightLine';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
@@ -21,6 +22,7 @@ import {
   joinDealName,
   resolvePipelinePaint,
 } from './shared';
+import { PIPELINE_MESSAGES } from './messages';
 import type { DealCardProps } from './types';
 
 /**
@@ -61,6 +63,7 @@ function DealCardComponent({
   style,
   testID,
 }: DealCardProps) {
+  const { messages } = useMessages(PIPELINE_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolvePipelinePaint(theme, theme.colors.card), [theme]);
 
@@ -69,7 +72,7 @@ function DealCardComponent({
   }, []);
 
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
-  const signal = dealHealthLabel({ health, healthLabel, stalledFor });
+  const signal = dealHealthLabel({ health, healthLabel, stalledFor }, messages);
   const HealthIcon = health === undefined ? undefined : DEAL_HEALTH[health].icon;
 
   const titleBlock = (
@@ -135,7 +138,7 @@ function DealCardComponent({
               onPress={onMove}
               hoverFill={paint.raised}
               ring={paint.ring}
-              accessibilityLabel={moveLabel ?? `Move ${title}`}
+              accessibilityLabel={moveLabel ?? messages.move(title)}
               testID={id('move')}
             />
           ) : null}

@@ -6,52 +6,60 @@ import { RiSofaLine } from '../icons/remix/RiSofaLine';
 import { RiStackLine } from '../icons/remix/RiStackLine';
 import { RiStairsLine } from '../icons/remix/RiStairsLine';
 import { RiWalkLine } from '../icons/remix/RiWalkLine';
+import type { BloomIconComponent } from '../icons/icon-component';
+import { SHIPMENT_REQUEST_MESSAGES, type ShipmentRequestMessages } from './messages';
 import type {
+  ShipmentAccess,
   ShipmentAccessOption,
+  ShipmentLoadKind,
   ShipmentLoadKindOption,
   ShipmentLoadPickerLabels,
+  ShipmentLoadSize,
   ShipmentLoadSizeOption,
   ShipmentOptionsLabels,
   ShipmentRequestFormLabels,
 } from './types';
+
+const KIND_ORDER: readonly ShipmentLoadKind[] = ['envelope', 'parcel', 'furniture', 'pallet', 'food'];
+const KIND_ICON: Record<ShipmentLoadKind, BloomIconComponent> = {
+  envelope: RiMailLine,
+  parcel: RiBox3Line,
+  furniture: RiSofaLine,
+  pallet: RiStackLine,
+  food: RiRestaurantLine,
+};
+
+/** The rungs' one-or-two-letter codes: clothing sizes, read the same in every language. */
+const SIZE_CODE: ReadonlyArray<readonly [ShipmentLoadSize, string]> = [
+  ['small', 'S'],
+  ['medium', 'M'],
+  ['large', 'L'],
+  ['extraLarge', 'XL'],
+];
+
+const ACCESS_ORDER: readonly ShipmentAccess[] = ['ground', 'stairs', 'lift'];
+const ACCESS_ICON: Record<ShipmentAccess, BloomIconComponent> = {
+  ground: RiWalkLine,
+  stairs: RiStairsLine,
+  lift: RiArrowUpDownLine,
+};
+
+/** The five built-in kinds in one language's words. */
+export function builtInLoadKinds(messages: ShipmentRequestMessages): readonly ShipmentLoadKindOption[] {
+  return KIND_ORDER.map((value) => ({ value, ...messages.kinds[value], icon: KIND_ICON[value] }));
+}
+
+/** The four built-in size rungs in one language's words. */
+export function builtInLoadSizes(messages: ShipmentRequestMessages): readonly ShipmentLoadSizeOption[] {
+  return SIZE_CODE.map(([value, label]) => ({ value, label, detail: messages.sizes[value] }));
+}
 
 /**
  * The five kinds, in the order a marketplace draws them: the two a bike can
  * take first, then the two that need a van, then food — which is not a size at
  * all but a condition.
  */
-export const SHIPMENT_LOAD_KINDS: readonly ShipmentLoadKindOption[] = [
-  {
-    value: 'envelope',
-    label: 'Envelope',
-    description: 'Documents, keys, anything flat.',
-    icon: RiMailLine,
-  },
-  {
-    value: 'parcel',
-    label: 'Parcel',
-    description: 'A box or a bag one person can carry.',
-    icon: RiBox3Line,
-  },
-  {
-    value: 'furniture',
-    label: 'Furniture',
-    description: 'A sofa, a table, a mattress — two people at both ends.',
-    icon: RiSofaLine,
-  },
-  {
-    value: 'pallet',
-    label: 'Pallet',
-    description: 'Wrapped and stacked, moved with a tail lift.',
-    icon: RiStackLine,
-  },
-  {
-    value: 'food',
-    label: 'Food',
-    description: 'A restaurant run, kept at temperature.',
-    icon: RiRestaurantLine,
-  },
-];
+export const SHIPMENT_LOAD_KINDS: readonly ShipmentLoadKindOption[] = builtInLoadKinds(SHIPMENT_REQUEST_MESSAGES.en);
 
 /**
  * The four size rungs.
@@ -60,51 +68,37 @@ export const SHIPMENT_LOAD_KINDS: readonly ShipmentLoadKindOption[] = [
  * width and four words never fit; the sentence each one means is drawn UNDER
  * the control, for the chosen rung only. A control whose options all carry
  * their own sentence is a list, not a segmented control.
+ *
+ * In English, like the kinds and access words; a picker given no `kinds` or
+ * `sizes` draws them in the resolved locale's words.
  */
-export const SHIPMENT_LOAD_SIZES: readonly ShipmentLoadSizeOption[] = [
-  { value: 'small', label: 'S', detail: 'Up to a shoebox — 35 × 25 × 20 cm.' },
-  { value: 'medium', label: 'M', detail: 'Up to a cabin bag — 55 × 40 × 25 cm.' },
-  { value: 'large', label: 'L', detail: 'Up to a washing machine — 85 × 60 × 60 cm.' },
-  { value: 'extraLarge', label: 'XL', detail: 'Bigger than that — tell us in the notes.' },
-];
+export const SHIPMENT_LOAD_SIZES: readonly ShipmentLoadSizeOption[] = builtInLoadSizes(SHIPMENT_REQUEST_MESSAGES.en);
 
 /** Ground floor, stairs, lift. One of them is true, so they are a single choice. */
-export const SHIPMENT_ACCESS_OPTIONS: readonly ShipmentAccessOption[] = [
-  { value: 'ground', label: 'Ground floor', icon: RiWalkLine },
-  { value: 'stairs', label: 'Stairs', icon: RiStairsLine },
-  { value: 'lift', label: 'Lift', icon: RiArrowUpDownLine },
-];
+export const SHIPMENT_ACCESS_OPTIONS: readonly ShipmentAccessOption[] = ACCESS_ORDER.map((value) => ({
+  value,
+  label: SHIPMENT_REQUEST_MESSAGES.en.access[value],
+  icon: ACCESS_ICON[value],
+}));
+
+// The default copy below is English and stays exported; the components speak
+// `SHIPMENT_REQUEST_MESSAGES` in the resolved locale.
+const EN = SHIPMENT_REQUEST_MESSAGES.en;
 
 /** The load picker's default copy. */
 export const SHIPMENT_LOAD_LABELS: Required<ShipmentLoadPickerLabels> = {
-  kind: 'What are we moving?',
-  size: 'Size',
-  weight: 'Weight',
+  ...EN.load,
+  // i18n-exempt: a unit symbol, the same in every language Bloom ships
   weightUnit: 'kg',
-  quantity: 'How many',
-  quantityValue: (quantity: number) => (quantity === 1 ? '1 item' : `${quantity} items`),
-  notes: 'Anything else the carrier should know?',
-  notesPlaceholder: 'Fragile, a lift code, where to leave it…',
 };
 
 /** The options list's default copy. */
-export const SHIPMENT_OPTIONS_LABELS: Required<ShipmentOptionsLabels> = {
-  extras: 'Extras',
-  access: 'Access at both ends',
-  window: 'When should it be collected?',
-};
+export const SHIPMENT_OPTIONS_LABELS: Required<ShipmentOptionsLabels> = EN.options;
 
 /** The form's default section headings. */
 export const SHIPMENT_REQUEST_LABELS: Required<ShipmentRequestFormLabels> = {
-  route: 'Where it goes',
-  routeDescription: 'Pick-up first, drop-off last.',
-  load: 'The load',
+  ...EN.form,
   loadDescription: '',
-  photos: 'Photos',
-  photosDescription: 'A photo of the load is the single biggest thing you can do for the quotes you get back.',
-  options: 'Options',
-  optionsDescription: 'Each of these changes the price.',
-  price: 'Price',
   priceDescription: '',
 };
 

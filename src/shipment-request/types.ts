@@ -64,21 +64,21 @@ export interface ShipmentLoad {
 
 /** The picker's copy, all of it localisable. */
 export interface ShipmentLoadPickerLabels {
-  /** Over the kind cards. Default `"What are we moving?"`. */
+  /** Over the kind cards (`"What are we moving?"` in English). */
   kind?: string;
-  /** Over the size control. Default `"Size"`. */
+  /** Over the size control (`"Size"` in English). */
   size?: string;
-  /** The weight field. Default `"Weight"`. */
+  /** The weight field (`"Weight"` in English). */
   weight?: string;
-  /** Drawn inside the weight field, after the number. Default `"kg"`. */
+  /** Drawn inside the weight field, after the number (`"kg"` in English). */
   weightUnit?: string;
-  /** The quantity stepper. Default `"How many"`. */
+  /** The quantity stepper (`"How many"` in English). */
   quantity?: string;
-  /** The stepper's value. Default `` (n) => n === 1 ? '1 item' : `${n} items` ``. */
+  /** The stepper's value (`` (n) => n === 1 ? '1 item' : `${n} items` `` in English). */
   quantityValue?: (quantity: number) => string;
-  /** The notes field. Default `"Anything else the carrier should know?"`. */
+  /** The notes field (`"Anything else the carrier should know?"` in English). */
   notes?: string;
-  /** The notes placeholder. Default `"Fragile, a lift code, where to leave it…"`. */
+  /** The notes placeholder (`"Fragile, a lift code, where to leave it…"` in English). */
   notesPlaceholder?: string;
 }
 
@@ -95,9 +95,9 @@ export interface ShipmentLoadPickerProps {
   value: ShipmentLoad;
   /** Called with the WHOLE next load, never a patch. */
   onValueChange: (value: ShipmentLoad) => void;
-  /** The kinds, in the order they are drawn. Default {@link SHIPMENT_LOAD_KINDS}. */
+  /** The kinds, in the order they are drawn. Default {@link SHIPMENT_LOAD_KINDS}, in the resolved locale's words. */
   kinds?: readonly ShipmentLoadKindOption[];
-  /** The sizes. Default {@link SHIPMENT_LOAD_SIZES}. */
+  /** The sizes. Default {@link SHIPMENT_LOAD_SIZES}, in the resolved locale's words. */
   sizes?: readonly ShipmentLoadSizeOption[];
   /** Draws the notes field. Default `false`. */
   notes?: boolean;
@@ -154,11 +154,11 @@ export interface ShipmentTimeWindow {
 
 /** The options list's copy. */
 export interface ShipmentOptionsLabels {
-  /** Over the switch rows. Default `"Extras"`. */
+  /** Over the switch rows (`"Extras"` in English). */
   extras?: string;
-  /** Over the access chips. Default `"Access at both ends"`. */
+  /** Over the access chips (`"Access at both ends"` in English). */
   access?: string;
-  /** Over the time windows. Default `"When should it be collected?"`. */
+  /** Over the time windows (`"When should it be collected?"` in English). */
   window?: string;
 }
 
@@ -228,7 +228,7 @@ export interface ShipmentRequestFormProps {
   labels?: ShipmentRequestFormLabels;
   /** Dims and stops every control in the form. */
   disabled?: boolean;
-  /** Names the form. Default `"Shipment request"`. */
+  /** Names the form (`"Shipment request"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

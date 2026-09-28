@@ -45,10 +45,18 @@ function leaves(value: unknown, path = ''): Map<string, Leaf> {
     out.set(path, value);
   } else if (typeof value === 'function') {
     const fn = value as (...args: unknown[]) => unknown;
-    const samples = Array.from({ length: fn.length }, (_, index) => (index % 2 === 0 ? 3 : `«${index}»`));
-    // Numbers where a count is expected, placeholders otherwise: either way the
-    // result must be a string.
-    const rendered = fn(...samples);
+    // Arguments are counts or strings, and a function's type says which — this
+    // runtime check cannot read it, so it tries counts at even positions first
+    // (the common `(n)` / `(name, n)` shapes) and all-strings second. A catalog
+    // entry that renders under neither is broken for real callers too.
+    const numeric = Array.from({ length: fn.length }, (_, index) => (index % 2 === 0 ? 3 : `«${index}»`));
+    const textual = Array.from({ length: fn.length }, (_, index) => `«${index}»`);
+    let rendered: unknown;
+    try {
+      rendered = fn(...numeric);
+    } catch {
+      rendered = fn(...textual);
+    }
     out.set(`${path}()`, typeof rendered === 'string' ? rendered : `<${typeof rendered}>`);
   } else if (value && typeof value === 'object') {
     for (const [key, child] of Object.entries(value)) {

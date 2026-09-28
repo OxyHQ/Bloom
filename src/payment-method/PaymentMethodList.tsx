@@ -5,10 +5,12 @@ import { useFieldMembership } from '../field/membership';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiBankCardLine } from '../icons/remix/RiBankCardLine';
 import { Item } from '../item';
+import { useMessages } from '../locale/messages';
 import * as Skeleton from '../skeleton';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { PAYMENT_METHOD_MESSAGES } from './messages';
 import { PaymentMethodRow } from './PaymentMethodRow';
 import { PAYMENT_METHOD_GEOMETRY, PAYMENT_METHOD_LIST_GAP } from './constants';
 import { resolvePaymentMethodPaint } from './shared';
@@ -21,8 +23,6 @@ import type { PaymentMethodEntry, PaymentMethodListProps } from './types';
  */
 const PICKER_ROW_ROLE = 'radio' as const;
 
-/** The name a list falls back to when neither a caller nor a `Field` gives one. */
-const LAST_RESORT_NAME = 'Payment methods';
 
 /**
  * The saved methods, with the default marked, an add row, an empty state and a
@@ -74,18 +74,21 @@ function PaymentMethodListComponent({
   density = 'comfortable',
   disabled = false,
   onAdd,
-  addLabel = 'Add a payment method',
+  addLabel: addLabelProp,
   addIcon: AddIcon = RiAddLine,
   loading = false,
   loadingRows = 3,
   empty,
-  emptyTitle = 'No saved payment methods',
+  emptyTitle: emptyTitleProp,
   emptyDescription,
   emptyIcon: EmptyIcon = RiBankCardLine,
   accessibilityLabel,
   style,
   testID,
 }: PaymentMethodListProps) {
+  const { messages } = useMessages(PAYMENT_METHOD_MESSAGES);
+  const addLabel = addLabelProp ?? messages.add;
+  const emptyTitle = emptyTitleProp ?? messages.emptyTitle;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePaymentMethodPaint(theme, surface), [theme, surface]);
@@ -96,7 +99,7 @@ function PaymentMethodListComponent({
   // and outranks the field's; `disabled` is a CONSTRAINT and combines.
   const field = useFieldMembership({ accessibilityLabel, disabled });
   const isDisabled = field.disabled;
-  const name = field.accessibilityLabel ?? LAST_RESORT_NAME;
+  const name = field.accessibilityLabel ?? messages.paymentMethods;
 
   // A disabled row keeps its press HANDLER and is handed `disabled` instead:
   // `Item` then renders a real disabled control, which still announces itself

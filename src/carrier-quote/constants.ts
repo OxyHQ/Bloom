@@ -1,31 +1,18 @@
 import { RADIUS } from '../design-tokens/scales';
 import type { AccentTone } from '../theme/accent-colors';
 import type { CarrierQuoteLabels, CarrierQuoteMark, CarrierQuoteSort } from './types';
+import { CARRIER_QUOTE_MESSAGES } from './messages';
 
-/** Every default word the card and the list draw. */
+/**
+ * Every default word the card and the list draw, in English. The components
+ * speak the locale's (`CARRIER_QUOTE_MESSAGES`, via `BloomProvider locale`).
+ */
 export const CARRIER_QUOTE_LABELS: Required<
   Omit<CarrierQuoteLabels, 'marks' | 'sortOptions'>
 > & {
   marks: Record<CarrierQuoteMark, string>;
   sortOptions: Record<CarrierQuoteSort, string>;
-} = {
-  accept: 'Accept',
-  message: 'Message',
-  decline: 'Decline',
-  pickup: 'Pick-up',
-  eta: 'Arrives',
-  vehicle: 'Vehicle',
-  jobs: (jobs: string) => `${jobs} jobs`,
-  verified: 'Verified carrier',
-  marks: { cheapest: 'Cheapest', fastest: 'Fastest' },
-  showPrice: 'Show price details',
-  hidePrice: 'Hide price details',
-  priceDetails: 'Price details for',
-  sort: 'Sort offers',
-  sortOptions: { price: 'Cheapest', eta: 'Fastest', rating: 'Best rated' },
-  count: (count: number) => (count === 1 ? '1 offer' : `${count} offers`),
-  loading: 'Loading offers',
-};
+} = CARRIER_QUOTE_MESSAGES.en.labels;
 
 /**
  * The tone each mark is painted in.

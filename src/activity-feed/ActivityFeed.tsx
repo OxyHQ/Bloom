@@ -4,6 +4,8 @@ import { View } from 'react-native';
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { Button } from '../button';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
@@ -14,9 +16,9 @@ import {
   ACTIVITY_FEED_KIND,
   ACTIVITY_KIND_MARK_SIZE,
 } from './constants';
+import { ACTIVITY_FEED_MESSAGES } from './messages';
 import { activityBodyIsLong, groupActivityByDay, resolveActivityFeedPaint } from './shared';
 import type { ActivityFeedEntry, ActivityFeedProps } from './types';
-import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * Everything anyone did with a customer, newest block first, grouped by day.
@@ -47,13 +49,16 @@ function ActivityFeedComponent({
   bodyLines = 3,
   moreLabel: moreLabelProp,
   lessLabel: lessLabelProp,
-  formatLoggedBy = (name: string) => `Logged by ${name}`,
-  emptyLabel = 'Nothing logged yet',
+  formatLoggedBy: formatLoggedByProp,
+  emptyLabel: emptyLabelProp,
   accessibilityLabel,
   style,
   testID,
 }: ActivityFeedProps) {
   const common = useCommonMessages();
+  const { messages } = useMessages(ACTIVITY_FEED_MESSAGES);
+  const formatLoggedBy = formatLoggedByProp ?? messages.loggedBy;
+  const emptyLabel = emptyLabelProp ?? messages.empty;
   const moreLabel = moreLabelProp ?? common.showMore;
   const lessLabel = lessLabelProp ?? common.showLess;
   const theme = useTheme();
@@ -132,7 +137,7 @@ function ActivityFeedComponent({
             style={{ color: paint.textTertiary }}
             testID={eid('meta')}
           >
-            {[kind.label, entry.timestamp].filter(Boolean).join(' · ')}
+            {[messages.kinds[entry.kind], entry.timestamp].filter(Boolean).join(' · ')}
           </Text>
 
           {entry.body ? (

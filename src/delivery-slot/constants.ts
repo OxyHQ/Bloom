@@ -1,24 +1,26 @@
+import { DELIVERY_SLOT_MESSAGES } from './messages';
 import type { DeliveryTier } from './types';
 
+// The English words. The picker speaks `DELIVERY_SLOT_MESSAGES` in the
+// resolved locale; these stay exported for apps that read them.
+const EN = DELIVERY_SLOT_MESSAGES.en;
+
 /** The words a tier is drawn and announced with. */
-export const DELIVERY_TIER_LABELS: Record<DeliveryTier, string> = {
-  standard: 'Standard',
-  express: 'Express',
-};
+export const DELIVERY_TIER_LABELS: Record<DeliveryTier, string> = EN.tiers;
 
 /** What a taken window says. */
-export const DELIVERY_SOLD_OUT_LABEL = 'Sold out';
+export const DELIVERY_SOLD_OUT_LABEL = EN.soldOut;
 
 /** The option that belongs to no day. */
-export const DELIVERY_ASAP_LABEL = 'As soon as possible';
+export const DELIVERY_ASAP_LABEL = EN.asap;
 
 /** The field's own name, which is also the radio group's. */
-export const DELIVERY_FIELD_LABEL = 'Delivery time';
-export const DELIVERY_DAY_LABEL = 'Day';
+export const DELIVERY_FIELD_LABEL = EN.field;
+export const DELIVERY_DAY_LABEL = EN.day;
 
 /** What there is to say when a day has nothing left. */
-export const DELIVERY_EMPTY_TITLE = 'No windows left';
-export const DELIVERY_EMPTY_DESCRIPTION = 'Pick another day, or take the next courier.';
+export const DELIVERY_EMPTY_TITLE = EN.emptyTitle;
+export const DELIVERY_EMPTY_DESCRIPTION = EN.emptyDescription;
 
 /**
  * The radio dot at the head of an option row. 20 is `Radio`'s `lg` rung: the

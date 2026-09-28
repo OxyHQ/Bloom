@@ -20,6 +20,8 @@ import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 export interface HeatmapRow {
   label: string;
@@ -118,7 +120,7 @@ export function heatmapCellColor(value: number, max: number, accent: string, tra
  * Hover on web (leaving the grid clears); press and scrub on native.
  */
 export function HeatmapChartCard({
-  title = 'Active users',
+  title: titleProp,
   rows: rowsProp,
   columns: columnsProp,
   color,
@@ -138,6 +140,8 @@ export function HeatmapChartCard({
   style,
   testID,
 }: HeatmapChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.activeUsers;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);

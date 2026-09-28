@@ -7,21 +7,12 @@ import { useFieldControl } from '../field/context';
 import { useFieldMembership } from '../field/membership';
 import { RiFlashlightLine } from '../icons/remix/RiFlashlightLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
+import { useMessages } from '../locale/messages';
 import * as Skeleton from '../skeleton';
 import { DeliverySlotDays } from './DeliverySlotDays';
 import { DeliverySlotOption } from './DeliverySlotOption';
-import {
-  DELIVERY_ASAP_LABEL,
-  DELIVERY_DAY_LABEL,
-  DELIVERY_DOT,
-  DELIVERY_EMPTY_DESCRIPTION,
-  DELIVERY_EMPTY_TITLE,
-  DELIVERY_FIELD_LABEL,
-  DELIVERY_OPTION_GAP,
-  DELIVERY_OPTION_RADIUS,
-  DELIVERY_SECTION_GAP,
-  DELIVERY_SOLD_OUT_LABEL,
-} from './constants';
+import { DELIVERY_DOT, DELIVERY_OPTION_GAP, DELIVERY_OPTION_RADIUS, DELIVERY_SECTION_GAP } from './constants';
+import { DELIVERY_SLOT_MESSAGES } from './messages';
 import { joinDeliveryParts, windowDetail, windowName } from './shared';
 import type { DeliverySlotPickerProps } from './types';
 
@@ -71,6 +62,7 @@ function DeliverySlotGroups({
   // — the two directions `field/membership.ts` exists to stop every family
   // getting backwards.
   const field = useFieldMembership({ accessibilityLabel: label, disabled });
+  const { messages } = useMessages(DELIVERY_SLOT_MESSAGES);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const off = field.disabled;
 
@@ -78,16 +70,16 @@ function DeliverySlotGroups({
     () =>
       windows.map((w) => ({
         window: w,
-        detail: windowDetail(w, tierLabels, soldOutLabel),
-        name: windowName(w, tierLabels, soldOutLabel),
+        detail: windowDetail(w, tierLabels, soldOutLabel, messages),
+        name: windowName(w, tierLabels, soldOutLabel, messages),
       })),
-    [windows, tierLabels, soldOutLabel],
+    [windows, tierLabels, soldOutLabel, messages],
   );
 
   const asapRow = asap ? (
     <DeliverySlotOption
       key="asap"
-      label={asap.label ?? DELIVERY_ASAP_LABEL}
+      label={asap.label ?? messages.asap}
       detail={asap.soldOut ? soldOutLabel : joinDeliveryParts([asap.eta, asap.note])}
       price={asap.price}
       icon={asap.icon ?? RiFlashlightLine}
@@ -209,15 +201,20 @@ function DeliverySlotPickerComponent({
   error,
   required,
   disabled,
-  dayLabel = DELIVERY_DAY_LABEL,
-  emptyTitle = DELIVERY_EMPTY_TITLE,
-  emptyDescription = DELIVERY_EMPTY_DESCRIPTION,
-  soldOutLabel = DELIVERY_SOLD_OUT_LABEL,
+  dayLabel: dayLabelProp,
+  emptyTitle: emptyTitleProp,
+  emptyDescription: emptyDescriptionProp,
+  soldOutLabel: soldOutLabelProp,
   loadingRows = 3,
   style,
   testID,
   ...rest
 }: DeliverySlotPickerProps) {
+  const { messages } = useMessages(DELIVERY_SLOT_MESSAGES);
+  const dayLabel = dayLabelProp ?? messages.day;
+  const emptyTitle = emptyTitleProp ?? messages.emptyTitle;
+  const emptyDescription = emptyDescriptionProp ?? messages.emptyDescription;
+  const soldOutLabel = soldOutLabelProp ?? messages.soldOut;
   // Is there already a `Field` around us? A picker dropped into somebody's form
   // must not make a SECOND one: two fields means two labels above one control
   // and an error the outer field describes and the inner one does not.
@@ -248,7 +245,7 @@ function DeliverySlotPickerComponent({
 
   return (
     <Field
-      label={label ?? DELIVERY_FIELD_LABEL}
+      label={label ?? messages.field}
       description={description}
       error={error}
       required={required}

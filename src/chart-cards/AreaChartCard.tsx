@@ -15,6 +15,8 @@ import { useChartRange } from './primitives/use-chart-range';
 import { resolveTone } from './palette';
 import type { AreaChartCardProps, AreaPoint, AreaSeries } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * `AreaChartCard`: a multi-series area chart — composition over time — in
@@ -63,7 +65,7 @@ function defaultAccessibilityLabel(title: string, variant: string, series: reado
 export function AreaChartCard({
   variant = 'stacked',
   shape = 'curved',
-  title = 'Visitors',
+  title: titleProp,
   data: dataProp,
   series: seriesProp,
   headline: headlineProp,
@@ -81,6 +83,8 @@ export function AreaChartCard({
   style,
   testID,
 }: AreaChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.visitors;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { GlyphButton } from '../button';
 import { RiInformationLine } from '../icons/remix/RiInformationLine';
+import { useMessages } from '../locale/messages';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
@@ -12,8 +13,8 @@ import {
   PRICE_INFO_SIZE,
   PRICE_LINE_HEIGHT,
   PRICE_PENDING_PLACEHOLDER,
-  PRICE_STATE_LABELS,
 } from './constants';
+import { PRICE_BREAKDOWN_MESSAGES } from './messages';
 import { resolvePricePaint } from './shared';
 import type { PriceSummaryLineProps } from './types';
 
@@ -50,10 +51,11 @@ function PriceSummaryLineComponent({
   style,
   testID,
 }: PriceSummaryLineProps) {
+  const { messages } = useMessages(PRICE_BREAKDOWN_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePricePaint(theme, surface), [theme, surface]);
-  const words = { ...PRICE_STATE_LABELS, ...stateLabels };
+  const words = { ...messages.states, ...stateLabels };
 
   const muted = tone === 'muted';
   const labelColor = muted ? paint.textSecondary : paint.text;
@@ -99,7 +101,7 @@ function PriceSummaryLineComponent({
                 icon={RiInformationLine}
                 color={paint.textTertiary}
                 hoverColor={paint.text}
-                accessibilityLabel={infoAccessibilityLabel ?? `About ${label}`}
+                accessibilityLabel={infoAccessibilityLabel ?? messages.about(label)}
                 testID={testID ? `${testID}-info` : undefined}
               />
             </PopoverTrigger>

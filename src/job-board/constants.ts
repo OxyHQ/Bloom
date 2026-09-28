@@ -2,41 +2,19 @@ import { RADIUS } from '../design-tokens/scales';
 import type { AccentTone } from '../theme/accent-colors';
 import type { VehicleKind } from '../vehicle-picker';
 import type { JobBoardBand, JobBoardLabels, JobBoardSort, JobOfferState } from './types';
+import { JOB_BOARD_MESSAGES, type JobBoardMessages } from './messages';
 
-/** Every default word the card and the board draw. */
+/**
+ * Every default word the card and the board draw, in English. The components
+ * speak the locale's (`JOB_BOARD_MESSAGES`, via `BloomProvider locale`).
+ */
 export const JOB_BOARD_LABELS: Required<
   Omit<JobBoardLabels, 'state' | 'sortOptions' | 'filters'>
 > & {
   state: Record<Exclude<JobOfferState, 'open'>, string>;
   sortOptions: Record<JobBoardSort, string>;
   filters: Required<NonNullable<JobBoardLabels['filters']>>;
-} = {
-  take: 'Take the job',
-  pass: 'Pass',
-  distance: 'Distance',
-  duration: 'Time',
-  window: 'Window',
-  pickup: 'Pick-up',
-  dropoff: 'Drop-off',
-  state: { taken: 'Taken', expired: 'Expired' },
-  showPay: 'Show what it pays',
-  hidePay: 'Hide what it pays',
-  payDetails: 'Pay for',
-  sort: 'Sort jobs',
-  filtersToggle: 'Filters',
-  filtersActive: (count: number) => `${count} applied`,
-  sortOptions: {
-    pay: 'Best paid',
-    distance: 'Nearest',
-    soonest: 'Starting soonest',
-    expiring: 'Closing soonest',
-  },
-  filters: { distance: 'Distance', pay: 'Pay', when: 'When', vehicle: 'Vehicle' },
-  clearFilters: 'Clear filters',
-  refresh: 'Refresh the board',
-  count: (count: number) => (count === 1 ? '1 job' : `${count} jobs`),
-  loading: 'Loading jobs',
-};
+} = JOB_BOARD_MESSAGES.en.labels;
 
 /**
  * The tone a closed job is painted in.
@@ -62,20 +40,32 @@ export const JOB_BOARD_SORTS: readonly JobBoardSort[] = ['pay', 'distance', 'soo
  * are the unit `distanceKm` is compared in; an app on miles supplies its own
  * bands and its own words.
  */
-export const JOB_DISTANCE_BANDS: readonly JobBoardBand[] = [
-  { value: null, label: 'Any distance' },
-  { value: 3, label: 'Under 3 km' },
-  { value: 10, label: 'Under 10 km' },
-  { value: 25, label: 'Under 25 km' },
-];
+/** The default distance bands, in the words of `text` (a `JOB_BOARD_MESSAGES` entry). */
+export function jobDistanceBands(text: JobBoardMessages): readonly JobBoardBand[] {
+  return [
+    { value: null, label: text.bands.anyDistance },
+    { value: 3, label: text.bands.underKm(3) },
+    { value: 10, label: text.bands.underKm(10) },
+    { value: 25, label: text.bands.underKm(25) },
+  ];
+}
+
+/** The default distance bands, in English; the board speaks the locale's. */
+export const JOB_DISTANCE_BANDS: readonly JobBoardBand[] = jobDistanceBands(JOB_BOARD_MESSAGES.en);
 
 /** The default when bands, in minutes from now. */
-export const JOB_WHEN_BANDS: readonly JobBoardBand[] = [
-  { value: null, label: 'Any time' },
-  { value: 60, label: 'Within the hour' },
-  { value: 240, label: 'Next 4 hours' },
-  { value: 1440, label: 'Today' },
-];
+/** The default start-time bands, in the words of `text`. */
+export function jobWhenBands(text: JobBoardMessages): readonly JobBoardBand[] {
+  return [
+    { value: null, label: text.bands.anyTime },
+    { value: 60, label: text.bands.withinHour },
+    { value: 240, label: text.bands.nextHours(4) },
+    { value: 1440, label: text.bands.today },
+  ];
+}
+
+/** The default start-time bands, in English; the board speaks the locale's. */
+export const JOB_WHEN_BANDS: readonly JobBoardBand[] = jobWhenBands(JOB_BOARD_MESSAGES.en);
 
 /** The vehicles a board filters on by default, smallest first. */
 export const JOB_VEHICLE_KINDS: readonly VehicleKind[] = [

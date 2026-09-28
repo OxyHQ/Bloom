@@ -38,7 +38,7 @@ export interface MenuItemRowProps {
    * reader whether one is enough.
    */
   spice?: number;
-  /** The word the flames are announced with. Default `"Spicy"` (as "Spicy 2 of 3"). */
+  /** The word the flames are announced with (`"Spicy"` in English, as "Spicy 2 of 3"). */
   spiceLabel?: string;
   /**
    * How many are already in the basket. Drawn ONCE: in the `Stepper` when
@@ -51,11 +51,11 @@ export interface MenuItemRowProps {
   onQuantityChange?: (quantity: number) => void;
   /** The add control. Drawn while nothing is in the basket yet. */
   onAdd?: () => void;
-  /** Names the add control, which draws no text. Default `"Add <name>"`. */
+  /** Names the add control, which draws no text (`"Add <name>"` in English). */
   addLabel?: string;
   /** Sold out: the photo washes toward the page, the row dims and every control goes. */
   unavailable?: boolean;
-  /** Default `"Sold out"`. */
+  /** `"Sold out"` in English. */
   unavailableLabel?: string;
   /** Opens the dish — its options, its full description. */
   onPress?: () => void;
@@ -117,7 +117,7 @@ export interface MenuItemOptionsProps {
   /** How many of the dish. Without `onQuantityChange` no quantity row is drawn. */
   quantity?: number;
   onQuantityChange?: (quantity: number) => void;
-  /** The quantity row's title. Default `"Quantity"`. */
+  /** The quantity row's title (`"Quantity"` in English). */
   quantityLabel?: string;
   /**
    * The running price, PRE-FORMATTED — "€16.40". The app recomputes it as the
@@ -126,7 +126,7 @@ export interface MenuItemOptionsProps {
   total?: string;
   /** The footer button. Without it no footer is drawn. */
   onSubmit?: () => void;
-  /** The footer button's label. Default `"Add to basket"`. */
+  /** The footer button's label (`"Add to basket"` in English). */
   submitLabel?: string;
   /** Blocks the footer button — a required group with nothing chosen. */
   submitDisabled?: boolean;
@@ -134,7 +134,7 @@ export interface MenuItemOptionsProps {
   disabled?: boolean;
   /** A node above the groups — the dish's own photo, name and description. */
   header?: ReactNode;
-  /** Names the set of questions. Default `"Options"`. */
+  /** Names the set of questions (`"Options"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

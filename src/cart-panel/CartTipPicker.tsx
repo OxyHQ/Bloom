@@ -1,10 +1,12 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { CART_PANEL_MESSAGES } from './messages';
 import { resolveCartPaint } from './shared';
 import type { CartTipPickerProps } from './types';
 
@@ -28,12 +30,14 @@ function CartTipPickerComponent({
   options,
   value,
   onValueChange,
-  label = 'Tip',
+  label: labelProp,
   description,
   disabled = false,
   style,
   testID,
 }: CartTipPickerProps) {
+  const { messages } = useMessages(CART_PANEL_MESSAGES);
+  const label = labelProp ?? messages.tip;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveCartPaint(theme, surface), [theme, surface]);

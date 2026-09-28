@@ -9,7 +9,7 @@
  */
 import { surfaceFillOn, surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
-import { PAYMENT_METHOD_STATE_LABELS } from './constants';
+import { PAYMENT_METHOD_MESSAGES, type PaymentMethodMessages } from './messages';
 import type { PaymentMethodState } from './types';
 
 export interface PaymentMethodPaint extends SurfaceTextPaint {
@@ -43,8 +43,8 @@ export function composePaymentMethodName(
 export function paymentMethodStateMessage(
   state: PaymentMethodState,
   message?: string,
+  messages: PaymentMethodMessages = PAYMENT_METHOD_MESSAGES.en,
 ): string | undefined {
   if (typeof message === 'string' && message !== '') return message;
-  const label = PAYMENT_METHOD_STATE_LABELS[state];
-  return label === '' ? undefined : label;
+  return state === 'ok' ? undefined : messages.states[state];
 }

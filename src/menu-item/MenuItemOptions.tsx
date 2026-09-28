@@ -5,6 +5,7 @@ import { Button } from '../button';
 import { Checkbox } from '../checkbox';
 import { Divider } from '../divider';
 import { Field } from '../field';
+import { useMessages } from '../locale/messages';
 import { RadioGroup } from '../radio';
 import type { RadioOption } from '../radio';
 import { StepperRow } from '../stepper';
@@ -12,6 +13,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MENU_ITEM_GROUP_GAP } from './constants';
+import { MENU_ITEM_MESSAGES } from './messages';
 import {
   describeOptionRule,
   optionDisabled,
@@ -80,8 +82,9 @@ function OptionGroup({
   secondary: string;
   testID?: string;
 }) {
+  const { messages } = useMessages(MENU_ITEM_MESSAGES);
   const rule = optionGroupRule(group);
-  const ruleText = describeOptionRule(group);
+  const ruleText = describeOptionRule(group, messages);
   const label = <GroupLabel title={group.title} rule={ruleText} color={secondary} />;
 
   const body = rule.multiple ? (
@@ -140,17 +143,21 @@ function MenuItemOptionsComponent({
   onValueChange,
   quantity,
   onQuantityChange,
-  quantityLabel = 'Quantity',
+  quantityLabel: quantityLabelProp,
   total,
   onSubmit,
-  submitLabel = 'Add to basket',
+  submitLabel: submitLabelProp,
   submitDisabled = false,
   disabled = false,
   header,
-  accessibilityLabel = 'Options',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: MenuItemOptionsProps) {
+  const { messages } = useMessages(MENU_ITEM_MESSAGES);
+  const quantityLabel = quantityLabelProp ?? messages.quantity;
+  const submitLabel = submitLabelProp ?? messages.addToBasket;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.options;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveMenuItemPaint(theme, surface), [theme, surface]);

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { AddressRow } from '../address';
 import { Divider } from '../divider';
+import { useMessages } from '../locale/messages';
 import { PriceSummary } from '../price-breakdown';
 import {
   SurfaceLevelProvider,
@@ -21,6 +22,7 @@ import {
   CHECKOUT_ROW_ICON,
   CHECKOUT_SECTION_GAP,
 } from './constants';
+import { CHECKOUT_SUMMARY_MESSAGES } from './messages';
 import { checkoutRowName } from './shared';
 import type { CheckoutSummaryLine, CheckoutSummaryProps } from './types';
 
@@ -69,7 +71,7 @@ const NESTED_ROW_STYLE = {
  * padding reset, so there is one row's chrome rather than two.
  */
 function CheckoutSummaryComponent({
-  title = 'Review your order',
+  title: titleProp,
   address,
   delivery,
   payment,
@@ -82,6 +84,9 @@ function CheckoutSummaryComponent({
   style,
   testID,
 }: CheckoutSummaryProps) {
+  const { messages } = useMessages(CHECKOUT_SUMMARY_MESSAGES);
+  // `null` turns the heading off, so only `undefined` takes the default.
+  const title = titleProp === undefined ? messages.title : titleProp;
   const theme = useTheme();
   const level = useSurfaceLevelValue();
   const own = useSurfaceLevel(1);
@@ -106,7 +111,7 @@ function CheckoutSummaryComponent({
 
   const rows: ReactNode[] = [];
   if (address) {
-    const label = address.label ?? 'Deliver to';
+    const label = address.label ?? messages.deliverTo;
     rows.push(
       <CheckoutSummaryRow
         key="address"
@@ -161,7 +166,7 @@ function CheckoutSummaryComponent({
 
       <View
         role="group"
-        accessibilityLabel={accessibilityLabel ?? title ?? 'Order summary'}
+        accessibilityLabel={accessibilityLabel ?? title ?? messages.orderSummary}
         testID={id('group')}
         style={[
           {

@@ -3,11 +3,13 @@ import { View } from 'react-native';
 
 import { Badge } from '../badge';
 import { Button } from '../button';
+import { useMessages } from '../locale/messages';
 import * as Skeleton from '../skeleton';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { PIPELINE_MESSAGES } from './messages';
 import {
   PIPELINE_CARD_GAP,
   PIPELINE_COLUMN_PADDING,
@@ -38,15 +40,18 @@ function PipelineColumnComponent({
   count,
   total,
   tone = 'primary',
-  emptyLabel = 'No deals in this stage',
+  emptyLabel: emptyLabelProp,
   loading = false,
   onLoadMore,
-  loadMoreLabel = 'Load more',
+  loadMoreLabel: loadMoreLabelProp,
   children,
   width,
   style,
   testID,
 }: PipelineColumnProps) {
+  const { messages } = useMessages(PIPELINE_MESSAGES);
+  const emptyLabel = emptyLabelProp ?? messages.empty;
+  const loadMoreLabel = loadMoreLabelProp ?? messages.loadMore;
   const theme = useTheme();
   const behind = useSurfaceFill();
   const fill = useMemo(() => pipelineColumnFill(theme, behind), [theme, behind]);

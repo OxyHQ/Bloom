@@ -36,9 +36,9 @@ export interface ImportantAlertsCardProps {
    * `alerts.length` when the feed lists only the most recent ones.
    */
   count: number | string;
-  /** Card title. Defaults to `"Important alerts"`. */
+  /** Card title (`"Important alerts"` in English). */
   title?: string;
-  /** Caption after the count. Defaults to `"this week"`. */
+  /** Caption after the count (`"this week"` in English). */
   countCaption?: string;
   /** Label of the range pill in the corner (`"29 Jun - 5 Jul"`). Omit to hide the pill. */
   rangeLabel?: string;

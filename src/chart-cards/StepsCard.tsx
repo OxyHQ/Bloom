@@ -31,6 +31,8 @@ import {
   useSvgEase,
 } from './medical-parts';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
@@ -146,11 +148,11 @@ export function stepsBars(width: number, count: number): StepsBar[] {
 
 export function StepsCard({
   data,
-  title = 'Steps',
+  title: titleProp,
   getPointTitle,
   headline,
-  totalSuffix = 'total steps',
-  pointSuffix = 'steps',
+  totalSuffix: totalSuffixProp,
+  pointSuffix: pointSuffixProp,
   format = groupThousands,
   range,
   onPrevRange,
@@ -163,6 +165,10 @@ export function StepsCard({
   style,
   testID,
 }: StepsCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.steps;
+  const totalSuffix = totalSuffixProp ?? chartText.totalSteps;
+  const pointSuffix = pointSuffixProp ?? chartText.stepsSuffix;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const tone = useMemo(

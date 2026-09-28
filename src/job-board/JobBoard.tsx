@@ -14,16 +14,17 @@ import * as Skeleton from '../skeleton';
 import { surfaceFillVars, useSurfaceLevel } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { VEHICLE_ICON, VEHICLE_OPTIONS } from '../vehicle-picker';
+import { VEHICLE_ICON } from '../vehicle-picker';
+import { builtInVehicleOptions } from '../vehicle-picker/constants';
+import { VEHICLE_PICKER_MESSAGES } from '../vehicle-picker/messages';
 import type { VehicleKind } from '../vehicle-picker';
 import { JobCard } from './JobCard';
 import {
   JOB_BOARD_GEOMETRY,
-  JOB_BOARD_LABELS,
   JOB_BOARD_SORTS,
-  JOB_DISTANCE_BANDS,
+  jobDistanceBands,
   JOB_VEHICLE_KINDS,
-  JOB_WHEN_BANDS,
+  jobWhenBands,
 } from './constants';
 import {
   countActiveJobFilters,
@@ -33,6 +34,8 @@ import {
   toggleJobVehicle,
 } from './shared';
 import type { JobBoardBand, JobBoardFilter, JobBoardProps, JobBoardSort } from './types';
+import { useMessages } from '../locale/messages';
+import { JOB_BOARD_MESSAGES } from './messages';
 
 /**
  * The work on offer, filtered, ordered and counted.
@@ -79,9 +82,9 @@ function JobBoardComponent({
   filter: filterProp,
   defaultFilter,
   onFilterChange,
-  distanceBands = JOB_DISTANCE_BANDS,
+  distanceBands: distanceBandsProp,
   payBands,
-  whenBands = JOB_WHEN_BANDS,
+  whenBands: whenBandsProp,
   vehicleKinds = JOB_VEHICLE_KINDS,
   showCount = true,
   onRefresh,
@@ -95,14 +98,21 @@ function JobBoardComponent({
   density = 'comfortable',
   route,
   breakdown,
-  emptyTitle = 'No jobs right now',
-  emptyDescription = 'Nothing matches what you are looking for. Widen a filter, or pull the board again in a minute.',
+  emptyTitle: emptyTitleProp,
+  emptyDescription: emptyDescriptionProp,
   emptyAction,
   labels: labelOverrides,
-  accessibilityLabel = 'Jobs',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: JobBoardProps) {
+  const { messages: boardText } = useMessages(JOB_BOARD_MESSAGES);
+  const emptyTitle = emptyTitleProp ?? boardText.emptyTitle;
+  const emptyDescription = emptyDescriptionProp ?? boardText.emptyDescription;
+  const accessibilityLabel = accessibilityLabelProp ?? boardText.list;
+  const { messages: vehicleText } = useMessages(VEHICLE_PICKER_MESSAGES);
+  const distanceBands = useMemo(() => distanceBandsProp ?? jobDistanceBands(boardText), [distanceBandsProp, boardText]);
+  const whenBands = useMemo(() => whenBandsProp ?? jobWhenBands(boardText), [whenBandsProp, boardText]);
   const theme = useTheme();
   const ambient = useSurfaceLevel(0);
   const paint = useMemo(
@@ -111,12 +121,12 @@ function JobBoardComponent({
   );
   const labels = useMemo(
     () => ({
-      ...JOB_BOARD_LABELS,
+      ...boardText.labels,
       ...labelOverrides,
-      sortOptions: { ...JOB_BOARD_LABELS.sortOptions, ...labelOverrides?.sortOptions },
-      filters: { ...JOB_BOARD_LABELS.filters, ...labelOverrides?.filters },
+      sortOptions: { ...boardText.labels.sortOptions, ...labelOverrides?.sortOptions },
+      filters: { ...boardText.labels.filters, ...labelOverrides?.filters },
     }),
-    [labelOverrides],
+    [labelOverrides, boardText],
   );
   const [sort, setSort] = useControllableState<JobBoardSort>({
     value: sortProp,
@@ -154,9 +164,9 @@ function JobBoardComponent({
 
   const vehicleWords = useMemo(() => {
     const out = new Map<string, string>();
-    for (const option of VEHICLE_OPTIONS) out.set(option.value, option.label);
+    for (const option of builtInVehicleOptions(vehicleText)) out.set(option.value, option.label);
     return out;
-  }, []);
+  }, [vehicleText]);
 
   /** One dimension: a named, sideways-scrolling `radiogroup` of bands. */
   const bandRow = (

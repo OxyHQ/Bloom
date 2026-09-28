@@ -22,7 +22,7 @@ export interface RecentHire {
 export interface RecentHiresCardProps {
   /** The people cards, in order. The card has room for four (2 × 2). */
   hires: readonly RecentHire[];
-  /** Muted label over the count. Default `"Recent hires"`. */
+  /** Muted label over the count (`"Recent hires"` in English). */
   title?: string;
   /** The headline number, pre-formatted or raw (`56`). */
   count: string | number;

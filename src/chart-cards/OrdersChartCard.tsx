@@ -13,6 +13,8 @@ import { bandSize, barPositions, topRoundedBarPath, yScale } from './geometry';
 import { ordersSeriesTone } from './palette';
 import type { OrdersChartCardProps } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { useMessages } from '../locale/messages';
+import { CHART_CARDS_MESSAGES } from './messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
@@ -53,6 +55,7 @@ export function OrdersChartCard({
   testID,
   ...frame
 }: OrdersChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => ordersSeriesTone(theme), [theme]);
@@ -67,13 +70,13 @@ export function OrdersChartCard({
   const previousAnim = useChartProgress(previous);
 
   const label =
-    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? 'Orders', frame.currentLabel, frame.previousLabel);
+    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? chartText.titles.orders, frame.currentLabel, frame.previousLabel, chartText);
 
   return (
     <ChartCardFrame
       {...frame}
       data={data}
-      defaultTitle="Orders"
+      defaultTitle={chartText.titles.orders}
       defaultFormatValue={groupThousands}
       seriesColor={fill}
       comparisonColor={comparisonFill}

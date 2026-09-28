@@ -27,7 +27,7 @@ import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { OfferingBadge } from '../offering-badge/OfferingBadge';
-import { OFFERING_LABELS } from '../offering-badge/shared';
+import { OFFERING_BADGE_MESSAGES, type OfferingBadgeMessages } from '../offering-badge/messages';
 import { FavoriteButton } from './FavoriteButton';
 import {
   ListingFacts,
@@ -298,13 +298,17 @@ function BadgePill({ label, paint }: { label: string; paint: ListingCardPaint })
 //  Text
 // ---------------------------------------------------------------------------
 
-function composeName(props: ListingCardProps, messages: ListingCardMessages): string {
+function composeName(
+  props: ListingCardProps,
+  messages: ListingCardMessages,
+  offerings: OfferingBadgeMessages['offerings'],
+): string {
   const parts: string[] = [props.title];
   const status = statusLabelFor(props.status, props.statusLabel, messages.statuses);
   if (status) parts.push(status);
   if (typeof props.badge === 'string' && props.badge) parts.push(props.badge);
   for (const offering of uniqueOfferings(props.offerings)) {
-    parts.push(props.offeringLabels?.[offering] ?? OFFERING_LABELS[offering]);
+    parts.push(props.offeringLabels?.[offering] ?? offerings[offering]);
   }
   if (props.rating !== undefined) {
     const rated = props.rating !== null && props.rating !== '';
@@ -683,6 +687,7 @@ function ListingCardComponent(props: ListingCardProps) {
     testID,
   } = props;
   const { messages } = useMessages(LISTING_CARD_MESSAGES);
+  const { messages: offeringText } = useMessages(OFFERING_BADGE_MESSAGES);
   const previousPhotoLabel = previousPhotoLabelProp ?? messages.previousPhoto;
   const nextPhotoLabel = nextPhotoLabelProp ?? messages.nextPhoto;
   const theme = useTheme();
@@ -746,7 +751,7 @@ function ListingCardComponent(props: ListingCardProps) {
   if (loading) return <ListingCardSkeleton layout={layout} compact={compact} style={style} testID={testID} />;
 
   const horizontal = layout === 'horizontal';
-  const name = accessibilityLabel ?? composeName(props, messages);
+  const name = accessibilityLabel ?? composeName(props, messages, offeringText.offerings);
   const shownStatus = statusLabelFor(status, statusLabel, messages.statuses);
   const hasBadge = badge != null && badge !== '';
   const offeringList = uniqueOfferings(offerings);

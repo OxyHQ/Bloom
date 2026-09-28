@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, type ReactNode } 
 import { View } from 'react-native';
 
 import { FieldControlProvider, type FieldControlValue } from '../field/context';
+import { useMessages } from '../locale/messages';
 import {
   Select,
   SelectContent,
@@ -14,7 +15,8 @@ import {
 } from '../select';
 import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel } from '../text-field';
 import { TEXT_FIELD_RADIUS } from '../text-field/shared';
-import { CARD_FORM_LABELS, CARD_FORM_PLACEHOLDERS } from './constants';
+import { CARD_FORM_PLACEHOLDERS } from './constants';
+import { CARD_FORM_MESSAGES } from './messages';
 import {
   applyCardExpiryEdit,
   applyCardNumberEdit,
@@ -151,6 +153,7 @@ function CardFormNumberComponent({
   style,
   testID,
 }: CardFormNumberProps) {
+  const { messages } = useMessages(CARD_FORM_MESSAGES);
   const member = useCardFormPart({
     accessibilityLabel,
     label,
@@ -159,7 +162,7 @@ function CardFormNumberComponent({
     disabled,
     required,
     nativeID,
-    fallbackName: CARD_FORM_LABELS.number,
+    fallbackName: messages.labels.number,
   });
   const digits = cardDigits(value);
   const detected = useMemo(
@@ -248,6 +251,7 @@ function CardFormExpiryComponent({
   style,
   testID,
 }: CardFormExpiryProps) {
+  const { messages } = useMessages(CARD_FORM_MESSAGES);
   const member = useCardFormPart({
     accessibilityLabel,
     label,
@@ -256,7 +260,7 @@ function CardFormExpiryComponent({
     disabled,
     required,
     nativeID,
-    fallbackName: CARD_FORM_LABELS.expiry,
+    fallbackName: messages.labels.expiry,
   });
 
   const handleChange = useCallback(
@@ -325,6 +329,7 @@ function CardFormSecurityCodeComponent({
   style,
   testID,
 }: CardFormSecurityCodeProps) {
+  const { messages } = useMessages(CARD_FORM_MESSAGES);
   const member = useCardFormPart({
     accessibilityLabel,
     label,
@@ -333,7 +338,7 @@ function CardFormSecurityCodeComponent({
     disabled,
     required,
     nativeID,
-    fallbackName: CARD_FORM_LABELS.securityCode,
+    fallbackName: messages.labels.securityCode,
   });
 
   const handleChange = useCallback(
@@ -394,6 +399,7 @@ function CardFormNameComponent({
   style,
   testID,
 }: CardFormNameProps) {
+  const { messages } = useMessages(CARD_FORM_MESSAGES);
   const member = useCardFormPart({
     accessibilityLabel,
     label,
@@ -402,7 +408,7 @@ function CardFormNameComponent({
     disabled,
     required,
     nativeID,
-    fallbackName: CARD_FORM_LABELS.name,
+    fallbackName: messages.labels.name,
   });
 
   return (
@@ -457,6 +463,7 @@ function CardFormPostcodeComponent({
   style,
   testID,
 }: CardFormPostcodeProps) {
+  const { messages } = useMessages(CARD_FORM_MESSAGES);
   const member = useCardFormPart({
     accessibilityLabel,
     label,
@@ -465,7 +472,7 @@ function CardFormPostcodeComponent({
     disabled,
     required,
     nativeID,
-    fallbackName: CARD_FORM_LABELS.postcode,
+    fallbackName: messages.labels.postcode,
   });
 
   return (
@@ -522,10 +529,11 @@ function CardFormCountryComponent({
   required,
   nativeID,
   countries,
-  placeholder = 'Select a country',
+  placeholder: placeholderProp,
   style,
   testID,
 }: CardFormCountryProps) {
+  const { messages } = useMessages(CARD_FORM_MESSAGES);
   const member = useCardFormPart({
     accessibilityLabel,
     label,
@@ -534,8 +542,9 @@ function CardFormCountryComponent({
     disabled,
     required,
     nativeID,
-    fallbackName: CARD_FORM_LABELS.country,
+    fallbackName: messages.labels.country,
   });
+  const placeholder = placeholderProp ?? messages.selectCountry;
   const items = useMemo(() => countries.map((country) => ({ ...country })), [countries]);
 
   return (

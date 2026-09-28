@@ -3,6 +3,7 @@ import { RiChat3Line } from '../icons/remix/RiChat3Line';
 import { RiMapPin2Line } from '../icons/remix/RiMapPin2Line';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { CHECKOUT_SUMMARY_MESSAGES } from './messages';
 
 /**
  * The default glyph for each of the four rows a buyer checks. A caller that
@@ -16,15 +17,18 @@ export const CHECKOUT_ROW_ICON: Record<'address' | 'delivery' | 'payment' | 'not
   note: RiChat3Line,
 };
 
+// The English words below stay exported; the components speak
+// `CHECKOUT_SUMMARY_MESSAGES` in the resolved locale.
+
 /** Drawn in place of the value while nothing is chosen. */
-export const CHECKOUT_ROW_PLACEHOLDER = 'Not chosen yet';
+export const CHECKOUT_ROW_PLACEHOLDER = CHECKOUT_SUMMARY_MESSAGES.en.notChosen;
 
 /** The row's hint: what pressing it opens. */
-export const CHECKOUT_ROW_HINT = 'Opens the picker';
+export const CHECKOUT_ROW_HINT = CHECKOUT_SUMMARY_MESSAGES.en.opensPicker;
 
 /** The default words on the confirm control. */
-export const CHECKOUT_CONFIRM_LABEL = 'Place order';
-export const CHECKOUT_CONFIRM_BUSY_LABEL = 'Placing your order';
+export const CHECKOUT_CONFIRM_LABEL = CHECKOUT_SUMMARY_MESSAGES.en.placeOrder;
+export const CHECKOUT_CONFIRM_BUSY_LABEL = CHECKOUT_SUMMARY_MESSAGES.en.placingOrder;
 
 /**
  * The separator between the confirm label and the amount. A MIDDLE DOT rather

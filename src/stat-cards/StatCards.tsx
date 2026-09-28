@@ -15,12 +15,14 @@ import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
 import { RiArrowUpCircleFill } from '../icons/remix/RiArrowUpCircleFill';
 import { RiIndeterminateCircleFill } from '../icons/remix/RiIndeterminateCircleFill';
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { STAT_CARDS_MESSAGES } from './messages';
 import { resolveDashboardSurfaces, statusPair, toneColor, type DashboardSurfaces } from './tones';
 import type {
   StatCardProps,
@@ -244,6 +246,7 @@ function StatHint({
 }
 
 function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardProps) {
+  const { messages } = useMessages(STAT_CARDS_MESSAGES);
   const theme = useTheme();
   const fill = useCardFill(style);
   const surfaces = useMemo(() => resolveDashboardSurfaces(theme, fill), [theme, fill]);
@@ -267,7 +270,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
           </GradientTile>
           {stat.hint ? (
             <StatHint
-              label={stat.hintLabel ?? `About ${stat.label}`}
+              label={stat.hintLabel ?? messages.about(stat.label)}
               hint={stat.hint}
               surfaces={surfaces}
               testID={testID ? `${testID}-hint` : undefined}
@@ -301,7 +304,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
             numberOfLines={1}
             style={[styles.caption, { color: surfaces.textSecondary }]}
           >
-            {stat.caption ?? 'From last month'}
+            {stat.caption ?? messages.fromLastMonth}
           </Text>
           <DeltaPill
             delta={stat.delta}

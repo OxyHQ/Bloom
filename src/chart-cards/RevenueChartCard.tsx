@@ -13,6 +13,8 @@ import { monotoneXAreaPath, monotoneXPath, pointX, yScale } from './geometry';
 import { revenueSeriesTone } from './palette';
 import type { RevenueChartCardProps } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { useMessages } from '../locale/messages';
+import { CHART_CARDS_MESSAGES } from './messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
@@ -52,6 +54,7 @@ export function RevenueChartCard({
   testID,
   ...frame
 }: RevenueChartCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => revenueSeriesTone(theme), [theme]);
@@ -70,13 +73,13 @@ export function RevenueChartCard({
   const previousAnim = useChartProgress(previous);
 
   const label =
-    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? 'Revenue', frame.currentLabel, frame.previousLabel);
+    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? chartText.titles.revenue, frame.currentLabel, frame.previousLabel, chartText);
 
   return (
     <ChartCardFrame
       {...frame}
       data={data}
-      defaultTitle="Revenue"
+      defaultTitle={chartText.titles.revenue}
       defaultFormatValue={defaultFormatValue}
       seriesColor={stroke}
       comparisonColor={comparisonStroke}

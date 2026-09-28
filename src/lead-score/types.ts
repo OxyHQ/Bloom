@@ -49,11 +49,11 @@ export interface LeadScoreCardProps {
    * number ("72 of 100, hot"), which is otherwise announced as a percentage.
    */
   valueText?: string;
-  /** The heading over the ring. Default `"Lead score"`. */
+  /** The heading over the ring (`"Lead score"` in English). */
   title?: string;
   /** What the score is made of. */
   factors?: readonly LeadScoreFactor[];
-  /** The heading over the factors. Default `"What it is made of"`. */
+  /** The heading over the factors (`"What it is made of"` in English). */
   factorsLabel?: string;
   trend?: LeadScoreTrend;
   style?: StyleProp<ViewStyle>;

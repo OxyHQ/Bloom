@@ -13,9 +13,9 @@ import type { Theme } from '../theme/types';
 import {
   PAYMENT_STATUS_ADMONITION,
   PAYMENT_STATUS_ICON,
-  PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_TONE,
 } from './constants';
+import { PAYMENT_STATUS_MESSAGES, type PaymentStatusMessages } from './messages';
 import type { PaymentStatusLabels, PaymentStatusState } from './types';
 
 export interface PaymentStatusPresentation {
@@ -39,9 +39,10 @@ export interface PaymentStatusPresentation {
 export function resolvePaymentStatus(
   state: PaymentStatusState,
   options: { status?: string; labels?: PaymentStatusLabels; icon?: BloomIconComponent } = {},
+  messages: PaymentStatusMessages = PAYMENT_STATUS_MESSAGES.en,
 ): PaymentStatusPresentation {
   return {
-    words: options.status ?? options.labels?.[state] ?? PAYMENT_STATUS_LABELS[state],
+    words: options.status ?? options.labels?.[state] ?? messages.states[state],
     tone: PAYMENT_STATUS_TONE[state],
     icon: options.icon ?? PAYMENT_STATUS_ICON[state],
     admonition: PAYMENT_STATUS_ADMONITION[state],

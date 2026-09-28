@@ -3,7 +3,8 @@ import React, { memo } from 'react';
 import { ChipRow } from '../chip';
 import { SelectChip } from '../listing-actions/parts';
 import { Text } from '../typography';
-import { DELIVERY_DAY_LABEL } from './constants';
+import { useMessages } from '../locale/messages';
+import { DELIVERY_SLOT_MESSAGES } from './messages';
 import type { DeliverySlotDaysProps } from './types';
 
 /**
@@ -32,12 +33,14 @@ function DeliverySlotDaysComponent({
   days,
   value,
   onChange,
-  accessibilityLabel = DELIVERY_DAY_LABEL,
+  accessibilityLabel: accessibilityLabelProp,
   disabled = false,
   fadeColor,
   style,
   testID,
 }: DeliverySlotDaysProps) {
+  const { messages } = useMessages(DELIVERY_SLOT_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.day;
   return (
     <ChipRow
       role="radiogroup"

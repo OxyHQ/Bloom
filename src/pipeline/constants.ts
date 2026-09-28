@@ -3,10 +3,12 @@ import { RiCheckboxCircleLine } from '../icons/remix/RiCheckboxCircleLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
+import { PIPELINE_MESSAGES } from './messages';
 import type { DealHealth } from './types';
 
 /**
- * The one health signal, as a tone, a word and a glyph.
+ * The one health signal, as a tone, a word (English; the card speaks
+ * `PIPELINE_MESSAGES` in the resolved locale) and a glyph.
  *
  * A tone rather than a colour: `resolveAccentColors` owns what "warning" looks
  * like on the surface the card lands on, in both modes and in all 64 presets,
@@ -16,9 +18,9 @@ export const DEAL_HEALTH: Record<
   DealHealth,
   { tone: AccentTone; label: string; icon: BloomIconComponent }
 > = {
-  'on-track': { tone: 'success', label: 'On track', icon: RiCheckboxCircleLine },
-  'at-risk': { tone: 'warning', label: 'At risk', icon: RiAlarmWarningLine },
-  stalled: { tone: 'error', label: 'Stalled', icon: RiTimeLine },
+  'on-track': { tone: 'success', label: PIPELINE_MESSAGES.en.health['on-track'], icon: RiCheckboxCircleLine },
+  'at-risk': { tone: 'warning', label: PIPELINE_MESSAGES.en.health['at-risk'], icon: RiAlarmWarningLine },
+  stalled: { tone: 'error', label: PIPELINE_MESSAGES.en.health.stalled, icon: RiTimeLine },
 };
 
 /** Card geometry. */

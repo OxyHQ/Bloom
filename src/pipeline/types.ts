@@ -50,7 +50,7 @@ export interface DealCardProps {
    * sheet, a dialog).
    */
   onMove?: () => void;
-  /** The move action's accessible name. Default `"Move {title}"`. */
+  /** The move action's accessible name (`"Move {title}"` in English). */
   moveLabel?: string;
   /** Trailing slot beside the move action: a `DropdownMenu` trigger, an assign button. */
   actions?: ReactNode;
@@ -74,13 +74,13 @@ export interface PipelineStage {
   total?: string;
   /** The stage's dot. Default `primary`. */
   tone?: AccentTone;
-  /** What an empty column says. Default `"No deals in this stage"`. */
+  /** What an empty column says (`"No deals in this stage"` in English). */
   emptyLabel?: string;
   /** Draws placeholder cards instead of the children. */
   loading?: boolean;
   /** Renders the "load more" action under the cards. */
   onLoadMore?: () => void;
-  /** Default `"Load more"`. */
+  /** `"Load more"` in English. */
   loadMoreLabel?: string;
 }
 

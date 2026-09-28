@@ -60,11 +60,11 @@ There is no pager, no dots and no arrows. A shelf scrolls sideways through *vend
 
 ## The readings are drawn one way and announced another
 
-"25–35 min" beside a clock is unambiguous to an eye and meaningless to a screen reader, which is not told about the glyph. So each reading carries a **word**, and `factLabels` is the one prop that translates all four:
+"25–35 min" beside a clock is unambiguous to an eye and meaningless to a screen reader, which is not told about the glyph. So each reading carries a **word**, localised via `BloomProvider locale` along with the status pill, "New" and the rating sentence; `factLabels` overrides the four words with your own:
 
 ```tsx
 <VendorCard
-  factLabels={{ deliveryTime: 'Tiempo de entrega', deliveryFee: 'Envío' }}
+  factLabels={{ deliveryTime: 'Arrives in', deliveryFee: 'Courier' }}
   …
 />
 ```

@@ -21,7 +21,7 @@ export interface QuestionnaireQuestion {
   options: ReadonlyArray<QuestionnaireOption>;
   /** Adds a free-text "Other" row after the options; pass an object to reword it. */
   other?: boolean | { label?: string; placeholder?: string };
-  /** Label for this question's step pill; "Step N" by default. */
+  /** Label for this question's step pill; "Step N" (in the locale) by default. */
   stepLabel?: string;
 }
 
@@ -37,19 +37,19 @@ export type QuestionnaireAnswers = Record<string, QuestionnaireAnswer>;
 
 /** The card's fixed strings, overridable for localisation. */
 export interface QuestionnaireLabels {
-  /** Default `'Previous'`. */
+  /** `'Previous'` in English. */
   previous?: string;
-  /** Default `'Next'`. */
+  /** `'Next'` in English. */
   next?: string;
-  /** Replaces Next on the last question. Default `'Done'`. */
+  /** Replaces Next on the last question. `'Done'` in English. */
   complete?: string;
-  /** The free-text row's title. Default `'Other'`. */
+  /** The free-text row's title (`'Other'` in English). */
   other?: string;
-  /** Default `'Enter your custom answer here'`. */
+  /** `'Enter your custom answer here'` in English. */
   otherPlaceholder?: string;
-  /** Names the corner dismiss button. Default `'Dismiss'`. */
+  /** Names the corner dismiss button (`'Dismiss'` in English). */
   dismiss?: string;
-  /** Names the step pill group. Default `'Steps'`. */
+  /** Names the step pill group (`'Steps'` in English). */
   steps?: string;
 }
 

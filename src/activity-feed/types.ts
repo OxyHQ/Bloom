@@ -55,9 +55,9 @@ export interface ActivityFeedProps {
   moreLabel?: string;
   /** Default `"Show less"`. */
   lessLabel?: string;
-  /** The trail under an entry. Default `` (name) => `Logged by ${name}` ``. */
+  /** The trail under an entry (`` (name) => `Logged by ${name}` `` in English). */
   formatLoggedBy?: (name: string) => string;
-  /** What an empty feed says. Default `"Nothing logged yet"`. */
+  /** What an empty feed says (`"Nothing logged yet"` in English). */
   emptyLabel?: string;
   /** Names the list. */
   accessibilityLabel?: string;
@@ -75,7 +75,7 @@ export interface ActivityFeedFiltersProps {
   counts?: Partial<Record<ActivityFeedKind, number>>;
   /** Overrides a kind's word, for a localised feed. */
   labels?: Partial<Record<ActivityFeedKind, string>>;
-  /** Names the row. Default `"Filter activity"`. */
+  /** Names the row (`"Filter activity"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

@@ -14,6 +14,8 @@ import { useActiveIndex } from './primitives/use-active-index';
 import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /** One sub-score: an arc on the ring and a row in the panel. */
 export interface SleepMetric {
@@ -102,7 +104,7 @@ function Chevron16({ d, color }: { d: string; color: string }) {
  */
 export function SleepScoreCard({
   metrics,
-  title = 'Sleep score',
+  title: titleProp,
   scoreLabel,
   range,
   height = SLEEP_CARD_HEIGHT,
@@ -112,6 +114,8 @@ export function SleepScoreCard({
   style,
   testID,
 }: SleepScoreCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.sleepScore;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -159,7 +163,7 @@ export function SleepScoreCard({
 
   const a11y =
     accessibilityLabel ??
-    `${title}: ${total} of ${totalMax}, ${verdict}. ${metrics.map((m) => `${m.label} ${m.score} of ${m.max}`).join(', ')}`;
+    `${title}: ${chartText.scoreOf(String(total), String(totalMax))}, ${verdict}. ${metrics.map((m) => `${m.label} ${chartText.scoreOf(String(m.score), String(m.max))}`).join(', ')}`;
 
   return (
     <ChartCardSurface radius="radius-20"

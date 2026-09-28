@@ -1,7 +1,9 @@
 import React, { memo } from 'react';
 
 import { Badge } from '../badge';
-import { OFFERING_BADGE_RUNG, OFFERING_ICONS, OFFERING_LABELS, OFFERING_TONES } from './shared';
+import { useMessages } from '../locale/messages';
+import { OFFERING_BADGE_MESSAGES } from './messages';
+import { OFFERING_BADGE_RUNG, OFFERING_ICONS, OFFERING_TONES } from './shared';
 import type { OfferingBadgeProps } from './types';
 
 /**
@@ -26,11 +28,12 @@ function OfferingBadgeComponent({
   style,
   testID,
 }: OfferingBadgeProps) {
+  const { messages } = useMessages(OFFERING_BADGE_MESSAGES);
   const Icon = icon === true ? OFFERING_ICONS[offering] : icon === false ? undefined : icon;
 
   return (
     <Badge
-      content={label ?? OFFERING_LABELS[offering]}
+      content={label ?? messages.offerings[offering]}
       icon={Icon}
       size={OFFERING_BADGE_RUNG[size]}
       color={OFFERING_TONES[offering]}

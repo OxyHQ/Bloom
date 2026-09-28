@@ -1,11 +1,12 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { PriceSummary } from '../price-breakdown';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { EARNINGS_LABELS } from './constants';
+import { EARNINGS_MESSAGES } from './messages';
 import { resolveEarningsPaint } from './shared';
 import type { EarningsBreakdownProps } from './types';
 
@@ -38,10 +39,11 @@ function EarningsBreakdownComponent({
   style,
   testID,
 }: EarningsBreakdownProps) {
+  const { messages } = useMessages(EARNINGS_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveEarningsPaint(theme, surface), [theme, surface]);
-  const labels = useMemo(() => ({ ...EARNINGS_LABELS, ...labelOverrides }), [labelOverrides]);
+  const labels = useMemo(() => ({ ...messages, ...labelOverrides }), [messages, labelOverrides]);
   const heading = title === undefined ? labels.breakdown : title;
 
   return (
