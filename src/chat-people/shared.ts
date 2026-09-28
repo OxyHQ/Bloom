@@ -6,6 +6,7 @@ import {
   resolveButtonRamps,
 } from '../button/shared';
 import type { Theme } from '../theme/types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 import type {
   ContactSection,
   MemberRole,
@@ -143,25 +144,13 @@ export function contactSectionIndex(
 //  Groups and members
 // ---------------------------------------------------------------------------
 
-export const NEW_GROUP_LABELS: NewGroupFormLabels = {
-  photo: 'Choose a group photo',
-  name: 'Group name',
-  namePlaceholder: 'Name this group',
-  description: 'Description',
-  descriptionPlaceholder: 'What is this group for?',
-  members: (count) => (count === 1 ? '1 member' : `${count} members`),
-  addMembers: 'Add members',
-  remove: (name) => `Remove ${name}`,
-};
+/**
+ * The English strings, kept for callers that import them. Components read the
+ * localised ones from `CHAT_PEOPLE_MESSAGES` (see `docs/locale.mdx`).
+ */
+export const NEW_GROUP_LABELS: NewGroupFormLabels = CHAT_PEOPLE_MESSAGES.en.newGroup;
 
-export const MEMBER_LABELS: MemberRoleLabels = {
-  owner: 'Owner',
-  admin: 'Admin',
-  promote: 'Promote to admin',
-  restrict: 'Restrict',
-  remove: 'Remove from group',
-  actions: (name) => `Actions for ${name}`,
-};
+export const MEMBER_LABELS: MemberRoleLabels = CHAT_PEOPLE_MESSAGES.en.member;
 
 /** `owner` and `admin` wear a badge; `member` wears nothing. */
 export function memberBadgeLabel(
@@ -193,18 +182,8 @@ export function nameCounterTone(length: number, max: number): 'quiet' | 'warn' |
 //  Stories
 // ---------------------------------------------------------------------------
 
-export const STORY_VIEWER_LABELS: StoryViewerLabels = {
-  close: 'Close story',
-  previous: 'Previous story',
-  next: 'Next story',
-  mute: 'Mute story',
-  unmute: 'Unmute story',
-  more: 'Story options',
-  replyPlaceholder: 'Reply…',
-  send: 'Send reply',
-  progress: (index, count) => `Story ${index + 1} of ${count}`,
-  react: (emoji) => `React with ${emoji}`,
-};
+/** The English strings, kept for callers that import them (see `NEW_GROUP_LABELS`). */
+export const STORY_VIEWER_LABELS: StoryViewerLabels = CHAT_PEOPLE_MESSAGES.en.story;
 
 /** The default time one story plays for. */
 export const STORY_DURATION_MS = 5000;

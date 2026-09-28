@@ -3,10 +3,12 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { Avatar } from '../avatar/Avatar';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveChatPeoplePaint } from './shared';
 import type { PersonSummary, SelectedChipsRowProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `SelectedChipsRow`: the people already picked, above the search field.
@@ -100,7 +102,8 @@ function SelectedChipsRowComponent({
 }: SelectedChipsRowProps) {
   const theme = useTheme();
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
-  const removeLabel = formatRemoveLabel ?? ((name: string) => `Remove ${name}`);
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
+  const removeLabel = formatRemoveLabel ?? messages.newGroup.remove;
 
   if (people.length === 0) {
     return emptyState === undefined ? null : (

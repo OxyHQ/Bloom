@@ -5,8 +5,10 @@ import { RiCheckDoubleLine } from '../icons/remix/RiCheckDoubleLine';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
-import { MESSAGE_STATUS_LABELS, resolveChatIndicatorPaint } from './shared';
+import { resolveChatIndicatorPaint } from './shared';
+import { CHAT_INDICATORS_MESSAGES } from './messages';
 import type { MessageStatusProps } from './types';
 
 /**
@@ -35,9 +37,10 @@ function MessageStatusComponent({
   testID,
 }: MessageStatusProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_INDICATORS_MESSAGES);
   const paint = useMemo(() => resolveChatIndicatorPaint(theme), [theme]);
 
-  const name = label ?? MESSAGE_STATUS_LABELS[status];
+  const name = label ?? messages.status[status];
   const hidden = name === '';
 
   // `failed` ignores `color`: an error repainted to match the bubble it sits in

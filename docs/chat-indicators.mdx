@@ -36,7 +36,7 @@ clock, formats a name or decides what "recently" means.
 | `size`               | `'small'` 8, `'medium'` 10 (default), `'large'` 12 — the DOT, not the footprint |
 | `ringColor`          | the colour separating the dot from what is behind it; default the page background |
 | `ringWidth`          | default `2`; `0` draws no ring                                               |
-| `accessibilityLabel` | default "Online" / "Away" / "Offline" / "Busy"; `""` hides it from assistive tech |
+| `accessibilityLabel` | default "Online" / "Away" / "Offline" / "Busy" (localised via `BloomProvider locale`); `""` hides it from assistive tech |
 
 `offline` is a HOLLOW dot, not a grey one. Four states told apart by hue alone
 are four states one reader in twelve cannot tell apart at all, so the quiet one
@@ -86,6 +86,8 @@ The delivery ticks on an OUTGOING message. Never draw it on an incoming one.
 | `read`      | two ticks              | ACCENT        | "Read"       |
 | `failed`    | filled error circle    | negative      | "Not sent"   |
 
+The names are localised via `BloomProvider locale`.
+
 `size` is `12 | 14 | 16` (default 14). `color` repaints the glyph for ticks on a
 coloured bubble — except `failed`, which stays negative: an error recoloured to
 match the bubble stops reading as an error. `label=""` hides the glyph from
@@ -117,9 +119,9 @@ confusion, and the tick count is the same.
 | `textStyle`          | the digits                                                          |
 
 The clamp is a layout constraint, not information: the drawn text says "99+"
-while the name still says "128 unread messages". The default name is English
-("1 unread message" / "3 unread messages", "Unread" for a bare dot) — translate
-it with `formatLabel`.
+while the name still says "128 unread messages". The default name
+("1 unread message" / "3 unread messages", "Unread" for a bare dot) is localised
+via `BloomProvider locale`; `formatLabel` rewords it.
 
 `formatUnreadCount(count, max = 99)` is exported for the places that need the
 same string outside a badge (a tab title, a document title).

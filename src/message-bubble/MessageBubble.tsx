@@ -9,7 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { mixColor } from '../button/shared';
-import { MESSAGE_STATUS_LABELS } from '../chat-indicators';
+import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
+import { useMessages } from '../locale/messages';
 import { webDataSet } from '../styles/web-data';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -41,6 +42,7 @@ import {
   senderNameColor,
   sidePaint,
 } from './shared';
+import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import { SwipeToReply } from './SwipeToReply';
 import type { MessageBubbleProps } from './types';
 
@@ -143,9 +145,11 @@ function MessageBubbleComponent({
   testID,
 }: MessageBubbleProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_BUBBLE_MESSAGES);
+  const { messages: indicatorMessages } = useMessages(CHAT_INDICATORS_MESSAGES);
   const paint = useMemo(() => resolveMessageBubblePaint(theme), [theme]);
   const side = sidePaint(paint, direction);
-  const text_ = resolveLabels(labels);
+  const text_ = resolveLabels(labels, messages);
   const outgoing = direction === 'outgoing';
 
   if (IS_WEB) adoptStyleSheet(MESSAGE_BUBBLE_STYLE_ID, MESSAGE_BUBBLE_CSS);
@@ -222,7 +226,7 @@ function MessageBubbleComponent({
         channelViews,
         failed ? text_.failed : undefined,
         pending && !failed ? text_.pending : undefined,
-        outgoing && status !== undefined && !failed ? MESSAGE_STATUS_LABELS[status] : undefined,
+        outgoing && status !== undefined && !failed ? indicatorMessages.status[status] : undefined,
         selected === true ? text_.selected : undefined,
       ],
     });
@@ -285,7 +289,7 @@ function MessageBubbleComponent({
       ]}
     >
       {forwardedFrom === undefined || deleted ? null : (
-        <ForwardedLine name={forwardedFrom} prefix={text_.forwardedFrom} side={side} />
+        <ForwardedLine text={text_.forwardedFrom(forwardedFrom)} side={side} />
       )}
       {senderName === undefined || deleted ? null : (
         <Text variant="body-2-medium" numberOfLines={1} style={{ color: resolvedSenderColor }}>
@@ -404,6 +408,7 @@ function MessageBubbleComponent({
           onToggle={onToggleReaction}
           onAdd={onAddReaction}
           addLabel={text_.addReaction}
+          selectedWord={messages.reactionSelected}
         />
       )}
     </>

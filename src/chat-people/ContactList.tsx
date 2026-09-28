@@ -1,11 +1,13 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ContactRow } from './ContactRow';
 import { contactIndexLetters, contactSectionIndex, resolveChatPeoplePaint } from './shared';
 import type { ContactListProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `ContactList`: contacts in A–Z sections, with the index rail.
@@ -48,6 +50,7 @@ function ContactListComponent({
   testID,
 }: ContactListProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
   const scroller = useRef<ScrollView | null>(null);
   const offsets = useRef<Map<string, number>>(new Map());
@@ -56,7 +59,7 @@ function ContactListComponent({
   const filled = sections.filter((section) => section.contacts.length > 0);
   const letters = contactIndexLetters(filled, indexLetters);
   const railVisible = showIndex ?? filled.length > 1;
-  const jumpLabel = formatJumpLabel ?? ((letter: string) => `Jump to ${letter}`);
+  const jumpLabel = formatJumpLabel ?? messages.jumpTo;
 
   const onSectionLayout = useCallback((letter: string, event: LayoutChangeEvent) => {
     offsets.current.set(letter, event.nativeEvent.layout.y);

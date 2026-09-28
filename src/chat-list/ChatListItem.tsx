@@ -18,7 +18,6 @@ import {
   CHAT_LIST_STYLE_ID,
   CHAT_ROW_GEOMETRY,
   CHAT_ROW_RADIUS,
-  DEFAULT_ITEM_LABELS,
   IS_WEB,
   chatMarker,
   composeChatRowName,
@@ -26,6 +25,9 @@ import {
   resolveChatListPaint,
 } from './shared';
 import type { ChatAction, ChatListItemProps } from './types';
+import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * One conversation in the list.
@@ -93,6 +95,8 @@ function ChatListItemComponent({
   testID,
 }: ChatListItemProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
+  const { messages: indicatorMessages } = useMessages(CHAT_INDICATORS_MESSAGES);
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
@@ -114,7 +118,7 @@ function ChatListItemComponent({
     [paint],
   );
 
-  const text = useMemo(() => ({ ...DEFAULT_ITEM_LABELS, ...labels }), [labels]);
+  const text = useMemo(() => ({ ...messages.item, ...labels }), [messages, labels]);
   const geo = CHAT_ROW_GEOMETRY[density];
   const unread = hasUnread(unreadCount, unreadDot);
   const badge = chatMarker(kind, verified, text);
@@ -135,7 +139,9 @@ function ChatListItemComponent({
         outgoingStatus,
       },
       text,
-      (count) => (count === 1 ? '1 unread message' : `${count} unread messages`),
+      // A bare dot has no count to say: it is just "Unread".
+      (count) => (count > 0 ? indicatorMessages.unreadCount(count) : indicatorMessages.unread),
+      indicatorMessages.status,
     );
 
   // --- the preview line ----------------------------------------------------

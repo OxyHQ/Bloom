@@ -1,5 +1,6 @@
 import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
+import { CHAT_INDICATORS_MESSAGES, type ChatIndicatorsMessages } from './messages';
 import type {
   MessageDeliveryStatus,
   PresenceDotSize,
@@ -36,21 +37,13 @@ export const UNREAD_DOT_SIZES: Record<UnreadBadgeSize, number> = {
   medium: 10,
 };
 
-/** Default English names. Apps in other languages pass their own. */
-export const PRESENCE_LABELS: Record<PresenceStatus, string> = {
-  online: 'Online',
-  idle: 'Away',
-  offline: 'Offline',
-  busy: 'Busy',
-};
+/**
+ * The English names, kept for callers that import them. Components read the
+ * localised ones from `CHAT_INDICATORS_MESSAGES` (see `docs/locale.mdx`).
+ */
+export const PRESENCE_LABELS: Record<PresenceStatus, string> = CHAT_INDICATORS_MESSAGES.en.presence;
 
-export const MESSAGE_STATUS_LABELS: Record<MessageDeliveryStatus, string> = {
-  sending: 'Sending…',
-  sent: 'Sent',
-  delivered: 'Delivered',
-  read: 'Read',
-  failed: 'Not sent',
-};
+export const MESSAGE_STATUS_LABELS: Record<MessageDeliveryStatus, string> = CHAT_INDICATORS_MESSAGES.en.status;
 
 /**
  * `count` as the pill draws it: `"7"`, or `"99+"` once it passes `max`.
@@ -63,10 +56,13 @@ export function formatUnreadCount(count: number, max = 99): string {
   return n > max ? `${max}+` : String(n);
 }
 
-/** The default accessible name for a count. */
-export function defaultUnreadLabel(count: number): string {
-  if (count <= 0) return 'Unread';
-  return count === 1 ? '1 unread message' : `${count} unread messages`;
+/** The default accessible name for a count, in `messages`' language (English by default). */
+export function defaultUnreadLabel(
+  count: number,
+  messages: ChatIndicatorsMessages = CHAT_INDICATORS_MESSAGES.en,
+): string {
+  if (count <= 0) return messages.unread;
+  return messages.unreadCount(count);
 }
 
 /** Every colour this family paints, from the theme only. */

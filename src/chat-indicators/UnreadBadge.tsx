@@ -1,6 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -11,6 +12,7 @@ import {
   UNREAD_BADGE_HEIGHTS,
   UNREAD_DOT_SIZES,
 } from './shared';
+import { CHAT_INDICATORS_MESSAGES } from './messages';
 import type { UnreadBadgeProps, UnreadBadgeSize } from './types';
 
 /**
@@ -29,9 +31,9 @@ import type { UnreadBadgeProps, UnreadBadgeSize } from './types';
  * the plain dot whatever the count, for "there is something here" without a
  * number.
  *
- * Accessibility: one `img` named "3 unread messages" — the digits alone
- * announce as "3", which is not a message count. Pass `formatLabel` to
- * translate it, or `accessibilityLabel` to replace it outright. The drawn text
+ * Accessibility: one `img` named "3 unread messages" (in the app's locale) — the
+ * digits alone announce as "3", which is not a message count. Pass `formatLabel` to
+ * reword it, or `accessibilityLabel` to replace it outright. The drawn text
  * is hidden so the name is not read twice.
  *
  * Above `max` the text reads "99+" while the NAME keeps the real count: the
@@ -56,6 +58,7 @@ function UnreadBadgeComponent({
   testID,
 }: UnreadBadgeProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_INDICATORS_MESSAGES);
   const paint = useMemo(() => resolveChatIndicatorPaint(theme), [theme]);
 
   const n = Number.isFinite(count) ? Math.floor(count) : 0;
@@ -63,7 +66,7 @@ function UnreadBadgeComponent({
 
   const fill = muted ? paint.mutedFill : paint.accent;
   const on = muted ? paint.onMuted : paint.onAccent;
-  const label = accessibilityLabel ?? (formatLabel ? formatLabel(n) : defaultUnreadLabel(n));
+  const label = accessibilityLabel ?? (formatLabel ? formatLabel(n) : defaultUnreadLabel(n, messages));
 
   if (dot) {
     const d = UNREAD_DOT_SIZES[size];

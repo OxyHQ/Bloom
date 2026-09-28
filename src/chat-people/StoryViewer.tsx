@@ -9,11 +9,13 @@ import { RiSendPlaneLine } from '../icons/remix/RiSendPlaneLine';
 import { RiVolumeMuteLine } from '../icons/remix/RiVolumeMuteLine';
 import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { TextFieldInput } from '../text-field';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { StoryProgressBars } from './StoryProgressBars';
-import { STORY_DURATION_MS, STORY_VIEWER_LABELS, resolveChatPeoplePaint } from './shared';
+import { STORY_DURATION_MS, resolveChatPeoplePaint } from './shared';
 import type { StoryViewerProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
 
 /**
  * `StoryViewer`: one story, full bleed.
@@ -120,8 +122,9 @@ function StoryViewerComponent({
   testID,
 }: StoryViewerProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
-  const l = { ...STORY_VIEWER_LABELS, ...labels };
+  const l = { ...messages.story, ...labels };
   const current = stories[index];
   const storyDuration = current?.duration ?? duration;
 

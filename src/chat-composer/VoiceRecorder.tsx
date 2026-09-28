@@ -37,7 +37,7 @@ import {
   BAR_PADDING,
   BAR_RADIUS,
   CONTROL_SIZE,
-  VOICE_RECORDER_LABELS,
+  voiceRecorderLabels,
   WAVE_BAR_GAP,
   WAVE_BAR_WIDTH,
   WAVE_HEIGHT,
@@ -47,6 +47,8 @@ import {
 } from './shared';
 import type { VoiceRecorderProps } from './types';
 import { IS_WEB, dataHook, useChatComposerWebCss } from './web-hooks';
+import { useMessages } from '../locale/messages';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 
@@ -150,9 +152,10 @@ export function VoiceRecorder({
   accessibilityLabel,
 }: VoiceRecorderProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
   const palette = resolveChatComposerPalette(theme);
   useChatComposerWebCss();
-  const labels = { ...VOICE_RECORDER_LABELS, ...labelOverrides };
+  const labels = { ...voiceRecorderLabels(messages), ...labelOverrides };
   const preview = state === 'preview';
   const total = duration ?? seconds;
 

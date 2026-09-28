@@ -58,7 +58,7 @@ counts as "today" depends on a timezone and a locale the component cannot see.
 | `pending` `failed` `deleted` `selected` `highlighted` | the five states                            |
 | `onPress` `onLongPress` `onContextMenu` `onDoublePress` `onSwipeReply` | the gestures              |
 | `maxWidth`                | default `'78%'`                                                               |
-| `labels`                  | every English string this family draws                                        |
+| `labels`                  | overrides the strings this family draws (localised by default)                |
 
 ### Colour
 
@@ -299,15 +299,16 @@ the `+` pill at the end; leave it out and there is none.
 
 ## Localisation
 
-Every English string is in `labels`:
+The bubble's own strings (and `UnreadSeparator`'s and `TypingBubble`'s
+defaults) are localised via `BloomProvider locale`. `labels` overrides them
+one key at a time, for wording of your own:
 
 ```tsx
 <MessageList
   items={items}
-  labels={{ deleted: 'Se eliminó este mensaje', forwardedFrom: 'Reenviado de' }}
+  labels={{ deleted: 'Message removed by a moderator' }}
 />
 ```
 
-`DateSeparator`, `UnreadSeparator`, `SystemMessage`, `CallSummaryRow` and
-`TypingBubble` take their text directly, since every string they draw is one
-the app already had to format.
+`DateSeparator`, `SystemMessage` and `CallSummaryRow` take their text
+directly, since every string they draw is one the app already had to format.

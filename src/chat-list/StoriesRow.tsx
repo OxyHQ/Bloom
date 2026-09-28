@@ -15,6 +15,8 @@ import {
   sortStories,
 } from './shared';
 import type { StoriesRowProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * The strip of story rings above the conversations.
@@ -45,12 +47,14 @@ function StoriesRowComponent({
   seenLast = true,
   gap = 12,
   paddingHorizontal = 16,
-  accessibilityLabel = 'Stories',
+  accessibilityLabel: accessibilityLabelProp,
   labels,
   style,
   testID,
 }: StoriesRowProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.stories;
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
@@ -60,8 +64,8 @@ function StoriesRowComponent({
     [seenLast, stories],
   );
 
-  const ownName = own?.name ?? labels?.own ?? 'Your story';
-  const addLabel = labels?.add ?? 'Add to your story';
+  const ownName = own?.name ?? labels?.own ?? messages.ownStory;
+  const addLabel = labels?.add ?? messages.addStory;
   // The ring reserves `thickness + gap` on every side (2 + 2 by default), so the
   // caption column is the ring's real footprint, not the avatar's.
   const footprint = size + 8;
@@ -138,7 +142,7 @@ function StoriesRowComponent({
               state={story.state ?? 'unseen'}
               size={size}
               onPress={onStoryPress ? () => onStoryPress(story.id) : undefined}
-              accessibilityLabel={`${story.name}'s story`}
+              accessibilityLabel={messages.storyOf(story.name)}
               testID={testID ? `${testID}-story-${story.id}` : undefined}
             >
               <Avatar source={story.avatar ?? null} name={story.name} size={size} />

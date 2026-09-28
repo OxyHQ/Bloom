@@ -6,6 +6,7 @@ import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useHovered, useMessageMediaCss } from './parts';
@@ -17,6 +18,7 @@ import {
   resolveMessageMediaPaint,
   type MessageMediaPaint,
 } from './shared';
+import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';
 import type { PollMessageProps, PollOption } from './types';
 
 /** The mark's box. 20px: a radio you can hit without hitting the row. */
@@ -32,6 +34,7 @@ interface OptionRowProps {
   quiz: boolean;
   picked: boolean;
   paint: MessageMediaPaint;
+  messages: MessageMediaMessages;
   onPress?: () => void;
   testID?: string;
 }
@@ -59,6 +62,7 @@ const OptionRow = memo(function OptionRow({
   quiz,
   picked,
   paint,
+  messages,
   onPress,
   testID,
 }: OptionRowProps) {
@@ -93,7 +97,7 @@ const OptionRow = memo(function OptionRow({
     </View>
   );
 
-  const label = (
+  const labelBlock = (
     <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
         <Text
@@ -149,9 +153,14 @@ const OptionRow = memo(function OptionRow({
   };
 
   if (results) {
-    const name = `${option.label}, ${percent}%${correct ? ', correct answer' : ''}${
-      wrong ? ', your answer' : ''
-    }`;
+    const name = [
+      option.label,
+      `${percent}%`,
+      correct ? messages.correctAnswer : undefined,
+      wrong ? messages.yourAnswer : undefined,
+    ]
+      .filter((part): part is string => part !== undefined)
+      .join(', ');
     return (
       <View
         role="progressbar"
@@ -165,7 +174,7 @@ const OptionRow = memo(function OptionRow({
         testID={testID}
       >
         {mark}
-        {label}
+        {labelBlock}
       </View>
     );
   }
@@ -183,7 +192,7 @@ const OptionRow = memo(function OptionRow({
       testID={testID}
     >
       {mark}
-      {label}
+      {labelBlock}
     </Pressable>
   );
 });
@@ -217,11 +226,11 @@ function PollMessageComponent({
   showResults = false,
   onVote,
   onViewResults,
-  voteLabel = 'Vote',
-  viewResultsLabel = 'View results',
-  anonymousLabel = 'Anonymous voting',
-  quizLabel = 'Quiz',
-  formatVotes = formatVoteCount,
+  voteLabel: voteLabelProp,
+  viewResultsLabel: viewResultsLabelProp,
+  anonymousLabel: anonymousLabelProp,
+  quizLabel: quizLabelProp,
+  formatVotes: formatVotesProp,
   hintLabel,
   width = MESSAGE_MEDIA_WIDTH,
   radius = MESSAGE_MEDIA_RADIUS,
@@ -232,6 +241,12 @@ function PollMessageComponent({
   testID,
 }: PollMessageProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const voteLabel = voteLabelProp ?? messages.vote;
+  const viewResultsLabel = viewResultsLabelProp ?? messages.viewResults;
+  const anonymousLabel = anonymousLabelProp ?? messages.anonymousVoting;
+  const quizLabel = quizLabelProp ?? messages.quiz;
+  const formatVotes = formatVotesProp ?? ((n: number) => formatVoteCount(n, messages));
   useMessageMediaCss();
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
@@ -269,7 +284,7 @@ function PollMessageComponent({
     [multiple, onVote],
   );
 
-  const hint = hintLabel ?? (multiple ? 'Select one or more' : 'Select one');
+  const hint = hintLabel ?? (multiple ? messages.selectOneOrMore : messages.selectOne);
   const labels = [quiz ? quizLabel : undefined, anonymous ? anonymousLabel : undefined].filter(
     (l): l is string => Boolean(l),
   );
@@ -323,6 +338,7 @@ function PollMessageComponent({
             quiz={quiz}
             picked={isPicked(option)}
             paint={paint}
+            messages={messages}
             onPress={results ? undefined : () => pick(option)}
             testID={testID ? `${testID}-option-${option.id}` : undefined}
           />

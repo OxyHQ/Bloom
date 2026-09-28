@@ -31,8 +31,8 @@ export interface PresenceDotProps {
   /** Ring thickness. Default `2`. `0` draws no ring. */
   ringWidth?: number;
   /**
-   * The accessible name. Defaults to the English word for the status
-   * ("Online", "Away", "Offline", "Busy") — pass a translated one.
+   * The accessible name. Defaults to the status's word in the app's locale
+   * (`'Online'`, `'Away'`, `'Offline'`, `'Busy'` in English).
    * An empty string hides the dot from assistive tech, for rows that already
    * say the status in their own text.
    */
@@ -76,8 +76,8 @@ export interface MessageStatusProps {
    */
   color?: string;
   /**
-   * The accessible name. Defaults per status: "Sending…", "Sent", "Delivered",
-   * "Read", "Not sent". An empty string hides the glyph from assistive tech.
+   * The accessible name. Defaults per status, in the app's locale
+   * (`'Sending…'`, `'Sent'`, `'Delivered'`, `'Read'`, `'Not sent'` in English). An empty string hides the glyph from assistive tech.
    */
   label?: string;
   style?: StyleProp<ViewStyle>;
@@ -103,9 +103,9 @@ export interface UnreadBadgeProps {
   /** Default `medium`. */
   size?: UnreadBadgeSize;
   /**
-   * Builds the accessible name from the count. Default English:
-   * "1 unread message" / "3 unread messages", and "Unread" for a `dot` with no
-   * count. It receives the REAL count, not the clamped text.
+   * Builds the accessible name from the count. Defaults to the app's locale
+   * ("1 unread message" / "3 unread messages", and "Unread" for a `dot` with no
+   * count, in English). It receives the REAL count, not the clamped text.
    */
   formatLabel?: (count: number) => string;
   /** Replaces the composed name entirely. */

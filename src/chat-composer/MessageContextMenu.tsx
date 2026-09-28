@@ -26,6 +26,8 @@ import { useTheme } from '../theme/use-theme';
 import { ReactionPicker } from './ReactionPicker';
 import { REACTION_PICKER_EMOJIS, resolveChatComposerPalette } from './shared';
 import type { MessageContextMenuProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_COMPOSER_MESSAGES } from './messages';
 
 export function MessageContextMenu({
   children,
@@ -38,12 +40,14 @@ export function MessageContextMenu({
   selectedReaction,
   onSelectReaction,
   onMoreReactions,
-  label = 'Message actions',
+  label: labelProp,
   style,
   reactionBarStyle,
   testID,
 }: MessageContextMenuProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
+  const label = labelProp ?? messages.messageActions;
   const palette = resolveChatComposerPalette(theme);
   const showReactions = reactions !== false && reactions.length > 0;
 
