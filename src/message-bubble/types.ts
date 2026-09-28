@@ -46,7 +46,7 @@ export interface MessageReaction {
   count: number;
   /** Highlights the pill in the accent and flips the toggle's pressed state. */
   mine?: boolean;
-  /** Accessible name. Default: `"<emoji>, <count>"` (plus ", selected"). */
+  /** Accessible name. Default: `"<emoji>, <count>"` (plus ", selected" — in the app's locale). */
   label?: string;
 }
 
@@ -64,7 +64,10 @@ export interface MessageReplyPreview {
 export type CallOutcome = 'incoming' | 'outgoing' | 'missed';
 
 export interface MessageBubbleLabels {
-  /** Prefixes the forwarded line. Default `"Forwarded from"`. */
+  /**
+   * Prefixes the forwarded line (`"Forwarded from"` + name). Defaults to the
+   * whole line in the app's locale ("Forwarded from Ana" in English).
+   */
   forwardedFrom: string;
   /** What a deleted bubble says. */
   deleted: string;
@@ -210,7 +213,7 @@ export interface DateSeparatorProps {
 }
 
 export interface UnreadSeparatorProps {
-  /** Default `"Unread messages"`. */
+  /** `"Unread messages"` in English; localised via `BloomProvider locale`. */
   label?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -254,7 +257,7 @@ export interface TypingBubbleProps {
   avatarSource?: string | { uri: string };
   showAvatar?: boolean;
   avatarSize?: number;
-  /** Default `"Typing…"` — the bubble draws dots and no text, so it needs one. */
+  /** `"Typing…"` in English (localised) — the bubble draws dots and no text, so it needs one. */
   label?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -313,7 +316,7 @@ export interface MessageListProps {
   /** Hides the sender line above each run — a 1:1 chat. */
   showSenderNames?: boolean;
   avatarSize?: number;
-  /** Default `"Unread messages"`. */
+  /** `"Unread messages"` in English; localised via `BloomProvider locale`. */
   unreadLabel?: string;
   labels?: Partial<MessageBubbleLabels>;
   /** Padding around the stack. Default `{ paddingHorizontal: 12, paddingVertical: 8 }`. */
