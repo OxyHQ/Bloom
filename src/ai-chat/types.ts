@@ -526,6 +526,13 @@ export interface AiChatShellProps {
    */
   surface?: boolean;
   /**
+   * Own all four native device safe-area edges in the shell frame and drawers.
+   * Default false; web is unchanged. Use PageHeader safeArea={false} inside
+   * this shell. BottomBar automatically excludes the bottom inset supplied
+   * here; modal descendants retain the original device inset context.
+   */
+  safeArea?: boolean;
+  /**
    * What scrolls the page — `AppShell`'s contract.
    *
    * - `container` (default) — the shell fills its parent and the conversation
