@@ -352,7 +352,7 @@ export function SettingsStoragePage({
   style,
   testID,
 }: SettingsStoragePageProps) {
-  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+  const { locale, messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   const common = useCommonMessages();
   const copy = messages.storage;
   useSettingsWebCss();
@@ -476,7 +476,7 @@ export function SettingsStoragePage({
               {copy.storedIn}
             </Text>
             <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
-              {copy.fileCount(filtered.length, filtered.length.toLocaleString())}
+              {copy.fileCount(filtered.length, filtered.length.toLocaleString(locale))}
             </Text>
           </View>
           <View style={[styles.tools, compact ? styles.toolsCompact : null]}>
