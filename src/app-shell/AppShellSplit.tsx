@@ -19,6 +19,7 @@ import { ScrollView, View } from 'react-native';
 
 import { AiChatResizeHandle } from '../ai-chat/AiChatShell';
 import { Z_INDEX } from '../styles/z-index';
+import { space } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
 
 import type { AppShellSplitPanesProps } from './types';
@@ -50,6 +51,7 @@ function Pane({
 }
 
 const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
+  variant = 'joined',
   list,
   detail,
   info,
@@ -98,11 +100,13 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
    * hit test at the divider's centre returned the pane, and the drag never
    * started. Raising the DIVIDER lifts the whole context over both panes.
    */
+  const separated = variant === 'separated';
   const divider = {
-    width: 1,
+    width: separated ? space.md : 1,
+    flexShrink: 0,
     alignSelf: 'stretch' as const,
     zIndex: Z_INDEX.floating,
-    backgroundColor: theme.colors.border,
+    backgroundColor: separated ? 'transparent' : theme.colors.border,
   };
   // Only the panes that are actually drawn count: alone, a pane fills the row.
   const solo = [showList, showDetail, showInfo].filter(Boolean).length === 1;
@@ -119,15 +123,21 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
         </Pane>
       ) : null}
       {showList && !solo ? (
-        <View style={divider}>
+        <View style={divider} testID={testID ? `${testID}-list-gap` : undefined}>
           {resizable ? (
-            <AiChatResizeHandle
-              label={resizeLabel}
-              onResizeStart={onResizeStart}
-              onResize={onResize}
-              onNudge={onNudge}
-              testID={testID ? `${testID}-divider` : undefined}
-            />
+            <View
+              pointerEvents="box-none"
+              testID={testID ? `${testID}-resize-anchor` : undefined}
+              style={separated ? { position: 'absolute', top: 0, bottom: 0, left: '50%', width: 0 } : { flex: 1 }}
+            >
+              <AiChatResizeHandle
+                label={resizeLabel}
+                onResizeStart={onResizeStart}
+                onResize={onResize}
+                onNudge={onNudge}
+                testID={testID ? `${testID}-divider` : undefined}
+              />
+            </View>
           ) : null}
         </View>
       ) : null}
@@ -140,7 +150,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
           {detail}
         </Pane>
       ) : null}
-      {showInfo && !solo ? <View style={divider} /> : null}
+      {showInfo && showDetail && !solo ? <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} /> : null}
       {showInfo ? (
         <Pane
           testID={testID ? `${testID}-pane-info` : undefined}

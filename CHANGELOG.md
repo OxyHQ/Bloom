@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.34.4 — 2026-09-29
+
+- Add separated split-pane layout with Bloom-owned gutters and centered resize controls for independent panel surfaces.
+- Keep the default joined layout and single-pane mobile behavior.
+
 ## 4.34.3 — 2026-09-29
 
 - Export AppShellSplitPanes for composing bounded list/detail/info panes inside existing Bloom shells, with the same defaults as AppShell split.

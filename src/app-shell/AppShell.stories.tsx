@@ -15,7 +15,8 @@ import {
   DEMO_TEAM,
 } from '../sidebar/Sidebar.stories';
 import { useTheme } from '../theme/use-theme';
-import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from './index';
+import { AiChatContainer } from '../ai-chat';
+import { AppShell, AppShellSplitPanes, AppShellHeader, NotificationBell, ProOfferCard } from './index';
 
 const meta: Meta<typeof AppShell> = {
   argTypes: {
@@ -183,4 +184,13 @@ export const ProOffer: Story = {
       testID="offer"
     />
   ),
+};
+
+
+export const SeparatedPanes: Story = {
+  render: () => <View style={{ height: 600, padding: 12 }}>
+    <AppShellSplitPanes variant="separated" testID="separated" paneScroll={false}
+      list={<AiChatContainer><View style={{ flex: 1 }} /></AiChatContainer>}
+      detail={<AiChatContainer><View style={{ flex: 1 }} /></AiChatContainer>} />
+  </View>,
 };
