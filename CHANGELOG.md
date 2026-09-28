@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.34.5 — 2026-09-29
+
+- Add opt-in native safe-area ownership to AiChatShell, covering all four frame edges and drawer content without repeating the bottom inset in BottomBar.
+- Publish AiChatContainer’s painted surface to nested mail composition and other surface-aware controls.
+
 ## 4.34.4 — 2026-09-29
 
 - Add separated split-pane layout with Bloom-owned gutters and centered resize controls for independent panel surfaces.

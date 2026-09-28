@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { AgentThinking } from '../agent-thinking';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { RiFolderLine } from '../icons/remix/RiFolderLine';
@@ -138,6 +139,13 @@ export function AiChatContainerBase({
   const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
   const documentScroll = useAiChatShell()?.documentScroll ?? false;
   const gutterColor = useContext(AiChatDocumentGutterContext);
+  const parentFill = useSurfaceFill();
+  const parentLevel = useSurfaceLevelValue();
+  const styleFill = StyleSheet.flatten(style)?.backgroundColor;
+  const ownFill = typeof styleFill === 'string' && styleFill !== 'transparent'
+    ? styleFill
+    : surface && styleFill !== 'transparent' ? palette.secondary : parentFill;
+  const surfaceLevel = surface ? 1 : parentLevel;
 
   const hasCrumbRow = title != null || project != null || onShare || onMore || actions != null;
   const crumbRow = hasCrumbRow ? (
@@ -194,6 +202,7 @@ export function AiChatContainerBase({
       overflow: 'hidden',
       borderRadius: CONTAINER_RADIUS,
       backgroundColor: surface ? palette.secondary : 'transparent',
+      ...surfaceFillVars(ownFill),
     },
     style,
   ];
@@ -224,6 +233,7 @@ export function AiChatContainerBase({
 
   if (floatingChrome) {
     return (
+      <SurfaceLevelProvider level={surfaceLevel} fill={ownFill}>
       <FloatingChrome
         testID={testID}
         rootStyle={rootStyle}
@@ -234,10 +244,12 @@ export function AiChatContainerBase({
         fadeColor={surface ? palette.secondary : null}>
         {children}
       </FloatingChrome>
+      </SurfaceLevelProvider>
     );
   }
 
   return (
+    <SurfaceLevelProvider level={surfaceLevel} fill={ownFill}>
     <View testID={testID} style={rootStyle}>
       {backgroundLayer}
       {header}
@@ -249,6 +261,7 @@ export function AiChatContainerBase({
         {footerBody}
       </View>
     </View>
+    </SurfaceLevelProvider>
   );
 }
 
