@@ -179,7 +179,6 @@ const PENDING: Record<string, number> = {
   'category-bar': 2,
   'chart-cards': 36,
   'checkout-summary': 3,
-  'creator-studio': 100,
   'delivery-slot': 2,
   'directions': 34,
   'earnings': 12,
@@ -188,7 +187,6 @@ const PENDING: Record<string, number> = {
   'job-board': 29,
   'lead-score': 2,
   'location-puck': 3,
-  'lyrics': 4,
   'mail-compose': 16,
   'mail-list': 15,
   'mail-thread': 16,
@@ -201,7 +199,6 @@ const PENDING: Record<string, number> = {
   'media-player': 33,
   'media-shelf': 2,
   'menu-item': 15,
-  'music-library': 52,
   'navigation-banner': 11,
   'note-card': 6,
   'note-editor': 9,
@@ -231,7 +228,7 @@ const PENDING: Record<string, number> = {
 };
 
 /** `// i18n-exempt:` lines, counted so a new one is a reviewed decision. */
-const EXEMPTIONS = 3;
+const EXEMPTIONS = 5;
 
 const { findings, exemptions } = scan();
 const byFamily = new Map<string, Finding[]>();

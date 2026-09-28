@@ -49,13 +49,13 @@ export interface AudienceOverviewProps {
   /** The selected period id. */
   period: string;
   onPeriodChange: (period: string) => void;
-  /** Default: 7 days · 28 days · 12 months · All time. */
+  /** Default: 7 days · 28 days · 12 months · All time (localised). */
   periods?: readonly CreatorOption[];
-  /** Heading over the tiles. Default `"Audience"`. */
+  /** Heading over the tiles. `"Audience"` in English (localised). */
   title?: string;
   /** A line under the heading (`"Compared with the previous 28 days"`). */
   caption?: string;
-  /** Names the period switcher. Default `"Period"`. */
+  /** Names the period switcher. `"Period"` in English (localised). */
   periodLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -99,7 +99,7 @@ export interface StreamsChartProps {
   onMetricChange?: (id: string) => void;
   /** Release markers: a dashed rule and a labelled pin. */
   events?: readonly StreamsEvent[];
-  /** Names the metric switcher. Default `"Chart metric"`. */
+  /** Names the metric switcher. `"Chart metric"` in English (localised). */
   metricsLabel?: string;
   /** Headline format. Default en-US grouping. */
   format?: (value: number) => string;
@@ -286,7 +286,7 @@ export interface ReleaseTimelineProps {
   steps: readonly ReleaseStep[];
   /** `vertical` (default) or `horizontal` — a row of steps for a wide header. */
   orientation?: 'vertical' | 'horizontal';
-  /** Names the list. Default `"Release progress"`. */
+  /** Names the list. `"Release progress"` in English (localised). */
   accessibilityLabel?: string;
   /** Spoken state words. */
   stateLabels?: Partial<Record<ReleaseStepState, string>>;
@@ -302,7 +302,7 @@ export type TrackUploadStatus = 'queued' | 'uploading' | 'processing' | 'ready' 
 
 export interface TrackUploadRowLabels {
   queued: string;
-  /** Status text while transcoding. Default `"Transcoding…"`. */
+  /** Status text while transcoding. `"Transcoding…"` in English (localised). */
   processing: string;
   ready: string;
   failed: string;
@@ -334,9 +334,9 @@ export interface TrackUploadRowProps {
 }
 
 export interface ArtworkUploaderLabels {
-  /** Heading over the zone. Default `"Artwork"`. */
+  /** Heading over the zone. `"Artwork"` in English (localised). */
   title: string;
-  /** Default `"3000×3000 px, JPG or PNG"`. */
+  /** `"3000×3000 px, JPG or PNG"` in English (localised). */
   requirements: string;
   replace: string;
   remove: string;
@@ -403,7 +403,7 @@ export interface CreditsEditorLabels {
 export interface CreditsEditorProps {
   credits: readonly TrackCredit[];
   onCreditsChange: (credits: TrackCredit[]) => void;
-  /** Default Songwriter, Producer, Composer, Performer, Lyricist, Mixing engineer, Mastering engineer. */
+  /** Default Songwriter, Producer, Composer, Performer, Lyricist, Mixing engineer, Mastering engineer (localised). */
   roles?: readonly CreatorOption[];
   /** Builds a new credit's id. Default a counter. */
   createId?: () => string;
@@ -424,7 +424,7 @@ export interface ArtistChipsInputProps {
   max?: number;
   /** `name => "Remove <name>"`. */
   removeLabel?: (name: string) => string;
-  /** Default `"Add"`. */
+  /** `"Add"` in English (localised). */
   addLabel?: string;
   disabled?: boolean;
   required?: boolean;
@@ -435,11 +435,11 @@ export interface ArtistChipsInputProps {
 export interface IsrcFieldProps {
   value: string;
   onChangeText: (value: string) => void;
-  /** Default `"ISRC"`. */
+  /** Default `"ISRC"` (the same in every language). */
   label?: string;
-  /** Default `"Format: CC-XXX-YY-NNNNN"`. */
+  /** `"Format: CC-XXX-YY-NNNNN"` in English (localised). */
   hint?: string;
-  /** Shown instead of the hint when the value is not a valid ISRC. Default `"That is not a valid ISRC"`. */
+  /** Shown instead of the hint when the value is not a valid ISRC. `"That is not a valid ISRC"` in English (localised). */
   invalidMessage?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;

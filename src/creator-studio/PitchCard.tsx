@@ -23,6 +23,8 @@ import { Textarea } from '../textarea';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CARD_RADIUS, resolveCreatorStudioPaint, toggleTag } from './shared';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { CreatorOption, PitchCardLabels, PitchCardProps } from './types';
 
 /**
@@ -44,25 +46,8 @@ import type { CreatorOption, PitchCardLabels, PitchCardProps } from './types';
  *             declined (cross, negative); "Edit pitch" while still `submitted`
  */
 
-export const PITCH_CARD_LABELS: PitchCardLabels = {
-  title: 'Pitch to editors',
-  description: 'Tell the editorial team about your next release before it comes out.',
-  release: 'Release',
-  releasePlaceholder: 'Choose an upcoming release',
-  moods: 'Mood',
-  genres: 'Genre',
-  pitch: 'Your pitch',
-  pitchPlaceholder: 'What makes this release stand out? Who is it for, and what is the story behind it?',
-  submit: 'Send pitch',
-  tagLimit: (max) => `Pick up to ${max}`,
-  statuses: { submitted: 'Pitch sent', accepted: 'Picked for review', declined: 'Not selected this time' },
-  statusDescriptions: {
-    submitted: 'Editors read every pitch. You will hear back before the release date.',
-    accepted: 'Your release is being considered for editorial playlists.',
-    declined: 'This release was not picked. You can pitch your next one as soon as it is scheduled.',
-  },
-  edit: 'Edit pitch',
-};
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const PITCH_CARD_LABELS: PitchCardLabels = CREATOR_STUDIO_MESSAGES.en.pitch;
 
 function TagGroup({
   label,
@@ -138,13 +123,14 @@ function PitchCardComponent({
   style,
   testID,
 }: PitchCardProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const labels = {
-    ...PITCH_CARD_LABELS,
+    ...messages.pitch,
     ...labelOverrides,
-    statuses: { ...PITCH_CARD_LABELS.statuses, ...labelOverrides?.statuses },
-    statusDescriptions: { ...PITCH_CARD_LABELS.statusDescriptions, ...labelOverrides?.statusDescriptions },
+    statuses: { ...messages.pitch.statuses, ...labelOverrides?.statuses },
+    statusDescriptions: { ...messages.pitch.statusDescriptions, ...labelOverrides?.statusDescriptions },
   };
   const id = (suffix: string) => (testID ? `${testID}-${suffix}` : undefined);
   const sent = status === 'submitted' || status === 'accepted' || status === 'declined';

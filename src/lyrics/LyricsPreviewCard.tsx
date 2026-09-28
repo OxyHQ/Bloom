@@ -4,10 +4,11 @@ import { View } from 'react-native';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
+import { LYRICS_MESSAGES } from './messages';
 import { LyricsLineRow, LyricsPill, type LyricLineState } from './LyricsParts';
 import {
-  DEFAULT_EMPTY_TEXT,
   LYRICS_CSS,
   LYRICS_STYLE_ID,
   activeLyricIndex,
@@ -36,16 +37,20 @@ function LyricsPreviewCardComponent({
   text,
   currentTime,
   artworkColor,
-  title = 'Lyrics',
+  title: titleProp,
   visibleLines = 5,
   onShowLyrics,
-  showLyricsLabel = 'Show lyrics',
+  showLyricsLabel: showLyricsLabelProp,
   onSeekLine,
   providerText,
-  emptyText = DEFAULT_EMPTY_TEXT,
+  emptyText: emptyTextProp,
   style,
   testID,
 }: LyricsPreviewCardProps) {
+  const { messages } = useMessages(LYRICS_MESSAGES);
+  const title = titleProp ?? messages.lyrics;
+  const showLyricsLabel = showLyricsLabelProp ?? messages.showLyrics;
+  const emptyText = emptyTextProp ?? messages.empty;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(LYRICS_STYLE_ID, LYRICS_CSS);

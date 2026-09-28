@@ -41,9 +41,9 @@ export interface LyricsViewProps {
   providerText?: string;
   /** Replaces the footer with your own node. */
   footer?: ReactNode;
-  /** Drawn when there are no lyrics at all. Default "Lyrics aren’t available for this track". */
+  /** Drawn when there are no lyrics at all. "Lyrics aren’t available for this track" in English (localised). */
   emptyText?: string;
-  /** The pill shown after the user scrolls away. Default "Back to current line". */
+  /** The pill shown after the user scrolls away. "Back to current line" in English (localised). */
   backToCurrentLabel?: string;
   /** How long after the user's last scroll auto-scroll resumes, in ms. Default `3000`. */
   resumeDelay?: number;
@@ -51,7 +51,7 @@ export interface LyricsViewProps {
   anchor?: number;
   /** Text size. Default by width: `large` from 720, `medium` from 480, `small` below. */
   size?: LyricsSize;
-  /** The region's name. Default `"Lyrics"`. */
+  /** The region's name. `"Lyrics"` in English (localised). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -66,19 +66,19 @@ export interface LyricsPreviewCardProps {
   text?: string;
   currentTime?: number;
   artworkColor?: string | null;
-  /** The card's heading. Default `"Lyrics"`. */
+  /** The card's heading. `"Lyrics"` in English (localised). */
   title?: string;
   /** How many lines the card shows. Default `5`. */
   visibleLines?: 4 | 5;
   /** Called by the "Show lyrics" button. Without it the button is not drawn. */
   onShowLyrics?: () => void;
-  /** Default `"Show lyrics"`. */
+  /** `"Show lyrics"` in English (localised). */
   showLyricsLabel?: string;
   /** Makes the lines pressable, as in {@link LyricsViewProps.onSeekLine}. */
   onSeekLine?: (line: LyricLine, index: number) => void;
   /** A small footer, e.g. "Lyrics provided by …". */
   providerText?: string;
-  /** Drawn when there are no lyrics. Default "Lyrics aren’t available for this track". */
+  /** Drawn when there are no lyrics. "Lyrics aren’t available for this track" in English (localised). */
   emptyText?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

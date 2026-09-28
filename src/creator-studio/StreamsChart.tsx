@@ -15,6 +15,8 @@ import { useChartCardPalette, useChartTones } from '../chart-cards/primitives/us
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { RiAlbumLine } from '../icons/remix/RiAlbumLine';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { StreamsChartProps, StreamsEvent } from './types';
 
 /**
@@ -43,9 +45,9 @@ const TICK_COUNT = 4;
 const CARD_GAP = 24;
 const DEFAULT_HEIGHT = 360;
 
+/** The marked releases as one list ("Low Tide (12 Mar), …"), `''` for none. */
 function describeEvents(events: readonly StreamsEvent[], labels: readonly string[]): string {
-  if (events.length === 0) return '';
-  return `; releases: ${events.map((e) => `${e.label} (${labels[e.index] ?? ''})`).join(', ')}`;
+  return events.map((e) => `${e.label} (${labels[e.index] ?? ''})`).join(', ');
 }
 
 export function StreamsChart({
@@ -54,7 +56,7 @@ export function StreamsChart({
   defaultMetric,
   onMetricChange,
   events = [],
-  metricsLabel = 'Chart metric',
+  metricsLabel: metricsLabelProp,
   format = formatNumber,
   formatAxisValue = compactNumber,
   height = DEFAULT_HEIGHT,
@@ -62,6 +64,8 @@ export function StreamsChart({
   style,
   testID,
 }: StreamsChartProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const metricsLabel = metricsLabelProp ?? messages.streams.metrics;
   const palette = useChartCardPalette();
   const tones = useChartTones();
 
@@ -133,7 +137,7 @@ export function StreamsChart({
           onActiveIndexChange={setActiveIndex}
           palette={palette}
           accessibilityLabel={
-            accessibilityLabel ?? `${title} over time${describeEvents(visibleEvents, categories)}`
+            accessibilityLabel ?? messages.streams.summary(title, describeEvents(visibleEvents, categories))
           }
           testID={testID ? `${testID}-plot` : undefined}
         >

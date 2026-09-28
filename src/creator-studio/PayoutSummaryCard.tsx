@@ -18,6 +18,8 @@ import { Divider } from '../divider';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { PayoutSummaryCardLabels, PayoutSummaryCardProps } from './types';
 
 /**
@@ -37,13 +39,8 @@ import type { PayoutSummaryCardLabels, PayoutSummaryCardProps } from './types';
  *   link      "View statements" link button with a chevron
  */
 
-export const PAYOUT_SUMMARY_LABELS: PayoutSummaryCardLabels = {
-  estimated: 'Estimated earnings this month',
-  lastPayout: 'Last payout',
-  nextPayout: 'Next payout',
-  statements: 'View statements',
-  chart: 'Monthly earnings',
-};
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const PAYOUT_SUMMARY_LABELS: PayoutSummaryCardLabels = CREATOR_STUDIO_MESSAGES.en.payout;
 
 const PLOT_HEIGHT = 112;
 const BAR_RADIUS = 6;
@@ -63,9 +60,10 @@ function PayoutSummaryCardComponent({
   style,
   testID,
 }: PayoutSummaryCardProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const theme = useTheme();
   const palette = useChartCardPalette();
-  const labels = { ...PAYOUT_SUMMARY_LABELS, ...labelOverrides };
+  const labels = { ...messages.payout, ...labelOverrides };
   const tone = useMemo(() => chartHueTone(theme, 6), [theme]);
   const [activeIndex, setActiveIndex] = useActiveIndex(months.length, undefined, undefined);
 

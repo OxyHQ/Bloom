@@ -10,7 +10,9 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Cover } from './Cover';
 import { IS_WEB, MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID, resolveMusicLibraryPaint } from './shared';
-import type { TopResultCardProps, TopResultKind } from './types';
+import { useMessages } from '../locale/messages';
+import { MUSIC_LIBRARY_MESSAGES } from './messages';
+import type { TopResultCardProps } from './types';
 
 /**
  * The large first search result.
@@ -30,17 +32,6 @@ import type { TopResultCardProps, TopResultKind } from './types';
  * inside the card's pressable.
  */
 
-const KIND_LABELS: Record<TopResultKind, string> = {
-  song: 'Song',
-  artist: 'Artist',
-  album: 'Album',
-  playlist: 'Playlist',
-  podcast: 'Podcast',
-  episode: 'Episode',
-  audiobook: 'Audiobook',
-  profile: 'Profile',
-};
-
 const COVER = 92;
 
 function TopResultCardComponent({
@@ -56,13 +47,14 @@ function TopResultCardComponent({
   style,
   testID,
 }: TopResultCardProps) {
+  const { messages } = useMessages(MUSIC_LIBRARY_MESSAGES);
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
   const paint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
   const [hovered, setHovered] = useState(false);
-  const label = kindLabel ?? KIND_LABELS[kind];
+  const label = kindLabel ?? messages.topResultKinds[kind];
   const round = kind === 'artist' || kind === 'profile';
   const name = accessibilityLabel ?? [title, label, subtitle].filter(Boolean).join(', ');
 

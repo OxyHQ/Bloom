@@ -38,6 +38,8 @@ Both are controlled by `currentTime`: they draw where playback is and report pre
 
 ## `LyricsView`
 
+The default strings below ("Lyrics", "Show lyrics", "Back to current line", the empty line) are the English ones; they are localised via `BloomProvider locale`, and each prop still wins.
+
 | prop                 | decides                                                                                           |
 | -------------------- | ------------------------------------------------------------------------------------------------- |
 | `lines`              | `{ time?, text, key? }[]` in any order; synced lines are sorted by `time` (seconds)               |
