@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 
+import { space } from '../styles/tokens';
+
 import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
 import {
   hairlineOn,
@@ -28,7 +30,7 @@ export const IS_WEB = Platform.OS === 'web';
 export const MAIL_EMPTY_ICON = RiInbox2Line;
 
 // ---------------------------------------------------------------------------
-//  Geometry — the whole difference between the two densities
+//  Geometry — the whole difference between the densities
 // ---------------------------------------------------------------------------
 
 export interface MailRowGeometry {
@@ -82,15 +84,8 @@ export interface MailRowGeometry {
 }
 
 /**
- * 64 tall with two lines on a phone, 40 tall with one on a desktop. The avatar
- * is centred in both, so a row with no snippet is the same height as one with a
- * snippet and a label.
- *
- * The phone rung is the same 72/48 as a `chat-list` row on purpose: a mail row
- * and a conversation row are the same kind of object, and an inbox that stands
- * 16px taller per row than the messages screen reads as a different library.
- * Two lines is what pays for it — the sender and the time share the first, the
- * subject and the snippet the second.
+ * Two stacked lines at comfortable/cozy, one baseline at compact. Stacked rows
+ * grow with their content; cozy gives the same facts more breathing room.
  */
 export const MAIL_ROW_GEOMETRY: Record<MailDensity, MailRowGeometry> = {
   comfortable: {
@@ -117,6 +112,27 @@ export const MAIL_ROW_GEOMETRY: Record<MailDensity, MailRowGeometry> = {
     action: 44,
     actionGlyph: 18,
     starControl: 24,
+  },
+  cozy: {
+    minHeight: 80,
+    paddingVertical: space.lg,
+    paddingHorizontal: space.lg,
+    avatar: 48,
+    gap: space.md,
+    lineGap: space._2xs,
+    glyph: space.lg,
+    senderWidth: 0,
+    senderMinWidth: 0,
+    senderMaxWidth: '100%',
+    senderVariant: 'headline-regular',
+    senderUnreadVariant: 'headline-semibold',
+    subjectVariant: 'body-regular',
+    subjectUnreadVariant: 'body-semibold',
+    snippetVariant: 'body-regular',
+    timeVariant: 'caption-1-regular',
+    action: 44,
+    actionGlyph: 18,
+    starControl: space._2xl,
   },
   compact: {
     minHeight: 40,
@@ -161,6 +177,7 @@ export const MAIL_LABEL_DOT = 8;
 /** The selection bar's height, per density. */
 export const MAIL_SELECTION_BAR_HEIGHT: Record<MailDensity, number> = {
   comfortable: 56,
+  cozy: 56,
   compact: 44,
 };
 

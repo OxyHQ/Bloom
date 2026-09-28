@@ -5,13 +5,11 @@ import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
 
 /**
- * The two rungs of ONE row, not two components.
- *
- * `comfortable` is the phone inbox: avatar, three lines, 88 tall. `compact` is
- * the desktop list: one line, 40 tall, the same facts on a single baseline.
- * Nothing but the geometry table changes between them.
+ * One row at three densities: compact is a single 40px baseline, comfortable
+ * stacks two lines at a 64px floor, cozy keeps those lines with an 80px floor
+ * and a larger avatar and insets. All share the same content and actions.
  */
-export type MailDensity = 'comfortable' | 'compact';
+export type MailDensity = 'comfortable' | 'cozy' | 'compact';
 
 /** Who a message is from, as a row draws them. */
 export interface MailSender {
@@ -154,6 +152,8 @@ export interface MailRowProps {
    */
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
+  /** Show sender avatars. Selection checkboxes remain visible when enabled. */
+  showAvatar?: boolean;
   density?: MailDensity;
   onPress?: () => void;
   onLongPress?: () => void;
@@ -203,6 +203,8 @@ export interface MailListProps {
   sections?: readonly MailListSection[];
   /** One unlabelled run, for a list that is not bucketed. */
   mails?: readonly MailSummary[];
+  /** Show sender avatars. Selection checkboxes remain visible when enabled. */
+  showAvatar?: boolean;
   density?: MailDensity;
   /** The row the reading pane is showing. */
   selectedId?: string;
