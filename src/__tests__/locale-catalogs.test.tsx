@@ -17,6 +17,8 @@ import type React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { Text } from 'react-native';
 
+import { BloomProvider } from '../provider/BloomProvider';
+import { useTheme } from '../theme';
 import { COMMON_MESSAGES } from '../locale/common-messages';
 import { LocaleProvider, useBloomLocale } from '../locale/context';
 import { BLOOM_LANGUAGES } from '../locale/languages';
@@ -77,6 +79,30 @@ describe('on-demand languages', () => {
       );
     });
     // The effect has started the load; jest resolves `import()` as a require.
+    await act(async () => {
+      await loadBloomLocale('es');
+    });
+    expect(tree.root.findAllByProps({ testID: 'fallback' })).toHaveLength(0);
+    expect(shown(tree)).toBe('es:Cancelar');
+  });
+
+  it('BloomProvider holds a translated first paint on `onFontsLoading` INSIDE the theme', async () => {
+    // Apps build that screen with Bloom components that read the theme (a
+    // spinner, a themed surface), exactly as they do for the font wait. Held
+    // outside the theme provider it threw on every non-English cold load.
+    resetBloomTranslations();
+    function ThemedWait() {
+      const { colors } = useTheme();
+      return <Text testID="fallback">{colors.text ? 'wait' : ''}</Text>;
+    }
+    let tree!: ReactTestRenderer;
+    await act(async () => {
+      tree = mount(
+        <BloomProvider locale="es" onFontsLoading={<ThemedWait />}>
+          <Probe />
+        </BloomProvider>,
+      );
+    });
     await act(async () => {
       await loadBloomLocale('es');
     });
