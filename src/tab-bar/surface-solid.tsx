@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
  * (MIT © 2026 David Mokos).
@@ -35,6 +37,6 @@ SolidTabBarSurface.displayName = 'SolidTabBarSurface';
 
 const styles = StyleSheet.create({
   surface: {
-    borderCurve: 'continuous',
+    ...surfaceStyle(SURFACE_SHAPES.capsule),
   },
 });

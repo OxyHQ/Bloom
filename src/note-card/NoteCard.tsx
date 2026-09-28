@@ -195,7 +195,6 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
   const cardStyle: WebCssStyle = {
     backgroundColor: hovered && !selected ? paint.selectedBackground : background,
     borderColor: selected ? paint.selectedBorder : paint.border,
-    borderWidth: selected ? 2 : 1,
     // A 2px selected border must not move the content — the padding gives the
     // pixel back rather than a negative margin taking it.
     padding: selected ? geo.padding - 1 : geo.padding,
@@ -360,7 +359,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
     ) : null;
 
   const body = (
-    <Card variant="outlined" radius={geo.radius} style={cardStyle}>
+    <Card variant="outlined" radius={geo.radius} border={selected ? 'medium' : 'thin'} style={cardStyle}>
       <SurfaceLevelProvider level={1} fill={background}>
         {checkbox}
         <View style={{ flex: 1, minWidth: 0 }}>

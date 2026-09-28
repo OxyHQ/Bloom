@@ -55,7 +55,9 @@ export const EscapingAClip: Story = {
               <Card
                 appearance="outline"
                 radius="radius-16"
-                style={{ width: 260, height: 110, padding: 12, overflow: 'hidden' }}
+                clipContent
+                contentStyle={{ padding: 12 }}
+                style={{ width: 260, height: 110 }}
               >
                 <Text>Parent with overflow hidden</Text>
                 {open ? panel : null}
@@ -67,7 +69,9 @@ export const EscapingAClip: Story = {
               <Card
                 appearance="outline"
                 radius="radius-16"
-                style={{ width: 260, height: 110, padding: 12, overflow: 'hidden' }}
+                clipContent
+                contentStyle={{ padding: 12 }}
+                style={{ width: 260, height: 110 }}
               >
                 <Text>Same parent, same clip</Text>
                 {open ? (

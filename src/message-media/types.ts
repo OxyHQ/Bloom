@@ -1,3 +1,4 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
 
@@ -330,7 +331,7 @@ export interface ContactMessageProps extends MessageMediaToneProps {
   name: string;
   /** Phone number or handle. */
   detail?: string;
-  avatar?: MessageMediaSource;
+  avatar?: string | ImageSource;
   avatarVariant?: string;
   /** Initials for the avatar fallback. Derived from `name` when absent. */
   initials?: string;

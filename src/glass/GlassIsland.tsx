@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -7,6 +9,7 @@ import { resolveSurfaceLevel } from '../styles/surface-levels';
 import { borderRadius } from '../styles/tokens';
 import { resolveChromeGlassColors } from '../theme/glass-colors';
 import { useTheme } from '../theme/use-theme';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { GlassSurface } from './GlassSurface';
 import type { GlassIslandProps } from './types';
 
@@ -54,6 +57,7 @@ import type { GlassIslandProps } from './types';
 const GlassIslandComponent: React.FC<GlassIslandProps> = ({
   children,
   radius = borderRadius.full,
+  cornerCurve = SURFACE_SHAPES.glass.curve,
   role,
   accessibilityLabel,
   sheen = true,
@@ -61,32 +65,35 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const direction = useIsRtl() ? 'rtl' : 'ltr';
+  const directionProps = useDirectionProps();
   const paint = useMemo(() => {
     const level = resolveSurfaceLevel(theme, 1);
     return { fill: level.background, glass: resolveChromeGlassColors(level.background, level.border, theme.isDark) };
   }, [theme]);
 
+  const shape = { radius, curve: radius === borderRadius.full ? 'round' as const : cornerCurve };
+
   return (
     <ControlSurface material="glass">
       <View
+        {...directionProps}
         role={role}
         accessibilityLabel={accessibilityLabel}
         testID={testID}
         style={[
           styles.island,
-          {
-            borderRadius: radius,
-            borderWidth: paint.glass.hairlineWidth,
-            borderColor: paint.glass.hairline,
-          },
+          { borderColor: paint.glass.hairline },
           bloomShadowStyle('glass'),
           style,
+          { ...surfaceStyle(shape, direction), borderWidth: paint.glass.hairlineWidth, overflow: 'visible' },
         ]}
       >
         <GlassSurface
           fill={paint.fill}
           material="chrome"
-          radius={radius}
+          shape={shape}
+          direction={direction}
           sheen={sheen}
           testID={testID ? `${testID}-material` : undefined}
         />

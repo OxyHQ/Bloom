@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
  * (MIT © 2026 David Mokos).
@@ -822,7 +824,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     // The START edge: the translate above runs from it, signed by direction.
     insetInlineStart: 0,
-    borderCurve: 'continuous',
+    ...surfaceStyle(SURFACE_SHAPES.capsule),
   },
   itemRow: {
     flex: 1,

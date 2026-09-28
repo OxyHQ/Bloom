@@ -13,6 +13,7 @@
  *      Bloom applies background, radius, border and shadow as inline resolved
  *      tokens rather than classes.
  */
+import { View } from 'react-native';
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
@@ -25,7 +26,11 @@ import { SettingsListGroup, SettingsListItem } from '../settings-list';
 import { UserHoverCard } from '../user-hover-card';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { LinkPreviewCard } from '../link-preview';
-import { findHost, resolvedStyle, type HostNode } from './support/rendered-style';
+import {
+  findHost,
+  resolvedStyle,
+  type HostNode,
+} from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -68,8 +73,12 @@ function roundedNode(node: unknown): HostNode {
 describe('Card axes', () => {
   it('keeps the existing outlined preset opaque while explicit appearance wins', () => {
     const opaque = renderWithTheme(<Card variant="outlined" testID="c" />);
-    expect(chromeOf(opaque.toJSON(), 'c').backgroundColor).toBe(buildTheme('oxy', 'light').colors.card);
-    const outline = renderWithTheme(<Card variant="outlined" appearance="outline" testID="c" />);
+    expect(chromeOf(opaque.toJSON(), 'c').backgroundColor).toBe(
+      buildTheme('oxy', 'light').colors.card,
+    );
+    const outline = renderWithTheme(
+      <Card variant="outlined" appearance="outline" testID="c" />,
+    );
     expect(chromeOf(outline.toJSON(), 'c').backgroundColor).toBe('transparent');
   });
   it('takes its corner from a RADIUS rung, not a free number', () => {
@@ -88,10 +97,10 @@ describe('Card axes', () => {
   });
 
   it.each([
-    ['plain', undefined, 'none'],
-    ['solid', undefined, SHADOW_BOX.s],
+    ['plain', 0, 'none'],
+    ['solid', 0, SHADOW_BOX.s],
     ['outline', 1, 'none'],
-    ['subtle', undefined, 'none'],
+    ['subtle', 0, 'none'],
   ] as const)(
     'variant %s resolves to border %s / shadow %s',
     (variant, borderWidth, shadow) => {
@@ -147,7 +156,9 @@ describe('Card axes', () => {
         {null}
       </Card>,
     );
-    expect(findHost(button.toJSON(), 'c')?.props.accessibilityRole).toBe('button');
+    expect(findHost(button.toJSON(), 'c')?.props.accessibilityRole).toBe(
+      'button',
+    );
 
     const link = renderWithTheme(
       <Card onPress={() => {}} accessibilityRole="link" testID="c">
@@ -157,9 +168,26 @@ describe('Card axes', () => {
     expect(findHost(link.toJSON(), 'c')?.props.accessibilityRole).toBe('link');
   });
 
-  it('clips its content to the corner by default', () => {
+  it('keeps the shadow node unclipped by default', () => {
     const { toJSON } = renderWithTheme(<Card testID="c">{null}</Card>);
-    expect(chromeOf(toJSON(), 'c').overflow).toBe('hidden');
+    expect(chromeOf(toJSON(), 'c').overflow).toBeUndefined();
+  });
+});
+
+describe('Card content clipping', () => {
+  it('clips in a child without clipping the shadow node', () => {
+    const { toJSON } = renderWithTheme(
+      <Card clipContent border="medium" radius="radius-20" testID="c">
+        <View testID="inside" />
+      </Card>,
+    );
+    const root = findHost(toJSON(), 'c')!;
+    expect(resolvedStyle(root.props.style).overflow).toBeUndefined();
+    const child = root.children?.find((node) => typeof node !== 'string');
+    expect(resolvedStyle(root.props.style).borderWidth).toBe(2);
+    expect(
+      child && typeof child !== 'string' && resolvedStyle(child.props.style),
+    ).toMatchObject({ borderRadius: 18, overflow: 'hidden' });
   });
 });
 
@@ -172,9 +200,9 @@ describe('the surfaces that compose Card keep their own chrome', () => {
     );
     const style = resolvedStyle(roundedNode(toJSON()).props.style);
     expect(style.borderRadius).toBe(RADIUS['radius-16']);
-    expect(style.borderWidth).toBeUndefined();
+    expect(style.borderWidth).toBe(0);
     expect(style.boxShadow).toBeUndefined();
-    expect(style.overflow).toBe('hidden');
+    expect(style.overflow).toBeUndefined();
   });
 
   it('user-hover-card: floating panel — radius 16, 1px border, shadow-dropdown', () => {
@@ -201,6 +229,6 @@ describe('the surfaces that compose Card keep their own chrome', () => {
     // as an unbordered transparent block with no error anywhere.
     expect(style.borderWidth).toBe(1);
     expect(typeof style.backgroundColor).toBe('string');
-    expect(style.overflow).toBe('hidden');
+    expect(style.overflow).toBeUndefined();
   });
 });

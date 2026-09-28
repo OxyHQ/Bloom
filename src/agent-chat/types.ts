@@ -1,5 +1,6 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
-import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
 
@@ -137,7 +138,7 @@ export interface AgentChatAccount {
   name: string;
   /** Initials for the avatar disc. Default: the name's first letter. */
   initials?: string;
-  avatar?: string | ImageSourcePropType;
+  avatar?: string | ImageSource;
 }
 
 export interface AgentChatHistoryLabels {

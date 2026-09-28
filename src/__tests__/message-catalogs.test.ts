@@ -69,6 +69,14 @@ for (const file of catalogFiles()) {
   }
 }
 
+// These exact broadcast labels are also idiomatic in German and Indonesian.
+// Pin catalog/language/key/text: splitting shape labels into their own family
+// leaves a one-word Avatar catalog, for which the percentage heuristic is invalid.
+const SHARED_WORDS = [
+  { catalog: 'avatar/messages.ts#AVATAR_MESSAGES', language: 'de', path: 'live', text: 'LIVE' },
+  { catalog: 'avatar/messages.ts#AVATAR_MESSAGES', language: 'id', path: 'live', text: 'LIVE' },
+] as const;
+
 describe('message catalogs', () => {
   it('finds the catalogs (control: the common words and the date-picker at least)', () => {
     const names = catalogs.map((c) => c.name);
@@ -76,6 +84,15 @@ describe('message catalogs', () => {
       'locale/common-messages.ts#COMMON_MESSAGES',
       'date-picker/messages.ts#DATE_PICKER_MESSAGES',
     ]));
+  });
+
+  it('pins shared-word exceptions to existing identical translations', () => {
+    for (const entry of SHARED_WORDS) {
+      const catalog = catalogs.find(item => item.name === entry.catalog)?.catalog;
+      expect(catalog).toBeDefined();
+      expect(leaves(catalog?.en).get(entry.path)).toBe(entry.text);
+      expect(leaves(catalog?.[entry.language]).get(entry.path)).toBe(entry.text);
+    }
   });
 
   describe.each(catalogs.map((c) => [c.name, c.catalog] as const))('%s', (_name, catalog) => {
@@ -95,7 +112,7 @@ describe('message catalogs', () => {
       for (const language of BLOOM_LANGUAGES) {
         if (language === 'en') continue;
         const own = leaves(catalog[language]);
-        const same = [...own].filter(([path, text]) => english.get(path) === text).map(([path]) => path);
+        const same = [...own].filter(([path, text]) => english.get(path) === text && !SHARED_WORDS.some(entry => entry.catalog === _name && entry.language === language && entry.path === path && entry.text === text)).map(([path]) => path);
         expect({ language, same: same.length > own.size / 4 ? same : [] }).toEqual({ language, same: [] });
       }
     });

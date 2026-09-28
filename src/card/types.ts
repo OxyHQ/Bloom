@@ -1,3 +1,4 @@
+import type { CornerCurve } from '../shapes/corner-types';
 import type { BloomAppearance, BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
@@ -13,7 +14,6 @@ import type { ShadowRole } from '../design-tokens/shadows';
  * `elevation` instead of asking for a new appearance.
  */
 
-
 /**
  * A rung of the `RADIUS` scale. Deliberately not a number: a card, a settings
  * group and a link preview are legitimately different surfaces, and the scale is
@@ -25,10 +25,22 @@ export type CardRadius = keyof typeof RADIUS;
 export type CardElevation = 'none' | ShadowRole;
 
 /** Border width role. `thin` is the 1px default; `hairline` is the 0.5px `BORDER_WIDTH.hairline`. */
-export type CardBorder = 'none' | 'hairline' | 'thin';
+export type CardBorder = 'none' | 'hairline' | 'thin' | 'medium';
 
 /** Existing named presets; appearance is the shared presentation axis. */
 export type CardVariant = 'plain' | 'elevated' | 'outlined' | 'filled';
+
+/** Geometry is controlled by radius/cornerCurve/border, not by style overrides. */
+type CardStyle = Omit<
+  ViewStyle,
+  Extract<
+    keyof ViewStyle,
+    | `border${string}Radius`
+    | `border${string}Width`
+    | 'borderCurve'
+    | 'overflow'
+  >
+>;
 
 export interface CardProps {
   children?: React.ReactNode;
@@ -39,11 +51,17 @@ export interface CardProps {
   tone?: BloomTone;
   /** Corner rung. Default `radius-12`. */
   radius?: CardRadius;
+  /** Platform-adaptive curve. radius-max remains circular. */
+  cornerCurve?: CornerCurve;
+  /** Clip children in an inner layer, preserving outer shadows and focus. */
+  clipContent?: boolean;
+  /** Child layout and padding when clipContent is enabled. */
+  contentStyle?: StyleProp<CardStyle>;
   /** Overrides the appearance's elevation. */
   elevation?: CardElevation;
   /** Overrides the appearance's border width. */
   border?: CardBorder;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<CardStyle>;
   className?: string;
   onPress?: () => void;
   /**

@@ -1,3 +1,4 @@
+import type { SurfaceShape, CornerCurve } from '../shapes/corner-types';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
@@ -28,6 +29,9 @@ export interface GlassBlurWindowProps {
  */
 export type GlassMaterial = 'accent' | 'chrome';
 
+/** Geometry belongs to the shape/radius props, and clipping belongs to the material. */
+type GlassStyle = Omit<ViewStyle, Extract<keyof ViewStyle, `border${string}Radius` | `border${string}Width` | 'borderCurve' | 'overflow'>>;
+
 export interface GlassSurfaceProps {
   /**
    * The OPAQUE brand fill the pane is tinted with — `theme.colors.primary`,
@@ -40,15 +44,10 @@ export interface GlassSurfaceProps {
    * preset x mode combinations.
    */
   fill: string;
-  /**
-   * Corner radius, matching the radius of the box this fills.
-   *
-   * Required rather than defaulted: the surface CLIPS its own layers, so a
-   * radius that disagrees with the parent's shows as a square blur peeking out
-   * of a rounded control — visible, and exactly the kind of thing a default
-   * hides until someone uses a different shape.
-   */
-  radius: number;
+  /** Exact surface policy of the caller; shared by blur, fill and rim. */
+  shape: SurfaceShape & { radius: NonNullable<SurfaceShape['radius']> };
+  /** Resolves logical corners consistently with the caller. Defaults to ltr. */
+  direction?: 'ltr' | 'rtl';
   /**
    * Which role's alpha to apply to `fill`. Default `accent`.
    *
@@ -67,8 +66,8 @@ export interface GlassSurfaceProps {
    * measuring it against a flat tint is what decided it was worth having.
    */
   sheen?: boolean;
-  /** Extra style for the clipped layer stack (rarely needed). */
-  style?: StyleProp<ViewStyle>;
+  /** Extra non-geometric style for the clipped layer stack. Shape and clipping remain authoritative. */
+  style?: StyleProp<GlassStyle>;
   testID?: string;
 }
 
@@ -80,6 +79,8 @@ export interface GlassIslandProps {
    * groups rather than as one bar.
    */
   radius?: number;
+  /** Curve for non-capsule islands. */
+  cornerCurve?: CornerCurve;
   /**
    * `'group'` when the island holds several RELATED actions the consumer has
    * declared as one group. Omitted for a single control in its own capsule: a
@@ -91,6 +92,6 @@ export interface GlassIslandProps {
   accessibilityLabel?: string;
   /** Forwarded to the material. See {@link GlassSurfaceProps.sheen}. */
   sheen?: boolean;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<GlassStyle>;
   testID?: string;
 }

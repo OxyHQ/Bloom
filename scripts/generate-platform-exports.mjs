@@ -121,6 +121,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./radio-indicator', 'radio-indicator/index.ts'],
   ['./radio', 'radio/index.ts'],
   ['./error-boundary', 'error-boundary/index.ts'],
+  ['./shapes', 'shapes/index.ts'],
   ['./avatar', 'avatar/index.ts'],
   ['./avatar-group', 'avatar-group/index.ts'],
   ['./user-hover-card', 'user-hover-card/index.ts'],

@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * Internal bottom-sheet shell shared by `Menu`, `Select` and `ContextMenu`.
  *
@@ -104,7 +106,7 @@ export function SheetShell({
     () => ({
       maxWidth: 500,
       backgroundColor: theme.colors.background,
-      borderRadius: 20,
+      ...surfaceStyle(SURFACE_SHAPES.panel),
     }),
     [theme.colors.background],
   );

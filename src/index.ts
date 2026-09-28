@@ -223,6 +223,7 @@ export type {
   ErrorBoundaryFallback,
   ErrorBoundaryFallbackContext,
 } from './error-boundary';
+export * as Shapes from './shapes';
 export * from './avatar';
 export { AvatarGroup } from './avatar-group';
 export type { AvatarGroupProps, AvatarGroupItem } from './avatar-group';

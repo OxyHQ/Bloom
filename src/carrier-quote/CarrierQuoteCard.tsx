@@ -380,9 +380,10 @@ function CarrierQuoteCardComponent({
       <Card
         variant="outlined"
         radius="radius-20"
+        border={selected ? 'medium' : 'thin'}
         style={[
           surfaceFillVars(paint.surface),
-          selected ? { borderWidth: 2, borderColor: paint.accent } : null,
+          selected ? { borderColor: paint.accent } : null,
           disabled ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}

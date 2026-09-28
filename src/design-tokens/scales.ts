@@ -63,6 +63,7 @@ export const SPACING = {
  * utility has been publishing all along.
  */
 export const RADIUS = {
+  'radius-0': 0,
   'radius-2': 2,
   'radius-4': 4,
   'radius-8': 8,

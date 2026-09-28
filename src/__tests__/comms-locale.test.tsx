@@ -16,7 +16,8 @@ import { within } from '@testing-library/dom';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { Avatar, AVATAR_SHAPE_LABELS, avatarShapeLabels } from '../avatar';
+import { Avatar } from '../avatar';
+import { LABELS, labels } from '../shapes';
 import { CallControls, CallHistoryRow, GroupCallBar, IncomingCallBanner } from '../call-ui';
 import { CALL_STATUS_LABELS } from '../call-ui/shared';
 import { LocaleProvider } from '../locale';
@@ -75,11 +76,11 @@ describe('avatar', () => {
   });
 
   it("names the shapes in the locale's words, in the same order", () => {
-    const es = avatarShapeLabels('es');
-    expect(es.map((row) => row.name)).toEqual(AVATAR_SHAPE_LABELS.map((row) => row.name));
+    const es = labels('es');
+    expect(es.map((row) => row.name)).toEqual(LABELS.map((row) => row.name));
     expect(es.find((row) => row.name === 'heart')?.label).toBe('Corazón');
     expect(es.find((row) => row.name === '4-leaf-clover')?.label).toBe('Trébol de 4 hojas');
-    expect(AVATAR_SHAPE_LABELS.find((row) => row.name === '12-sided-cookie')?.label).toBe('12-Sided Cookie');
+    expect(LABELS.find((row) => row.name === '12-sided-cookie')?.label).toBe('12-Sided Cookie');
   });
 });
 

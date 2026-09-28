@@ -63,6 +63,7 @@ export const lineHeight = {
  * (`radius-max`); see `scales.ts` for why it is 9999 rather than 999.
  */
 export const borderRadius = {
+  none: RADIUS['radius-0'],
   _2xs: RADIUS['radius-2'],
   xs: RADIUS['radius-4'],
   sm: RADIUS['radius-8'],

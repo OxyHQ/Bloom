@@ -87,7 +87,7 @@ describe('ButtonGroup, glass', () => {
         <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
       </ButtonGroup>,
     );
-    expect(resolvedStyle(getByTestId('group').props.style).overflow).toBeUndefined();
+    expect(resolvedStyle(getByTestId('group').props.style).overflow).toBe('visible');
   });
 
   it('INHERITS the material from the nearest control surface', () => {

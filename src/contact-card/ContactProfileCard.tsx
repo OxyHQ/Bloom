@@ -332,9 +332,10 @@ function ContactProfileCardComponent({
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
+        clipContent
         variant="outlined"
         radius="radius-20"
-        // `Card` already clips to its own corners and draws no padding, so the
+        // The inner clip follows the card corners and draws no padding, so the
         // cover band can run to the edge and the content block owns the inset.
         style={[surfaceFillVars(paint.surface), style]}
         testID={testID}

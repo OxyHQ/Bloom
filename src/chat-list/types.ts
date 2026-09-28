@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import type { AvatarShape } from '../avatar/types';
+import type { Shape } from '../shapes';
 import type {
   MessageDeliveryStatus,
   PresenceStatus,
@@ -55,7 +55,7 @@ export interface GroupAvatarProps {
   /** Diameter of the whole cluster. Default `48`. */
   size?: number;
   /** Shape of each face. Default `'circle'`. */
-  shape?: AvatarShape;
+  shape?: Shape;
   /**
    * The colour of the hairline that separates overlapping faces — the surface
    * behind the cluster. Default the page background.
@@ -183,7 +183,7 @@ export interface ChatListItemProps {
   /** 2–4 faces instead of `avatar`, drawn as a {@link GroupAvatarProps} cluster. */
   faces?: readonly ChatFace[];
   /** Shape of the avatar. Default `'circle'`. */
-  avatarShape?: AvatarShape;
+  avatarShape?: Shape;
   /** Draws a presence dot on the avatar's corner. */
   status?: PresenceStatus;
   /** Decides the default marker beside the name. Default `'direct'`. */

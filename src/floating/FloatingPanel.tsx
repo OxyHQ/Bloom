@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * The anchored surface every WEB fork of `Popover`, `DropdownMenu`,
  * `ContextMenu`, `Menubar` and `Select` renders. WEB ONLY — imported by
@@ -101,6 +103,8 @@ import { useCommonMessages } from '../locale/common-messages';
  * because an element type constructed during render remounts its subtree every
  * time. Same pattern, and the same reason, as `button/Button.tsx`.
  */
+const PANEL_CURVE = surfaceStyle({ curve: SURFACE_SHAPES.menu.curve });
+
 const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
 
 /** Tailwind v4 `ease-out`, the menu curve. */
@@ -506,6 +510,7 @@ export function FloatingPanel({
           className={cx(chrome.className, className)}
           style={[
             styles.panel,
+            PANEL_CURVE,
             // `bg-background-primary-default border-border-button-default
             // shadow-dropdown`, resolved from the theme. Inline, and BEFORE the
             // caller's `style`, which still overrides it.

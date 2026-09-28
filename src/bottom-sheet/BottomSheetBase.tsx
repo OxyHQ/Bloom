@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
 import { forwardRef, useImperativeHandle, useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import {
@@ -784,13 +786,12 @@ const styles = StyleSheet.create({
     sheetDetached: {
         left: 16,
         right: 16,
-        borderRadius: 24,
+        ...surfaceStyle({ ...SURFACE_SHAPES.panel, radius: 24 }),
     },
     sheetNormal: {
         left: 0,
         right: 0,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        ...surfaceStyle(SURFACE_SHAPES.sheet),
     },
     /** Legacy (non-manualActivation) handle: decorative overlay only. */
     handle: {

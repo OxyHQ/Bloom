@@ -16,7 +16,7 @@ import { Text } from '../typography';
 import { GroupAvatar } from './GroupAvatar';
 import { CHAT_ROW_RADIUS, IS_WEB, type ChatListPaint } from './shared';
 import type { ChatAction, ChatFace, ChatIconComponent } from './types';
-import type { AvatarShape } from '../avatar/types';
+import type { Shape } from '../shapes';
 import type { PresenceStatus } from '../chat-indicators/types';
 
 // ---------------------------------------------------------------------------
@@ -172,7 +172,7 @@ export interface ChatAvatarProps {
   name: string;
   avatar?: string;
   faces?: readonly ChatFace[];
-  shape?: AvatarShape;
+  shape?: Shape;
   status?: PresenceStatus;
   size: number;
   paint: ChatListPaint;

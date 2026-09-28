@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -421,7 +423,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             borderEndColor: palette.dockedEdge,
           }
         : {
-            borderRadius: 24,
+            ...surfaceStyle(SURFACE_SHAPES.sidebar),
             borderWidth: 1,
             borderColor: palette.panelBorder,
             backgroundColor: palette.panel,

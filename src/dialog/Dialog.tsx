@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, {
   useCallback,
   useEffect,
@@ -49,7 +51,6 @@ import {
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
-  PANEL_RADIUS,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
   physicalDialogSide,
@@ -264,7 +265,7 @@ function CenteredOrSideDialog({
         // All four corners rounded — bloom's BottomSheet defaults to top-only
         // radius in flush mode, but we use `detached` so the whole card is
         // floating and rounded uniformly.
-        borderRadius: 20,
+        ...surfaceStyle(SURFACE_SHAPES.panel),
       },
       // Drives the card's `height` only while a morph is in flight; at rest it
       // resolves to `height: 'auto'` — the card's normal content sizing.
@@ -529,7 +530,7 @@ function SideSheet({
         bottom: insetBottom,
         [anchorKey]: anchorInset,
         width: sideWidth,
-        borderRadius: PANEL_RADIUS,
+        ...surfaceStyle(SURFACE_SHAPES.panel),
       }),
     [insetTop, insetBottom, anchorKey, anchorInset, sideWidth],
   );

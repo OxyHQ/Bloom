@@ -216,15 +216,11 @@ function wrapStyle(root: ReactTestInstance): Record<string, unknown> {
   return styleOf(root, (style) => style.marginHorizontal === BAR_MARGIN, 'bar wrap');
 }
 
-/**
- * The sliding highlight. The capsule surface also carries
- * `borderCurve: 'continuous'`, but it is an `absoluteFill` with no width of its
- * own — the width IS the highlight's geometry, which is what this reads.
- */
+/** Read the sliding highlight by its absolute position and measured width. */
 function highlightStyle(root: ReactTestInstance): Record<string, unknown> {
   return styleOf(
     root,
-    (style) => style.borderCurve === 'continuous' && typeof style.width === 'number',
+    (style) => style.position === 'absolute' && style.insetInlineStart === 0 && typeof style.width === 'number',
     'highlight',
   );
 }

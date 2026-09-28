@@ -1,4 +1,6 @@
+import { surfaceStyle } from '../shapes/surface-style';
 import React, { memo, useMemo } from 'react';
+import { useSvgId } from '../shapes/use-svg-id';
 import { Platform, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -47,15 +49,15 @@ import type { GlassSurfaceProps } from './types';
  * ── WHAT THE CALLER OWES IT ─────────────────────────────────────────────────
  *
  * A positioned box with `overflow` of its own is NOT required — this fills the
- * caller absolutely and clips itself — but `radius` must match the caller's, and
+ * caller absolutely and clips itself — but `shape` must match the caller's, and
  * the caller must render this FIRST so it paints under its own content.
  */
 
-let glassSheenIdCounter = 0;
 
 const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
   fill,
-  radius,
+  shape,
+  direction = 'ltr',
   material = 'accent',
   sheen = true,
   style,
@@ -69,10 +71,8 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         : resolveGlassColors(fill),
     [fill, material, theme.isDark],
   );
-  // Per instance, because two panes in one document would otherwise share an id
-  // and the survivor of an unmount would reference a gradient that is gone. Same
-  // counter shape as `AvatarRing`.
-  const sheenId = useMemo(() => `bloom-glass-sheen${glassSheenIdCounter++}`, []);
+  const sheenId = useSvgId('glass');
+  const geometry = surfaceStyle(shape, direction);
 
   return (
     <View
@@ -82,7 +82,7 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
       // than the exception, and the surface must never eat a press meant for the
       // control it fills.
       pointerEvents="none"
-      style={[StyleSheet.absoluteFill, { borderRadius: radius }, styles.clip, style]}
+      style={[StyleSheet.absoluteFill, style, geometry, styles.clip]}
       testID={testID}
     >
       <BlurView
@@ -168,7 +168,7 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         reason one layer further out. Its own empty layer is the only position in
         the stack where it is visible.
       */}
-      <View style={[StyleSheet.absoluteFill, styles.rim]} />
+      <View style={[StyleSheet.absoluteFill, geometry, styles.rim]} />
     </View>
   );
 };

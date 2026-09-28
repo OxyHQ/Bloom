@@ -36,7 +36,7 @@ import { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription } fr
 | ----------- | ---------------------------------------------------------------- |
 | `appearance`   | the preset combination of background, border and elevation        |
 | `radius`    | the corner, as a **rung of the `RADIUS` scale** — never a number  |
-| `border`    | `none` · `hairline` (0.5px) · `thin` (1px)                        |
+| `border`    | `none` · `hairline` (0.5px) · `thin` (1px) · `medium` (2px)                        |
 | `elevation` | `none` · `s` (a subtle raise) · `m` (the overlay role)            |
 
 `appearance` is only a named default for the other three. An explicit `border` or
@@ -92,13 +92,22 @@ is a `button` (the default).
 
 ## Clipping
 
-`Card` sets `overflow: 'hidden'` so a cover image cannot paint over the corner.
-A surface that must *not* clip — because it has an Android elevation, or
-because a child deliberately overflows — opts out through `style`:
+The outer card stays unclipped so its shadow and focus indicator remain visible.
+Use `clipContent` for full-bleed media. This creates one inner clipping layer;
+put its child layout and padding in `contentStyle`. `style` and `className`
+still target the outer node that the parent lays out.
 
 ```tsx
-<Card style={{ overflow: 'visible' }} />
+<Card clipContent radius="radius-20" contentStyle={{ gap: 12 }} />
 ```
+
+`cornerCurve="smooth"` is the default: CSS squircle on supporting browsers,
+iOS continuous curves, circular corners on Android and unsupported browsers.
+`cornerCurve="round"` is circular everywhere. `radius-max` always remains a pill.
+`border="medium"` supplies a 2px selection border.
+Both layers use the same curve; the inner radius accounts for the border width.
+`radius`, `cornerCurve` and `border` own geometry. Set layout and paint in `style`,
+not border radii, border widths or overflow; `contentStyle` follows the same rule.
 
 ## Parts
 

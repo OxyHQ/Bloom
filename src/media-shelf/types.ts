@@ -1,4 +1,5 @@
-import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
+import type { ImageSource } from '../shapes';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
  * `row` — one horizontally scrolling line of items (web: prev/next buttons in
@@ -15,7 +16,7 @@ export interface ShelfProps {
   /** A small line above the title, e.g. "Made for". */
   eyebrow?: string;
   /** A 24px avatar before the eyebrow and title — who the section is for. URL, ImageResolver id or image source. */
-  eyebrowAvatar?: string | ImageSourcePropType;
+  eyebrowAvatar?: string | ImageSource;
   /** Makes the title itself pressable (it opens the same page as "Show all"). */
   onTitlePress?: () => void;
   /** Shows the "Show all" button on the right of the header. */

@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { CardForegroundContext } from './context';
 import { useBloomAppearance, type BloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
@@ -41,14 +43,18 @@ import type {
   CardDescriptionProps,
 } from './types';
 
-/** The width each border role resolves to. `none` is expressed by omitting the border. */
+/** The width each border role resolves to. `none` resolves to zero. */
 const BORDER_PX: Record<Exclude<CardBorder, 'none'>, number> = {
   hairline: BORDER_WIDTH.hairline,
   thin: 1,
+  medium: 2,
 };
 
 /** What each preset means on the two axes an explicit prop can override. */
-const VARIANT_DEFAULTS: Record<BloomAppearance, { border: CardBorder; elevation: CardElevation }> = {
+const VARIANT_DEFAULTS: Record<
+  BloomAppearance,
+  { border: CardBorder; elevation: CardElevation }
+> = {
   plain: { border: 'none', elevation: 'none' },
   // `shadow-s` IS the "subtle raise — cards, chips" role, and the token is
   // already platform-forked, so a hand-rolled `Platform.OS` branch would be one
@@ -64,6 +70,9 @@ const CardRootComponent: React.FC<CardProps> = ({
   variant,
   tone: toneProp,
   radius = 'radius-12',
+  cornerCurve = SURFACE_SHAPES.card.curve,
+  clipContent = false,
+  contentStyle,
   elevation,
   border,
   style,
@@ -75,30 +84,55 @@ const CardRootComponent: React.FC<CardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const appearance = appearanceProp ?? (variant === 'filled' ? 'subtle' : variant === 'outlined' ? 'outline' : 'solid');
-  const {tone} = useBloomAppearance({tone: toneProp}, {size: 'md', tone: 'neutral'});
+  const appearance =
+    appearanceProp ??
+    (variant === 'filled'
+      ? 'subtle'
+      : variant === 'outlined'
+        ? 'outline'
+        : 'solid');
+  const { tone } = useBloomAppearance(
+    { tone: toneProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const paint = resolveBloomColors(theme.colors, tone, appearance);
   // Drive the press-opacity via state instead of Pressable's function-form
   // `style`, which NativeWind v4's css-interop swallows (dropping the base
   // container style: background, radius, border, shadow).
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
-    useInteractionState();
+  const {
+    state: pressed,
+    onIn: onPressIn,
+    onOut: onPressOut,
+  } = useInteractionState();
 
   const containerStyle = useMemo((): ViewStyle => {
     const defaults = VARIANT_DEFAULTS[appearance];
     const resolvedBorder = border ?? defaults.border;
-    const resolvedElevation = elevation ?? (variant === 'plain' && appearanceProp == null ? 'none' : defaults.elevation);
+    const resolvedElevation =
+      elevation ??
+      (variant === 'plain' && appearanceProp == null
+        ? 'none'
+        : defaults.elevation);
 
     const base: ViewStyle = {
       backgroundColor:
-        tone === 'neutral' && (appearance === 'solid' || (appearanceProp == null && variant === 'outlined')) ? theme.colors.card : tone === 'neutral' && appearance === 'subtle' ? theme.colors.backgroundSecondary : paint.background,
-      borderRadius: RADIUS[radius],
-      overflow: 'hidden',
+        tone === 'neutral' &&
+        (appearance === 'solid' ||
+          (appearanceProp == null && variant === 'outlined'))
+          ? theme.colors.card
+          : tone === 'neutral' && appearance === 'subtle'
+            ? theme.colors.backgroundSecondary
+            : paint.background,
+      ...surfaceStyle({
+        radius: RADIUS[radius],
+        curve: radius === 'radius-max' ? 'round' : cornerCurve,
+      }),
     };
 
     if (resolvedBorder !== 'none') {
       base.borderWidth = BORDER_PX[resolvedBorder];
-      base.borderColor = tone === 'neutral' ? theme.colors.border : paint.border;
+      base.borderColor =
+        tone === 'neutral' ? theme.colors.border : paint.border;
     }
 
     if (resolvedElevation !== 'none') {
@@ -106,9 +140,56 @@ const CardRootComponent: React.FC<CardProps> = ({
     }
 
     return base;
-  }, [appearance, appearanceProp, variant, tone, paint, radius, border, elevation, theme]);
+  }, [
+    appearance,
+    appearanceProp,
+    variant,
+    tone,
+    paint,
+    radius,
+    cornerCurve,
+    border,
+    elevation,
+    theme,
+  ]);
 
-  const content = <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>{children}</CardForegroundContext.Provider>;
+  const geometry = {
+    ...surfaceStyle({
+      radius: RADIUS[radius],
+      curve: radius === 'radius-max' ? 'round' : cornerCurve,
+    }),
+    borderWidth: containerStyle.borderWidth ?? 0,
+  };
+  const content = (
+    <CardForegroundContext.Provider
+      value={tone === 'neutral' ? undefined : paint.foreground}
+    >
+      {clipContent ? (
+        <View
+          style={[
+            contentStyle,
+            surfaceStyle({
+              radius: Math.max(
+                0,
+                RADIUS[radius] - (containerStyle.borderWidth ?? 0),
+              ),
+              curve: radius === 'radius-max' ? 'round' : cornerCurve,
+            }),
+            {
+              overflow: 'hidden',
+              alignSelf: 'stretch',
+              flexGrow: 1,
+              flexShrink: 1,
+            },
+          ]}
+        >
+          {children}
+        </View>
+      ) : (
+        children
+      )}
+    </CardForegroundContext.Provider>
+  );
 
   if (onPress) {
     return (
@@ -119,6 +200,7 @@ const CardRootComponent: React.FC<CardProps> = ({
           pressed && !disabled && { opacity: 0.85 },
           disabled && { opacity: 0.5 },
           style,
+          geometry,
         ]}
         onPress={onPress}
         onPressIn={disabled ? undefined : onPressIn}
@@ -127,6 +209,7 @@ const CardRootComponent: React.FC<CardProps> = ({
         accessibilityLabel={accessibilityLabel}
         accessibilityRole={accessibilityRole}
         accessibilityState={{ disabled }}
+        aria-disabled={disabled}
         testID={testID}
       >
         {content}
@@ -137,7 +220,7 @@ const CardRootComponent: React.FC<CardProps> = ({
   return (
     <StyledView
       className={className}
-      style={[containerStyle, disabled && { opacity: 0.5 }, style]}
+      style={[containerStyle, disabled && { opacity: 0.5 }, style, geometry]}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
@@ -146,7 +229,10 @@ const CardRootComponent: React.FC<CardProps> = ({
   );
 };
 
-const CardHeaderComponent: React.FC<CardHeaderProps> = ({ children, style }) => (
+const CardHeaderComponent: React.FC<CardHeaderProps> = ({
+  children,
+  style,
+}) => (
   <View
     style={[
       {
@@ -175,7 +261,10 @@ const CardBodyComponent: React.FC<CardBodyProps> = ({ children, style }) => (
   </View>
 );
 
-const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => (
+const CardFooterComponent: React.FC<CardFooterProps> = ({
+  children,
+  style,
+}) => (
   <View
     style={[
       {
@@ -194,7 +283,11 @@ const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => 
   </View>
 );
 
-const CardTitleComponent: React.FC<CardTitleProps> = ({ children, style, numberOfLines }) => {
+const CardTitleComponent: React.FC<CardTitleProps> = ({
+  children,
+  style,
+  numberOfLines,
+}) => {
   const theme = useTheme();
   const foreground = useContext(CardForegroundContext);
   return (

@@ -175,3 +175,14 @@ Chrome islands retain zero AA failures over the black/white backdrop endpoints:
 the new light minimum is 7.84 (`sky/light/black/web`), and dark 6.47
 (`graphite/dark/white/web`). Previously pinned floors were 8.23 and 6.43. These
 are measured at unchanged chrome alphas 0.72/0.80 and now pin exact named rows.
+
+## Shared geometry
+
+`GlassSurface` takes a required `shape` policy (`radius` and `curve`) from
+`@oxy.so/bloom/shapes`. The caller applies `Shapes.surfaceStyle(shape)` to its
+outer box and passes the same policy to the material. The material clips only
+its own blur, fill and sheen; its rim uses that geometry too. The outer box
+keeps shadows visible. `GlassIsland` handles this composition and accepts
+`cornerCurve` for non-pill radii. Its default capsule remains round.
+
+Geometry is owned by `shape`/`radius`/`cornerCurve`, not by `style`; material clipping and the island's visible outer shadow cannot be overridden through style. For asymmetric logical corners, pass the caller's `direction` to both `surfaceStyle` and `GlassSurface`.

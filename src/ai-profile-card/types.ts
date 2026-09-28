@@ -1,3 +1,4 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
 
@@ -30,7 +31,7 @@ export interface AiProfileCardProps {
    */
   coverPosition?: { x: number; y: number };
   /** Avatar photo. Without one the 80px disc shows `initials`. */
-  avatarSource?: string | ImageSourcePropType | null;
+  avatarSource?: string | ImageSource | null;
   /** Initials for the photo-less disc. Defaults to the first letter of `name`. */
   initials?: string;
   /**

@@ -9,15 +9,15 @@ const meta: Meta<typeof Avatar> = {
   title: 'Base/Avatar',
   component: Avatar,
   argTypes: {
-    "uri": { control: 'text' },
-    "variant": { control: 'text' },
-    "color": { control: 'select', options: ["neutral","blue","lime","pink"] },
-    "initials": { control: 'text' },
-    "alt": { control: 'text' },
-    "placeholderColor": { control: 'text' },
-    "name": { control: 'text' },
-    "liveLabel": { control: 'text' },
-    "liveColor": { control: 'text' },
+    uri: { control: 'text' },
+    variant: { control: 'text' },
+    color: { control: 'select', options: ['neutral', 'blue', 'lime', 'pink'] },
+    initials: { control: 'text' },
+    alt: { control: 'text' },
+    placeholderColor: { control: 'text' },
+    name: { control: 'text' },
+    liveLabel: { control: 'text' },
+    liveColor: { control: 'text' },
     size: {
       control: { type: 'number', min: 16, max: 256, step: 4 },
     },
@@ -55,15 +55,37 @@ export const SizeMatrix: Story = {
   render: () => (
     <View testID="avatar-matrix" style={{ padding: 24, gap: 16 }}>
       {(['neutral', 'blue', 'lime', 'pink'] as const).map((color) => (
-        <View key={color} style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', alignItems: 'center', gap: 12 }}>
+        <View
+          key={color}
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            maxWidth: '100%',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
           {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
             <Avatar key={size} size={size} color={color} initials="M" />
           ))}
         </View>
       ))}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', alignItems: 'center', gap: 12 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          maxWidth: '100%',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
         {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
-          <Avatar key={size} size={size} source={SAMPLE_URI} alt="Profile photo" />
+          <Avatar
+            key={size}
+            size={size}
+            source={SAMPLE_URI}
+            alt="Profile photo"
+          />
         ))}
       </View>
     </View>
@@ -90,7 +112,15 @@ export const Squircle: Story = {
 export const Sizes: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 12, alignItems: 'center' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        gap: 12,
+        alignItems: 'center',
+      }}
+    >
       <Avatar size={24} name="Ada" />
       <Avatar size={32} name="Ada" />
       <Avatar size={40} name="Ada" />
@@ -104,7 +134,15 @@ export const Sizes: Story = {
 export const Composition: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 12, alignItems: 'center' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        gap: 12,
+        alignItems: 'center',
+      }}
+    >
       <Avatar size={48} name="Ada Lovelace" />
       <Avatar size={48} name="Grace Hopper" />
       <Avatar size={48} name="Alan Turing" />
@@ -141,9 +179,7 @@ export const LiveVerified: Story = {
     uri: SAMPLE_URI,
     live: true,
     verified: true,
-    verifiedIcon: (
-      <RiVerifiedBadgeLine size="lg" fill="#1D9BF0" />
-    ),
+    verifiedIcon: <RiVerifiedBadgeLine size="lg" fill="#1D9BF0" />,
   },
   name: 'Live + verified',
 };
@@ -151,7 +187,15 @@ export const LiveVerified: Story = {
 export const LiveGallery: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 20, alignItems: 'center' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        gap: 20,
+        alignItems: 'center',
+      }}
+    >
       <Avatar size={24} uri={SAMPLE_URI} live />
       <Avatar size={32} uri={SAMPLE_URI} live />
       <Avatar size={48} uri={SAMPLE_URI} live />
@@ -167,7 +211,7 @@ export const GradientRing: Story = {
   args: {
     size: 72,
     uri: SAMPLE_URI,
-    ring: { colors: STORY_GRADIENT, width: 3, gap: 3 },
+    ring: { colors: STORY_GRADIENT, width: 3 },
   },
   name: 'Gradient ring (stories)',
 };
@@ -175,37 +219,30 @@ export const GradientRing: Story = {
 export const SeenVsUnseen: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 20, alignItems: 'center' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        gap: 20,
+        alignItems: 'center',
+      }}
+    >
       {/* Unseen → gradient ring. */}
       <Avatar
         size={72}
         uri={SAMPLE_URI}
-        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3 }}
+        ring={{ colors: STORY_GRADIENT, width: 3 }}
       />
       {/* Seen → muted solid gray ring. */}
       <Avatar
         size={72}
         uri={SAMPLE_URI}
-        ring={{ colors: SEEN_GRAY, width: 3, gap: 3 }}
+        ring={{ colors: SEEN_GRAY, width: 3 }}
       />
     </View>
   ),
   name: 'Seen vs unseen',
-};
-
-export const RingWithGap: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 24, alignItems: 'center' }}>
-      {/* gap 0 → overlays the edge, footprint unchanged. */}
-      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: STORY_GRADIENT, width: 3, gap: 0 }} />
-      {/* gap 4 → sits outside the avatar, footprint grows. */}
-      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: STORY_GRADIENT, width: 3, gap: 4 }} />
-      {/* gap 8 → wider clearance. */}
-      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: STORY_GRADIENT, width: 4, gap: 8 }} />
-    </View>
-  ),
-  name: 'Ring with gap',
 };
 
 export const RingSquircle: Story = {
@@ -213,7 +250,7 @@ export const RingSquircle: Story = {
     size: 72,
     uri: SAMPLE_URI,
     shape: 'squircle',
-    ring: { colors: STORY_GRADIENT, width: 3, gap: 3 },
+    ring: { colors: STORY_GRADIENT, width: 3 },
   },
   name: 'Gradient ring (squircle)',
 };
@@ -221,10 +258,31 @@ export const RingSquircle: Story = {
 export const SolidRing: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 20, alignItems: 'center' }}>
-      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: '#1A73E8', width: 3 }} />
-      <Avatar size={72} uri={SAMPLE_URI} shape="squircle" ring={{ colors: '#1A73E8', width: 3 }} />
-      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: '#1A73E8', width: 3, gap: 4 }} />
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        gap: 20,
+        alignItems: 'center',
+      }}
+    >
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        ring={{ colors: '#1A73E8', width: 3 }}
+      />
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        shape="squircle"
+        ring={{ colors: '#1A73E8', width: 3 }}
+      />
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        ring={{ colors: '#1A73E8', width: 3 }}
+      />
     </View>
   ),
   name: 'Solid ring',
@@ -233,21 +291,41 @@ export const SolidRing: Story = {
 export const GradientDirections: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 20, alignItems: 'center' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        gap: 20,
+        alignItems: 'center',
+      }}
+    >
       <Avatar
         size={72}
         uri={SAMPLE_URI}
-        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3, gradientDirection: 'diagonal' }}
+        ring={{
+          colors: STORY_GRADIENT,
+          width: 3,
+          gradientDirection: 'diagonal',
+        }}
       />
       <Avatar
         size={72}
         uri={SAMPLE_URI}
-        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3, gradientDirection: 'horizontal' }}
+        ring={{
+          colors: STORY_GRADIENT,
+          width: 3,
+          gradientDirection: 'horizontal',
+        }}
       />
       <Avatar
         size={72}
         uri={SAMPLE_URI}
-        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3, gradientDirection: 'vertical' }}
+        ring={{
+          colors: STORY_GRADIENT,
+          width: 3,
+          gradientDirection: 'vertical',
+        }}
       />
     </View>
   ),
@@ -256,5 +334,11 @@ export const GradientDirections: Story = {
 
 /** Edit the props in Controls; interactive state stays in sync. */
 export const Playground: Story = {
-  args: { initials: 'AL', size: 64, shape: 'circle', verified: false, live: false },
+  args: {
+    initials: 'AL',
+    size: 64,
+    shape: 'circle',
+    verified: false,
+    live: false,
+  },
 };

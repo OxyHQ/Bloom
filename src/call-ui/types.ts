@@ -1,5 +1,6 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
-import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -16,8 +17,8 @@ import type { BloomIconComponent } from '../icons/icon-component';
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
 export type CallGlyph = BloomIconComponent;
 
-/** An avatar source: a URL, an `ImageResolver` id, or an RN image source. */
-export type CallAvatarSource = string | ImageSourcePropType | null;
+/** An avatar source: a URL, an `ImageResolver` id, or a portable Shapes image source. */
+export type CallAvatarSource = string | ImageSource | null;
 
 // ---------------------------------------------------------------------------
 //  Status

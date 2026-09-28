@@ -1,3 +1,4 @@
+import type { ImageSource } from '../shapes';
 import type { ComponentType, ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
@@ -62,7 +63,7 @@ export interface ChatHeaderProps {
    */
   avatar?: ReactNode;
   /** A URL, an `ImageResolver` id, or an RN image source. */
-  avatarSource?: string | ImageSourcePropType | null;
+  avatarSource?: string | ImageSource | null;
   /** Initials fallback and the avatar's tint seed. Defaults to `title`. */
   avatarName?: string;
   /** Draws a presence dot on the avatar. */
@@ -339,7 +340,7 @@ export interface ChatMember {
   id: string;
   name: string;
   /** A URL, an `ImageResolver` id or an RN image source. */
-  source?: string | ImageSourcePropType | null;
+  source?: string | ImageSource | null;
   status?: PresenceStatus;
   role?: ChatMemberRole;
   /** The second line — a handle, "last seen recently", a phone number. */
@@ -382,7 +383,7 @@ export interface ChatInfoPanelProps {
 
   /** Replaces the built-in avatar. */
   avatar?: ReactNode;
-  avatarSource?: string | ImageSourcePropType | null;
+  avatarSource?: string | ImageSource | null;
   presence?: PresenceStatus;
   /** Avatar diameter. Default `96` (`72` over a cover). */
   avatarSize?: number;

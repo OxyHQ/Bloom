@@ -1,5 +1,6 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
-import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
 
@@ -13,8 +14,8 @@ import type { PresenceStatus } from '../chat-indicators/types';
  * timezone the data came from.
  */
 
-/** An avatar source: a URL, an `ImageResolver` id, or an RN image source. */
-export type PersonAvatarSource = string | ImageSourcePropType | null;
+/** An avatar source: a URL, an `ImageResolver` id, or a portable Shapes image source. */
+export type PersonAvatarSource = string | ImageSource | null;
 
 /** The smallest shape every list here accepts. */
 export interface PersonSummary {

@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * `Dialog` — WEB: a pure-DOM modal overlay rendered into Bloom's `Portal`.
  *
@@ -68,7 +70,6 @@ import {
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
-  PANEL_RADIUS,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
   physicalDialogSide,
@@ -521,7 +522,7 @@ function DialogPanel({
       style={[
         {
           position: 'relative',
-          borderRadius: 20,
+          ...surfaceStyle(SURFACE_SHAPES.panel),
           width: '100%',
           maxWidth,
           // The Dialog OWNS the size cap + scroll boundary (its content renders
@@ -733,7 +734,7 @@ function SheetSurface({
       bottom: insetBottom,
       [edge]: anchorInset,
       width: cappedWidth,
-      borderRadius: PANEL_RADIUS,
+      ...surfaceStyle(SURFACE_SHAPES.panel),
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
     };

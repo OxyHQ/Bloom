@@ -412,9 +412,10 @@ function JobCardComponent({
       <Card
         variant="outlined"
         radius="radius-20"
+        border={selected ? 'medium' : 'thin'}
         style={[
           surfaceFillVars(paint.surface),
-          selected ? { borderWidth: 2, borderColor: paint.accent } : null,
+          selected ? { borderColor: paint.accent } : null,
           inert ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}
