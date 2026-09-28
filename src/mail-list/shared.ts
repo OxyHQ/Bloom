@@ -367,6 +367,17 @@ function dayIndex(at: number): number {
 }
 
 /**
+ * The LOCAL midnight of a `dayIndex`. The index counts calendar days as UTC
+ * dates, so `new Date(day * 86_400_000)` is UTC midnight — the previous
+ * evening anywhere west of UTC, which a formatter in local time printed as
+ * the day before.
+ */
+function localMidnight(day: number): Date {
+  const utc = new Date(day * 86_400_000);
+  return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
+}
+
+/**
  * A flat list bucketed into day sections, newest bucket first, keeping each
  * bucket's input order.
  *
@@ -416,7 +427,7 @@ export function groupMailByDay(
           ? todayLabel
           : day === today - 1
             ? yesterdayLabel
-            : formatDate(new Date(day * 86_400_000));
+            : formatDate(localMidnight(day));
       return { key: `day-${day}`, title, mails: buckets.get(day) as MailSummary[] };
     });
   if (undated.length > 0) sections.push({ key: 'undated', mails: undated });

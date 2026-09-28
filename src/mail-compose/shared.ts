@@ -16,10 +16,11 @@ export const MAIL_COMPOSE_GEOMETRY = {
   rowMinHeight: 48,
   paddingHorizontal: 16,
   /**
-   * The "To" / "Cc" / "Bcc" / "Subject" gutter column. ONE width for all four,
-   * so the chips and the subject sit on a single left margin — and wide enough
-   * for the longest of the four words, which is "Subject" (measured: 36 clipped
-   * it to "Su…").
+   * The "To" / "Cc" / "Bcc" / "Subject" gutter column's MINIMUM. One width for
+   * all four, so the chips and the subject sit on a single left margin: 56 fits
+   * English "Subject" (measured: 36 clipped it to "Su…"), and inside the header
+   * the column grows to the widest label in the language on screen, up to 120
+   * (`context.ts`) — Russian "Скрытая копия" needs about 104.
    */
   labelWidth: 56,
   /** The docked panel's own surface radius. */

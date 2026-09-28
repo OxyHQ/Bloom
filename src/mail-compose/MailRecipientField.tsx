@@ -12,7 +12,6 @@ import { hairlineOn, useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import {
   MAIL_COMPOSE_CSS,
@@ -22,6 +21,7 @@ import {
   recipientName,
   recipientsInvalid,
 } from './shared';
+import { MailGutterLabel } from './MailGutterLabel';
 import { MAIL_COMPOSE_MESSAGES } from './messages';
 import type { MailRecipientFieldProps } from './types';
 
@@ -129,19 +129,14 @@ export function MailRecipientField({
         }}
       >
         {gutter === undefined ? null : (
-          <Text
-            variant="body-regular"
-            numberOfLines={1}
-            style={{
-              width: geo.labelWidth,
-              color: paint.textTertiary,
-              paddingTop: 8,
-              flexShrink: 0,
-            }}
+          <MailGutterLabel
+            id={testID ?? gutter}
+            color={paint.textTertiary}
+            paddingTop={8}
             testID={testID ? `${testID}-label` : undefined}
           >
             {gutter}
-          </Text>
+          </MailGutterLabel>
         )}
         <View
           style={{

@@ -185,6 +185,22 @@ describe('mail-list', () => {
     expect(sections.map((section) => section.title)).toEqual(['Hoy', 'Ayer', '18 sept']);
     expect(groupMailByDay([{ id: 'a', sender: { name: 'A' }, subject: 'a', date: now }], { now })[0]?.title).toBe('Today');
   });
+
+  it("hands the date formatter the bucket's LOCAL midnight, so no time zone shifts it a day", () => {
+    // A UTC-midnight Date is the previous evening west of UTC, where a local
+    // formatter printed the day before. Asserted as local midnight of the same
+    // calendar day, which holds in whatever zone the suite runs.
+    const now = new Date(2026, 8, 28, 12).getTime();
+    const seen: Date[] = [];
+    groupMailByDay(
+      [
+        { id: 'a', sender: { name: 'A' }, subject: 'a', date: now },
+        { id: 'c', sender: { name: 'C' }, subject: 'c', date: new Date(2026, 8, 18, 9).getTime() },
+      ],
+      { now, formatDate: (date) => (seen.push(date), 'x') },
+    );
+    expect(seen.map((d) => [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()])).toEqual([[2026, 8, 18, 0, 0]]);
+  });
 });
 
 describe('note-editor', () => {

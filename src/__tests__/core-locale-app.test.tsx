@@ -6,15 +6,15 @@
  */
 import React from 'react';
 import * as ReactNative from 'react-native';
-import { render,within } from '@testing-library/react-native';
+import { render, within } from '@testing-library/react-native';
 
-import { AppShellHeader,NotificationBell,ProOfferCard } from '../app-shell';
-import { type CalendarViewEvent,CalendarViewEventDetails,CalendarViewHeader,CalendarViewMonthGrid,CalendarViewMonthSwitcher } from '../calendar';
-import { DataTable,type DataTableColumn } from '../data-table';
+import { AppShellHeader, NotificationBell, ProOfferCard } from '../app-shell';
+import { type CalendarViewEvent, CalendarViewEventDetails, CalendarViewHeader, CalendarViewMonthGrid, CalendarViewMonthSwitcher } from '../calendar';
+import { DataTable, type DataTableColumn } from '../data-table';
 import { LocaleProvider } from '../locale';
 import { Notification } from '../notification';
-import { NotificationCenter,type NotificationCenterItem } from '../notification-center';
-import { PortalOutlet,PortalProvider } from '../portal';
+import { NotificationCenter, type NotificationCenterItem } from '../notification-center';
+import { PortalOutlet, PortalProvider } from '../portal';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 // The web portal is a react-dom portal (no DOM here); render in place.

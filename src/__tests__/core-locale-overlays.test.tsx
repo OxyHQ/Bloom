@@ -5,25 +5,25 @@
  * `core-locale.web.test.tsx`.
  */
 import React from 'react';
-import { Pressable,Text } from 'react-native';
-import { act,fireEvent,render } from '@testing-library/react-native';
+import { Pressable, Text } from 'react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AlertDialog } from '../alert-dialog';
-import { Breadcrumb,BreadcrumbItem } from '../breadcrumb';
+import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Command } from '../command';
 import { ConnectionDots } from '../connection-dots';
-import { ContextMenu,ContextMenuContent,ContextMenuItem,ContextMenuTrigger } from '../context-menu';
-import { Dialog,useDialogControl } from '../dialog';
-import { HoverCard,HoverCardContent,HoverCardTrigger } from '../hover-card';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../context-menu';
+import { Dialog, useDialogControl } from '../dialog';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '../hover-card';
 import { RiHomeLine } from '../icons/remix';
 import { LocaleProvider } from '../locale';
-import { Menubar,MenubarContent,MenubarItem,MenubarMenu,MenubarTrigger } from '../menubar';
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from '../menubar';
 import { Pagination } from '../pagination';
 import { PAGINATION_MESSAGES } from '../pagination/messages';
-import { Popover,PopoverContent,PopoverTrigger } from '../popover';
-import { PortalOutlet,PortalProvider } from '../portal';
-import { Sidebar,type SidebarAccount } from '../sidebar';
-import { alert,confirm,prompt,SurfaceHost } from '../surfaces';
+import { Popover, PopoverContent, PopoverTrigger } from '../popover';
+import { PortalOutlet, PortalProvider } from '../portal';
+import { Sidebar, type SidebarAccount } from '../sidebar';
+import { alert, confirm, prompt, SurfaceHost } from '../surfaces';
 import { __resetSurfacesForTests } from '../surfaces/surface-store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
