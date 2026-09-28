@@ -51,7 +51,7 @@ describe('StatCards', () => {
     const surfaces = resolveDashboardSurfaces(theme);
     const band = cardLayout(getByTestId('card-band'));
     expect(band).toMatchObject({
-      borderRadius: 10,
+      borderRadius: 12,
       paddingTop: 6,
       paddingBottom: 6,
       paddingRight: 6,

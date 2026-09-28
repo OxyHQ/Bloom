@@ -58,13 +58,13 @@ The grid follows the WINDOW width, using Tailwind's breakpoints:
 | icon | tile radius 6 padding 6, icon 20 | 40 tile radius 10, gradient, icon 20 white |
 | label → value | 14/20 medium → 2 → 24/34 medium | 14/20 medium (truncates) → 2 → 32/44 medium, tabular |
 | delta | `Chip` (medium) | pill: padding 2 / 8 right / 4 left, arrow-circle 16, 14/20 medium tabular |
-| band | — | radius 10, padding 6 / 6 / 10 left, `shadow-card` |
+| band | — | radius 12, padding 6 / 6 / 10 left, no elevation |
 
 ## Colours
 
-Surfaces are built on Bloom's ramps (`button/shared`): the card is `neutral-100` / `neutral-900`, the icon tile and band are the card colour (`white`) in light and `neutral-800` (at 60% over the card, for the band) in dark.
+Both the card and footer band use Bloom's `Card` material. The card resolves its fill from the parent surface; the nested band advances one layer, sharing the material gradient and rim. Neutral palette values follow these resolved fills.
 
-- **Deltas.** `lime` / `rose` / `neutral`. The plain card's `Chip` reads `success` / `error` / `default`. The footer pill uses a status recipe on the theme's `success` and `negative` ramps: light `200` fill with `800` text, dark `950` at 60% over the band with `500` text.
+- **Deltas.** `lime` / `rose` / `neutral` read the semantic success, error or neutral fill/foreground pairs. The plain variant uses `Chip`; the footer pill resolves its pair against the band's fill.
 - **Tile tones.** `blue` is the accent ramp, `orange` the `warning` ramp, `sky` the `info` ramp and `emerald` the `success` ramp — so a preset that moves a status colour moves the tile with it. `purple` and `pink` have no theme role: they keep Tailwind's offset from `blue-500` (lightness step, chroma ratio, hue distance), measured from the theme's `primary`. Stops are fixed (`500 → 600`, `orange`/`sky` `400 → 500`), always opaque (react-native-svg drops alpha in `stopColor`).
 
 ## Accessory
