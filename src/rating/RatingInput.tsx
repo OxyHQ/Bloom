@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import { useBloomAppearance } from '../appearance';
+import React, { memo, useCallback, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';
@@ -48,9 +49,9 @@ import { useFieldMembership } from '../field/membership';
  */
 
 const SIZE_CONFIG: Record<RatingInputSize, { star: number; gap: number }> = {
-  small: { star: 24, gap: 4 },
-  medium: { star: 32, gap: 6 },
-  large: { star: 40, gap: 8 },
+  sm: { star: 24, gap: 4 },
+  md: { star: 32, gap: 6 },
+  lg: { star: 40, gap: 8 },
 };
 
 const IS_WEB = Platform.OS === 'web';
@@ -84,13 +85,16 @@ function RatingInputComponent({
   value,
   onChange,
   max = 5,
-  size = 'medium',
+  size: sizeProp,
   disabled: disabledProp = false,
   accessibilityLabel,
   formatStarLabel: formatStarLabelProp,
   style,
   testID,
 }: RatingInputProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
+
   const theme = useTheme();
   const { messages } = useMessages(RATING_MESSAGES);
   const formatStarLabel = formatStarLabelProp ?? messages.star;
@@ -169,6 +173,8 @@ function RatingInputComponent({
       accessibilityLabel={field.accessibilityLabel}
       aria-label={field.accessibilityLabel}
       aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
+      aria-required={field.required || undefined}
       aria-disabled={disabled || undefined}
       style={[
         {

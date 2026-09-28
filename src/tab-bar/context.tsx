@@ -1,3 +1,4 @@
+import { MOTION_RECIPES } from '../motion/recipes';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/minimize-context.tsx
  * (MIT © 2026 David Mokos).
@@ -21,7 +22,7 @@ import {
  * from zero and feel mechanical. Critically damped (ratio 1): no overshoot and
  * no long settling tail, which matters because the bar animates layout.
  */
-export const MINIMIZE_SPRING = { duration: 380, dampingRatio: 1 };
+export const MINIMIZE_SPRING = MOTION_RECIPES.expand;
 
 /** Scroll offset below which the bar is always expanded (px). */
 const TOP_ZONE = 24;

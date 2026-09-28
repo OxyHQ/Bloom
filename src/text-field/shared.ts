@@ -4,13 +4,8 @@ import { Platform, type ViewStyle } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
 
-import {
-  DANGER_TABLE,
-  colorRamp,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
-import { hairlineOn, surfaceFillOn, surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
+
+import { surfaceFillOn, surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';
@@ -35,7 +30,7 @@ import { TYPE_SCALE } from '../typography/scale';
  * NEUTRAL, not the accent; the accent ring belongs to the OTP boxes.
  */
 
-export type TextFieldSize = BloomSize | 'small' | 'medium';
+export type TextFieldSize = BloomSize;
 
 export interface TextFieldGeometry {
   height: number;
@@ -43,8 +38,6 @@ export interface TextFieldGeometry {
 }
 
 export const TEXT_FIELD_GEOMETRY: Record<TextFieldSize, TextFieldGeometry> = {
-  small: {height: 32, paddingHorizontal: 6},
-  medium: {height: 36, paddingHorizontal: 8},
   xs: { height: 28, paddingHorizontal: 4 },
   lg: { height: 44, paddingHorizontal: 10 },
   md: { height: 36, paddingHorizontal: 8 },
@@ -60,8 +53,6 @@ export const TEXT_FIELD_ADDON_PADDING: Record<
   TextFieldSize,
   { paddingLeft: number; paddingRight: number }
 > = {
-  small: {paddingLeft: 4, paddingRight: 6},
-  medium: {paddingLeft: 4, paddingRight: 8},
   xs: { paddingLeft: 4, paddingRight: 4 },
   lg: { paddingLeft: 4, paddingRight: 10 },
   md: { paddingLeft: 4, paddingRight: 8 },

@@ -121,7 +121,7 @@ describe('asChild composition', () => {
 describe('a ButtonGroupItem as a trigger', () => {
   it('carries the trigger contract onto the rendered control', () => {
     const utils = wrap(
-      <ButtonGroup variant="glass" accessibilityLabel="Page actions">
+      <ButtonGroup accessibilityLabel="Page actions">
         <Popover>
           <PopoverTrigger asChild label="More">
             <ButtonGroupItem testID="more" iconOnly accessibilityLabel="More" />

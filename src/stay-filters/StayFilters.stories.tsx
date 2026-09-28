@@ -409,7 +409,7 @@ export const Footer: Story = {
 /** `FilterTriggerButton` without and with applied filters, at each size. */
 export const Trigger: Story = {
   render: () => {
-    const sizes = ['small', 'medium', 'large'] as const;
+    const sizes = ['sm', 'md', 'lg'] as const;
     return (
       <View style={{ gap: 16 }}>
         {sizes.map((size) => (

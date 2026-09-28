@@ -138,7 +138,7 @@ export const ToolbarWidths: Story = {
         <View style={{ gap: 6 }}>
           <Text variant="caption-1-regular">small, disabled</Text>
           <View style={{ width: 360 }}>
-            <NoteEditorToolbar actions={actions} size="small" disabled accessibilityLabel="Formatting, disabled" />
+            <NoteEditorToolbar actions={actions} size="sm" disabled accessibilityLabel="Formatting, disabled" />
           </View>
         </View>
       </Page>

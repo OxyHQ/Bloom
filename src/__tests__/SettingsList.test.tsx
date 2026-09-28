@@ -1,3 +1,4 @@
+import { resolveSurfaceTint } from '../surface/shared';
 jest.mock('react-native-svg', () => ({
   __esModule: true,
   default: 'Svg',
@@ -145,13 +146,13 @@ describe('SettingsListGroup', () => {
 
   it('paints the card colour by default', () => {
     const { backgrounds, colors } = surfaceOf();
-    expect(backgrounds).toContain(colors.card);
-    expect(backgrounds).not.toContain(colors.backgroundSecondary);
+    expect(backgrounds).toContain(resolveSurfaceTint(colors.card));
+    expect(backgrounds).not.toContain(resolveSurfaceTint(colors.backgroundSecondary));
   });
 
   it('paints the secondary background when filled, for a card-coloured parent', () => {
     const { backgrounds, colors } = surfaceOf('filled');
-    expect(backgrounds).toContain(colors.backgroundSecondary);
-    expect(backgrounds).not.toContain(colors.card);
+    expect(backgrounds).toContain(resolveSurfaceTint(colors.backgroundSecondary));
+    expect(backgrounds).not.toContain(resolveSurfaceTint(colors.card));
   });
 });

@@ -60,7 +60,7 @@ function themeColors() {
 }
 
 describe('Loading', () => {
-  it.each([['small', 20], ['medium', 24], ['large', 44]] as const)('retains the %s public size geometry', (size, pixels) => {
+  it.each([['sm', 20], ['md', 24], ['lg', 44]] as const)('retains the %s public size geometry', (size, pixels) => {
     const view = renderWithTheme(<Loading size={size} />);
     expect(view.UNSAFE_getByType(SpinnerIcon).props.size).toBe(pixels);
   });

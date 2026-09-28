@@ -253,7 +253,7 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
           <Text variant="title-3-semibold" style={{ color: theme.colors.text }}>
             List your home
           </Text>
-          <Button variant="secondary" size="small" onPress={() => go('explore')} testID="housing-publish-exit">
+          <Button  size="sm" onPress={() => go('explore')} testID="housing-publish-exit" tone="neutral" appearance="outline">
             Save and exit
           </Button>
         </PageColumn>

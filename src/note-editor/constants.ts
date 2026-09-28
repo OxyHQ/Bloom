@@ -11,8 +11,8 @@ import type { NoteEditorToolbarProps } from './types';
  * and the fix is to export the table rather than to edit these.
  */
 export const TOOLBAR_ITEM_SIZE: Record<NonNullable<NoteEditorToolbarProps['size']>, number> = {
-  medium: 34,
-  small: 30,
+  md: 34,
+  sm: 30,
 };
 
 /** The group's own 1px border, both sides. */

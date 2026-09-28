@@ -6,8 +6,8 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import { Button, CloseButton } from '../button';
-import { BUTTON_GEOMETRY, BUTTON_RADIUS, resolveButtonPalette } from '../button/shared';
+import { Button, CloseButton , LinkButton } from '../button';
+import { BUTTON_GEOMETRY, BUTTON_RADIUS, resolveButtonPalette, resolveLinkButtonPalette } from '../button/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import { pressHost } from './support/press-host';
 import {
@@ -494,23 +494,23 @@ describe('filled button material', () => {
 describe('Button underline and the reading tone', () => {
   it('underline="rest" draws the underline with no pointer at all', () => {
     const { getByText } = renderWithTheme(
-      <Button variant="link" underline="rest">
+      <LinkButton  underline="rest">
         Clear all
-      </Button>,
+      </LinkButton>,
     );
     expect(resolvedStyle(getByText('Clear all').props.style).textDecorationLine).toBe('underline');
   });
 
   it('underline="hover" and the link default draw NO underline at rest', () => {
     const { getByText, rerender } = renderWithTheme(
-      <Button variant="link" underline="hover">
+      <LinkButton  underline="hover">
         Learn more
-      </Button>,
+      </LinkButton>,
     );
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <Button variant="link">Learn more</Button>
+        <LinkButton >Learn more</LinkButton>
       </BloomThemeProvider>,
     );
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
@@ -518,9 +518,9 @@ describe('Button underline and the reading tone', () => {
 
   it('underline="hover" underlines once the pointer arrives', () => {
     const { getByTestId, getByText } = renderWithTheme(
-      <Button testID="btn" variant="link" underline="hover">
+      <LinkButton testID="btn"  underline="hover">
         Learn more
-      </Button>,
+      </LinkButton>,
     );
     fireEvent(getByTestId('btn'), 'hoverIn');
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBe('underline');
@@ -529,20 +529,20 @@ describe('Button underline and the reading tone', () => {
   });
 
   it('every other variant underlines nothing unless asked', () => {
-    const { getByText } = renderWithTheme(<Button variant="primary">Save</Button>);
+    const { getByText } = renderWithTheme(<Button  tone="accent" appearance="solid">Save</Button>);
     expect(resolvedStyle(getByText('Save').props.style).textDecorationLine).toBeUndefined();
   });
 
   it('linkTone="text" is the READING colour, and the only tone whose hover changes it', () => {
     const theme = captureTheme();
-    const palette = resolveButtonPalette('link', theme, 'text');
+    const palette = resolveLinkButtonPalette(theme, 'text');
     expect(palette.rest.foreground).toBe(theme.colors.text);
     expect(palette.hover.foreground).toBe(theme.colors.textSecondary);
     expect(palette.disabled.foreground).toBe(theme.colors.textTertiary);
     // The three tones that existed before keep a hover colour equal to rest,
     // which is why no fork ever painted `palette.hover.foreground` until now.
     for (const tone of ['primary', 'secondary'] as const) {
-      const other = resolveButtonPalette('link', theme, tone);
+      const other = resolveLinkButtonPalette(theme, tone);
       expect(other.hover.foreground).toBe(other.rest.foreground);
     }
   });
@@ -550,9 +550,9 @@ describe('Button underline and the reading tone', () => {
   it('linkTone="text" takes the secondary colour under a pointer', () => {
     const theme = captureTheme();
     const { getByTestId, getByText } = renderWithTheme(
-      <Button testID="btn" variant="link" linkTone="text" underline="rest">
+      <LinkButton testID="btn"  linkTone="text" underline="rest">
         Show more
-      </Button>,
+      </LinkButton>,
     );
     expect(resolvedStyle(getByText('Show more').props.style).color).toBe(theme.colors.text);
     fireEvent(getByTestId('btn'), 'hoverIn');
@@ -563,7 +563,7 @@ describe('Button underline and the reading tone', () => {
 
   it('textVariant replaces the ramp step the SIZE picked, and nothing else', () => {
     const { getByTestId, getByText } = renderWithTheme(
-      <Button testID="btn" size="small" textVariant="body-semibold">
+      <Button testID="btn" size="sm" textVariant="body-semibold">
         Back
       </Button>,
     );
@@ -580,18 +580,18 @@ describe('Button underline and the reading tone', () => {
 
   it('numberOfLines reaches the label', () => {
     const { getByText } = renderWithTheme(
-      <Button variant="link" numberOfLines={1}>
+      <LinkButton  numberOfLines={1}>
         A label far longer than its button
-      </Button>,
+      </LinkButton>,
     );
     expect(getByText('A label far longer than its button').props.numberOfLines).toBe(1);
   });
 
   it('accessibilityRole overrides the role, for a link with no href', () => {
     const { getByTestId } = renderWithTheme(
-      <Button testID="btn" variant="link" accessibilityRole="link">
+      <LinkButton testID="btn"  accessibilityRole="link">
         128 reviews
-      </Button>,
+      </LinkButton>,
     );
     expect(getByTestId('btn').props.accessibilityRole).toBe('link');
   });

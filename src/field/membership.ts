@@ -15,7 +15,7 @@
  * `||` belongs — and the failure is silent in both directions: a control that
  * re-enables itself inside a disabled field looks fine and a field-labelled
  * control that announces nothing looks fine too. So it is a function, for the
- * same reason `useInheritedControl` is one.
+ * same reason `useBloomAppearance` is one.
  *
  * `TextFieldInput` is the one family that resolves the same rule inline, because
  * it also reconciles the text-field shell's own context and its standalone

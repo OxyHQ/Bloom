@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 
-import { Button } from '../../src/button';
+import { Button , LinkButton } from '../../src/button';
 import { RangeCalendar, type DateRange } from '../../src/date-picker';
 import { Dialog, useDialogControl } from '../../src/dialog';
 import { Divider } from '../../src/divider';
@@ -496,16 +496,16 @@ export function MobileSearch({ search, onFilterPress }: { search: HomeSearchStat
               paddingRight: 16,
             }}
           >
-            <Button
-              variant="link"
+            <LinkButton
+
               onPress={() => {
                 search.clear();
                 setOpen('location');
               }}
             >
               Clear all
-            </Button>
-            <Button variant="primary" size="large" leadingIcon={RiSearchLine} onPress={() => control.close()} testID="housing-mobile-search-submit">
+            </LinkButton>
+            <Button  size="lg" leadingIcon={RiSearchLine} onPress={() => control.close()} testID="housing-mobile-search-submit" tone="accent" appearance="solid">
               Search
             </Button>
           </View>

@@ -51,9 +51,8 @@ const NEUTRAL_AND_WEB_FILES = [
   'tab-bar/context.tsx',
   'tab-bar/use-footprint.ts',
   'tab-bar/surface.tsx',
-  'tab-bar/surface-solid.tsx',
+  'tab-bar/surface-paint.tsx',
   'tab-bar/surface.web.tsx',
-  'tab-bar/surface-translucent.tsx',
   'tab-bar/glyph.tsx',
   'progressive-blur/ProgressiveBlur.web.tsx',
   'progressive-blur/shared.ts',
@@ -131,15 +130,15 @@ describe('tab-bar platform split', () => {
     expect(moduleSpecifiers(read('tab-bar/glyph.native.tsx'))).toContain('expo-symbols');
   });
 
-  it('the native surface takes its fallback from surface-solid, never ./surface', () => {
+  it('the native surface takes its fallback from surface-paint, never ./surface', () => {
     // Metro resolves a bare `./surface` to `surface.native.tsx` from ANY caller,
     // so importing the neutral sibling by that name would be a self-import — which
-    // is the entire reason `surface-solid.tsx` exists as a separate name.
+    // is the entire reason `surface-paint.tsx` exists as a separate name.
     const specifiers = moduleSpecifiers(read('tab-bar/surface.native.tsx'));
-    expect(specifiers).toContain('./surface-solid');
+    expect(specifiers).toContain('./surface-paint');
     expect(specifiers).not.toContain('./surface');
     // And the neutral variant must be that same component, not a second copy.
-    expect(moduleSpecifiers(read('tab-bar/surface.tsx'))).toContain('./surface-solid');
+    expect(moduleSpecifiers(read('tab-bar/surface.tsx'))).toContain('./surface-paint');
   });
 
   it('the router packages live only under tab-bar/expo-router', () => {
@@ -248,7 +247,6 @@ describe('tab-bar published surface', () => {
 it('binds both BottomBar entries to the universal translucent material', () => {
   for (const entry of ['bottom-bar/BottomBar.tsx', 'bottom-bar/BottomBar.web.tsx']) {
     const imports = moduleSpecifiers(read(entry));
-    expect(imports).toContain('../tab-bar/surface-translucent');
-    expect(imports).not.toContain('../tab-bar/surface-solid');
+    expect(imports).toContain('../tab-bar/surface-paint');
   }
 });

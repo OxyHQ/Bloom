@@ -1,6 +1,5 @@
 import React from 'react';
 import * as Reanimated from 'react-native-reanimated';
-import * as minimize from '../fab/use-fab-minimized';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { Fab } from '../fab';
@@ -59,11 +58,11 @@ describe('Fab action primitive', () => {
     expect(fill()).toBe(neutral.background);
   });
 
-  it('keeps explicit legacy sizing and positioning alongside the shared tone', () => {
-    const view = themed(<Fab size={48} placement="bottom-right" offset={12} variant="secondary" icon={<Text>+</Text>} label="Compose" testID="legacy-fab" />);
+  it('keeps action sizing independent of parent placement', () => {
+    const view = themed(<Fab size="sm" tone="support" icon={Icon} label="Compose" testID="legacy-fab" />);
     const style = resolvedStyle(view.getByTestId('legacy-fab').props.style);
     expect(style.height).toBe(48);
-    expect(style.bottom).toBe(12);
+    expect(style.bottom).toBeUndefined();
     expect(view.getByText('+')).toBeTruthy();
     expect(view.getByText('Compose')).toBeTruthy();
   });
@@ -93,16 +92,6 @@ it.each([['native', Fab], ['web', WebFab]] as const)('%s keeps the labeled contr
   expect(host().props[platform === 'web' ? 'aria-label' : 'accessibilityLabel']).toBe('Compose');
 });
 
-it('uses the same mounted label transition for legacy minimizeBehavior collapse', () => {
-  const minimized = jest.spyOn(minimize, 'useFabMinimized').mockReturnValue(true);
-  try {
-    const tree = themed(<Fab icon={Icon} label="Compose" minimizeBehavior="collapse" testID="minimized-fab" />);
-    expect(tree.getByTestId('minimized-fab').props.accessibilityLabel).toBe('Compose');
-    expect(resolvedStyle(tree.getByTestId('minimized-fab-label', { includeHiddenElements: true }).props.style)).toMatchObject({ width: 0, opacity: 0 });
-    tree.unmount();
-  } finally { minimized.mockRestore(); }
-});
-
 it('honors reduced motion without starting a label timing animation', () => {
   const reduced = jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
   const timing = jest.spyOn(Reanimated, 'withTiming');
@@ -117,7 +106,7 @@ it('honors reduced motion without starting a label timing animation', () => {
 
 it.each([['native', Fab], ['web', WebFab]] as const)('%s supports a larger glyph without widening the collapsed circle', (platform, Action) => {
   const Glyph = (props: { width?: number; height?: number }) => <Text testID="sized-glyph" {...props}>+</Text>;
-  const tree = themed(<Action icon={Glyph} label="Compose" size={50} iconSize={26} collapsed testID="sized-fab" />);
+  const tree = themed(<Action icon={Glyph} label="Compose" size="md" iconSize={26} collapsed testID="sized-fab" />);
   const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'sized-fab' }) : tree.getByTestId('sized-fab');
   const style = resolvedStyle(host.props.style);
   expect(tree.getByTestId('sized-glyph', { includeHiddenElements: true }).props).toMatchObject({ width: 26, height: 26 });
@@ -126,28 +115,17 @@ it.each([['native', Fab], ['web', WebFab]] as const)('%s supports a larger glyph
   expect(Number(style.paddingLeft) + 26 + Number(style.paddingRight)).toBe(50);
 });
 
-it.each([['native', Fab], ['web', WebFab]] as const)('%s shares the default 50/26 geometry for component and element icons', (platform, Action) => {
+it.each([['native', Fab], ['web', WebFab]] as const)('%s shares the default 50/26 geometry for component icons', (platform, Action) => {
   const Glyph = (props: { width?: number; height?: number }) => <Text testID="default-glyph" {...props}>+</Text>;
-  const ui = (element: boolean) => <BloomThemeProvider fonts={false}><Action icon={element ? <Glyph /> : Glyph} accessibilityLabel="Create" testID="default-fab" /></BloomThemeProvider>;
-  const tree = render(ui(false));
-  for (const element of [false, true]) {
-    tree.rerender(ui(element));
-    const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'default-fab' }) : tree.getByTestId('default-fab');
-    expect(resolvedStyle(host.props.style)).toMatchObject({ width: 50, height: 50 });
-    expect(tree.getByTestId('default-glyph', { includeHiddenElements: true }).props).toMatchObject({ width: 26, height: 26 });
-  }
+  const tree = themed(<Action icon={Glyph} accessibilityLabel="Create" testID="default-fab" />);
+  const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'default-fab' }) : tree.getByTestId('default-fab');
+  expect(resolvedStyle(host.props.style)).toMatchObject({ width: 50, height: 50 });
+  expect(tree.getByTestId('default-glyph', { includeHiddenElements: true }).props).toMatchObject({ width: 26, height: 26 });
 });
 
-it.each([['native', Fab], ['web', WebFab]] as const)('%s paints legacy element icons with the button foreground unless explicitly colored', (platform, Action) => {
-  const Glyph = (props: { fill?: string; color?: string }) => <Text testID="painted-glyph" {...props}>+</Text>;
-  const ui = (icon: React.ReactElement) => <BloomThemeProvider mode="light" colorPreset="teal" fonts={false}><Action icon={icon} accessibilityLabel="Create" /></BloomThemeProvider>;
-  const tree = render(ui(<Glyph />));
-  const glyph = () => tree.getByTestId('painted-glyph', { includeHiddenElements: true });
+it.each([['native', Fab], ['web', WebFab]] as const)('%s supplies icon components with the action foreground', (platform, Action) => {
+  const Glyph = (props: { fill?: string }) => <Text testID="painted-glyph" {...props}>+</Text>;
+  const tree = render(<BloomThemeProvider mode="light" colorPreset="teal" fonts={false}><Action icon={Glyph} accessibilityLabel="Create" /></BloomThemeProvider>);
   const expected = platform === 'web' ? 'currentColor' : resolveButtonPalette('solid', buildTheme('teal', 'light'), 'action').rest.foreground;
-  expect(glyph().props.fill).toBe(expected);
-  tree.rerender(ui(<Glyph fill="#ff0000" />));
-  expect(glyph().props.fill).toBe('#ff0000');
-  tree.rerender(ui(<Glyph color="#00ff00" />));
-  expect(glyph().props.color).toBe('#00ff00');
-  expect(glyph().props.fill).toBeUndefined();
+  expect(tree.getByTestId('painted-glyph', { includeHiddenElements: true }).props.fill).toBe(expected);
 });

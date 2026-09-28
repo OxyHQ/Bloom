@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
  * Web variant of `ContentPanel` — the framed app-content surface.
  *
@@ -87,14 +88,14 @@
  */
 import React, { memo, useInsertionEffect } from 'react';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import { useWindowDimensions, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { StyledView } from '../styles/styled-primitives';
 
 import { useOptionalPanelChrome } from '../styles/panel-chrome';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { SurfaceLevelProvider, surfaceFillVars, useOptionalSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import {
   ContentPanelNestingContext,
@@ -155,10 +156,6 @@ const RESPONSIVE_WEB: Record<
 // without reaching adjacent controls. CSS owns
 // responsive framing, including the sticky inset inherited by PageHeader.
 const PANEL_INSET_CSS = `
-@media (width < 500px) { [data-bloom-panel-material][data-bloom-panel-material="500"]::after { content: none; } }
-@media (width < 640px) { [data-bloom-panel-material][data-bloom-panel-material="640"]::after { content: none; } }
-@media (width < 768px) { [data-bloom-panel-material][data-bloom-panel-material="768"]::after { content: none; } }
-@media (width < 1024px) { [data-bloom-panel-material][data-bloom-panel-material="1024"]::after { content: none; } }
 
 [data-bloom-panel] { --bloom-panel-sticky-top: 0px; }
 [data-bloom-panel="framed"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); }
@@ -202,9 +199,13 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // outside a provider.
   const panelChrome = useOptionalPanelChrome();
   // What the panel tells its subtree it is painted in (`./shared.ts`).
-  const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
-  const defaultFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, undefined);
-  const materialStyle = useSurfaceMaterial('[data-bloom-panel-material]', 'bloom-content-panel-material');
+  const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
+  const defaultFill = rawFill;
+  const { width } = useWindowDimensions();
+  const parentFill = useOptionalSurfaceFill();
+  const paintsSurface = Boolean(defaultFill) && parentFill !== undefined && (framed ?? width >= framedFrom);
+  const publishedFill = rawFill && paintsSurface ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill : rawFill;
+  const materialStyle = useSurfaceMaterial('[data-bloom-panel-material]', 'bloom-content-panel-material', defaultFill ?? 'transparent');
 
   // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
   // `false` → never framed (full-bleed).
@@ -248,7 +249,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const gridStackClass = boundToPanel
     ? 'web:grid web:[grid-template-columns:minmax(0,1fr)] web:[grid-template-rows:minmax(0,1fr)]'
     : '';
-  const surfaceClass = [surfaceBase, fillSurface, gridStackClass, surfaceClassName ?? 'bg-card'].filter(Boolean).join(' ');
+  const surfaceClass = [surfaceBase, fillSurface, gridStackClass, surfaceClassName ?? (paintsSurface ? 'bg-transparent' : 'bg-card')].filter(Boolean).join(' ');
   const contentClass = [contentBase, fillContent, boundToPanel ? 'web:[grid-area:1/1]' : '', contentClassName]
     .filter(Boolean)
     .join(' ');
@@ -291,16 +292,16 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     <ContentPanelNestingContext.Provider value={true}>
       <StyledView
         testID="content-panel-surface"
-        {...{ dataSet: { bloomPanelMaterial: defaultFill && framed !== false ? (framed === true ? 'framed' : String(framedFrom)) : undefined, bloomPanel: boundToPanel || framed === false ? 'none' : responsive ? String(framedFrom) : 'framed' } }}
+        {...{ dataSet: { bloomPanelMaterial: paintsSurface ? 'framed' : undefined, bloomPanel: boundToPanel || framed === false ? 'none' : responsive ? String(framedFrom) : 'framed' } }}
         className={surfaceClass}
         style={[
           // `--bloom-surface` rides the element that carries the fill, so CSS
-          // below the panel and `useSurfaceFill()` below the panel cannot
+          // below the panel and `useOptionalSurfaceFill()` below the panel cannot
           // disagree about what the panel painted.
           surfaceFillVars(publishedFill),
           insetVars,
-          materialStyle,
           surfaceStyle,
+          paintsSurface ? materialStyle : null,
         ]}
       >
         {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Not

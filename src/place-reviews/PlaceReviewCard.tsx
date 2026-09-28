@@ -2,7 +2,7 @@ import React, { memo, useCallback, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 import { Avatar } from '../avatar';
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
@@ -262,16 +262,16 @@ function PlaceReviewCardComponent({
               <View />
             )}
             {onReport ? (
-              <Button
-                variant="link"
+              <LinkButton
+
                 linkTone="secondary"
-                size="small"
+                size="sm"
                 leadingIcon={RiFlagLine}
                 onPress={onReport}
                 testID={id('report')}
               >
                 {reportLabel}
-              </Button>
+              </LinkButton>
             ) : null}
           </View>
         ) : null}

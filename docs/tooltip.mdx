@@ -91,3 +91,7 @@ what paints above what.
 the content renders into the root portal group, so a tooltip inside a
 `BottomSheet` portals *outside* that window and lands in the wrong place.
 Fixing it needs a real device — jest cannot see a native window boundary.
+
+### Shared surface paint
+
+The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.

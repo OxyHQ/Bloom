@@ -1,30 +1,25 @@
-import { surfaceStyle } from '../shapes/surface-style';
+import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { forwardRef, memo } from 'react';
 import { styled } from 'react-native-css';
 import { Platform, StyleSheet, type View } from 'react-native';
-import { parseRgba, withAlpha } from '../theme/color-utils';
 import { StyledView } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
-import { useSurfaceLayer } from './use-surface-layer';
-import { resolveSurfaceFill } from './shared';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { useResolvedSurface } from './use-resolved-surface';
 import { SurfacePaint } from './SurfacePaint';
 import type { SurfaceProps } from './types';
 
 /** Layout-neutral container: callers supply their own padding and content. */
 const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponent({
-  children, material = 'solid', fill, radius = borderRadius.xl, cornerCurve = SURFACE_SHAPES.panel.curve,
+  children, fill, radius, cornerCurve = SURFACE_SHAPES.panel.curve,
   style, className, accessibilityLabel, testID, ...hostProps
 }, ref) {
-  const glass = material === 'glass';
-  const layer = useSurfaceLayer();
   const resolvedStyle = StyleSheet.flatten(style);
-  const effectiveRadius = resolvedStyle?.borderRadius ?? radius;
-  const tint = fill ?? resolvedStyle?.backgroundColor ?? (glass ? withAlpha(layer.fill, 0.25) : layer.fill);
-  const painted = glass || (tint !== 'transparent' && parseRgba(String(tint))?.a !== 0);
-  const color = resolveSurfaceFill(String(tint), glass, layer.parentFill);
-  const publishedFill = painted ? resolveSurfaceFill(color, false, layer.parentFill) : layer.parentFill;
+  const geometry = resolveSurfaceGeometry(radius, style, borderRadius.xl, cornerCurve);
+
+  const override = fill ?? resolvedStyle?.backgroundColor;
+  const material = useResolvedSurface({ fill: override === undefined ? undefined : String(override) });
   return (
     <StyledView
       {...hostProps}
@@ -32,10 +27,10 @@ const SurfaceComponent = forwardRef<View, SurfaceProps>(function SurfaceComponen
       className={className}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      style={[{ position: 'relative', borderRadius: effectiveRadius, ...surfaceStyle({ curve: cornerCurve }) }, style, { backgroundColor: 'transparent', ...surfaceFillVars(painted ? publishedFill : undefined) }]}
+      style={[{ position: 'relative' }, style, { backgroundColor: 'transparent', ...material.vars, ...geometry.style }]}
     >
-      {painted ? <SurfacePaint fill={color} backdrop={layer.parentFill} radius={effectiveRadius} shape={{ curve: cornerCurve }} glass={glass} /> : null}
-      <SurfaceLevelProvider level={painted ? layer.level : layer.parentLevel} fill={publishedFill}>{children}</SurfaceLevelProvider>
+      {material.painted ? <SurfacePaint fill={material.paintFill} radius={geometry.radius} shape={geometry.shape} /> : null}
+      <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>{children}</SurfaceLevelProvider>
     </StyledView>
   );
 });

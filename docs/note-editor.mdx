@@ -107,7 +107,7 @@ the label, the glyph and whether the state is on.
 
 ## Traps
 
-- **Toolbar items are 34px tall (`medium`) or 30 (`small`)**, which is below the
+- **Toolbar items are 34px tall (`md`) or 30 (`sm`)**, which is below the
   44 a touch target wants. That is `ButtonGroup`'s scale, not this family's;
   `hitSlop` is not the answer for adjacent items, because slop on one overlaps
   its neighbour and the press lands on whichever the platform hit-tests first.
@@ -116,3 +116,5 @@ the label, the glyph and whether the state is on.
   the base layer's spelling and this family does not work around it.
 - **`accessibilityLabel` on the toolbar is required in substance.** A row of
   glyphs has no name of its own, and each item is named by its `label`.
+
+Control sizes use `sm` and `md`. When omitted, they inherit `BloomScope`; `xs` maps to the compact rung and `lg` to the regular rung. An explicit size overrides the scope.

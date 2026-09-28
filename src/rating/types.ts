@@ -62,8 +62,8 @@ export interface RatingProps {
   testID?: string;
 }
 
-/** `small` is a 24px star, `medium` (default) 32, `large` 40. */
-export type RatingInputSize = 'small' | 'medium' | 'large';
+/** `sm` is a 24px star, `md` (default) 32, `lg` 40. */
+export type RatingInputSize = 'sm' | 'md' | 'lg';
 
 export interface RatingInputProps {
   /**
@@ -75,7 +75,7 @@ export interface RatingInputProps {
   onChange: (value: number) => void;
   /** How many stars. Default `5`. */
   max?: number;
-  /** Default `medium`. */
+  /** Default `md`. */
   size?: RatingInputSize;
   /** Disables the whole group: no press, no keyboard, dimmed. */
   disabled?: boolean;

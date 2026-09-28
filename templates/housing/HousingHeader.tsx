@@ -273,11 +273,11 @@ function HeaderActions({ listHome = true }: { listHome?: boolean }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {listHome ? (
-        <Button variant="ghost" size="medium" onPress={() => go('publish')} testID="housing-list-home">
+        <Button  size="md" onPress={() => go('publish')} testID="housing-list-home" tone="accent" appearance="subtle">
           List your home
         </Button>
       ) : null}
-      <Button variant="ghost" size="medium" iconOnly leadingIcon={RiGlobalLine} accessibilityLabel="Language and currency" />
+      <Button  size="md" iconOnly leadingIcon={RiGlobalLine} accessibilityLabel="Language and currency" tone="accent" appearance="subtle" />
     </View>
   );
 }

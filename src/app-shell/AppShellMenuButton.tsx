@@ -25,15 +25,15 @@ const AppShellMenuButtonComponent: React.FC<AppShellMenuButtonProps> = ({
   if (!shell.drawerAvailable) return null;
   return (
     <Button
-      variant="secondary"
-      size="medium"
+
+      size="md"
       iconOnly
       leadingIcon={shell.drawerOpen ? RiCloseLine : RiMenuLine}
       accessibilityLabel={accessibilityLabel}
       aria-expanded={shell.drawerOpen}
       onPress={shell.toggleDrawer}
       style={style}
-      testID={testID}
+      testID={testID} tone="neutral" appearance="outline"
     />
   );
 };

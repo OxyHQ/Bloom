@@ -229,17 +229,17 @@ function EvictionReportCardComponent({
             />
           ) : null}
           {onShare ? (
-            <Button variant="secondary" size="small" leadingIcon={RiShareLine} onPress={onShare} testID={id('share')}>
+            <Button  size="sm" leadingIcon={RiShareLine} onPress={onShare} testID={id('share')} tone="neutral" appearance="outline">
               {shareLabel}
             </Button>
           ) : null}
           {onContactSupport ? (
             <Button
-              variant="secondary"
-              size="small"
+
+              size="sm"
               leadingIcon={RiChat3Line}
               onPress={onContactSupport}
-              testID={id('contact')}
+              testID={id('contact')} tone="neutral" appearance="outline"
             >
               {contactSupportLabel}
             </Button>

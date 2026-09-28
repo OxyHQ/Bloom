@@ -47,7 +47,7 @@ describe('UserHoverCard', () => {
           {kind === 'bare' ? <HoverCardSurfaceProvider value>{card}</HoverCardSurfaceProvider> : card}
         </SurfaceLevelProvider>,
       );
-      expect(screen.getByTestId('surface-probe').props.children).toBe(kind === 'painted' ? '1:#123456' : '2:#abcdef');
+      expect(screen.getByTestId('surface-probe').props.children).toBe(kind === 'painted' ? '1:rgb(33, 67, 101)' : '2:#abcdef');
       screen.unmount();
     }
   });

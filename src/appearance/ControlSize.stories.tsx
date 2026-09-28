@@ -6,20 +6,19 @@ import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiMore2Line, RiSearchLine, RiShare2Line } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { ControlSurface } from './index';
+import { BloomScope } from './index';
 
-const meta: Meta<typeof ControlSurface> = {
+const meta: Meta<typeof BloomScope> = {
   argTypes: {
-    "material": { control: 'select', options: ["solid","glass"] },
-    "density": { control: 'select', options: ["sm","md"] }
+    "size": { control: 'select', options: ["sm","md"] }
   },
-  title: 'Foundations/Control Surface',
-  component: ControlSurface,
+  title: 'Foundations/Control Size',
+  component: BloomScope,
 };
 
 export default meta;
 
-type Story = StoryObj<typeof ControlSurface>;
+type Story = StoryObj<typeof BloomScope>;
 
 function Caption({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
@@ -43,32 +42,32 @@ function Actions() {
 /**
  * The same `ButtonGroup`, written identically three times. What changes is the
  * container around it — which is the whole point: the app declares grouping and
- * intent, the container declares the material.
+ * intent, the container declares the density.
  */
 export const Inheritance: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 24, alignItems: 'flex-start' }}>
       <View style={{ gap: 8 }}>
-        <Caption>No container — the group's own default, solid.</Caption>
+        <Caption>No container — the group's medium density.</Caption>
         <Actions />
       </View>
 
       <View style={{ gap: 8 }}>
-        <Caption>Inside a glass control surface — one island, items flush.</Caption>
-        <ControlSurface material="glass">
+        <Caption>Small density inherited from the container.</Caption>
+        <BloomScope size="sm">
           <Actions />
-        </ControlSurface>
+        </BloomScope>
       </View>
 
       <View style={{ gap: 8 }}>
-        <Caption>Glass container, explicit `material="solid"` — the caller still wins.</Caption>
-        <ControlSurface material="glass">
-          <ButtonGroup material="solid" accessibilityLabel="Page actions">
+        <Caption>Small container, explicit medium group — the caller still wins.</Caption>
+        <BloomScope size="sm">
+          <ButtonGroup size="md" accessibilityLabel="Page actions">
             <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
             <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
           </ButtonGroup>
-        </ControlSurface>
+        </BloomScope>
       </View>
     </View>
   ),
@@ -80,18 +79,18 @@ export const Density: Story = {
   render: () => (
     <View style={{ gap: 24, alignItems: 'flex-start' }}>
       <View style={{ gap: 8 }}>
-        <Caption>`density="sm"` — 30px items.</Caption>
-        <ControlSurface density="sm">
+        <Caption>`size="sm"` — 30px items.</Caption>
+        <BloomScope size="sm">
           <Actions />
-        </ControlSurface>
+        </BloomScope>
       </View>
       <View style={{ gap: 8 }}>
-        <Caption>Glass outside, `density="sm"` inside: still glass, now small.</Caption>
-        <ControlSurface material="glass">
-          <ControlSurface density="sm">
+        <Caption>Small outside, no inner density: the nested context inherits small.</Caption>
+        <BloomScope size="sm">
+          <BloomScope>
             <Actions />
-          </ControlSurface>
-        </ControlSurface>
+          </BloomScope>
+        </BloomScope>
       </View>
     </View>
   ),
@@ -102,8 +101,8 @@ export const Density: Story = {
  * nothing behind it to blur; over a picture the material does its work.
  */
 export const OverContent: Story = {
-  args: { material: "glass" },
-  parameters: { controls: { include: ["material","density"] } },
+  args: {},
+  parameters: { controls: { include: ["size"] } },
   render: (args) => (
     <View
       style={{
@@ -114,9 +113,9 @@ export const OverContent: Story = {
         backgroundColor: '#2b4a63',
       }}
     >
-      <ControlSurface {...args} >
+      <BloomScope {...args} >
         <Actions />
-      </ControlSurface>
+      </BloomScope>
       <Text variant="body-medium" style={{ color: 'rgba(255,255,255,0.86)' }}>
         The island takes its fill from the surface ladder and its alpha from the chrome
         role, so it reads on a colour Bloom did not choose.

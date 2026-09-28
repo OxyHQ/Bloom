@@ -2,13 +2,13 @@ import React, { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import { chartHueTone } from '../chart-cards/palette';
 import { bandSize } from '../chart-cards/geometry';
 import { CartesianPlot } from '../chart-cards/primitives/CartesianPlot';
 import { ChartCardSurface } from '../chart-cards/primitives/ChartCardSurface';
 import { TABULAR } from '../chart-cards/primitives/ChartHeader';
-import { describeDeltaRatio, groupThousands } from '../chart-cards/primitives/format';
+import { describeDeltaRatio } from '../chart-cards/primitives/format';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
 import { roundedBarPath, singleBarSlot } from '../chart-cards/rounded-bar-geometry';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
@@ -187,9 +187,9 @@ function PayoutSummaryCardComponent({
       </View>
 
       {onViewStatements || statementsHref ? (
-        <Button
-          variant="link"
-          size="small"
+        <LinkButton
+
+          size="sm"
           trailingIcon={RiArrowRightSLine}
           onPress={onViewStatements}
           href={statementsHref}
@@ -197,7 +197,7 @@ function PayoutSummaryCardComponent({
           testID={testID ? `${testID}-statements` : undefined}
         >
           {labels.statements}
-        </Button>
+        </LinkButton>
       ) : null}
     </ChartCardSurface>
   );

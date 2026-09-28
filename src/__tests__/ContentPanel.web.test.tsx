@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
+import { resolveSurfaceFill } from '../surface/shared';
 import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
@@ -257,4 +259,14 @@ describe('chrome', () => {
     );
     expect(resolvedStyle(findHost(toJSON(), 'content-panel-border-frame')?.props.style).boxShadow).toBe('0 0 0 2px red');
   });
+});
+
+it.each([['#80A0C0', 'rgba(128, 160, 192, 0.9)'], ['rgba(128, 160, 192, 0.4)', 'rgba(128, 160, 192, 0.4)']])('delegates %s to paint and publishes the matching body fill', (background, painted) => {
+  let fill = '';
+  function Probe() { fill = useSurfaceFill(); return null; }
+  const view = render(<BloomThemeProvider mode="light" colorPreset="teal"><SurfaceLevelProvider level={2} fill="#203040"><ContentPanel framed surfaceStyle={{ backgroundColor: background }}><Probe /></ContentPanel></SurfaceLevelProvider></BloomThemeProvider>);
+  const host = resolvedStyle(findHost(view.toJSON(), 'content-panel-surface')?.props.style);
+  expect(host.backgroundColor).toBe('transparent');
+  expect(host['--bloom-surface-fill']).toBe(painted);
+  expect(fill).toBe(resolveSurfaceFill(painted, '#203040'));
 });

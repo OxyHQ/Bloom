@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { SURFACE_RIM } from '../surface/shared';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -9,7 +10,7 @@ import { getByRole, getByText, getByLabelText, fireEvent } from '@testing-librar
 import '@testing-library/jest-dom';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Button, LinkButton, BLOOM_BUTTON_CSS } from '../button/Button.web';
+import { Button, LinkButton, SecondaryButton, InverseButton, BLOOM_BUTTON_CSS } from '../button/Button.web';
 import { BUTTON_RADIUS, LINK_BUTTON_UNDERLINE_OFFSET } from '../button/shared';
 
 // react-dom 19 logs a guard unless this flag is set in test environments.
@@ -245,9 +246,9 @@ describe('Button.web', () => {
 
     it('underline="rest" swaps the modifier', () => {
       const c = mount(
-        <Button variant="link" underline="rest">
+        <LinkButton  underline="rest">
           Clear all
-        </Button>,
+        </LinkButton>,
       );
       const el = getByRole(c, 'button', { name: 'Clear all' });
       expect(el).toHaveClass('bloom-btn--underline-rest');
@@ -256,9 +257,9 @@ describe('Button.web', () => {
 
     it('underline="none" removes it from a link', () => {
       const c = mount(
-        <Button variant="link" underline="none">
+        <LinkButton  underline="none">
           Plain
-        </Button>,
+        </LinkButton>,
       );
       const el = getByRole(c, 'button', { name: 'Plain' });
       expect(el.className).not.toMatch(/bloom-btn--underline/);
@@ -270,7 +271,7 @@ describe('Button.web', () => {
         /bloom-btn--underline/,
       );
       c = mount(
-        <Button underline="rest" variant="secondary">
+        <Button underline="rest"  tone="neutral" appearance="outline">
           Cancel
         </Button>,
       );
@@ -287,9 +288,9 @@ describe('Button.web', () => {
 
     it('linkTone="text" paints the reading colour and hands the hover one to CSS', () => {
       const c = mount(
-        <Button variant="link" linkTone="text" underline="rest">
+        <LinkButton  linkTone="text" underline="rest">
           Show more
-        </Button>,
+        </LinkButton>,
       );
       const el = getByRole(c, 'button', { name: 'Show more' });
       // A hover FOREGROUND is the thing this tone needs and no variant needed
@@ -304,7 +305,7 @@ describe('Button.web', () => {
     });
 
     it('every OTHER variant keeps its rest colour on hover', () => {
-      const c = mount(<Button variant="primary">Save</Button>);
+      const c = mount(<Button  tone="accent" appearance="solid">Save</Button>);
       const el = getByRole(c, 'button', { name: 'Save' });
       expect(el.style.getPropertyValue('--bloom-btn-fg-hover')).toBe(
         el.style.getPropertyValue('--bloom-btn-fg'),
@@ -313,7 +314,7 @@ describe('Button.web', () => {
 
     it('textVariant replaces the ramp step, keeping the size`s box', () => {
       const c = mount(
-        <Button size="small" textVariant="caption-1-semibold">
+        <Button size="sm" textVariant="caption-1-semibold">
           Back
         </Button>,
       );
@@ -333,9 +334,9 @@ describe('Button.web', () => {
 
     it('accessibilityRole overrides the role, for a link with no href', () => {
       const c = mount(
-        <Button variant="link" accessibilityRole="link">
+        <LinkButton  accessibilityRole="link">
           128 reviews
-        </Button>,
+        </LinkButton>,
       );
       const el = getByRole(c, 'link', { name: '128 reviews' });
       expect(el.tagName).toBe('BUTTON');
@@ -447,8 +448,8 @@ describe('Button.web', () => {
       const c = mount(<Button>Go</Button>);
       const btn = getByRole(c, 'button', { name: 'Go' });
       expect(btn).toHaveClass('bloom-btn--surface');
-      expect(BLOOM_BUTTON_CSS).not.toContain('backdrop-filter:');
-      expect(BLOOM_BUTTON_CSS).toContain('inset 2px 2px 1px');
+      expect(BLOOM_BUTTON_CSS).toContain('backdrop-filter:');
+      expect(BLOOM_BUTTON_CSS).toContain(SURFACE_RIM);
       expect(btn.style.getPropertyValue('--bloom-btn-bg-hover')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg'));
       expect(btn.style.getPropertyValue('--bloom-btn-bg-active')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg'));
       expect(btn.style.getPropertyValue('--bloom-btn-bg')).not.toBe('');
@@ -475,4 +476,17 @@ describe('Button.web', () => {
       expect(btn.querySelector('svg')?.getAttribute('data-width')).toBe('14');
     });
   });
+});
+
+
+it('lets explicit axes and colours override named button defaults', () => {
+  const c = mount(<><Button appearance="plain" tone="danger">Reference</Button><SecondaryButton appearance="plain" tone="danger">Secondary</SecondaryButton><LinkButton appearance="solid" tone="danger">Link</LinkButton><Button appearance="solid" tone="danger">Filled</Button><InverseButton appearance="plain" colors={{background:'#123456',foreground:'#abcdef'}}>Inverse</InverseButton></>);
+  const reference = getByRole(c, 'button', {name:'Reference'});
+  const secondary = getByRole(c, 'button', {name:'Secondary'});
+  expect(secondary).not.toHaveClass('bloom-btn--surface');
+  expect(secondary.style.getPropertyValue('--bloom-btn-fg')).toBe(reference.style.getPropertyValue('--bloom-btn-fg'));
+  expect(getByRole(c, 'button', {name:'Link'}).style.getPropertyValue('--bloom-btn-bg')).toBe(getByRole(c, 'button', {name:'Filled'}).style.getPropertyValue('--bloom-btn-bg'));
+  const inverse = getByRole(c, 'button', {name:'Inverse'});
+  expect(inverse).not.toHaveClass('bloom-btn--surface');
+  expect(inverse.style.getPropertyValue('--bloom-btn-fg')).toBe('#abcdef');
 });

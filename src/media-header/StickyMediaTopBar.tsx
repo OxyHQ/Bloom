@@ -89,7 +89,7 @@ function StickyMediaTopBarComponent({
         <PlayButton
           playing={playing}
           onPress={onPlayPress}
-          size="medium"
+          size="md"
           subject={title}
           testID={testID ? `${testID}-play` : undefined}
         />

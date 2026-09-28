@@ -1,6 +1,7 @@
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { StyleSheet } from 'react-native';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceLevelValue } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
@@ -163,7 +164,8 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
 
   const layer = useSurfaceLayer();
   const parentLevel = useSurfaceLevelValue();
-  const fill = resolveSurfaceFill(String(StyleSheet.flatten(style)?.backgroundColor ?? (variant === 'pane' ? layer.fill : layer.parentFill)), false, layer.parentFill);
+  const rawFill = String(StyleSheet.flatten(style)?.backgroundColor ?? (variant === 'pane' ? layer.fill : layer.parentFill));
+  const fill = resolveSurfaceMaterial({ fill: rawFill, parentFill: layer.parentFill, parentLevel: layer.parentLevel, paint: variant === 'pane' }).publishedFill;
 
   const coverImage = useResolvedImageSource(coverSource, 'large');
   const hasCover = Boolean(cover ?? coverImage);
@@ -424,8 +426,9 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
   return (
     <View
       testID={testID}
-      style={[{ minHeight: 0 }, frame, style, { backgroundColor: variant === 'pane' || StyleSheet.flatten(style)?.backgroundColor != null ? fill : 'transparent', ...surfaceFillVars(fill) }]}
+      style={[{ minHeight: 0 }, frame, style, { backgroundColor: variant === 'pane' || StyleSheet.flatten(style)?.backgroundColor == null ? 'transparent' : fill, ...surfaceFillVars(fill) }]}
     >
+      {variant === 'pane' ? <SurfacePaint fill={rawFill} radius={StyleSheet.flatten(style)?.borderRadius ?? 0} /> : null}
       <SurfaceLevelProvider level={variant === 'pane' ? layer.level : parentLevel} fill={fill}>
       <View
         style={{
@@ -452,13 +455,13 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
         {headerActions}
         {onClose ? (
           <Button
-            variant="text"
-            size="small"
+
+            size="sm"
             iconOnly
             icon={<RiCloseLine width={18} height={18} fill={paint.textSecondary} />}
             accessibilityLabel={closeLabel}
             onPress={onClose}
-            testID={testID ? `${testID}-close` : undefined}
+            testID={testID ? `${testID}-close` : undefined} tone="accent" appearance="plain"
           />
         ) : null}
       </View>

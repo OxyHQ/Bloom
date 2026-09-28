@@ -651,7 +651,7 @@ export const Reactions: Story = {
 
           <Block title="small bar, no surface, with a confirmation glyph">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <ReactionPicker size="small" surface={false} emojis={['👍', '❤️', '😂']} onSelectEmoji={() => {}} />
+              <ReactionPicker size="sm" surface={false} emojis={['👍', '❤️', '😂']} onSelectEmoji={() => {}} />
               <RiCheckboxCircleLine width={18} height={18} fill="#8a8a8a" />
             </View>
           </Block>

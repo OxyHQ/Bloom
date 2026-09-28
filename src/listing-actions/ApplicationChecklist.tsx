@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { ActionCardShell } from '../booking/ActionCard';
@@ -160,8 +160,9 @@ function ApplicationChecklistComponent({
               </View>
               {actionLabel ? (
                 <Button
-                  variant={item.status === 'missing' || rejected ? 'primary' : 'secondary'}
-                  size="small"
+                  appearance={item.status === 'missing' || rejected ? 'solid' : 'outline'}
+                  tone={item.status === 'missing' || rejected ? 'accent' : 'neutral'}
+                  size="sm"
                   leadingIcon={item.status === 'missing' || rejected ? RiUploadLine : RiEyeLine}
                   onPress={onAction}
                   accessibilityLabel={messages.itemAction(actionLabel, item.title)}

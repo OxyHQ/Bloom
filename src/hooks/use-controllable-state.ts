@@ -3,6 +3,8 @@ import { useCallback, useRef, useState } from 'react';
 export interface UseControllableStateOptions<T> {
   /** Controlled value. When defined, the hook does not own internal state. */
   value?: T;
+  /** Override detection when an explicitly undefined value is a controlled empty state. */
+  controlled?: boolean;
   /** Initial value used when uncontrolled. */
   defaultValue: T;
   /** Notified whenever the value changes, controlled or not. */
@@ -20,11 +22,12 @@ export interface UseControllableStateOptions<T> {
  */
 export function useControllableState<T>({
   value,
+  controlled,
   defaultValue,
   onChange,
 }: UseControllableStateOptions<T>): [T, (next: T) => void] {
   const [internal, setInternal] = useState<T>(defaultValue);
-  const isControlled = value !== undefined;
+  const isControlled = controlled ?? (value !== undefined);
   const current = isControlled ? (value as T) : internal;
 
   const onChangeRef = useRef(onChange);

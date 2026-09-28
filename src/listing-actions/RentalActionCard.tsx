@@ -90,24 +90,24 @@ function RentalActionCardComponent({
 
       <View style={{ marginTop: 16, gap: 8 }}>
         <Button
-          variant="primary"
-          size="large"
+
+          size="lg"
           fullWidth
           onPress={onRequestViewing}
           disabled={!available}
           loading={loading}
-          testID={id('request-viewing')}
+          testID={id('request-viewing')} tone="accent" appearance="solid"
         >
           {requestViewingLabel}
         </Button>
         {onApply ? (
           <Button
-            variant="secondary"
-            size="large"
+
+            size="lg"
             fullWidth
             onPress={onApply}
             disabled={!available}
-            testID={id('apply')}
+            testID={id('apply')} tone="neutral" appearance="outline"
           >
             {applyLabel}
           </Button>

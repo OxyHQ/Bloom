@@ -193,7 +193,7 @@ function ShipmentLoadPickerComponent({
             min={1}
             max={maxQuantity}
             formatValue={labels.quantityValue}
-            size="small"
+            size="sm"
             disabled={disabled}
             style={{ paddingTop: 0, paddingBottom: 0 }}
             testID={id('quantity')}

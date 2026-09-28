@@ -18,7 +18,7 @@ import { RiAddLine } from '@oxy.so/bloom/icons';
 <Button href="/help" tone="accent" appearance="plain">Read the guide</Button>
 ```
 
-`size` (`xs`, `sm`, `md`, `lg`) and `tone` inherit from `BloomScope`; defaults are `md` and `accent`. `appearance` defaults to `solid`. Appearance controls the fill, independently of semantic tone. The shared material rim is used instead of a coloured outline; the legacy outline geometry is retained. Surface appearances share the solid paint described below; semantic fill/foreground pairs remain authoritative.
+`size` (`xs`, `sm`, `md`, `lg`) and `tone` inherit from `BloomScope`; defaults are `md` and `accent`. `appearance` defaults to `solid`. Appearance controls the fill, independently of semantic tone. The shared material rim is used instead of a coloured outline; the legacy outline geometry is retained. Surface appearances share the glass paint described below; semantic fill/foreground pairs remain authoritative.
 
 The Color roles prototype assigns `accent` to identity and links, `support` to contextual emphasis, and `action` to the main CTA. Use `tone="action"` for a task’s Create/Send/Save button and keep secondary controls neutral. `tone="support" appearance="subtle"` can emphasize a related option when that distinction has meaning; it is not a replacement for every secondary button. All eight tones remain available through the shared contract.
 
@@ -56,16 +56,16 @@ On web `color` is `currentColor`, so the glyph follows the stylesheet's state
 colours without a re-render; native gets the resolved value. Full rationale, and
 why this is a separate prop rather than a wider `leadingIcon`: [Icons](/docs/icons).
 
-## Compatibility
+## API migration
 
-The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.
+Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
 
 
-## Shared solid material
+## Shared glass material
 
-Surface appearances (`solid`, `subtle`, `outline`, including legacy surface variants) share Surface's gradient and specular rim over an opaque fill. There is no backdrop blur, refraction or coloured outline. `plain`, `text` and `link` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
+Surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's 90%-opaque body, gradient and specular rim, with subtle backdrop refraction on web. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
 
-Accent/status/brand colours keep their semantic foreground pairs. Subtle tints are composited onto a stable theme backing; neutral and disabled surfaces remain opaque. Loading retains its rest paint. The optional `colors={{ background, foreground }}` pair supports branded controls without changing geometry. Native uses one SVG; web uses a decorative pseudo-element. Geometry has no optical offsets.
+Accent/status/brand colours keep their semantic foreground pairs. Neutral, semantic and disabled defaults use the same 90%-opaque fills. Explicit caller transparency is preserved. Loading retains its rest paint. The optional `colors={{ background, foreground }}` pair supports branded controls without changing geometry. Native uses one SVG; web uses a decorative pseudo-element. Geometry has no optical offsets.
 
 Button forwards its ref to the interactive node (the native View handle or the actual web button/anchor), so menus can anchor to it without a layout wrapper. Optional `onLayout` reports React Native's layout shape on both platforms; web installs a resize observer only when that callback is supplied. Press-in/out, cancellation and long press share the base gesture lifecycle. String labels keep the typography defaults; custom content can supply icons, animated glyphs or a composed row. Accessibility visibility props support controls that fade out without leaving an invisible focus target.
 

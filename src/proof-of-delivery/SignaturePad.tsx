@@ -252,13 +252,13 @@ function SignaturePadComponent({
         </Text>
         {hasInk ? (
           <Button
-            variant="text"
-            size="small"
+
+            size="sm"
             leadingIcon={RiDeleteBinLine}
             onPress={clear}
             disabled={disabled}
             accessibilityLabel={labels.clear}
-            testID={id('clear')}
+            testID={id('clear')} tone="accent" appearance="plain"
           >
             {labels.clear}
           </Button>

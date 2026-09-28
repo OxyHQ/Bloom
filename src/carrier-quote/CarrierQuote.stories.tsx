@@ -202,7 +202,7 @@ export const Empty: Story = {
       <CarrierQuoteList
         quotes={[]}
         emptyAction={
-          <Button variant="secondary" size="medium" onPress={noop}>
+          <Button  size="md" onPress={noop} tone="neutral" appearance="outline">
             Edit the job
           </Button>
         }

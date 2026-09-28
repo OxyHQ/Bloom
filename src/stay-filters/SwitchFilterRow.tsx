@@ -46,8 +46,8 @@ function SwitchFilterRowComponent({
         )}
       </View>
       <Switch
-        value={value}
-        onValueChange={onValueChange}
+        checked={value}
+        onCheckedChange={onValueChange}
         disabled={disabled}
         accessibilityLabel={name}
         testID={testID}

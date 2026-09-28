@@ -10,10 +10,10 @@ order: 139
 import { PaymentStatusBar, PaymentStatusBlock } from '@oxy.so/bloom/payment-status';
 
 <PaymentStatusBar state="failed" amount="€48.00" detail="Your bank turned this one down."
-  action={<Button size="sm" variant="outline" onPress={retry}>Retry</Button>} />
+  action={<Button size="sm"  onPress={retry} tone="neutral" appearance="outline">Retry</Button>} />
 
 <PaymentStatusBlock state="paid" amount="€48.00" detail="Aurora •••• 4417"
-  reference="8F2K-41QD-7T" actions={<Button variant="outline" onPress={open}>View receipt</Button>} />
+  reference="8F2K-41QD-7T" actions={<Button  onPress={open} tone="neutral" appearance="outline">View receipt</Button>} />
 ```
 
 ## Five states, and they are the five you DRAW

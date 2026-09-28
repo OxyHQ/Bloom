@@ -194,24 +194,24 @@ function ChannelPostCardComponent({
         <View style={{ flex: 1 }} />
         {comments === undefined ? null : (
           <Button
-            variant="text"
-            size="small"
+
+            size="sm"
             leadingIcon={RiChat3Line}
             onPress={onComments}
-            testID={testID ? `${testID}-comments` : undefined}
+            testID={testID ? `${testID}-comments` : undefined} tone="accent" appearance="plain"
           >
             {comments}
           </Button>
         )}
         {onShare === undefined ? null : (
           <Button
-            variant="text"
-            size="small"
+
+            size="sm"
             iconOnly
             leadingIcon={RiShareForwardLine}
             accessibilityLabel={shareLabel}
             onPress={onShare}
-            testID={testID ? `${testID}-share` : undefined}
+            testID={testID ? `${testID}-share` : undefined} tone="accent" appearance="plain"
           />
         )}
       </View>

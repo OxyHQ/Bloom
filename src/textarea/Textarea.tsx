@@ -1,6 +1,5 @@
-import { normalizeBloomSize } from '../appearance/legacy';
 import { useBloomAppearance } from '../appearance';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Platform, StyleSheet, TextInput, type TextStyle, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -21,7 +20,7 @@ import {
   resolveShellPaint,
   useTextFieldPalette,
 } from '../text-field/shared';
-import { useInheritedControl } from '../control-surface';
+
 import { useFieldMembership } from '../field/membership';
 import type { TextareaProps } from './types';
 
@@ -81,12 +80,12 @@ export function Textarea({
   const onValueChange = onValueChangeProp ?? onChangeText;
   const theme = useTheme();
   // The two contracts a textarea sits inside: a container's density
-  // (`ControlSurface`) and an enclosing `Field`'s association. The label is
+  // (`BloomScope`) and an enclosing `Field`'s association. The label is
   // STACKED here, as it is on `TextField`, so the field's label wins — they are
   // two spellings of one thing and rendering both is the mistake `docs/field.mdx`
   // names.
-  const { size: scopedSize } = useBloomAppearance({ size: normalizeBloomSize(sizeProp) }, { size: 'md', tone: 'neutral' });
-  const size = useInheritedControl('density', normalizeBloomSize(sizeProp), scopedSize);
+  const { size: scopedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = scopedSize;
   const field = useFieldMembership({
     accessibilityLabel,
     label: label ?? placeholder,

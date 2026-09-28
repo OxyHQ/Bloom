@@ -289,14 +289,14 @@ export function HomeSearchBar<K extends string = string>({
                 )}
                 {isLast ? (
                   <Button
-                    variant="primary"
-                    size="large"
+
+                    size="lg"
                     icon={RiSearchLine}
                     iconOnly={!open || compact}
                     onPress={onSearch}
                     accessibilityLabel={searchLabel}
                     testID={testID ? `${testID}-search` : undefined}
-                    style={{ marginRight: STAY_SEARCH_BUTTON_INSET - 1, flexShrink: 0 }}
+                    style={{ marginRight: STAY_SEARCH_BUTTON_INSET - 1, flexShrink: 0 }} tone="accent" appearance="solid"
                   >
                     {open && !compact ? searchLabel : undefined}
                   </Button>

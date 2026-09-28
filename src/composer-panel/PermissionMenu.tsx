@@ -211,7 +211,7 @@ function PermissionRow({
 /** A secondary small `LinkButton`, a step lighter: tertiary, underline on hover. */
 function LearnMore({ label, onPress }: { label: string; onPress: () => void }) {
   const Button = useComposerButton();
-  return <Button variant="link" linkTone="text" underline="hover" size="sm"
+  return <Button appearance="plain" linkTone="text" underline="hover" size="sm"
     accessibilityRole="link" accessibilityLabel={label} onPress={onPress}
     style={COMPOSER_BUTTON_LAYOUT}>{label}</Button>;
 }

@@ -160,12 +160,12 @@ export function BackButton() {
   if (!router.canGoBack) return null;
   return (
     <Button
-      variant="secondary"
-      size="small"
+
+      size="sm"
       iconOnly
       icon={RiArrowLeftSLine}
       accessibilityLabel="Back"
-      onPress={router.back}
+      onPress={router.back} tone="neutral" appearance="outline"
     />
   );
 }
@@ -412,7 +412,7 @@ export function EventTile({
       layout={layout}
       action={
         event.soldOut ? undefined : (
-          <Button variant="secondary" size="xs">
+          <Button  size="xs" tone="neutral" appearance="outline">
             Tickets
           </Button>
         )

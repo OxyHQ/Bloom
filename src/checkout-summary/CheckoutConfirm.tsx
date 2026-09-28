@@ -80,8 +80,8 @@ function CheckoutConfirmComponent({
   return (
     <View testID={testID} style={style}>
       <Button
-        variant="primary"
-        size="large"
+
+        size="lg"
         fullWidth
         onPress={handlePress}
         disabled={disabled}
@@ -91,7 +91,7 @@ function CheckoutConfirmComponent({
         // being placed invites the press this component exists to refuse.
         accessibilityLabel={busy ? busyLabel : words}
         style={{ alignSelf: 'stretch' }}
-        testID={id('button')}
+        testID={id('button')} tone="accent" appearance="solid"
       >
         {words}
       </Button>

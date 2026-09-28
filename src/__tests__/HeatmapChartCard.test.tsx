@@ -1,3 +1,4 @@
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -6,7 +7,6 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { HeatmapChartCard, heatmapCellColor } from '../chart-cards/HeatmapChartCard';
 import type { HeatmapRow } from '../chart-cards/HeatmapChartCard';
-import { resolveChartCardPalette } from '../chart-cards/palette';
 
 const COLUMNS = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'];
 const ROWS: HeatmapRow[] = [

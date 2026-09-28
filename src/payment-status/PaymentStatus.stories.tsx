@@ -51,7 +51,7 @@ export const Bar: Story = {
             state="failed"
             amount="€48.00"
             detail="Your bank turned this one down."
-            action={<Button size="sm" variant="outline" onPress={noop}>Retry</Button>}
+            action={<Button size="sm"  onPress={noop} tone="neutral" appearance="outline">Retry</Button>}
             testID="failed"
           />
           <PaymentStatusBar state="refunded" amount="−€48.00" detail="Back within five working days" testID="refunded" />
@@ -89,7 +89,7 @@ export const Block: Story = {
           amount="€48.00"
           detail="Aurora •••• 4417"
           reference="8F2K-41QD-7T"
-          actions={<Button variant="outline" onPress={noop}>View receipt</Button>}
+          actions={<Button  onPress={noop} tone="neutral" appearance="outline">View receipt</Button>}
           testID="block-paid"
         />
       </Section>
@@ -103,7 +103,7 @@ export const Block: Story = {
           actions={
             <View style={{ gap: 8 }}>
               <Button onPress={noop}>Try again</Button>
-              <Button variant="outline" onPress={noop}>Use another method</Button>
+              <Button  onPress={noop} tone="neutral" appearance="outline">Use another method</Button>
             </View>
           }
           testID="block-failed"

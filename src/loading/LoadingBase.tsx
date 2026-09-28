@@ -19,7 +19,6 @@
  * resolves no platform extensions at all, so logic that moved into a
  * `.native.*` file would lose its coverage in silence.)
  */
-import { normalizeBloomSize } from '../appearance/legacy';
 import { resolveBloomColors } from '../appearance/colors';
 import { useBloomAppearance } from '../appearance';
 import React, { memo } from 'react';
@@ -113,7 +112,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     testID,
   }) => {
     const theme = useTheme();
-    const {size, tone} = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
+    const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
     const sizeConfig = SIZE_CONFIG[size];
     const effectiveIconSize = iconSize ?? sizeConfig.spinner;
     const spinnerColor = className ? 'currentColor' : (color ?? resolveBloomColors(theme.colors, tone, 'solid').background);
@@ -149,7 +148,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     testID,
   }) => {
     const theme = useTheme();
-    const {size, tone} = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
+    const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
     const sizeConfig = SIZE_CONFIG[size];
     const spinnerColor = color ?? resolveBloomColors(theme.colors, tone, 'solid').background;
     const textColor = theme.colors.textSecondary;

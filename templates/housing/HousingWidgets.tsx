@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { Badge } from '../../src/badge';
-import { Button } from '../../src/button';
+import { Button , LinkButton } from '../../src/button';
 import { Card, CardBody, CardHeader, CardTitle } from '../../src/card';
 import { SavedSearchCard } from '../../src/home-search';
 import { RiAlarmWarningLine, RiArrowRightLine, RiMegaphoneLine } from '../../src/icons/remix';
@@ -31,7 +31,7 @@ function Widget({
   testID?: string;
 }) {
   return (
-    <Card variant="outlined" radius="radius-16" testID={testID}>
+    <Card  radius="radius-16" testID={testID} appearance="outline">
       <CardHeader style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <CardTitle numberOfLines={1}>{title}</CardTitle>
         {action}
@@ -60,9 +60,9 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
       <Widget
         title="Saved searches"
         action={
-          <Button variant="link" linkTone="secondary" size="small" onPress={() => go('saved')}>
+          <LinkButton  linkTone="secondary" size="sm" onPress={() => go('saved')}>
             See all
-          </Button>
+          </LinkButton>
         }
         testID="housing-widget-searches"
       >
@@ -100,7 +100,7 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
               </View>
             </View>
           ))}
-          <Button variant="secondary" size="small" trailingIcon={RiArrowRightLine} onPress={() => go('evictions')}>
+          <Button  size="sm" trailingIcon={RiArrowRightLine} onPress={() => go('evictions')} tone="neutral" appearance="outline">
             See the calendar
           </Button>
         </View>
@@ -111,7 +111,7 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
           <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
             Rent it, sell it, swap it or offer it for a season. Listing is free and takes about ten minutes.
           </Text>
-          <Button variant="primary" size="small" leadingIcon={RiMegaphoneLine} onPress={() => go('publish')}>
+          <Button  size="sm" leadingIcon={RiMegaphoneLine} onPress={() => go('publish')} tone="accent" appearance="solid">
             List your home
           </Button>
         </View>

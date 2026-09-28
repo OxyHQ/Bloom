@@ -131,7 +131,7 @@ function QuickAccessTileComponent({
               style={{ position: 'absolute', top: 0, left: 0 }}
               testID={testID ? `${testID}-play` : undefined}
             >
-              <PlayButton playing={playing} loading={loading} onPress={onPlay} subject={title} size="small" />
+              <PlayButton playing={playing} loading={loading} onPress={onPlay} subject={title} size="sm" />
             </View>
           ) : null}
         </View>

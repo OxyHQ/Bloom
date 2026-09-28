@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
@@ -294,13 +295,16 @@ function FollowButtonComponent({
   color,
   tone = 'support',
   iconOnly = false,
-  size = 'small',
+  size: sizeProp,
   disabled = false,
   loading = false,
   textStyle,
   style,
   testID,
 }: FollowButtonProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'sm', tone: 'neutral' });
+  const size = inheritedSize;
+
   const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
   const label = labelProp ?? messages.follow;
   const followingLabel = followingLabelProp ?? messages.following;
@@ -395,7 +399,7 @@ function MediaActionBarComponent({
         <PlayButton
           playing={playing}
           onPress={onPlayPress}
-          size="large"
+          size="lg"
           subject={playSubject}
           disabled={playDisabled}
           style={{ marginRight: 8 }}
@@ -412,7 +416,7 @@ function MediaActionBarComponent({
           <LikeButton
             liked={liked}
             onLikedChange={onLikedChange}
-            size="large"
+            size="lg"
             testID={testID ? `${testID}-like` : undefined}
           />
         ) : null}

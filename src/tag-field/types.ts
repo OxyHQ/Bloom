@@ -66,7 +66,7 @@ export interface TagFieldProps {
   tone?: AccentTone;
   /**
    * Default `medium` (36 tall); `small` is 32. Omitted, it is INHERITED from
-   * the nearest `ControlSurface` — the same vocabulary `TextField` and
+   * the nearest `BloomScope` — the same vocabulary `TextField` and
    * `Textarea` take — so a filter row asks for `small` once instead of writing
    * it on five controls.
    */

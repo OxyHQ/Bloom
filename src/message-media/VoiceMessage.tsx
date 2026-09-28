@@ -372,7 +372,7 @@ function VoiceMessageComponent({
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
         <PlayButton
           playing={playing}
-          size="small"
+          size="sm"
           variant={tone === 'outgoing' ? 'inverse' : 'accent'}
           accessibilityLabel={playing ? messages.pauseVoiceMessage : messages.playVoiceMessage}
           onPress={onPlayPress}

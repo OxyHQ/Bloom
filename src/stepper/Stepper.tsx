@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import { useBloomAppearance } from '../appearance';
+import React, { memo, useCallback } from 'react';
 import { Platform, View, type AccessibilityActionEvent } from 'react-native';
 
 import { Button } from '../button';
@@ -51,10 +52,10 @@ const IS_WEB = Platform.OS === 'web';
 
 const SIZE_CONFIG: Record<
   StepperSize,
-  { button: 'small' | 'medium'; type: TypeScaleVariant; valueWidth: number; height: number; gap: number }
+  { button: 'sm' | 'md'; type: TypeScaleVariant; valueWidth: number; height: number; gap: number }
 > = {
-  small: { button: 'small', type: 'body-semibold', valueWidth: 24, height: 32, gap: 8 },
-  medium: { button: 'medium', type: 'headline-semibold', valueWidth: 32, height: 36, gap: 12 },
+  sm: { button: 'sm', type: 'body-semibold', valueWidth: 24, height: 32, gap: 8 },
+  md: { button: 'md', type: 'headline-semibold', valueWidth: 32, height: 36, gap: 12 },
 };
 
 /** Snap to `step` from `min` and clamp, without floating-point drift. */
@@ -90,7 +91,7 @@ function StepperComponent({
   max,
   step = 1,
   disabled: disabledProp = false,
-  size = 'medium',
+  size: sizeProp,
   formatValue,
   accessibilityLabel,
   decrementLabel: decrementLabelProp,
@@ -100,6 +101,8 @@ function StepperComponent({
   style,
   testID,
 }: StepperProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const common = useCommonMessages();
   const { messages } = useMessages(STEPPER_MESSAGES);
   const decrementLabel = decrementLabelProp ?? messages.decrease;
@@ -198,7 +201,7 @@ function StepperComponent({
       style={[{ flexDirection: 'row', alignItems: 'center', gap: config.gap }, style]}
     >
       <Button
-        variant="secondary"
+
         size={config.button}
         iconOnly
         icon={removes ? RiDeleteBinLine : RiSubtractLine}
@@ -206,11 +209,13 @@ function StepperComponent({
         disabled={!(canDecrement || removes)}
         accessibilityLabel={removes ? removeLabel : decrementLabel}
         tabIndex={removes ? 0 : -1}
-        testID={testID ? `${testID}-decrement` : undefined}
+        testID={testID ? `${testID}-decrement` : undefined} tone="neutral" appearance="outline"
       />
       <View
         accessibilityRole="adjustable"
         accessibilityLabel={field.accessibilityLabel}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
@@ -236,7 +241,7 @@ function StepperComponent({
         </Text>
       </View>
       <Button
-        variant="secondary"
+
         size={config.button}
         iconOnly
         icon={RiAddLine}
@@ -244,7 +249,7 @@ function StepperComponent({
         disabled={!canIncrement}
         accessibilityLabel={incrementLabel}
         tabIndex={-1}
-        testID={testID ? `${testID}-increment` : undefined}
+        testID={testID ? `${testID}-increment` : undefined} tone="neutral" appearance="outline"
       />
     </View>
   );

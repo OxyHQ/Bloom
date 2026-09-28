@@ -32,9 +32,6 @@ export const CHECKBOX_SIZE_CONFIG: Record<
   CheckboxSize,
   { box: number; gap: number; label: TypeScaleVariant; description: TypeScaleVariant }
 > = {
-  small: { box: 14, gap: 6, label: 'body-2-medium', description: 'body-2-regular' },
-  medium: { box: 16, gap: 8, label: 'body-medium', description: 'body-regular' },
-  large: { box: 20, gap: 8, label: 'headline-medium', description: 'body-regular' },
   xs: { box: 12, gap: 4, label: 'caption-1-medium', description: 'caption-1-regular' },
   sm: { box: 14, gap: 6, label: 'body-2-medium', description: 'body-2-regular' },
   md: { box: 16, gap: 8, label: 'body-medium', description: 'body-regular' },

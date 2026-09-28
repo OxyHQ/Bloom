@@ -4,11 +4,9 @@ import type { StyleProp, ViewStyle, ViewProps } from 'react-native';
 
 export interface SurfaceProps extends Omit<ViewProps, 'style' | 'children'> {
   children?: ReactNode;
-  /** Solid (default) keeps the gradient and rim on an opaque fill; glass adds transparency and web refraction. */
-  material?: 'glass' | 'solid';
-  /** Explicit tint. Defaults to a surface above the actual parent. Solid composites alpha onto that parent; glass preserves it. */
+  /** Tint source. Opaque colours use 90% opacity; supplied alpha is preserved. */
   fill?: string;
-  /** Radius shared by the layout box and its clipped paint. Defaults to 20. */
+  /** Radius shared by host and paint. Explicit prop wins over style.borderRadius, then default 20. */
   radius?: number;
   /** Platform-adaptive corners shared by the host and material. */
   cornerCurve?: CornerCurve;

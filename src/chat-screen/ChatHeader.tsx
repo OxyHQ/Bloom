@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useMemo } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
@@ -58,25 +59,27 @@ function HeaderIconButton({
   label,
   onPress,
   tint,
-  size = 'medium',
+  size: sizeProp,
   testID,
 }: {
   icon: ChatIconComponent;
   label: string;
   onPress: () => void;
   tint: string;
-  size?: 'small' | 'medium';
+  size?: 'sm' | 'md';
   testID?: string;
 }) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize;
   return (
     <Button
-      variant="text"
+
       size={size}
       iconOnly
-      icon={<Icon width={size === 'small' ? 18 : 20} height={size === 'small' ? 18 : 20} fill={tint} />}
+      icon={<Icon width={size === 'sm' ? 18 : 20} height={size === 'sm' ? 18 : 20} fill={tint} />}
       accessibilityLabel={label}
       onPress={onPress}
-      testID={testID}
+      testID={testID} tone="accent" appearance="plain"
     />
   );
 }

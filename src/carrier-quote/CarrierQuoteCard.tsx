@@ -333,15 +333,15 @@ function CarrierQuoteCardComponent({
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} testID={id('actions')}>
       {onDecline ? (
         <Button
-          variant="text"
-          size="medium"
+
+          size="md"
           iconOnly={!labelled}
           leadingIcon={RiCloseLine}
           onPress={() => onDecline(quote.id)}
           disabled={disabled}
           hitSlop={CARRIER_QUOTE_GEOMETRY.actionHit}
           accessibilityLabel={`${labels.decline} ${carrier.name}`}
-          testID={id('decline')}
+          testID={id('decline')} tone="accent" appearance="plain"
         >
           {labelled ? labels.decline : undefined}
         </Button>
@@ -349,28 +349,28 @@ function CarrierQuoteCardComponent({
       <View style={{ flex: 1, minWidth: 0 }} />
       {onMessage ? (
         <Button
-          variant="secondary"
-          size="medium"
+
+          size="md"
           iconOnly={!labelled}
           leadingIcon={RiChat3Line}
           onPress={() => onMessage(quote.id)}
           disabled={disabled}
           hitSlop={CARRIER_QUOTE_GEOMETRY.actionHit}
           accessibilityLabel={`${labels.message} ${carrier.name}`}
-          testID={id('message')}
+          testID={id('message')} tone="neutral" appearance="outline"
         >
           {labelled ? labels.message : undefined}
         </Button>
       ) : null}
       {onAccept ? (
         <Button
-          variant="primary"
-          size="medium"
+
+          size="md"
           leadingIcon={selected ? RiCheckLine : undefined}
           onPress={() => onAccept(quote.id)}
           disabled={disabled}
           accessibilityLabel={`${labels.accept} ${carrier.name}, ${quote.price}`}
-          testID={id('accept')}
+          testID={id('accept')} tone="accent" appearance="solid"
         >
           {labels.accept}
         </Button>
@@ -381,7 +381,7 @@ function CarrierQuoteCardComponent({
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
-        variant="outlined"
+
         radius="radius-20"
         border={selected ? 'medium' : 'thin'}
         style={[
@@ -390,7 +390,7 @@ function CarrierQuoteCardComponent({
           disabled ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}
-        testID={testID}
+        testID={testID} appearance="outline"
       >
         <View
           // The card measures ITSELF, not the window: this same card is 358

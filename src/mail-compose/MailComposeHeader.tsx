@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { TextInput, View, type TextStyle } from 'react-native';
 
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useMessages } from '../locale/messages';
 import { resolveMailPaint } from '../mail-list/shared';
@@ -109,8 +109,8 @@ export function MailComposeHeader({
           strings={strings}
           trailing={
             copies ? undefined : (
-              <Button
-                variant="link"
+              <LinkButton
+
                 size="xs"
                 linkTone="secondary"
                 onPress={() => setRevealed(true)}
@@ -118,7 +118,7 @@ export function MailComposeHeader({
                 testID={testID ? `${testID}-copies` : undefined}
               >
                 {text.showCopies}
-              </Button>
+              </LinkButton>
             )
           }
           testID={testID ? `${testID}-to` : undefined}

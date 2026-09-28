@@ -88,7 +88,7 @@ function SongCardComponent({
     <>
       {onLikedChange ? (
         <View {...webDataSet(liked ? {} : { bloomMediaCardReveal: IS_WEB ? 'hover' : '' })}>
-          <LikeButton liked={liked} onLikedChange={onLikedChange} size="small" accessibilityLabel={controls.saveSubjectToLibrary(title)} />
+          <LikeButton liked={liked} onLikedChange={onLikedChange} size="sm" accessibilityLabel={controls.saveSubjectToLibrary(title)} />
         </View>
       ) : null}
       {duration ? (

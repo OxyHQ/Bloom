@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, {
   useCallback,
   useEffect,
@@ -30,7 +31,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import {
   SettingsModalContext,
   settingsLayoutFor,
@@ -144,7 +145,9 @@ export function SettingsModal({
   const common = useCommonMessages();
   const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   useSettingsWebCss();
+  const parentFill = useSurfaceFill();
   const palette = useSettingsPalette();
+  const publishedFill = resolveSurfaceMaterial({ fill: palette.full, parentFill: parentFill }).publishedFill;
   const reducedMotion = useReducedMotion();
   const isControlled = controlledOpen !== undefined;
 
@@ -397,15 +400,15 @@ export function SettingsModal({
                           height: Math.min(PANEL_HEIGHT, vh - VIEWPORT_GUTTER * 2),
                         },
                     {
-                      backgroundColor: palette.full,
-                      ...surfaceFillVars(palette.full),
+                      backgroundColor: 'transparent',
+                      ...surfaceFillVars(publishedFill),
                       boxShadow: palette.shadowXs,
                     },
                     ringVars(palette),
                   ]}
                 >
-                  <SurfacePaint radius={layout === 'compact' ? 0 : 24} />
-                  <SurfaceLevelProvider level={1} fill={palette.full}>
+                  <SurfacePaint fill={palette.full} radius={layout === 'compact' ? 0 : 24} />
+                  <SurfaceLevelProvider level={1} fill={publishedFill}>
                   {layout === 'compact' ? (
                     compactPageOpen && pageConfig ? (
                       <View style={styles.content}>

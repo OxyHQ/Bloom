@@ -102,12 +102,12 @@ function PriceSummaryComponent({
       {collapsible ? (
         <View style={{ alignItems: 'flex-start', paddingTop: showLines ? PRICE_LINE_GAP : 0 }}>
           <Button
-            variant="text"
-            size="small"
+
+            size="sm"
             trailingIcon={open ? RiArrowUpSLine : RiArrowDownSLine}
             onPress={toggle}
             aria-expanded={open}
-            testID={testID ? `${testID}-disclosure` : undefined}
+            testID={testID ? `${testID}-disclosure` : undefined} tone="accent" appearance="plain"
           >
             {open ? collapseLabel : expandLabel}
           </Button>

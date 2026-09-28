@@ -17,7 +17,7 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
   breadcrumb={<Breadcrumb>…</Breadcrumb>}
   actions={<>
     <NotificationBell notifications={inbox} onAction={handle} />
-    <Button variant="primary" leadingIcon={RiAddFill}>Create ticket</Button>
+    <Button  leadingIcon={RiAddFill} tone="accent" appearance="solid">Create ticket</Button>
   </>}
   overlay={showOffer ? <ProOfferCard … onDismiss={hideOffer} /> : null}
 >
@@ -111,7 +111,7 @@ clearance is reserved automatically. Do not render your own
   variant="canvas"
   sidebar={{ ...sidebar, surface: 'docked' }}
   aside={<PlacesInView />}
-  floatingAction={<Button variant="primary" leadingIcon={RiAddFill}>Add a pin</Button>}
+  floatingAction={<Button  leadingIcon={RiAddFill} tone="accent" appearance="solid">Add a pin</Button>}
 >
   <Map />
 </AppShell>

@@ -185,7 +185,7 @@ function BothModes({ children }: { children: React.ReactNode }) {
 
 /** The labelled actions a card carries once it is wide enough for words. */
 const logANote = (
-  <Button variant="secondary" size="small" leadingIcon={RiDraftLine} onPress={noop}>
+  <Button  size="sm" leadingIcon={RiDraftLine} onPress={noop} tone="neutral" appearance="outline">
     Log a note
   </Button>
 );

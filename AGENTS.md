@@ -46,10 +46,10 @@ Wiring: Expo/Metro apps import `@oxy.so/app-preset/css/base.css` at the top of `
 
 ## Composition contracts (`docs/composition.mdx`, `docs/adoption-matrix.mdx`)
 
-Five opt-in container contexts; model in the docs. Traps:
+Contracts: docs/composition.mdx, docs/unified-api.mdx.
 
 - **Join Field via `useFieldMembership()`.** Name defers to field (`??`); disabled/invalid combine (`||`); caller ID wins; aria-describedby lists JOIN. `labelPlacement`: above-control labels (TextField/Textarea) yield to Field, beside-control captions keep their own to match visible names. Forward state to composite halves: PhoneInput's picker stayed operable in disabled Field when only input subscribed. Gates: `FieldMembership.test.tsx` (15 families; mutating one `||` to `??` fails18), `FieldAssociation.test.tsx`.
-- **Density is `medium | small`.** Three-rung family sizes cannot unambiguously inherit it. TextField/Textarea/TimeField read it; InputGroup geometry overrides it for equal member heights; Button does not read it.
+- **BloomScope is the sole size/tone context.** Explicit prop → nearest scope → family default; sizes xs/sm/md/lg. InputGroup aligns member geometry; domain content density stays separate. Field disabled/invalid are constraints (OR), never overridable defaults.
 - **Modals/sheets need their OWN `layout/ScreenScope`.** Otherwise chrome claims the underlying page edge (padding appears/disappears) and follows an untouched scroller. DialogBody/BottomSheetBase mount it for all three dialog placements and sheets. `ScreenScope.test.tsx` tests both directions.
 - **Adoption matrix is GENERATED:** `bun run generate:adoption-matrix`, shared derivation `src/__tests__/support/adoption-matrix.ts`; manual edits are overwritten. Applicability follows what a family RENDERS; non-adopters require reasoned classifications pinned by EQUALITY (new UNCLASSIFIED and stale entries fail). Never resolve transitively: nearly all families eventually reach text-field, once falsely passing17 raw-TextInput families.
 
@@ -136,8 +136,8 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 
 `Surface` owns the shared material; Button, Card, Sidebar and GlassIsland consume its paint while retaining their current semantic APIs. `glass/` retains grouping/blur-target contracts; the old GlassSurface and glass-colors recipe were removed.
 
-- The current approved default is SOLID: opaque fill + shared sheen/rim, no blur or refraction. Button, Card, Sidebar and overlays use it. Explicit Surface/Card material="glass" remains optional for comparison. BottomBar is intrinsically translucent, without a material variant; its blur band is independent. Preserve semantic foreground pairs; flatten alpha onto the stable theme backing for solid paint.
-- For optional glass, capture the full viewport before cropping: Chromium screenshot `clip` can trim backdrop input. `scripts/verify-surface-refraction.mjs` changes only the exterior colours and removes displacement as its negative control. Expanded capture on compact nested buttons previously leaked rectangular corners; an ancestor clip-path hid the artefact but also blocked refraction. Do not call clipping fixed without reading painted pixels.
+- Surface has ONE material: 90%-opaque body + sheen/rim, with subtle web refraction; no solid/glass selector. Button, Card, Sidebar and overlays share it. Preserve semantic foreground pairs and explicit caller alpha. Publish the fill composited against the actual parent as descendant backing. BottomBar's blur band remains independent.
+- For glass verification, capture the full viewport before cropping: Chromium screenshot `clip` can trim backdrop input. `scripts/verify-surface-refraction.mjs` changes only the exterior colours and removes displacement as its negative control. Expanded capture on compact nested buttons previously leaked rectangular corners; an ancestor clip-path hid the artefact but also blocked refraction. Do not call clipping fixed without reading painted pixels.
 - Web paints blur3px + one shared displacement definition under the tint. Native uses SVG tint/sheen, without backdrop blur/refraction. Sharing a filter definition does not remove per-surface compositor cost; verify dense/large/nested panes.
 - Preserve the measured native hazards: expo-blur intensity couples blur+tint; a BlurView descending from its own BlurTargetView can SIGSEGV on Android. Never wrap the app in a blur target to imitate this web effect.
 - SVG stopColor drops embedded alpha: use separate stopOpacity. Shared rgba tokens once painted an opaque white→black Android wipe while token-equality tests passed.

@@ -426,8 +426,8 @@ export interface ReactionPickerProps extends PartProps {
   /** The "+" that opens the full picker. Omit to hide it. */
   onMorePress?: () => void;
   moreLabel?: string;
-  /** Glyph box: `small` 30, `medium` 36. Default `medium`. */
-  size?: 'small' | 'medium';
+  /** Glyph box: `sm` 30, `md` 36. Default `md`. */
+  size?: 'sm' | 'md';
   /** `false` drops the bar's own surface — for use inside a menu panel. */
   surface?: boolean;
   accessibilityLabel?: string;

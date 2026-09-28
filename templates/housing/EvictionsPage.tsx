@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 
 import { Admonition, AdmonitionText } from '../../src/admonition';
-import { Button } from '../../src/button';
+import { Button , LinkButton } from '../../src/button';
 import { EvictionReportCard, EvictionTimeline } from '../../src/eviction';
 import { RiAddLine, RiArrowDownSLine, RiArrowUpSLine } from '../../src/icons/remix';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../../src/segmented-control';
@@ -50,7 +50,7 @@ export function EvictionsPage() {
               Reported by neighbours and housing groups. Show up, share, or offer support.
             </Text>
           </View>
-          <Button variant="primary" leadingIcon={RiAddLine} onPress={noop}>
+          <Button  leadingIcon={RiAddLine} onPress={noop} tone="accent" appearance="solid">
             Report an eviction
           </Button>
         </View>
@@ -65,7 +65,7 @@ export function EvictionsPage() {
         <SegmentedControl
           label="Show evictions"
           type="tabs"
-          size="large"
+          size="lg"
           value={tab}
           onChange={(next) => {
             setTab(next);
@@ -97,10 +97,10 @@ export function EvictionsPage() {
                     onContactSupport={report.organisationsLabel ? noop : undefined}
                     testID={`housing-eviction-${id}`}
                   />
-                  <Button
-                    variant="link"
+                  <LinkButton
+
                     linkTone="secondary"
-                    size="small"
+                    size="sm"
                     trailingIcon={isOpen ? RiArrowUpSLine : RiArrowDownSLine}
                     onPress={() => setExpanded(isOpen ? null : id)}
                     aria-expanded={isOpen}
@@ -108,7 +108,7 @@ export function EvictionsPage() {
                     testID={`housing-eviction-${id}-toggle`}
                   >
                     {isOpen ? 'Hide case history' : 'Show case history'}
-                  </Button>
+                  </LinkButton>
                   {isOpen && !lg ? history : null}
                 </View>
               );

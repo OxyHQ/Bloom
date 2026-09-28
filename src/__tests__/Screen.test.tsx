@@ -1,4 +1,7 @@
 import React from 'react';
+import { OverlayRoot } from '../overlay';
+import { useTheme } from '../theme/use-theme';
+import { BloomScope, useBloomAppearance } from '../appearance';
 import { Keyboard, Platform, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -96,4 +99,35 @@ it('keeps retained shell descendants inactive even if their own active prop defa
   render(wrap(<Screen navigationScope="shared" active={false}><Screen><Probe /><ScreenScrollView /></Screen></Screen>));
   expect(route?.active).toBe(false);
   expect(route?.activeScrollerId.value).toBeNull();
+});
+
+it('starts without inherited bottom clearance when mounted while the native keyboard is open', () => {
+  const originalOS = Platform.OS;
+  const originalVisible = Keyboard.isVisible;
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+  Keyboard.isVisible = () => true;
+  try {
+    const tree = render(wrap(<Screen navigationScope="shared" bottomBar={<View testID="bar" />} bottomBarHeight={96}><Screen><ScreenScrollView testID="nested-scroll" /></Screen></Screen>));
+    expect(tree.queryByTestId('bar')).toBeNull();
+    expect(resolvedStyle(tree.getByTestId('nested-scroll').props.contentContainerStyle).paddingBottom).toBe(16);
+    tree.unmount();
+  } finally {
+    Keyboard.isVisible = originalVisible;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS });
+  }
+});
+
+
+it('isolates overlay screen motion from its trigger screen without losing the visual theme', () => {
+  const states: Record<string, ScreenContextValue> = {};
+  const colors: Record<string, string> = {};
+  const sizes: Record<string, string> = {};
+  function Probe({ id }: { id: string }) { states[id] = useScreen(); colors[id] = useTheme().colors.background; sizes[id] = useBloomAppearance({}, { size: 'md', tone: 'neutral' }).size; return null; }
+  render(wrap(<BloomScope size="sm"><Screen navigationScope="shared" active={false}><Probe id="background" /><OverlayRoot><Screen><Probe id="overlay" /></Screen></OverlayRoot></Screen></BloomScope>));
+  expect(states.overlay!.active).toBe(true);
+  expect(colors.overlay).toBe(colors.background);
+  expect(sizes.overlay).toBe('sm');
+  expect(states.overlay!.collapseProgress).not.toBe(states.background!.collapseProgress);
+  act(() => { states.overlay!.collapseProgress.value = 1; });
+  expect(states.background!.collapseProgress.value).toBe(0);
 });

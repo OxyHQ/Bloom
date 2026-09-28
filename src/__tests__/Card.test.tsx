@@ -13,6 +13,8 @@
  *      Bloom applies background, radius, border and shadow as inline resolved
  *      tokens rather than classes.
  */
+
+import { resolveSurfaceTint } from '../surface/shared';
 import { View } from 'react-native';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -72,10 +74,10 @@ function roundedNode(node: unknown): HostNode {
 }
 
 describe('Card axes', () => {
-  it('keeps the outlined fill on solid material while explicit appearance wins', () => {
-    const opaque = renderWithTheme(<Card material="solid" variant="outlined" testID="c" />);
-    expect(opaque.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === false).props.fill).toBe(buildTheme('oxy', 'light').colors.card);
-    const outline = renderWithTheme(<Card variant="outlined" appearance="outline" testID="c" />);
+  it('keeps the outlined fill on shared glass material while explicit appearance wins', () => {
+    const opaque = renderWithTheme(<Card  testID="c" appearance="outline" />);
+    expect(opaque.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.radius !== undefined).props.fill).toBe(resolveSurfaceTint(buildTheme('oxy', 'light').colors.card));
+    const outline = renderWithTheme(<Card  appearance="outline" testID="c" />);
     expect(chromeOf(outline.toJSON(), 'c').backgroundColor).toBe('transparent');
   });
   it('takes its corner from a RADIUS rung, not a free number', () => {
@@ -141,10 +143,10 @@ describe('Card axes', () => {
         {null}
       </Card>,
     );
-    const filledBg = filled.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === false).props.fill;
-    const outlinedBg = outlined.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.glass === false).props.fill;
+    const filledBg = filled.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.radius !== undefined).props.fill;
+    const outlinedBg = outlined.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.radius !== undefined).props.fill;
     expect(typeof filledBg).toBe('string');
-    expect(filledBg).toBe(buildTheme('oxy', 'light').colors.card);
+    expect(filledBg).toBe(resolveSurfaceTint(buildTheme('oxy', 'light').colors.card));
     expect(filledBg).toBe(outlinedBg);
   });
 
@@ -237,4 +239,12 @@ it.each([false, true])('forwards ref and measurement to the card host (interacti
   expect(onLayout).toHaveBeenCalledWith(event);
   screen.unmount();
   expect(ref.current).toBeNull();
+});
+
+it('shares radius precedence with Surface while preserving the actual card host', () => {
+  const fallback = renderWithTheme(<Card testID="geometry" style={{ borderRadius: 8 }} />);
+  expect(chromeOf(fallback.toJSON(), 'geometry').borderRadius).toBe(8);
+  fallback.unmount();
+  const explicit = renderWithTheme(<Card testID="geometry" radius="radius-20" style={{ borderRadius: 8 }} />);
+  expect(chromeOf(explicit.toJSON(), 'geometry').borderRadius).toBe(20);
 });

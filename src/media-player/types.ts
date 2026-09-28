@@ -4,8 +4,8 @@ import type { StyleProp, ViewStyle } from 'react-native';
 /** `off` → `all` → `one` → `off`. */
 export type RepeatMode = 'off' | 'all' | 'one';
 
-/** `compact` (play 32, glyphs 16), `regular` (play 48, glyphs 20, default), `large` (play 56, glyphs 24). */
-export type TransportControlsSize = 'compact' | 'regular' | 'large';
+/** `sm` (play 32, glyphs 16), `md` (play 48, glyphs 20, default), `lg` (play 56, glyphs 24). */
+export type TransportControlsSize = 'sm' | 'md' | 'lg';
 
 /** `music`: shuffle · previous · play · next · repeat. `podcast`: speed · back N · play · forward N · trailing. */
 export type TransportControlsVariant = 'music' | 'podcast';

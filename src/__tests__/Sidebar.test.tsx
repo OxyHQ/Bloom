@@ -494,7 +494,7 @@ function SidebarSurfaceProbe() {
 it('publishes custom sidebar paint while plain sidebars inherit the enclosing surface', () => {
   for (const surface of ['card', 'plain'] as const) {
     const screen = renderIn(<SurfaceLevelProvider level={2} fill="#abcdef"><Sidebar surface={surface} style={surface === 'card' ? { backgroundColor: '#123456' } : undefined} footer={<SidebarSurfaceProbe />} /></SurfaceLevelProvider>);
-    expect(screen.getByTestId('sidebar-surface-probe').props.children).toBe(surface === 'card' ? '1:#123456' : '2:#abcdef');
+    expect(screen.getByTestId('sidebar-surface-probe').props.children).toBe(surface === 'card' ? '1:rgb(33, 67, 101)' : '2:#abcdef');
     screen.unmount();
   }
 });

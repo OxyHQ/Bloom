@@ -124,7 +124,7 @@ function PlaceAmenitiesComponent({
         </View>
       ))}
       {onShowAll && fullCount > shown.length ? (
-        <Button variant="secondary" onPress={onShowAll} testID={testID ? `${testID}-show-all` : undefined}>
+        <Button  onPress={onShowAll} testID={testID ? `${testID}-show-all` : undefined} tone="neutral" appearance="outline">
           {showAllLabel ? showAllLabel(fullCount) : listingMessages.showAllAmenities(fullCount)}
         </Button>
       ) : null}

@@ -479,28 +479,28 @@ function CategoryBarComponent({
         {IS_WEB && overflow.previous ? (
           <View pointerEvents="box-none" style={edgeStyle('left')}>
             <Button
-              variant="secondary"
-              size="small"
+
+              size="sm"
               iconOnly
               leadingIcon={RiArrowLeftSLine}
               accessibilityLabel={previousLabel}
               tabIndex={-1}
               onPress={() => page(-1)}
-              testID={testID ? `${testID}-previous` : undefined}
+              testID={testID ? `${testID}-previous` : undefined} tone="neutral" appearance="outline"
             />
           </View>
         ) : null}
         {IS_WEB && overflow.next ? (
           <View pointerEvents="box-none" style={edgeStyle('right')}>
             <Button
-              variant="secondary"
-              size="small"
+
+              size="sm"
               iconOnly
               leadingIcon={RiArrowRightSLine}
               accessibilityLabel={nextLabel}
               tabIndex={-1}
               onPress={() => page(1)}
-              testID={testID ? `${testID}-next` : undefined}
+              testID={testID ? `${testID}-next` : undefined} tone="neutral" appearance="outline"
             />
           </View>
         ) : null}

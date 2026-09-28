@@ -203,12 +203,12 @@ function MenuItemOptionsComponent({
 
       {onSubmit ? (
         <Button
-          variant="primary"
-          size="large"
+
+          size="lg"
           fullWidth
           disabled={disabled || submitDisabled}
           onPress={onSubmit}
-          testID={testID ? `${testID}-submit` : undefined}
+          testID={testID ? `${testID}-submit` : undefined} tone="accent" appearance="solid"
         >
           {total ? `${submitLabel} · ${total}` : submitLabel}
         </Button>

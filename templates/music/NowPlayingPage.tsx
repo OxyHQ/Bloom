@@ -115,12 +115,12 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
           {player.context?.name ?? 'Now playing'}
         </Text>
         <Button
-          variant="ghost"
-          size="small"
+
+          size="sm"
           iconOnly
           icon={RiCloseLine}
           accessibilityLabel="Hide now playing view"
-          onPress={onClose}
+          onPress={onClose} tone="accent" appearance="subtle"
         />
       </View>
       <ScrollView
@@ -154,10 +154,10 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
                   {SHOW_BY_ID[item.parentId]?.description}
                 </Text>
                 <Button
-                  variant="secondary"
-                  size="small"
+
+                  size="sm"
                   style={{ alignSelf: 'flex-start' }}
-                  onPress={() => router.navigate({ name: 'podcast', id: item.parentId })}
+                  onPress={() => router.navigate({ name: 'podcast', id: item.parentId })} tone="neutral" appearance="outline"
                 >
                   Go to show
                 </Button>

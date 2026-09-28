@@ -183,7 +183,7 @@ function PitchCardComponent({
           </View>
         </View>
         {status === 'submitted' && onEdit ? (
-          <Button variant="secondary" size="medium" onPress={onEdit} style={styles.submit} testID={id('edit')}>
+          <Button  size="md" onPress={onEdit} style={styles.submit} testID={id('edit')} tone="neutral" appearance="outline">
             {labels.edit}
           </Button>
         ) : null}
@@ -250,14 +250,14 @@ function PitchCardComponent({
       />
 
       <Button
-        variant="primary"
-        size="medium"
+
+        size="md"
         leadingIcon={RiSendPlaneLine}
         onPress={onSubmit}
         disabled={!canSubmit}
         loading={submitting}
         style={styles.submit}
-        testID={id('submit')}
+        testID={id('submit')} tone="accent" appearance="solid"
       >
         {labels.submit}
       </Button>

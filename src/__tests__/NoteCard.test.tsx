@@ -7,6 +7,7 @@
  * tree can show — the tone composited over its parent and the quiet rungs
  * measured against the composite.
  */
+import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -359,13 +360,13 @@ describe('the card paints its own surface in both modes', () => {
   it.each(MODES)('publishes the composited fill it actually drew (%s)', (mode) => {
     mount(<NoteCard title="A" tone="info" onPress={() => {}} testID="note" />, mode);
     const surface = surfaceOf('note');
-    const material = surface.querySelector<HTMLElement>('.bloom-surface-paint--solid');
+    const material = surface.querySelector<HTMLElement>('.bloom-surface-paint');
     expect(material).not.toBeNull();
     const drawn = material!.style.getPropertyValue('--bloom-surface-paint-fill');
-    expect(surface.style.getPropertyValue('--bloom-surface')).toBe(drawn);
+    expect(surface.style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceFill(drawn, theme.colors.background));
     const expected = resolveNoteCardPaint(theme, theme.colors.background, 'info').background;
-    expect(drawn).toBe(expected);
-    // The rendered fill is never the raw translucent token.
-    expect(drawn).not.toContain('rgba');
+    expect(drawn).toBe(resolveSurfaceTint(expected));
+    // Material transmits a little backdrop while descendants receive its composite.
+    expect(drawn).toMatch(/, 0.9\)$/);
   });
 });

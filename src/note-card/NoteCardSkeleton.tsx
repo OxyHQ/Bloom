@@ -21,10 +21,10 @@ export function NoteCardSkeleton({ density = 'grid', lines, style, testID }: Not
 
   return (
     <Card
-      variant="outlined"
+
       radius={geo.radius}
       style={{ padding: geo.padding, minHeight: geo.minHeight }}
-      testID={testID}
+      testID={testID} appearance="outline"
     >
       <View
         aria-hidden

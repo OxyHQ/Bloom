@@ -113,22 +113,22 @@ export function ActionBarView({
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         {secondaryIcon ? (
           <Button
-            variant="secondary"
-            size="large"
+
+            size="lg"
             iconOnly
             icon={secondaryIcon}
             accessibilityLabel={secondaryLabel}
             onPress={onSecondary}
-            testID={id('secondary')}
+            testID={id('secondary')} tone="neutral" appearance="outline"
           />
         ) : null}
         <Button
-          variant="primary"
-          size="large"
+
+          size="lg"
           onPress={onPrimary}
           disabled={primaryDisabled}
           loading={loading}
-          testID={id(ids.primary)}
+          testID={id(ids.primary)} tone="accent" appearance="solid"
         >
           {primaryLabel}
         </Button>

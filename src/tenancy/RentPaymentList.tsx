@@ -77,13 +77,13 @@ function RentPaymentListComponent({
   const receipt = (payment: RentPayment, index: number) =>
     payment.onDownloadReceipt ? (
       <Button
-        variant="secondary"
-        size="small"
+
+        size="sm"
         iconOnly
         leadingIcon={RiDownload2Line}
         accessibilityLabel={receiptLabel(payment)}
         onPress={payment.onDownloadReceipt}
-        testID={id(`receipt-${index}`)}
+        testID={id(`receipt-${index}`)} tone="neutral" appearance="outline"
       />
     ) : hasReceipts ? (
       <View style={{ width: RECEIPT_WIDTH }} />

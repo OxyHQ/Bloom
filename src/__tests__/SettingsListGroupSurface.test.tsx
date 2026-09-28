@@ -1,3 +1,4 @@
+import { resolveSurfaceTint } from '../surface/shared';
 jest.mock('react-native-svg', () => ({
   __esModule: true,
   default: 'Svg',
@@ -8,7 +9,7 @@ jest.mock('react-native-svg', () => ({
   Rect: 'Rect',
 }));
 
-import React from 'react';
+import React, { createContext, useContext } from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
@@ -20,7 +21,7 @@ import { OverlayRoot } from '../overlay';
 import { SettingsListGroup, SettingsListItem } from '../settings-list/SettingsList';
 import { SETTINGS_LIST_GROUP_TEST_ID } from '../settings-list/surface';
 import { contrastRatio } from '../styles/color-contrast';
-import { SurfaceLevelProvider, resolveSurfaceLevel } from '../styles/surface-levels';
+import { SurfaceLevelProvider, resolveSurfaceLevel, useSurfaceFill } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import type { Theme } from '../theme/types';
@@ -60,6 +61,9 @@ import { resolvedStyle } from './support/rendered-style';
  * a preset change must be able to move every colour without touching this file.
  */
 
+const CaptureBacking = createContext<(kind: 'parent' | 'published', fill: string) => void>(() => {});
+function BackingProbe() { useContext(CaptureBacking)('published', useSurfaceFill()); return null; }
+
 const MODES = ['light', 'dark'] as const;
 type Mode = (typeof MODES)[number];
 
@@ -78,8 +82,9 @@ const FILL_JND = 1.1;
  * background at all, so "the background that is not the container's" would
  * quietly start measuring whichever node happened to be left.
  */
-function paint(mode: Mode, ui: () => React.ReactElement): { fill: string; colors: Theme['colors'] } {
+function paint(mode: Mode, ui: () => React.ReactElement): { fill: string; colors: Theme['colors']; parentFill: string; publishedFill: string } {
   const ref: { current?: Theme['colors'] } = {};
+  const backing = { parent: '', published: '' };
   function Probe() {
     ref.current = useTheme().colors;
     return null;
@@ -87,7 +92,7 @@ function paint(mode: Mode, ui: () => React.ReactElement): { fill: string; colors
   const { getByTestId } = render(
     <BloomThemeProvider mode={mode} colorPreset="teal">
       <Probe />
-      {ui()}
+      <CaptureBacking.Provider value={(kind, fill) => { backing[kind] = fill; }}>{ui()}</CaptureBacking.Provider>
     </BloomThemeProvider>,
   );
   const host = getByTestId(SETTINGS_LIST_GROUP_TEST_ID);
@@ -96,40 +101,40 @@ function paint(mode: Mode, ui: () => React.ReactElement): { fill: string; colors
   expect(materials).toHaveLength(1);
   const fill = materials[0]!.props.fill as string;
   if (!ref.current) throw new Error('theme probe never ran');
-  return { fill, colors: ref.current };
+  return { fill, colors: ref.current, parentFill: backing.parent, publishedFill: backing.published };
 }
 
-const group = (variant?: 'plain' | 'filled') => (
-  <SettingsListGroup variant={variant}>
-    <SettingsListItem title="Row" />
-  </SettingsListGroup>
-);
+function GroupFixture({ variant }: { variant?: 'plain' | 'filled' }) {
+  useContext(CaptureBacking)('parent', useSurfaceFill());
+  return <SettingsListGroup variant={variant}><SettingsListItem title="Row" /><BackingProbe /></SettingsListGroup>;
+}
+const group = (variant?: 'plain' | 'filled') => <GroupFixture variant={variant} />;
 
 describe.each(MODES)('the default resolves off the real surface (%s)', (mode) => {
   const theme = buildTheme('teal', mode);
 
   it('paints the `card` ROLE on the page, where a card is exactly what reads', () => {
-    const { fill, colors } = paint(mode, () => group());
-    expect(fill).toBe(colors.card);
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => group());
+    expect(fill).toBe(resolveSurfaceTint(colors.card));
   });
 
   it('steps off a published fill instead, with no prop at the call site', () => {
-    const { fill, colors } = paint(mode, () => (
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
       <SurfaceLevelProvider level={1} fill={theme.colors.card}>
         {group()}
       </SurfaceLevelProvider>
     ));
-    expect(fill).not.toBe(colors.card);
-    expect(contrastRatio(fill, colors.card)).toBeGreaterThanOrEqual(FILL_JND);
+    expect(fill).not.toBe(resolveSurfaceTint(colors.card));
+    expect(contrastRatio(publishedFill, parentFill)).toBeGreaterThanOrEqual(FILL_JND);
   });
 
   it('reads the fill a ContentPanel publishes — the case the prop was repeated for', () => {
     // The panel paints `card` and publishes that exact colour (#125). The group
     // has to separate from what the panel PAINTED, which in dark is not the rung
     // the panel sits at: `colors.card` and rung 1 are 1.277:1 apart in teal/dark.
-    const { fill, colors } = paint(mode, () => <ContentPanel framed>{group()}</ContentPanel>);
-    expect(fill).not.toBe(colors.card);
-    expect(contrastRatio(fill, colors.card)).toBeGreaterThanOrEqual(FILL_JND);
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => <ContentPanel framed>{group()}</ContentPanel>);
+    expect(fill).not.toBe(resolveSurfaceTint(colors.card));
+    expect(contrastRatio(publishedFill, parentFill)).toBeGreaterThanOrEqual(FILL_JND);
   });
 
   it('follows the FILL when a panel publishes a rung that is not its colour', () => {
@@ -139,7 +144,7 @@ describe.each(MODES)('the default resolves off the real surface (%s)', (mode) =>
     // the panel is painting `background`. Reading the rung answered
     // `backgroundSecondary`, which measures 1.121-1.132 against that page in dark
     // — a group drawn on the page in the one colour that nearly matches it.
-    const { fill, colors } = paint(mode, () => (
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
       <ContentPanel
         framed
         surfaceClassName="bg-background"
@@ -148,15 +153,15 @@ describe.each(MODES)('the default resolves off the real surface (%s)', (mode) =>
         {group()}
       </ContentPanel>
     ));
-    expect(fill).toBe(colors.card);
+    expect(fill).toBe(resolveSurfaceTint(colors.card));
   });
 
   it('lets an explicit variant win over the ambient surface, in both directions', () => {
     const insidePanel = paint(mode, () => <ContentPanel framed>{group('plain')}</ContentPanel>);
-    expect(insidePanel.fill).toBe(insidePanel.colors.card);
+    expect(insidePanel.fill).toBe(resolveSurfaceTint(insidePanel.colors.card));
 
     const onThePage = paint(mode, () => group('filled'));
-    expect(onThePage.fill).toBe(onThePage.colors.backgroundSecondary);
+    expect(onThePage.fill).toBe(resolveSurfaceTint(onThePage.colors.backgroundSecondary));
   });
 });
 
@@ -170,11 +175,11 @@ describe.each(MODES)('a group on the menu surface separates from it (%s)', (mode
   const menuSurface = resolveSurfaceLevel(theme, 1).background;
 
   it('clears the just-noticeable floor against what the menu actually paints', () => {
-    const { fill } = paint(mode, () => (
+    const { fill, parentFill, publishedFill } = paint(mode, () => (
       // What `FloatingPanel` and `QueuePanel` publish: the rung, no exact fill.
       <SurfaceLevelProvider level={1}>{group()}</SurfaceLevelProvider>
     ));
-    expect(contrastRatio(fill, menuSurface)).toBeGreaterThanOrEqual(FILL_JND);
+    expect(contrastRatio(publishedFill, parentFill)).toBeGreaterThanOrEqual(FILL_JND);
   });
 
   it('and `backgroundSecondary` — the answer this replaced — would not, in dark', () => {
@@ -188,22 +193,22 @@ describe.each(MODES)('a group on the menu surface separates from it (%s)', (mode
 
 describe.each(MODES)('a surface that starts a new painting context resets it (%s)', (mode) => {
   it('OverlayRoot resets the surface a ContentPanel published', () => {
-    const { fill, colors } = paint(mode, () => (
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
       <ContentPanel framed>
         <OverlayRoot>{group()}</OverlayRoot>
       </ContentPanel>
     ));
     // The plain overlay body is the page rung, so the group is a card again.
-    expect(fill).toBe(colors.card);
+    expect(fill).toBe(resolveSurfaceTint(colors.card));
   });
 
   it('a BottomSheet resets it too — native sheets never pass through OverlayRoot', () => {
-    const { fill, colors } = paint(mode, () => (
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
       <ContentPanel framed>
         <BottomSheet open>{group()}</BottomSheet>
       </ContentPanel>
     ));
-    expect(fill).toBe(colors.card);
+    expect(fill).toBe(resolveSurfaceTint(colors.card));
   });
 
   it('an open Dialog paints the same whether or not its trigger lives in a panel', () => {
@@ -221,14 +226,14 @@ describe.each(MODES)('a surface that starts a new painting context resets it (%s
     ));
 
     // The property, stated directly: same dialog, same paint, either origin.
-    expect(inPanel.fill).toBe(inPanel.colors.card);
-    expect(onPage.fill).toBe(onPage.colors.card);
+    expect(inPanel.fill).toBe(resolveSurfaceTint(inPanel.colors.card));
+    expect(onPage.fill).toBe(resolveSurfaceTint(onPage.colors.card));
   });
 
   it('but content still inside the panel, beside the overlay, keeps the panel surface', () => {
     // The reset is scoped to the overlay, not to the whole subtree under it —
     // otherwise it would "fix" the dialog by breaking the screen behind it.
-    const { fill, colors } = paint(mode, () => (
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => (
       <ContentPanel framed>
         <OverlayRoot>
           <Text>overlay</Text>
@@ -236,8 +241,8 @@ describe.each(MODES)('a surface that starts a new painting context resets it (%s
         {group()}
       </ContentPanel>
     ));
-    expect(fill).not.toBe(colors.card);
-    expect(contrastRatio(fill, colors.card)).toBeGreaterThanOrEqual(FILL_JND);
+    expect(fill).not.toBe(resolveSurfaceTint(colors.card));
+    expect(contrastRatio(publishedFill, parentFill)).toBeGreaterThanOrEqual(FILL_JND);
   });
 });
 
@@ -247,8 +252,8 @@ describe.each(MODES)('both ContentPanel forks publish their fill (%s)', (mode) =
   // measures `ContentPanel.tsx` alone. The web fork is named here so it cannot
   // quietly stop publishing while the suite stays green on the other file.
   it('web: a group inside the panel steps off the panel with no prop', () => {
-    const { fill, colors } = paint(mode, () => <ContentPanelWeb framed>{group()}</ContentPanelWeb>);
-    expect(fill).not.toBe(colors.card);
-    expect(contrastRatio(fill, colors.card)).toBeGreaterThanOrEqual(FILL_JND);
+    const { fill, colors, parentFill, publishedFill } = paint(mode, () => <ContentPanelWeb framed>{group()}</ContentPanelWeb>);
+    expect(fill).not.toBe(resolveSurfaceTint(colors.card));
+    expect(contrastRatio(publishedFill, parentFill)).toBeGreaterThanOrEqual(FILL_JND);
   });
 });

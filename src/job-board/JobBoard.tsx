@@ -250,11 +250,11 @@ function JobBoardComponent({
         {active > 0 ? (
           <View style={{ flexDirection: 'row' }}>
             <Button
-              variant="text"
-              size="small"
+
+              size="sm"
               onPress={clear}
               accessibilityLabel={labels.clearFilters}
-              testID={id('clear')}
+              testID={id('clear')} tone="accent" appearance="plain"
             >
               {labels.clearFilters}
             </Button>
@@ -296,8 +296,8 @@ function JobBoardComponent({
           >
             {filterRows.length > 0 ? (
               <Button
-                variant="secondary"
-                size="small"
+
+                size="sm"
                 leadingIcon={RiEqualizerLine}
                 onPress={() => setFiltersOpen(!filtersOpen)}
                 // `aria-expanded` on both spellings: react-native-web reads only
@@ -311,7 +311,7 @@ function JobBoardComponent({
                     ? `${labels.filtersToggle}, ${labels.filtersActive(active)}`
                     : labels.filtersToggle
                 }
-                testID={id('filters-toggle')}
+                testID={id('filters-toggle')} tone="neutral" appearance="outline"
               >
                 {labels.filtersToggle}
               </Button>
@@ -382,10 +382,10 @@ function JobBoardComponent({
         {Array.from({ length: Math.max(1, loadingCount) }, (_unused, index) => (
           <Card
             key={index}
-            variant="outlined"
+
             radius="radius-20"
             style={surfaceFillVars(theme.colors.card)}
-            testID={id(`placeholder-${index}`)}
+            testID={id(`placeholder-${index}`)} appearance="outline"
           >
             <View
               style={{
@@ -448,11 +448,11 @@ function JobBoardComponent({
         {emptyAction ??
           (active > 0 ? (
             <Button
-              variant="secondary"
-              size="medium"
+
+              size="md"
               onPress={clear}
               accessibilityLabel={labels.clearFilters}
-              testID={id('empty-clear')}
+              testID={id('empty-clear')} tone="neutral" appearance="outline"
             >
               {labels.clearFilters}
             </Button>

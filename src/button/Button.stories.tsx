@@ -62,7 +62,7 @@ export const CloseButtons: Story = {
 function PlaygroundGroup({ size }: { size: 'md' | 'sm' }) {
   const [checked, setChecked] = useState('Week');
   return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-    <ButtonGroup material="glass" size={size} accessibilityLabel={`Range ${size}`}>
+    <ButtonGroup size={size} accessibilityLabel={`Range ${size}`}>
       {['Day', 'Week', 'Month'].map(label => <ButtonGroupItem key={label} checked={checked === label} onPress={() => setChecked(label)}>{label}</ButtonGroupItem>)}
     </ButtonGroup>
     <ButtonGroup size={size} accessibilityLabel={`Actions ${size}`}>

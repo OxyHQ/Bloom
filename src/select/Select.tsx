@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
 import React, {
@@ -14,26 +15,14 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
-import {
-  ROW_ICON_SIZE,
-  ROW_INDICATOR_END_CLASS,
-  SELECT_CHEVRON_SIZE,
-  SELECT_ITEM_CLASS,
-  SELECT_ITEM_SIZE_CLASS,
-  SELECT_ITEM_TEXT_CLASS,
-  SELECT_SEPARATOR_CLASS,
-  SELECT_TRIGGER_CLASS,
-  SELECT_TRIGGER_POPUP,
-  SELECT_TRIGGER_SIZE_CLASS,
-  SELECT_VALUE_CLASS,
-} from '../floating/constants';
+import { SELECT_CHEVRON_SIZE, SELECT_ITEM_CLASS, SELECT_ITEM_SIZE_CLASS, SELECT_TRIGGER_CLASS, SELECT_TRIGGER_POPUP, SELECT_TRIGGER_SIZE_CLASS, SELECT_VALUE_CLASS } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
 import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
+
 import {
   StyledPressable,
   StyledText,
@@ -50,17 +39,7 @@ import {
   useSelectItemContext,
   VALUE_TYPE,
 } from './shared';
-import type {
-  SelectContentProps,
-  SelectIconProps,
-  SelectItemIndicatorProps,
-  SelectItemProps,
-  SelectItemTextProps,
-  SelectProps,
-  SelectItemContextValue,
-  SelectTriggerProps,
-  SelectValueProps,
-} from './types';
+import type { SelectContentProps, SelectIconProps, SelectItemProps, SelectProps, SelectItemContextValue, SelectTriggerProps, SelectValueProps } from './types';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
@@ -94,7 +73,9 @@ function useSelectContext(): SelectContextValue {
 // Select
 // ---------------------------------------------------------------------------
 
-export function Select({ children, value, onValueChange, disabled, size: sizeProp }: SelectProps) {
+export function Select(props: SelectProps) {
+  const { children, value: valueProp, defaultValue, onValueChange: onValueChangeProp, disabled, size: sizeProp } = props;
+  const [value, onValueChange] = useControllableState<string | undefined>({ value: valueProp, defaultValue, controlled: Object.prototype.hasOwnProperty.call(props, 'value'), onChange: next => { if (next !== undefined) onValueChangeProp?.(next); } });
   const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const control = useDialogControl();

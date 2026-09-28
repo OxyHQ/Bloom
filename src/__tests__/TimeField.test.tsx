@@ -317,7 +317,7 @@ describe('TimeField', () => {
     mount(<TimeField value="09:00" onChange={() => {}} accessibilityLabel="T" testID="t" />);
     expect(getComputedStyle(field('t')).width).toBe('104px');
     expect(getComputedStyle(field('t')).height).toBe('38px');
-    mount(<TimeField value="09:00" onChange={() => {}} size="small" accessibilityLabel="T" testID="t" />);
+    mount(<TimeField value="09:00" onChange={() => {}} size="sm" accessibilityLabel="T" testID="t" />);
     expect(getComputedStyle(field('t')).width).toBe('96px');
     expect(getComputedStyle(field('t')).height).toBe('32px');
     mount(<TimeField value="09:00" onChange={() => {}} width={140} accessibilityLabel="T" testID="t" />);

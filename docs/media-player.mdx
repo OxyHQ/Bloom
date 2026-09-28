@@ -70,9 +70,9 @@ A list of artists makes each credit a link when `onArtistPress(artist, index)` i
 
 | | play | glyphs | previous / next | hit box | gap |
 | --- | --- | --- | --- | --- | --- |
-| `compact` | 32 | 16 | 20 | 32 | 8 |
-| `regular` (default) | 48 | 20 | 24 | 32 | 16 |
-| `large` | 56 | 24 | 32 | 40 | 24 |
+| `sm` | 32 | 16 | 20 | 32 | 8 |
+| `md` (default) | 48 | 20 | 24 | 32 | 16 |
+| `lg` | 56 | 24 | 32 | 40 | 24 |
 
 - **music** — shuffle · previous · play · next · repeat. **podcast** — speed · back N · play · forward N · `trailing`.
 - The play button is `PlayButton` `inverse`, named "Play &lt;subject&gt;" / "Pause &lt;subject&gt;".
@@ -117,7 +117,7 @@ The desktop bar, full width at the bottom of the window.
 
 - **80 tall**, 16 side inset, the page background and a 1px neutral-200 (dark neutral-800) top rule.
 - **Left** — 56 cover (8 corner), title (a link with `onTitlePress`) with the explicit badge, artists, and the like button (with `onLikedChange`).
-- **Centre** (≤ 722) — `compact` transport over `PlaybackProgress` with times beside it.
+- **Centre** (≤ 722) — `sm` transport over `PlaybackProgress` with times beside it.
 - **Right** — lyrics (`RiMicLine`) and queue (`RiPlayListLine`) toggles, the device button, `VolumeControl`, fullscreen. Each shows when its handler is given.
 - **Device button** — with `devicePicker` it opens a `Popover` above itself holding that content (`devicePickerOpen` / `onDevicePickerOpenChange` to control it); otherwise it calls `onDevicePress`. It is lit (accent + dot) while `deviceName` is set, and its name adds the device.
 - **Collapse** — the bar measures its OWN width (seeded from the window): under **1024** the fullscreen button goes and the volume slider shortens to 64; under **768** lyrics, volume and the scrubber times go, the device button stays only while casting, and the actions column shrinks to what it draws.
@@ -191,7 +191,7 @@ The phone's expanded player and the desktop's immersive view. It **fills its par
 ```
 
 - **Top bar** — collapse chevron, "PLAYING FROM PLAYLIST" over "Night Drive", more.
-- **Narrow** — square artwork (16 corner, ≤ 480) over title + artists + like, the scrubber with times below it, the `large` transport spread to the column's width, and a row of device (with the device name while casting), share and queue.
+- **Narrow** — square artwork (16 corner, ≤ 480) over title + artists + like, the scrubber with times below it, the `lg` transport spread to the column's width, and a row of device (with the device name while casting), share and queue.
 - **Wide (≥ 900, measured)** — artwork and details side by side, 64 apart.
 - **The first screen is exactly the parent's height**, painted with a vertical gradient from the contrast-safe artwork tint to neutral-950. **Below the fold**, in the same scroll, a lyrics preview card (earlier lines dimmed up to `activeIndex`; a button when `onPress` is given) and the `aboutArtist` slot — side by side when wide.
 - **It is always dark.** Its content renders under the dark theme whatever the app's mode. A light app on a named preset gets that preset's dark accent; an app whose accent is a seed or scope keeps its accent as given.

@@ -72,7 +72,7 @@ export function TrackListEmpty({
         </Text>
       ) : null}
       {actionLabel && onAction ? (
-        <Button variant="primary" size="medium" onPress={onAction} style={{ marginTop: 20 }}>
+        <Button  size="md" onPress={onAction} style={{ marginTop: 20 }} tone="accent" appearance="solid">
           {actionLabel}
         </Button>
       ) : null}

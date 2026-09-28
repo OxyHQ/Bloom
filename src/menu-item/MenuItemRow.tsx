@@ -89,7 +89,7 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
 
   const control = unavailable ? null : stepper ? (
     <Stepper
-      size="small"
+      size="sm"
       value={quantity}
       min={0}
       onValueChange={onQuantityChange!}
@@ -98,13 +98,13 @@ function MenuItemRowComponent(props: MenuItemRowProps) {
     />
   ) : onAdd ? (
     <Button
-      variant="secondary"
-      size="small"
+
+      size="sm"
       iconOnly
       leadingIcon={RiAddLine}
       accessibilityLabel={addLabel ?? messages.addItem(name)}
       onPress={onAdd}
-      testID={testID ? `${testID}-add` : undefined}
+      testID={testID ? `${testID}-add` : undefined} tone="neutral" appearance="outline"
     />
   ) : null;
 

@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, 
 import { Image, Platform, Pressable, View } from 'react-native';
 
 import { Button } from '../button';
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { webDataSet } from '../styles/web-data';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -572,13 +572,13 @@ const PhotoTile = memo(function PhotoTile({
               {onRemove ? (
                 <View style={{ position: 'absolute', top: 6, right: 6 }}>
                   <Button
-                    variant="secondary"
-                    size="small"
+
+                    size="sm"
                     iconOnly
                     leadingIcon={RiCloseLine}
                     accessibilityLabel={labels.remove(position)}
                     onPress={() => onRemove(photo.id)}
-                    testID={testID ? `${testID}-remove` : undefined}
+                    testID={testID ? `${testID}-remove` : undefined} tone="neutral" appearance="outline"
                   />
                 </View>
               ) : null}
@@ -589,14 +589,14 @@ const PhotoTile = memo(function PhotoTile({
                     style={{ position: 'absolute', bottom: 6, left: 6 }}
                   >
                     <Button
-                      variant="secondary"
-                      size="small"
+
+                      size="sm"
                       iconOnly
                       leadingIcon={RiArrowLeftSLine}
                       accessibilityLabel={labels.moveEarlier(position)}
                       disabled={position === 1}
                       onPress={() => onMove(photo.id, 'earlier')}
-                      testID={testID ? `${testID}-earlier` : undefined}
+                      testID={testID ? `${testID}-earlier` : undefined} tone="neutral" appearance="outline"
                     />
                   </View>
                   <View
@@ -604,14 +604,14 @@ const PhotoTile = memo(function PhotoTile({
                     style={{ position: 'absolute', bottom: 6, right: 6 }}
                   >
                     <Button
-                      variant="secondary"
-                      size="small"
+
+                      size="sm"
                       iconOnly
                       leadingIcon={RiArrowRightSLine}
                       accessibilityLabel={labels.moveLater(position)}
                       disabled={position === total}
                       onPress={() => onMove(photo.id, 'later')}
-                      testID={testID ? `${testID}-later` : undefined}
+                      testID={testID ? `${testID}-later` : undefined} tone="neutral" appearance="outline"
                     />
                   </View>
                 </>
@@ -664,7 +664,7 @@ function UploadOverlay({
         style={{ width: '60%', alignItems: 'center', gap: 6 }}
       >
         {progress === undefined ? (
-          <Loading variant="spinner" size="small" color={paint.onMedia} />
+          <Loading variant="spinner" size="sm" color={paint.onMedia} />
         ) : (
           <>
             <Text variant="caption-1-semibold" style={{ color: paint.onMedia, fontVariant: ['tabular-nums'] }}>
@@ -727,11 +727,11 @@ function ErrorOverlay({
       )}
       {onRetry ? (
         <Button
-          variant="secondary"
+
           size="xs"
           onPress={onRetry}
           accessibilityLabel={labels.retry(position)}
-          testID={testID ? `${testID}-retry` : undefined}
+          testID={testID ? `${testID}-retry` : undefined} tone="neutral" appearance="outline"
         >
           {labels.retryAction}
         </Button>

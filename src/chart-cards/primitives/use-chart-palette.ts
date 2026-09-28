@@ -1,8 +1,8 @@
+import { resolveSurfaceMaterial } from '../../surface/resolve-surface-material';
 import { useMemo } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { useSurfaceFill } from '../../styles/surface-levels';
 import { useSurfaceLayer } from '../../surface/use-surface-layer';
-import { resolveSurfaceFill } from '../../surface/shared';
 
 import { useTheme } from '../../theme/use-theme';
 import {
@@ -39,6 +39,6 @@ export function useChartCardSurfacePalette(style?: StyleProp<ViewStyle>): ChartC
   const theme = useTheme();
   const layer = useSurfaceLayer();
   const fill = StyleSheet.flatten(style)?.backgroundColor;
-  const surface = resolveSurfaceFill(typeof fill === 'string' ? fill : layer.fill, false, layer.parentFill);
+  const surface = resolveSurfaceMaterial({ fill: typeof fill === 'string' ? fill : layer.fill, parentFill: layer.parentFill }).publishedFill;
   return useMemo(() => resolveChartCardPalette(theme, surface), [theme, surface]);
 }

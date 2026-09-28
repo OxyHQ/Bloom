@@ -1,4 +1,3 @@
-import { normalizeBloomSize } from '../appearance/legacy';
 import { useBloomAppearance, type BloomSize } from '../appearance';
 import {
   createContext,
@@ -30,7 +29,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { mixColor, resolveButtonRamps } from '../button/shared';
+
 import { useFieldMembership } from '../field/membership';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import { webDataSet } from '../styles/web-data';
@@ -58,7 +57,7 @@ import { webDataSet } from '../styles/web-data';
  * segment reads through its text weight and colour alone.
  */
 
-type SegmentedControlSize = BloomSize | 'small' | 'medium' | 'large';
+type SegmentedControlSize = BloomSize;
 type SegmentedControlVariant = 'solid' | 'plain';
 
 const GEOMETRY = {
@@ -219,7 +218,7 @@ export function SegmentedControl<T extends string>({
 }) {
   const onValueChange = onValueChangeProp ?? onChange ?? (() => {});
   const theme = useTheme();
-  const {size} = useBloomAppearance({size: normalizeBloomSize(sizeProp)}, {size: 'md', tone: 'neutral'});
+  const {size} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   useInteractiveWebCss(STYLE_ID, SEGMENTED_CSS);
   // The group is ONE control made of several segments, so a `Field` names the
   // group and disables all of it. `label` is the group's name rather than

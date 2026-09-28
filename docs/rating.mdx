@@ -108,7 +108,7 @@ while nothing is chosen, and `onChange` fires with the star that was chosen.
 | `value`              | the chosen rating, or `null` for nothing chosen yet                                          |
 | `onChange`           | called with the chosen rating; never called with the value already chosen                    |
 | `max`                | how many stars, default `5`                                                                  |
-| `size`               | `'small'` (24px star), `'medium'` (default, 32) or `'large'` (40)                            |
+| `size`               | `'sm'` (24px star), `'md'` (default, 32) or `'lg'` (40)                            |
 | `disabled`           | no press, no keyboard, the group at `DISABLED_OPACITY`                                       |
 | `accessibilityLabel` | **required** — the name of what is being rated ("Overall rating")                            |
 | `formatStarLabel`    | each star's own name, English `"1 star"` / `"4 stars"`, localised via `BloomProvider locale` |
@@ -156,3 +156,5 @@ prop is optional:
 ```
 
 The field's `disabled` freezes the whole row, including the hover preview.
+
+Control sizes inherit `BloomScope` when omitted; explicit sizes override it. Controls with `sm`/`md`/`lg` geometry map scoped `xs` to `sm`.

@@ -1,3 +1,5 @@
+import { resolveSurfaceTint } from '../surface/shared';
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -8,7 +10,7 @@ import { buildTheme } from '../theme/build-theme';
 import { AreaChartCard, ChartLegend, ChartStatTiles } from '../chart-cards';
 import type { AreaPoint, AreaRange, AreaSeries } from '../chart-cards';
 import { areaBandPath, niceTicks, plotBox, pointX, scaleY, stackSeries } from '../chart-cards/geometry';
-import { chartHueTone, resolveChartCardPalette, resolveTone } from '../chart-cards/palette';
+import { chartHueTone, resolveTone } from '../chart-cards/palette';
 import { compactNumber, describeDeltaRatio, formatNumber, percentTick } from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
@@ -253,7 +255,7 @@ describe('AreaChartCard', () => {
     const { getByTestId } = renderCard(<AreaChartCard testID="area" data={DATA} series={SERIES} tiles />, 'dark');
     const theme = buildTheme('teal', 'dark');
     const palette = resolveChartCardPalette(theme);
-    expect(cardFill(getByTestId('area'))).toBe(theme.colors.card);
+    expect(cardFill(getByTestId('area'))).toBe(resolveSurfaceTint(theme.colors.card));
     expect(resolvedStyle(getByTestId('area-tiles-tile-0').props.style).backgroundColor).toBe(palette.inner);
   });
 });

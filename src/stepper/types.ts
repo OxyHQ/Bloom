@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-/** `small` pairs 32px buttons with body text; `medium` (default) 38px buttons with headline text. */
-export type StepperSize = 'small' | 'medium';
+/** `sm` pairs 32px buttons with body text; `md` (default) 36px buttons with headline text. */
+export type StepperSize = 'sm' | 'md';
 
 export interface StepperProps {
   /** The current value. The stepper is fully controlled. */
@@ -17,7 +17,7 @@ export interface StepperProps {
   step?: number;
   /** Disables both buttons and the keyboard. */
   disabled?: boolean;
-  /** Default `medium`. */
+  /** Default `md`. */
   size?: StepperSize;
   /** How the value is drawn and announced (`aria-valuetext`), e.g. `(n) => \`${n}+\``. */
   formatValue?: (value: number) => string;

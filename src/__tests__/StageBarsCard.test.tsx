@@ -1,3 +1,4 @@
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -8,7 +9,7 @@ import { RiEyeLine } from '../icons/remix';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { StageBarsCard, type StageBar, type StageBarsRange } from '../chart-cards/StageBarsCard';
-import { resolveChartCardPalette, resolveChartTones, resolveMonoTone } from '../chart-cards/palette';
+import { resolveChartTones, resolveMonoTone } from '../chart-cards/palette';
 
 const STAGES: StageBar[] = [
   { label: 'Visits', value: 4820, icon: RiEyeLine },

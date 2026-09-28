@@ -190,7 +190,7 @@ function FullScreenPlayerBody({
           />
         </View>
         {onLikedChange ? (
-          <LikeButton liked={liked} onLikedChange={onLikedChange} size="large" testID={id('like')} />
+          <LikeButton liked={liked} onLikedChange={onLikedChange} size="lg" testID={id('like')} />
         ) : null}
       </View>
       <PlaybackProgress
@@ -207,7 +207,7 @@ function FullScreenPlayerBody({
       <TransportControls
         {...transport}
         subject={transport.subject ?? track.title}
-        size="large"
+        size="lg"
         style={{ justifyContent: 'space-between' }}
         testID={id('transport')}
       />

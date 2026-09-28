@@ -1,14 +1,14 @@
 import React from 'react';
 import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import type { TypeScaleVariant } from '../typography/scale';
 
 /**
  * INTERNAL — the family's underlined text button: a price row's label, the
  * guests panel's "Close", the bar's dates.
  *
- * It is `Button variant="link"` with the READING tone and the underline at rest
+ * It composes `LinkButton` with the READING tone and the underline at rest
  * (`linkTone="text"`, `underline="rest"`), which is exactly what it hand-rolled
  * before those two props existed: text-primary and underlined at rest,
  * text-secondary under a pointer or a press (colour only, no scale), a focus
@@ -48,12 +48,12 @@ export function BookingLink({
   ...handle
 }: BookingLinkProps) {
   return (
-    <Button
+    <LinkButton
       {...handle}
-      variant="link"
+
       linkTone="text"
       underline="rest"
-      size="small"
+      size="sm"
       textVariant={variant}
       onPress={onPress}
       disabled={disabled}
@@ -64,6 +64,6 @@ export function BookingLink({
       testID={testID}
     >
       {children}
-    </Button>
+    </LinkButton>
   );
 }

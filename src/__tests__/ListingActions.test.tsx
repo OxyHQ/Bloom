@@ -179,7 +179,7 @@ describe('the shared action-card chrome', () => {
       expect(s.paddingTop).toBe('24px');
       expect(s.paddingLeft).toBe('24px');
       expect(s.borderTopWidth).toBe('0px');
-      expect(byTestId(id).querySelector('.bloom-surface-paint--solid')).not.toBeNull();
+      expect(byTestId(id).querySelector('.bloom-surface-paint')).not.toBeNull();
       expect(s.boxShadow).toBe(reference.boxShadow);
     }
   });

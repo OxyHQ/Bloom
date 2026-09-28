@@ -120,13 +120,13 @@ function DealCardComponent({
   return (
     <SurfaceLevelProvider level={2} fill={paint.surface}>
       <Card
-        variant="outlined"
+
         radius="radius-12"
         style={[
           { padding: DEAL_CARD_PADDING, gap: 8, ...surfaceFillVars(paint.surface) },
           style,
         ]}
-        testID={testID}
+        testID={testID} appearance="outline"
       >
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
           {subject}

@@ -1,3 +1,5 @@
+import { MOTION_RECIPES } from '../motion/recipes';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
@@ -78,7 +80,7 @@ import {
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import {
   DEFAULT_ALIGN_OFFSET,
@@ -209,13 +211,14 @@ export function FloatingPanel({
   panelRef,
 }: FloatingPanelProps) {
   const common = useCommonMessages();
-  const materialStyle = useSurfaceMaterial('.bloom-floating-surface', 'bloom-floating-surface-css');
+  const parentFill = useSurfaceFill();
   const chrome = SURFACE[surface];
   const isMenuSurface = surface !== 'popover';
   const palette = useMenuPalette();
-  const ownFill = StyleSheet.flatten(style)?.backgroundColor ?? (isMenuSurface ? palette.surface : undefined);
+  const ownFill = StyleSheet.flatten(style)?.backgroundColor ?? palette.surface;
   const parsedFill = typeof ownFill === 'string' ? parseRgba(ownFill) : null;
-  const publishedFill = typeof ownFill === 'string' && parsedFill?.a === 1 ? ownFill : undefined;
+  const publishedFill = typeof ownFill === 'string' ? resolveSurfaceMaterial({ fill: ownFill, parentFill: parentFill }).publishedFill : undefined;
+  const materialStyle = useSurfaceMaterial('.bloom-floating-surface', 'bloom-floating-surface-css', typeof ownFill === 'string' ? ownFill : 'transparent');
   const transparentFill = ownFill === 'transparent' || parsedFill?.a === 0;
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
   // and `Portal` renders null on its first pass (it resolves its host in its own
@@ -413,13 +416,13 @@ export function FloatingPanel({
       if (!placement) return;
       progress.value = reducedMotion
         ? 1
-        : withTiming(1, { duration: chrome.duration, easing: chrome.easing });
+        : withTiming(1, { ...MOTION_RECIPES.present, duration: chrome.duration, easing: chrome.easing });
       return;
     }
     if (phase === 'closing') {
       progress.value = reducedMotion
         ? 0
-        : withTiming(0, { duration: chrome.duration, easing: chrome.easing });
+        : withTiming(0, { ...MOTION_RECIPES.dismiss, duration: chrome.duration, easing: chrome.easing });
       return;
     }
     progress.value = 0;
@@ -517,7 +520,6 @@ export function FloatingPanel({
           className={cx('bloom-floating-surface', chrome.className, className)}
           style={[
             styles.panel,
-            materialStyle,
             PANEL_CURVE,
             surfaceFillVars(publishedFill),
             // `bg-background-primary-default border-border-button-default
@@ -560,6 +562,7 @@ export function FloatingPanel({
             },
             motionStyle,
             style,
+            materialStyle,
           ]}>
           {/*
             The panel IS a surface, so it publishes the rung its children sit on.

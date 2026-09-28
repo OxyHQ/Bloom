@@ -172,8 +172,8 @@ export interface FollowButtonProps extends ToggleBase {
   accessibilityHint?: string;
   /** Draw on a band: the pill takes the band's text colour. */
   color?: string;
-  /** Shared Button sizes; small by default. */
-  size?: 'small' | 'medium' | 'large';
+  /** Shared Button sizes; inherits the scope, then defaults to sm. */
+  size?: 'sm' | 'md' | 'lg';
   /** Reserves label geometry while showing the shared Button spinner. */
   loading?: boolean;
   /** Applied to both labels and their width-measuring copies. */

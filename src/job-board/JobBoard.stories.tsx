@@ -290,7 +290,7 @@ export const Empty: Story = {
         emptyTitle="No jobs on this board"
         emptyDescription="You are outside the area this board covers. Move the pin, or turn on alerts for when something lands."
         emptyAction={
-          <Button variant="secondary" size="medium" onPress={noop}>
+          <Button  size="md" onPress={noop} tone="neutral" appearance="outline">
             Change my area
           </Button>
         }

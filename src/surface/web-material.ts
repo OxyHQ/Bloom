@@ -6,7 +6,7 @@ import { SURFACE_REFRACTION_ID } from './web-refraction';
  * Root must be positioned/isolated and transparent, with rounded clipping.
  * Both Surface and Button use these exact layers; state changes only their tint.
  */
-export function surfaceMaterialCss(selector: string, fill: string, transition = 'none', glass = false): string {
+export function surfaceMaterialCss(selector: string, fill: string, transition = 'none'): string {
   return `
 ${selector}::after {
   content: "";
@@ -16,20 +16,20 @@ ${selector}::after {
   corner-shape: inherit;
   pointer-events: none;
 }
-${glass ? `${selector}::before {
+${selector}::before {
   content: "";
   position: absolute;
   border-radius: inherit;
   corner-shape: inherit;
   pointer-events: none;
   z-index: -2;
-  /* Larger panes collect nearby backdrop pixels before the rounded crop. */
-  inset: -8px;
+  /* Match the pane bounds: expanded filtered layers escape rounded clipping
+     in Chromium. Backdrop blur still supplies lateral samples to displacement. */
+  inset: 0;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   filter: url(#${SURFACE_REFRACTION_ID});
 }
-` : ""}
 ${selector}::after {
   z-index: -1;
   background-color: ${fill};

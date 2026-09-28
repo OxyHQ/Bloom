@@ -33,7 +33,7 @@ import { Select, SelectTrigger, SelectValue } from '../select';
 import { Switch } from '../switch';
 import { TextField, TextFieldInput } from '../text-field';
 import { Textarea } from '../textarea';
-import { ControlSurface } from '../control-surface';
+import { BloomScope } from "../appearance";
 import { ScreenScope, TopEdgeProvider, useClaimTopEdge, useTopEdgeInset } from '../layout';
 import { Text } from '../typography';
 
@@ -69,7 +69,7 @@ describe('1. a form in a bottom sheet', () => {
           </Select>
         </Field>
         <Field label="Notify members" disabled={disabled}>
-          <Switch testID="notify" value onValueChange={() => {}} />
+          <Switch testID="notify" checked onCheckedChange={() => {}} />
         </Field>
         <Button testID="submit" onPress={() => setSubmits((n) => n + 1)}>
           Create
@@ -116,7 +116,7 @@ describe('2. an interactive card with a secondary action', () => {
     return (
       <Card testID="row" onPress={onOpen} accessibilityLabel="Order 4821">
         <Text>Order 4821</Text>
-        <Button testID="archive" onPress={onArchive} variant="ghost" size="small">
+        <Button testID="archive" onPress={onArchive}  size="sm" tone="accent" appearance="subtle">
           Archive
         </Button>
       </Card>
@@ -225,9 +225,9 @@ describe('4. a data screen: a table inside a panel inside a card', () => {
   it('a filter row in a small control surface makes its fields small without a prop each', () => {
     const view = screen(
       <Card>
-        <ControlSurface density="small">
+        <BloomScope size="sm">
           <Textarea testID="notes" label="Notes" />
-        </ControlSurface>
+        </BloomScope>
       </Card>,
     );
     // Read the resolved geometry, not the prop: the claim is that the control
@@ -242,7 +242,7 @@ describe('4. a data screen: a table inside a panel inside a card', () => {
     const { TEXT_FIELD_GEOMETRY, TEXT_FIELD_RING_WIDTH } =
       require('../text-field/shared') as typeof import('../text-field/shared');
     expect(padded?.paddingHorizontal).toBe(
-      TEXT_FIELD_GEOMETRY.small.paddingHorizontal - TEXT_FIELD_RING_WIDTH,
+      TEXT_FIELD_GEOMETRY.sm.paddingHorizontal - TEXT_FIELD_RING_WIDTH,
     );
   });
 });

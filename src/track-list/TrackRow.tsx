@@ -327,7 +327,7 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
       {IS_WEB && active && !unavailable && onPlay ? (
         <PlayButton
           variant="plain"
-          size="small"
+          size="sm"
           playing={current && playing}
           subject={track.title}
           onPress={play}
@@ -530,7 +530,7 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
           <View style={[{ width: CELL.button, alignItems: 'center' }, cellGap]}>
             {showLike ? (
               <LikeButton
-                size="small"
+                size="sm"
                 liked={liked}
                 disabled={unavailable}
                 onLikedChange={(next) => onLikedChange?.(track, next)}

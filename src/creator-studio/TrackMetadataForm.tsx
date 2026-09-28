@@ -163,8 +163,8 @@ function TrackMetadataFormComponent({
           </Text>
         </View>
         <Switch
-          value={value.explicit}
-          onValueChange={(v) => set('explicit', v)}
+          checked={value.explicit}
+          onCheckedChange={(v) => set('explicit', v)}
           disabled={disabled}
           accessibilityLabel={labels.explicit}
           testID={id('explicit')}

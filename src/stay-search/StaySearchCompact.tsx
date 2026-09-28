@@ -114,14 +114,14 @@ function StaySearchCompactComponent({
       </Pressable>
       {onFilterPress ? (
         <Button
-          variant="secondary"
-          size="medium"
+
+          size="md"
           iconOnly
           icon={filterIcon}
           onPress={onFilterPress}
           accessibilityLabel={filterLabel}
           testID={testID ? `${testID}-filter` : undefined}
-          style={{ marginRight: 9, flexShrink: 0 }}
+          style={{ marginRight: 9, flexShrink: 0 }} tone="neutral" appearance="outline"
         />
       ) : null}
     </View>

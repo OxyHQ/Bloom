@@ -9,7 +9,7 @@ import type { GuestCounts } from '../stay-search';
 import { PriceBreakdown } from './PriceBreakdown';
 import { TripCard } from './TripCard';
 import type { PriceBreakdownProps } from './types';
-import { Button } from '../button';
+import { Button , LinkButton } from '../button';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -54,9 +54,9 @@ const BREAKDOWN: PriceBreakdownProps = {
 
 function ReportLink() {
   return (
-    <Button variant="link" linkTone="secondary" size="small" leadingIcon={RiFlagLine} onPress={() => undefined}>
+    <LinkButton  linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
       Report this listing
-    </Button>
+    </LinkButton>
   );
 }
 
@@ -84,7 +84,7 @@ function GuestsDemo({ initialOpen = false }: { initialOpen?: boolean }) {
       onGuestsOpenChange={setOpen}
       guestPicker={
         <GuestPicker
-          size="small"
+          size="sm"
           value={counts}
           onChange={setCounts}
           maxGuests={4}
@@ -260,10 +260,10 @@ export const BookingBarPhone: Story = {
 function TripActions() {
   return (
     <>
-      <Button variant="secondary" size="small" onPress={() => undefined}>
+      <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
         Message host
       </Button>
-      <Button variant="secondary" size="small" onPress={() => undefined}>
+      <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
         Get directions
       </Button>
     </>
@@ -305,7 +305,7 @@ export const TripCards: Story = {
               dates="Aug 2 – 9, 2026"
               status="completed"
               actions={
-                <Button variant="secondary" size="small" onPress={() => undefined}>
+                <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
                   Write a review
                 </Button>
               }

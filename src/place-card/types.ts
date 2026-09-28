@@ -65,7 +65,7 @@ export interface PlaceAction {
 export interface PlaceActionsProps {
   actions: readonly PlaceAction[];
   /** Default `small` — the rung `ai-profile-card` draws its header actions at. */
-  size?: 'small' | 'medium';
+  size?: 'sm' | 'md';
   /** Names the row, which is a `group`. `"Actions"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

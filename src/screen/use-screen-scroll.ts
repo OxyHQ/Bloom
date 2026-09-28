@@ -1,6 +1,7 @@
+import { animateMotion } from '../motion/recipes';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { useCallback, useEffect, useId } from 'react';
-import { runOnJS, useAnimatedScrollHandler, useComposedEventHandler, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
+import { runOnJS, useAnimatedScrollHandler, useComposedEventHandler, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 import { useScreen } from './context';
 import type { ScreenScrollOptions } from './types';
 
@@ -30,7 +31,7 @@ export function useScreenScroll({ active: requestedActive = true, handler = null
     const target = y < 24 ? 0 : delta > 3 ? 1 : delta < -3 ? 0 : screen.collapseTarget.value;
     if (target !== screen.collapseTarget.value) {
       screen.collapseTarget.value = target;
-      screen.collapseProgress.value = reducedMotion ? target : withSpring(target, { duration: 380, dampingRatio: 1 });
+      animateMotion(screen.collapseProgress, target, 'expand', reducedMotion);
     }
   } }, [screen, active, id, previousY, reducedMotion, hasRestoration, record, restoring]);
   const onScroll = useComposedEventHandler([ownHandler, handler]);

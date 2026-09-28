@@ -93,15 +93,14 @@ TextField parts must be rendered inside a <TextField>.
 <TextFieldHint invalid={invalid}>We never share it.</TextFieldHint>
 ```
 
-`size` is `'medium' | 'small'`, which is exactly the `density` vocabulary of the
-[control-presentation contract](/docs/composition) — so a filter row can ask once
-and every field in it draws small:
+`size` uses `xs | sm | md | lg` and inherits from the
+[control-presentation contract](/docs/composition), so a filter row can set it once:
 
 ```tsx
-<ControlSurface density="small">
+<BloomScope size="sm">
   <TextField>…</TextField>
   <TextField>…</TextField>
-</ControlSurface>
+</BloomScope>
 ```
 
 An explicit `size` still wins, and an `InputGroup` outranks both — its members
@@ -307,6 +306,6 @@ Measured **1.000:1**: a field dropped into any of them had no shell at all, and
 one inside a `card` had 1.225:1. On the page the fill lands within 0.04 of the
 colour it always had. Gate: `surface-level-adoption.test.ts`.
 
-## Compatibility
+## API migration
 
-The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.
+Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).

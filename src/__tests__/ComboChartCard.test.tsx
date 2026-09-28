@@ -1,3 +1,5 @@
+import { resolveSurfaceTint } from '../surface/shared';
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -10,7 +12,7 @@ import type { ComboPoint, ComboRange, ComboSeries } from '../chart-cards/ComboCh
 import { PulsingDot } from '../chart-cards/primitives/PulsingDot';
 import { multiAxisPlotBox } from '../chart-cards/primitives/MultiAxisPlot';
 import { niceTicks } from '../chart-cards/geometry';
-import { resolveChartCardPalette, resolveChartTones } from '../chart-cards/palette';
+import { resolveChartTones } from '../chart-cards/palette';
 import { formatNumber } from '../chart-cards/primitives/format';
 import { roundedBarPath, singleBarSlot } from '../chart-cards/rounded-bar-geometry';
 
@@ -200,6 +202,6 @@ describe('ComboChartCard', () => {
     layoutPlot(getByTestId, 'combo-plot');
     const casing = (UNSAFE_getAllByType('Path' as never) as unknown as Node[]).find((p) => p.props.strokeWidth === 7);
     expect(casing?.props.stroke).toBe(palette.surface);
-    expect(cardFill(getByTestId('combo'))).toBe(palette.surface);
+    expect(cardFill(getByTestId('combo'))).toBe(resolveSurfaceTint(buildTheme('teal', 'dark').colors.card));
   });
 });

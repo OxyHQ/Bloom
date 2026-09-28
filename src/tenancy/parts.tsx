@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { useEffect, useMemo, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -134,7 +135,7 @@ export function HousingToggleButton({
   onPress,
   icon: Icon,
   pressedIcon: PressedIcon,
-  size = 'small',
+  size: sizeProp,
   disabled = false,
   testID,
 }: {
@@ -144,7 +145,7 @@ export function HousingToggleButton({
   onPress?: () => void;
   icon?: HousingIcon;
   pressedIcon?: HousingIcon;
-  size?: 'small' | 'medium';
+  size?: 'sm' | 'md';
   disabled?: boolean;
   testID?: string;
 }) {
@@ -152,6 +153,7 @@ export function HousingToggleButton({
   const palette = useHousingPalette();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: down, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
+  const { size } = useBloomAppearance({ size: sizeProp }, { size: 'sm', tone: 'neutral' });
   const g = BUTTON_GEOMETRY[size];
   const active = (hovered || down) && !disabled;
   const background = pressed

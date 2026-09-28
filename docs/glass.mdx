@@ -5,7 +5,7 @@ description: Lightweight button optics and safe overlay blur boundaries.
 
 # Glass
 
-Surface defaults to an opaque fill with the shared gradient and rim. Button, Card, Sidebar, Dialog and Bottom Sheet use this solid material with no backdrop blur or refraction. Explicit `Surface material="glass"` remains available for comparison: it adds a translucent tint and a shared web displacement filter. Native glass uses tint/sheen without refraction. See [Surface](./surface.mdx) and [Button](./button.mdx).
+Surface provides one shared glass material: a 90%-opaque body, gradient and narrow refracted rim on web. Explicit caller alpha is preserved. Native uses the same fill and sheen without refraction. See [Surface](./surface.mdx) and [Button](./button.mdx).
 
 The previous standalone `GlassSurface`, `GlassSurfaceProps` and `theme/glass-colors.ts` material have been removed. There is no replacement wrapper to mount around a Button. Existing overlay blur infrastructure remains under `@oxy.so/bloom/glass`: `GlassBlurTargetProvider`, `GlassBlurWindow`, and `useWindowedBlurTarget`.
 
@@ -23,10 +23,12 @@ SVG stops require separate `stopColor` and `stopOpacity`: native SVG can discard
 
 ## Floating islands
 
-`GlassIsland` keeps its grouping and geometry and paints with the same Surface material. Explicit glass groups share one translucent pane with flush controls. Plain sidebar surfaces and navigation rails keep their existing semantics.
+`GlassIsland` keeps its grouping and geometry and paints with the same Surface material. Groups share one translucent pane with flush controls. Plain sidebar surfaces and navigation rails keep their existing semantics.
 
-GlassIsland defaults to shared solid material and publishes its actual fill and contextual level. `material="glass"` explicitly enables translucent optics and publishes the tint composited against its parent as an estimate. Its ControlSurface material matches the selected material; glass groups pass that option explicitly.
+GlassIsland uses this same glass material and publishes its tint composited against the parent as an estimate for descendants. BloomScope carries density only.
 
 ## Shared geometry
 
 SurfacePaint replaces GlassSurface and accepts `shape` plus `direction` for logical corners. The host and material share the same Shapes policy, including CSS smooth corners, native continuous curves where supported, clipped paint and the rim. GlassIsland exposes `cornerCurve` for non-capsule shapes; capsules remain round. There is no separate glass geometry implementation.
+
+GlassIsland uses the same material resolver as Surface and Card. Radius precedence is explicit prop, then resolved `style.borderRadius`, then its capsule default; host and paint use the same result.

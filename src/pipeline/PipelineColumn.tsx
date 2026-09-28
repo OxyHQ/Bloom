@@ -144,7 +144,7 @@ function PipelineColumnComponent({
         )}
 
         {onLoadMore && !loading ? (
-          <Button variant="text" size="small" onPress={onLoadMore} testID={id('load-more')}>
+          <Button  size="sm" onPress={onLoadMore} testID={id('load-more')} tone="accent" appearance="plain">
             {loadMoreLabel}
           </Button>
         ) : null}

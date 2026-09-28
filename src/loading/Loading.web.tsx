@@ -10,7 +10,6 @@
 import React from 'react';
 import { View } from 'react-native';
 
-import { normalizeBloomSize } from '../appearance/legacy';
 import { resolveBloomColors } from '../appearance/colors';
 import { useBloomAppearance } from '../appearance';
 import { animation } from '../styles/tokens';
@@ -45,7 +44,7 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const {size, tone} = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
+  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const sizeConfig = SIZE_CONFIG[size];
   const effectiveIconSize = iconSize ?? sizeConfig.spinner;
   const targetHeight = Math.max(0, effectiveIconSize + sizeConfig.spinner + heightOffset);

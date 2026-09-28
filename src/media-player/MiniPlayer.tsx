@@ -1,8 +1,7 @@
-import { useCardFill } from '../card/use-card-fill';
-import { useSurfaceBacking } from '../surface/use-surface-backing';
+import { useResolvedSurface } from '../surface/use-resolved-surface';
 import { Surface } from '../surface';
 import React, { memo, useContext, useMemo, useRef } from 'react';
-import { PanResponder, Pressable, View } from 'react-native';
+import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { LikeButton } from '../media-controls/LikeButton';
@@ -145,7 +144,7 @@ function MiniPlayerContent({
         playing={playing}
         onPress={onPlayPause}
         variant="plain"
-        size="small"
+        size="sm"
         subject={track.title}
         style={{ marginRight: 8 }}
         testID={id('play')}
@@ -199,8 +198,8 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
     () => resolveMiniPlayerSurface(theme, ctx?.colorPreset ?? 'oxy', props.artworkColor),
     [theme, ctx?.colorPreset, props.artworkColor],
   );
-  const neutralFill = useCardFill(props.style);
-  const backing = useSurfaceBacking(surface.tinted ? surface.background : neutralFill, props.style);
+  const ownFill = StyleSheet.flatten(props.style)?.backgroundColor ?? (surface.tinted ? surface.background : undefined);
+  const material = useResolvedSurface({ fill: ownFill === undefined ? undefined : String(ownFill) });
   return (
     <Surface
       {...webDataSet({ bloomMiniPlayer: surface.tinted ? 'tinted' : 'neutral' })}
@@ -220,7 +219,7 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
       testID={props.testID}
     >
       <ImmersiveTheme enabled={surface.tinted}>
-        <MiniPlayerContent {...props} {...surface} background={backing.fill} />
+        <MiniPlayerContent {...props} {...surface} background={material.publishedFill} />
       </ImmersiveTheme>
     </Surface>
   );

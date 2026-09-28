@@ -35,8 +35,8 @@ This integration adds a shared vocabulary while retaining the current Button, fi
 | Card `variant="elevated/filled/outlined/plain"` | `appearance="solid/subtle/outline/plain"`; `elevation` remains an independent override |
 | FrostedIconButton icon element or `children` alias | `icon={IconComponent}`; size and active-state `tone` inherit from `BloomScope` |
 | Menu item `variant="default/destructive"` | `tone="neutral/danger"` |
-| ButtonGroup / ButtonGroupItem `variant="solid/glass"` | `material="solid/glass"`; the shared island and inherited control surface are preserved |
-| ControlSurface `density="medium/small"` | `density="md/sm"`; item heights remain 34/30 |
+| ButtonGroup / ButtonGroupItem `variant="solid/glass"` or `material` | Removed; one shared Surface material. BloomScope supplies control size and tone |
+| ControlSurface `density="medium/small"` | BloomScope `size="md/sm"`; item heights remain 34/30 |
 | ThemeToggle `appearance`, `ThemeToggleAppearance` | Structural `variant`, `ThemeToggleVariant` |
 | FAB `placement/offset/zIndex/minimizeBehavior` | Still supported; prefer parent composition with `Screen` / `BottomBar` for new screens |
 | Implicit Expo Router root | Universal `BloomProvider` from the provider subpath; explicit `scrollAdapter` |

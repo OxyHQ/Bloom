@@ -1,4 +1,5 @@
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import {
   createContext,
   useCallback,
@@ -195,7 +196,9 @@ function Bubble({
   requestClose: () => void;
   targetMeasurements: TargetMeasurements;
 }) {
+  const parentFill = useSurfaceFill();
   const palette = useMenuPalette();
+  const publishedFill = resolveSurfaceMaterial({ fill: palette.surface, parentFill: parentFill }).publishedFill;
   const insets = useSafeAreaInsets();
   const dimensions = useWindowDimensions();
   const [bubbleMeasurements, setBubbleMeasurements] = useState<
@@ -337,8 +340,8 @@ function Bubble({
               borderRadius: TOOLTIP_SIZES[size].borderRadius,
               borderWidth: 1,
               borderColor: palette.border,
-              backgroundColor: palette.surface,
-              ...surfaceFillVars(palette.surface),
+              backgroundColor: 'transparent',
+              ...surfaceFillVars(publishedFill),
               boxShadow: palette.shadow,
             }}
             onLayout={(e) => {
@@ -347,8 +350,8 @@ function Bubble({
                 height: e.nativeEvent.layout.height,
               });
             }}>
-            <SurfacePaint radius={TOOLTIP_SIZES[size].borderRadius} />
-            <SurfaceLevelProvider level={1} fill={palette.surface}>{children}</SurfaceLevelProvider>
+            <SurfacePaint fill={palette.surface} radius={TOOLTIP_SIZES[size].borderRadius} />
+            <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider>
           </View>
           {/* After the bubble, so it paints over the border it overlaps. */}
           <TooltipCaret

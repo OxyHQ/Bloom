@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { StyleSheet, View } from 'react-native';
 
@@ -16,13 +16,7 @@ import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { useMessages } from '../locale/messages';
 import { resolveMailPaint } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import {
-  SurfaceLevelProvider,
-  hairlineOn,
-  surfaceFillVars,
-  useSurfaceLevelValue,
-  useSurfaceFill,
-} from '../styles/surface-levels';
+import { SurfaceLevelProvider, hairlineOn, useSurfaceLevelValue, useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -96,7 +90,8 @@ export function MailComposeSurface({
   const customFrame = StyleSheet.flatten(style);
   const paintsSurface = docked;
   const customFill = customFrame?.backgroundColor;
-  const fill = resolveSurfaceFill(String(customFill ?? (docked ? layer.fill : parent)), false, parent);
+  const material = resolveSurfaceMaterial({ fill: String(customFill ?? (docked ? layer.fill : parent)), parentFill: parent, parentLevel: layer.parentLevel, paint: paintsSurface });
+  const { paintFill, publishedFill: fill } = material;
   const paint = useMemo(() => resolveMailPaint(theme, fill), [theme, fill]);
   const text = useMemo(() => mailComposeStrings(strings, messages), [strings, messages]);
 
@@ -196,12 +191,12 @@ export function MailComposeSurface({
       >
         {onSend === undefined ? null : (
           <Button
-            variant="primary"
-            size="small"
+
+            size="sm"
             icon={RiSendPlaneLine}
             disabled={sending || sendDisabled}
             onPress={onSend}
-            testID={testID ? `${testID}-send` : undefined}
+            testID={testID ? `${testID}-send` : undefined} tone="accent" appearance="solid"
           >
             {sending ? text.sending : text.send}
           </Button>
@@ -247,11 +242,11 @@ export function MailComposeSurface({
               }
             : { flex: 1, minHeight: 0 },
           style,
-          { backgroundColor: docked ? 'transparent' : customFill == null ? 'transparent' : fill, ...surfaceFillVars(fill) },
+          { backgroundColor: docked ? 'transparent' : customFill == null ? 'transparent' : fill, ...material.vars },
         ]}
         testID={testID}
       >
-        {paintsSurface ? <SurfacePaint fill={fill} radius={customFrame?.borderRadius ?? geo.radius} /> : null}
+        {paintsSurface ? <SurfacePaint fill={paintFill} radius={customFrame?.borderRadius ?? geo.radius} /> : null}
         {bar}
         {folded ? null : body}
       </View>

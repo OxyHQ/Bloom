@@ -21,7 +21,7 @@ export function SegmentedFilter<T extends string = string>({
     <SegmentedControl
       label={accessibilityLabel}
       type="radio"
-      size="large"
+      size="lg"
       value={value}
       onChange={onValueChange}
       style={[{ alignSelf: 'stretch' }, style]}

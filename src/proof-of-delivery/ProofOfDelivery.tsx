@@ -296,8 +296,8 @@ function ProofOfDeliveryComponent({
         <InteractionBoundary disabled={disabled || submitting}>{actions}</InteractionBoundary>
       ) : (
         <Button
-          variant="primary"
-          size="large"
+
+          size="lg"
           fullWidth
           onPress={submit}
           // `submitting` is the ONE thing that stops the press: a second
@@ -305,7 +305,7 @@ function ProofOfDeliveryComponent({
           // does not stop it — it answers it.
           disabled={disabled || submitting}
           accessibilityLabel={labels.submit}
-          testID={id('submit')}
+          testID={id('submit')} tone="accent" appearance="solid"
         >
           {labels.submit}
         </Button>

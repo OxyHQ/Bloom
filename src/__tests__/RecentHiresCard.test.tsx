@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
@@ -58,7 +59,7 @@ describe('RecentHiresCard', () => {
   it('paints the person cards as inner tiles: radius 10, padding 10, the card shadow', () => {
     const { getByTestId } = renderIn(<RecentHiresCard testID="card" count={56} hires={HIRES} />, 'dark');
     const theme = buildTheme('teal', 'dark');
-    const palette = resolveRecentHiresPalette(theme);
+    const palette = resolveRecentHiresPalette(theme, resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill);
     const tile = resolvedStyle(getByTestId('card-hire-0').props.style);
     expect(tile).toMatchObject({
       borderRadius: 10,

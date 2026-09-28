@@ -1,3 +1,4 @@
+import { ScreenContext, ScreenNavigationContext } from '../screen/context';
 /**
  * A surface that is its OWN screen, for the two contracts that are screen-scoped.
  *
@@ -43,12 +44,15 @@ import { TopEdgeProvider } from './top-edge';
 
 export function ScreenScope({ children }: PropsWithChildren) {
   return (
-    <TopEdgeProvider>
-      <BottomEdgeProvider>
-        {/* `null`, not a zero SharedValue: the two mean different things to the
-            chrome reading it (`scroll-offset.ts`). */}
-        <ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider>
-      </BottomEdgeProvider>
-    </TopEdgeProvider>
+    <ScreenContext.Provider value={null}>
+      <ScreenNavigationContext.Provider value={null}>
+        <TopEdgeProvider>
+          <BottomEdgeProvider>
+            {/* null means no scroller has claimed this scope yet. */}
+            <ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider>
+          </BottomEdgeProvider>
+        </TopEdgeProvider>
+      </ScreenNavigationContext.Provider>
+    </ScreenContext.Provider>
   );
 }

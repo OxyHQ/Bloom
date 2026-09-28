@@ -1,6 +1,5 @@
-import { normalizeBloomSize } from '../appearance/legacy';
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { Platform } from 'react-native';
 
 import { Text } from '../typography';
@@ -43,7 +42,7 @@ const LabelComponent = function Label({
   style,
   testID,
 }: LabelProps) {
-  const {size: inheritedSize} = useBloomAppearance({size: normalizeBloomSize(sizeProp)}, {size: 'sm', tone: 'neutral'});
+  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'sm', tone: 'neutral'});
   const size: NonNullable<LabelProps['size']> = inheritedSize === 'lg' ? 'md' : inheritedSize;
   const palette = useTextFieldPalette();
   const { messages } = useMessages(LABEL_MESSAGES);

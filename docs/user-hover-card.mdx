@@ -234,3 +234,7 @@ is visibly finer. `StyleSheet.hairlineWidth` is hardcoded to **1** on web, and o
 native is 0.5 at @2x and ~0.333 at @3x. A hairline card beside 1px menus would
 therefore match them on a 1× monitor and look lighter than them on every HiDPI
 screen — the mismatch this card now avoids.
+
+### Shared surface paint
+
+The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.

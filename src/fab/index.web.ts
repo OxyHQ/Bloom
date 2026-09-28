@@ -4,4 +4,4 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { Fab } from './Fab.web';
-export type { FabProps, FabVariant, FabSize, FabPlacement, FabMinimizeBehavior } from './types';
+export type { FabProps, FabSize } from './types';

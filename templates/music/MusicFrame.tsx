@@ -149,32 +149,32 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
       >
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           <Button
-            variant="ghost"
-            size="small"
+
+            size="sm"
             iconOnly
             icon={RiArrowLeftSLine}
             accessibilityLabel="Go back"
             disabled={!router.canGoBack}
-            onPress={router.back}
+            onPress={router.back} tone="accent" appearance="subtle"
           />
           <Button
-            variant="ghost"
-            size="small"
+
+            size="sm"
             iconOnly
             icon={RiArrowRightSLine}
             accessibilityLabel="Go forward"
             disabled={!router.canGoForward}
-            onPress={router.forward}
+            onPress={router.forward} tone="accent" appearance="subtle"
           />
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, width: Math.min(560, width - 360) }}>
           <Button
-            variant="secondary"
-            size="large"
+
+            size="lg"
             iconOnly
             icon={router.route.name === 'home' ? RiHome5Fill : RiHome5Line}
             accessibilityLabel="Home"
-            onPress={() => router.navigate({ name: 'home' })}
+            onPress={() => router.navigate({ name: 'home' })} tone="neutral" appearance="outline"
           />
           <SearchField
             testID="music-search-field"
@@ -191,7 +191,7 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
           />
         </View>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <Button variant="ghost" size="small" iconOnly icon={RiNotification3Line} accessibilityLabel="What’s new" />
+          <Button  size="sm" iconOnly icon={RiNotification3Line} accessibilityLabel="What’s new" tone="accent" appearance="subtle" />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`${ME.name}, profile`}
@@ -232,12 +232,12 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
                 <LiveLyrics size="small" />
                 <View style={{ position: 'absolute', top: 8, right: 8 }}>
                   <Button
-                    variant="secondary"
-                    size="small"
+
+                    size="sm"
                     iconOnly
                     icon={RiCloseLine}
                     accessibilityLabel="Hide lyrics"
-                    onPress={() => closePane(false, 'lyrics')}
+                    onPress={() => closePane(false, 'lyrics')} tone="neutral" appearance="outline"
                   />
                 </View>
               </View>
@@ -341,7 +341,7 @@ function PlayerBar({
                     value={player.sleep}
                     onValueChange={player.setSleep}
                     remaining={player.sleep === 'off' ? undefined : '14:52'}
-                    size="compact"
+                    size="sm"
                   />
                 ),
               }
@@ -453,12 +453,12 @@ function MobileFrame({ children }: MusicFrameProps) {
           <LiveLyrics size="medium" />
           <View style={{ position: 'absolute', top: 12, right: 12 }}>
             <Button
-              variant="secondary"
-              size="small"
+
+              size="sm"
               iconOnly
               icon={RiCloseLine}
               accessibilityLabel="Close lyrics"
-              onPress={() => setLyricsOpen(false)}
+              onPress={() => setLyricsOpen(false)} tone="neutral" appearance="outline"
             />
           </View>
         </View>

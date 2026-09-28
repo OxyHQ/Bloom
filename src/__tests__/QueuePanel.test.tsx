@@ -10,6 +10,7 @@
  * through (`queueDragTarget`) and the keyboard path that shares their callback.
  */
 import React from 'react';
+import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -221,7 +222,8 @@ describe('QueuePanel structure', () => {
     const el = byTestId('qp');
     expect(el.style.width).toBe('380px');
     expect(el.style.borderTopLeftRadius || el.style.borderRadius).toContain('8px');
-    expect(normalise(el.style.backgroundColor)).toBe(normalise(paint.surface));
+    expect(normalise(el.style.backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+    expect(el.querySelector<HTMLElement>('.bloom-surface-paint')?.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(resolveSurfaceTint(paint.surface));
   });
 
   it('shows the empty state when there is nothing at all', () => {
@@ -364,7 +366,7 @@ describe('resolveQueuePanelPaint', () => {
 
 it('publishes the actual panel fill to CSS, leaving unpainted sheet surfaces inherited', () => {
   mount(<QueuePanel testID="surface-panel" variant="panel" style={{ backgroundColor: '#123456' }} />);
-  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe('#123456');
+  expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceFill(resolveSurfaceTint('#123456'), theme.colors.background));
   mount(<QueuePanel testID="surface-panel" variant="sheet" />);
   expect(container.querySelector<HTMLElement>('[data-testid="surface-panel"]')!.style.getPropertyValue('--bloom-surface')).toBe('');
   mount(<QueuePanel testID="surface-panel" variant="panel" style={{ backgroundColor: 'transparent' }} />);

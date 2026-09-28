@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { Shape } from '../shapes';
@@ -531,9 +531,9 @@ export interface HighlightedTextProps {
 //  NewChatButton
 // ---------------------------------------------------------------------------
 
-export interface NewChatButtonProps extends Omit<FabProps, 'icon' | 'children' | 'label'> {
+export interface NewChatButtonProps extends Omit<FabProps, 'icon' | 'label'> {
   /** Replaces the default pencil-on-a-square glyph. */
-  icon?: ReactNode;
+  icon?: FabProps['icon'];
   /** `'New chat'` in English (localised) — the name, and the extended FAB's text when `extended`. */
   accessibilityLabel?: string;
   /** Draw the extended pill (icon + `accessibilityLabel`) instead of the circle. */

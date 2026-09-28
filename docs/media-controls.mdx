@@ -47,7 +47,7 @@ The English defaults below are localised: each is drawn in the app's language vi
 | -------------------- | --------------------------------------------------------------------------------------------- |
 | `playing`            | draws the pause glyph and is named "Pause"; otherwise the play glyph and "Play"               |
 | `onPress`            | called on press — the button toggles nothing itself                                           |
-| `size`               | `'small'` 32, `'medium'` 48 (default), `'large'` 56 — the circle's diameter                    |
+| `size`               | `'sm'` 32, `'md'` 48 (default), `'lg'` 56 — the circle's diameter                    |
 | `variant`            | `'accent'` (default) filled accent; `'inverse'` filled in the text colour; `'plain'` the glyph alone, for rows |
 | `loading`            | a spinning ring replaces the glyph and `aria-busy` is set; the button still presses          |
 | `subject`            | appended to the name: "Play Night Drive"                                                      |
@@ -72,7 +72,7 @@ measures both paths rather than pinning a remembered number.
 | prop                        | decides                                                                  |
 | --------------------------- | ------------------------------------------------------------------------ |
 | `liked`, `onLikedChange`    | the state, and the callback with the next state                          |
-| `size`                      | glyph `'small'` 16 / `'medium'` 20 (default) / `'large'` 24; hit area 32 / 32 / 40 |
+| `size`                      | glyph `'sm'` 16 / `'md'` 20 (default) / `'lg'` 24; hit area 32 / 32 / 40 |
 | `activeColor`               | the liked heart's colour, default the theme accent                       |
 | `accessibilityLabel`        | the name, default "Save to Your Library" — fixed in both states         |
 | `disabled`, `style`, `testID` |                                                                        |
@@ -124,3 +124,5 @@ The speaker glyph follows the level: muted or 0, under 50%, and above. While mut
 ## `formatDuration(seconds)`
 
 `m:ss` under an hour, `h:mm:ss` from an hour. Fractions are floored; negative, `NaN` and infinite input give `0:00`.
+
+Control sizes inherit `BloomScope` when omitted; explicit sizes override it. Controls with `sm`/`md`/`lg` geometry map scoped `xs` to `sm`.

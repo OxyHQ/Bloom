@@ -1,10 +1,9 @@
-import type { BloomTone } from '../appearance';
-import type { BloomSizeInput } from '../appearance/legacy';
+import type { BloomTone, BloomSize } from '../appearance';
 import type { ReactNode } from 'react';
 import type { ViewStyle, TextStyle } from 'react-native';
 
 export type LoadingVariant = 'spinner' | 'top' | 'inline';
-export type LoadingSize = BloomSizeInput;
+export type LoadingSize = BloomSize;
 
 interface BaseLoadingProps {
   /** Variant type */

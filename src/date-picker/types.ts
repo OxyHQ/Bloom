@@ -231,7 +231,7 @@ export interface MeetingSchedulerProps extends CalendarConstraintProps {
 }
 
 /** `small` is a 32-tall field with body-2 text; `medium` (default) 38 with body. */
-export type TimeFieldSize = 'small' | 'medium';
+export type TimeFieldSize = 'sm' | 'md';
 
 export interface TimeFieldProps {
   /**

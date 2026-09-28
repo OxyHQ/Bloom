@@ -91,15 +91,15 @@ Accepts React Native's `TextInputProps` (except `multiline`, which is always on)
 
 ## It reads two contracts
 
-`Textarea` takes its density from the nearest `ControlSurface` and its
+`Textarea` takes its density from the nearest `BloomScope` and its
 association from the nearest `Field`:
 
 ```tsx
-<ControlSurface density="small">
+<BloomScope size="sm">
   <Field label="Notes" error={errors.notes} disabled={locked}>
     <Textarea rows={4} value={notes} onChangeText={setNotes} />
   </Field>
-</ControlSurface>
+</BloomScope>
 ```
 
 `size` still wins when written, because a caller always outranks a container.
@@ -115,6 +115,6 @@ See [Composition](/docs/composition) and [Field](/docs/field).
 it lands on — see [TextField](/docs/bloom/main/text-field) and
 [Styles → Surface levels](/docs/bloom/main/styles).
 
-## Compatibility
+## API migration
 
-The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.
+Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).

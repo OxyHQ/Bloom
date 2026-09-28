@@ -118,7 +118,7 @@ the failure is a button that does nothing.
   onFlipCamera={flip}
   onScreenShareChange={setSharing}
   onEndCall={hangUp}
-  size="large"
+  size="lg"
   showLabels
 />
 ```
@@ -128,9 +128,9 @@ skipped, so it can never put a dead button back. The end button is last, always.
 
 | size     | button | glyph |
 | -------- | ------ | ----- |
-| `small`  | 40     | 20    |
-| `medium` | 48     | 22    |
-| `large`  | 56     | 26    |
+| `sm`  | 40     | 20    |
+| `md` | 48     | 22    |
+| `lg`  | 56     | 26    |
 
 ### Toggle accessibility
 
@@ -298,3 +298,5 @@ on a short screen, or whether the speaking ring reads as a ring at all. Those
 are browser and device checks.
 
 GroupCallBar uses the shared Surface container for its neutral frame. Call state colors and nested actions remain semantic controls; custom frame backgrounds are handled by Surface.
+
+Control sizes inherit `BloomScope` when omitted; explicit sizes override it. Controls with `sm`/`md`/`lg` geometry map scoped `xs` to `sm`.

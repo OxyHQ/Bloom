@@ -125,7 +125,7 @@ function PlacePopularTimesComponent({
       {days.length > 1 ? (
         <SegmentedControl
           type="radio"
-          size="small"
+          size="sm"
           label={daysLabel}
           value={current?.id ?? ''}
           onValueChange={setSelected}

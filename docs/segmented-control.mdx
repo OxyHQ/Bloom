@@ -127,6 +127,6 @@ Taps and keyboard activation preserve radio/tab semantics. Settling respects the
 system reduced-motion preference. Native apps mount `GestureHandlerRootView` at
 the application root, as for BottomBar. The plain variant also accepts dragging.
 
-## Compatibility
+## API migration
 
-The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.
+Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).

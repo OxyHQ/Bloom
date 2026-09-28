@@ -2,7 +2,7 @@ import React, { useMemo, type ReactNode } from 'react';
 import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Avatar } from '../avatar';
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
@@ -282,10 +282,10 @@ export function InlineLink({
   }
   const style: WebCssStyle = { '--bloom-btn-ring': ring };
   return (
-    <Button
-      variant="link"
+    <LinkButton
+
       underline="hover"
-      size="small"
+      size="sm"
       textVariant={variant}
       accessibilityRole="link"
       accessibilityLabel={label}
@@ -295,7 +295,7 @@ export function InlineLink({
       testID={testID}
     >
       {label}
-    </Button>
+    </LinkButton>
   );
 }
 

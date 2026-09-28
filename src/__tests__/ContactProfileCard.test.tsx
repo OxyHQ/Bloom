@@ -15,6 +15,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Avatar } from '../avatar';
+import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { resolveButtonPalette } from '../button/shared';
 import {
   CONTACT_AVATAR_SIZE,
@@ -224,9 +225,9 @@ describe('the channels are LABELLED actions, not glyphs', () => {
     expect(control.tagName).toBe('BUTTON');
     const style = getComputedStyle(control);
     // The shared Button keeps paint on its material layer, not its layout host.
-    const material = control.querySelector<HTMLElement>('.bloom-surface-paint--solid');
+    const material = control.querySelector<HTMLElement>('.bloom-surface-paint');
     const fill = control.style.getPropertyValue('--bloom-btn-bg') || material?.style.getPropertyValue('--bloom-surface-paint-fill');
-    expect(fill).toBe(resolveButtonPalette('solid', theme, 'neutral').rest.background);
+    expect(fill).toBe(resolveButtonPalette('solid', theme, 'neutral', undefined, surfaceFillOn(theme, resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background))).rest.background);
     expect(Number.parseFloat(style.height)).toBeGreaterThanOrEqual(32);
   });
 
@@ -278,7 +279,7 @@ describe('the numbers are a figure and TILES', () => {
     for (const mode of ['light', 'dark'] as const) {
       mount(<ContactProfileCard {...NORA} testID="c" />, mode);
       const tile = byTestId('c-stat-0');
-      const expected = surfaceFillOn(theme, theme.colors.card);
+      const expected = surfaceFillOn(theme, resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background));
       expect([mode, getComputedStyle(tile).backgroundColor]).toEqual([mode, normalise(expected)]);
       expect([mode, getComputedStyle(tile).backgroundColor]).not.toEqual([
         mode,
@@ -407,10 +408,10 @@ describe('one component, two densities', () => {
     expect(queryTestId('c-chips')).not.toBeNull();
     expect(queryTestId('c-owner')).not.toBeNull();
     expect(queryTestId('c-footer')).not.toBeNull();
-    const material = byTestId('c').querySelector<HTMLElement>('.bloom-surface-paint--solid');
+    const material = byTestId('c').querySelector<HTMLElement>('.bloom-surface-paint');
     expect(material).not.toBeNull();
-    expect(material!.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(theme.colors.card);
-    expect(byTestId('c').style.getPropertyValue('--bloom-surface')).toBe(theme.colors.card);
+    expect(material!.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(resolveSurfaceTint(theme.colors.card));
+    expect(byTestId('c').style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background));
   });
 
   it('draws a ROW at compact: no surface, no cover, no tiles, no owner, 64 tall', () => {
@@ -441,8 +442,8 @@ it('shares the nested custom backing with its material, published fill and stat 
   mount(<SurfaceLevelProvider level={3} fill="#0000ff"><ContactProfileCard {...NORA} style={{ backgroundColor: 'rgba(255,0,0,.5)' }} testID="nested" /></SurfaceLevelProvider>);
   const expected = 'rgb(128, 0, 128)';
   const card = byTestId('nested');
-  const material = card.querySelector<HTMLElement>('.bloom-surface-paint--solid');
-  expect(material?.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(expected);
+  const material = card.querySelector<HTMLElement>('.bloom-surface-paint');
+  expect(material?.style.getPropertyValue('--bloom-surface-paint-fill')).toBe('rgba(255,0,0,.5)');
   expect(card.style.getPropertyValue('--bloom-surface')).toBe(expected);
   const paint = resolveContactPaint(theme, expected);
   expect(getComputedStyle(byTestId('nested-stat-0')).backgroundColor).toBe(normalise(paint.tile));

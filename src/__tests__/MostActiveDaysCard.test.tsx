@@ -1,3 +1,4 @@
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -6,7 +7,7 @@ import { resolvedStyle } from './support/rendered-style';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { MostActiveDaysCard, currentMonthAt, type ActivityDay } from '../chart-cards/MostActiveDaysCard';
-import { chartHueTone, resolveChartCardPalette } from '../chart-cards/palette';
+import { chartHueTone } from '../chart-cards/palette';
 
 const TODAY = { month: 6, day: 10 };
 const rings = ({ month, day }: ActivityDay) =>

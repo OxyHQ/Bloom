@@ -73,7 +73,7 @@ export function createMessageContextMenu({ DropdownMenu, DropdownMenuContent, Dr
                 selected={selectedReaction}
                 onSelectEmoji={onSelectReaction}
                 onMorePress={onMoreReactions}
-                size="small"
+                size="sm"
                 surface={false}
                 style={[{ alignSelf: 'stretch', justifyContent: 'space-between' }, reactionBarStyle]}
                 testID={testID ? `${testID}-reactions` : undefined}

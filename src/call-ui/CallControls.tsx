@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -53,7 +54,7 @@ function CallControlButtonComponent({
   label,
   active,
   tone = 'default',
-  size = 'large',
+  size: sizeProp,
   disabled = false,
   onPress,
   showLabel = false,
@@ -62,6 +63,9 @@ function CallControlButtonComponent({
   style,
   testID,
 }: CallControlButtonProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'lg', tone: 'neutral' });
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
+
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
   const { state: hovered, onIn, onOut } = useInteractionState();
@@ -165,7 +169,7 @@ function CallControlsComponent({
   onAddParticipant,
   onEndCall,
   controls,
-  size = 'large',
+  size: sizeProp,
   disabled = false,
   showLabels = false,
   labels,
@@ -174,6 +178,9 @@ function CallControlsComponent({
   style,
   testID,
 }: CallControlsProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'lg', tone: 'neutral' });
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
+
   const { messages } = useMessages(CALL_UI_MESSAGES);
   const l = useMemo(() => ({ ...messages.controls, ...labels }), [messages, labels]);
   const geometry = CALL_CONTROL_GEOMETRY[size];

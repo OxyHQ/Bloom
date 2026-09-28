@@ -240,7 +240,7 @@ function MailRowComponent({
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
-          size={compact ? 'small' : 'medium'}
+          size={compact ? 'sm' : 'md'}
           accessibilityLabel={`${text.select}: ${sender.name}, ${subject}`}
           testID={testID ? `${testID}-checkbox` : undefined}
         />

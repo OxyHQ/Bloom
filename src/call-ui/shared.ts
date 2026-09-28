@@ -201,9 +201,9 @@ export const CALL_CONTROL_GEOMETRY: Record<
   CallControlSize,
   { size: number; glyph: number; gap: number }
 > = {
-  small: { size: 40, glyph: 20, gap: 8 },
-  medium: { size: 48, glyph: 22, gap: 12 },
-  large: { size: 56, glyph: 26, gap: 16 },
+  sm: { size: 40, glyph: 20, gap: 8 },
+  md: { size: 48, glyph: 22, gap: 12 },
+  lg: { size: 56, glyph: 26, gap: 16 },
 };
 
 /** The English `CallScreen` words; components speak the locale's (`CALL_UI_MESSAGES`). */

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from '../button';
 import { Divider } from '../divider';
@@ -8,8 +8,8 @@ import { MailLabelChips, MailStar } from '../mail-list/parts';
 import { mailStrings, resolveMailPaint, visibleLabels } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
-import { webDataSet } from '../styles/web-data';
-import type { WebCssStyle } from '../styles/web-view-style';
+
+
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
@@ -166,12 +166,12 @@ export function MailThread({
             // carried its own focus ring, its own fill and its own hover.
             <Button
               key="earlier"
-              variant="secondary"
-              size="small"
+
+              size="sm"
               onPress={() => setRevealed(true)}
               accessibilityLabel={text.earlierMessages(entry.count)}
               style={{ alignSelf: 'flex-start', marginLeft: MAIL_BODY_INSET }}
-              testID={testID ? `${testID}-earlier` : undefined}
+              testID={testID ? `${testID}-earlier` : undefined} tone="neutral" appearance="outline"
             >
               {text.earlierMessages(entry.count)}
             </Button>

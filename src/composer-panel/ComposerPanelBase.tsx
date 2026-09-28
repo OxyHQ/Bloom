@@ -1,4 +1,5 @@
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
@@ -147,7 +148,9 @@ export function ComposerPanelBase({
 }: ComposerPanelProps) {
   useComposerWebCss();
   const theme = useTheme();
+  const parentFill = useSurfaceFill();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
+  const publishedFill = resolveSurfaceMaterial({ fill: palette.surface, parentFill: parentFill }).publishedFill;
   const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
   const common = useCommonMessages();
   const labels = useMemo<Required<ComposerPanelLabels>>(
@@ -252,8 +255,8 @@ export function ComposerPanelBase({
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
       {status ?? null}
 
-      <SurfaceLevelProvider level={1} fill={palette.surface}>
-      <View style={[cardStyle, surfaceFillVars(palette.surface)]}>
+      <SurfaceLevelProvider level={1} fill={publishedFill}>
+      <View style={[cardStyle, surfaceFillVars(publishedFill)]}>
         <SurfacePaint fill={palette.surface} radius={CARD_RADIUS} />
         <Collapse open={hasAttachments}>
           <View style={{ paddingBottom: 4 }}>

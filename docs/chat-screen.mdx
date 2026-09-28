@@ -313,8 +313,8 @@ panel cannot hold, so it takes a node:
         icon={<RiNotification3Line width={20} height={20} fill={colors.textSecondary} />}
         rightElement={
           <Switch
-            value={notifications}
-            onValueChange={setNotifications}
+            checked={notifications}
+            onCheckedChange={setNotifications}
             accessibilityLabel="Notifications for this conversation"
           />
         }

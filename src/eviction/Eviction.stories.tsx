@@ -182,7 +182,7 @@ function EvictionList({ width }: { width: number }) {
       <SegmentedControl
         label="Show evictions"
         type="tabs"
-        size="large"
+        size="lg"
         value={tab}
         onChange={setTab}
         style={{ alignSelf: columns > 1 ? 'flex-start' : 'stretch' }}

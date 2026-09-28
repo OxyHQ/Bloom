@@ -166,7 +166,7 @@ function CartLineComponent(props: CartLineProps) {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 }}>
           {onQuantityChange ? (
             <Stepper
-              size="small"
+              size="sm"
               value={quantity}
               min={1}
               disabled={unavailable}

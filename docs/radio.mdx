@@ -116,3 +116,8 @@ Both the row's dot ring and `RadioCard`'s ring take their 2px gap from
 `var(--bloom-ring-offset)`, set inline from the surface behind the control. It
 was a hardcoded `#FFFFFF` — a white halo in dark mode. See
 [Styles → The focus ring gap](/docs/bloom/main/styles).
+
+
+`Radio` and `RadioCard` use `checked` and `onValueChange`: choosing an option reports its value, never a false toggle. `RadioGroup` accepts controlled `value` or uncontrolled `defaultValue`. The duplicate `selected` and `onSelect` props have been removed.
+
+An explicitly supplied `value={undefined}` is a controlled empty selection. Omit `value` to opt into uncontrolled state with `defaultValue`; callbacks do not commit a controlled selection until its parent updates the prop.

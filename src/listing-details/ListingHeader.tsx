@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Rating } from '../rating';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -66,11 +66,11 @@ function InlineLink({
     );
   }
   return (
-    <Button
-      variant="link"
+    <LinkButton
+
       linkTone="text"
       underline="rest"
-      size="small"
+      size="sm"
       textVariant="body-medium"
       accessibilityRole={IS_WEB ? 'link' : 'button'}
       accessibilityLabel={label}
@@ -78,7 +78,7 @@ function InlineLink({
       testID={testID}
     >
       {label}
-    </Button>
+    </LinkButton>
   );
 }
 

@@ -1,4 +1,5 @@
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
@@ -142,8 +143,10 @@ export function TooltipContent({
   label: string;
   size?: TooltipSize;
 }) {
-  const materialStyle = useSurfaceMaterial('[data-bloom-tooltip]', 'bloom-tooltip-surface-css');
+  const parentFill = useSurfaceFill();
   const palette = useMenuPalette();
+  const publishedFill = resolveSurfaceMaterial({ fill: palette.surface, parentFill: parentFill }).publishedFill;
+  const materialStyle = useSurfaceMaterial('[data-bloom-tooltip]', 'bloom-tooltip-surface-css', palette.surface);
   const { position, visible, triggerRef } = useContext(TooltipContext);
 
   // `visible` drives an `open` → `closing` → unmounted cycle, so the exit has
@@ -184,14 +187,14 @@ export function TooltipContent({
   const box = TOOLTIP_SIZES[size];
   const bubbleStyle: WebCssStyle = {
     ...materialStyle,
-    ...surfaceFillVars(palette.surface),
+    ...surfaceFillVars(publishedFill),
     maxWidth: BUBBLE_MAX_WIDTH,
     paddingHorizontal: box.paddingHorizontal,
     paddingVertical: box.paddingVertical,
     borderRadius: box.borderRadius,
     borderWidth: 1,
     borderColor: palette.border,
-    backgroundColor: palette.surface,
+    backgroundColor: 'transparent',
     boxShadow: palette.shadow,
   };
 
@@ -235,7 +238,7 @@ export function TooltipContent({
               dataSet: { bloomTooltip: '', state: visible ? 'open' : 'closed' },
             } as Record<string, unknown>)}
             style={[bubbleStyle, { transformOrigin: `${caretLeft + ARROW_HALF_SIZE}px ${position === 'top' ? '100%' : '0%'}` } as WebCssStyle]}>
-            <SurfaceLevelProvider level={1} fill={palette.surface}>{children}</SurfaceLevelProvider>
+            <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider>
             {/* Outside the padding box, overlapping the border by its 1px. */}
             <TooltipCaret
               position={position}

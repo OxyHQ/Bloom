@@ -82,7 +82,7 @@ export function MyHomePage() {
         }}
         title="My home"
         actions={
-          <Button variant="primary" size="small" leadingIcon={RiToolsLine} onPress={noop}>
+          <Button  size="sm" leadingIcon={RiToolsLine} onPress={noop} tone="accent" appearance="solid">
             Report a repair
           </Button>
         }
@@ -100,10 +100,10 @@ export function MyHomePage() {
             {...LEASE}
             actions={
               <>
-                <Button variant="primary" size="small" onPress={noop}>
+                <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
                   Pay rent
                 </Button>
-                <Button variant="secondary" size="small" leadingIcon={RiChat3Line} onPress={noop}>
+                <Button  size="sm" leadingIcon={RiChat3Line} onPress={noop} tone="neutral" appearance="outline">
                   Message landlord
                 </Button>
               </>
@@ -120,7 +120,7 @@ export function MyHomePage() {
             testID="housing-payments"
           />
 
-          <SectionTitle action={<Button variant="secondary" size="small" onPress={noop}>New request</Button>}>Repairs</SectionTitle>
+          <SectionTitle action={<Button  size="sm" onPress={noop} tone="neutral" appearance="outline">New request</Button>}>Repairs</SectionTitle>
           {MAINTENANCE.map((request) => (
             <MaintenanceRequestCard key={request.reference} {...request} onPressComments={noop} onPressPhoto={noop} />
           ))}

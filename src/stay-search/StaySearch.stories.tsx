@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from '../button';
+import { Button , LinkButton } from '../button';
 import { RangeCalendar, type DateRange } from '../date-picker';
 import { Dialog, useDialogControl } from '../dialog';
 import { Divider } from '../divider';
@@ -368,10 +368,10 @@ function MobileSearchFlow({ onClose }: { onClose?: () => void }) {
           backgroundColor: theme.colors.card,
         }}
       >
-        <Button variant="link" onPress={clear}>
+        <LinkButton  onPress={clear}>
           Clear all
-        </Button>
-        <Button variant="primary" size="large" icon={RiSearchLine} onPress={onClose}>
+        </LinkButton>
+        <Button  size="lg" icon={RiSearchLine} onPress={onClose} tone="accent" appearance="solid">
           Search
         </Button>
       </View>
@@ -464,7 +464,7 @@ export const UnavailableRowAndTranslatedSteppers: Story = {
     return (
       <View style={{ padding: 16, gap: 24, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <View style={{ gap: 12, maxWidth: '100%' }}>
-          <Button variant="secondary" size="small" onPress={() => setLocationOn((on) => !on)}>
+          <Button  size="sm" onPress={() => setLocationOn((on) => !on)} tone="neutral" appearance="outline">
             {locationOn ? 'Turn location off' : 'Turn location on'}
           </Button>
           <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>

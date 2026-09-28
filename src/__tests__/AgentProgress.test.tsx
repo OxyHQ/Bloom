@@ -1,3 +1,4 @@
+import { resolveSurfaceTint } from '../surface/shared';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
@@ -57,7 +58,7 @@ describe('AgentProgress', () => {
       backgroundColor: 'transparent',
       boxShadow: BUTTON_SHADOW.light,
     });
-    expect(getByTestId('agent-progress').findAll(n => n.props.fill === theme.colors.card && n.props.radius === 16).length).toBeGreaterThan(0);
+    expect(getByTestId('agent-progress').findAll(n => n.props.fill === resolveSurfaceTint(theme.colors.card) && n.props.radius === 16).length).toBeGreaterThan(0);
     expect(card.borderWidth).toBeUndefined();
     expect(agentProgressExpandedHeight(0)).toBe(45);
     expect(agentProgressExpandedHeight(3)).toBe(159);
@@ -70,7 +71,7 @@ describe('AgentProgress', () => {
       backgroundColor: 'transparent',
       boxShadow: BUTTON_SHADOW.dark,
     });
-    expect(getByTestId('agent-progress').findAll(n => n.props.fill === theme.colors.card && n.props.radius === 16).length).toBeGreaterThan(0);
+    expect(getByTestId('agent-progress').findAll(n => n.props.fill === resolveSurfaceTint(theme.colors.card) && n.props.radius === 16).length).toBeGreaterThan(0);
   });
 
   it('lists every step and counts the ones left', () => {

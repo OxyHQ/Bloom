@@ -200,7 +200,7 @@ function CallScreenComponent({
           <CallControlButton
             icon={RiCollapseDiagonalLine}
             label={l.minimise}
-            size="small"
+            size="sm"
             accentColor={accentColor}
             onPress={onMinimise}
             testID={testID ? `${testID}-minimise` : undefined}
@@ -211,7 +211,7 @@ function CallScreenComponent({
           <CallControlButton
             icon={RiChat3Line}
             label={l.chat}
-            size="small"
+            size="sm"
             accentColor={accentColor}
             onPress={onOpenChat}
             testID={testID ? `${testID}-chat` : undefined}
@@ -225,7 +225,7 @@ function CallScreenComponent({
                 ? l.participants
                 : `${l.participants} (${participantCount})`
             }
-            size="small"
+            size="sm"
             accentColor={accentColor}
             onPress={onOpenParticipants}
             testID={testID ? `${testID}-participants` : undefined}

@@ -1,3 +1,4 @@
+import { resolveSurfaceTint } from '../surface/shared';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { render, within } from '@testing-library/react-native';
@@ -216,14 +217,14 @@ describe('AgentLimitsCard', () => {
     const light = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'light');
     const lightTheme = buildTheme('teal', 'light');
     expect(cardFill(light.getByTestId('card'))).toBe(
-      lightTheme.colors.card,
+      resolveSurfaceTint(lightTheme.colors.card),
     );
     light.unmount();
 
     const dark = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'dark');
     const darkTheme = buildTheme('teal', 'dark');
     expect(cardFill(dark.getByTestId('card'))).toBe(
-      darkTheme.colors.card,
+      resolveSurfaceTint(darkTheme.colors.card),
     );
   });
 });

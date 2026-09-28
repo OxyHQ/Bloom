@@ -166,7 +166,7 @@ function NowPlayingBarComponent({
           testID={id('track')}
         />
         {onLikedChange ? (
-          <LikeButton liked={liked} onLikedChange={onLikedChange} size="small" testID={id('like')} />
+          <LikeButton liked={liked} onLikedChange={onLikedChange} size="sm" testID={id('like')} />
         ) : null}
       </View>
 
@@ -177,7 +177,7 @@ function NowPlayingBarComponent({
         <TransportControls
           {...transport}
           subject={transport.subject ?? track.title}
-          size="compact"
+          size="sm"
           testID={id('transport')}
         />
         <PlaybackProgress

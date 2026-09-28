@@ -1,3 +1,4 @@
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -7,7 +8,6 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { purpleChip, purpleStop } from '../chart-cards/ai-profile-hues';
 import { linearPath } from '../chart-cards/geometry';
-import { resolveChartCardPalette } from '../chart-cards/palette';
 import {
   TokensChartCard,
   tokensAreaPath,

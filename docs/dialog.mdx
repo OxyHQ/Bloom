@@ -312,6 +312,10 @@ Bottom-sheet on small screens, left drawer on `md` and wider:
 
 Removed exports: `CenteredDialog`, `CenteredDialogProps`, `BLOOM_CENTERED_DIALOG_CSS`, `CENTERED_DIALOG_BACKDROP_TESTID`, `ResponsiveSheet`, `@oxy.so/bloom/responsive-sheet` subpath.
 
-The default panel uses Bloom’s shared solid `SurfacePaint` with its gradient and rim. The paint is absolute inside the existing measured panel, so gestures, focus, imperative controls and layout retain their hosts. Explicit caller backgrounds and BottomSheet’s `backgroundComponent` remain overrides. The nominal surface color still supplies descendant tokens; the default fill is opaque and independent of the backdrop.
+The default panel uses Bloom’s shared `SurfacePaint` with its gradient and rim. The paint is absolute inside the existing measured panel, so gestures, focus, imperative controls and layout retain their hosts. Explicit caller backgrounds and BottomSheet’s `backgroundComponent` remain overrides. The composited painted color supplies descendant tokens; the default body has 90% opacity and only its edge refracts the backdrop on web.
 
-Dialog panels publish level 0 with the exact opaque fill sent to SurfacePaint. Explicit style backgrounds are resolved against the page backing once and shared by paint, descendant context and web surface variables; opening inside a card does not leak its level into the dialog.
+Dialog panels publish level 0 with the painted tint composited against the page backing. Explicit style backgrounds are resolved against the page backing once and shared by paint, descendant context and web surface variables; opening inside a card does not leak its level into the dialog.
+
+### Shared surface paint
+
+The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.

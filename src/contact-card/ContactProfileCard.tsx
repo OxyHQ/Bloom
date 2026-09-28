@@ -256,7 +256,7 @@ function ContactProfileCardComponent({
           <Button
             key={channel.kind + String(index)}
             appearance="solid" tone="neutral"
-            size="small"
+            size="sm"
             iconOnly={!labelled}
             leadingIcon={channel.icon ?? spec.icon}
             onPress={channel.onPress}

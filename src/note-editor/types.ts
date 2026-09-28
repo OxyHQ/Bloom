@@ -100,8 +100,8 @@ export interface NoteEditorToolbarLabels {
 export interface NoteEditorToolbarProps {
   /** The actions, in the order they are drawn. */
   actions: ReadonlyArray<NoteEditorAction>;
-  /** The `ButtonGroup` rung. Default `medium` (34px items); `small` is 30. */
-  size?: 'medium' | 'small';
+  /** The `ButtonGroup` rung. Default `md` (34px items); `sm` is 30. */
+  size?: 'md' | 'sm';
   /** Disables every action and the overflow, without each caller writing it per action. */
   disabled?: boolean;
   /** Names the toolbar. Required in substance — a row of glyphs has no name of its own. */

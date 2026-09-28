@@ -46,12 +46,12 @@ function ProfileHeaderComponent({
         <FollowButton
           following={following}
           onFollowChange={onFollowChange}
-          size="medium"
+          size="md"
           testID={testID ? `${testID}-follow` : undefined}
         />
       ) : null}
       {onEditPress ? (
-        <Button variant="secondary" size="medium" onPress={onEditPress} testID={testID ? `${testID}-edit` : undefined}>
+        <Button  size="md" onPress={onEditPress} testID={testID ? `${testID}-edit` : undefined} tone="neutral" appearance="outline">
           {editLabel}
         </Button>
       ) : null}

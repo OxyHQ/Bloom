@@ -24,7 +24,7 @@ import type { MapControlsProps } from './types';
  *            written for.
  *   control  `ButtonGroupItem` at 44 square. It is Bloom's island-aware
  *            control: it reads the `material` the island publishes through
- *            `ControlSurface` and paints flush, with no `variant` written on
+ *            `BloomScope` and paints flush, with no `variant` written on
  *            it, and it carries a toggle's `aria-pressed` and native selected
  *            state in one prop.
  *   zoom     ONE island, two items, laid out in a column. The island's `style`

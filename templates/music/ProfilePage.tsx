@@ -90,7 +90,7 @@ export function ProfilePage() {
                 size={tileSize}
                 action={
                   <Button
-                    variant={on ? 'secondary' : 'primary'}
+                    appearance={on ? 'outline' : 'solid'} tone={on ? 'neutral' : 'accent'}
                     size="xs"
                     accessibilityLabel={`Follow ${person.name}`}
                     aria-pressed={on}
@@ -153,10 +153,10 @@ export function ProfilePage() {
                   <View style={{ gap: 12, width: wide ? 360 : '100%' }}>
                     {shareCard}
                     <Button
-                      variant="secondary"
+
                       leadingIcon={RiShareForwardLine}
                       onPress={() => share.open()}
-                      style={{ alignSelf: 'flex-start' }}
+                      style={{ alignSelf: 'flex-start' }} tone="neutral" appearance="outline"
                     >
                       Share this song
                     </Button>

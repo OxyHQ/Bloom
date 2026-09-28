@@ -1,3 +1,4 @@
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -8,7 +9,7 @@ import { RiComputerLine } from '../icons/remix';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { BarListCard, shareLabel, type BarListTab } from '../chart-cards/BarListCard';
-import { resolveChartCardPalette, resolveChartTones, resolveMonoTone } from '../chart-cards/palette';
+import { resolveChartTones, resolveMonoTone } from '../chart-cards/palette';
 
 const TABS: BarListTab[] = [
   {

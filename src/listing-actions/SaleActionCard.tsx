@@ -107,24 +107,24 @@ function SaleActionCardComponent({
 
       <View style={{ marginTop: 16, gap: 8 }}>
         <Button
-          variant="primary"
-          size="large"
+
+          size="lg"
           fullWidth
           onPress={onContact}
           disabled={!available}
           loading={loading}
-          testID={id('contact')}
+          testID={id('contact')} tone="accent" appearance="solid"
         >
           {contactLabel}
         </Button>
         {onRequestVisit ? (
           <Button
-            variant="secondary"
-            size="large"
+
+            size="lg"
             fullWidth
             onPress={onRequestVisit}
             disabled={!available}
-            testID={id('request-visit')}
+            testID={id('request-visit')} tone="neutral" appearance="outline"
           >
             {requestVisitLabel}
           </Button>

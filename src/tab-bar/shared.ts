@@ -12,7 +12,6 @@ import { useMemo, type ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { AnimatedStyle } from 'react-native-reanimated';
 
-import { withAlpha } from '../theme/color-utils';
 import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import type { TabBarItem, TabBarTheme } from './types';
@@ -55,25 +54,6 @@ export const LABEL_FONT_SIZE = 9.5;
 
 
 /**
- * Slide spring: interruptible by design — rapid tab-hopping retargets with
- * preserved velocity. Slight under-damping gives the pill a tiny settle, safe
- * here because it's transform-only (no layout involved).
- */
-export const SLIDE_SPRING = { duration: 420, dampingRatio: 0.82 };
-
-/**
- * Fade for the highlight coming and going when the selection does — an
- * `activeIndex` that names no tab (see `TabBarProps.activeIndex`).
- *
- * A timing, not a spring, and deliberately shorter than {@link SLIDE_SPRING}:
- * appearing and disappearing is a change of STATE, not a movement, so it must
- * not read as a second animation racing the slide. The capsule fades where it
- * stands — moving it out of view instead would drag it the length of the bar on
- * its way out and sweep the active tint across every tab it passed.
- */
-export const HIGHLIGHT_FADE = { duration: 160 };
-
-/**
  * How long a press must be held before `onIndexLongPress` fires.
  *
  * Comfortably above the tap gesture's own 400ms ceiling: the two can never both
@@ -97,10 +77,7 @@ export const LONG_PRESS_MIN_DURATION = 500;
  *
  *   - the two tints are the standard foreground pair;
  *   - the highlight is `contrast50`, the token meant for a subtle raised fill;
- *   - the glass tint is a 55%-alpha page background, so the liquid-glass
- *     material behind it still refracts content;
- *   - the solid fallback is a 94%-alpha `backgroundSecondary` — near-opaque, so
- *     the bar reads as a distinct surface where there is no glass to lens.
+ *   - the card token is painted at 90% opacity; explicit tint alpha is preserved;
  *
  * Overrides are coalesced key by key (not spread) so an explicit `undefined` in
  * a partial can never punch a hole in the resolved theme.
@@ -113,8 +90,7 @@ export function resolveTabBarTheme(
     activeTint: overrides?.activeTint ?? colors.text,
     inactiveTint: overrides?.inactiveTint ?? colors.textSecondary,
     highlight: overrides?.highlight ?? colors.contrast50,
-    glassTint: overrides?.glassTint ?? withAlpha(colors.background, 0.55),
-    solidFallback: overrides?.solidFallback ?? withAlpha(colors.backgroundSecondary, 0.94),
+    glassTint: overrides?.glassTint ?? colors.card,
   };
 }
 
@@ -129,7 +105,7 @@ export function resolveTabBarTheme(
  */
 export function useTabBarTheme(overrides?: Partial<TabBarTheme>): TabBarTheme {
   const { colors } = useTheme();
-  const { activeTint, inactiveTint, highlight, glassTint, solidFallback } = overrides ?? {};
+  const { activeTint, inactiveTint, highlight, glassTint } = overrides ?? {};
 
   return useMemo(
     () =>
@@ -138,9 +114,8 @@ export function useTabBarTheme(overrides?: Partial<TabBarTheme>): TabBarTheme {
         inactiveTint,
         highlight,
         glassTint,
-        solidFallback,
       }),
-    [colors, activeTint, inactiveTint, highlight, glassTint, solidFallback],
+    [colors, activeTint, inactiveTint, highlight, glassTint],
   );
 }
 
@@ -161,7 +136,7 @@ export type TabBarSurfaceComponent = ComponentType<TabBarSurfaceProps> & {
 };
 
 export interface TabBarSurfaceProps {
-  /** Resolved theme — the surface picks `glassTint` or `solidFallback`. */
+  /** Resolved theme — the surface picks `glassTint`. */
   theme: TabBarTheme;
   /**
    * Animated capsule shape (a `borderRadius` tracking the animated height).

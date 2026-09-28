@@ -131,7 +131,7 @@ function IncomingCallBannerComponent({
           icon={CallEndGlyph}
           label={l.decline}
           tone="end"
-          size="small"
+          size="sm"
           onPress={onDecline}
           testID={testID ? `${testID}-decline` : undefined}
         />
@@ -141,7 +141,7 @@ function IncomingCallBannerComponent({
           icon={RiPhoneFill}
           label={l.accept}
           tone="accept"
-          size="small"
+          size="sm"
           onPress={onAccept}
           testID={testID ? `${testID}-accept` : undefined}
         />

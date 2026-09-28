@@ -1,7 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
-/** `small` 32, `medium` 48 (default), `large` 56 — the diameter of the button. */
-export type PlayButtonSize = 'small' | 'medium' | 'large';
+/** `sm` 32, `md` 48 (default), `lg` 56 — the diameter of the button. */
+export type PlayButtonSize = 'sm' | 'md' | 'lg';
 
 /**
  * `accent` — a filled accent circle (the main transport button).
@@ -22,7 +22,7 @@ export interface PlayButtonProps {
   playing: boolean;
   /** Called on press. The button does not toggle anything itself. */
   onPress?: () => void;
-  /** Default `medium`. */
+  /** Default `md`. */
   size?: PlayButtonSize;
   /** Default `accent`. */
   variant?: PlayButtonVariant;
@@ -41,14 +41,14 @@ export interface PlayButtonProps {
   testID?: string;
 }
 
-/** Glyph size: `small` 16, `medium` 20 (default), `large` 24. The hit area is never under 32. */
-export type LikeButtonSize = 'small' | 'medium' | 'large';
+/** Glyph size: `sm` 16, `md` 20 (default), `lg` 24. The hit area is never under 32. */
+export type LikeButtonSize = 'sm' | 'md' | 'lg';
 
 export interface LikeButtonProps {
   liked: boolean;
   /** Called with the next state. */
   onLikedChange: (liked: boolean) => void;
-  /** Default `medium`. */
+  /** Default `md`. */
   size?: LikeButtonSize;
   /** The liked heart's colour. Default: the theme accent. */
   activeColor?: string;

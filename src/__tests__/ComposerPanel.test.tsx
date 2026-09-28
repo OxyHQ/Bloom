@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { resolveButtonPalette } from '../button/shared';
 import { Text } from 'react-native';
 import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
@@ -722,7 +723,7 @@ function ComposerSurfaceProbe() {
 it('leaves a plain pill on its parent and publishes the filled pill backing', () => {
   for (const surface of [false, true]) {
     const screen = renderIn(<SurfaceLevelProvider level={2} fill="#123456"><ComposerPill surface={surface} emptyAction={<ComposerSurfaceProbe />} /></SurfaceLevelProvider>);
-    expect(screen.getByTestId('composer-surface-probe').props.children).toBe(surface ? `1:${buildTheme('teal', 'light').colors.card}` : '2:#123456');
+    expect(screen.getByTestId('composer-surface-probe').props.children).toBe(surface ? `1:${resolveSurfaceMaterial({ fill: buildTheme('teal', 'light').colors.card, parentFill: '#123456' }).publishedFill}` : '2:#123456');
     screen.unmount();
   }
 });

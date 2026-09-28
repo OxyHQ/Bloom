@@ -107,10 +107,10 @@ function SectionTitle({ children }: { children: string }) {
 function LeaseActions() {
   return (
     <>
-      <Button variant="primary" size="small" onPress={noop}>
+      <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
         Pay rent
       </Button>
-      <Button variant="secondary" size="small" leadingIcon={RiChat3Line} onPress={noop}>
+      <Button  size="sm" leadingIcon={RiChat3Line} onPress={noop} tone="neutral" appearance="outline">
         Message landlord
       </Button>
     </>
@@ -166,7 +166,7 @@ function TenantDashboard({ width }: { width: number }) {
         commentCount={4}
         onPressComments={noop}
         actions={
-          <Button variant="secondary" size="small" onPress={noop}>
+          <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
             Reschedule
           </Button>
         }
@@ -279,10 +279,10 @@ function LandlordView({ width }: { width: number }) {
             nextPaymentLabel="Last payment"
             actions={
               <>
-                <Button variant="primary" size="small" onPress={noop}>
+                <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
                   Send reminder
                 </Button>
-                <Button variant="secondary" size="small" onPress={noop}>
+                <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
                   Renew lease
                 </Button>
               </>
@@ -311,10 +311,10 @@ function LandlordView({ width }: { width: number }) {
             commentCount={0}
             actions={
               <>
-                <Button variant="secondary" size="small" onPress={noop}>
+                <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
                   Acknowledge
                 </Button>
-                <Button variant="primary" size="small" onPress={noop}>
+                <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
                   Schedule visit
                 </Button>
               </>
@@ -422,7 +422,7 @@ function TimelineDemo() {
   const [compact, setCompact] = useState(false);
   return (
     <View style={{ width: 420, maxWidth: '100%', gap: 16 }}>
-      <Button variant="secondary" size="small" onPress={() => setCompact((c) => !c)}>
+      <Button  size="sm" onPress={() => setCompact((c) => !c)} tone="neutral" appearance="outline">
         {compact ? 'Comfortable' : 'Compact'}
       </Button>
       <TenancyTimeline
