@@ -71,7 +71,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const messages = useMessages(APP_SHELL_MESSAGES);
+  const { messages } = useMessages(APP_SHELL_MESSAGES);
   const resizeLabel = resizeLabelProp ?? messages.resizePanes;
   const [width, setWidth] = useState(listWidth);
   const widthAtDragStart = useRef(listWidth);
