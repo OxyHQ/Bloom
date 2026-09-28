@@ -27,3 +27,6 @@ export type {
   NotificationBellProps,
   ProOfferCardProps,
 } from './types';
+
+export { AppShellSplitPanes } from './AppShellSplit';
+export type { AppShellSplitPanesProps } from './types';

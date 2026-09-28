@@ -375,3 +375,31 @@ export interface AppShellNavigationProps {
 export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> & AppShellNavigationProps & {
   scroll?: AppShellScroll | 'auto' | 'external';
 };
+
+
+/** A bounded list/detail/info layout, independent of navigation or surfaces. */
+export interface AppShellSplitPanesProps {
+  list?: ReactNode;
+  detail?: ReactNode;
+  info?: ReactNode;
+  /** Defaults to whether list content was supplied. Hidden panes unmount. */
+  showList?: boolean;
+  /** Defaults to true. Keep true across breakpoints to retain routed detail state. */
+  showDetail?: boolean;
+  /** Defaults to whether info content was supplied. */
+  showInfo?: boolean;
+  /** Initial list width (360), constrained by listMinWidth/listMaxWidth (280/520). */
+  listWidth?: number;
+  listMinWidth?: number;
+  listMaxWidth?: number;
+  onListWidthChange?: (width: number) => void;
+  /** Info column width, defaults to 320. */
+  infoWidth?: number;
+  /** Show the shared draggable/keyboard divider, defaults to true. */
+  resizable?: boolean;
+  /** Wrap each pane in a ScrollView (default true); false for a navigator or virtual list. */
+  paneScroll?: boolean;
+  /** Accessible divider name, defaults to "Resize panes". */
+  resizeLabel?: string;
+  testID?: string;
+}
