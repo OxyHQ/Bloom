@@ -21,26 +21,8 @@ import { AiChatResizeHandle } from '../ai-chat/AiChatShell';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 
-export interface AppShellSplitPanesProps {
-  list?: React.ReactNode;
-  detail?: React.ReactNode;
-  info?: React.ReactNode;
-  /** Which panes have room right now. */
-  showList: boolean;
-  showDetail: boolean;
-  showInfo: boolean;
-  /** The list pane's resting width; a drag moves it within min/max. */
-  listWidth: number;
-  listMinWidth: number;
-  listMaxWidth: number;
-  onListWidthChange?: (width: number) => void;
-  infoWidth: number;
-  resizable: boolean;
-  /** The shell wraps each pane in its own `ScrollView` unless the page owns one. */
-  paneScroll: boolean;
-  resizeLabel: string;
-  testID?: string;
-}
+import type { AppShellSplitPanesProps } from './types';
+import { APP_SHELL_DEFAULTS as D } from './constants';
 
 /** One pane: a bounded column that scrolls its own overflow. */
 function Pane({
@@ -71,17 +53,17 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   list,
   detail,
   info,
-  showList,
-  showDetail,
-  showInfo,
-  listWidth,
-  listMinWidth,
-  listMaxWidth,
+  showList = list != null,
+  showDetail = true,
+  showInfo = info != null,
+  listWidth = D.listWidth,
+  listMinWidth = D.listMinWidth,
+  listMaxWidth = D.listMaxWidth,
   onListWidthChange,
-  infoWidth,
-  resizable,
-  paneScroll,
-  resizeLabel,
+  infoWidth = D.infoWidth,
+  resizable = true,
+  paneScroll = true,
+  resizeLabel = 'Resize panes',
   testID,
 }) => {
   const theme = useTheme();

@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.34.3 — 2026-09-29
+
+- Export AppShellSplitPanes for composing bounded list/detail/info panes inside existing Bloom shells, with the same defaults as AppShell split.
+- Preserve detail state while responsive list/info panes appear or disappear; no new navigation or surface layer.
+
 ## 4.34.2 — 2026-09-28
 
 - Restore pointer activation across mail-row content while preserving independent checkbox, star and archive actions.

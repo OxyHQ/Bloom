@@ -5,7 +5,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
-import { AppShell, AppShellHeader, AppShellMenuButton, NotificationBell, ProOfferCard, useAppShell } from '../app-shell';
+import { AppShell, AppShellSplitPanes, AppShellHeader, AppShellMenuButton, NotificationBell, ProOfferCard, useAppShell } from '../app-shell';
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { ContentPanel } from '../content-panel';
@@ -952,5 +952,42 @@ describe('AppShell panel theme', () => {
     expect(screen.getByTestId('aside-color').props.children).toBe(original);
     expect(screen.getByTestId('panel-color').props.children).not.toBe(original);
     expect(mounted.mock.calls.filter(([id]) => id === 'panel-color')).toHaveLength(1);
+  });
+});
+
+
+describe('standalone AppShellSplitPanes', () => {
+  it('uses split defaults without introducing another shell or surface', () => {
+    const screen = renderIn(<AppShellSplitPanes testID="panes" list={<ReactNative.Text>List</ReactNative.Text>}
+      detail={<ReactNative.Text>Detail</ReactNative.Text>} />);
+    expect(resolvedStyle(screen.getByTestId('panes-pane-list').props.style).width).toBe(360);
+    expect(screen.getByTestId('panes-divider').props.accessibilityLabel).toBe('Resize panes');
+    expect(screen.getByTestId('panes-pane-detail')).toBeTruthy();
+    expect(screen.queryByTestId('panes-pane-info')).toBeNull();
+  });
+
+  it('retains a detail draft when list/info visibility changes', () => {
+    const mounted = jest.fn();
+    const unmounted = jest.fn();
+    function Detail() {
+      const [draft, setDraft] = React.useState('');
+      React.useEffect(() => { mounted(); return unmounted; }, []);
+      return <ReactNative.TextInput testID="draft" value={draft} onChangeText={setDraft} />;
+    }
+    function Frame({ desktop }: { desktop: boolean }) {
+      return <BloomThemeProvider mode="light"><AppShellSplitPanes testID="panes" showList={desktop} showInfo={desktop}
+        paneScroll={false} list={<ReactNative.Text>List</ReactNative.Text>} info={<ReactNative.Text>Info</ReactNative.Text>}
+        detail={<Detail />} /></BloomThemeProvider>;
+    }
+    const screen = render(<Frame desktop={false} />);
+    fireEvent.changeText(screen.getByTestId('draft'), 'Preserved draft');
+    screen.rerender(<Frame desktop />);
+    expect(screen.getByTestId('panes-pane-list')).toBeTruthy();
+    expect(screen.getByTestId('panes-pane-info')).toBeTruthy();
+    screen.rerender(<Frame desktop={false} />);
+    expect(screen.getByTestId('draft').props.value).toBe('Preserved draft');
+    expect(mounted).toHaveBeenCalledTimes(1);
+    expect(unmounted).not.toHaveBeenCalled();
+    expect(screen.UNSAFE_queryAllByType(ReactNative.ScrollView)).toHaveLength(0);
   });
 });

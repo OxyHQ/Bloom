@@ -643,3 +643,18 @@ For fullscreen video or a child scroller that accounts for the occupied bottom e
 set `reserveBottomBarSpace={false}`. The visible bar still publishes its measured height
 through the shared edge registry; document/container content receives no duplicate bar padding.
 `scroll="fixed"` always leaves scrolling and clearance to the child navigator or list.
+
+### Split panes inside another Bloom shell
+
+`AppShellSplitPanes` is also exported from `@oxy.so/bloom/app-shell` and the root barrel. It owns only the bounded pane layout and divider, not navigation, surfaces or a second shell context. Compose it inside `AiChatShell` + `AiChatContainer` to use that template's reveal navigation and surfaces.
+
+```tsx
+<AppShellSplitPanes
+  list={<MailboxList />}
+  showList={desktop}
+  detail={<Slot />}
+  paneScroll={false}
+/>
+```
+
+The detail remains mounted while `showList` changes; hiding a pane explicitly unmounts that pane. Defaults match AppShell's split layout: list width 360 (range 280–520), info width 320, scrolling and resizing enabled. `showDetail` defaults to true; list/info visibility follows the supplied content. Set `paneScroll={false}` when routes or virtualized lists own their scrolling. The surrounding Bloom container must provide a bounded height.
