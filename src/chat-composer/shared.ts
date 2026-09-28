@@ -44,7 +44,6 @@ import { RiRestaurantLine } from '../icons/remix/RiRestaurantLine';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { RiUserLine } from '../icons/remix/RiUserLine';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type {
   AttachmentMenuItem,
@@ -96,12 +95,8 @@ export interface ChatComposerPalette {
   focusRing: string;
 }
 
-/** Re-emit a resolved colour at `alpha` (parse-and-re-emit, never concatenation). */
-export function withAlpha(color: string, alpha: number): string {
-  const rgba = parseRgba(color);
-  if (!rgba) return color;
-  return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${alpha})`;
-}
+/** Re-exported from `theme/color-utils`, which owns it (it was copied here). */
+export { withAlpha } from '../theme/color-utils';
 
 export function resolveChatComposerPalette(theme: Theme, backing?: string): ChatComposerPalette {
   const { accent } = resolveButtonRamps(theme);

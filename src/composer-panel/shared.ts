@@ -22,7 +22,6 @@ import { RiShieldCheckLine } from '../icons/remix/RiShieldCheckLine';
 import { RiSlideshow3Line } from '../icons/remix/RiSlideshow3Line';
 import { RiSpeedUpFill } from '../icons/remix/RiSpeedUpFill';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { COMPOSER_PANEL_MESSAGES, type ComposerPanelMessages } from './messages';
 import type {
@@ -84,12 +83,8 @@ export interface ComposerPalette {
   logo: string;
 }
 
-/** Re-emit a resolved colour at `alpha` (parse-and-re-emit, never string concatenation). */
-export function withAlpha(color: string, alpha: number): string {
-  const rgba = parseRgba(color);
-  if (!rgba) return color;
-  return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${alpha})`;
-}
+/** Re-exported from `theme/color-utils`, which owns it (it was copied here). */
+export { withAlpha } from '../theme/color-utils';
 
 /** Canonical surfaces and foregrounds follow the preset's authored role pairs. */
 export function resolveComposerPalette(theme: Theme): ComposerPalette {

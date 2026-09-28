@@ -42,6 +42,7 @@ import {
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatMobileHeaderProps, AiChatResizeHandleProps, AiChatShellProps } from './types';
+import { clamp01 } from '../styles/clamp';
 
 const REVEAL_EASE = Easing.bezier(0.42, 0, 0.58, 1);
 const REVEAL_MS = 325;
@@ -87,7 +88,6 @@ const NAV_SWIPE_FLICK = 0.3;
 /** A settle never runs shorter than this, so the last few px are still seen. */
 const NAV_SETTLE_MIN_MS = 120;
 
-const clamp01 = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
 
 
 // ---------------------------------------------------------------------------

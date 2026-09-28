@@ -7,6 +7,7 @@ import type { Theme } from '../theme/types';
 import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';
 import type { FileKind, MessageTone, VoicePlaybackRate } from './types';
 import { formatMultiplier } from '../locale/format-number';
+import { clamp01 } from '../styles/clamp';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -475,7 +476,6 @@ export const WAVEFORM_MIN_BAR = 0.18;
 export function resampleWaveform(samples: readonly number[], count: number): number[] {
   const bars = Math.max(1, Math.floor(count));
   if (samples.length === 0) return Array.from({ length: bars }, () => 0);
-  const clamp01 = (v: number) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
   if (samples.length === bars) return samples.map(clamp01);
   if (samples.length < bars) {
     return Array.from({ length: bars }, (_, i) =>

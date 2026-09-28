@@ -1,7 +1,7 @@
+import { clamp } from '../styles/clamp';
 export interface Oklch { l: number; c: number; h: number } // l 0..1, c 0..~0.4, h deg
 export interface Rgb { r: number; g: number; b: number }   // 0..255 integers
 
-const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 const srgbGamma = (x: number) =>
   x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
 
