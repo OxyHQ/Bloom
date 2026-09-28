@@ -46,6 +46,8 @@ import {
 
 Every card is controlled and draws only what it is given: text arrives pre-formatted (dates, durations, counts — the app owns the locale), and the card reports presses. Colours come from the theme in light and dark; artwork-derived colours arrive as a hex prop and are never sampled from an image.
 
+The English defaults below are localised: each is drawn in the app's language via `BloomProvider locale` ([Locale](/docs/locale)), and a prop you pass still wins.
+
 ## The shared props
 
 | prop | decides |

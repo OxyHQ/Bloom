@@ -76,25 +76,25 @@ export interface TrackListGroup {
 export interface TrackListLabels {
   /** Default `"#"`. */
   index?: string;
-  /** Default `"Title"`. */
+  /** Default `"Title"` in English. */
   title?: string;
-  /** Default `"Album"`. */
+  /** Default `"Album"` in English. */
   album?: string;
-  /** Default `"Date added"`. */
+  /** Default `"Date added"` in English. */
   dateAdded?: string;
-  /** Default `"Plays"`. */
+  /** Default `"Plays"` in English. */
   plays?: string;
-  /** The clock icon's name. Default `"Duration"`. */
+  /** The clock icon's name (`"Duration"` in English). */
   duration?: string;
   /** Default `"More options"`; the button is named "More options for <title>". */
   moreOptions?: string;
-  /** Default `"Move up"`. */
+  /** Default `"Move up"` in English. */
   moveUp?: string;
-  /** Default `"Move down"`. */
+  /** Default `"Move down"` in English. */
   moveDown?: string;
-  /** The drag handle. Default `"Reorder"`. */
+  /** The drag handle (`"Reorder"` in English). */
   reorder?: string;
-  /** Default `"Downloaded"`. */
+  /** Default `"Downloaded"` in English. */
   downloaded?: string;
   /** Default `"Unavailable"`, appended to the row's name. */
   unavailable?: string;
@@ -207,7 +207,7 @@ export interface TrackListProps {
   headerBackground?: string;
   /** Width to lay out for. Default: measured (the window width until the first layout). */
   width?: number;
-  /** The grid's accessible name. Default `"Tracks"`. */
+  /** The grid's accessible name (`"Tracks"` in English). */
   accessibilityLabel?: string;
   labels?: TrackListLabels;
   style?: StyleProp<ViewStyle>;
@@ -271,9 +271,9 @@ export interface SelectionBarProps {
   count: number;
   actions: SelectionBarAction[];
   onClear: () => void;
-  /** Default `"<n> selected"`. */
+  /** Default `"<n> selected"` in English. */
   formatCount?: (count: number) => string;
-  /** Default `"Clear selection"`. */
+  /** Default `"Clear selection"` in English. */
   clearLabel?: string;
   /** Default `floating`. */
   placement?: SelectionBarPlacement;
@@ -304,19 +304,19 @@ export interface Episode {
 }
 
 export interface EpisodeRowLabels {
-  /** Default `"Played"`. */
+  /** Default `"Played"` in English. */
   played?: string;
-  /** Default: "12 min left" / "1 hr 4 min left". */
+  /** Default (in English): "12 min left" / "1 hr 4 min left". */
   formatRemaining?: (seconds: number) => string;
-  /** Default: "45 min" / "1 hr 12 min". */
+  /** Default (in English): "45 min" / "1 hr 12 min". */
   formatLength?: (seconds: number) => string;
   /** Default `"Save episode"` (toggle; state is aria-pressed). */
   save?: string;
   /** Default `"Download episode"` (toggle). */
   download?: string;
-  /** Default `"More options"`. */
+  /** Default `"More options"` in English. */
   moreOptions?: string;
-  /** The progress bar's name. Default `"Listened"`. */
+  /** The progress bar's name (`"Listened"` in English). */
   progress?: string;
 }
 
@@ -348,7 +348,7 @@ export interface EpisodeListProps
   episodes: Episode[];
   currentEpisodeId?: string | null;
   isPlaying?: boolean;
-  /** Default `"Episodes"`. */
+  /** Default `"Episodes"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

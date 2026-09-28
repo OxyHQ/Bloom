@@ -6,6 +6,8 @@ import { Text } from '../typography';
 import { MediaTrack } from './MediaTrack';
 import { formatDuration, resolveMediaControlsPaint } from './shared';
 import type { PlaybackProgressProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from './messages';
 
 /**
  * The thin scrubber under a player: rail, buffered segment, progress fill and a
@@ -36,11 +38,13 @@ function PlaybackProgressComponent({
   timesPosition = 'inline',
   keyboardStep = 5,
   disabled = false,
-  accessibilityLabel = 'Seek',
+  accessibilityLabel: accessibilityLabelProp,
   formatValueText,
   style,
   testID,
 }: PlaybackProgressProps) {
+  const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.seek;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
   const [dragValue, setDragValue] = useState<number | null>(null);
@@ -49,8 +53,8 @@ function PlaybackProgressComponent({
     (seconds: number) =>
       formatValueText
         ? formatValueText(seconds, duration)
-        : `${formatDuration(seconds)} of ${formatDuration(duration)}`,
-    [formatValueText, duration],
+        : messages.seekValue(formatDuration(seconds), formatDuration(duration)),
+    [formatValueText, duration, messages],
   );
 
   const track = (

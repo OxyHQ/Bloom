@@ -6,6 +6,8 @@ import { Text } from '../typography';
 import { Cover, HeaderTitle, MediaHeaderFrame, useImageUri, useMediaHeaderPaint } from './parts';
 import { gradientStyle, selectTitleVariant } from './shared';
 import type { ArtistHeroProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The top of an artist page.
@@ -31,7 +33,7 @@ function ArtistHeroComponent({
   banner,
   avatar,
   verified = false,
-  verifiedLabel = 'Verified artist',
+  verifiedLabel: verifiedLabelProp,
   listeners,
   artworkColor,
   actions,
@@ -39,6 +41,8 @@ function ArtistHeroComponent({
   style,
   testID,
 }: ArtistHeroProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const verifiedLabel = verifiedLabelProp ?? messages.verifiedArtist;
   const paint = useMediaHeaderPaint(artworkColor);
   const bannerUri = useImageUri(banner, 'large');
   const onPhoto = !!bannerUri;

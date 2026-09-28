@@ -9,6 +9,9 @@ import { MediaCard, SUBTITLE_VARIANT } from './MediaCard';
 import { IS_WEB, resolveMediaCardPaint } from './shared';
 import type { SongCardArtist, SongCardProps } from './types';
 import { webDataSet } from '../styles/web-data';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
 export function normaliseArtists(
   artists: SongCardProps['artists'],
@@ -39,7 +42,7 @@ function SongCardComponent({
   duration,
   liked = false,
   onLikedChange,
-  typeLabel = 'Song',
+  typeLabel: typeLabelProp,
   current = false,
   playing = false,
   layout = 'tile',
@@ -47,6 +50,9 @@ function SongCardComponent({
   testID,
   ...rest
 }: SongCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.song;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const list = normaliseArtists(artists);
@@ -82,7 +88,7 @@ function SongCardComponent({
     <>
       {onLikedChange ? (
         <View {...webDataSet(liked ? {} : { bloomMediaCardReveal: IS_WEB ? 'hover' : '' })}>
-          <LikeButton liked={liked} onLikedChange={onLikedChange} size="small" accessibilityLabel={`Save ${title} to Your Library`} />
+          <LikeButton liked={liked} onLikedChange={onLikedChange} size="small" accessibilityLabel={controls.saveSubjectToLibrary(title)} />
         </View>
       ) : null}
       {duration ? (
@@ -104,7 +110,7 @@ function SongCardComponent({
       placeholderIcon={RiMusic2Fill}
       titleLeading={current ? <NowPlayingIndicator playing={playing} size={14} /> : undefined}
       titleAccessory={explicit ? <ExplicitBadge size="small" /> : undefined}
-      titleAccessoryLabel={explicit ? 'Explicit' : undefined}
+      titleAccessoryLabel={explicit ? controls.explicit : undefined}
       accessibilityDetail={onPressArtist ? names : undefined}
       trailing={trailing}
       current={current}

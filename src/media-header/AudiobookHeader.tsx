@@ -6,6 +6,8 @@ import { Text } from '../typography';
 import { Cover, HeaderTitle, InlineLink, MediaHeaderFrame, MetaLine, ProgressBar, useMediaHeaderPaint } from './parts';
 import { selectTitleVariant } from './shared';
 import type { AudiobookHeaderProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The header of an audiobook.
@@ -19,7 +21,7 @@ import type { AudiobookHeaderProps } from './types';
 function AudiobookHeaderComponent({
   title,
   cover,
-  typeLabel = 'Audiobook',
+  typeLabel: typeLabelProp,
   author,
   onAuthorPress,
   narrator,
@@ -35,6 +37,8 @@ function AudiobookHeaderComponent({
   style,
   testID,
 }: AudiobookHeaderProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.audiobook;
   const paint = useMediaHeaderPaint(artworkColor);
   return (
     <MediaHeaderFrame
@@ -95,7 +99,7 @@ function AudiobookHeaderComponent({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
               <ProgressBar
                 value={progress}
-                label="Listening progress"
+                label={messages.listeningProgress}
                 fill={paint.onBand}
                 rail={paint.bandRail}
                 width={200}

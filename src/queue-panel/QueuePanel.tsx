@@ -12,8 +12,12 @@ import { QueueIconButton } from './QueueIconButton';
 import { QueuePanelRow, useQueuePanelCss } from './QueuePanelRow';
 import { QueueReorderList } from './QueueReorderList';
 import { RecentlyPlayedList } from './RecentlyPlayedList';
-import { DEFAULT_QUEUE_PANEL_LABELS, IS_WEB, resolveQueuePanelPaint } from './shared';
+import { IS_WEB, queuePanelLabels, queuePlayName, resolveQueuePanelPaint } from './shared';
 import type { QueuePanelLabels, QueuePanelProps, QueuePanelTab } from './types';
+import { useMessages } from '../locale/messages';
+import { useCommonMessages } from '../locale/common-messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { QUEUE_PANEL_MESSAGES } from './messages';
 
 /**
  * The play queue.
@@ -82,12 +86,15 @@ function QueuePanelComponent({
   style,
   testID,
 }: QueuePanelProps) {
+  const { messages } = useMessages(QUEUE_PANEL_MESSAGES);
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   useQueuePanelCss();
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
   const labels: QueuePanelLabels = useMemo(
-    () => ({ ...DEFAULT_QUEUE_PANEL_LABELS, ...labelsProp }),
-    [labelsProp],
+    () => ({ ...queuePanelLabels(messages, controls, common), ...labelsProp }),
+    [messages, controls, common, labelsProp],
   );
 
   const [innerTab, setInnerTab] = useState<QueuePanelTab>(defaultTab);
@@ -176,7 +183,7 @@ function QueuePanelComponent({
             items={recentlyPlayed}
             currentId={nowPlaying?.id}
             playing={playing}
-            labels={labels}
+            labels={{ play: labelsProp?.play, emptyRecent: labels.emptyRecent }}
             onPlay={onPlay ? (index, track) => onPlay('recent', index, track) : undefined}
             style={{ marginTop: 8 }}
             testID={testID ? `${testID}-recent` : undefined}
@@ -200,7 +207,7 @@ function QueuePanelComponent({
                   track={nowPlaying}
                   current
                   playing={playing}
-                  accessibilityLabel={`${labels.play} ${nowPlaying.title}`}
+                  accessibilityLabel={queuePlayName(labelsProp?.play, nowPlaying.title, controls)}
                   onPress={onPlay ? () => onPlay('now', 0, nowPlaying) : undefined}
                   testID={testID ? `${testID}-now` : undefined}
                 />
@@ -226,6 +233,7 @@ function QueuePanelComponent({
                   {labels.nextInQueue}
                 </SectionHeading>
                 <QueueReorderList
+                  customPlay={labelsProp?.play}
                   section="queue"
                   tracks={queue}
                   labels={labels}
@@ -245,6 +253,7 @@ function QueuePanelComponent({
                   {contextName ? labels.nextFrom(contextName) : labels.nextUp}
                 </SectionHeading>
                 <QueueReorderList
+                  customPlay={labelsProp?.play}
                   section="context"
                   tracks={context}
                   labels={labels}

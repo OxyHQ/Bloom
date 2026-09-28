@@ -18,6 +18,8 @@ import {
   resolveMediaControlsPaint,
 } from './shared';
 import type { VolumeControlProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from './messages';
 
 /** The speaker glyph for a level: muted or 0 → mute, under 0.5 → down, else up. */
 export function volumeIconFor(volume: number, muted: boolean) {
@@ -52,12 +54,16 @@ function VolumeControlComponent({
   sliderWidth = 96,
   sliderVisibility = 'always',
   disabled = false,
-  muteLabel = 'Mute',
-  unmuteLabel = 'Unmute',
-  accessibilityLabel = 'Volume',
+  muteLabel: muteLabelProp,
+  unmuteLabel: unmuteLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: VolumeControlProps) {
+  const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const muteLabel = muteLabelProp ?? messages.mute;
+  const unmuteLabel = unmuteLabelProp ?? messages.unmute;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.volume;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);

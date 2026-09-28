@@ -6,6 +6,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { DEVICE_GLYPHS } from './device-icons';
 import type { ConnectBannerProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_PLAYER_MESSAGES } from './messages';
 
 export const CONNECT_BANNER_HEIGHT = 28;
 
@@ -22,16 +24,19 @@ export const CONNECT_BANNER_HEIGHT = 28;
 function ConnectBannerComponent({
   deviceName,
   kind = 'speaker',
-  label = 'Listening on',
+  label,
   onPress,
   style,
   testID,
 }: ConnectBannerProps) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const theme = useTheme();
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const [hovered, setHovered] = useState(false);
   const Glyph = DEVICE_GLYPHS[kind];
-  const text = `${label} ${deviceName}`;
+  // A caller's `label` keeps the "<label> <device>" shape; the catalog's
+  // sentence places the device where the language does.
+  const text = label !== undefined ? `${label} ${deviceName}` : messages.listeningOnDevice(deviceName);
   const fg = theme.colors.primaryForeground;
   const bg = hovered && onPress ? (theme.isDark ? accent[400] : accent[600]) : accent[500];
 

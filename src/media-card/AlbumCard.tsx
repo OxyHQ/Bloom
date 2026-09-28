@@ -5,13 +5,12 @@ import { RiDiscFill } from '../icons/remix/RiDiscFill';
 import { MediaCard } from './MediaCard';
 import { joinMeta } from './shared';
 import type { AlbumCardProps, AlbumCardType } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
-export const ALBUM_TYPE_LABELS: Record<AlbumCardType, string> = {
-  album: 'Album',
-  single: 'Single',
-  ep: 'EP',
-  compilation: 'Compilation',
-};
+/** The English type words; the card speaks the locale's (`BloomProvider locale`). */
+export const ALBUM_TYPE_LABELS: Record<AlbumCardType, string> = MEDIA_CARD_MESSAGES.en.albumTypes;
 
 /**
  * An album, single or EP: square cover (radius 8), the title, "2026 · Album"
@@ -29,7 +28,9 @@ function AlbumCardComponent({
   layout = 'tile',
   ...rest
 }: AlbumCardProps) {
-  const type = typeLabels?.[albumType] ?? ALBUM_TYPE_LABELS[albumType];
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const type = typeLabels?.[albumType] ?? messages.albumTypes[albumType];
   const row = layout === 'row';
   return (
     <MediaCard
@@ -41,7 +42,7 @@ function AlbumCardComponent({
       meta={!row && artist ? [artist] : undefined}
       accessibilityLabel={
         rest.accessibilityLabel ??
-        [title, explicit ? 'Explicit' : null, type, year, artist].filter(Boolean).join(', ')
+        [title, explicit ? controls.explicit : null, type, year, artist].filter(Boolean).join(', ')
       }
       placeholderIcon={RiDiscFill}
       titleAccessory={explicit ? <ExplicitBadge size="small" /> : undefined}

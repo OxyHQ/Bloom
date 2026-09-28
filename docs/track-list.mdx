@@ -133,7 +133,7 @@ The list is **one** Tab stop: the focused row carries `tabIndex={0}` and every o
 - Each track is a `row` with `aria-selected` and `aria-rowindex`, named "title, artists" (plus "Unavailable"); its cells are `gridcell`s. Native gets the same name and `accessibilityState.selected`.
 - `grid`, not `listbox`: an `option`'s contents are presentational, and these rows contain buttons (play, like, more) and links (artists, album).
 - Artist and album names are `link`s when their handlers are set. Like is a toggle (`aria-pressed`); the more button carries `aria-haspopup` and `aria-expanded`.
-- Every word is in `labels` for translation.
+- Every word is localised via `BloomProvider locale` ([Locale](/docs/locale)); `labels` overrides any of them.
 
 ### Long lists
 

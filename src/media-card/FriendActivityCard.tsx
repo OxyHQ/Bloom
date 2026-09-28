@@ -15,6 +15,8 @@ import { Artwork, CardLink, useMediaCardCss } from './parts';
 import { composeName, resolveMediaCardPaint, ROW_PADDING, ROW_RADIUS } from './shared';
 import type { FriendActivityCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 const AVATAR = 40;
 const DOT = 12;
@@ -42,7 +44,7 @@ function FriendActivityCardComponent({
   contextType = 'playlist',
   live = false,
   time,
-  liveLabel = 'Listening now',
+  liveLabel: liveLabelProp,
   onPress,
   href,
   selected = false,
@@ -51,6 +53,8 @@ function FriendActivityCardComponent({
   style,
   testID,
 }: FriendActivityCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const liveLabel = liveLabelProp ?? messages.listeningNow;
   const common = useCommonMessages();
   const theme = useTheme();
   useMediaCardCss();
@@ -70,7 +74,7 @@ function FriendActivityCardComponent({
 
   const label =
     accessibilityLabel ??
-    composeName([name, live ? liveLabel : time, `${track} by ${artist}`, context]);
+    composeName([name, live ? liveLabel : time, messages.trackBy(track, artist), context]);
   const ContextGlyph = contextType === 'album' ? RiDiscFill : RiMusic2Fill;
 
   const rootStyle: WebCssStyle = {

@@ -21,27 +21,27 @@ export interface SortablePhoto {
 
 /** Visible and accessible copy, overridable for localisation. */
 export interface SortablePhotoGridLabels {
-  /** A photo's name. Default `` (position, total) => `Photo ${position} of ${total}` ``. */
+  /** A photo's name. Default (in English) `` (position, total) => `Photo ${position} of ${total}` ``. */
   photo: (position: number, total: number) => string;
-  /** The first photo's badge, also added to its name. Default `"Cover"`. */
+  /** The first photo's badge, also added to its name (`"Cover"` in English). */
   cover: string;
-  /** Default `` (position) => `Move photo ${position} earlier` ``. */
+  /** Default (in English) `` (position) => `Move photo ${position} earlier` ``. */
   moveEarlier: (position: number) => string;
-  /** Default `` (position) => `Move photo ${position} later` ``. */
+  /** Default (in English) `` (position) => `Move photo ${position} later` ``. */
   moveLater: (position: number) => string;
-  /** Default `` (position) => `Remove photo ${position}` ``. */
+  /** Default (in English) `` (position) => `Remove photo ${position}` ``. */
   remove: (position: number) => string;
-  /** The retry button's name. Default `` (position) => `Retry uploading photo ${position}` ``. */
+  /** The retry button's name. Default (in English) `` (position) => `Retry uploading photo ${position}` ``. */
   retry: (position: number) => string;
-  /** The retry button's visible text. Default `"Retry"`. */
+  /** The retry button's visible text (`"Retry"` in English). */
   retryAction: string;
-  /** The progress overlay's name. Default `` (position) => `Uploading photo ${position}` ``. */
+  /** The progress overlay's name. Default (in English) `` (position) => `Uploading photo ${position}` ``. */
   uploading: (position: number) => string;
-  /** Default `"Upload failed"`. */
+  /** Default `"Upload failed"` in English. */
   failed: string;
-  /** The add tile. Default `"Add photos"`. */
+  /** The add tile (`"Add photos"` in English). */
   add: string;
-  /** Announced after a move. Default `` (position, total) => `Moved to position ${position} of ${total}` ``. */
+  /** Announced after a move. Default (in English) `` (position, total) => `Moved to position ${position} of ${total}` ``. */
   moved: (position: number, total: number) => string;
 }
 
@@ -67,7 +67,7 @@ export interface SortablePhotoGridProps {
   /** Stops reordering, removing and adding. */
   disabled?: boolean;
   labels?: Partial<SortablePhotoGridLabels>;
-  /** Names the grid. Default `"Photos"`. */
+  /** Names the grid (`"Photos"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

@@ -2,6 +2,8 @@ import React, { memo } from 'react';
 
 import { Chip, ChipRow } from '../chip';
 import type { FilterChipsProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_SHELF_MESSAGES } from './messages';
 
 /**
  * The single-select pill row above a feed: "All", "Music", "Podcasts"…
@@ -29,11 +31,13 @@ function FilterChipsComponent({
   value,
   onValueChange,
   allowDeselect = false,
-  accessibilityLabel = 'Filters',
+  accessibilityLabel: accessibilityLabelProp,
   contentInset = 0,
   style,
   testID,
 }: FilterChipsProps) {
+  const { messages } = useMessages(MEDIA_SHELF_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.filters;
   return (
     <ChipRow
       role="group"

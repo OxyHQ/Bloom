@@ -6,6 +6,8 @@ import { ArtistStats } from './ArtistStats';
 import { ClampedText, useImageUri, useMediaHeaderPaint } from './parts';
 import { gradientStyle } from './shared';
 import type { ArtistAboutProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The "About" section of an artist page.
@@ -23,12 +25,14 @@ function ArtistAboutComponent({
   bioLines = 3,
   stats,
   cities,
-  title = 'About',
+  title: titleProp,
   showMoreLabel,
   showLessLabel,
   style,
   testID,
 }: ArtistAboutProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const title = titleProp ?? messages.about;
   const paint = useMediaHeaderPaint();
   const uri = useImageUri(image, 'large');
   return (

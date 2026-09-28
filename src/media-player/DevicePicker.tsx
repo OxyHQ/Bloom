@@ -9,6 +9,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { DEVICE_GLYPHS } from './device-icons';
 import type { DevicePickerProps, PlaybackDevice } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_PLAYER_MESSAGES } from './messages';
 
 export const DEVICE_ROW_HEIGHT = 52;
 
@@ -124,15 +126,21 @@ function DevicePickerComponent({
   current,
   devices,
   onSelect,
-  title = 'Current device',
-  currentLabel = 'Listening on',
-  devicesTitle = 'Select a device',
-  emptyLabel = 'No other devices found',
-  helpLabel = "Don't see your device?",
+  title: titleProp,
+  currentLabel: currentLabelProp,
+  devicesTitle: devicesTitleProp,
+  emptyLabel: emptyLabelProp,
+  helpLabel: helpLabelProp,
   onHelpPress,
   style,
   testID,
 }: DevicePickerProps) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const title = titleProp ?? messages.currentDevice;
+  const currentLabel = currentLabelProp ?? messages.listeningOn;
+  const devicesTitle = devicesTitleProp ?? messages.selectDevice;
+  const emptyLabel = emptyLabelProp ?? messages.noDevices;
+  const helpLabel = helpLabelProp ?? messages.deviceHelp;
   const theme = useTheme();
   const palette = useMemo(() => resolveMenuPalette(theme), [theme]);
   const [helpHovered, setHelpHovered] = useState(false);

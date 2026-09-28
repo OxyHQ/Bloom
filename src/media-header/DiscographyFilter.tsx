@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Chip } from '../chip';
@@ -8,6 +8,8 @@ import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
 import type { DiscographyFilterOption, DiscographyFilterProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES, type MediaHeaderMessages } from './messages';
 
 /**
  * The heading and chips over an artist's discography.
@@ -16,22 +18,33 @@ import type { DiscographyFilterOption, DiscographyFilterProps } from './types';
  *   chips      `Chip` medium; the chosen one is `selected` (aria-pressed)
  */
 
-export const DEFAULT_DISCOGRAPHY_OPTIONS: readonly DiscographyFilterOption[] = [
-  { value: 'albums', label: 'Albums' },
-  { value: 'singles', label: 'Singles and EPs' },
-  { value: 'compilations', label: 'Compilations' },
-];
+/** The chips in a language's words. */
+function discographyOptions(messages: MediaHeaderMessages): readonly DiscographyFilterOption[] {
+  return [
+    { value: 'albums', label: messages.albums },
+    { value: 'singles', label: messages.singlesAndEps },
+    { value: 'compilations', label: messages.compilations },
+  ];
+}
+
+/** The English chips; the filter draws the locale's (`BloomProvider locale`) unless `options` is given. */
+export const DEFAULT_DISCOGRAPHY_OPTIONS: readonly DiscographyFilterOption[] = discographyOptions(MEDIA_HEADER_MESSAGES.en);
 
 function DiscographyFilterComponent({
   value,
   onValueChange,
-  options = DEFAULT_DISCOGRAPHY_OPTIONS,
-  title = 'Discography',
+  options: optionsProp,
+  title: titleProp,
   onShowAll,
-  showAllLabel = 'Show all',
+  showAllLabel: showAllLabelProp,
   style,
   testID,
 }: DiscographyFilterProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const options = useMemo(() => optionsProp ?? discographyOptions(messages), [optionsProp, messages]);
+  // `null` is a deliberate "no heading"; only an absent title takes the catalog's.
+  const title = titleProp === undefined ? messages.discography : titleProp;
+  const showAllLabel = showAllLabelProp ?? messages.showAll;
   const paint = useMediaHeaderPaint();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const linkStyle: WebCssStyle = { borderRadius: 4, '--bloom-media-header-ring': paint.ring };

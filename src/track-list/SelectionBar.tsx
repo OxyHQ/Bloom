@@ -8,6 +8,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveTrackListPaint } from './shared';
 import type { SelectionBarProps } from './types';
+import { useMessages } from '../locale/messages';
+import { TRACK_LIST_MESSAGES } from './messages';
 
 /** Below this width the actions draw as icon buttons only. */
 const LABELS_MIN_WIDTH = 640;
@@ -38,13 +40,16 @@ export function SelectionBar({
   count,
   actions,
   onClear,
-  formatCount = (n) => `${n} selected`,
-  clearLabel = 'Clear selection',
+  formatCount: formatCountProp,
+  clearLabel: clearLabelProp,
   placement = 'floating',
   width,
   style,
   testID,
 }: SelectionBarProps) {
+  const { messages } = useMessages(TRACK_LIST_MESSAGES);
+  const clearLabel = clearLabelProp ?? messages.clearSelection;
+  const formatCount = formatCountProp ?? messages.selected;
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
   const window = useWindowDimensions();
