@@ -3,6 +3,8 @@ import React, { memo } from 'react';
 import { Fab } from '../fab';
 import { RiChatNewLine } from '../icons/remix/RiChatNewLine';
 import type { NewChatButtonProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * The round "New chat" action.
@@ -20,10 +22,12 @@ import type { NewChatButtonProps } from './types';
 
 function NewChatButtonComponent({
   icon,
-  accessibilityLabel = 'New chat',
+  accessibilityLabel: accessibilityLabelProp,
   extended = false,
   ...rest
 }: NewChatButtonProps) {
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.newChat;
   return (
     <Fab
       {...rest}

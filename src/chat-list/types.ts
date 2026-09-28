@@ -159,19 +159,19 @@ export interface ChatSwipeActions {
 // ---------------------------------------------------------------------------
 
 export interface ChatListItemLabels {
-  /** Leads a draft preview. Default `'Draft:'`. */
+  /** Leads a draft preview. `'Draft:'` in English (localised). */
   draft?: string;
-  /** Names the pin glyph. Default `'Pinned'`. */
+  /** Names the pin glyph. `'Pinned'` in English (localised). */
   pinned?: string;
-  /** Names the mute glyph. Default `'Muted'`. */
+  /** Names the mute glyph. `'Muted'` in English (localised). */
   muted?: string;
-  /** Names the verified marker. Default `'Verified'`. */
+  /** Names the verified marker. `'Verified'` in English (localised). */
   verified?: string;
-  /** Names the channel marker. Default `'Channel'`. */
+  /** Names the channel marker. `'Channel'` in English (localised). */
   channel?: string;
-  /** Names the bot marker. Default `'Bot'`. */
+  /** Names the bot marker. `'Bot'` in English (localised). */
   bot?: string;
-  /** Names the group marker. Default `'Group'`. */
+  /** Names the group marker. `'Group'` in English (localised). */
   group?: string;
 }
 
@@ -282,7 +282,7 @@ export interface ChatListSection {
 export interface ArchivedRowProps {
   /** Chats in the archive. `0` or absent draws no badge. */
   count?: number;
-  /** Default `'Archived'`. */
+  /** `'Archived'` in English (localised). */
   label?: string;
   /** The folder glyph. Default an archive box. */
   icon?: ReactNode;
@@ -300,9 +300,9 @@ export interface ArchivedRowProps {
 }
 
 export interface ChatListLabels {
-  /** The empty state's heading. Default `'No conversations yet'`. */
+  /** The empty state's heading. `'No conversations yet'` in English (localised). */
   emptyTitle?: string;
-  /** The line under it. Default `'Start a chat and it will show up here.'`. */
+  /** The line under it. `'Start a chat and it will show up here.'` in English (localised). */
   emptyDescription?: string;
 }
 
@@ -334,7 +334,7 @@ export interface ChatListProps {
   /** Replaces the built-in empty state. */
   empty?: ReactNode;
   labels?: ChatListLabels;
-  /** Names the list. Default `'Chats'`. */
+  /** Names the list. `'Chats'` in English (localised). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -389,9 +389,9 @@ export interface StoryEntry {
 }
 
 export interface StoriesRowLabels {
-  /** The first entry's name. Default `'Your story'`. */
+  /** The first entry's name. `'Your story'` in English (localised). */
   own?: string;
-  /** Names the + badge. Default `'Add to your story'`. */
+  /** Names the + badge. `'Add to your story'` in English (localised). */
   add?: string;
 }
 
@@ -412,7 +412,7 @@ export interface StoriesRowProps {
   gap?: number;
   /** Inline padding of the scrolling strip. Default `16`. */
   paddingHorizontal?: number;
-  /** Names the strip. Default `'Stories'`. */
+  /** Names the strip. `'Stories'` in English (localised). */
   accessibilityLabel?: string;
   labels?: StoriesRowLabels;
   style?: StyleProp<ViewStyle>;
@@ -434,9 +434,9 @@ export interface ChatSearchFieldProps {
   onBlur?: () => void;
   /** Default `'Search'`. */
   placeholder?: string;
-  /** The input's accessible name. Default `'Search chats'`. */
+  /** The input's accessible name. `'Search chats'` in English (localised). */
   accessibilityLabel?: string;
-  /** Default `'Clear search'`. */
+  /** `'Clear search'` in English (localised). */
   clearLabel?: string;
   /** Drawn at the right edge — a cancel button, a filter glyph. */
   trailing?: ReactNode;
@@ -474,7 +474,7 @@ export interface ChatSearchResultsLabels {
   chat?: string;
   message?: string;
   contact?: string;
-  /** Shown when nothing matched. Default `'No results'`. */
+  /** Shown when nothing matched. `'No results'` in English (localised). */
   empty?: string;
 }
 
@@ -492,7 +492,7 @@ export interface ChatSearchResultsProps {
   loadingCount?: number;
   /** Default `'comfortable'`. */
   density?: ChatListDensity;
-  /** Names the results region. Default `'Search results'`. */
+  /** Names the results region. `'Search results'` in English (localised). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -534,7 +534,7 @@ export interface HighlightedTextProps {
 export interface NewChatButtonProps extends Omit<FabProps, 'icon' | 'children' | 'label'> {
   /** Replaces the default pencil-on-a-square glyph. */
   icon?: ReactNode;
-  /** Default `'New chat'` — the name, and the extended FAB's text when `extended`. */
+  /** `'New chat'` in English (localised) — the name, and the extended FAB's text when `extended`. */
   accessibilityLabel?: string;
   /** Draw the extended pill (icon + `accessibilityLabel`) instead of the circle. */
   extended?: boolean;
