@@ -16,6 +16,7 @@ import { SettingsDateField, SettingsModal, SettingsPlanCard, SettingsServerList,
 import { SETTINGS_MODAL_MESSAGES } from '../settings-modal/messages';
 import { ThemeToggle } from '../theme-toggle';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
 jest.mock('../settings-modal/modal-portal', () => ({
@@ -75,10 +76,10 @@ describe('settings-modal, error-boundary, theme-toggle', () => {
     });
 
     it('pluralises the file count per language', () => {
-      const ru = SETTINGS_MODAL_MESSAGES.ru.storage.fileCount;
+      const ru = messagesIn(SETTINGS_MODAL_MESSAGES, 'ru').storage.fileCount;
       expect([1, 3, 5, 21].map((n) => ru(n, String(n)))).toEqual(['1 файл', '3 файла', '5 файлов', '21 файл']);
       expect(SETTINGS_MODAL_MESSAGES.en.storage.fileCount(2, '2')).toBe('2 files');
-      expect(SETTINGS_MODAL_MESSAGES.ar.storage.fileCount(2, '2')).toBe('ملفان');
+      expect(messagesIn(SETTINGS_MODAL_MESSAGES, 'ar').storage.fileCount(2, '2')).toBe('ملفان');
     });
 
     it('translates the tools page and the server list', () => {

@@ -16,6 +16,7 @@ import { LocaleProvider } from '../locale';
 import { OutlineNav } from '../outline-nav';
 import { SocialButton, socialButtonLabel } from '../social-button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
 jest.mock('../settings-modal/modal-portal', () => ({
@@ -124,12 +125,12 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
     });
 
     it('pluralises per language (ru, ar, fr)', () => {
-      expect(AVATAR_GROUP_MESSAGES.ru.more(1)).toBe('ещё 1 человек');
-      expect(AVATAR_GROUP_MESSAGES.ru.more(3)).toBe('ещё 3 человека');
-      expect(AVATAR_GROUP_MESSAGES.ru.more(5)).toBe('ещё 5 человек');
-      expect(AVATAR_GROUP_MESSAGES.ar.more(2)).toBe('شخصان آخران');
-      expect(AVATAR_GROUP_MESSAGES.fr.more(1)).toBe('1 autre personne');
-      expect(AVATAR_GROUP_MESSAGES.es.more(1)).toBe('1 persona más');
+      expect(messagesIn(AVATAR_GROUP_MESSAGES, 'ru').more(1)).toBe('ещё 1 человек');
+      expect(messagesIn(AVATAR_GROUP_MESSAGES, 'ru').more(3)).toBe('ещё 3 человека');
+      expect(messagesIn(AVATAR_GROUP_MESSAGES, 'ru').more(5)).toBe('ещё 5 человек');
+      expect(messagesIn(AVATAR_GROUP_MESSAGES, 'ar').more(2)).toBe('شخصان آخران');
+      expect(messagesIn(AVATAR_GROUP_MESSAGES, 'fr').more(1)).toBe('1 autre personne');
+      expect(messagesIn(AVATAR_GROUP_MESSAGES, 'es').more(1)).toBe('1 persona más');
     });
   });
 

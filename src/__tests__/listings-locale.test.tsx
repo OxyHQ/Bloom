@@ -58,6 +58,8 @@ import { STAY_SEARCH_MESSAGES } from '../stay-search/messages';
 import { DocumentList, MaintenanceRequestCard, RentPaymentList, TenancyTimeline } from '../tenancy';
 import { TENANCY_MESSAGES } from '../tenancy/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
+import { BLOOM_LANGUAGES } from '../locale';
 
 function renderIn(locale: string | undefined, ui: React.ReactElement) {
   return render(
@@ -93,7 +95,7 @@ describe('listing-actions and booking', () => {
       const rental = renderIn('es', <RentalActionCard price="1.250 €" status="reserved" onApply={() => {}} />);
       expect(rental.getByText('Solicitar una visita')).toBeTruthy();
       expect(rental.getByText('Reservado')).toBeTruthy();
-      expect(rental.getByText(LISTING_ACTIONS_MESSAGES.es.rentalStatusMessage.reserved)).toBeTruthy();
+      expect(rental.getByText(messagesIn(LISTING_ACTIONS_MESSAGES, 'es').rentalStatusMessage.reserved)).toBeTruthy();
       expect(rental.getByLabelText('1.250 € por mes')).toBeTruthy();
 
       const sale = renderIn('de', <SaleActionCard price="385.000 €" status="sold" statusLabel="Weg" />);
@@ -126,7 +128,7 @@ describe('listing-actions and booking', () => {
     });
 
     it('pluralises the term in Arabic', () => {
-      const ar = LISTING_ACTIONS_MESSAGES.ar.termYears;
+      const ar = messagesIn(LISTING_ACTIONS_MESSAGES, 'ar').termYears;
       expect([ar(1), ar(2), ar(5), ar(15)]).toEqual(['سنة واحدة', 'سنتان', '5 سنوات', '15 سنة']);
     });
   });
@@ -153,8 +155,8 @@ describe('listing-actions and booking', () => {
 
     it('places the unit and the earlier price in the language’s own order', () => {
       expect(priceAccessibilityName('$162', 'night', '$180')).toBe('$162 per night, originally $180');
-      expect(priceAccessibilityName('₺900', 'gece', '₺1000', BOOKING_MESSAGES.tr)).toBe('gece başına ₺900, önceki fiyat ₺1000');
-      expect(BOOKING_MESSAGES.es.priceName('180 €', 'noche')).toBe('180 € por noche');
+      expect(priceAccessibilityName('₺900', 'gece', '₺1000', messagesIn(BOOKING_MESSAGES, 'tr'))).toBe('gece başına ₺900, önceki fiyat ₺1000');
+      expect(messagesIn(BOOKING_MESSAGES, 'es').priceName('180 €', 'noche')).toBe('180 € por noche');
     });
   });
 });
@@ -199,7 +201,7 @@ describe('listing-editor, tenancy and eviction', () => {
       // `null` still hides the footnote.
       expect(
         renderIn('es', <AddressPrecisionPicker value="street" onValueChange={noop} footnote={null} />).queryByText(
-          LISTING_EDITOR_MESSAGES.es.addressPrecisionFootnote,
+          messagesIn(LISTING_EDITOR_MESSAGES, 'es').addressPrecisionFootnote,
         ),
       ).toBeNull();
 
@@ -212,7 +214,7 @@ describe('listing-editor, tenancy and eviction', () => {
     });
 
     it('pluralises the review count per language, pre-formatted counts included', () => {
-      const { reviews } = LISTING_EDITOR_MESSAGES.ru;
+      const { reviews } = messagesIn(LISTING_EDITOR_MESSAGES, 'ru');
       expect(reviews(1, '1')).toBe('1 отзыв');
       expect(reviews(3, '3')).toBe('3 отзыва');
       expect(reviews(12, '12')).toBe('12 отзывов');
@@ -236,8 +238,8 @@ describe('listing-editor, tenancy and eviction', () => {
       expect(screen.getByText('5 комментариев')).toBeTruthy();
       expect(screen.getByText('Сантехника')).toBeTruthy();
       expect(screen.getByLabelText('Фото 1 из 1')).toBeTruthy();
-      expect(TENANCY_MESSAGES.ru.comments(1)).toBe('1 комментарий');
-      expect(TENANCY_MESSAGES.ru.comments(3)).toBe('3 комментария');
+      expect(messagesIn(TENANCY_MESSAGES, 'ru').comments(1)).toBe('1 комментарий');
+      expect(messagesIn(TENANCY_MESSAGES, 'ru').comments(3)).toBe('3 комментария');
     });
 
     it('draws the rent and document lists in Spanish, and a caller label still wins', () => {
@@ -322,7 +324,9 @@ describe('property-insights, listing-details and listing-card', () => {
     });
 
     it('pluralises the comparables line by each language’s rules', () => {
-      const { ru, ar, en } = PROPERTY_INSIGHTS_MESSAGES;
+      const ru = messagesIn(PROPERTY_INSIGHTS_MESSAGES, 'ru');
+      const ar = messagesIn(PROPERTY_INSIGHTS_MESSAGES, 'ar');
+      const en = PROPERTY_INSIGHTS_MESSAGES.en;
       expect(en.comparables(1)).toBe('Based on 1 comparable home');
       expect(en.comparables(12)).toBe('Based on 12 comparable homes');
       expect(ru.comparables(21)).toBe('На основе 21 похожего объекта');
@@ -348,7 +352,7 @@ describe('property-insights, listing-details and listing-card', () => {
       expect(
         renderIn('es', <AmenityList items={items} columns={1} limit={1} total={42} onShowAll={() => {}} />).getByText('Mostrar los 42 servicios'),
       ).toBeTruthy();
-      expect(LISTING_DETAILS_MESSAGES.ru.showAllAmenities(22)).toBe('Показать все 22 удобства');
+      expect(messagesIn(LISTING_DETAILS_MESSAGES, 'ru').showAllAmenities(22)).toBe('Показать все 22 удобства');
       expect(LISTING_DETAILS_MESSAGES.en.showAllAmenities(42)).toBe('Show all 42 amenities');
     });
 
@@ -377,8 +381,8 @@ describe('property-insights, listing-details and listing-card', () => {
     it('composes the card’s name in Spanish, with the review plural', () => {
       const { getByLabelText } = renderIn('es', <ListingCard {...stay} onPress={() => {}} />);
       expect(getByLabelText('Alvora, Reservado, Valoración: 4.92 de 5, 1 reseña')).toBeTruthy();
-      expect(LISTING_CARD_MESSAGES.es.ratedWithReviews('4.92', '128')).toBe('Valoración: 4.92 de 5, 128 reseñas');
-      expect(LISTING_CARD_MESSAGES.ru.ratedWithReviews('4.9', '3')).toBe('Оценка 4.9 из 5, 3 отзыва');
+      expect(messagesIn(LISTING_CARD_MESSAGES, 'es').ratedWithReviews('4.92', '128')).toBe('Valoración: 4.92 de 5, 128 reseñas');
+      expect(messagesIn(LISTING_CARD_MESSAGES, 'ru').ratedWithReviews('4.9', '3')).toBe('Оценка 4.9 из 5, 3 отзыва');
       expect(LISTING_CARD_MESSAGES.en.ratedWithReviews('4.92', '128')).toBe('Rated 4.92 out of 5, 128 reviews');
     });
 
@@ -415,10 +419,10 @@ describe('stay-search, stay-filters and home-search', () => {
     });
 
     it('pluralises the day offsets per language', () => {
-      expect(STAY_SEARCH_MESSAGES.ru.plusMinusDays(1)).toBe('± 1 день');
-      expect(STAY_SEARCH_MESSAGES.ru.plusMinusDays(3)).toBe('± 3 дня');
-      expect(STAY_SEARCH_MESSAGES.ru.plusMinusDays(7)).toBe('± 7 дней');
-      expect(STAY_SEARCH_MESSAGES.ar.plusMinusDays(2)).toBe('± يومان');
+      expect(messagesIn(STAY_SEARCH_MESSAGES, 'ru').plusMinusDays(1)).toBe('± 1 день');
+      expect(messagesIn(STAY_SEARCH_MESSAGES, 'ru').plusMinusDays(3)).toBe('± 3 дня');
+      expect(messagesIn(STAY_SEARCH_MESSAGES, 'ru').plusMinusDays(7)).toBe('± 7 дней');
+      expect(messagesIn(STAY_SEARCH_MESSAGES, 'ar').plusMinusDays(2)).toBe('± يومان');
     });
 
     it("keeps a caller's title and labels over the catalog", () => {
@@ -462,7 +466,7 @@ describe('stay-search, stay-filters and home-search', () => {
     });
 
     it('ships every built-in option in every language', () => {
-      for (const messages of Object.values(STAY_FILTERS_MESSAGES)) {
+      for (const messages of BLOOM_LANGUAGES.map((language) => messagesIn(STAY_FILTERS_MESSAGES, language))) {
         expect(Object.keys(messages.propertyTypes)).toHaveLength(8);
         expect(Object.keys(messages.features)).toHaveLength(11);
       }
@@ -490,8 +494,8 @@ describe('stay-search, stay-filters and home-search', () => {
       expect(card.getByText('3 nuevos')).toBeTruthy();
       expect(card.getByText('Alertas desactivadas')).toBeTruthy();
       expect(card.getByLabelText('Editar: Pisos en Halden')).toBeTruthy();
-      expect(HOME_SEARCH_MESSAGES.es.newCount(1)).toBe('1 nuevo');
-      expect(HOME_SEARCH_MESSAGES.ru.newCount(5)).toBe('5 новых');
+      expect(messagesIn(HOME_SEARCH_MESSAGES, 'es').newCount(1)).toBe('1 nuevo');
+      expect(messagesIn(HOME_SEARCH_MESSAGES, 'ru').newCount(5)).toBe('5 новых');
     });
 
     it("keeps a caller's labels over the catalog", () => {

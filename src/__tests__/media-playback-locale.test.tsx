@@ -24,6 +24,7 @@ import { EpisodeRow, SelectionBar } from '../track-list';
 import { TRACK_LIST_MESSAGES } from '../track-list/messages';
 import { formatEpisodeLength, formatEpisodeRemaining } from '../track-list/shared';
 import { ZoomableMediaGallery, type ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
+import { messagesIn } from './support/messages-in';
 
 function renderIn(locale: string | undefined, ui: React.ReactElement) {
   return render(
@@ -77,10 +78,10 @@ describe('media-player', () => {
     );
     expect(podcast.getByLabelText('Назад на 15 секунд')).toBeTruthy();
     expect(podcast.getByLabelText('Вперёд на 30 секунд')).toBeTruthy();
-    expect(MEDIA_PLAYER_MESSAGES.ru.minutes(1)).toBe('1 минута');
-    expect(MEDIA_PLAYER_MESSAGES.ru.minutes(3)).toBe('3 минуты');
-    expect(MEDIA_PLAYER_MESSAGES.ru.minutes(45)).toBe('45 минут');
-    expect(MEDIA_PLAYER_MESSAGES.ar.minutes(2)).toBe('دقيقتان');
+    expect(messagesIn(MEDIA_PLAYER_MESSAGES, 'ru').minutes(1)).toBe('1 минута');
+    expect(messagesIn(MEDIA_PLAYER_MESSAGES, 'ru').minutes(3)).toBe('3 минуты');
+    expect(messagesIn(MEDIA_PLAYER_MESSAGES, 'ru').minutes(45)).toBe('45 минут');
+    expect(messagesIn(MEDIA_PLAYER_MESSAGES, 'ar').minutes(2)).toBe('دقيقتان');
     expect(MEDIA_PLAYER_MESSAGES.en.skipBack(15)).toBe('Back 15 seconds');
   });
 
@@ -157,13 +158,13 @@ describe('track-list', () => {
     const items = () => [{ key: 'share', label: 'Compartir', onPress: noop }];
     expect(renderIn('es', <EpisodeRow episode={episode} menuItems={items} width={900} />).getAllByLabelText('Más opciones de Tide Tables').length).toBeGreaterThan(0);
     expect(renderIn(undefined, <EpisodeRow episode={episode} menuItems={items} width={900} />).getAllByLabelText('More options for Tide Tables').length).toBeGreaterThan(0);
-    expect(COMMON_MESSAGES.es.labelFor('Más opciones', 'X')).not.toMatch(/\bfor\b/);
+    expect(messagesIn(COMMON_MESSAGES, 'es').labelFor('Más opciones', 'X')).not.toMatch(/\bfor\b/);
   });
 
   it('formats episode lengths with the language’s units', () => {
     expect(formatEpisodeLength(72 * 60)).toBe('1 hr 12 min');
-    expect(formatEpisodeLength(72 * 60, TRACK_LIST_MESSAGES.de)).toBe('1 Std. 12 Min.');
-    expect(formatEpisodeRemaining(12 * 60, TRACK_LIST_MESSAGES.ja)).toBe('残り12分');
+    expect(formatEpisodeLength(72 * 60, messagesIn(TRACK_LIST_MESSAGES, 'de'))).toBe('1 Std. 12 Min.');
+    expect(formatEpisodeRemaining(12 * 60, messagesIn(TRACK_LIST_MESSAGES, 'ja'))).toBe('残り12分');
   });
 });
 

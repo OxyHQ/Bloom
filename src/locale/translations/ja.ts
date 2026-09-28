@@ -1,0 +1,2306 @@
+// Bloom's ja strings for every family. Loaded on demand by
+// `loadBloomLanguage` (src/locale/translations.ts), the ONLY importer of this
+// module, so a bundler gives each language one chunk of its own.
+import type { Translations } from './types';
+import { priceName as booking_priceName } from '../../booking/message-helpers';
+import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
+import { corner as callUi_corner } from '../../call-ui/message-helpers';
+import { plural } from '../plural';
+import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
+import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
+import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import { countForms as rating_countForms } from '../../rating/message-helpers';
+import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
+import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+
+const CALL_UI_MESSAGES__CORNERS = { 'top-left': '左上', 'top-right': '右上', 'bottom-left': '左下', 'bottom-right': '右下' };
+
+const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
+  close: '閉じる',
+  dismiss: '非表示',
+  back: '戻る',
+  goBack: '前に戻る',
+  loading: '読み込み中',
+  more: 'その他',
+  moreOptions: 'その他のオプション',
+  moreActions: 'その他の操作',
+  progress: '進捗',
+  stepOf: (step, total) => `ステップ ${step}/${total}`,
+  labelFor: (label, subject) => `${subject}の${label}`,
+  tapToClose: 'タップして閉じる',
+  cancel: 'キャンセル',
+  done: '完了',
+  save: '保存',
+  delete: '削除',
+  edit: '編集',
+  remove: '取り除く',
+  retry: '再試行',
+  search: '検索',
+  showMore: 'もっと見る',
+  showLess: '表示を減らす',
+  next: '次へ',
+  previous: '前へ',
+  open: '開く',
+  menu: 'メニュー',
+  copy: 'コピー',
+  copied: 'コピーしました',
+  send: '送信',
+  clear: 'クリア',
+  seeAll: 'すべて表示',
+  resizePanels: 'パネルのサイズを変更',
+};
+
+const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: '確認', ok: '了解' };
+
+const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
+  channels: {
+    email: { action: 'メール', name: (s) => `${s}にメールを送信` },
+    phone: { action: '電話', name: (s) => `${s}に電話` },
+    chat: { action: 'メッセージ', name: (s) => `${s}にメッセージを送信` },
+    meeting: { action: 'ミーティング', name: (s) => `${s}とのミーティングを設定` },
+    video: { action: 'ビデオ', name: (s) => `${s}とビデオ通話を開始` },
+    website: { action: 'ウェブサイト', name: (s) => `${s}のウェブサイトを開く` },
+  },
+  labelsFor: (name) => `${name}のラベル`,
+  owner: '担当者',
+};
+
+const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
+  item: { draft: '下書き:', pinned: 'ピン留め', muted: 'ミュート中', verified: '認証済み', channel: 'チャンネル', bot: 'ボット', group: 'グループ' },
+  search: { chat: 'トーク', message: 'メッセージ', contact: '連絡先', empty: '結果はありません' },
+  list: 'トーク',
+  emptyTitle: 'まだトークはありません',
+  emptyDescription: 'トークを始めると、ここに表示されます。',
+  searchResults: '検索結果',
+  searchChats: 'トークを検索',
+  clearSearch: '検索をクリア',
+  newChat: '新しいトーク',
+  archived: 'アーカイブ',
+  archivedName: (label, n) => `${label}、${n} 件のトーク`,
+  folderName: (label, n) => `${label}、未読 ${n} 件`,
+  stories: 'ストーリー',
+  ownStory: 'あなたのストーリー',
+  addStory: 'ストーリーに追加',
+  storyOf: (name) => `${name}のストーリー`,
+};
+
+const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
+  pinned: 'ピン留め',
+  locked: '保護済み',
+  attachments: (n) => plural('ja', n, { other: '添付ファイル{n}件' }),
+  select: 'メモを選択',
+  checklistDone: '完了',
+  checklistTodo: '未完了',
+  more: (n) => `他${n}件`,
+};
+
+const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
+  view: '表示',
+  dismissDialog: 'ダイアログを閉じる',
+  dismissNamed: (label) => `${label}を閉じる`,
+};
+
+const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
+  confirm: '確認',
+};
+
+const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  sidebar: 'サイドバー',
+  collapse: 'サイドバーを折りたたむ',
+  expand: 'サイドバーを展開',
+  close: 'サイドバーを閉じる',
+  quickSearch: 'クイック検索',
+  searchPlaceholder: 'ナビゲーションを検索…',
+  searchPlaceholderCompact: '検索...',
+  filter: 'ナビゲーションを絞り込む',
+  clearSearch: 'ナビゲーション検索をクリア',
+  noResults: '結果がありません',
+  mode: 'モード',
+  upgrade: 'アップグレード',
+  usersWithAccess: 'アクセス権のあるユーザー',
+  addUser: 'ユーザーを追加',
+  manage: '管理',
+  accountMenu: 'アカウントメニュー',
+  teamMenu: (team) => `${team}のメニュー`,
+};
+
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+
+const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
+  labels: { number: 'カード番号', expiry: '有効期限', securityCode: 'セキュリティコード', name: 'カード名義人', postcode: '郵便番号', country: '国' },
+  selectCountry: '国を選択',
+};
+
+const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
+  attach: '添付',
+  emoji: '絵文字',
+  camera: 'カメラ',
+  mic: 'ボイスメッセージを録音',
+  message: 'メッセージ',
+  enterHint: 'Enter で送信 · Shift + Enter で改行',
+  modEnterHint: '⌘ + Enter で送信 · Enter で改行',
+  cancelRecording: '録音をキャンセル',
+  sendVoice: 'ボイスメッセージを送信',
+  deleteRecording: '録音を削除',
+  playRecording: '録音を再生',
+  pauseRecording: '録音を一時停止',
+  lockRecording: '録音をロック',
+  slideToCancel: 'スライドしてキャンセル',
+  recording: '録音中',
+  searchEmoji: '絵文字を検索',
+  noEmoji: '絵文字が見つかりません',
+  frequentlyUsed: 'よく使う絵文字',
+  skinTone: '肌の色',
+  emojiPicker: '絵文字ピッカー',
+  moreReactions: 'その他のリアクション',
+  quickReactions: 'クイックリアクション',
+  messageActions: 'メッセージの操作',
+  attachments: '添付ファイル',
+  removeAttachment: (name) => `${name}を削除`,
+  suggestions: { mention: 'ユーザー', command: 'コマンド', emoji: '絵文字' },
+  attachmentItems: { gallery: 'ギャラリー', camera: 'カメラ', file: 'ファイル', location: '位置情報', contact: '連絡先', poll: 'アンケート', music: '音楽' },
+};
+
+const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
+  to: '宛先',
+  cc: 'Cc',
+  bcc: 'Bcc',
+  subject: '件名',
+  showCopies: 'Cc/Bcc',
+  hideCopies: 'Cc と Bcc を非表示',
+  removeRecipient: (name) => `${name}を削除`,
+  suggestions: '連絡先',
+  send: COMMON_MESSAGES.send,
+  sending: '送信中',
+  attach: 'ファイルを添付',
+  discard: '下書きを破棄',
+  minimize: '最小化',
+  expand: '拡大',
+  close: COMMON_MESSAGES.close,
+  title: '新規メッセージ',
+};
+
+const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
+  lyrics: '歌詞',
+  queue: '再生キュー',
+  devices: 'デバイスに接続',
+  fullscreen: '全画面表示',
+  openPlayer: 'プレーヤーを開く',
+  currentDevice: '現在のデバイス',
+  listeningOn: '再生中のデバイス',
+  listeningOnDevice: (d) => `${d}で再生中`,
+  selectDevice: 'デバイスを選択',
+  noDevices: '他のデバイスが見つかりません',
+  deviceHelp: 'デバイスが表示されない場合',
+  playbackSpeed: '再生速度',
+  sleepTimer: 'スリープタイマー',
+  sleepOff: 'オフ',
+  endOfEpisode: 'エピソードの終わり',
+  oneHour: '1時間',
+  minutes: (n) => plural('ja', n, { other: '{n}分' }),
+  stopsIn: (r) => `あと${r}で停止`,
+  shuffle: 'シャッフル',
+  repeat: 'リピート',
+  repeatOne: '1曲リピート',
+  skipBack: (n) => plural('ja', n, { other: '{n}秒戻る' }),
+  skipForward: (n) => plural('ja', n, { other: '{n}秒進む' }),
+  closePlayer: 'プレーヤーを閉じる',
+  share: '共有',
+  showLyrics: '歌詞を表示',
+};
+
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'まだ何もありません', addresses: '住所' };
+
+const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
+  releaseTypes: { single: 'シングル', ep: 'EP', album: 'アルバム' },
+  releaseStatuses: {
+    draft: '下書き',
+    'in-review': '審査中',
+    scheduled: '配信予定',
+    live: '配信中',
+    rejected: '却下',
+    takedown: '配信停止',
+  },
+  creditRoles: {
+    songwriter: 'ソングライター',
+    producer: 'プロデューサー',
+    composer: '作曲者',
+    performer: '演奏者',
+    lyricist: '作詞者',
+    'mixing-engineer': 'ミキシングエンジニア',
+    'mastering-engineer': 'マスタリングエンジニア',
+  },
+  periods: { '7d': '7日間', '28d': '28日間', '12m': '12か月', all: '全期間' },
+  artworkNotSquare: (w, h) => `アートワークは正方形にしてください。この画像は ${w}×${h} px です。`,
+  artworkTooSmall: (w, h, min) =>
+    `アートワークが小さすぎます（${w}×${h} px）。${min}×${min} px 以上の画像をアップロードしてください。`,
+  audience: { title: 'オーディエンス', period: '期間' },
+  breakdown: {
+    locations: '上位の地域',
+    cities: '都市',
+    countries: '国',
+    age: '年齢',
+    gender: '性別',
+    sources: '再生元',
+    metric: 'リスナー',
+  },
+  streams: {
+    metrics: 'グラフの指標',
+    summary: (metric, releases) => (releases ? `${metric}の推移、リリース: ${releases}` : `${metric}の推移`),
+  },
+  topTracks: {
+    title: '人気の曲',
+    rank: '#',
+    rankName: '順位',
+    track: '曲',
+    streams: '再生回数',
+    listeners: 'リスナー',
+    saves: '保存数',
+    trend: '傾向',
+    trends: { up: '上昇', down: '下降', flat: '横ばい', new: '初登場' },
+    newBadge: '新着',
+    empty: 'この期間の再生はまだありません。',
+  },
+  tracks: (n) => plural('ja', n, { other: '{n}曲' }),
+  timeline: {
+    states: { complete: '完了', current: '進行中', upcoming: '未着手', error: '要対応' },
+    label: 'リリースの進捗',
+  },
+  upload: {
+    queued: '待機中',
+    processing: 'トランスコード中…',
+    ready: '準備完了',
+    failed: 'アップロードに失敗しました',
+    remove: (name) => `${name}を取り除く`,
+    progress: (name) => `${name}をアップロード中`,
+  },
+  artwork: {
+    title: 'アートワーク',
+    requirements: '3000×3000 px、JPG または PNG',
+    replace: '置き換え',
+    remove: 'アートワークを取り除く',
+    preview: 'リリースのアートワーク',
+    upload: 'アートワークをアップロード',
+  },
+  credits: {
+    title: 'クレジット',
+    role: '役割',
+    name: '名前',
+    add: 'クレジットを追加',
+    remove: (index, name) =>
+      name ? `クレジット${index + 1}（${name}）を取り除く` : `クレジット${index + 1}を取り除く`,
+    empty: 'この曲のソングライター、プロデューサー、演奏者をクレジットしましょう。',
+    field: (field, n) => `${field}（クレジット${n}）`,
+  },
+  artists: {
+    add: '追加',
+    addTo: (label) => `${label}に追加`,
+    remove: (name) => `${name}を取り除く`,
+  },
+  isrc: { hint: '形式: CC-XXX-YY-NNNNN', invalid: '有効な ISRC ではありません' },
+  metadata: {
+    title: '曲名',
+    version: 'バージョン',
+    versionPlaceholder: 'リミックス、ライブ、アコースティック…',
+    explicit: '露骨な表現を含む歌詞',
+    explicitDescription: '強い言葉や露骨なテーマを含む場合はオンにしてください。',
+    genre: 'ジャンル',
+    genrePlaceholder: 'ジャンルを選択',
+    primaryArtists: 'メインアーティスト',
+    featuredArtists: 'フィーチャリングアーティスト',
+    artistPlaceholder: 'アーティスト名を追加',
+    language: '歌詞の言語',
+    languagePlaceholder: '言語を選択',
+    lyrics: '歌詞',
+    lyricsPlaceholder: '歌詞を貼り付けてください（歌う1行につき1行）',
+  },
+  payout: {
+    estimated: '今月の推定収益',
+    lastPayout: '前回の支払い',
+    nextPayout: '次回の支払い',
+    statements: '明細を表示',
+    chart: '月別収益',
+  },
+  pitch: {
+    title: '編集部にピッチ',
+    description: 'リリース前に、次の作品を編集チームに紹介しましょう。',
+    release: 'リリース',
+    releasePlaceholder: '今後のリリースを選択',
+    moods: 'ムード',
+    genres: 'ジャンル',
+    pitch: 'ピッチ内容',
+    pitchPlaceholder: 'このリリースの魅力は？誰に向けた作品で、どんな背景がありますか？',
+    submit: 'ピッチを送信',
+    tagLimit: (max) => `${max}個まで選択`,
+    statuses: { submitted: 'ピッチを送信しました', accepted: '審査対象に選ばれました', declined: '今回は選ばれませんでした' },
+    statusDescriptions: {
+      submitted: '編集部はすべてのピッチを読んでいます。リリース日までに返答があります。',
+      accepted: 'あなたのリリースは編集部プレイリストの候補になっています。',
+      declined: 'このリリースは選ばれませんでした。次のリリースは予定が決まり次第ピッチできます。',
+    },
+    edit: 'ピッチを編集',
+  },
+};
+
+const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
+  energy: 'エネルギー',
+  pending: '取得中',
+  energyRatingClass: (r) => `省エネ等級 ${r}`,
+  energyRatingStatus: (s) => `省エネ等級：${s}`,
+  energyRating: '省エネ等級',
+  certificateInProgress: '証明書を取得中',
+  consumption: '消費量',
+  emissions: '排出量',
+  moreEfficient: '効率が高い',
+  lessEfficient: '効率が低い',
+  walkTime: (t) => `徒歩${t}`,
+  scoreOutOf: (d, m) => `${m}点中${d}点`,
+  pricePerSquareMetre: '1平方メートルあたりの価格',
+  rentHistory: '賃料の履歴',
+  rentHistoryEmpty: 'この物件の履歴はまだありません',
+  confidence: { low: '信頼度：低', medium: '信頼度：中', high: '信頼度：高' },
+  aboveEstimate: (p) => `推定より${p}高い`,
+  belowEstimate: (p) => `推定より${p}低い`,
+  fairPrice: '適正価格',
+  estimatedPrice: '推定価格',
+  asking: '売出価格',
+  noVerdict: '判定に十分なデータがありません',
+  whyThisEstimate: 'この推定の根拠',
+  comparables: (n) => plural('ja', n, { other: '類似物件{n}件に基づく' }),
+  currentPrice: '現在の価格',
+  now: '現在',
+  noPriceHistory: '価格の履歴はまだありません',
+  priceHistoryPeriod: '価格履歴の期間',
+  priceHistory: '価格の履歴',
+  priceHistoryTrend: (head, a, aw, b, bw) => `${head}：${aw}の${a}から${bw}の${b}へ。`,
+};
+
+const MAP_MARKER_MESSAGES: Translations['MAP_MARKER_MESSAGES'] = {
+  searchAsMapMoves: '地図の移動に合わせて検索',
+  searchThisArea: 'このエリアを検索',
+  stays: (n) => mapMarker_countOf('ja', n, { other: '{n}件の宿泊先' }),
+};
+
+const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
+  month: '月',
+  rentalStatus: { available: '募集中', reserved: '申込あり', rented: '成約済み' },
+  rentalStatusMessage: {
+    reserved: '他の申込者が契約手続き中です。新しい内見の受付は停止しています。',
+    rented: 'この物件は成約済みのため、お問い合わせを受け付けていません。',
+  },
+  saleStatus: { available: '販売中', reserved: '商談中', sold: '売却済み' },
+  saleStatusMessage: {
+    reserved: '購入申込が承諾されました。現在、担当者は内見の手配をしていません。',
+    sold: 'この物件は売却済みです。',
+  },
+  requestViewing: '内見を申し込む',
+  apply: '入居を申し込む',
+  contactAgent: '担当者に問い合わせる',
+  requestVisit: '内見を申し込む',
+  makeOffer: '購入を申し込む',
+  yourHome: 'あなたの家',
+  theirHome: '相手の家',
+  dates: '日程',
+  guests: 'ゲスト',
+  addDates: '日程を追加',
+  addGuests: 'ゲストを追加',
+  proposeSwap: '交換を提案する',
+  exchangeModes: { swap: '相互交換', host: 'ゲストポイント', both: 'どちらでも' },
+  scheduleViewing: '内見を予約',
+  noTimesLeft: 'この日は空き時間がありません',
+  noteForLandlord: '貸主へのメッセージ',
+  day: '日付',
+  time: '時間',
+  submitViewing: '内見を申し込む',
+  inPerson: '現地',
+  videoCall: 'ビデオ通話',
+  viewingType: '内見の方法',
+  yourApplication: 'あなたの申込書類',
+  applicationProgress: '申込の進捗',
+  progressReady: (done, total) => `${total}件中${done}件完了`,
+  applicationStatus: { missing: '未提出', uploaded: '審査中', verified: '確認済み', rejected: '差し戻し' },
+  applicationAction: { upload: 'アップロード', view: '表示', replace: '差し替え' },
+  itemAction: (action, title) => `${title}を${action}`,
+  mortgage: {
+    title: '住宅ローン計算',
+    price: '物件価格',
+    downPayment: '頭金',
+    downPaymentPercent: '頭金の割合',
+    percent: '割合',
+    term: '返済期間',
+    years: '年',
+    rate: '金利',
+    monthlyPayment: '毎月の返済額',
+    principal: '元金',
+    interest: '利息',
+    loanAmount: '借入額',
+    totalInterest: '利息の合計',
+    totalCost: '総支払額',
+  },
+  termYears: (n) => `${n}年`,
+  mortgageDisclaimer:
+    'これは概算であり、融資の提示ではありません。手数料・税金・保険料は含まれず、全期間固定金利を前提としています。',
+};
+
+const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
+  stepsLeft: (n) => plural('ja', n, { other: '残り{n}ステップ' }),
+  allCompleted: 'すべてのステップが完了しました',
+  minimize: 'ステップを最小化',
+  expand: 'ステップを展開',
+  defaultSteps: [
+    'プロジェクトファイルを読み込む',
+    'ライトモードのトークンを更新してインストール',
+    'ダークモードのトークンを実装',
+    '再利用可能なテーマ切り替えを登録して追加',
+    'レジストリ、lint、本番ビルドを実行',
+  ],
+};
+
+const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
+  newEvent: '新しい予定',
+  openNavigation: 'ナビゲーションを開く',
+  month: '月',
+  moreEvents: (n) => plural('ja', n, { other: 'ほか {n} 件' }),
+  eventDetails: '予定の詳細',
+  join: '参加',
+  editTimeZone: 'タイムゾーンを編集',
+  participants: '参加者',
+  editParticipants: '参加者を編集',
+  reminders: 'リマインダー',
+  editReminders: 'リマインダーを編集',
+  duration: calendar_compactDuration('時間', '分', ''),
+  jumpToDate: '日付に移動',
+  previousMonth: '前の月',
+  nextMonth: '次の月',
+  chooseDate: (month) => `${month}、日付を選択`,
+  inbox: '受信トレイ',
+  inboxMenu: '受信トレイのメニュー',
+  addAccount: 'アカウントを追加',
+};
+
+const LISTING_DETAILS_MESSAGES: Translations['LISTING_DETAILS_MESSAGES'] = {
+  ratedOutOf5: (r) => `5段階中${r}の評価`,
+  overallRating: '総合評価',
+  unavailable: '利用不可',
+  showAllAmenities: (n) => plural('ja', n, { other: 'すべての設備を表示（{n}件）' }),
+  showAllFeatures: (n) => plural('ja', n, { other: 'すべての特徴を表示（{n}件）' }),
+  propertyFeatures: '物件の特徴',
+  showAllPhotos: 'すべての写真を表示',
+  listingPhotos: '物件の写真',
+  photoOf: (p, t) => `写真 ${p}/${t}`,
+  photoWithAlt: (a, p, t) => `${a}、写真 ${p}/${t}`,
+  floorPlanOf: (a, p, t) => `${a}、間取り図 ${p}/${t}`,
+  landlord: '貸主',
+  agent: 'エージェント',
+  agency: '不動産会社',
+  activeListings: (n) => plural('ja', n, { other: '掲載中の物件{n}件' }),
+  verified: '認証済み',
+  showPhone: '電話番号を表示',
+  call: '電話する',
+  messageHost: 'ホストにメッセージ',
+  message: 'メッセージ',
+};
+
+const PRICE_BREAKDOWN_MESSAGES: Translations['PRICE_BREAKDOWN_MESSAGES'] = {
+  states: { estimated: '概算', pending: '未確定' },
+  showDetails: '料金の内訳を表示',
+  hideDetails: '料金の内訳を隠す',
+  breakdown: '料金の内訳',
+  about: (label) => `${label}について`,
+};
+
+const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
+  cancel: 'キャンセル',
+  apply: '適用',
+  previousMonth: '前の月',
+  nextMonth: '次の月',
+  datePlaceholder: '日付を選択',
+  dateLabel: '日付',
+  rangePlaceholder: '期間を選択',
+  rangeLabel: '期間',
+  startDate: '開始日',
+  endDate: '終了日',
+  daysSelected: (n) => plural('ja', n, { other: '{n}日間を選択' }),
+  presets: {
+    today: '今日',
+    yesterday: '昨日',
+    lastWeek: '先週',
+    thisMonth: '今月',
+    lastMonth: '先月',
+    thisYear: '今年',
+    lastYear: '昨年',
+    allTime: '全期間',
+  },
+  meetingTrigger: 'ミーティングを予約',
+  meetingLabel: 'ミーティングの予約',
+  send: '招待を送信',
+  selectTime: '時間を選択',
+  duration: (n) => plural('ja', n, { other: '{n}分' }),
+};
+
+const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
+  kinds: {
+    envelope: { label: '封筒', description: '書類、鍵など平たいもの。' },
+    parcel: { label: '小包', description: '一人で運べる箱や袋。' },
+    furniture: { label: '家具', description: 'ソファ、テーブル、マットレス — 両地点に2人必要。' },
+    pallet: { label: 'パレット', description: '梱包・積載済み、パワーゲートで搬送。' },
+    food: { label: '食品', description: '飲食店の配達、温度を保って。' },
+  },
+  sizes: {
+    small: '靴箱まで — 35 × 25 × 20 cm。',
+    medium: '機内持ち込みバッグまで — 55 × 40 × 25 cm。',
+    large: '洗濯機まで — 85 × 60 × 60 cm。',
+    extraLarge: 'それ以上 — メモで詳しく教えてください。',
+  },
+  access: { ground: '1階', stairs: '階段', lift: 'エレベーター' },
+  load: {
+    kind: '何を運びますか？',
+    size: 'サイズ',
+    weight: '重さ',
+    quantity: '個数',
+    quantityValue: (n) => `${n}個`,
+    notes: '配送業者に伝えることはありますか？',
+    notesPlaceholder: '割れ物、エレベーターの暗証番号、置き場所など…',
+  },
+  options: { extras: 'オプション', access: '両地点の搬入経路', window: 'いつ集荷しますか？' },
+  form: {
+    route: 'ルート',
+    routeDescription: '最初に集荷、最後に配達。',
+    load: '荷物',
+    photos: '写真',
+    photosDescription: '荷物の写真があると、受け取る見積もりが最も正確になります。',
+    options: 'オプション',
+    optionsDescription: 'どれも料金に影響します。',
+    price: '料金',
+  },
+  shipmentRequest: '配送依頼',
+};
+
+const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: '必須' };
+
+const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
+  title: 'ご注文内容の確認',
+  orderSummary: '注文の概要',
+  deliverTo: 'お届け先',
+  notChosen: '未選択',
+  opensPicker: '選択画面を開きます',
+  placeOrder: '注文を確定する',
+  placingOrder: '注文を送信しています',
+};
+
+const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
+  from: '最低料金',
+  fits: (label) => `${label}に積めるもの`,
+  unavailable: 'この荷物には利用できません',
+  vehicle: '車両',
+  vehicles: {
+    bike: { label: 'カーゴバイク', capacity: '最大 25 kg · 60 × 40 × 40 cm', fits: ['書類', 'フードの注文', '小さな箱'] },
+    car: { label: '乗用車', capacity: '最大 150 kg · 100 × 80 × 60 cm', fits: ['スーツケース2個', '段ボール4箱', '自転車1台'] },
+    van: { label: 'バン', capacity: '最大 800 kg · 240 × 150 × 140 cm', fits: ['ソファ', 'ワンルームの引っ越し', 'パレット半分'] },
+    boxTruck: { label: '箱型トラック', capacity: '最大 3,500 kg · 420 × 200 × 210 cm', fits: ['パレット2枚', '2LDKの引っ越し', 'パワーゲート'] },
+    refrigerated: { label: '冷蔵バン', capacity: '最大 700 kg · 2〜8 °C を維持', fits: ['生鮮食品', '冷蔵ケータリング', '花'] },
+  },
+};
+
+const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
+  message: 'メッセージ',
+  add: '添付ファイルを追加',
+  addMenu: 'チャットに追加',
+  permissions: '権限',
+  permissionMode: '権限モード',
+  learnMore: '詳細',
+  voice: '音声入力',
+  send: 'メッセージを送信',
+  stop: '生成を停止',
+  permissionTrigger: (mode) => `権限: ${mode}`,
+  removeFile: (name) => `${name}を削除`,
+  retryFile: (name) => `${name}を再試行`,
+  panelPlaceholder: 'こんにちは。今日は何をお手伝いしましょうか？',
+  pillPlaceholder: '何でも聞いてください',
+  pillCompactPlaceholder: '質問する',
+  modelSettings: 'モデル設定',
+  models: 'モデル',
+  modelGroup: 'モデル',
+  effort: '推論レベル',
+  effortAuto: '自動',
+  faster: '高速',
+  smarter: '高精度',
+  quickSearch: 'クイック検索',
+  searchModels: 'モデルを検索',
+  closeSearch: '検索を閉じる',
+  noMatches: '一致するモデルはありません',
+  providers: 'プロバイダー',
+  matchingModels: '一致するモデル',
+  providerModels: (provider) => `${provider}のモデル`,
+  localFolders: 'ローカルフォルダー',
+  context: (percent) => `コンテキスト ${percent}%`,
+  effortLevels: ['低', '中', 'バランス', '高', '非常に高い', '最大'],
+  permissionModes: {
+    auto: { label: '自動', description: 'エージェントが自分で判断します' },
+    manual: { label: '手動', description: '変更の前に毎回確認します' },
+    plan: { label: 'プランモード', description: '進める前にプランを作成します' },
+    bypass: { label: 'すべてスキップ', description: 'エージェントが権限を判断します' },
+  },
+  addMenuRows: {
+    add: '追加',
+    plugins: 'プラグイン',
+    files: 'ファイルとフォルダー',
+    goal: '目標',
+    goalDescription: '目標を設定して結果をより早く得る',
+    plan: 'プランモード',
+    planDescription: '複雑なタスクを管理',
+    documents: 'ドキュメント',
+    documentsDescription: 'ドキュメントを作成・編集',
+    spreadsheets: 'スプレッドシート',
+    spreadsheetsDescription: 'スプレッドシートを生成',
+    presentations: 'プレゼンテーション',
+    presentationsDescription: 'マーケティング素材を作成',
+    code: 'コードブロック',
+    codeDescription: '既存のコードを作成・編集',
+  },
+};
+
+const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
+  forwardedFrom: (name) => `${name}から転送`,
+  deleted: 'このメッセージは削除されました',
+  retry: '再送信',
+  addReaction: 'リアクションを追加',
+  replyTo: '引用元のメッセージへ移動',
+  selected: '選択済み',
+  pending: '送信中',
+  failed: '未送信',
+  reactionSelected: '選択済み',
+  unread: '未読メッセージ',
+  typing: '入力中…',
+};
+
+const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
+  states: { authorising: '承認中', paid: '支払い済み', failed: '支払いに失敗しました', refunded: '返金済み', pending: '支払い保留中' },
+  reference: '参照番号',
+};
+
+const AVATAR_MESSAGES: Translations['AVATAR_MESSAGES'] = { live: 'ライブ' };
+
+const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
+  openStates: {
+    open: '営業中',
+    'closing-soon': 'まもなく閉店',
+    closed: '営業時間外',
+    'opening-soon': 'まもなく開店',
+  },
+  new: '新規',
+  actions: '操作',
+  actionsFor: (name) => `${name}の操作`,
+  rated: (value, reviews) =>
+    placeCard_withReviews(
+      `5点中${value}点の評価`,
+      reviews === undefined ? undefined : placeCard_countOf('ja', reviews, { other: '{n}件のレビュー' }),
+    ),
+};
+
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `${b}で続行`, signIn: (b) => `${b}でサインイン`, signUp: (b) => `${b}で登録` } };
+
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'その他', otherPlaceholder: '回答を入力してください', steps: 'ステップ', step: (n) => `ステップ ${n}` };
+
+const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
+  group: '地図の操作',
+  locate: '現在地を表示',
+  following: '現在地の追跡を停止',
+  zoomIn: 'ズームイン',
+  zoomOut: 'ズームアウト',
+  zoom: 'ズーム',
+  tilt: '地図を傾ける',
+  tiltOff: '地図を平面に戻す',
+  compass: (degrees) => `${degrees}度の方向。北向きに戻す`,
+  layerTrigger: '地図のレイヤー',
+  layers: '地図',
+  overlays: 'オーバーレイ',
+};
+
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: '有効期限切れ', declined: '拒否されました' }, default: 'デフォルト', add: '支払い方法を追加', emptyTitle: '保存された支払い方法はありません', paymentMethods: '支払い方法' };
+
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `他${n}人`, profile: 'プロフィール' };
+
+const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
+  menuBar: 'メニューバー',
+};
+
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '考え中' };
+
+const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
+  feedback: { like: '良い回答', dislike: '良くない回答', copy: '回答をコピー', copied: 'コピーしました！' },
+  imageGeneration: {
+    generated: '画像を生成しました',
+    generating: '画像を生成中',
+    remaining: (n) => plural('ja', n, { other: '残り{n}秒' }),
+    likeToast: 'フィードバックありがとうございます',
+    dislikeToast: 'ありがとうございます。改善に役立てます',
+  },
+  generatedImage: (alt) => `生成された画像: ${alt}`,
+  codePanel: {
+    changes: '変更',
+    browser: 'ブラウザ',
+    uncommitted: (n) => plural('ja', n, { other: '未コミットの変更 {n} 件' }),
+    undo: '変更を元に戻す',
+    browserPreview: 'ブラウザプレビュー',
+  },
+  galleryPanel: {
+    gallery: 'ギャラリー',
+    styles: 'スタイル',
+    stylePresets: 'スタイルプリセット',
+    enlarge: (prompt) => `${prompt}を拡大`,
+    minimize: (prompt) => `${prompt}を縮小`,
+    download: (prompt) => `${prompt}をダウンロード`,
+  },
+  panelView: 'パネル表示',
+  openTerminal: 'ターミナルを開く',
+  newGeneration: '新規生成',
+  expandPanel: 'パネルを拡大',
+  togglePanel: 'パネルの表示を切り替え',
+  container: { breadcrumb: 'チャットの場所', share: 'チャットを共有' },
+  shell: {
+    openNavigation: 'ナビゲーションを開く',
+    closeNavigation: 'ナビゲーションを閉じる',
+    openPanel: (panel) => `${panel}を開く`,
+    closePanel: (panel) => `${panel}を閉じる`,
+  },
+  code: 'コード',
+};
+
+const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
+  placeholder: 'コマンドを入力または検索…',
+  empty: '結果が見つかりません。',
+  palette: 'コマンドパレット',
+  clearSearch: '検索をクリア',
+};
+
+const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
+  kinds: {
+    playlist: 'プレイリスト',
+    artist: 'アーティスト',
+    album: 'アルバム',
+    podcast: 'ポッドキャスト',
+    audiobook: 'オーディオブック',
+    folder: 'フォルダ',
+  },
+  library: {
+    title: 'マイライブラリ',
+    create: 'プレイリストまたはフォルダを作成',
+    collapseRail: 'マイライブラリを折りたたむ',
+    expandRail: 'マイライブラリを開く',
+    filters: 'フィルター',
+    clearFilters: 'フィルターをクリア',
+    filter: {
+      playlists: 'プレイリスト',
+      artists: 'アーティスト',
+      albums: 'アルバム',
+      podcasts: 'ポッドキャスト',
+      audiobooks: 'オーディオブック',
+    },
+    downloaded: 'ダウンロード済み',
+    search: 'マイライブラリを検索',
+    searchPlaceholder: 'マイライブラリを検索',
+    clearSearch: '検索をクリア',
+    sortAndView: '並べ替えと表示',
+    sortBy: '並べ替え',
+    viewAs: '表示形式',
+    sort: {
+      recents: '最近再生した項目',
+      'recently-added': '最近追加した項目',
+      alphabetical: 'アルファベット順',
+      creator: '作成者',
+    },
+    view: { compact: 'コンパクト', list: 'リスト', grid: 'グリッド' },
+    empty: 'まだ何もありません',
+  },
+  item: { pinned: 'ピン留め済み', downloaded: 'ダウンロード済み', nowPlaying: '再生中' },
+  search: { placeholder: '何を聴きたいですか？', clear: '検索をクリア', browse: 'ブラウズ' },
+  resultTypes: '結果の種類',
+  topResultKinds: {
+    song: '曲',
+    artist: 'アーティスト',
+    album: 'アルバム',
+    playlist: 'プレイリスト',
+    podcast: 'ポッドキャスト',
+    episode: 'エピソード',
+    audiobook: 'オーディオブック',
+    profile: 'プロフィール',
+  },
+  recent: {
+    title: '最近の検索',
+    clearAll: '最近の検索をクリア',
+    remove: (title) => `${title}を取り除く`,
+  },
+};
+
+const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
+  statuses: { reserved: '予約済み', sold: '売却済み', rented: '賃貸済み', unavailable: '利用不可' },
+  originally: (p) => `元の価格 ${p}`,
+  approximateLocation: 'おおよその位置',
+  rated: (r) => `5段階中${r}の評価`,
+  ratedWithReviews: (r, c) =>
+    plural('ja', c, { other: `5段階中${r}の評価、レビュー${c}件` }),
+  newListing: '新着',
+  previousPhoto: '前の写真',
+  nextPhoto: '次の写真',
+  saveToWishlist: 'ウィッシュリストに保存',
+  removeFromWishlist: 'ウィッシュリストから削除',
+};
+
+const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
+  states: { 'off-route': 'ルートから外れました', rerouting: '新しいルートを検索しています' },
+  thenLine: (street, maneuver) => `その後、${navigationBanner_words(maneuver, street)}`,
+  laneGuidance: 'レーン案内',
+  laneCount: (n) => plural('ja', n, { other: '{n}車線' }),
+  laneNumber: (n) => `左から${n}番目の車線`,
+  and: (a, b) => `${a}と${b}`,
+  useLanes: (lanes) => `${lanes}を走行`,
+  speedLimit: (limit) => `制限速度 ${limit}`,
+  overLimit: '速度超過',
+  arrival: '到着',
+  left: '残り時間',
+  distance: '距離',
+  end: '終了',
+};
+
+const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
+  states: { locating: '現在地を取得しています', located: '現在地', stale: '最後に確認された現在地' },
+  facing: (state, degrees) => `${state}、${degrees}度の方向`,
+};
+
+const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
+  previousSlide: '前のスライド',
+  nextSlide: '次のスライド',
+  goToSlide: (n) => `スライド${n}に移動`,
+  slideOf: (at, of) => `${at}/${of}`,
+  carouselRole: 'カルーセル',
+  slideRole: 'スライド',
+};
+
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: '進行中', upcoming: '未着手', failed: '失敗' }, status: 'ステータス' };
+
+const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
+  newRating: '新着',
+  reviews: (c) => rating_countForms('ja', c, { other: 'レビュー{n}件' }),
+  rated: (v) => `5点中${v}点`,
+  ratedWithReviews: (v, r) => `5点中${v}点、${r}`,
+  star: (n) => plural('ja', n, { other: '星{n}つ' }),
+};
+
+const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
+  offering: {
+    rent: { title: '賃貸', description: '長期の賃貸。月額で設定します。' },
+    sale: { title: '売却', description: '物件をそのまま売却します。' },
+    stay: { title: 'バケーションレンタル', description: '短期滞在。1泊単位で設定します。' },
+    swap: { title: 'ホームスワップ', description: 'ほかのメンバーと家を交換します。' },
+    monthlyRent: '月額家賃',
+    deposit: '敷金',
+    depositOption: (months) => (months === 0 ? 'なし' : plural('ja', months, { other: '{n}か月' })),
+    availableFrom: '入居可能日',
+    minimumStay: '最短契約期間',
+    months: (months) => plural('ja', months, { other: '{n}か月' }),
+    askingPrice: '売出価格',
+    pricePerArea: '㎡単価',
+    pricePerAreaEmpty: '価格を入力してください',
+    nightlyRate: '1泊の料金',
+    cleaningFee: '清掃料金',
+    minimumNights: '最低宿泊数',
+    nights: (nights) => plural('ja', nights, { other: '{n}泊' }),
+    swapMode: 'どのように交換しますか？',
+    swapModes: { swap: '家を交換', host: 'ホストのみ', both: 'どちらでも' },
+    group: '物件の提供方法',
+  },
+  propertyTypes: {
+    apartment: 'マンション',
+    house: '一戸建て',
+    room: '個室',
+    studio: 'ワンルーム',
+    duplex: 'メゾネット',
+    penthouse: 'ペントハウス',
+    coliving: 'シェアハウス',
+    hostel: 'ホステル',
+    other: 'その他',
+  },
+  propertyType: '物件タイプ',
+  addressPrecision: {
+    exact: {
+      title: '正確な住所',
+      description: 'ピンが建物の上に表示されます。もともと見つけやすい物件に最適です。',
+    },
+    street: {
+      title: '通りのみ',
+      description: '番地ではなく通りを表示します。正確な住所は予約または契約後に共有されます。',
+    },
+    approximate: {
+      title: 'おおよそのエリア',
+      description: '半径約500mの円を表示します。最もプライバシーに配慮した設定です。',
+    },
+  },
+  addressPrecisionLabel: '住所の表示精度',
+  addressPrecisionFootnote: '公開される地図はこの設定に従います。正確な住所は、あなたが承認した人にのみ共有されます。',
+  qualityTitle: '掲載の品質',
+  qualityScore: '掲載の品質スコア',
+  tips: 'ヒント',
+  todo: '未完了',
+  needsWork: '改善が必要',
+  good: '良好',
+  excellent: '非常に良い',
+  previewTitle: 'プレビュー',
+  previewDescription: 'ゲストにはこのように表示されます。',
+  card: 'カード',
+  page: 'ページ',
+  previewAs: '表示形式',
+  reviews: (n, shown) => plural('ja', n, { other: 'レビュー{s}件' }).replace('{s}', shown),
+};
+
+const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
+  artistPick: 'アーティストのおすすめ',
+  saveEpisode: 'エピソードを保存',
+  share: '共有',
+  podcastEpisode: 'ポッドキャストのエピソード',
+  listeningProgress: '再生の進捗',
+  shuffle: 'シャッフル',
+  download: 'ダウンロード',
+  downloadProgress: 'ダウンロードの進捗',
+  follow: 'フォロー',
+  following: 'フォロー中',
+  searchInPlaylist: 'プレイリスト内を検索',
+  compactView: 'コンパクト表示',
+  editDetails: '詳細を編集',
+  about: '概要',
+  discography: 'ディスコグラフィ',
+  showAll: 'すべて表示',
+  albums: 'アルバム',
+  singlesAndEps: 'シングル・EP',
+  compilations: 'コンピレーション',
+  audiobook: 'オーディオブック',
+  popular: '人気',
+  seeMore: 'もっと見る',
+  podcast: 'ポッドキャスト',
+  latestEpisode: '最新のエピソード',
+  verifiedArtist: '認証済みアーティスト',
+  profile: 'プロフィール',
+  editProfile: 'プロフィールを編集',
+};
+
+const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
+  diets: { vegetarian: 'ベジタリアン', vegan: 'ヴィーガン', 'gluten-free': 'グルテンフリー', 'dairy-free': '乳製品不使用', halal: 'ハラール', kosher: 'コーシャ' },
+  spicy: '辛さ',
+  spiceOf: (label, level, max) => `${label} ${level}/${max}`,
+  originally: (price, original) => `${price}（通常 ${original}）`,
+  inBasket: (n) => `カートに${n}点`,
+  soldOut: '売り切れ',
+  addItem: (name) => `${name}を追加`,
+  choose: (n) => `${n}つ選択`,
+  chooseRange: (min, max) => `${min}〜${max}つ選択`,
+  upTo: (n) => `${n}つまで`,
+  optional: '任意',
+  quantity: '数量',
+  addToBasket: 'カートに追加',
+  options: 'オプション',
+};
+
+const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
+  pagination: 'ページネーション',
+  goToPage: (page) => `${page}ページへ移動`,
+};
+
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'リードスコア', factors: 'スコアの内訳', bands: { cold: 'コールド', warm: 'ウォーム', hot: 'ホット' } };
+
+const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
+  modes: { drive: '車', transit: '公共交通機関', walk: '徒歩', cycle: '自転車' },
+  traffic: { light: '道路は空いています', moderate: 'やや混雑', heavy: '渋滞' },
+  maneuvers: {
+    depart: '出発',
+    straight: '直進',
+    'slight-left': 'やや左方向',
+    left: '左折',
+    'sharp-left': '大きく左方向',
+    'slight-right': 'やや右方向',
+    right: '右折',
+    'sharp-right': '大きく右方向',
+    uturn: 'Uターン',
+    roundabout: 'ロータリーで',
+    merge: '合流',
+    arrive: '到着',
+    board: '乗車',
+    alight: '降車',
+    transfer: '乗り換え',
+    walk: '徒歩',
+  },
+  directions: '経路',
+  otherRoutes: 'ほかのルート',
+  travelMode: '移動手段',
+  start: '開始',
+  currentStep: '現在のステップ',
+  line: (name) => `路線 ${name}`,
+};
+
+const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
+  basket: 'カート',
+  checkout: 'レジに進む',
+  emptyTitle: 'カートは空です',
+  emptyDescription: 'メニューから追加するとここに表示されます。',
+  soldOut: '売り切れ',
+  removeItem: (name) => `${name}を削除`,
+  originally: (price, original) => `${price}（通常 ${original}）`,
+  promoCode: 'プロモーションコード',
+  apply: '適用',
+  tip: 'チップ',
+};
+
+const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
+  albumTypes: { album: 'アルバム', single: 'シングル', ep: 'EP', compilation: 'コンピレーション' },
+  artist: 'アーティスト',
+  verified: '認証済み',
+  audiobook: 'オーディオブック',
+  narratedBy: (n) => `ナレーション: ${n}`,
+  progressOf: (t) => `${t}の進捗`,
+  episode: 'エピソード',
+  played: '再生済み',
+  event: 'イベント',
+  soldOut: '完売',
+  listeningNow: '今聴いています',
+  trackBy: (t, a) => `${a}の${t}`,
+  mix: 'ミックス',
+  playlist: 'プレイリスト',
+  collaborative: 'コラボ',
+  ownedBy: (o) => `${o}が作成`,
+  podcast: 'ポッドキャスト',
+  profile: 'プロフィール',
+  followsYou: 'フォローされています',
+  song: '曲',
+  share: '共有',
+  listened: '再生済み',
+};
+
+const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
+  labels: {
+    take: 'この仕事を受ける',
+    pass: '見送る',
+    distance: '距離',
+    duration: '時間',
+    window: '時間帯',
+    pickup: '集荷',
+    dropoff: '配達',
+    state: { taken: '受注済み', expired: '期限切れ' },
+    showPay: '報酬を表示',
+    hidePay: '報酬を隠す',
+    payDetails: '報酬：',
+    sort: '仕事を並べ替え',
+    filtersToggle: 'フィルター',
+    filtersActive: (n) => `${n}件適用中`,
+    sortOptions: {
+      pay: '報酬の高い順',
+      distance: '近い順',
+      soonest: '開始が早い順',
+      expiring: '締め切りが近い順',
+    },
+    filters: { distance: '距離', pay: '報酬', when: '日時', vehicle: '車両' },
+    clearFilters: 'フィルターをクリア',
+    refresh: '一覧を更新',
+    count: (n) => `仕事${n}件`,
+    loading: '仕事を読み込み中',
+  },
+  emptyTitle: '現在、仕事はありません',
+  emptyDescription: '条件に合う仕事がありません。フィルターを広げるか、1分後にもう一度更新してください。',
+  list: '仕事',
+  payDetailsFor: (load) => `${load}の報酬`,
+  route: (pickup, dropoff) => `${pickup}と${dropoff}`,
+  bands: {
+    anyDistance: '距離指定なし',
+    underKm: (km) => `${km}km以内`,
+    anyTime: 'いつでも',
+    withinHour: '1時間以内',
+    nextHours: (hours) => `今後${hours}時間以内`,
+    today: '今日',
+  },
+};
+
+const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
+  submenu: 'サブメニュー',
+};
+
+const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
+  chat: {
+    newChat: '新しいチャット',
+    emptyTitle: '何をお手伝いしましょうか？',
+    emptyDescription: 'このチャットはご自身の API キーで動作します。履歴はこのブラウザに保存されます。',
+    thinking: '考え中',
+    error: '問題が発生しました。サーバーログを確認してから、もう一度お試しください。',
+    suggestions: [
+      'このスターターが何をするのか説明して',
+      '製品アップデートを3文で書いて',
+      'スケジュール管理アプリの名前を5つ考えて',
+    ],
+    you: 'あなた',
+    assistant: 'アシスタント',
+  },
+  actions: {
+    share: 'チャットを共有',
+    shared: 'トランスクリプトをコピーしました',
+    more: 'このチャットのその他の操作',
+    exportChats: 'チャットをエクスポート',
+    markUnread: '未読にする',
+    deleteChat: 'チャットを削除',
+  },
+  message: { copy: 'メッセージをコピー', readAloud: '読み上げる', stopReading: '読み上げを停止' },
+  history: {
+    region: 'チャット履歴',
+    recent: '最近',
+    empty: '開始したチャットはここに表示されます。',
+    rename: '名前を変更',
+    renameField: 'チャット名を変更',
+    markUnread: '未読にする',
+    unread: '未読',
+    exportCount: (n) =>
+      n === 0 ? 'エクスポートするチャットがありません' : plural('ja', n, { other: '{n}件のチャットをエクスポート' }),
+    accountMenu: (name) => `${name}のアカウントメニュー`,
+    usageLeft: '残りの利用量',
+    upgrade: 'Max にアップグレード',
+    logOut: 'ログアウト',
+  },
+  composer: {
+    field: 'メッセージ',
+    placeholder: '何でも聞いてください',
+    attach: '添付ファイルを追加',
+    send: 'メッセージを送信',
+    stop: '生成を停止',
+    notConfigured: '未設定',
+    messageCount: (n) => plural('ja', n, { other: '{n}件のメッセージ' }),
+    answeringWith: (model) => `${model} で回答中`,
+  },
+  ago: {
+    justNow: 'たった今',
+    minutes: (n) => plural('ja', n, { other: '{n}分前' }),
+    hours: (n) => plural('ja', n, { other: '{n}時間前' }),
+    days: (n) => plural('ja', n, { other: '{n}日前' }),
+  },
+  age: { now: '今', minutes: (n) => `${n}分`, hours: (n) => `${n}時間`, days: (n) => `${n}日` },
+};
+
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: '情報源', working: '作業中' };
+
+const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
+  to: '宛先',
+  cc: 'Cc',
+  bcc: 'Bcc',
+  reply: '返信',
+  replyAll: '全員に返信',
+  forward: '転送',
+  more: COMMON_MESSAGES.more,
+  moreAddresses: (n) => `他${n}人`,
+  earlierMessages: (n) => plural('ja', n, { other: '以前のメッセージ{n}件' }),
+  showTrimmed: '省略された内容を表示',
+  hideTrimmed: '省略された内容を非表示',
+  unread: '未読',
+  starred: 'スター付き',
+  star: 'スターを付ける',
+  attachments: '添付ファイル',
+  attachmentCount: (n) => plural('ja', n, { other: '添付ファイル{n}件' }),
+  expand: 'メッセージを展開',
+  collapse: 'メッセージを折りたたむ',
+};
+
+const NOTIFICATION_CENTER_MESSAGES: Translations['NOTIFICATION_CENTER_MESSAGES'] = {
+  title: '通知',
+  emptyMessage: 'すべて確認済みです。',
+  emptyDescription: '新しいアクティビティはここに表示されます。',
+  noUnread: '未読の通知はありません',
+  unread: (n) => plural('ja', n, { other: '未読 {n} 件' }),
+  markAllRead: 'すべて既読にする',
+  category: '通知のカテゴリ',
+  tabs: { all: 'すべて', mentions: 'メンション', system: 'システム' },
+  unreadDot: '未読',
+};
+
+const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
+  titles: {
+    activity: 'アクティビティ',
+    agents: 'エージェント',
+    visitors: '訪問者',
+    breakdown: '内訳',
+    sessions: 'セッション',
+    contributionsThisYear: '今年のコントリビューション',
+    earnedSoFar: 'これまでの収益',
+    signUpFunnel: '登録ファネル',
+    activeUsers: 'アクティブユーザー',
+    revenue: '収益',
+    mostActiveDays: '最もアクティブな日',
+    orders: '注文',
+    trackedTime: '記録時間',
+    revenuePerAccount: 'アカウントあたりの収益',
+    sleepScore: '睡眠スコア',
+    pipeline: '営業パイプライン',
+    steps: '歩数',
+    tokens: 'トークン',
+  },
+  weekly: '週ごと',
+  monthly: '月ごと',
+  yearly: '年ごと',
+  stepsSuffix: '歩',
+  today: '今日',
+  thisYear: '今年',
+  lastYear: '昨年',
+  sinceLastYear: '前年比',
+  aYearEarlier: '1年前',
+  earningsPeriod: '収益の期間',
+  changePeriod: '期間を変更',
+  period: '期間',
+  total: '合計',
+  average: '平均',
+  thisMonth: '今月',
+  ofGoal: '目標比',
+  totalSteps: '歩（合計）',
+  gaugeChart: (title, reading) => `${title}のゲージ：${reading}`,
+  halfGaugeChart: (title, items) => `${title}の半円ゲージ：${items}`,
+  radialChart: (title, items) => `${title}の放射状グラフ：${items}`,
+  percentOfGoal: (pct) => `目標の${pct}%`,
+  periodOf: (label) => `${label}の期間`,
+  chartVs: (title, current, previous) => `${title}のグラフ：${current}と${previous}の比較`,
+  lineChart: (title) => `${title}の折れ線グラフ`,
+  barChart: (title, items) => `${title}の棒グラフ：${items}`,
+  comboChart: (title, bar, line) => `${title}のグラフ：${bar}の棒と${line}の線`,
+  scatterChart: (title, series) => `${title}の散布図：${series}`,
+  bubbleChart: (title, series) => `${title}のバブルチャート：${series}`,
+  ringItem: (label, value, pct) => `${label} ${value}、目標の${pct}%`,
+  scoreOf: (score, max) => `${score}/${max}`,
+  activityFor: (name, day) => `${name}${day}日のアクティビティ`,
+  contributions: (n, date) => { const on = date ? `${date}の` : ''; return n === 0 ? `${on}コントリビューションなし` : `${on}コントリビューション${n}件`; },
+};
+
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'コードをコピー', copied: 'コードをコピーしました' };
+
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'このページの内容', progress: (at, of) => `見出し ${at}/${of}` };
+
+const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: '減らす', increase: '増やす' };
+
+const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
+  status: {
+    calling: '発信中…',
+    ringing: '呼び出し中',
+    connecting: '接続中…',
+    active: '通話中',
+    reconnecting: '再接続中…',
+    onHold: '保留中',
+    ended: '通話終了',
+  },
+  controls: {
+    mute: 'ミュート',
+    unmute: 'ミュート解除',
+    speakerOn: 'スピーカーをオン',
+    speakerOff: 'スピーカーをオフ',
+    videoOn: 'カメラをオン',
+    videoOff: 'カメラをオフ',
+    flipCamera: 'カメラを切り替え',
+    screenShareOn: '画面を共有',
+    screenShareOff: '画面共有を停止',
+    addParticipant: '参加者を追加',
+    endCall: '通話を終了',
+  },
+  screen: {
+    minimise: '通話を最小化',
+    chat: 'チャットを開く',
+    participants: '参加者',
+    movePip: (c) => `自分の映像を移動（現在: ${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)}）`,
+  },
+  pipCorners: CALL_UI_MESSAGES__CORNERS,
+  history: {
+    incoming: '着信',
+    outgoing: '発信',
+    missed: '不在着信',
+    declined: '拒否',
+    callBack: (name) => `${name}にかけ直す`,
+  },
+  incoming: {
+    accept: '応答',
+    decline: '拒否',
+    message: 'メッセージ',
+    remind: '後で通知',
+    slideToAnswer: 'スライドで応答',
+    voice: '音声通話の着信',
+    video: 'ビデオ通話の着信',
+  },
+  returnToCall: '通話に戻る',
+  returnToCallWith: (name) => `${name}との通話に戻る`,
+  join: '参加',
+  leave: '退出',
+  speaking: (name) => `${name}が話しています`,
+  overflow: (n) => `他${n}人`,
+  muted: (name) => `${name}、ミュート中`,
+};
+
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: '最近の採用' };
+
+const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
+  draft: '下書き:',
+  unread: '未読',
+  starred: 'スター付き',
+  star: 'スターを付ける',
+  attachment: '添付ファイルあり',
+  select: '選択',
+  threadCount: (n) => plural('ja', n, { other: '{n}件のメッセージ' }),
+  moreLabels: (n) => plural('ja', n, { other: '他{n}個のラベル' }),
+  selectedCount: (n) => `${n}件選択済み`,
+  selectAll: 'すべて選択',
+  clearSelection: '選択を解除',
+  emptyTitle: '何もありません',
+  emptyDescription: '新しいメールはこのフォルダに届きます。',
+  today: '今日',
+  yesterday: '昨日',
+  list: 'メール',
+};
+
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: '重要なアラート', thisWeek: '今週' };
+
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `${label}について`, fromLastMonth: '先月比' };
+
+const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
+  shapes: shapes_shapeNames(
+    {
+      square: '正方形',
+      slanted: '斜め',
+      arch: 'アーチ',
+      semicircle: '半円',
+      oval: '楕円',
+      pill: 'ピル',
+      triangle: '三角形',
+      arrow: '矢印',
+      fan: '扇形',
+      diamond: 'ひし形',
+      clamshell: '貝殻',
+      pentagon: '五角形',
+      gem: '宝石',
+      'very-sunny': 'とても晴れ',
+      sunny: '晴れ',
+      burst: 'バースト',
+      'soft-burst': 'ソフトバースト',
+      boom: 'ブーム',
+      'soft-boom': 'ソフトブーム',
+      flower: '花',
+      puffy: 'ふんわり',
+      'puffy-diamond': 'ふんわりひし形',
+      'ghost-ish': 'おばけ風',
+      'pixel-circle': 'ピクセル円',
+      'pixel-triangle': 'ピクセル三角形',
+      bun: 'パン',
+      heart: 'ハート',
+    },
+    (n) => `${n}辺のクッキー`,
+    (n) => `${n}つ葉のクローバー`,
+  ),
+};
+
+const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
+  leasePaymentStatus: { upcoming: '予定', due: 'まもなく期限', overdue: '期限超過', paid: '支払い済み' },
+  rentPaymentStatus: { paid: '支払い済み', pending: '保留中', overdue: '期限超過', partial: '一部支払い' },
+  maintenanceCategory: {
+    plumbing: '水回り',
+    electrical: '電気',
+    appliances: '家電',
+    heating: '暖房',
+    other: 'その他',
+  },
+  maintenancePriority: { low: '優先度: 低', medium: '優先度: 中', high: '優先度: 高', urgent: '緊急' },
+  maintenanceStage: { reported: '報告済み', acknowledged: '受付済み', scheduled: '日程確定', resolved: '対応完了' },
+  documentStatus: { signed: '署名済み', pending: '署名待ち', expired: '期限切れ' },
+  timelineState: { complete: '完了', current: '進行中', upcoming: '未着手' },
+  leasePeriod: '契約期間',
+  monthlyRent: '月額家賃',
+  deposit: '敷金',
+  nextPayment: '次回の支払い',
+  paidThisYear: '今年の支払い済み額',
+  outstanding: '未払い額',
+  noPayments: 'まだ支払いはありません',
+  columns: { month: '月', dueDate: '支払期日', method: '支払方法', amount: '金額', status: 'ステータス' },
+  downloadReceipt: (month) => `${month}の領収書をダウンロード`,
+  dueOn: (date) => `期日 ${date}`,
+  comments: (n) => plural('ja', n, { other: 'コメント {n} 件' }),
+  photo: (position, total) => `写真 ${position}/${total}`,
+  photoWithAlt: (alt, position, total) => `${alt}、写真 ${position}/${total}`,
+  sign: '署名',
+  signDocument: (name) => `${name}に署名`,
+  viewDocument: (name) => `${name}を表示`,
+  downloadDocument: (name) => `${name}をダウンロード`,
+  noDocuments: '書類はありません',
+};
+
+const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
+  selectAll: 'このページのすべての行を選択',
+  selectRow: (id) => `行 ${id} を選択`,
+  densityLabel: '表の密度',
+  density: { md: '標準', sm: 'コンパクト' },
+};
+
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: '問題が発生しました', message: '予期しないエラーが発生しました', retry: 'もう一度試す' };
+
+const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
+  contributions: '今年のコントリビューション',
+  activity: 'アクティビティ',
+  periodGroup: (label) => `${label}の期間`,
+  periods: { weekly: '週間', monthly: '月間', yearly: '年間' },
+};
+
+const BREADCRUMB_MESSAGES: Translations['BREADCRUMB_MESSAGES'] = {
+  breadcrumb: 'パンくずリスト',
+};
+
+const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
+  photo: '写真',
+  video: '動画',
+  photoOf: (i, total) => `写真 ${i}/${total}`,
+  videoOf: (i, total) => `動画 ${i}/${total}`,
+  tapToView: 'タップして表示',
+  sendingPhoto: '写真を送信中',
+  sendingVideo: '動画を送信中',
+  sendingAlbum: 'アルバムを送信中',
+  sendingSticker: 'スタンプを送信中',
+  sendingGif: 'GIF を送信中',
+  album: (n) => `アルバム、${n} 件`,
+  sharedMedia: (n) => `共有メディア、${n} 件`,
+  sharedFiles: (n) => `共有ファイル、${n} 件`,
+  moreItems: (n) => `他 ${n} 件`,
+  notSent: '未送信',
+  voiceMessage: (d) => `ボイスメッセージ、${d}`,
+  playVoiceMessage: 'ボイスメッセージを再生',
+  pauseVoiceMessage: 'ボイスメッセージを一時停止',
+  transcribe: '文字起こし',
+  hideTranscript: '文字起こしを隠す',
+  seek: '再生位置',
+  seekPosition: (p, d) => `${p} / ${d}`,
+  playbackSpeed: (r) => `再生速度 ${r}`,
+  unplayed: '未再生',
+  download: 'ダウンロード',
+  downloaded: 'ダウンロード済み',
+  file: 'ファイル',
+  fileKinds: {
+    pdf: 'PDF',
+    doc: '文書',
+    sheet: 'スプレッドシート',
+    slides: 'スライド',
+    zip: 'ZIP',
+    audio: '音声',
+    video: '動画',
+    image: '画像',
+    code: 'コード',
+  },
+  contact: '連絡先',
+  message: 'メッセージ',
+  add: '追加',
+  location: '位置情報',
+  liveLocation: 'ライブ位置情報',
+  stopSharing: '共有を停止',
+  vote: '投票',
+  viewResults: '結果を見る',
+  anonymousVoting: '匿名投票',
+  quiz: 'クイズ',
+  selectOne: '1 つ選択',
+  selectOneOrMore: '1 つ以上選択',
+  correctAnswer: '正解',
+  yourAnswer: 'あなたの回答',
+  votes: (n) => (n === 0 ? '投票なし' : `${n} 票`),
+  sticker: 'スタンプ',
+};
+
+const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
+  health: { 'on-track': '順調', 'at-risk': '要注意', stalled: '停滞中' },
+  stalledFor: (duration) => `${duration}停滞中`,
+  move: (title) => `「${title}」を移動`,
+  stages: 'パイプラインのステージ',
+  stageWithCount: (name, n) => `${name}、商談${n}件`,
+  empty: 'このステージに商談はありません',
+  loadMore: 'さらに読み込む',
+};
+
+const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
+  where: '目的地',
+  checkIn: 'チェックイン',
+  checkOut: 'チェックアウト',
+  when: '日程',
+  who: '人数',
+  destinationPlaceholder: '目的地を検索',
+  datesPlaceholder: '日付を追加',
+  guestsPlaceholder: 'ゲストを追加',
+  guests: { adults: '大人', children: '子ども', infants: '乳幼児', pets: 'ペット' },
+  guestDescriptions: {
+    adults: '13歳以上',
+    children: '2～12歳',
+    infants: '2歳未満',
+    pets: '補助犬などを同伴しますか？',
+  },
+  dateFlexibility: '日程の柔軟性',
+  exactDates: '指定日のみ',
+  plusMinusDays: (n) => plural('ja', n, { other: '± {n}日' }),
+  destinations: '目的地の候補',
+  whereTo: 'どこへ行きますか？',
+  filters: 'フィルター',
+};
+
+const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
+  modes: {
+    signin: {
+      title: 'おかえりなさい',
+      description: 'ログインして、中断したところから再開しましょう。',
+      cta: 'ログイン',
+      switchLead: '初めてですか？',
+      switchAction: 'アカウントを作成',
+    },
+    signup: {
+      title: 'アカウントを作成',
+      description: '数分で始められます。',
+      cta: 'アカウントを作成',
+      switchLead: 'すでにアカウントをお持ちですか？',
+      switchAction: 'ログイン',
+    },
+    verify: {
+      title: '受信トレイを確認してください',
+      description: 'お送りしたコードを入力して、ログインを完了してください。',
+      cta: '確認して続行',
+      switchLead: 'コードが届きませんか？',
+      switchAction: '再送信',
+    },
+  },
+  codeSentTo: (email) => `${email} にお送りしたコードを入力して、ログインを完了してください。`,
+  verificationCode: '確認コード',
+  fullName: '氏名',
+  namePlaceholder: '山田 花子',
+  email: 'メールアドレス',
+  emailPlaceholder: 'you@example.co.jp',
+  emailHint: 'ご連絡のためにのみ使用し、第三者と共有することはありません。',
+  password: 'パスワード',
+  passwordPlaceholder: 'パスワードを入力',
+  newPasswordPlaceholder: '8文字以上',
+  confirmPassword: 'パスワードの確認',
+  confirmPasswordPlaceholder: 'パスワードをもう一度入力',
+  rememberMe: 'ログイン状態を保持',
+  forgotPassword: 'パスワードをお忘れですか？',
+  terms: 'アカウントを作成すると、利用規約とプライバシーポリシーに同意したことになります。',
+  orContinueWith: 'または次で続行',
+};
+
+const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
+  title: 'タイトル',
+  album: 'アルバム',
+  dateAdded: '追加日',
+  plays: '再生回数',
+  duration: '再生時間',
+  moveUp: '上に移動',
+  moveDown: '下に移動',
+  reorder: '並べ替え',
+  downloaded: 'ダウンロード済み',
+  unavailable: '利用できません',
+  tracks: '曲',
+  episodes: 'エピソード',
+  selected: (n) => plural('ja', n, { other: '{n}件を選択中' }),
+  clearSelection: '選択を解除',
+  played: '再生済み',
+  listened: '再生済み',
+  saveEpisode: 'エピソードを保存',
+  downloadEpisode: 'エピソードをダウンロード',
+  minutes: (m) => `${m}分`,
+  hours: (h) => `${h}時間`,
+  hoursMinutes: (h, m) => `${h}時間${m}分`,
+  remaining: (l) => `残り${l}`,
+};
+
+const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
+  lyrics: '歌詞',
+  showLyrics: '歌詞を表示',
+  backToCurrent: '再生中の行に戻る',
+  empty: 'この曲の歌詞はありません',
+};
+
+const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
+  kinds: { call: '通話', email: 'メール', meeting: 'ミーティング', note: 'メモ', 'stage-change': 'ステージ変更', task: 'タスク完了' },
+  empty: 'まだ記録はありません',
+  loggedBy: (name) => `記録者: ${name}`,
+  filterActivity: 'アクティビティを絞り込む',
+};
+
+const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
+  depositReturned: '敷金が返還された',
+  depositNotReturned: '敷金が返還されなかった',
+  recommend: 'おすすめする',
+  notRecommend: 'おすすめしない',
+  helpful: '参考になった',
+  report: '報告',
+  promptTitle: 'ここに住んでいましたか？',
+  promptDescription: (building) =>
+    `${building}の今後の入居者のためにご協力ください。レビューは匿名です。`,
+  writeReview: 'レビューを書く',
+  reviewCount: (n) => plural('ja', n, { other: '{n}件のレビュー' }),
+  depositRate: (percent) => `${percent}%の入居者に敷金が返還されました`,
+  recommendRate: (percent) => `${percent}%がここでの暮らしをおすすめしています`,
+};
+
+const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
+  tiers: { standard: '通常配送', express: '速達' },
+  soldOut: '受付終了',
+  asap: 'できるだけ早く',
+  field: '配達時間',
+  day: '日付',
+  emptyTitle: '空いている時間帯がありません',
+  emptyDescription: '別の日を選ぶか、次の配達員をお待ちください。',
+};
+
+const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
+  visibility: { private: '非公開', shared: '共有', public: '公開' },
+  places: (n) => plural('ja', n, { other: '{n}か所' }),
+  sharedWith: (n) => plural('ja', n, { other: '{n}人と共有' }),
+  labels: {
+    moveEarlier: (position) => `${position - 1}番目に移動`,
+    moveLater: (position) => `${position + 1}番目に移動`,
+    remove: (name) => `${name}をリストから削除`,
+    moved: (name, position, total) => `${name}を${total}件中${position}番目に移動しました`,
+    note: 'メモ',
+  },
+  savedPlaces: '保存済みの場所',
+};
+
+const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
+  modes: { rent: '賃貸', buy: '購入', stays: 'バケーションレンタル', swap: 'ホームエクスチェンジ' },
+  searchMode: '検索モード',
+  location: 'エリア',
+  locationPlaceholder: '都市やエリアを検索',
+  moveIn: '入居',
+  datePlaceholder: '日付を追加',
+  budget: '予算',
+  budgetPlaceholder: '予算を追加',
+  price: '価格',
+  pricePlaceholder: '価格指定なし',
+  propertyType: '物件タイプ',
+  propertyTypePlaceholder: 'タイプ指定なし',
+  dates: '日程',
+  homeSize: '広さ',
+  homeSizePlaceholder: '広さ指定なし',
+  minimum: '下限',
+  maximum: '上限',
+  budgetPresets: '予算の目安',
+  monthlyBudget: '月額予算',
+  monthlyBudgetDescription: '月額家賃（光熱費別）',
+  totalPriceDescription: '総額',
+  upTo: (amount) => `${amount}まで`,
+  any: '指定なし',
+  moveInLabels: {
+    date: '入居日',
+    flexible: '柔軟に対応',
+    asap: 'できるだけ早く',
+    contractLength: '契約期間',
+  },
+  contractLengths: { any: '指定なし', short: '1～6か月', medium: '6～12か月', long: '1年以上' },
+  saveSearch: '検索条件を保存',
+  saved: '保存済み',
+  newCount: (n) => plural('ja', n, { other: '新着{n}件' }),
+  alertsOff: '通知オフ',
+  actionOn: (action, subject) => `「${subject}」を${action}`,
+};
+
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: '賃貸', sale: '売買', short_term_rent: 'バケーションレンタル', exchange: '交換' } };
+
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: '縮尺', mapData: '地図データ' };
+
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: '最小値', maximum: '最大値', value: (n) => `値 ${n}` };
+
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'オプションを選択', scrollUp: '上にスクロール', scrollDown: '下にスクロール' };
+
+const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
+  close: 'メディアビューアを閉じる',
+  previous: '前の項目',
+  next: '次の項目',
+  goTo: (i, n) => `${n}件中${i}件目に移動`,
+  share: 'メディアを共有',
+};
+
+const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: '通知を閉じる' };
+
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: '電話番号', countryCode: '国番号' };
+
+const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
+  facts: { deliveryTime: '配達時間', deliveryFee: '配達料', distance: '距離', minimumOrder: '最低注文金額' },
+  availability: { paused: '一時停止中', closed: '営業時間外' },
+  new: '新着',
+  rated: (value, reviews) =>
+    `評価 ${value}（5点満点）${vendorCard_has(reviews) ? `、${vendorCard_counted('ja', reviews, { other: 'レビュー{n}件' })}` : ''}`,
+};
+
+const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
+  presence: { online: 'オンライン', idle: '退席中', offline: 'オフライン', busy: '取り込み中' },
+  status: { sending: '送信中…', sent: '送信済み', delivered: '配信済み', read: '既読', failed: '未送信' },
+  unread: '未読',
+  unreadCount: (n) => `未読メッセージ ${n} 件`,
+};
+
+const MEDIA_CONTROLS_MESSAGES: Translations['MEDIA_CONTROLS_MESSAGES'] = {
+  play: '再生',
+  pause: '一時停止',
+  playSubject: (s) => `${s}を再生`,
+  pauseSubject: (s) => `${s}を一時停止`,
+  saveToLibrary: 'ライブラリに保存',
+  saveSubjectToLibrary: (s) => `${s}をライブラリに保存`,
+  explicit: '露骨な表現',
+  seek: '再生位置',
+  seekValue: (a, b) => `${a} / ${b}`,
+  mute: 'ミュート',
+  unmute: 'ミュート解除',
+  volume: '音量',
+  nowPlaying: '再生中',
+};
+
+const INPUT_OTP_MESSAGES: Translations['INPUT_OTP_MESSAGES'] = {
+  oneTimeCode: 'ワンタイムコード',
+  digitOf: (i, n) => `${n}桁中${i}桁目`,
+  characterOf: (i, n) => `${n}文字中${i}文字目`,
+};
+
+const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
+  infoActions: { call: '電話', open: 'ウェブサイトを開く', directions: '経路' },
+  busy: {
+    busier: 'いつもより混雑',
+    typical: 'いつもと同じくらいの混雑',
+    quieter: 'いつもより空いている',
+  },
+  transitModes: {
+    bus: 'バス停',
+    metro: '地下鉄駅',
+    train: '駅',
+    tram: '路面電車の停留所',
+    ferry: 'フェリーターミナル',
+  },
+  notAvailable: '利用不可',
+  amenities: '設備・サービス',
+  today: '今日',
+  closed: '定休日',
+  openingHours: '営業時間',
+  day: '曜日',
+  noDataForDay: 'この日のデータはありません',
+  chartNoData: (day) => `${day}、データなし`,
+  chartClosed: (day) => `${day}、終日休業`,
+  chartPeak: (day, hour) => `${day}、最も混雑するのは${hour}`,
+  chartNow: (hour) => `現在 ${hour}`,
+  live: 'リアルタイム',
+  noDepartures: '現在、出発便はありません',
+  nearbyTransit: '近くの交通機関',
+  lines: '路線',
+  line: (name) => `路線 ${name}`,
+  towards: (headsign) => `${headsign}行き`,
+};
+
+const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  openNavigation: 'ナビゲーションを開く',
+  closeNavigation: 'ナビゲーションを閉じる',
+  resizePanes: 'ペインのサイズを変更',
+  notifications: '通知',
+  proOffer: 'Pro のご案内',
+};
+
+const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
+  routeStops: 'ルートの経由地',
+  origin: '出発地',
+  destination: '目的地',
+  stop: (position) => `経由地 ${position}`,
+  swap: '出発地と目的地を入れ替える',
+  addStop: '経由地を追加',
+  removeStop: (title) => `${title}を削除`,
+  state: { reached: '到着済み', current: '現在の経由地', pending: '未到着' },
+};
+
+const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: '検索語句をクリア' };
+
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `「${t}」を削除`, full: (n) => `最大${n}個`, suggestions: '候補' };
+
+const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
+  propertyTypes: {
+    apartment: 'マンション',
+    house: '一戸建て',
+    room: '個室',
+    studio: 'ワンルーム',
+    duplex: 'メゾネット / ペントハウス',
+    coliving: 'シェアハウス',
+    hostel: 'ホステル',
+    other: '土地 / その他',
+  },
+  features: {
+    elevator: 'エレベーター',
+    parking: '駐車場',
+    terrace: 'テラス',
+    garden: '庭',
+    pool: 'プール',
+    furnished: '家具付き',
+    pets: 'ペット可',
+    airConditioning: 'エアコン',
+    heating: '暖房',
+    accessible: 'バリアフリー',
+    storage: '物置',
+  },
+  floors: { ground: '1階', middle: '中層階', top: '最上階', elevator: 'エレベーターあり' },
+  minimum: '下限',
+  maximum: '上限',
+  priceRange: '価格帯',
+  area: '面積',
+  featuresGroup: '設備',
+  floor: '階数',
+  propertyType: '物件タイプ',
+  energyRating: '省エネ等級',
+  anyRating: 'すべての等級',
+  ratingOnly: (r) => `${r}のみ`,
+  ratingAndBetter: (r) => `${r}以上`,
+  filters: 'フィルター',
+  filtersApplied: (label, n) => `${label}（${n}件適用中）`,
+  clearAll: 'すべてクリア',
+  any: '指定なし',
+  availableNow: '即入居可',
+  availableNowDescription: '今日から入居できます',
+  availableFrom: '入居可能日',
+  anyDate: '日付指定なし',
+};
+
+const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
+  dialog: '設定',
+  nav: '設定のセクション',
+  close: '設定を閉じる',
+  saved: '保存しました',
+  currentPlan: '現在のプラン',
+  actions: '操作',
+  storage: {
+    storedIn: '保存先',
+    fileCount: (n, shown) => plural('ja', n, { other: `${shown} 件のファイル` }),
+    filterByType: 'ファイルの種類で絞り込む',
+    fileType: 'ファイルの種類',
+    orderBy: '並べ替え',
+    modified: '更新日順',
+    oldestFirst: '古い順',
+    searchFiles: 'ファイルを検索',
+    selectAllOnPage: 'このページのファイルをすべて選択',
+    fileName: 'ファイル名',
+    uploadedOn: 'アップロード日',
+    fileSize: 'ファイルサイズ',
+    sortBy: { name: 'ファイル名で並べ替え', uploadedAt: 'アップロード日で並べ替え', size: 'ファイルサイズで並べ替え' },
+    selectFile: (name) => `${name} を選択`,
+    deleteFile: 'ファイルを削除',
+    deleteNamed: (name) => `${name} を削除`,
+    noMatches: 'フィルタに一致するファイルはありません。',
+    documents: 'ドキュメント',
+    spreadsheets: 'スプレッドシート',
+    videos: '動画',
+    downloadFile: 'ファイルをダウンロード',
+    rename: '名前を変更',
+    copyLink: 'リンクをコピー',
+  },
+  tools: {
+    showOutput: '出力を表示',
+    refreshTools: 'ツールを更新',
+    removeServer: 'サーバーを削除',
+    logout: 'ログアウト',
+    logOutOf: (server) => `${server} からログアウト`,
+    showTools: (server) => `${server} のツールを表示`,
+    hideTools: (server) => `${server} のツールを非表示`,
+    error: 'エラー',
+    showOutputLink: '出力を表示',
+    showOutputOf: (server) => `${server} の出力を表示`,
+    newServer: '新しい MCP サーバー',
+    newServerDescription: 'カスタム MCP サーバーを追加',
+    projectScope: 'プロジェクトの範囲',
+    authentication: '認証',
+    waitForAuth: 'MCP 認証を待機',
+    waitForAuthDescription:
+      '認証を求められたときに無期限で待機します。オフの場合、認証の要求は 30 秒後にスキップされます。',
+    waitForAuthSwitch: 'MCP 認証を待機',
+    scopeServers: (scope) => `${scope} の MCP サーバー`,
+    scopeServersDescription: (scope) => `${scope} で利用できるサーバー。`,
+    teamServers: 'チームの MCP サーバー',
+    teamServersDescription: 'ダッシュボードで設定',
+    manage: '管理',
+    noTeamServers: 'チームの MCP サーバーはありません',
+    noTeamServersBody: 'ダッシュボードで MCP サーバーを設定すると、デスクトップとクラウドで利用できるようになります。',
+    configureTeam: 'チームの MCP サーバーを設定',
+    pluginServers: 'プラグインの MCP サーバー',
+  },
+};
+
+const EVICTION_MESSAGES: Translations['EVICTION_MESSAGES'] = {
+  status: {
+    scheduled: '予定',
+    postponed: '延期',
+    suspended: '停止',
+    executed: '執行済み',
+    cancelled: '中止',
+  },
+  attend: '参加します',
+  share: '共有',
+  contactSupport: '支援グループに連絡',
+  verified: 'コミュニティ確認済み',
+  caseHistory: '事案の経緯',
+  source: (source) => `出典: ${source}`,
+};
+
+const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
+  checkIn: 'チェックイン',
+  checkOut: 'チェックアウト',
+  guests: 'ゲスト',
+  addDate: '日付を追加',
+  reserve: '予約する',
+  checkAvailability: '空室状況を確認',
+  notChargedYet: 'まだ料金は発生しません',
+  total: '合計',
+  tripStatus: { confirmed: '確定', pending: '保留中', cancelled: 'キャンセル済み', completed: '完了' },
+  priceName: booking_priceName((p, u) => `${u}あたり${p}`, (s, o) => `${s}（元の価格 ${o}）`),
+};
+
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'コンテキストウィンドウ', freeSpace: '空き容量', planUsageLimits: 'プランの利用上限', managePlan: 'プランを管理' };
+
+const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
+  closeActions: 'アクションを閉じる',
+};
+
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'プロフィール写真を追加' };
+
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'テーマ', darkMode: 'ダークモード', lightMode: 'ライトモード', useDarkMode: 'ダークモードにする', useLightMode: 'ライトモードにする' };
+
+const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
+  earned: '収益',
+  period: '収益の期間',
+  breakdown: '内訳',
+  payout: '次回の支払い',
+  payoutState: { scheduled: '予定', processing: '送金中', paid: '支払い済み', held: '保留中', failed: '失敗' },
+  chart: (label) => `${label}の収益（期間別）`,
+  empty: 'まだ収益はありません',
+  earnings: '収益',
+};
+
+const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
+  labels: {
+    signature: '署名',
+    signaturePad: '署名欄',
+    signatureHint: '指で署名してください',
+    signed: '署名済み',
+    clear: '署名を消去',
+    typeName: 'または名前を入力',
+    typeNamePlaceholder: '氏名',
+    photo: '写真',
+    photoHint: '置いた場所、または受取人と荷物の写真。',
+    code: '配達コード',
+    codeHint: '受取人にアプリのコードを読み上げてもらってください。',
+    recipient: '受取人',
+    recipientPlaceholder: '名前',
+    note: 'メモ',
+    notePlaceholder: '記録しておきたいこと',
+    submit: '配達を確定する',
+    required: '必須',
+    missing: '確定する前に入力が必要です。',
+    missingSummary: (n) => `未入力の項目が${n}件あります`,
+  },
+  proofOfDelivery: '配達証明',
+};
+
+const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
+  promptWeb: 'ドラッグ＆ドロップでアップロード、または',
+  promptNative: 'タップして',
+  selectWeb: 'ファイルを選択',
+  selectNative: 'ファイルを選択',
+  uploading: (size) => `${size} をアップロード中...`,
+  uploaded: 'アップロードしました',
+  unsupported: (extensions) => `${extensions} ファイルのみ対応しています`,
+  tooLarge: (max) => `ファイルが ${max} を超えています`,
+  max: (size) => `（最大 ${size}）`,
+  uploadFile: 'ファイルをアップロード',
+};
+
+const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
+  popover: 'ポップオーバー',
+};
+
+const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
+  queueTab: '再生キュー',
+  recentTab: '最近再生した項目',
+  close: 'キューを閉じる',
+  nextInQueue: 'キューの次の曲',
+  nextFrom: (c) => `次の曲（${c}）`,
+  nextUp: '次に再生',
+  clearQueue: 'キューをクリア',
+  reorder: (t) => `${t}を並べ替え`,
+  reorderHint: 'ドラッグするか矢印キーを使用します',
+  moveUp: '上に移動',
+  moveDown: '下に移動',
+  remove: 'キューから削除',
+  moved: (t, p, n) => `${t}を${n}件中${p}番目に移動しました`,
+  emptyQueue: 'キューは空です',
+  emptyQueueHint: '曲やエピソードを追加すると、次に再生されます。',
+  emptyRecent: 'まだ何も再生していません',
+};
+
+const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
+  hoverCard: 'プレビューカード',
+};
+
+const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
+  header: {
+    saved: '保存済み',
+    saving: '保存中…',
+    offline: 'オフライン — 変更は保持されています',
+    error: '未保存',
+    words: (n) => plural('ja', n, { other: '{n}語' }),
+    title: 'タイトル',
+  },
+  untitled: '無題',
+  note: 'メモ',
+  toolbar: { more: 'その他の書式', moreMenu: 'その他の書式' },
+};
+
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'フィルター', showAll: 'すべて表示' };
+
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: '前のカテゴリ', next: '次のカテゴリ' };
+
+const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
+  labels: {
+    accept: '承諾',
+    message: 'メッセージ',
+    decline: '辞退',
+    pickup: '集荷',
+    eta: '到着',
+    vehicle: '車両',
+    jobs: (jobs) => `${jobs}件の実績`,
+    verified: '認証済みの運送業者',
+    marks: { cheapest: '最安', fastest: '最速' },
+    showPrice: '料金の内訳を表示',
+    hidePrice: '料金の内訳を隠す',
+    priceDetails: '料金の内訳：',
+    sort: '見積もりを並べ替え',
+    sortOptions: { price: '安い順', eta: '早い順', rating: '評価の高い順' },
+    count: (n) => `見積もり${n}件`,
+    loading: '見積もりを読み込み中',
+  },
+  emptyTitle: 'まだ見積もりはありません',
+  emptyDescription: '運送業者があなたの依頼を確認しています。最初の見積もりは通常数分以内に届きます。',
+  list: '見積もり',
+  priceDetailsFor: (name) => `${name}の料金の内訳`,
+};
+
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'パスワードを表示', hidePassword: 'パスワードを非表示', required: '必須' };
+
+const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
+  call: '音声通話',
+  videoCall: 'ビデオ通話',
+  searchInConversation: 'トーク内を検索',
+  connecting: '接続中…',
+  verified: '認証済み',
+  bot: 'ボット',
+  channel: 'チャンネル',
+  clearSelection: '選択を解除',
+  forward: '転送',
+  pin: 'ピン留め',
+  selectedCount: (n) => `${n} 件選択中`,
+  pinnedList: 'ピン留めしたメッセージを表示',
+  pinnedClose: 'ピン留めバーを非表示',
+  pinnedUnpin: 'このメッセージのピン留めを解除',
+  pinnedMessage: 'ピン留めされたメッセージ',
+  pinnedMessageNumber: (n) => `ピン留めされたメッセージ #${n}`,
+  scrollToBottom: '最新のメッセージへ移動',
+  jumpToMention: 'メンションへ移動',
+  emptyTitle: 'まだメッセージはありません',
+  info: '情報',
+  members: 'メンバー',
+  addMember: 'メンバーを追加',
+  memberSearch: 'メンバーを検索',
+  noMembers: 'メンバーが見つかりません',
+  owner: 'オーナー',
+  admin: '管理者',
+  resizeList: 'トーク一覧のサイズを変更',
+};
+
+const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
+  contextMenu: 'コンテキストメニュー',
+};
+
+const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {
+  photo: (p, t) => `写真 ${p}/${t}`,
+  cover: 'カバー',
+  moveEarlier: (p) => `写真${p}を前に移動`,
+  moveLater: (p) => `写真${p}を後ろに移動`,
+  remove: (p) => `写真${p}を削除`,
+  retry: (p) => `写真${p}のアップロードを再試行`,
+  uploading: (p) => `写真${p}をアップロード中`,
+  failed: 'アップロードに失敗しました',
+  add: '写真を追加',
+  moved: (p, t) => `${t}件中${p}番目に移動しました`,
+  photos: '写真',
+};
+
+const CONNECTION_DOTS_MESSAGES: Translations['CONNECTION_DOTS_MESSAGES'] = {
+  connecting: '接続中',
+};
+
+const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
+  newGroup: {
+    photo: 'グループの写真を選択',
+    name: 'グループ名',
+    namePlaceholder: 'グループに名前を付ける',
+    description: '説明',
+    descriptionPlaceholder: 'このグループの目的は？',
+    members: (n) => `メンバー ${n} 人`,
+    addMembers: 'メンバーを追加',
+    remove: (name) => `${name}を削除`,
+  },
+  member: {
+    owner: 'オーナー',
+    admin: '管理者',
+    promote: '管理者にする',
+    restrict: '制限する',
+    remove: 'グループから削除',
+    actions: (name) => `${name}の操作`,
+  },
+  story: {
+    close: 'ストーリーを閉じる',
+    previous: '前のストーリー',
+    next: '次のストーリー',
+    mute: 'ストーリーをミュート',
+    unmute: 'ストーリーのミュートを解除',
+    more: 'ストーリーのオプション',
+    replyPlaceholder: '返信…',
+    send: '返信を送信',
+    progress: (index, count) => `ストーリー ${index + 1}/${count}`,
+    react: (emoji) => `${emoji}でリアクション`,
+  },
+  searchMembers: 'メンバーを検索',
+  share: '共有',
+  postOptions: '投稿のオプション',
+  pinned: '固定済み',
+  views: (c) => `${c} 回表示`,
+  forwards: (c) => `${c} 回転送`,
+  jumpTo: (letter) => `${letter}へ移動`,
+  add: '追加',
+  added: '追加済み',
+  actionOn: (action, name) => `${action}: ${name}`,
+};
+
+const translations: Translations = {
+  COMMON_MESSAGES,
+  SURFACES_MESSAGES,
+  CONTACT_CARD_MESSAGES,
+  CHAT_LIST_MESSAGES,
+  NOTE_CARD_MESSAGES,
+  DIALOG_MESSAGES,
+  ALERT_DIALOG_MESSAGES,
+  SIDEBAR_MESSAGES,
+  FILE_SIZE_UNITS,
+  CARD_FORM_MESSAGES,
+  CHAT_COMPOSER_MESSAGES,
+  MAIL_COMPOSE_MESSAGES,
+  MEDIA_PLAYER_MESSAGES,
+  ADDRESS_MESSAGES,
+  CREATOR_STUDIO_MESSAGES,
+  PROPERTY_INSIGHTS_MESSAGES,
+  MAP_MARKER_MESSAGES,
+  LISTING_ACTIONS_MESSAGES,
+  AGENT_PROGRESS_MESSAGES,
+  CALENDAR_MESSAGES,
+  LISTING_DETAILS_MESSAGES,
+  PRICE_BREAKDOWN_MESSAGES,
+  DATE_PICKER_MESSAGES,
+  SHIPMENT_REQUEST_MESSAGES,
+  LABEL_MESSAGES,
+  CHECKOUT_SUMMARY_MESSAGES,
+  VEHICLE_PICKER_MESSAGES,
+  COMPOSER_PANEL_MESSAGES,
+  MESSAGE_BUBBLE_MESSAGES,
+  PAYMENT_STATUS_MESSAGES,
+  AVATAR_MESSAGES,
+  PLACE_CARD_MESSAGES,
+  SOCIAL_BUTTON_MESSAGES,
+  QUESTIONNAIRE_MESSAGES,
+  MAP_CONTROLS_MESSAGES,
+  PAYMENT_METHOD_MESSAGES,
+  AVATAR_GROUP_MESSAGES,
+  MENUBAR_MESSAGES,
+  AGENT_THINKING_MESSAGES,
+  AI_CHAT_MESSAGES,
+  COMMAND_MESSAGES,
+  MUSIC_LIBRARY_MESSAGES,
+  LISTING_CARD_MESSAGES,
+  NAVIGATION_BANNER_MESSAGES,
+  LOCATION_PUCK_MESSAGES,
+  CAROUSEL_MESSAGES,
+  ORDER_STATUS_MESSAGES,
+  RATING_MESSAGES,
+  LISTING_EDITOR_MESSAGES,
+  MEDIA_HEADER_MESSAGES,
+  MENU_ITEM_MESSAGES,
+  PAGINATION_MESSAGES,
+  LEAD_SCORE_MESSAGES,
+  DIRECTIONS_MESSAGES,
+  CART_PANEL_MESSAGES,
+  MEDIA_CARD_MESSAGES,
+  JOB_BOARD_MESSAGES,
+  FLOATING_MESSAGES,
+  AGENT_CHAT_MESSAGES,
+  WEB_SEARCH_MESSAGES,
+  MAIL_THREAD_MESSAGES,
+  NOTIFICATION_CENTER_MESSAGES,
+  CHART_CARDS_MESSAGES,
+  CODE_MESSAGES,
+  OUTLINE_NAV_MESSAGES,
+  STEPPER_MESSAGES,
+  CALL_UI_MESSAGES,
+  RECENT_HIRES_CARD_MESSAGES,
+  MAIL_LIST_MESSAGES,
+  IMPORTANT_ALERTS_CARD_MESSAGES,
+  STAT_CARDS_MESSAGES,
+  SHAPE_MESSAGES,
+  TENANCY_MESSAGES,
+  DATA_TABLE_MESSAGES,
+  ERROR_BOUNDARY_MESSAGES,
+  AI_PROFILE_CARD_MESSAGES,
+  BREADCRUMB_MESSAGES,
+  MESSAGE_MEDIA_MESSAGES,
+  PIPELINE_MESSAGES,
+  STAY_SEARCH_MESSAGES,
+  AUTH_CARD_MESSAGES,
+  TRACK_LIST_MESSAGES,
+  LYRICS_MESSAGES,
+  ACTIVITY_FEED_MESSAGES,
+  PLACE_REVIEWS_MESSAGES,
+  DELIVERY_SLOT_MESSAGES,
+  PLACE_LIST_MESSAGES,
+  HOME_SEARCH_MESSAGES,
+  OFFERING_BADGE_MESSAGES,
+  MAP_ATTRIBUTION_MESSAGES,
+  SLIDER_MESSAGES,
+  SELECT_MESSAGES,
+  ZOOMABLE_MEDIA_GALLERY_MESSAGES,
+  NOTIFICATION_MESSAGES,
+  PHONE_INPUT_MESSAGES,
+  VENDOR_CARD_MESSAGES,
+  CHAT_INDICATORS_MESSAGES,
+  MEDIA_CONTROLS_MESSAGES,
+  INPUT_OTP_MESSAGES,
+  PLACE_DETAILS_MESSAGES,
+  APP_SHELL_MESSAGES,
+  ROUTE_STOPS_MESSAGES,
+  SEARCH_MESSAGES,
+  TAG_FIELD_MESSAGES,
+  STAY_FILTERS_MESSAGES,
+  SETTINGS_MODAL_MESSAGES,
+  EVICTION_MESSAGES,
+  BOOKING_MESSAGES,
+  AGENT_LIMITS_CARD_MESSAGES,
+  SWIPE_ROW_MESSAGES,
+  PATIENT_INFO_CARD_MESSAGES,
+  THEME_TOGGLE_MESSAGES,
+  EARNINGS_MESSAGES,
+  PROOF_OF_DELIVERY_MESSAGES,
+  FILE_UPLOAD_MESSAGES,
+  POPOVER_MESSAGES,
+  QUEUE_PANEL_MESSAGES,
+  HOVER_CARD_MESSAGES,
+  NOTE_EDITOR_MESSAGES,
+  MEDIA_SHELF_MESSAGES,
+  CATEGORY_BAR_MESSAGES,
+  CARRIER_QUOTE_MESSAGES,
+  TEXT_FIELD_MESSAGES,
+  CHAT_SCREEN_MESSAGES,
+  CONTEXT_MENU_MESSAGES,
+  SORTABLE_MEDIA_MESSAGES,
+  CONNECTION_DOTS_MESSAGES,
+  CHAT_PEOPLE_MESSAGES,
+};
+
+export default translations;

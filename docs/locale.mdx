@@ -22,6 +22,16 @@ import { BloomProvider } from '@oxy.so/bloom/provider';
 
 Set it once, from the app's own language, and every Bloom component below follows it — including after a language switch, since the provider re-renders with the new value. `LocaleProvider` (from `@oxy.so/bloom/locale`) scopes a different locale to a subtree.
 
+## Only the app's language is downloaded
+
+Bloom's English strings are inline in each family; every other language is one module per language (`src/locale/translations/<language>.ts`) loaded when a `LocaleProvider` first asks for it. An English app downloads no translation at all; a Spanish one downloads Spanish, once, for every family.
+
+- **First paint.** `BloomProvider` holds its first paint on `onFontsLoading` until a non-English locale's strings have loaded — the same visual, and usually the same wait, as its fonts. English never waits. A standalone `LocaleProvider` does the same with its `fallback` prop; without one, its children render at once in the parent's locale and switch when the strings arrive.
+- **Switching.** A new locale is published to the subtree only once its strings are loaded; until then the subtree keeps the locale it had. Words, dates and numbers change together in one render, with no English frame between.
+- **Ahead of time.** `loadBloomLocale(locale)` (from `@oxy.so/bloom/locale`) loads a language before rendering, for a first render that must already be translated without the hold — before hydrating server-rendered markup, for instance.
+- **Failure.** A language whose module fails to load renders in English rather than holding the screen; the next request retries.
+- **A component's own `locale` prop** renders from the languages already loaded: a language no provider above it has loaded shows English until one does.
+
 ## Languages
 
 Bloom ships its strings in `BLOOM_LANGUAGES`: English, Spanish, Catalan, German, French, Italian, Portuguese, Russian, Turkish, Japanese, Chinese, Arabic, Hindi, Bengali and Indonesian. A locale is matched on its primary subtag (`es-MX` → Spanish, `pt_BR` → Portuguese); a language Bloom does not ship falls back to English. `resolveBloomLanguage(locale)` answers which one a tag gets.
@@ -42,9 +52,10 @@ What stays as given is the app's own content: series names, month abbreviations 
 
 ## Adding a family (for Bloom authors)
 
-- The family's strings live in `src/<family>/messages.ts` as a `MessageCatalog<M>` (`src/locale/messages.ts`). The type requires EVERY language and every key, so a new string or a new language fails the type-check until it is translated — a missing translation is never an English word in a translated screen.
+- The family's English strings live in `src/<family>/messages.ts`: `export const X_MESSAGES: MessageCatalog<M> = defineMessages<M>('X_MESSAGES', { … })`, the id being the export's own name. Each other language lives in `src/locale/translations/<language>.ts` under that id, and `Translations` (`src/locale/translations/types.ts`) lists every catalog — add yours there. Each language module is typed `Translations`, so a new string, family or language fails the type-check until it is translated: a missing translation is never an English word in a translated screen.
+- **A language module imports no family module.** Loading Spanish would otherwise link that family's English (and, since fourteen language chunks share it, a bundler would hoist it into the page's eager chunk). A helper several languages' strings call lives in `src/<family>/message-helpers.ts`; a type comes in with `import type`. `locale-catalogs.test.tsx` enforces this and that `src/locale/translations.ts` is each module's only importer.
 - Read it with `useMessages(CATALOG, localeProp)`, which also returns the resolved locale to hand to `Intl`. Let `labels?.x ?? messages.x` decide each string.
 - Count-dependent strings are functions using `plural(language, n, forms)` (`src/locale/plural.ts`). It carries the CLDR rules itself because **Hermes has no `Intl.PluralRules`**: a catalog calling it would pluralise on web and throw on a phone.
 - A word most families say belongs in `COMMON_MESSAGES` (`src/locale/common-messages.ts`, read with `useCommonMessages()`), not in a family catalog: one translation, reviewed once.
-- Two gates keep it honest, and neither needs registering: `message-catalogs.test.ts` finds every `messages.ts` and checks each language has English's shape and is not English pasted in; `i18n-literal-census.test.ts` scans the source for English still drawn or announced directly. A migrated family leaves the census's `PENDING` list; a literal that is not copy (a brand name, a format pattern) says so with `// i18n-exempt: <reason>`.
+- Two gates keep it honest, and neither needs registering: `message-catalogs.test.ts` finds every `messages.ts`, checks it carries English only, and checks each language has English's shape and is not English pasted in (every language is registered for all suites by `__mocks__/setup.ts`; read one with `messagesIn(CATALOG, language)`); `i18n-literal-census.test.ts` scans the source for English still drawn or announced directly. A migrated family leaves the census's `PENDING` list; a literal that is not copy (a brand name, a format pattern) says so with `// i18n-exempt: <reason>`.
 - Never join translated words with an English connector: `labelFor(label, subject)` in `COMMON_MESSAGES` does "More actions for Ana" per language.

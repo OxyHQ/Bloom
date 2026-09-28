@@ -37,6 +37,7 @@ import { ComposerPanel, ComposerPanelStatusTab } from '../composer-panel';
 import { LocaleProvider } from '../locale';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { WebSearch } from '../web-search';
+import { messagesIn } from './support/messages-in';
 
 const HIDDEN = { includeHiddenElements: true } as const;
 const NOW = Date.now();
@@ -52,7 +53,10 @@ function renderIn(ui: React.ReactElement, locale = 'es') {
 
 describe('agent-chat speaks the locale', () => {
   it('formats ages with each language’s plurals, not English suffixes', () => {
-    const { ru, ar, es, ja } = AGENT_CHAT_MESSAGES;
+    const ru = messagesIn(AGENT_CHAT_MESSAGES, 'ru');
+    const ar = messagesIn(AGENT_CHAT_MESSAGES, 'ar');
+    const es = messagesIn(AGENT_CHAT_MESSAGES, 'es');
+    const ja = messagesIn(AGENT_CHAT_MESSAGES, 'ja');
     expect(formatAgo(NOW - 60_000, NOW, ru.ago)).toBe('1 минуту назад');
     expect(formatAgo(NOW - 3 * 60_000, NOW, ru.ago)).toBe('3 минуты назад');
     expect(formatAgo(NOW - 5 * 60_000, NOW, ru.ago)).toBe('5 минут назад');
