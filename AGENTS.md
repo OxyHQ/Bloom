@@ -65,7 +65,7 @@ for i in 1 2 3; do bunx jest --watchman=false --shard=$i/3; done
 
 Three shards65/64/64 completed where one193-suite run failed. **Count SUITES:** union of shard `--listTests` must equal whole (193), not just sum. Test totals changed3502→3514 unchanged; never fingerprint runs with them. Unverified hypothesis: directory-derived gates see lib after build.
 
-Node24 mitigation: `node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=3` (focused suites pass). `NODE_OPTIONS` forbids that flag; pass it directly. Still verify coverage.
+Node24 mitigation: `node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=3` (focused suites pass). `NODE_OPTIONS` forbids that flag; pass it directly. Still verify coverage. On2026-09-28 Node24.21 still crashed five suites under nine shards/maxWorkers2 even with `--no-opt`. CI uses Node22.17 for tests: serialize `jest.config.ts` with Bun to JSON (including `rootDir`), then pass `--config` to Jest; no added `ts-node` dependency. Build/typecheck stay on Node24.
 
 ## Jest does not resolve `.native.*`
 

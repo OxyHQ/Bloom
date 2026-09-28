@@ -43,15 +43,33 @@ function isTextContent(node: React.ReactNode): boolean {
   return React.isValidElement<{ children?: React.ReactNode }>(node) && node.type === React.Fragment && isTextContent(node.props.children);
 }
 
-/** Preserve layout nodes while giving every primitive descendant a Text host. */
+/** Keep contiguous labels together so the button's gap only separates layout nodes. */
 function renderTextContent(node: React.ReactNode, wrap: (text: React.ReactNode) => React.ReactNode): React.ReactNode {
   if (isTextContent(node)) return wrap(node);
-  return React.Children.map(node, child => {
-    if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.type === React.Fragment) {
-      return React.cloneElement(child, undefined, renderTextContent(child.props.children, wrap));
-    }
-    return typeof child === 'string' || typeof child === 'number' ? wrap(child) : child;
-  });
+  const result: React.ReactNode[] = [];
+  let run: React.ReactNode[] = [];
+  let runKey = '';
+  const flush = () => {
+    if (run.length) result.push(<React.Fragment key={runKey}>{wrap(run)}</React.Fragment>);
+    run = [];
+  };
+  const visit = (children: React.ReactNode, path: string) => {
+    React.Children.toArray(children).forEach((child, index) => {
+      const key = `${path}/${React.isValidElement(child) ? child.key ?? index : index}`;
+      if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.type === React.Fragment) {
+        visit(child.props.children, key);
+      } else if (typeof child === 'string' || typeof child === 'number') {
+        if (!run.length) runKey = key;
+        run.push(child);
+      } else {
+        flush();
+        result.push(<React.Fragment key={key}>{child}</React.Fragment>);
+      }
+    });
+  };
+  visit(node, 'content');
+  flush();
+  return result;
 }
 
 export type {
