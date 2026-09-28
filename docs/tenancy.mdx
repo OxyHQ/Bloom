@@ -72,7 +72,8 @@ Every date, amount and relative phrase is a pre-formatted string the app compute
 ("11 months left", "Due in 5 days", "Overdue 12 days"). The one number a part takes is
 `LeaseSummaryCard`'s `progress` — the ELAPSED share of the lease, 0..1 — which draws the
 bar. That keeps the parts deterministic (stories, tests, server rendering) and leaves
-locale and currency with the app. Every default English string is a prop.
+locale and currency with the app. The family's own strings are localised via
+`BloomProvider locale`, and every one is still a prop that wins over it.
 
 ## Status colours
 

@@ -3,6 +3,8 @@ import { View } from 'react-native';
 
 import { RangeSlider } from '../slider';
 import { RangeFields } from './RangeFields';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { AreaRangeFilterProps } from './types';
 
 /**
@@ -27,13 +29,17 @@ function AreaRangeFilterComponent({
   step = 5,
   slider = false,
   formatArea = (n) => `${n} m²`,
-  minLabel = 'Minimum',
-  maxLabel = 'Maximum',
-  accessibilityLabel = 'Area',
+  minLabel: minLabelProp,
+  maxLabel: maxLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   disabled = false,
   style,
   testID,
 }: AreaRangeFilterProps) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const minLabel = minLabelProp ?? messages.minimum;
+  const maxLabel = maxLabelProp ?? messages.maximum;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.area;
   const toOpen = useCallback(
     ([low, high]: [number, number]): [number | null, number | null] => [low <= min ? null : low, high >= max ? null : high],
     [min, max],

@@ -9,7 +9,9 @@ import { resolvePhoto } from '../listing-card/shared';
 import { ListingHeader } from '../listing-details';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
+import { LISTING_EDITOR_MESSAGES, type ListingEditorMessages } from './messages';
 import type { ListingPreviewData, ListingPreviewMode, ListingPreviewPaneProps } from './types';
 
 /**
@@ -38,14 +40,21 @@ function ListingPreviewPaneComponent({
   defaultMode = 'card',
   onModeChange,
   renderPage,
-  title = 'Preview',
-  description = 'This is how guests will see your listing.',
-  cardLabel = 'Card',
-  pageLabel = 'Page',
-  toggleLabel = 'Preview as',
+  title: titleProp,
+  description: descriptionProp,
+  cardLabel: cardLabelProp,
+  pageLabel: pageLabelProp,
+  toggleLabel: toggleLabelProp,
   style,
   testID,
 }: ListingPreviewPaneProps) {
+  const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
+  const title = titleProp ?? messages.previewTitle;
+  // `undefined` only: an empty string still hides the line, as before.
+  const description = descriptionProp === undefined ? messages.previewDescription : descriptionProp;
+  const cardLabel = cardLabelProp ?? messages.card;
+  const pageLabel = pageLabelProp ?? messages.page;
+  const toggleLabel = toggleLabelProp ?? messages.previewAs;
   const theme = useTheme();
   const [mode, setMode] = useControllableState<ListingPreviewMode>({
     value: modeProp,
@@ -111,7 +120,14 @@ function ListingPreviewPaneComponent({
   );
 }
 
+/** A pre-formatted count ("1.2k") takes the plural form of a large number. */
+function reviewsLabel(messages: ListingEditorMessages, count: number | string): string {
+  const n = typeof count === 'number' ? count : Number(count);
+  return messages.reviews(Number.isFinite(n) ? n : 100, String(count));
+}
+
 function PagePreview({ listing }: { listing: ListingPreviewData }) {
+  const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
   const theme = useTheme();
   const resolver = useImageResolver();
   const cover = listing.photos[0] ? resolvePhoto(listing.photos[0], resolver, listing.photoVariant) : undefined;
@@ -141,7 +157,7 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
           headingLevel={2}
           subtitle={listing.subtitle}
           rating={listing.rating}
-          reviewsLabel={listing.reviewCount != null ? `${listing.reviewCount} reviews` : undefined}
+          reviewsLabel={listing.reviewCount != null ? reviewsLabel(messages, listing.reviewCount) : undefined}
           location={listing.location}
         />
         {listing.facts && listing.facts.length > 0 ? (

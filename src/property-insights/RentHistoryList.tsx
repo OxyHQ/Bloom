@@ -6,6 +6,8 @@ import { RiHistoryLine } from '../icons/remix/RiHistoryLine';
 import type { AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import { resolveInsightPalette } from './shared';
 import type { RentHistoryListProps } from './types';
 
@@ -35,11 +37,14 @@ export function rentDeltaTone(delta: string): AccentTone {
 
 function RentHistoryListComponent({
   items,
-  emptyLabel = 'No history for this home yet',
-  accessibilityLabel = 'Rent history',
+  emptyLabel: emptyLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: RentHistoryListProps) {
+  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const emptyLabel = emptyLabelProp ?? messages.rentHistoryEmpty;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.rentHistory;
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
 

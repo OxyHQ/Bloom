@@ -28,7 +28,7 @@ export interface PriceBreakdownRow {
 
 export interface PriceBreakdownProps {
   rows: PriceBreakdownRow[];
-  /** The bold last row's label. Default `"Total"`. */
+  /** The bold last row's label. `"Total"` in English. */
   totalLabel?: string;
   /** The bold last row's amount; omit to draw no total (and no hairline). */
   total?: string;
@@ -55,7 +55,7 @@ export interface BookingPriceProps {
    * price still reads "€1,250 per month".
    */
   priceUnitPrefix?: string;
-  /** The price's spoken form. Default: "$180 per night, originally $210". */
+  /** The price's spoken form. Default: "$180 per night, originally $210" (in English). */
   priceAccessibilityLabel?: string;
 }
 
@@ -90,21 +90,21 @@ export interface BookingCardProps extends BookingPriceProps {
   guestsOpen?: boolean;
   onGuestsOpenChange?: (open: boolean) => void;
 
-  /** Default `"Check-in"`; drawn uppercase. */
+  /** `"Check-in"` in English; drawn uppercase. */
   checkInLabel?: string;
-  /** Default `"Checkout"`; drawn uppercase. */
+  /** `"Checkout"` in English; drawn uppercase. */
   checkOutLabel?: string;
-  /** Default `"Guests"`; drawn uppercase. */
+  /** `"Guests"` in English; drawn uppercase. */
   guestsLabel?: string;
-  /** Shown in an unselected date cell. Default `"Add date"`. */
+  /** Shown in an unselected date cell. `"Add date"` in English. */
   datePlaceholder?: string;
 
   /**
-   * The button's label. Default: `"Reserve"` once both dates are set,
+   * The button's label. Default: `"Reserve"` (in English) once both dates are set,
    * `checkAvailabilityLabel` before.
    */
   reserveLabel?: string;
-  /** Default `"Check availability"`. */
+  /** `"Check availability"` in English. */
   checkAvailabilityLabel?: string;
   onReserve?: () => void;
   reserveDisabled?: boolean;
@@ -112,7 +112,7 @@ export interface BookingCardProps extends BookingPriceProps {
   loading?: boolean;
 
   /**
-   * The centred line under the button. Default `"You won't be charged yet"`
+   * The centred line under the button. Default `"You won't be charged yet"` (in English)
    * once both dates are set, nothing before; `null` hides it.
    */
   note?: ReactNode;
@@ -134,7 +134,7 @@ export interface BookingBarProps extends BookingPriceProps {
   dates?: string;
   /** Makes `dates` a button. */
   onPressDates?: () => void;
-  /** Default `"Reserve"`. */
+  /** `"Reserve"` in English. */
   reserveLabel?: string;
   onReserve?: () => void;
   reserveDisabled?: boolean;
@@ -169,7 +169,7 @@ export interface TripCardProps {
   /** Pre-formatted dates ("Oct 12 – 17, 2026"). */
   dates?: string;
   status?: TripStatus;
-  /** Default: "Confirmed", "Pending", "Cancelled", "Completed". */
+  /** Default: "Confirmed", "Pending", "Cancelled", "Completed" (in English). */
   statusLabel?: string;
   /** Buttons under the text ("Message host", "Get directions"); they stay separately pressable. */
   actions?: ReactNode;

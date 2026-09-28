@@ -11,6 +11,8 @@ between Rent, Buy, Vacation rentals and Swap; `HomeSearchBar` draws that mode's
 segments; the panel parts fill the dropdown under the open segment; and
 `SavedSearchCard` / `SaveSearchButton` keep a search for later.
 
+The English defaults below (labels, placeholders, names) are localised via `BloomProvider locale`; a prop you pass still wins.
+
 ```tsx
 import {
   BudgetPicker,
@@ -110,8 +112,9 @@ open segment: `start` for the first, `end` for the last, `center` between —
 ### Presets per mode
 
 `HOME_SEARCH_SEGMENTS` holds each mode's segments with labels, placeholders and
-widths; `homeSearchSegments(mode, values, overrides)` fills the values in and
-applies per-key overrides.
+widths (in English); `homeSearchSegments(mode, values, overrides, locale?)` fills
+the values in, applies per-key overrides, and speaks `locale` (pass the app's
+language; without it, the runtime's).
 
 | mode | keys | labels |
 | --- | --- | --- |

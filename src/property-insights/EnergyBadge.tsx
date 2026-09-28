@@ -5,6 +5,8 @@ import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { borderRadius } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import { ENERGY_CLASSES, resolveEnergyTones, resolveInsightPalette } from './shared';
 import type { EnergyBadgeProps } from './types';
 
@@ -30,13 +32,16 @@ const GEOMETRY = {
 function EnergyBadgeComponent({
   rating,
   pending: pendingProp = false,
-  label = 'Energy',
-  pendingLabel = 'Pending',
+  label: labelProp,
+  pendingLabel: pendingLabelProp,
   size = 'medium',
   accessibilityLabel,
   style,
   testID,
 }: EnergyBadgeProps) {
+  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const label = labelProp ?? messages.energy;
+  const pendingLabel = pendingLabelProp ?? messages.pending;
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const tones = useMemo(() => resolveEnergyTones(theme), [theme]);
@@ -50,7 +55,7 @@ function EnergyBadgeComponent({
     <View
       accessible
       accessibilityRole="image"
-      accessibilityLabel={accessibilityLabel ?? (pending ? `Energy rating ${pendingLabel.toLowerCase()}` : `Energy rating ${rating}`)}
+      accessibilityLabel={accessibilityLabel ?? (pending ? messages.energyRatingStatus(pendingLabel) : messages.energyRatingClass(rating!))}
       testID={testID}
       style={[
         {

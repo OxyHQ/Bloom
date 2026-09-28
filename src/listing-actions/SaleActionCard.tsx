@@ -5,9 +5,11 @@ import { ActionCardHeader, ActionCardNote, ActionCardShell } from '../booking/Ac
 import { BookingLink } from '../booking/BookingLink';
 import { Badge } from '../badge';
 import { Button } from '../button';
+import { useMessages } from '../locale/messages';
 import { RiCalculatorLine } from '../icons/remix/RiCalculatorLine';
 import { Text } from '../typography';
 import { SALE_STATUS } from './constants';
+import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { FactList, StatusMessage, useActionPalette } from './parts';
 import type { SaleActionCardProps } from './types';
 
@@ -41,11 +43,11 @@ function SaleActionCardComponent({
   status = 'available',
   statusLabel,
   statusMessage,
-  contactLabel = 'Contact agent',
+  contactLabel: contactLabelProp,
   onContact,
-  requestVisitLabel = 'Request a visit',
+  requestVisitLabel: requestVisitLabelProp,
   onRequestVisit,
-  makeOfferLabel = 'Make an offer',
+  makeOfferLabel: makeOfferLabelProp,
   onMakeOffer,
   loading = false,
   note,
@@ -53,10 +55,14 @@ function SaleActionCardComponent({
   style,
   testID,
 }: SaleActionCardProps) {
+  const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
+  const contactLabel = contactLabelProp ?? messages.contactAgent;
+  const requestVisitLabel = requestVisitLabelProp ?? messages.requestVisit;
+  const makeOfferLabel = makeOfferLabelProp ?? messages.makeOffer;
   const palette = useActionPalette();
   const info = SALE_STATUS[status];
   const available = status === 'available';
-  const message = statusMessage ?? info.message;
+  const message = statusMessage ?? (status === 'available' ? info.message : messages.saleStatusMessage[status]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   return (
@@ -71,7 +77,7 @@ function SaleActionCardComponent({
         testID={id('price')}
         trailing={
           available ? null : (
-            <Badge variant="subtle" color={info.tone} size="large" content={statusLabel ?? info.label} testID={id('status')} />
+            <Badge variant="subtle" color={info.tone} size="large" content={statusLabel ?? messages.saleStatus[status]} testID={id('status')} />
           )
         }
       />

@@ -6,6 +6,7 @@ import { RiChat3Line } from '../icons/remix/RiChat3Line';
 import { useImageResolver } from '../image-resolver/context';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import {
   MAINTENANCE_CATEGORY,
@@ -13,6 +14,7 @@ import {
   MAINTENANCE_STAGE,
   MAINTENANCE_STAGES,
 } from './constants';
+import { TENANCY_MESSAGES } from './messages';
 import { HousingCard, IconTile, useHousingPalette, useHousingWebCss } from './parts';
 import { HOUSING_TILE_RADIUS, resolveImageUri } from './shared';
 import { TenancyTimeline } from './TenancyTimeline';
@@ -55,15 +57,20 @@ function MaintenanceRequestCardComponent({
   stageLabels,
   showTimeline = true,
   commentCount,
-  commentsLabel = (count: number) => (count === 1 ? '1 comment' : `${count} comments`),
+  commentsLabel: commentsLabelProp,
   onPressComments,
   actions,
   photoVariant = 'thumb',
-  photoLabel = (photo: MaintenancePhoto, position: number, total: number) =>
-    photo.alt ? `${photo.alt}, photo ${position} of ${total}` : `Photo ${position} of ${total}`,
+  photoLabel: photoLabelProp,
   style,
   testID,
 }: MaintenanceRequestCardProps) {
+  const { messages } = useMessages(TENANCY_MESSAGES);
+  const commentsLabel = commentsLabelProp ?? messages.comments;
+  const photoLabel =
+    photoLabelProp ??
+    ((photo: MaintenancePhoto, position: number, total: number) =>
+      photo.alt ? messages.photoWithAlt(photo.alt, position, total) : messages.photo(position, total));
   useHousingWebCss();
   const palette = useHousingPalette();
   const resolver = useImageResolver();
@@ -72,7 +79,7 @@ function MaintenanceRequestCardComponent({
   const categoryInfo = MAINTENANCE_CATEGORY[category];
   const stageIndex = MAINTENANCE_STAGES.indexOf(stage);
   const stageInfo = MAINTENANCE_STAGE[stage];
-  const stageWord = (s: typeof stage) => stageLabels?.[s] ?? MAINTENANCE_STAGE[s].label;
+  const stageWord = (s: typeof stage) => stageLabels?.[s] ?? messages.maintenanceStage[s];
   const priorityInfo = priority ? MAINTENANCE_PRIORITY[priority] : null;
 
   const events: TenancyTimelineEvent[] = MAINTENANCE_STAGES.map((s, index) => ({
@@ -133,7 +140,7 @@ function MaintenanceRequestCardComponent({
             {title}
           </Text>
           <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
-            {[categoryLabel ?? categoryInfo.label, reference].filter(Boolean).join(' · ')}
+            {[categoryLabel ?? messages.maintenanceCategory[category], reference].filter(Boolean).join(' · ')}
           </Text>
         </View>
         <Badge
@@ -153,7 +160,7 @@ function MaintenanceRequestCardComponent({
             size="label-small"
             variant="subtle"
             color={priorityInfo.tone}
-            content={priorityLabel ?? priorityInfo.label}
+            content={priorityLabel ?? messages.maintenancePriority[priority!]}
             testID={id('priority')}
           />
         </View>

@@ -76,7 +76,7 @@ export interface ListingCardProps {
   rating?: number | string | null;
   /** The review count, drawn after the rating ("(128)"). */
   reviewCount?: number | string;
-  /** The "New" label of an unrated stay. Default `"New"`. */
+  /** The "New" label of an unrated stay. `"New"` in English. */
   newLabel?: string;
   /**
    * The price lines, stacked ("€950 / month"; "€240,000 · €3,200/m²"). When
@@ -111,7 +111,7 @@ export interface ListingCardProps {
   address?: string;
   /** Adds "Approximate location" to the address line — or is the line, without `address`. */
   approximateLocation?: boolean;
-  /** Default `"Approximate location"`. */
+  /** `"Approximate location"` in English. */
   approximateLocationLabel?: string;
   /** Default `available`. Anything else washes the photo out and draws a status pill. */
   status?: ListingStatus;
@@ -166,9 +166,9 @@ export interface ListingCardProps {
    * Rated 4.92 out of 5, €120 night"), which is English.
    */
   accessibilityLabel?: string;
-  /** Default `"Previous photo"`. */
+  /** `"Previous photo"` in English. */
   previousPhotoLabel?: string;
-  /** Default `"Next photo"`. */
+  /** `"Next photo"` in English. */
   nextPhotoLabel?: string;
   /** Names of the heart, passed to `FavoriteButton`. */
   saveLabel?: string;
@@ -186,9 +186,9 @@ export interface FavoriteButtonProps {
   onFavoriteChange: (favorite: boolean) => void;
   /** Heart size in px. Default `24`; the touch target is at least 32. */
   size?: number;
-  /** Name while not saved. Default `"Save to wishlist"`. */
+  /** Name while not saved. `"Save to wishlist"` in English. */
   saveLabel?: string;
-  /** Name while saved. Default `"Remove from wishlist"`. */
+  /** Name while saved. `"Remove from wishlist"` in English. */
   removeLabel?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;

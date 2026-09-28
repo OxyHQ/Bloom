@@ -17,6 +17,8 @@ import {
   resolveImageUri,
   resolveListingPalette,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES, type ListingDetailsMessages } from './messages';
 import type { FloorPlanItem, FloorPlanProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
 
@@ -41,8 +43,13 @@ import { useContainerWidth } from '../hooks/use-container-width';
 
 const GAP = 16;
 
-function defaultPlanLabel(plan: FloorPlanItem, position: number, total: number): string {
-  return `${plan.alt ?? plan.label}, floor plan ${position} of ${total}`;
+function defaultPlanLabel(
+  plan: FloorPlanItem,
+  position: number,
+  total: number,
+  messages: ListingDetailsMessages = LISTING_DETAILS_MESSAGES.en,
+): string {
+  return messages.floorPlanOf(plan.alt ?? plan.label, position, total);
 }
 
 interface PlanTileProps {
@@ -149,11 +156,14 @@ function FloorPlanComponent({
   onPressPlan,
   columns = 'auto',
   aspectRatio = 4 / 3,
-  planLabel = defaultPlanLabel,
+  planLabel: planLabelProp,
   imageVariant = 'large',
   style,
   testID,
 }: FloorPlanProps) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
+  const planLabel =
+    planLabelProp ?? ((plan: FloorPlanItem, position: number, total: number) => defaultPlanLabel(plan, position, total, messages));
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const resolver = useImageResolver();
   const { width, onLayout } = useContainerWidth();

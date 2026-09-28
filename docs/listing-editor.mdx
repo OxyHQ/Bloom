@@ -35,9 +35,9 @@ it on the last step. The Storybook story "Publish Flow" is that composition.
 
 Large icon tiles, single select. Without `options` it draws Bloom's nine types
 (apartment, house, room, studio, duplex, penthouse, coliving, hostel, other)
-with English labels; pass your own `options` (`{ value, label, description?, icon }`)
-to localise or change the set — `DEFAULT_PROPERTY_TYPES` is exported to start
-from. 2 columns below 400 wide, 3 below 640, 4 from there.
+labelled in the app's language (`BloomProvider locale`); pass your own `options`
+(`{ value, label, description?, icon }`) to change the set — `DEFAULT_PROPERTY_TYPES`
+(English labels) is exported to start from. 2 columns below 400 wide, 3 below 640, 4 from there.
 
 ```tsx
 <PropertyTypeSelector value={draft.type} onValueChange={(type) => setDraft({ ...draft, type })} />
@@ -93,7 +93,9 @@ const [offering, setOffering] = useState<OfferingValue>({ kinds: [] });
 - Validation is yours: `errors` is keyed by field (`'rent.amount'`,
   `'stay.nightlyRate'`, `'swap.mode'`, …) and each message sits under its field;
   `errors.kinds` sits under the cards.
-- `kinds` restricts or reorders the cards; `labels` localises every string.
+- `kinds` restricts or reorders the cards; `labels` overrides any string.
+
+Every built-in string in the family is localised via `BloomProvider locale`; a caller's `labels`, `options` or `*Label` prop still wins.
 
 ## `ListingQualityMeter`
 

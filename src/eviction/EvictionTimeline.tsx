@@ -2,7 +2,9 @@ import React, { memo, useMemo } from 'react';
 
 import { TenancyTimeline } from '../tenancy/TenancyTimeline';
 import type { TenancyTimelineEvent } from '../tenancy/types';
+import { useMessages } from '../locale/messages';
 import { EVICTION_EVENT } from './constants';
+import { EVICTION_MESSAGES } from './messages';
 import type { EvictionTimelineProps } from './types';
 
 /**
@@ -24,15 +26,16 @@ import type { EvictionTimelineProps } from './types';
  * is drawn beside the date ("14 Aug 2026 · Source: Court notice") so a reader
  * can weigh each claim.
  */
-const DEFAULT_FORMAT_SOURCE = (source: string) => `Source: ${source}`;
-
 function EvictionTimelineComponent({
   events,
-  formatSource = DEFAULT_FORMAT_SOURCE,
-  accessibilityLabel = 'Case history',
+  formatSource: formatSourceProp,
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: EvictionTimelineProps) {
+  const { messages } = useMessages(EVICTION_MESSAGES);
+  const formatSource = formatSourceProp ?? messages.source;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.caseHistory;
   const mapped = useMemo<TenancyTimelineEvent[]>(
     () =>
       events.map((event) => ({

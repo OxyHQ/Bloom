@@ -3,9 +3,11 @@ import { View } from 'react-native';
 
 import { Divider } from '../divider';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { BookingLink } from './BookingLink';
+import { BOOKING_MESSAGES } from './messages';
 import { discountAmount, resolveBookingPalette } from './shared';
 import type { PriceBreakdownProps, PriceBreakdownRow } from './types';
 
@@ -66,7 +68,8 @@ function BreakdownRow({ row }: { row: PriceBreakdownRow }) {
   );
 }
 
-function PriceBreakdownComponent({ rows, totalLabel = 'Total', total, style, testID }: PriceBreakdownProps) {
+function PriceBreakdownComponent({ rows, totalLabel, total, style, testID }: PriceBreakdownProps) {
+  const { messages } = useMessages(BOOKING_MESSAGES);
   const theme = useTheme();
   const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
 
@@ -80,7 +83,7 @@ function PriceBreakdownComponent({ rows, totalLabel = 'Total', total, style, tes
           <Divider color={palette.border} spacing={4} />
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
             <Text variant="headline-semibold" style={{ flex: 1, color: palette.text }}>
-              {totalLabel}
+              {totalLabel ?? messages.total}
             </Text>
             <Text
               variant="headline-semibold"

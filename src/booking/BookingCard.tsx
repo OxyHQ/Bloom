@@ -8,10 +8,12 @@ import { RiArrowUpSLine } from '../icons/remix/RiArrowUpSLine';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { Rating } from '../rating';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { GuestPickerCloseProvider } from '../stay-search/context';
 import { ActionCardHeader, ActionCardNote, ActionCardShell } from './ActionCard';
 import { BookingFieldCell } from './BookingFieldCell';
+import { BOOKING_MESSAGES } from './messages';
 import { PriceBreakdown } from './PriceBreakdown';
 import { BOOKING_FIELD_RADIUS, BOOKING_STYLE_ID, BOOKING_WEB_CSS, resolveBookingPalette } from './shared';
 import type { BookingCardProps, BookingFieldKey } from './types';
@@ -52,12 +54,12 @@ function BookingCardComponent({
   guestPicker,
   guestsOpen,
   onGuestsOpenChange,
-  checkInLabel = 'Check-in',
-  checkOutLabel = 'Checkout',
-  guestsLabel = 'Guests',
-  datePlaceholder = 'Add date',
+  checkInLabel: checkInLabelProp,
+  checkOutLabel: checkOutLabelProp,
+  guestsLabel: guestsLabelProp,
+  datePlaceholder: datePlaceholderProp,
   reserveLabel,
-  checkAvailabilityLabel = 'Check availability',
+  checkAvailabilityLabel: checkAvailabilityLabelProp,
   onReserve,
   reserveDisabled = false,
   loading = false,
@@ -67,6 +69,12 @@ function BookingCardComponent({
   style,
   testID,
 }: BookingCardProps) {
+  const { messages } = useMessages(BOOKING_MESSAGES);
+  const checkInLabel = checkInLabelProp ?? messages.checkIn;
+  const checkOutLabel = checkOutLabelProp ?? messages.checkOut;
+  const guestsLabel = guestsLabelProp ?? messages.guests;
+  const datePlaceholder = datePlaceholderProp ?? messages.addDate;
+  const checkAvailabilityLabel = checkAvailabilityLabelProp ?? messages.checkAvailability;
   const theme = useTheme();
   const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
   useEffect(() => {
@@ -89,8 +97,8 @@ function BookingCardComponent({
     activeField != null ? activeField : hasGuestPicker && open ? 'guests' : null;
   const knowsOpen = activeField !== undefined;
   const datesSet = Boolean(checkIn) && Boolean(checkOut);
-  const buttonLabel = reserveLabel ?? (datesSet ? 'Reserve' : checkAvailabilityLabel);
-  const shownNote = note === undefined ? (datesSet ? "You won't be charged yet" : null) : note;
+  const buttonLabel = reserveLabel ?? (datesSet ? messages.reserve : checkAvailabilityLabel);
+  const shownNote = note === undefined ? (datesSet ? messages.notChargedYet : null) : note;
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   const Chevron = active === 'guests' ? RiArrowUpSLine : RiArrowDownSLine;

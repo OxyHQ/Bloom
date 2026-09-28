@@ -5,6 +5,8 @@ import { ChipRow } from '../chip';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { FilterChip } from './FilterChip';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { CountFilterProps } from './types';
 
 /**
@@ -28,13 +30,15 @@ function CountFilterComponent({
   onValueChange,
   max = 8,
   min = 1,
-  anyLabel = 'Any',
+  anyLabel: anyLabelProp,
   formatCount = (n, isMax) => (isMax ? `${n}+` : String(n)),
   accessibilityLabel,
   disabled = false,
   style,
   testID,
 }: CountFilterProps) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const anyLabel = anyLabelProp ?? messages.any;
   const theme = useTheme();
   const name = accessibilityLabel ?? (typeof title === 'string' ? title : undefined);
   const counts: number[] = [];

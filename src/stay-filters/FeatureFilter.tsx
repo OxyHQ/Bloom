@@ -2,8 +2,10 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { Checkbox } from '../checkbox';
-import { HOUSING_FEATURE_OPTIONS, relabelOptions } from './constants';
+import { HOUSING_FEATURE_OPTIONS, localizedOptions } from './constants';
 import { ToggleChipGroup } from './ToggleChipGroup';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { FeatureFilterProps, HousingFeature, ToggleChipOption } from './types';
 
 /**
@@ -24,13 +26,17 @@ export function FeatureFilter<T extends string = HousingFeature>({
   variant = 'chips',
   value,
   onValueChange,
-  accessibilityLabel = 'Features',
+  accessibilityLabel: accessibilityLabelProp,
   disabled = false,
   style,
   testID,
 }: FeatureFilterProps<T>) {
-  const items = relabelOptions<T, ToggleChipOption<T>>(
-    options ?? (HOUSING_FEATURE_OPTIONS as unknown as readonly ToggleChipOption<T>[]),
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.featuresGroup;
+  const items = localizedOptions<T, ToggleChipOption<T>>(
+    options,
+    HOUSING_FEATURE_OPTIONS as unknown as readonly ToggleChipOption<T>[],
+    messages.features as Partial<Record<T, string>>,
     labels,
   );
 

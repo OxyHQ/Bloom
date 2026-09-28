@@ -25,6 +25,8 @@ import {
   resolveImageUri,
   resolveListingPalette,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES, type ListingDetailsMessages } from './messages';
 import type { ContactCardProps, ContactRole, ListingIcon } from './types';
 
 /**
@@ -57,18 +59,11 @@ import type { ContactCardProps, ContactRole, ListingIcon } from './types';
  *              is set, plain selectable text otherwise
  */
 
-const DEFAULT_ROLE_LABELS: Record<ContactRole, string | undefined> = {
-  host: undefined,
-  landlord: 'Landlord',
-  agent: 'Agent',
-  agency: 'Agency',
-};
+function defaultRoleLabel(role: ContactRole, messages: ListingDetailsMessages): string | undefined {
+  return role === 'host' ? undefined : messages[role];
+}
 
 const LOGO_SIZE = 40;
-
-function defaultActiveListingsLabel(count: number): string {
-  return count === 1 ? '1 active listing' : `${count} active listings`;
-}
 
 function ContactCardComponent({
   role = 'host',
@@ -76,7 +71,7 @@ function ContactCardComponent({
   name,
   avatar,
   verified = false,
-  verifiedLabel = 'Verified',
+  verifiedLabel: verifiedLabelProp,
   label: labelProp,
   labelIcon: LabelIcon,
   stats,
@@ -86,14 +81,14 @@ function ContactCardComponent({
   logo,
   responseTime,
   activeListings,
-  activeListingsLabel = defaultActiveListingsLabel,
+  activeListingsLabel: activeListingsLabelProp,
   onPressListings,
   phone,
   phoneRevealed: phoneRevealedProp,
   onPhoneRevealedChange,
-  showPhoneLabel = 'Show phone',
+  showPhoneLabel: showPhoneLabelProp,
   onCall,
-  callLabel = 'Call',
+  callLabel: callLabelProp,
   onMessage,
   messageLabel,
   onPressProfile,
@@ -101,6 +96,11 @@ function ContactCardComponent({
   style,
   testID,
 }: ContactCardProps) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
+  const verifiedLabel = verifiedLabelProp ?? messages.verified;
+  const activeListingsLabel = activeListingsLabelProp ?? messages.activeListings;
+  const showPhoneLabel = showPhoneLabelProp ?? messages.showPhone;
+  const callLabel = callLabelProp ?? messages.call;
   const theme = useTheme();
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const palette = useMemo(() => resolveListingPalette(theme), [theme]);
@@ -112,7 +112,7 @@ function ContactCardComponent({
     onChange: onPhoneRevealedChange,
   });
 
-  const label = labelProp ?? roleLabel ?? DEFAULT_ROLE_LABELS[role];
+  const label = labelProp ?? roleLabel ?? defaultRoleLabel(role, messages);
   const isAgency = role === 'agency';
   const logoSource = typeof logo === 'string' ? logo : undefined;
   const avatarSource = avatar ?? (isAgency ? logoSource : undefined);
@@ -311,7 +311,7 @@ function ContactCardComponent({
             onPress={onMessage}
             testID={testID ? `${testID}-message` : undefined}
           >
-            {messageLabel ?? (role === 'host' ? 'Message host' : 'Message')}
+            {messageLabel ?? (role === 'host' ? messages.messageHost : messages.message)}
           </Button>
         ) : null}
         {onCall ? (

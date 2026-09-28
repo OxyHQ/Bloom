@@ -87,36 +87,36 @@ export interface OfferingEditorLabels {
   sale: OfferingCardCopy;
   stay: OfferingCardCopy;
   swap: OfferingCardCopy;
-  /** Default `"Monthly rent"`. */
+  /** `"Monthly rent"` in English. */
   monthlyRent: string;
-  /** Default `"Deposit"`. */
+  /** `"Deposit"` in English. */
   deposit: string;
-  /** A deposit chip. Default `0 → "None"`, `n → "n month(s)"`. */
+  /** A deposit chip. In English `0 → "None"`, `n → "n month(s)"`. */
   depositOption: (months: number) => string;
-  /** Default `"Available from"`. */
+  /** `"Available from"` in English. */
   availableFrom: string;
-  /** Default `"Minimum stay"`. */
+  /** `"Minimum stay"` in English. */
   minimumStay: string;
-  /** The minimum stay's value. Default `n → "n month(s)"`. */
+  /** The minimum stay's value. In English `n → "n month(s)"`. */
   months: (months: number) => string;
-  /** Default `"Asking price"`. */
+  /** `"Asking price"` in English. */
   askingPrice: string;
-  /** Default `"Price per m²"`. */
+  /** `"Price per m²"` in English. */
   pricePerArea: string;
-  /** Shown for the per-area price with no price or area. Default `"Add a price"`. */
+  /** Shown for the per-area price with no price or area. `"Add a price"` in English. */
   pricePerAreaEmpty: string;
-  /** Default `"Nightly rate"`. */
+  /** `"Nightly rate"` in English. */
   nightlyRate: string;
-  /** Default `"Cleaning fee"`. */
+  /** `"Cleaning fee"` in English. */
   cleaningFee: string;
-  /** Default `"Minimum nights"`. */
+  /** `"Minimum nights"` in English. */
   minimumNights: string;
-  /** The minimum nights' value. Default `n → "n night(s)"`. */
+  /** The minimum nights' value. In English `n → "n night(s)"`. */
   nights: (nights: number) => string;
-  /** Default `"How would you like to exchange?"`. */
+  /** `"How would you like to exchange?"` in English. */
   swapMode: string;
   swapModes: Record<SwapMode, string>;
-  /** Names the group of cards. Default `"How is the home offered?"`. */
+  /** Names the group of cards. `"How is the home offered?"` in English. */
   group: string;
 }
 
@@ -153,11 +153,11 @@ export interface OfferingEditorProps {
 export interface PropertyTypeSelectorProps<T extends string = PropertyType> {
   value: T | null;
   onValueChange: (value: T) => void;
-  /** The tiles. Default Bloom's nine property types with English labels. */
+  /** The tiles. Default Bloom's nine property types, labelled in the locale. */
   options?: ReadonlyArray<PropertyTypeOption<T>>;
   /** A fixed column count. Default: 2 below 400 wide, 3 below 640, 4 from there. */
   columns?: number;
-  /** Names the radiogroup. Default `"Property type"`. */
+  /** Names the radiogroup. `"Property type"` in English. */
   accessibilityLabel?: string;
   /** A message under the tiles, painted as an error. */
   error?: string;
@@ -188,11 +188,11 @@ export interface AddressPrecisionPickerProps {
    * (approximate). Return a real static map here.
    */
   renderMap?: (precision: AddressPrecision) => ReactNode;
-  /** The three cards' copy, in order. Default English copy. */
+  /** The three cards' copy, in order. Default Bloom's copy, in the locale. */
   options?: ReadonlyArray<AddressPrecisionOption>;
   /** The line under the cards. Default explains that the choice decides the published location. `null` hides it. */
   footnote?: string | null;
-  /** Names the radiogroup. Default `"Address precision"`. */
+  /** Names the radiogroup. `"Address precision"` in English. */
   accessibilityLabel?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -220,19 +220,19 @@ export interface ListingQualityMeterProps {
   items: ReadonlyArray<ListingQualityItem>;
   /** 0..100. Default: the done items' share of the total weight. */
   score?: number;
-  /** Default `"Listing quality"`. */
+  /** `"Listing quality"` in English. */
   title?: string;
-  /** The line under the title. Default by score: under 50 `"Needs work"`, under 80 `"Good"`, else `"Excellent"`. */
+  /** The line under the title. By score, in English: under 50 `"Needs work"`, under 80 `"Good"`, else `"Excellent"`. */
   summary?: string;
   /** Short advice drawn in a tips box under the checklist. */
   tips?: ReadonlyArray<string>;
-  /** Default `"Tips"`. */
+  /** `"Tips"` in English. */
   tipsTitle?: string;
   /** The ring's centre text. Default `` score => `${score}` ``. */
   formatScore?: (score: number) => string;
-  /** Names the ring. Default `"Listing quality score"`. */
+  /** Names the ring. `"Listing quality score"` in English. */
   accessibilityLabel?: string;
-  /** The done/not-done words added to each row's name. Default `"Done"` / `"To do"`. */
+  /** The done/not-done words added to each row's name. `"Done"` / `"To do"` in English. */
   doneLabel?: string;
   todoLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -265,14 +265,14 @@ export interface ListingPreviewPaneProps {
   onModeChange?: (mode: ListingPreviewMode) => void;
   /** Replaces the built-in page preview. */
   renderPage?: (listing: ListingPreviewData) => ReactNode;
-  /** Default `"Preview"`. */
+  /** `"Preview"` in English. */
   title?: string;
-  /** The line under the title. Default `"This is how guests will see your listing."`. */
+  /** The line under the title. `"This is how guests will see your listing."` in English. */
   description?: string;
-  /** The toggle's words. Default `"Card"` / `"Page"`. */
+  /** The toggle's words. `"Card"` / `"Page"` in English. */
   cardLabel?: string;
   pageLabel?: string;
-  /** Names the toggle. Default `"Preview as"`. */
+  /** Names the toggle. `"Preview as"` in English. */
   toggleLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

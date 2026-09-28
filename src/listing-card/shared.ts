@@ -5,6 +5,7 @@ import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
+import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
 import type { ListingCardProps, ListingFact, ListingPriceLine, ListingStatus, Offering } from './types';
 
 export const IS_WEB = Platform.OS === 'web';
@@ -102,18 +103,17 @@ export function resolveListingCardPaint(theme: Theme): ListingCardPaint {
 //  Housing data — pure, shared by the card and the map preview
 // ---------------------------------------------------------------------------
 
-/** The English default status labels. `available` draws nothing. */
-export const STATUS_LABELS: Readonly<Record<Exclude<ListingStatus, 'available'>, string>> = {
-  reserved: 'Reserved',
-  sold: 'Sold',
-  rented: 'Rented',
-  unavailable: 'Unavailable',
-};
+/** The English status labels. `available` draws nothing. The card itself speaks `LISTING_CARD_MESSAGES` in the locale. */
+export const STATUS_LABELS: Readonly<Record<Exclude<ListingStatus, 'available'>, string>> = LISTING_CARD_MESSAGES.en.statuses;
 
 /** The status pill's label, or `null` for an available listing. */
-export function statusLabelFor(status: ListingStatus | undefined, override?: string): string | null {
+export function statusLabelFor(
+  status: ListingStatus | undefined,
+  override?: string,
+  labels: Readonly<Record<Exclude<ListingStatus, 'available'>, string>> = STATUS_LABELS,
+): string | null {
   if (!status || status === 'available') return null;
-  return override ?? STATUS_LABELS[status];
+  return override ?? labels[status];
 }
 
 /**
@@ -129,10 +129,13 @@ export function resolvePriceLines(
 }
 
 /** "€240,000, €3,200/m², originally €250,000" — one line in words. */
-export function describePriceLine(line: ListingPriceLine): string {
+export function describePriceLine(
+  line: ListingPriceLine,
+  messages: ListingCardMessages = LISTING_CARD_MESSAGES.en,
+): string {
   const unit = line.unit ? ` ${line.unit}` : '';
   const secondary = line.secondary ? `, ${line.secondary}` : '';
-  const original = line.originalPrice ? `, originally ${line.originalPrice}` : '';
+  const original = line.originalPrice ? `, ${messages.originally(line.originalPrice)}` : '';
   return `${line.price}${unit}${secondary}${original}`;
 }
 
@@ -145,7 +148,7 @@ export function describeFacts(facts: ReadonlyArray<ListingFact> | undefined): st
 export function locationText(
   address: string | undefined,
   approximate: boolean | undefined,
-  approximateLabel = 'Approximate location',
+  approximateLabel: string = LISTING_CARD_MESSAGES.en.approximateLocation,
 ): string | null {
   if (address && approximate) return `${address} · ${approximateLabel}`;
   if (address) return address;

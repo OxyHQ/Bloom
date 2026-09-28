@@ -5,6 +5,7 @@ import { ActionCardShell } from '../booking/ActionCard';
 import { Button } from '../button';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import { RiUserLine } from '../icons/remix/RiUserLine';
+import { useMessages } from '../locale/messages';
 import {
   SegmentedControl,
   SegmentedControlItem,
@@ -12,6 +13,7 @@ import {
 } from '../segmented-control';
 import { Textarea } from '../textarea';
 import { Text } from '../typography';
+import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { SelectChip, useActionPalette } from './parts';
 import type { ViewingMode, ViewingSchedulerProps } from './types';
 
@@ -46,24 +48,24 @@ export function slotGrid(width: number): { columns: number; chipWidth: number } 
  * `slots` when the day changes.
  */
 function ViewingSchedulerComponent({
-  title = 'Schedule a viewing',
+  title: titleProp,
   days,
   day,
   onDayChange,
   slots,
   slot,
   onSlotChange,
-  emptySlotsLabel = 'No times left on this day',
+  emptySlotsLabel: emptySlotsLabelProp,
   mode,
   onModeChange,
   modeLabels,
   note,
   onNoteChange,
-  noteLabel = 'Note for the landlord',
+  noteLabel: noteLabelProp,
   notePlaceholder,
-  dayLabel = 'Day',
-  timeLabel = 'Time',
-  submitLabel = 'Request viewing',
+  dayLabel: dayLabelProp,
+  timeLabel: timeLabelProp,
+  submitLabel: submitLabelProp,
   onSubmit,
   submitDisabled,
   loading = false,
@@ -72,6 +74,13 @@ function ViewingSchedulerComponent({
   style,
   testID,
 }: ViewingSchedulerProps) {
+  const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
+  const title = titleProp === undefined ? messages.scheduleViewing : titleProp;
+  const emptySlotsLabel = emptySlotsLabelProp ?? messages.noTimesLeft;
+  const noteLabel = noteLabelProp ?? messages.noteForLandlord;
+  const dayLabel = dayLabelProp ?? messages.day;
+  const timeLabel = timeLabelProp ?? messages.time;
+  const submitLabel = submitLabelProp ?? messages.submitViewing;
   const palette = useActionPalette();
   const [gridWidth, setGridWidth] = useState<number | null>(null);
   const onGridLayout = useCallback((e: LayoutChangeEvent) => {
@@ -82,8 +91,8 @@ function ViewingSchedulerComponent({
   const selectedSlot = slots.find((s) => s.value === slot && !s.disabled);
   const canSubmit = day != null && selectedSlot != null;
   const disabled = submitDisabled ?? !canSubmit;
-  const inPerson = modeLabels?.['in-person'] ?? 'In person';
-  const video = modeLabels?.video ?? 'Video call';
+  const inPerson = modeLabels?.['in-person'] ?? messages.inPerson;
+  const video = modeLabels?.video ?? messages.videoCall;
   const groupRole = IS_WEB ? { role: 'radiogroup' as const } : null;
 
   const caption = (text: string) => (
@@ -191,7 +200,7 @@ function ViewingSchedulerComponent({
 
       {mode !== undefined ? (
         <SegmentedControl<ViewingMode>
-          label="Viewing type"
+          label={messages.viewingType}
           type="radio"
           size="large"
           value={mode}

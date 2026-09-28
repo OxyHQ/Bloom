@@ -4,9 +4,11 @@ import { View } from 'react-native';
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { useContainerWidth } from '../hooks/use-container-width';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { LEASE_CARD_WIDE_MIN_WIDTH, LEASE_PAYMENT_STATUS } from './constants';
 import { FigureLabel, HousingCard, ProgressTrack, useHousingPalette } from './parts';
+import { TENANCY_MESSAGES } from './messages';
 import type { LeaseSummaryCardProps } from './types';
 
 /**
@@ -35,20 +37,25 @@ function LeaseSummaryCardComponent({
   parties,
   startDate,
   endDate,
-  periodLabel = 'Lease period',
+  periodLabel: periodLabelProp,
   remainingLabel,
   progress,
   rent,
-  rentLabel = 'Monthly rent',
+  rentLabel: rentLabelProp,
   deposit,
-  depositLabel = 'Deposit',
+  depositLabel: depositLabelProp,
   nextPayment,
-  nextPaymentLabel = 'Next payment',
+  nextPaymentLabel: nextPaymentLabelProp,
   actions,
   layout = 'auto',
   style,
   testID,
 }: LeaseSummaryCardProps) {
+  const { messages } = useMessages(TENANCY_MESSAGES);
+  const periodLabel = periodLabelProp ?? messages.leasePeriod;
+  const rentLabel = rentLabelProp ?? messages.monthlyRent;
+  const depositLabel = depositLabelProp ?? messages.deposit;
+  const nextPaymentLabel = nextPaymentLabelProp ?? messages.nextPayment;
   const palette = useHousingPalette();
   const { width, onLayout } = useContainerWidth();
   const wide = layout === 'wide' || (layout === 'auto' && width != null && width >= LEASE_CARD_WIDE_MIN_WIDTH);
@@ -56,7 +63,7 @@ function LeaseSummaryCardComponent({
 
   const period = `${startDate} – ${endDate}`;
   const payment = nextPayment ? LEASE_PAYMENT_STATUS[nextPayment.status] : null;
-  const paymentStatus = nextPayment ? nextPayment.statusLabel ?? payment?.label : undefined;
+  const paymentStatus = nextPayment ? nextPayment.statusLabel ?? messages.leasePaymentStatus[nextPayment.status] : undefined;
 
   const figures: { key: string; label: string; body: React.ReactNode }[] = [
     {
