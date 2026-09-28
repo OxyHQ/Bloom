@@ -7,9 +7,11 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MAP_MARKER_CSS, MAP_MARKER_STYLE_ID, mapWebData, resolveMapMarkerPaint } from './shared';
+import { MAP_MARKER_MESSAGES } from './messages';
 import type { MapSearchAreaButtonProps } from './types';
 import { DISABLED_OPACITY } from '../styles/tokens';
 
@@ -29,6 +31,7 @@ const HEIGHT = 40;
 
 function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
   const { disabled = false, style, testID } = props;
+  const { messages } = useMessages(MAP_MARKER_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveMapMarkerPaint(theme), [theme]);
   const checkboxPaint = useMemo(() => resolveCheckboxPaint(theme), [theme]);
@@ -62,7 +65,7 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
 
   if (props.variant === 'toggle') {
     const { checked, onCheckedChange } = props;
-    const label = props.label ?? 'Search as I move the map';
+    const label = props.label ?? messages.searchAsMapMoves;
     return (
       <Pressable
         {...mapWebData({ bloomMapPressable: '', bloomCheckboxFocusable: '' })}
@@ -90,7 +93,7 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
     );
   }
 
-  const label = props.label ?? 'Search this area';
+  const label = props.label ?? messages.searchThisArea;
   return (
     <Pressable
       {...mapWebData({ bloomMapPressable: '' })}

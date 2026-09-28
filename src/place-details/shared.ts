@@ -14,11 +14,8 @@ import {
 } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import {
-  PLACE_BUSY_LABELS,
-  PLACE_INFO_ACTION_LABELS,
-  PLACE_TRANSIT_MODE_LABELS,
-} from './constants';
+import { PLACE_INFO_ACTION_LABELS } from './constants';
+import { PLACE_DETAILS_MESSAGES, type PlaceDetailsMessages } from './messages';
 import type {
   PlaceBusyTrend,
   PlaceHoursDay,
@@ -62,10 +59,11 @@ export function infoActionWord(
   action: PlaceInfoAction | undefined,
   override: string | undefined,
   labels: Partial<Record<PlaceInfoAction, string>> | undefined,
+  words: Readonly<Record<PlaceInfoAction, string>> = PLACE_INFO_ACTION_LABELS,
 ): string {
   if (override !== undefined) return override;
   if (action === undefined) return '';
-  return labels?.[action] ?? PLACE_INFO_ACTION_LABELS[action];
+  return labels?.[action] ?? words[action];
 }
 
 /**
@@ -84,10 +82,11 @@ export function infoActionWord(
 export function describeInfoItem(
   item: PlaceInfoItem,
   labels?: Partial<Record<PlaceInfoAction, string>>,
+  words?: Readonly<Record<PlaceInfoAction, string>>,
 ): string {
   if (item.accessibilityLabel) return item.accessibilityLabel;
   const name = item.label ? `${item.label}: ${item.value}` : item.value;
-  const word = item.onPress ? infoActionWord(item.action, item.actionLabel, labels) : '';
+  const word = item.onPress ? infoActionWord(item.action, item.actionLabel, labels, words) : '';
   return word ? `${name}, ${word}` : name;
 }
 
@@ -104,10 +103,11 @@ export interface HoursFormat {
   closed: string;
 }
 
+/** English; `PlaceHours` takes `closed` from the app's locale. */
 export const DEFAULT_HOURS_FORMAT: HoursFormat = {
   interval: ' – ',
   split: ', ',
-  closed: 'Closed',
+  closed: PLACE_DETAILS_MESSAGES.en.closed,
 };
 
 /**
@@ -135,7 +135,7 @@ export function formatHoursDay(day: PlaceHoursDay, format: HoursFormat = DEFAULT
 export function describeHoursDay(
   day: PlaceHoursDay,
   format: HoursFormat = DEFAULT_HOURS_FORMAT,
-  todayLabel = 'Today',
+  todayLabel: string = PLACE_DETAILS_MESSAGES.en.today,
 ): string {
   const parts: string[] = [];
   if (day.today) parts.push(todayLabel);
@@ -150,10 +150,13 @@ export function describeHoursDay(
 // ---------------------------------------------------------------------------
 
 /** The trend sentence as drawn, or `null` when the day does not claim one. */
-export function busyTrendLabel(day: PlacePopularTimesDay): string | null {
+export function busyTrendLabel(
+  day: PlacePopularTimesDay,
+  messages: PlaceDetailsMessages = PLACE_DETAILS_MESSAGES.en,
+): string | null {
   if (day.trendLabel) return day.trendLabel;
   const trend: PlaceBusyTrend | undefined = day.trend;
-  return trend ? PLACE_BUSY_LABELS[trend] : null;
+  return trend ? messages.busy[trend] : null;
 }
 
 /** 0–100, clamped. A closed hour draws no bar whatever it says. */
@@ -170,10 +173,13 @@ export function busyValue(value: number): number {
  * person would actually take from the picture: which day, when it peaks, and
  * what is happening right now.
  */
-export function describeBusyChart(day: PlacePopularTimesDay): string {
+export function describeBusyChart(
+  day: PlacePopularTimesDay,
+  messages: PlaceDetailsMessages = PLACE_DETAILS_MESSAGES.en,
+): string {
   const hours = day.hours;
   const name = day.accessibilityLabel ?? day.label;
-  if (hours.length === 0) return `${name}, no data`;
+  if (hours.length === 0) return messages.chartNoData(name);
   // The busiest OPEN hour. A closed one may still carry a reading (an app
   // sending a whole day's curve and a separate opening calendar), and
   // "busiest at 3 in the morning" would be that reading leaking out of a
@@ -183,14 +189,15 @@ export function describeBusyChart(day: PlacePopularTimesDay): string {
     if (hours[i]!.closed) continue;
     if (peak === -1 || busyValue(hours[i]!.value) > busyValue(hours[peak]!.value)) peak = i;
   }
-  if (peak === -1) return `${name}, closed all day`;
+  if (peak === -1) return messages.chartClosed(name);
   const peakHour = hours[peak]!;
-  const parts = [`${name}, busiest at ${peakHour.accessibilityLabel ?? peakHour.label}`];
+  const parts = [messages.chartPeak(name, peakHour.accessibilityLabel ?? peakHour.label)];
   const currentIndex = day.currentHourIndex;
   if (currentIndex != null && currentIndex >= 0 && currentIndex < hours.length) {
     const now = hours[currentIndex]!;
-    const trend = busyTrendLabel(day);
-    parts.push(trend ? `now ${now.accessibilityLabel ?? now.label}, ${trend}` : `now ${now.accessibilityLabel ?? now.label}`);
+    const trend = busyTrendLabel(day, messages);
+    const reading = messages.chartNow(now.accessibilityLabel ?? now.label);
+    parts.push(trend ? `${reading}, ${trend}` : reading);
   }
   return parts.join(', ');
 }
@@ -215,9 +222,12 @@ export function hourLabelStep(count: number, width: number, pitch: number): numb
 // ---------------------------------------------------------------------------
 
 /** A stop in one utterance: what it is, its name, how far. */
-export function describeTransitStop(stop: PlaceTransitStop): string {
+export function describeTransitStop(
+  stop: PlaceTransitStop,
+  messages: PlaceDetailsMessages = PLACE_DETAILS_MESSAGES.en,
+): string {
   const mode: PlaceTransitMode = stop.mode ?? 'bus';
-  const parts = [PLACE_TRANSIT_MODE_LABELS[mode], stop.name];
+  const parts = [messages.transitModes[mode], stop.name];
   if (stop.distance) parts.push(stop.distance);
   if (stop.note) parts.push(stop.note);
   return parts.join(', ');
@@ -233,14 +243,15 @@ export function describeTransitStop(stop: PlaceTransitStop): string {
  */
 export function describeDeparture(
   departure: PlaceTransitDeparture,
-  realtimeLabel = 'live',
+  realtimeLabel?: string,
+  messages: PlaceDetailsMessages = PLACE_DETAILS_MESSAGES.en,
 ): string {
   if (departure.accessibilityLabel) return departure.accessibilityLabel;
-  const line = departure.line.accessibilityLabel ?? `Line ${departure.line.name}`;
+  const line = departure.line.accessibilityLabel ?? messages.line(departure.line.name);
   const parts = [line];
   const headsign = departure.headsign ?? departure.line.headsign;
-  if (headsign) parts.push(`to ${headsign}`);
+  if (headsign) parts.push(messages.towards(headsign));
   parts.push(departure.time);
-  if (departure.realtime) parts.push(realtimeLabel);
+  if (departure.realtime) parts.push(realtimeLabel ?? messages.live);
   return parts.join(', ');
 }

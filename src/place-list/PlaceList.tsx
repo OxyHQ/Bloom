@@ -8,11 +8,13 @@ import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { PlaceCard } from '../place-card';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PLACE_LIST_GEOMETRY } from './constants';
-import { DEFAULT_PLACE_LIST_LABELS, placeNameOf, resolvePlaceListPaint } from './shared';
+import { PLACE_LIST_MESSAGES } from './messages';
+import { placeNameOf, resolvePlaceListPaint } from './shared';
 import type { PlaceListProps } from './types';
 
 /**
@@ -56,14 +58,16 @@ function PlaceListComponent({
   disabled = false,
   labels,
   empty,
-  accessibilityLabel = 'Saved places',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PlaceListProps) {
+  const { messages } = useMessages(PLACE_LIST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.savedPlaces;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePlaceListPaint(theme, surface), [theme, surface]);
-  const words = useMemo(() => ({ ...DEFAULT_PLACE_LIST_LABELS, ...labels }), [labels]);
+  const words = useMemo(() => ({ ...messages.labels, ...labels }), [messages, labels]);
   const [announcement, setAnnouncement] = useState('');
 
   const { control, controlGlyph, gap } = PLACE_LIST_GEOMETRY;

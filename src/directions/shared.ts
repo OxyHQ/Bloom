@@ -6,11 +6,7 @@ import { readableOn } from '../styles/color-contrast';
 import { hairlineOn, surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import {
-  DIRECTIONS_MANEUVER_LABELS,
-  DIRECTIONS_MODE_LABELS,
-  DIRECTIONS_TRAFFIC_LABELS,
-} from './constants';
+import { DIRECTIONS_MESSAGES, type DirectionsMessages } from './messages';
 import type {
   DirectionsMode,
   DirectionsRoute,
@@ -47,10 +43,16 @@ export function resolveTransitLineColors(theme: Theme, color: string): TransitLi
   };
 }
 
-/** "Line L4, towards Pla del Bosc" — a badge showing two characters says nothing aloud. */
-export function describeTransitLine(line: TransitLine): string {
+/**
+ * "Line L4, towards Pla del Bosc" — a badge showing two characters says nothing
+ * aloud. In `messages`' language; English when omitted.
+ */
+export function describeTransitLine(
+  line: TransitLine,
+  messages: DirectionsMessages = DIRECTIONS_MESSAGES.en,
+): string {
   if (line.accessibilityLabel) return line.accessibilityLabel;
-  return [`Line ${line.name}`, line.headsign].filter(Boolean).join(', ');
+  return [messages.line(line.name), line.headsign].filter(Boolean).join(', ');
 }
 
 /** The traffic word as drawn. */
@@ -58,17 +60,19 @@ export function trafficLabelFor(
   traffic: DirectionsTraffic | undefined,
   override: string | undefined,
   labels: DirectionsSummaryLabels | undefined,
+  messages: DirectionsMessages = DIRECTIONS_MESSAGES.en,
 ): string | null {
   if (traffic === undefined) return null;
-  return override ?? labels?.traffic?.[traffic] ?? DIRECTIONS_TRAFFIC_LABELS[traffic];
+  return override ?? labels?.traffic?.[traffic] ?? messages.traffic[traffic];
 }
 
 /** The mode word as drawn. */
 export function modeLabelFor(
   mode: DirectionsMode,
   labels: DirectionsSummaryLabels | undefined,
+  messages: DirectionsMessages = DIRECTIONS_MESSAGES.en,
 ): string {
-  return labels?.mode?.[mode] ?? DIRECTIONS_MODE_LABELS[mode];
+  return labels?.mode?.[mode] ?? messages.modes[mode];
 }
 
 /**
@@ -82,15 +86,16 @@ export function modeLabelFor(
 export function describeRoute(
   route: DirectionsRoute,
   labels: DirectionsSummaryLabels | undefined,
+  messages: DirectionsMessages = DIRECTIONS_MESSAGES.en,
 ): string {
   const parts: string[] = [route.duration];
   if (route.distance) parts.push(route.distance);
   if (route.arrival) parts.push(route.arrival);
   if (route.via) parts.push(route.via);
-  const traffic = trafficLabelFor(route.traffic, route.trafficLabel, labels);
+  const traffic = trafficLabelFor(route.traffic, route.trafficLabel, labels, messages);
   if (traffic) parts.push(traffic);
   if (route.note) parts.push(route.note);
-  for (const line of route.lines ?? []) parts.push(describeTransitLine(line));
+  for (const line of route.lines ?? []) parts.push(describeTransitLine(line, messages));
   return parts.join(', ');
 }
 
@@ -104,20 +109,21 @@ export function describeRoute(
  */
 export function describeStep(
   step: DirectionsStep,
-  options: { current?: boolean; currentWord?: string } = {},
+  options: { current?: boolean; currentWord?: string; messages?: DirectionsMessages } = {},
 ): string {
+  const messages = options.messages ?? DIRECTIONS_MESSAGES.en;
   if (step.accessibilityLabel) {
     return options.current && options.currentWord
       ? `${options.currentWord}, ${step.accessibilityLabel}`
       : step.accessibilityLabel;
   }
-  const maneuver = DIRECTIONS_MANEUVER_LABELS[step.maneuver ?? 'straight'];
+  const maneuver = messages.maneuvers[step.maneuver ?? 'straight'];
   return [
     options.current ? options.currentWord : undefined,
     maneuver,
     step.instruction,
     step.detail,
-    step.line ? describeTransitLine(step.line) : undefined,
+    step.line ? describeTransitLine(step.line, messages) : undefined,
     step.distance,
   ]
     .filter((part): part is string => typeof part === 'string' && part !== '')

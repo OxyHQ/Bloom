@@ -8,6 +8,8 @@ import { RiShip2Line } from '../icons/remix/RiShip2Line';
 import { RiSubwayLine } from '../icons/remix/RiSubwayLine';
 import { RiTrainLine } from '../icons/remix/RiTrainLine';
 import type { BloomIconComponent } from '../icons/icon-component';
+import { COMMON_MESSAGES } from '../locale/common-messages';
+import { PLACE_DETAILS_MESSAGES } from './messages';
 import type { PlaceBusyTrend, PlaceInfoAction, PlaceTransitMode } from './types';
 
 /**
@@ -36,22 +38,18 @@ export const PLACE_INFO_ACTION_ICON: Readonly<
  *
  * It goes last because the fact is what the reader is looking for. `edit` and
  * `none` say nothing: an "edit" row's own words already are the verb.
+ *
+ * These are the English words; the list speaks the app's locale.
  */
 export const PLACE_INFO_ACTION_LABELS: Readonly<Record<PlaceInfoAction, string>> = {
-  copy: 'Copy',
-  call: 'Call',
-  open: 'Open website',
-  directions: 'Directions',
+  copy: COMMON_MESSAGES.en.copy,
+  ...PLACE_DETAILS_MESSAGES.en.infoActions,
   edit: '',
   none: '',
 };
 
-/** The English default trend sentences for the current hour. */
-export const PLACE_BUSY_LABELS: Readonly<Record<PlaceBusyTrend, string>> = {
-  busier: 'Busier than usual',
-  typical: 'As busy as it usually is',
-  quieter: 'Quieter than usual',
-};
+/** The English trend sentences for the current hour; the chart speaks `PLACE_DETAILS_MESSAGES`. */
+export const PLACE_BUSY_LABELS: Readonly<Record<PlaceBusyTrend, string>> = PLACE_DETAILS_MESSAGES.en.busy;
 
 /** The glyph each kind of stop draws. */
 export const PLACE_TRANSIT_MODE_ICON: Readonly<Record<PlaceTransitMode, BloomIconComponent>> = {
@@ -62,14 +60,9 @@ export const PLACE_TRANSIT_MODE_ICON: Readonly<Record<PlaceTransitMode, BloomIco
   ferry: RiShip2Line,
 };
 
-/** The English default mode words, for a stop's announced name. */
-export const PLACE_TRANSIT_MODE_LABELS: Readonly<Record<PlaceTransitMode, string>> = {
-  bus: 'Bus stop',
-  metro: 'Metro station',
-  train: 'Train station',
-  tram: 'Tram stop',
-  ferry: 'Ferry terminal',
-};
+/** The English mode words, for a stop's announced name; the list speaks `PLACE_DETAILS_MESSAGES`. */
+export const PLACE_TRANSIT_MODE_LABELS: Readonly<Record<PlaceTransitMode, string>> =
+  PLACE_DETAILS_MESSAGES.en.transitModes;
 
 export interface PlaceDetailsGeometry {
   /** Between the blocks of one section. */

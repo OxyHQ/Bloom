@@ -34,9 +34,9 @@ export interface CategoryBarProps {
    * Default the page background.
    */
   fadeColor?: string;
-  /** The web left arrow's name. Default `"Previous categories"`. */
+  /** The web left arrow's name. `"Previous categories"` in English. */
   previousLabel?: string;
-  /** The web right arrow's name. Default `"Next categories"`. */
+  /** The web right arrow's name. `"Next categories"` in English. */
   nextLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Items get `<testID>-item-<key>`, the arrows `<testID>-previous` / `<testID>-next`. */

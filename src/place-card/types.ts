@@ -66,7 +66,7 @@ export interface PlaceActionsProps {
   actions: readonly PlaceAction[];
   /** Default `small` — the rung `ai-profile-card` draws its header actions at. */
   size?: 'small' | 'medium';
-  /** Names the row, which is a `group`. Default `"Actions"`. */
+  /** Names the row, which is a `group`. `"Actions"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Each button gets `<testID>-<action id>`. */
@@ -92,11 +92,11 @@ export interface PlaceCardProps {
   rating?: number | string | null;
   /** The review count, after the rating ("(318)"). */
   reviewCount?: number | string;
-  /** The "New" label of an unrated place. Default `"New"`. */
+  /** The "New" label of an unrated place. `"New"` in English. */
   newLabel?: string;
   /** Whether the place is open now. Without it no state pill is drawn. */
   openState?: PlaceOpenState;
-  /** Replaces the English state word ("Open", "Closing soon", …). */
+  /** Replaces the state word ("Open", "Closing soon", … in English). */
   openLabel?: string;
   /** The hours line, pre-formatted ("Open until 20:00", "Opens 08:00 tomorrow"). */
   hours?: string;
@@ -145,7 +145,7 @@ export interface PlaceCardProps {
   density?: PlaceCardDensity;
   /**
    * Replaces the composed accessible name ("Forner de la Plaça, Bakery · €€,
-   * Open, Open until 20:00, …"), which is English.
+   * Open, Open until 20:00, …"), which Bloom words in the app's locale.
    */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

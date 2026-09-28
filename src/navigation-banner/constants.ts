@@ -3,6 +3,7 @@ import { RiLoopRightLine } from '../icons/remix/RiLoopRightLine';
 import type { BloomIconComponent } from '../icons/icon-component';
 import { borderRadius } from '../styles/tokens';
 import type { AccentTone } from '../theme/accent-colors';
+import { NAVIGATION_BANNER_MESSAGES } from './messages';
 import type { NavigationBannerState } from './types';
 
 export interface NavigationBannerGeometry {
@@ -69,10 +70,10 @@ export const NAVIGATION_STATE_TONE: Readonly<
   rerouting: 'warning',
 };
 
-/** The English default headline for each exceptional state. */
+/**
+ * The English headline for each exceptional state. The banner speaks
+ * `NAVIGATION_BANNER_MESSAGES` in the app's locale.
+ */
 export const NAVIGATION_STATE_LABELS: Readonly<
   Record<Exclude<NavigationBannerState, 'guiding'>, string>
-> = {
-  'off-route': 'Off route',
-  rerouting: 'Finding a new route',
-};
+> = NAVIGATION_BANNER_MESSAGES.en.states;

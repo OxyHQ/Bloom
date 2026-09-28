@@ -39,7 +39,7 @@ export interface MapClusterMarkerProps {
   /** `visited` draws as `default`. Default `default`. */
   state?: MapMarkerState;
   onPress?: () => void;
-  /** Defaults to `"<count> stays"` — pass a translated sentence. */
+  /** `"<count> stays"` in English; localised via `BloomProvider locale`. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -118,7 +118,7 @@ export interface MapAreaCircleProps {
 }
 
 interface MapSearchAreaBase {
-  /** Defaults to the variant's own sentence. */
+  /** Defaults to the variant's own sentence, in the app's locale. */
   label?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;

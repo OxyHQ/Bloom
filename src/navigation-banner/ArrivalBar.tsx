@@ -4,9 +4,11 @@ import { View } from 'react-native';
 import { Button } from '../button';
 import { GlassIsland } from '../glass';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { NAVIGATION_BANNER_GEOMETRY } from './constants';
+import { NAVIGATION_BANNER_MESSAGES } from './messages';
 import { describeArrival, resolveNavigationPaint } from './shared';
 import type { ArrivalBarProps } from './types';
 
@@ -85,10 +87,11 @@ function ArrivalBarComponent({
   style,
   testID,
 }: ArrivalBarProps) {
+  const { messages } = useMessages(NAVIGATION_BANNER_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveNavigationPaint(theme), [theme]);
   const g = NAVIGATION_BANNER_GEOMETRY;
-  const endWord = labels?.end ?? 'End';
+  const endWord = labels?.end ?? messages.end;
 
   return (
     <GlassIsland
@@ -108,7 +111,7 @@ function ArrivalBarComponent({
           role="img"
           accessibilityLabel={
             accessibilityLabel ??
-            describeArrival({ arrival, remainingTime, remainingDistance, labels })
+            describeArrival({ arrival, remainingTime, remainingDistance, labels, messages })
           }
           style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 }}
         >
@@ -119,21 +122,21 @@ function ArrivalBarComponent({
             style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 }}
           >
             <Figure
-              label={labels?.arrival ?? 'Arrival'}
+              label={labels?.arrival ?? messages.arrival}
               value={arrival}
               color={paint.text}
               labelColor={paint.textTertiary}
               testID={testID ? `${testID}-arrival` : undefined}
             />
             <Figure
-              label={labels?.time ?? 'Left'}
+              label={labels?.time ?? messages.left}
               value={remainingTime}
               color={paint.text}
               labelColor={paint.textTertiary}
               testID={testID ? `${testID}-time` : undefined}
             />
             <Figure
-              label={labels?.distance ?? 'Distance'}
+              label={labels?.distance ?? messages.distance}
               value={remainingDistance}
               color={paint.text}
               labelColor={paint.textTertiary}

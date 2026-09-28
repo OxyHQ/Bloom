@@ -26,7 +26,7 @@ import { MapAttribution } from '@oxy.so/bloom/map-attribution';
 
 ## The credit is required and never defaulted
 
-Every other string in this family has a sensible English default. This one does
+Every other string in this family has a default, localised via `BloomProvider locale`. This one does
 not, and that is the point: a component that invented a credit would put a
 WRONG attribution on a map, which is a licence problem rather than a visual one.
 The app passes what its provider's licence says, verbatim.

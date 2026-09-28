@@ -4,8 +4,10 @@ import { View } from 'react-native';
 import { RiShieldCheckLine } from '../icons/remix/RiShieldCheckLine';
 import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
 import { ReviewSummary } from '../listing-details/ReviewSummary';
+import { useMessages } from '../locale/messages';
 import { useHousingPalette } from '../tenancy/parts';
 import { Text } from '../typography';
+import { PLACE_REVIEWS_MESSAGES } from './messages';
 import type { PlaceReviewSummaryProps } from './types';
 
 /**
@@ -22,26 +24,28 @@ import type { PlaceReviewSummaryProps } from './types';
  * sentence is a formatter prop for translation.
  */
 
-const defaultReviewCount = (count: number | string) =>
-  typeof count === 'number' ? (count === 1 ? '1 review' : `${count} reviews`) : count;
-const defaultDeposit = (percent: number) => `Deposit returned in ${percent}% of tenancies`;
-const defaultRecommend = (percent: number) => `${percent}% would recommend living here`;
-
 const toPercent = (rate: number) => Math.round(Math.min(1, Math.max(0, rate)) * 100);
 
 function PlaceReviewSummaryComponent({
   rating,
   title,
   reviewCount,
-  formatReviewCount = defaultReviewCount,
+  formatReviewCount: formatReviewCountProp,
   categories,
   depositReturnedRate,
-  formatDepositReturned = defaultDeposit,
+  formatDepositReturned: formatDepositReturnedProp,
   recommendRate,
-  formatRecommend = defaultRecommend,
+  formatRecommend: formatRecommendProp,
   style,
   testID,
 }: PlaceReviewSummaryProps) {
+  const { messages } = useMessages(PLACE_REVIEWS_MESSAGES);
+  // A string count is drawn as given; a number is counted in the language.
+  const formatReviewCount =
+    formatReviewCountProp ??
+    ((count: number | string) => (typeof count === 'number' ? messages.reviewCount(count) : count));
+  const formatDepositReturned = formatDepositReturnedProp ?? messages.depositRate;
+  const formatRecommend = formatRecommendProp ?? messages.recommendRate;
   const palette = useHousingPalette();
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
