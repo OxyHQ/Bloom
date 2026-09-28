@@ -2,6 +2,8 @@
 
 ## 4.34.5 — 2026-09-29
 
+- Add the standard underline, strikethrough, ordered-list and clear-format editor icons.
+
 - Add opt-in native safe-area ownership to AiChatShell, covering all four frame edges and drawer content without repeating the bottom inset in BottomBar.
 - Publish AiChatContainer’s painted surface to nested mail composition and other surface-aware controls.
 
