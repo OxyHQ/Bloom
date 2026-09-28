@@ -70,6 +70,8 @@ export interface QueueReorderListProps {
   onAnnounce?: (message: string) => void;
   /** Draw the direct remove button beside the menu. The `sheet` variant leaves it to the menu, for width. */
   removeButton?: boolean;
+  /** The caller's own `play` word, if it passed one (see `queuePlayName`). */
+  customPlay?: string;
   testID?: string;
 }
 
@@ -90,6 +92,7 @@ interface RowProps {
   onDragEnd: (commit: boolean) => void;
   registerHandle: (id: string, node: View | null) => void;
   removeButton: boolean;
+  customPlay?: string;
   testID?: string;
 }
 
@@ -110,6 +113,7 @@ function QueueReorderRow({
   onDragEnd,
   registerHandle,
   removeButton,
+  customPlay,
   testID,
 }: RowProps) {
   const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
@@ -260,7 +264,7 @@ function QueueReorderRow({
         track={track}
         highlighted={menuOpen || dragging}
         webState={dragging ? 'dragging' : menuOpen ? 'active' : undefined}
-        accessibilityLabel={queuePlayName(labels.play, title, controls)}
+        accessibilityLabel={queuePlayName(customPlay, title, controls)}
         onPress={onPlay ? () => onPlay(section, index, track) : undefined}
         trailing={trailing}
         testID={testID}
@@ -279,6 +283,7 @@ function QueueReorderListComponent({
   onDragActiveChange,
   onAnnounce,
   removeButton = true,
+  customPlay,
   testID,
 }: QueueReorderListProps) {
   const theme = useTheme();
@@ -364,6 +369,7 @@ function QueueReorderListComponent({
           count={count}
           section={section}
           labels={labels}
+          customPlay={customPlay}
           paint={paint}
           drag={drag}
           target={target}

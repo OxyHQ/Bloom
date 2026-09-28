@@ -183,7 +183,7 @@ function QueuePanelComponent({
             items={recentlyPlayed}
             currentId={nowPlaying?.id}
             playing={playing}
-            labels={labels}
+            labels={{ play: labelsProp?.play, emptyRecent: labels.emptyRecent }}
             onPlay={onPlay ? (index, track) => onPlay('recent', index, track) : undefined}
             style={{ marginTop: 8 }}
             testID={testID ? `${testID}-recent` : undefined}
@@ -207,7 +207,7 @@ function QueuePanelComponent({
                   track={nowPlaying}
                   current
                   playing={playing}
-                  accessibilityLabel={queuePlayName(labels.play, nowPlaying.title, controls)}
+                  accessibilityLabel={queuePlayName(labelsProp?.play, nowPlaying.title, controls)}
                   onPress={onPlay ? () => onPlay('now', 0, nowPlaying) : undefined}
                   testID={testID ? `${testID}-now` : undefined}
                 />
@@ -233,6 +233,7 @@ function QueuePanelComponent({
                   {labels.nextInQueue}
                 </SectionHeading>
                 <QueueReorderList
+                  customPlay={labelsProp?.play}
                   section="queue"
                   tracks={queue}
                   labels={labels}
@@ -252,6 +253,7 @@ function QueuePanelComponent({
                   {contextName ? labels.nextFrom(contextName) : labels.nextUp}
                 </SectionHeading>
                 <QueueReorderList
+                  customPlay={labelsProp?.play}
                   section="context"
                   tracks={context}
                   labels={labels}

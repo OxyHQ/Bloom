@@ -29,7 +29,6 @@ function RecentlyPlayedListComponent({
   const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
-  const play = labels?.play ?? controls.play;
 
   if (items.length === 0) {
     return (
@@ -49,7 +48,7 @@ function RecentlyPlayedListComponent({
             track={track}
             current={track.id === currentId}
             playing={playing}
-            accessibilityLabel={queuePlayName(play, track.title, controls)}
+            accessibilityLabel={queuePlayName(labels?.play, track.title, controls)}
             onPress={onPlay ? () => onPlay(index, track) : undefined}
             testID={testID ? `${testID}-row-${index}` : undefined}
           />

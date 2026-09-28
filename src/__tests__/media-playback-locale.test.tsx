@@ -137,6 +137,9 @@ describe('queue-panel', () => {
     const track = { id: 't1', title: 'Night Drive', artists: 'Mara Vell' };
     expect(renderIn('ja', <QueuePanel nowPlaying={track} onPlay={noop} />).getByLabelText('Night Driveを再生')).toBeTruthy();
     expect(renderIn('ja', <QueuePanel nowPlaying={track} onPlay={noop} labels={{ play: '聴く' }} />).getByLabelText('聴く Night Drive')).toBeTruthy();
+    // A caller's word that happens to equal the catalog's is still the caller's:
+    // its "<play> <title>" order is kept, not swapped for the catalog phrase.
+    expect(renderIn('ja', <QueuePanel nowPlaying={track} onPlay={noop} labels={{ play: '再生' }} />).getByLabelText('再生 Night Drive')).toBeTruthy();
   });
 });
 

@@ -39,10 +39,12 @@ export const DEFAULT_QUEUE_PANEL_LABELS: QueuePanelLabels = queuePanelLabels(
 
 /**
  * A row's name. The catalog's is a whole phrase ("Play Night Drive", "${title}を再生");
- * a caller who replaced the `play` word keeps the old "<play> <title>" shape.
+ * a caller who passed its own `play` word keeps the old "<play> <title>" shape.
+ * `customPlay` is the CALLER's word or `undefined` — never the merged label, which
+ * cannot tell a caller's "再生" from the catalog's.
  */
-export function queuePlayName(play: string, title: string, controls: MediaControlsMessages): string {
-  return play === controls.play ? controls.playSubject(title) : `${play} ${title}`;
+export function queuePlayName(customPlay: string | undefined, title: string, controls: MediaControlsMessages): string {
+  return customPlay === undefined ? controls.playSubject(title) : `${customPlay} ${title}`;
 }
 
 /** @deprecated Use `moveItem` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
