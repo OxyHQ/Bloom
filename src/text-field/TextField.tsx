@@ -469,6 +469,7 @@ export function TextFieldInput({
     <RevealButton
       revealed={revealed}
       onToggle={() => setRevealed((current) => !current)}
+      invalid={invalid}
       labels={revealLabels}
       locale={locale}
     />
@@ -591,8 +592,14 @@ function revealGeometry(size: TextFieldSize): { box: number; glyph: number } {
   return { box, glyph: Math.min(TEXT_FIELD_ICON_SIZE, box - 6) };
 }
 
-/** `preventDefault` on mousedown: the press never takes focus from the input (web). */
-const KEEP_INPUT_FOCUS = IS_WEB
+/**
+ * Web: `preventDefault` on mousedown, so a pointer press never takes focus
+ * from the input. The click needs nothing here: react-native-web's
+ * `PressResponder` stops a pressable's click itself, so the shell's own
+ * click-to-focus never pulls a keyboard user off the button
+ * (`TextFieldRevealWeb.test.tsx` pins it).
+ */
+const KEEP_FOCUS_WHERE_IT_IS = IS_WEB
   ? ({ onMouseDown: (event: { preventDefault: () => void }) => event.preventDefault() } as Record<string, unknown>)
   : undefined;
 
@@ -606,15 +613,21 @@ const KEEP_INPUT_FOCUS = IS_WEB
  * native a tap on a sibling does not blur a `TextInput`, and if something did
  * (a parent `ScrollView` handling the tap), the input is focused again. A
  * keyboard user who tabbed to the button keeps focus on the button.
+ *
+ * Its state is its NAME ("Show password" ↔ "Hide password"), so it carries no
+ * `aria-pressed`: a toggle whose label also flips announces its state twice.
  */
 function RevealButton({
   revealed,
   onToggle,
+  invalid,
   labels,
   locale,
 }: {
   revealed: boolean;
   onToggle: () => void;
+  /** The input's own invalid state, which may be set without the field's. */
+  invalid: boolean;
   labels?: TextFieldRevealLabels;
   locale?: string;
 }) {
@@ -631,13 +644,13 @@ function RevealButton({
       onTouchStart={() => {
         inputWasFocused.current = ctx.inputRef.current?.isFocused() ?? false;
       }}
-      {...KEEP_INPUT_FOCUS}>
+      {...KEEP_FOCUS_WHERE_IT_IS}>
       <GlyphButton
         size={size}
         glyphSize={glyph}
         icon={revealed ? RiEyeOffLine : RiEyeLine}
         accessibilityLabel={label}
-        color={resolveIconColor(ctx.palette, { invalid: ctx.invalid, disabled: ctx.disabled })}
+        color={resolveIconColor(ctx.palette, { invalid, disabled: ctx.disabled })}
         hoverColor={ctx.palette.text}
         disabled={ctx.disabled}
         onPress={() => {

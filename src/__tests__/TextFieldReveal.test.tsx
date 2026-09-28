@@ -96,6 +96,26 @@ describe('TextFieldInput revealable', () => {
     expect(getByLabelText('Hide password')).toBeTruthy();
   });
 
+  it("paints the eye in the error colour when only the INPUT is invalid", () => {
+    const { resolveIconColor, resolveTextFieldPalette } = jest.requireActual('../text-field/shared') as typeof import('../text-field/shared');
+    const { useTheme } = jest.requireActual('../theme/use-theme') as typeof import('../theme/use-theme');
+    let palette: ReturnType<typeof resolveTextFieldPalette> | undefined;
+    function Probe() {
+      palette = resolveTextFieldPalette(useTheme());
+      return null;
+    }
+    const { UNSAFE_getAllByProps } = renderWithTheme(
+      <>
+        <Probe />
+        <TextField>
+          <Password invalid />
+        </TextField>
+      </>,
+    );
+    const eye = UNSAFE_getAllByProps({ accessibilityLabel: 'Show password' }).find((n) => n.props.color !== undefined);
+    expect(eye?.props.color).toBe(resolveIconColor(palette!, { invalid: true, disabled: false }));
+  });
+
   it('is disabled with the field', () => {
     const { getByLabelText } = renderWithTheme(<Password disabled />);
     const button = getByLabelText('Show password');
