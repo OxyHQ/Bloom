@@ -21,6 +21,8 @@ import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { Z_INDEX } from '../styles/z-index';
 import { space } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { APP_SHELL_MESSAGES } from './messages';
 
 import type { AppShellSplitPanesProps } from './types';
 import { APP_SHELL_DEFAULTS as D } from './constants';
@@ -65,10 +67,12 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   infoWidth = D.infoWidth,
   resizable = true,
   paneScroll = true,
-  resizeLabel = 'Resize panes',
+  resizeLabel: resizeLabelProp,
   testID,
 }) => {
   const theme = useTheme();
+  const messages = useMessages(APP_SHELL_MESSAGES);
+  const resizeLabel = resizeLabelProp ?? messages.resizePanes;
   const [width, setWidth] = useState(listWidth);
   const widthAtDragStart = useRef(listWidth);
 
@@ -128,7 +132,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
             <View
               pointerEvents="box-none"
               testID={testID ? `${testID}-resize-anchor` : undefined}
-              style={separated ? { position: 'absolute', top: 0, bottom: 0, left: '50%', width: 0 } : { flex: 1 }}
+              style={separated ? { position: 'absolute', top: 0, bottom: 0, left: '50%', right: '50%', width: 0 } : { flex: 1 }}
             >
               <AiChatResizeHandle
                 label={resizeLabel}
