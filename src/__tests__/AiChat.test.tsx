@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
+import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import * as Native from 'react-native';
 import { Text, View, StyleSheet } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -586,5 +589,54 @@ describe('AiChatContainer composed actions', () => {
     expect(screen.queryByLabelText('More options')).toBeNull();
     expect(screen.queryByLabelText('Share chat')).toBeNull();
     expect(screen.queryByLabelText('Chat location')).toBeNull();
+  });
+});
+
+
+describe('AiChatShell safe area ownership', () => {
+  const insets = { top: 47, right: 24, bottom: 34, left: 16 };
+  const originalOS = Native.Platform.OS;
+  afterEach(() => { Native.Platform.OS = originalOS; });
+  function Reader() {
+    const original = useContext(SafeAreaInsetsContext);
+    const bottom = useContext(BottomBarSlotContext);
+    return <Text testID="inset-reader">{JSON.stringify({ original, bottom })}</Text>;
+  }
+  it.each(['ios', 'android'] as const)('adds all native edges to the frame and drawers while preserving modal insets on %s', os => {
+    Native.Platform.OS = os;
+    const tree = renderIn(<SafeAreaInsetsContext.Provider value={insets}>
+      <AiChatShell sidebar={null} safeArea testID="safe-shell" navOpen mobileSidebar={<Text>Navigation</Text>} panelOpen panel={() => <Text>Panel</Text>}>
+        <Reader />
+      </AiChatShell>
+    </SafeAreaInsetsContext.Provider>);
+    expect(resolvedStyle(tree.getByTestId('safe-shell').props.style)).toMatchObject({ paddingTop: 59, paddingRight: 36, paddingBottom: 46, paddingLeft: 28 });
+    expect(tree.getByTestId('inset-reader').props.children).toBe(JSON.stringify({ original: insets, bottom: 34 }));
+    const styles = tree.UNSAFE_getAllByType(View).map(node => resolvedStyle(node.props.style));
+    expect(styles).toContainEqual(expect.objectContaining({ width: 272, left: 16, paddingTop: 59, paddingBottom: 46 }));
+    expect(resolvedStyle(tree.getByLabelText('Code').props.style)).toMatchObject({ right: 24, paddingTop: 59, paddingBottom: 46, position: 'absolute' });
+  });
+  it.each(['ios', 'web'] as const)('preserves default geometry and web behavior on %s', os => {
+    Native.Platform.OS = os;
+    const tree = renderIn(<SafeAreaInsetsContext.Provider value={insets}><BottomBarSlotContext.Provider value={9}>
+      <AiChatShell sidebar={null} safeArea={os === 'web'} testID="safe-shell"><Reader /></AiChatShell>
+    </BottomBarSlotContext.Provider></SafeAreaInsetsContext.Provider>);
+    const style = resolvedStyle(tree.getByTestId('safe-shell').props.style);
+    expect(style.padding).toBe(12);
+    expect(style.paddingTop).toBeUndefined();
+    expect(tree.getByTestId('inset-reader').props.children).toBe(JSON.stringify({ original: insets, bottom: 9 }));
+  });
+});
+
+describe('AiChatContainer published surface', () => {
+  function FillReader() { return <Text testID="fill-reader">{useSurfaceFill()}</Text>; }
+  it.each([false, true])('publishes the painted container fill with floatingChrome=%s', floatingChrome => {
+    const tree = renderIn(<AiChatContainer floatingChrome={floatingChrome} testID="painted"><FillReader /></AiChatContainer>);
+    expect(tree.getByTestId('fill-reader').props.children).toBe(resolvedStyle(tree.getByTestId('painted').props.style).backgroundColor);
+  });
+  it('transparent containers inherit the ambient fill, while explicit fills are published', () => {
+    const tree = renderIn(<SurfaceLevelProvider level={1} fill="#123456"><AiChatContainer surface={false}><FillReader /></AiChatContainer></SurfaceLevelProvider>);
+    expect(tree.getByTestId('fill-reader').props.children).toBe('#123456');
+    tree.rerender(<BloomThemeProvider><AiChatContainer style={{ backgroundColor: '#654321' }}><FillReader /></AiChatContainer></BloomThemeProvider>);
+    expect(tree.getByTestId('fill-reader').props.children).toBe('#654321');
   });
 });

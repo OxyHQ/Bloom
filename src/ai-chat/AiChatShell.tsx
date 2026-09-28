@@ -1,6 +1,6 @@
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { useSurfaceBacking } from '../surface/use-surface-backing';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
   Platform,
@@ -19,6 +19,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { Button } from '../button';
 import { usePanelInteraction } from './use-panel-interaction';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -44,6 +46,8 @@ import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatMobileHeaderProps, AiChatShellProps } from './types';
 import { AiChatResizeHandle } from './AiChatResizeHandle';
 import { clamp01 } from '../styles/clamp';
+
+const NO_SAFE_INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 
 const REVEAL_EASE = Easing.bezier(0.42, 0, 0.58, 1);
 const REVEAL_MS = 325;
@@ -195,6 +199,7 @@ export function AiChatShell({
   onPanelOpenChange,
   background,
   surface = true,
+  safeArea = false,
   scroll = 'container',
   labels,
   style,
@@ -202,6 +207,10 @@ export function AiChatShell({
 }: AiChatShellProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
+  const deviceInsets = useContext(SafeAreaInsetsContext);
+  const inheritedBottomInset = useContext(BottomBarSlotContext);
+  const ownsSafeArea = safeArea && Platform.OS !== 'web';
+  const safeInsets = ownsSafeArea ? deviceInsets ?? NO_SAFE_INSETS : NO_SAFE_INSETS;
   const reducedMotion = useReducedMotion();
   const { messages } = useMessages(AI_CHAT_MESSAGES);
   const panelLabel = panelLabelProp ?? messages.code;
@@ -400,7 +409,7 @@ export function AiChatShell({
     drawer.value = reducedMotion ? target : withTiming(target, { duration: DRAWER_MS, easing: DRAWER_EASE });
   }, [panelOpen, reducedMotion, drawer]);
   const [shellWidth, setShellWidth] = useState(windowWidth);
-  const drawerWidth = Math.min(410, shellWidth - 12);
+  const drawerWidth = Math.min(410, shellWidth - safeInsets.left - safeInsets.right - 12);
   const backdropStyle = useAnimatedStyle(() => ({ opacity: drawer.value }), [drawer]);
   const drawerStyle = useAnimatedStyle(
     () => ({ transform: [{ translateX: drawerWidth * 1.1 * (1 - drawer.value) }] }),
@@ -457,6 +466,12 @@ export function AiChatShell({
     flexDirection: 'row',
     gap: 16,
     padding: SHELL_GUTTER,
+    ...(ownsSafeArea ? {
+      paddingTop: SHELL_GUTTER + safeInsets.top,
+      paddingRight: SHELL_GUTTER + safeInsets.right,
+      paddingBottom: SHELL_GUTTER + safeInsets.bottom,
+      paddingLeft: SHELL_GUTTER + safeInsets.left,
+    } : null),
     backgroundColor: surface ? palette.full : 'transparent',
   };
 
@@ -464,6 +479,7 @@ export function AiChatShell({
   const veil = palette.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)';
 
   return (
+    <BottomBarSlotContext.Provider value={ownsSafeArea ? safeInsets.bottom : inheritedBottomInset}>
     <AiChatShellContext.Provider value={shellState}>
       <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
       <AiChatDocumentGutterContext.Provider value={documentScroll && surface ? palette.full : null}>
@@ -483,7 +499,7 @@ export function AiChatShell({
             ref={navRef}
             {...(navOpen ? null : CLOSED_LAYER)}
             pointerEvents={navOpen ? 'box-none' : 'none'}
-            style={{ position: overlayPosition, top: 0, bottom: 0, left: 0, zIndex: 10, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
+            style={{ position: overlayPosition, top: 0, bottom: 0, left: safeInsets.left, zIndex: 10, width: 272, paddingTop: 12 + safeInsets.top, paddingBottom: 12 + safeInsets.bottom, paddingLeft: 6 }}>
             <Animated.View
               pointerEvents={navOpen ? 'auto' : 'none'}
               style={[{ height: '100%', width: 260, transformOrigin: 'left' }, railStyle]}>
@@ -599,11 +615,13 @@ export function AiChatShell({
                   position: 'absolute',
                   top: 0,
                   bottom: 0,
-                  right: 0,
+                  right: safeInsets.right,
                   width: drawerWidth,
                   flexDirection: 'column',
                   backgroundColor: palette.full,
                   padding: 12,
+                  paddingTop: 12 + safeInsets.top,
+                  paddingBottom: 12 + safeInsets.bottom,
                   boxShadow: palette.shadowSidebar,
                 },
                 drawerStyle,
@@ -633,6 +651,7 @@ export function AiChatShell({
       </AiChatDocumentGutterContext.Provider>
       </SurfaceLevelProvider>
     </AiChatShellContext.Provider>
+    </BottomBarSlotContext.Provider>
   );
 }
 
