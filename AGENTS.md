@@ -150,6 +150,11 @@ Button uses semantic solid/subtle/outline/plain, no glass/default gradient (`but
 - No overflow:hidden on glass variants: GlassSurface self-clips; iOS clipsToBounds removes shadow.
 - **Sample PAINTED pixels:** computed background-color can describe an unused slot. Screenshot, reload into page, sample canvas; style diffs cannot distinguish pane/wash.
 
+## Locale (`docs/locale.mdx`)
+
+- **No English literal in drawn/announced text:** `<family>/messages.ts` or `COMMON_MESSAGES`; props override. Gates: `i18n-literal-census` (`PENDING` equality), `message-catalogs`
+- **Hermes lacks Intl PluralRules/RelativeTimeFormat/ListFormat/DisplayNames:** use `locale/plural.ts`, `formatGregorian`; no English connector (`labelFor`).
+
 ## Web fonts
 
 Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub, `FontLoader` fork, `node` export condition, registered families): `docs/fonts.mdx`.
@@ -157,9 +162,9 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 ## Peers
 
 - **Peers source of truth:** peerDependencies + peerDependenciesMeta. Never duplicate ranges here; stale ranges falsely authorize missing peers.
-- **`@gorhom/bottom-sheet` is not a peer or dependency of any kind** — the bottom sheet is Bloom's own; the name survives only in comments. **A statically-imported peer is never `optional`** — optionality is about what RESOLVES, so omitting one makes Metro fail the build rather than degrade.
+- **`@gorhom/bottom-sheet` is no peer/dependency:** the sheet is Bloom's own (name only in comments). **A statically-imported peer is never `optional`:** optionality concerns what RESOLVES; omitting one fails the Metro build rather than degrading.
 - **Optional peers require `require('<literal>')` as a DIRECT try-block statement.** Metro stops at the first enclosing block: nesting an `if` inside try loses optionality. Put typeof-require guards outside. Parameter specifiers previously broke haptics, squircle clip, spinner and native color scoping. Reference `connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
-- **Apple-only peers are reachable ONLY via `@oxy.so/bloom/tab-bar`**; non-importers needn't install them (bun prints no mismatch warning for them). Toast engine is vendored; `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
+- **Apple-only peers are reachable ONLY via `@oxy.so/bloom/tab-bar`**; non-importers skip them (bun prints no mismatch warning). Toast engine is vendored: no `sonner`/`sonner-native`/`nanoid`. Web bundles DO import reanimated + gesture-handler.
 
 ## Style and `className`
 
@@ -179,16 +184,16 @@ Pure JS, universal. `ImageResolver = (id, variant?) => string | undefined`; `Ava
 
 These silently verify the PUBLISHED package instead:
 
-- **`bun add file:<tgz|dir>` reports success and does nothing** when the version matches what's installed. Bump the local version, or swap by symlink.
-- **Metro's `resolver.extraNodeModules` is a FALLBACK, not an override** — with a real `node_modules/@oxy.so/bloom` present it's never consulted. **`expo export`/`expo start` disagree, too** — the dev server's file map only indexes `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
-- **The Metro port is baked in at BUILD time** via `-PreactNativeDevServerPort`, not `RCT_METRO_PORT` — an emulator resolves it through host loopback, which `adb reverse` doesn't intercept. Confirm the value flipped in `gradleResValues.xml`.
+- **`bun add file:<tgz|dir>` silently no-ops** when the installed version matches. Bump the local version, or symlink.
+- **Metro `resolver.extraNodeModules` is a FALLBACK:** a real `node_modules/@oxy.so/bloom` wins. **`expo export`/`expo start` disagree:** the dev server indexes only `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
+- **Metro port is baked at BUILD time** (`-PreactNativeDevServerPort`, not `RCT_METRO_PORT`); emulators resolve it via host loopback, which `adb reverse` misses. Confirm it in `gradleResValues.xml`.
 
-**Assert what you're testing before you test it** — resolved version plus a marker only the local build can produce. **Never extract or write over `node_modules/<pkg>`** — bun hardlinks from its global cache, mutating the package for every worktree and session.
+**Assert what you test first:** resolved version plus a marker only the local build produces. **Never write over `node_modules/<pkg>`:** bun hardlinks its global cache, mutating it for every worktree/session.
 
 ## Local conventions
 
-- `apply-dark-class.ts` handles the dark class AND CSS var injection on web (no-op on native).
+- `apply-dark-class.ts` sets the dark class AND web CSS vars (native no-op)
 - **Shared-checkout agent commits are blocked** by `scripts/git-hooks/pre-commit` (`git config core.hooksPath "$PWD/scripts/git-hooks"`), preventing `git add -A` capturing user work. Use `.worktrees/<name>`; lead integration sets `BLOOM_SHARED_COMMIT=1`. Detection: CLAUDECODE and git-dir/common-dir **absolute paths**. Subdirectories otherwise yield one relative/one absolute and falsely look like worktrees.
-- **node_modules is per-worktree.** A devDependency installed elsewhere once left the shared checkout failing one suite with `Cannot find module`. Run bun install in each worktree. This differs from bun cache hardlinks.
-- **tsc misses shortened icon names in comments/MDX.** Only `icon-references.test.ts` scans src/docs/README/AGENTS for unresolved references.
+- **node_modules is per-worktree:** a devDependency installed elsewhere left the shared checkout failing with `Cannot find module`. Run bun install in each worktree (unlike bun cache hardlinks).
+- **tsc misses short icon names in comments/MDX;** only `icon-references.test.ts` scans src/docs/README/AGENTS.
 - **Never name the external design source, its author, or its file paths and constant names.** Say what a thing IS, keeping every measured number. `tsc` sees no comment, story fixture or MDX line, so `design-source-references.test.ts` is the only check; its term list is there, not here — this file is inside its scan.
