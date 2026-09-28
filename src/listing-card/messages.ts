@@ -32,7 +32,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Approximate location',
     rated: (r) => `Rated ${r} out of 5`,
     ratedWithReviews: (r, c) =>
-      plural('en', Number(c), { one: `Rated ${r} out of 5, ${c} review`, other: `Rated ${r} out of 5, ${c} reviews` }),
+      plural('en', c, { one: `Rated ${r} out of 5, ${c} review`, other: `Rated ${r} out of 5, ${c} reviews` }),
     newListing: 'New',
     previousPhoto: 'Previous photo',
     nextPhoto: 'Next photo',
@@ -45,7 +45,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Ubicación aproximada',
     rated: (r) => `Valoración: ${r} de 5`,
     ratedWithReviews: (r, c) =>
-      plural('es', Number(c), { one: `Valoración: ${r} de 5, ${c} reseña`, other: `Valoración: ${r} de 5, ${c} reseñas` }),
+      plural('es', c, { one: `Valoración: ${r} de 5, ${c} reseña`, other: `Valoración: ${r} de 5, ${c} reseñas` }),
     newListing: 'Nuevo',
     previousPhoto: 'Foto anterior',
     nextPhoto: 'Foto siguiente',
@@ -58,7 +58,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Ubicació aproximada',
     rated: (r) => `Valoració: ${r} de 5`,
     ratedWithReviews: (r, c) =>
-      plural('ca', Number(c), { one: `Valoració: ${r} de 5, ${c} ressenya`, other: `Valoració: ${r} de 5, ${c} ressenyes` }),
+      plural('ca', c, { one: `Valoració: ${r} de 5, ${c} ressenya`, other: `Valoració: ${r} de 5, ${c} ressenyes` }),
     newListing: 'Nou',
     previousPhoto: 'Foto anterior',
     nextPhoto: 'Foto següent',
@@ -71,7 +71,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Ungefährer Standort',
     rated: (r) => `Bewertet mit ${r} von 5`,
     ratedWithReviews: (r, c) =>
-      plural('de', Number(c), { one: `Bewertet mit ${r} von 5, ${c} Bewertung`, other: `Bewertet mit ${r} von 5, ${c} Bewertungen` }),
+      plural('de', c, { one: `Bewertet mit ${r} von 5, ${c} Bewertung`, other: `Bewertet mit ${r} von 5, ${c} Bewertungen` }),
     newListing: 'Neu',
     previousPhoto: 'Vorheriges Foto',
     nextPhoto: 'Nächstes Foto',
@@ -84,7 +84,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Emplacement approximatif',
     rated: (r) => `Noté ${r} sur 5`,
     ratedWithReviews: (r, c) =>
-      plural('fr', Number(c), { other: `Noté ${r} sur 5, ${c} avis` }),
+      plural('fr', c, { other: `Noté ${r} sur 5, ${c} avis` }),
     newListing: 'Nouveau',
     previousPhoto: 'Photo précédente',
     nextPhoto: 'Photo suivante',
@@ -97,7 +97,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Posizione approssimativa',
     rated: (r) => `Valutazione: ${r} su 5`,
     ratedWithReviews: (r, c) =>
-      plural('it', Number(c), { one: `Valutazione: ${r} su 5, ${c} recensione`, other: `Valutazione: ${r} su 5, ${c} recensioni` }),
+      plural('it', c, { one: `Valutazione: ${r} su 5, ${c} recensione`, other: `Valutazione: ${r} su 5, ${c} recensioni` }),
     newListing: 'Nuovo',
     previousPhoto: 'Foto precedente',
     nextPhoto: 'Foto successiva',
@@ -110,7 +110,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Localização aproximada',
     rated: (r) => `Avaliação: ${r} de 5`,
     ratedWithReviews: (r, c) =>
-      plural('pt', Number(c), { one: `Avaliação: ${r} de 5, ${c} avaliação`, other: `Avaliação: ${r} de 5, ${c} avaliações` }),
+      plural('pt', c, { one: `Avaliação: ${r} de 5, ${c} avaliação`, other: `Avaliação: ${r} de 5, ${c} avaliações` }),
     newListing: 'Novo',
     previousPhoto: 'Foto anterior',
     nextPhoto: 'Próxima foto',
@@ -123,7 +123,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Примерное местоположение',
     rated: (r) => `Оценка ${r} из 5`,
     ratedWithReviews: (r, c) =>
-      plural('ru', Number(c), { one: `Оценка ${r} из 5, ${c} отзыв`, few: `Оценка ${r} из 5, ${c} отзыва`, many: `Оценка ${r} из 5, ${c} отзывов`, other: `Оценка ${r} из 5, ${c} отзыва` }),
+      plural('ru', c, { one: `Оценка ${r} из 5, ${c} отзыв`, few: `Оценка ${r} из 5, ${c} отзыва`, many: `Оценка ${r} из 5, ${c} отзывов`, other: `Оценка ${r} из 5, ${c} отзыва` }),
     newListing: 'Новое',
     previousPhoto: 'Предыдущее фото',
     nextPhoto: 'Следующее фото',
@@ -136,7 +136,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Yaklaşık konum',
     rated: (r) => `5 üzerinden ${r} puan`,
     ratedWithReviews: (r, c) =>
-      plural('tr', Number(c), { other: `5 üzerinden ${r} puan, ${c} değerlendirme` }),
+      plural('tr', c, { other: `5 üzerinden ${r} puan, ${c} değerlendirme` }),
     newListing: 'Yeni',
     previousPhoto: 'Önceki fotoğraf',
     nextPhoto: 'Sonraki fotoğraf',
@@ -149,7 +149,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'おおよその位置',
     rated: (r) => `5段階中${r}の評価`,
     ratedWithReviews: (r, c) =>
-      plural('ja', Number(c), { other: `5段階中${r}の評価、レビュー${c}件` }),
+      plural('ja', c, { other: `5段階中${r}の評価、レビュー${c}件` }),
     newListing: '新着',
     previousPhoto: '前の写真',
     nextPhoto: '次の写真',
@@ -162,7 +162,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: '大致位置',
     rated: (r) => `评分${r}分（满分5分）`,
     ratedWithReviews: (r, c) =>
-      plural('zh', Number(c), { other: `评分${r}分（满分5分），${c}条评价` }),
+      plural('zh', c, { other: `评分${r}分（满分5分），${c}条评价` }),
     newListing: '新房源',
     previousPhoto: '上一张照片',
     nextPhoto: '下一张照片',
@@ -175,7 +175,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'موقع تقريبي',
     rated: (r) => `التقييم ${r} من 5`,
     ratedWithReviews: (r, c) =>
-      plural('ar', Number(c), { other: `التقييم ${r} من 5، عدد المراجعات: ${c}` }),
+      plural('ar', c, { other: `التقييم ${r} من 5، عدد المراجعات: ${c}` }),
     newListing: 'جديد',
     previousPhoto: 'الصورة السابقة',
     nextPhoto: 'الصورة التالية',
@@ -188,7 +188,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'अनुमानित स्थान',
     rated: (r) => `5 में से ${r} रेटिंग`,
     ratedWithReviews: (r, c) =>
-      plural('hi', Number(c), { one: `5 में से ${r} रेटिंग, ${c} समीक्षा`, other: `5 में से ${r} रेटिंग, ${c} समीक्षाएँ` }),
+      plural('hi', c, { one: `5 में से ${r} रेटिंग, ${c} समीक्षा`, other: `5 में से ${r} रेटिंग, ${c} समीक्षाएँ` }),
     newListing: 'नया',
     previousPhoto: 'पिछली फ़ोटो',
     nextPhoto: 'अगली फ़ोटो',
@@ -201,7 +201,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'আনুমানিক অবস্থান',
     rated: (r) => `৫-এর মধ্যে ${r} রেটিং`,
     ratedWithReviews: (r, c) =>
-      plural('bn', Number(c), { other: `৫-এর মধ্যে ${r} রেটিং, ${c}টি রিভিউ` }),
+      plural('bn', c, { other: `৫-এর মধ্যে ${r} রেটিং, ${c}টি রিভিউ` }),
     newListing: 'নতুন',
     previousPhoto: 'আগের ছবি',
     nextPhoto: 'পরের ছবি',
@@ -214,7 +214,7 @@ export const LISTING_CARD_MESSAGES: MessageCatalog<ListingCardMessages> = {
     approximateLocation: 'Perkiraan lokasi',
     rated: (r) => `Rating ${r} dari 5`,
     ratedWithReviews: (r, c) =>
-      plural('id', Number(c), { other: `Rating ${r} dari 5, ${c} ulasan` }),
+      plural('id', c, { other: `Rating ${r} dari 5, ${c} ulasan` }),
     newListing: 'Baru',
     previousPhoto: 'Foto sebelumnya',
     nextPhoto: 'Foto berikutnya',

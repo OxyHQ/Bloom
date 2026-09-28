@@ -34,7 +34,7 @@ function AvailabilityFilterComponent({
   style,
   testID,
 }: AvailabilityFilterProps) {
-  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES, locale);
   const availableNowLabel = availableNowLabelProp ?? messages.availableNow;
   const availableNowDescription = availableNowDescriptionProp ?? messages.availableNowDescription;
   const dateLabel = dateLabelProp ?? messages.availableFrom;
