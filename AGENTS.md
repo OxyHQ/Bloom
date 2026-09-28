@@ -134,21 +134,19 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 - Quiet labels use quietText(surface,text,floor), or quietTextOver([...]) for multiple fills. n[400] cleared page AA but measured2.42:1 on chart card. textTertiary IS textSecondary/--muted-foreground: one role, one color, since fixed third grey cannot cover all surfaces.
 - SURFACE_RAMP in `theme/color-policy.ts` owns surface tones, not M3 containers. ΔE00/JND/spacing/roles: design-token docs. “Separates all18” describes a PAIR, not ladder: name neighbours and measure EVERY pair; fixing one can land exactly on another. Review WORSENED list, not just target.
 - Use stat-bar Meter/MeterRing for determinate geometry, accent fill, semantic track and flat aria-value*. Seventeen copies differed: three used colors.text; rails200/700,200/800,300/700,100/800. Subsegments are decorative, never duplicate progressbars. Charts encode WHICH datum: use chart-cards/palette.ts chartHueTone/resolveMonoTone; old dark neutralSeries800 vanished on rail, now semantic. Gates: `Meter.test.tsx`, Meter subjects in `aria-state-web.test.tsx`.
-- **Read token pairs; never derive colors.** Appended alpha failure: `docs/badge.mdx`. Controls use resolveAccentColors(colors,tone,fill), `theme/accent-colors.ts`; classes use opacity utilities (bg-primary/10). Gate: `theme/__tests__/accent-colors.test.ts`. Only exception: glass-colors.ts withAlpha parses/re-emits fill alpha, never concatenates; same gate.
+- **Read token pairs; never derive colors.** Appended alpha failure: `docs/badge.mdx`. Controls use resolveAccentColors(colors,tone,fill), `theme/accent-colors.ts`; classes use opacity utilities (bg-primary/10). Gate: `theme/__tests__/accent-colors.test.ts`. Glass material is the exception: withAlpha parses/re-emits the resolved fill, never concatenates; the foreground still follows its semantic pair.
 
-## Glass (`theme/glass-colors.ts` + `glass/GlassSurface.tsx`)
+## Glass (`surface/`)
 
-Button uses semantic solid/subtle/outline/plain, no glass/default gradient (`button/shared.ts`, `docs/button.mdx`). Glass rules:
+`Surface` owns the shared material; Button, Card, Sidebar and GlassIsland consume its paint while retaining their current semantic APIs. `glass/` retains grouping/blur-target contracts; the old GlassSurface and glass-colors recipe were removed.
 
-- **Sheen, not wash:** reference alpha0.85;0.25 looked pale/bodyless. Transparency is only one of five material features (`docs/glass.mdx`, AA table).
-- Label follows alpha:0.25 takes page luminance (colors.text);0.85 takes fill (on-color). Neither permanent. Remeasure presets×modes×tones×surfaces after alpha/surface changes; exact failures in resolveGlassColors comment, `glass-colors.ts`.
-- **Pin shortfalls by EQUALITY:** count, band, named set (`docs/glass.mdx`, `glass-colors.test.ts`). Never lower thresholds;0.01 alpha changes must fail either direction, including improvement. Surface changes require remeasurement.
-- Prove translucency by painted movement with backdrop: zero opaque, monotonic with alpha. Old “fails AA on black/white” proxy stops distinguishing near opacity. Literal floors only; alpha-derived floors move both sides and prove nothing.
-- Glass REPLACES fill: blur behind transparent control shows nothing; hairline needs tint. Inverse remains opaque for CTA on unknown content (measurements in docs).
-- Expo intensity couples blur+tint; CSS backdrop-filter is pure blur. Require small NONZERO native/web gap, or missing native blur passes. Android blur requires PORTALED surface. NEVER wrap app in BlurTargetView: descendant BlurView targeting ancestor SIGSEGVs. Cause/channel gaps: docs and glass-colors.ts.
-- SVG stopColor drops embedded alpha; CSS preserves it. Shared rgba stops painted opaque white→black Android wipe while token-equality gate passed. Use separate stop alpha; measured regression: GLASS_SHEEN comment in glass-colors.ts.
-- No overflow:hidden on glass variants: GlassSurface self-clips; iOS clipsToBounds removes shadow.
-- **Sample PAINTED pixels:** computed background-color can describe an unused slot. Screenshot, reload into page, sample canvas; style diffs cannot distinguish pane/wash.
+- The current approved default is SOLID: opaque fill + shared sheen/rim, no blur or refraction. Button, Card, Sidebar and overlays use it. Explicit Surface/Card material="glass" remains optional for comparison. BottomBar is intrinsically translucent, without a material variant; its blur band is independent. Preserve semantic foreground pairs; flatten alpha onto the stable theme backing for solid paint.
+- For optional glass, capture the full viewport before cropping: Chromium screenshot `clip` can trim backdrop input. `scripts/verify-surface-refraction.mjs` changes only the exterior colours and removes displacement as its negative control. Expanded capture on compact nested buttons previously leaked rectangular corners; an ancestor clip-path hid the artefact but also blocked refraction. Do not call clipping fixed without reading painted pixels.
+- Web paints blur3px + one shared displacement definition under the tint. Native uses SVG tint/sheen, without backdrop blur/refraction. Sharing a filter definition does not remove per-surface compositor cost; verify dense/large/nested panes.
+- Preserve the measured native hazards: expo-blur intensity couples blur+tint; a BlurView descending from its own BlurTargetView can SIGSEGV on Android. Never wrap the app in a blur target to imitate this web effect.
+- SVG stopColor drops embedded alpha: use separate stopOpacity. Shared rgba tokens once painted an opaque white→black Android wipe while token-equality tests passed.
+- Material self-clips. Keep outer shadows unclipped on native; iOS clipsToBounds removes the shadow. Card clips native content separately while keeping caller layout resolved; web retains its single content layout node.
+- Read PAINTED pixels: computed background-color can name an unused slot. Screenshot/reload/sample canvas to verify translucency; floors must be independent literals, not derived from the alpha under test. If contrast shortfalls are pinned, use equality and remeasure rather than lowering a bar.
 
 ## Locale (`docs/locale.mdx`)
 

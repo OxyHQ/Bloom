@@ -11,7 +11,7 @@ export type SocialButtonSize = 'md' | 'sm';
 
 /**
  * - `colorful` (default) fills with the brand colour, a white glyph on it.
- * - `black` is the same shape in solid near-black.
+ * - `black` is the same glass shape in near-black.
  * - `white` is the outlined treatment (the secondary button) and the one that
  *   shows each provider's real multi-colour mark.
  */
@@ -30,8 +30,7 @@ export interface SocialBrandConfig {
   /** Used in the label and as the accessible name. Defaults to `"SSO"`. */
   label?: string;
   /**
-   * Fill for `colorful`, as `#rrggbb` or `rgb()`. Defaults to black. Any other
-   * colour syntax paints flat, without the derived gradient stop.
+   * Fill for `colorful`, as `#rrggbb` or `rgb()`. Defaults to black.
    */
   color?: string;
 }
@@ -60,7 +59,7 @@ export interface SocialButtonProps {
    * `onPress` runs. Dropped while `disabled`.
    */
   href?: string;
-  /** Dims to 60% and ignores presses. */
+  /** Shared Button disabled tint; retains glass and ignores presses. */
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   /** Label text style override. */

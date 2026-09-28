@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -53,7 +54,7 @@ describe('steps bar geometry matches recharts', () => {
 describe('StepsCard', () => {
   it("keeps the medical card shell: 330 tall, radius 20, 10px inset, header 16px in", () => {
     const { getByTestId } = renderCard(<StepsCard testID="steps" data={WEEK} range="29 Jun - 5 Jul" />);
-    expect(resolvedStyle(getByTestId('steps').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('steps'))).toMatchObject({
       height: 330,
       borderRadius: 20,
       gap: 16,

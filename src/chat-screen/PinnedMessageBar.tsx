@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, { memo } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
@@ -113,6 +115,7 @@ function PinnedMessageBarComponent({
   testID,
 }: PinnedMessageBarProps) {
   const paint = useChatScreenPaint();
+  const backing = useSurfaceBacking(paint.surface, style);
   const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
   if (pins.length === 0) return null;
   const listLabel = listLabelProp ?? messages.pinnedList;
@@ -128,6 +131,7 @@ function PinnedMessageBarComponent({
     (dismissIcon === 'unpin' ? messages.pinnedUnpin : messages.pinnedClose);
 
   return (
+    <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
     <View
       testID={testID}
       style={[
@@ -145,6 +149,7 @@ function PinnedMessageBarComponent({
           borderBottomColor: paint.border,
         },
         style,
+        backing.vars,
       ]}
     >
       <Pressable
@@ -222,6 +227,7 @@ function PinnedMessageBarComponent({
         />
       ) : null}
     </View>
+    </SurfaceLevelProvider>
   );
 }
 

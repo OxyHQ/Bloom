@@ -17,7 +17,7 @@ import { resolveTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 
@@ -138,7 +138,7 @@ export function HeatmapChartCard({
   style,
   testID,
 }: HeatmapChartCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 

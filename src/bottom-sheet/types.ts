@@ -25,6 +25,9 @@ export interface BottomSheetProps {
     open?: boolean;
     onDismiss?: () => void;
     enablePanDownToClose?: boolean;
+    /** Actual opaque backing painted by backgroundComponent; defaults to style.backgroundColor or the page fill.
+     * Custom background renderers must declare their backing here for nested surfaces. */
+    backgroundFill?: string;
     backgroundComponent?: (props: { style?: StyleProp<ViewStyle> }) => React.ReactElement | null;
     backdropComponent?: (props: { style?: StyleProp<ViewStyle>; onPress?: () => void }) => React.ReactElement | null;
     /**

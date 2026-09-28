@@ -1,3 +1,5 @@
+import { useCardFill } from '../card/use-card-fill';
+import { Card } from '../card/Card';
 import { surfaceFillOn } from '../styles/surface-levels';
 import React, { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
@@ -22,7 +24,6 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  CARD_RADIUS,
   COVER_RADIUS,
   CREATOR_STUDIO_CSS,
   CREATOR_STUDIO_STYLE_ID,
@@ -99,7 +100,8 @@ function ReleaseCardComponent({
   const common = useCommonMessages();
   const theme = useTheme();
   useInteractiveWebCss(CREATOR_STUDIO_STYLE_ID, CREATOR_STUDIO_CSS);
-  const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
+  const fill = useCardFill(style);
+  const paint = useMemo(() => ({ ...resolveCreatorStudioPaint(theme), surface: fill }), [theme, fill]);
   const hoverSurface = useMemo(() => {
     return surfaceFillOn(theme, paint.surface);
   }, [theme, paint.surface]);
@@ -222,11 +224,11 @@ function ReleaseCardComponent({
   );
 
   return (
-    <View
+    <Card radius="radius-16" elevation="none"
       testID={testID}
       style={[
         styles.card,
-        { backgroundColor: hovered ? hoverSurface : paint.surface },
+        hovered ? { backgroundColor: hoverSurface } : undefined,
         style,
       ]}
     >
@@ -258,7 +260,7 @@ function ReleaseCardComponent({
           </Text>
         </View>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
@@ -267,7 +269,6 @@ ReleaseCard.displayName = 'ReleaseCard';
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: CARD_RADIUS,
     paddingTop: 12,
     paddingBottom: 12,
     paddingLeft: 12,

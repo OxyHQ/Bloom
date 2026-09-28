@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -65,7 +66,7 @@ describe('line chart geometry matches recharts', () => {
 describe('LineChartCard', () => {
   it('keeps the card geometry: 329 tall, radius 16, padding 16/16/12, gap 24', () => {
     const { getByTestId } = renderCard(<LineChartCard testID="line" ranges={RANGES} />);
-    expect(resolvedStyle(getByTestId('line').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('line'))).toMatchObject({
       height: 329,
       borderRadius: 16,
       gap: 24,
@@ -130,7 +131,7 @@ describe('LineChartCard', () => {
     const paths = UNSAFE_getAllByType('Path' as never) as unknown as Node[];
     const stroke = paths.find((p) => p.props.strokeWidth === 2.5);
     expect(stroke?.props.stroke).toBe(tone.activeColor);
-    const stops = UNSAFE_getAllByType('Stop' as never) as unknown as Node[];
+    const stops = getByTestId('line-plot').findAllByType('Stop' as never) as unknown as Node[];
     expect(stops.map((s) => [s.props.stopColor, s.props.stopOpacity])).toEqual([
       [tone.color, 0.35],
       [tone.color, 0],
@@ -170,6 +171,6 @@ describe('LineChartCard', () => {
   it('paints the dark card from the neutral ramp', () => {
     const { getByTestId } = renderCard(<LineChartCard testID="line" data={WEEKLY} />, 'dark');
     const palette = resolveChartCardPalette(buildTheme('teal', 'dark'));
-    expect(resolvedStyle(getByTestId('line').props.style).backgroundColor).toBe(palette.surface);
+    expect(cardFill(getByTestId('line'))).toBe(palette.surface);
   });
 });

@@ -8,7 +8,6 @@ import { CartesianPlot } from '../chart-cards/primitives/CartesianPlot';
 import { ChartCardSurface } from '../chart-cards/primitives/ChartCardSurface';
 import { PeriodChartHeader } from '../chart-cards/primitives/PeriodChartHeader';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
-import { useChartCardPalette } from '../chart-cards/primitives/use-chart-palette';
 import { useChartRange } from '../chart-cards/primitives/use-chart-range';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { RiLineChartLine } from '../icons/remix/RiLineChartLine';
@@ -22,6 +21,7 @@ import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
 import type { PropertyInsightsMessages } from './messages';
 import type { PriceEventKind, PriceHistoryChartProps, PriceHistoryEvent, PriceHistoryPoint } from './types';
 
+import { useChartCardSurfacePalette } from '../chart-cards/primitives/use-chart-palette';
 /**
  * A home's asking price (or rent) over time, with what happened to it.
  *
@@ -141,7 +141,7 @@ export function PriceHistoryChart({
   const emptyLabel = emptyLabelProp ?? messages.noPriceHistory;
   const periodsLabel = periodsLabelProp ?? messages.priceHistoryPeriod;
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const { selected, selectedId, select } = useChartRange(periods, defaultPeriod, onPeriodChange);
   const data = selected?.data ?? dataProp ?? [];
   const events = (selected ? selected.events : eventsProp) ?? [];

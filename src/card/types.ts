@@ -1,6 +1,6 @@
 import type { CornerCurve } from '../shapes/corner-types';
 import type { BloomAppearance, BloomTone } from '../appearance';
-import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { StyleProp, ViewStyle, TextStyle, ViewProps } from 'react-native';
 
 import type { RADIUS } from '../design-tokens/scales';
 import type { ShadowRole } from '../design-tokens/shadows';
@@ -46,6 +46,8 @@ export interface CardProps {
   children?: React.ReactNode;
   /** Preset background + border + elevation. Default `solid` with small elevation. */
   appearance?: BloomAppearance;
+  /** Shared Surface material. Defaults to solid with gradient and rim; glass opts into refraction. */
+  material?: 'glass' | 'solid';
   /** Compatibility preset. An explicit appearance takes precedence. */
   variant?: CardVariant;
   tone?: BloomTone;
@@ -63,6 +65,8 @@ export interface CardProps {
   border?: CardBorder;
   style?: StyleProp<CardStyle>;
   className?: string;
+  /** Layout of the actual card host, without an extra measuring wrapper. */
+  onLayout?: ViewProps['onLayout'];
   onPress?: () => void;
   /**
    * Role for the pressable form. A card that opens a URL is a `link`; a card

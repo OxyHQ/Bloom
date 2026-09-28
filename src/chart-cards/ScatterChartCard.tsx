@@ -22,7 +22,7 @@ import { ChartHeader } from './primitives/ChartHeader';
 import { ChartLegend } from './primitives/ChartLegend';
 import { ChartStatTiles } from './primitives/ChartStatTiles';
 import { compactNumber, describeDeltaRatio, formatNumber } from './primitives/format';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { svgTextType, textTopForBaseline } from './svg-text';
 
@@ -237,7 +237,7 @@ export function ScatterChartCard({
   style,
   testID,
 }: ScatterChartCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 

@@ -53,6 +53,7 @@ describe('formatFileSize', () => {
 describe('FileUpload', () => {
   afterEach(() => {
     jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   it('sizes the progress SVG from its container before measurement and updates its geometry after layout', () => {
@@ -74,6 +75,9 @@ describe('FileUpload', () => {
 
   it('picks through onPickFiles on native and runs the simulated upload to completion', async () => {
     jest.useFakeTimers();
+    // Fixed two-point ticks reach 100 exactly. Random fractional progress can
+    // display a rounded 100 one tick before completion starts its hold timer.
+    jest.spyOn(Math, 'random').mockReturnValue(0);
     const onFileSelected = jest.fn();
     const onUploadComplete = jest.fn();
     const { getByTestId, getByText, queryByText } = renderWithTheme(

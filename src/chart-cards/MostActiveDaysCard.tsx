@@ -18,7 +18,6 @@ import { Text } from '../typography';
 import { chartHueTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { groupThousands } from './primitives/format';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import {
   MEDICAL_CARD_HEIGHT,
   MEDICAL_CARD_STYLE,
@@ -30,6 +29,7 @@ import {
   type MedicalPalette,
 } from './medical-parts';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * A whole year as one continuous vertical calendar of activity rings.
  *
@@ -266,7 +266,7 @@ export function MostActiveDaysCard({
   testID,
 }: MostActiveDaysCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const medical = useMedicalPalette();
   const ringColors = useMemo(
     () => ringColorsProp ?? [chartHueTone(theme, 3).activeColor, chartHueTone(theme, 2).color, chartHueTone(theme, 4).color],
@@ -302,7 +302,7 @@ export function MostActiveDaysCard({
   };
 
   return (
-    <ChartCardSurface height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
+    <ChartCardSurface radius="radius-20" height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
       <MedicalHeader>
         <MedicalHeadline label={title} value={headline} format={format} suffix={suffix} testID={testID} />
         <WeekRangePill

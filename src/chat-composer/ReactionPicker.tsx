@@ -1,19 +1,23 @@
+import { useSurfaceFill } from '../styles/surface-levels';
+import { useCardFill } from '../card/use-card-fill';
+import { Surface } from '../surface';
 /**
  * The quick reaction bar: six glyphs and a "+" that hands over to the full
  * `EmojiPicker`. It is its own part rather than a mode of the picker because it
  * is shown in a different place (over a message, above its menu) and must stay
  * one row tall at 390px.
  */
-import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import React from 'react';
+import { View } from 'react-native';
 
+import { Button } from '../button';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { REACTION_PICKER_EMOJIS, resolveChatComposerPalette } from './shared';
 import type { ReactionPickerProps } from './types';
-import { dataHook, useChatComposerWebCss } from './web-hooks';
+import { useChatComposerWebCss } from './web-hooks';
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
@@ -34,14 +38,16 @@ export function ReactionPicker({
   emojiLabel,
 }: ReactionPickerProps) {
   const theme = useTheme();
+  const raisedFill = useCardFill(style);
+  const parentFill = useSurfaceFill();
+  const palette = resolveChatComposerPalette(theme, surface ? raisedFill : parentFill);
   const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
   const moreLabel = moreLabelProp ?? messages.moreReactions;
   const accessibilityLabel = accessibilityLabelProp ?? messages.quickReactions;
-  const palette = resolveChatComposerPalette(theme);
   useChatComposerWebCss();
-  const [hovered, setHovered] = useState<string | null>(null);
   const box = BOX[size];
 
+  const Container = surface ? Surface : View;
   const bar: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -52,68 +58,46 @@ export function ReactionPicker({
     paddingRight: 4,
     paddingTop: 4,
     paddingBottom: 4,
-    ...(surface
-      ? {
-          backgroundColor: palette.surface,
-          borderWidth: 1,
-          borderColor: palette.border,
-          boxShadow: palette.shadowPanel,
-        }
-      : null),
     '--bloom-chat-composer-ring': palette.focusRing,
   };
 
-  const cell = (key: string, active: boolean): WebCssStyle => ({
-    width: box,
-    height: box,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 9999,
-    backgroundColor: active
-      ? palette.accentSoft
-      : hovered === key
-        ? palette.hover
-        : 'transparent',
-    cursor: 'pointer',
-  });
+  const cell: WebCssStyle = {
+    width: box, height: box, minWidth: box, minHeight: box, flexShrink: 0, padding: 0, borderRadius: 9999,
+  };
 
   return (
-    <View
+    <Container
       accessibilityLabel={accessibilityLabel}
       style={[bar, style]}
       testID={testID}>
       {emojis.map((emoji) => {
         const active = selected === emoji;
         return (
-          <Pressable
+          <Button
             key={emoji}
-            {...dataHook('bloomChatComposerControl')}
-            accessibilityRole="button"
+            appearance="plain"
+            tone={active ? 'accent' : 'neutral'}
             accessibilityLabel={emojiLabel ? emojiLabel(emoji) : emoji}
-            aria-pressed={active}
-            accessibilityState={{ selected: active }}
+            pressed={active}
             onPress={() => onSelectEmoji?.(emoji)}
-            onHoverIn={() => setHovered(emoji)}
-            onHoverOut={() => setHovered(null)}
-            style={cell(emoji, active)}
+            style={cell}
             testID={testID ? `${testID}-${emoji}` : undefined}>
             <Text variant={GLYPH[size]}>{emoji}</Text>
-          </Pressable>
+          </Button>
         );
       })}
       {onMorePress ? (
-        <Pressable
-          {...dataHook('bloomChatComposerControl')}
-          accessibilityRole="button"
+        <Button
+          appearance="subtle"
+          tone="neutral"
           accessibilityLabel={moreLabel}
           onPress={onMorePress}
-          onHoverIn={() => setHovered('__more')}
-          onHoverOut={() => setHovered(null)}
-          style={[cell('__more', false), { backgroundColor: hovered === '__more' ? palette.hover : palette.inset }]}
-          testID={testID ? `${testID}-more` : undefined}>
-          <RiAddLine width={18} height={18} fill={palette.iconSecondary} />
-        </Pressable>
+          iconOnly
+          icon={RiAddLine}
+          iconSize={18}
+          style={cell}
+          testID={testID ? `${testID}-more` : undefined} />
       ) : null}
-    </View>
+    </Container>
   );
 }

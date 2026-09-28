@@ -105,7 +105,7 @@ export function SheetShell({
   const sheetStyle = useMemo(
     () => ({
       maxWidth: 500,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'transparent',
       ...surfaceStyle(SURFACE_SHAPES.panel),
     }),
     [theme.colors.background],
@@ -142,7 +142,7 @@ export function SheetShell({
           accessibilityLabel={label}
           className={contentClassName}
           testID={contentTestID}
-          style={[styles.body, { backgroundColor: theme.colors.background }, contentStyle]}
+          style={[styles.body, { backgroundColor: 'transparent' }, contentStyle]}
         >
           {children}
         </StyledView>

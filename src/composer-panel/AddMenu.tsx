@@ -1,5 +1,7 @@
+import { useComposerButton } from './context';
+import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,7 +18,6 @@ import { useComposerPopover } from './context';
 import { ADD_PANEL_WIDTH, CONTROL_SIZE, type ComposerPalette } from './shared';
 import type { ComposerPanelAddMenuGroup, ComposerPanelAddMenuRow, ComposerPanelLabels } from './types';
 import { InlineAside } from './InlineAside';
-import { dataHook } from './web-hooks';
 
 /** CSS `ease`. */
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -40,10 +41,10 @@ interface AddMenuProps {
  *           body-medium primary label + secondary description 6 after
  */
 export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuProps) {
+  const Button = useComposerButton();
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(0);
 
@@ -59,7 +60,6 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 9999,
-    backgroundColor: hovered ? palette.addHover : palette.add,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
@@ -77,22 +77,20 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
 
   return (
     <>
-      <Pressable
+      <Button appearance="subtle" tone="neutral" iconOnly
         ref={triggerRef}
         testID={testID}
-        {...dataHook('bloomComposerControl')}
         accessibilityRole="button"
         accessibilityLabel={labels.add}
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
-        style={triggerStyle}>
+
+        style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}>
         <Animated.View style={glyphStyle}>
           <RiAddLine width={20} height={20} fill={palette.iconPrimary} />
         </Animated.View>
-      </Pressable>
+      </Button>
 
       <Popover
         open={open}
@@ -137,21 +135,18 @@ function AddMenuRow({
   palette: ComposerPalette;
   onPress: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
+  const Button = useComposerButton();
+
   const Icon = row.icon;
   const iconSize = row.iconSize ?? 20;
   return (
-    <Pressable
-      {...dataHook('bloomComposerRow')}
+    <Button appearance="plain" tone="neutral"
       accessibilityRole="button"
       accessibilityLabel={row.description ? `${row.label} ${row.description}` : row.label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{
+      pressed={row.checked}
+
+      style={[COMPOSER_BUTTON_LAYOUT, {
         width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
@@ -161,9 +156,8 @@ function AddMenuRow({
         paddingRight: 8,
         paddingTop: 6,
         paddingBottom: 6,
-        backgroundColor: hovered || focused ? palette.hover : 'transparent',
         cursor: 'pointer',
-      }}>
+      }]} >
       {row.image ? (
         <View style={{ width: 24, height: 24, flexShrink: 0 }}>{row.image}</View>
       ) : Icon ? (
@@ -193,6 +187,6 @@ function AddMenuRow({
           )}
         </View>
       )}
-    </Pressable>
+    </Button>
   );
 }

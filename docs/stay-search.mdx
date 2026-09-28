@@ -6,6 +6,8 @@ order: 108
 
 # Stay Search
 
+StaySearchPanel composes Surface on its original dialog host, retaining its radius, dimensions and custom background overrides.
+
 Search for a place to stay by destination, dates and guests. On a wide screen
 that is `StaySearchBar` with a `StaySearchPanel` under the open segment; on a
 narrow one it is `StaySearchCompact`, which opens a sheet of `StaySearchStep`
@@ -104,8 +106,7 @@ parent is tall enough, or use the compact trigger and sheet on phones.
 
 ## StaySearchPanel
 
-The floating surface: the menu palette's surface and hairline, the menu shadow
-plus a wider ambient layer, radius 32. `width` (default: its content),
+The floating Surface uses the next neutral layer above its actual parent, with the shared rim and radius 32. An explicit background override remains authoritative. `width` (default: its content),
 `padding` (default 16), `accessibilityLabel` (names it as a `dialog` region).
 
 ### DestinationSuggestions

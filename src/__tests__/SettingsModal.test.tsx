@@ -18,6 +18,7 @@ import {
 import type { SettingsNavGroup } from '../settings-modal';
 import { resolveSettingsPalette } from '../settings-modal/palette';
 import { pressHost } from './support/press-host';
+import { useSurfaceFill } from '../styles/surface-levels';
 import { resolvedStyle } from './support/rendered-style';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
@@ -387,4 +388,12 @@ describe('palette and helpers', () => {
       borderButton: nd.border,
     });
   });
+});
+
+
+it.each(['light', 'dark'] as const)('publishes the actual settings page backing in %s mode', mode => {
+  function Probe() { return <RNText testID="surface-probe">{useSurfaceFill()}</RNText>; }
+  const { getByTestId } = renderWithTheme(<SettingsModal open onClose={() => {}} groups={GROUPS} pages={{general: {title: 'General', content: <Probe />}}} testID="settings" />, mode);
+  flush();
+  expect(getByTestId('surface-probe').props.children).toBe(resolvedStyle(getByTestId('settings').props.style).backgroundColor);
 });

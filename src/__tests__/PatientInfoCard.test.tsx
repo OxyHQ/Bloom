@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
@@ -23,7 +24,7 @@ function renderIn(ui: React.ReactElement) {
 describe('PatientInfoCard', () => {
   it('keeps the geometry: radius 20, padding 24/10/10, 15 apart; rows radius 10 padding 8/10', () => {
     const { getByTestId } = renderIn(<PatientInfoCard testID="card" name="Maya" details={DETAILS} />);
-    expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('card'))).toMatchObject({
       height: 330,
       borderRadius: 20,
       gap: 15,

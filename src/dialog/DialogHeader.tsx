@@ -512,7 +512,7 @@ let navScrimIdCounter = 0;
  * tail below it. A gradient spread over the full overlay left the title's own
  * row about two-thirds opaque, so rows passing behind it still showed through.
  * The fade uses `stopOpacity`, never alpha in `stopColor`: SVG drops an
- * embedded alpha (see `glass-colors.ts`).
+ * embedded alpha (see `surface/shared.ts`).
  */
 function NavScrim({ onImage, surface }: { onImage: boolean; surface: string }): React.ReactElement {
   const id = useMemo(() => `bloom-dialog-nav-scrim${navScrimIdCounter++}`, []);

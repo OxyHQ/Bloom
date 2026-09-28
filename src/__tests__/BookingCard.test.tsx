@@ -134,17 +134,15 @@ describe('booking helpers', () => {
 });
 
 describe('BookingCard', () => {
-  it('has the card geometry: max 372, radius 16, padding 24, 1px border', () => {
+  it('has the card geometry with the shared material rim', () => {
     mount(<BookingCard testID="card" price="$180" priceUnit="night" guests="1 guest" />);
     const s = getComputedStyle(byTestId('card'));
     expect(s.maxWidth).toBe('372px');
     expect(s.borderTopLeftRadius).toBe('16px');
     expect(s.paddingTop).toBe('24px');
     expect(s.paddingLeft).toBe('24px');
-    expect(s.borderTopWidth).toBe('1px');
-    const palette = resolveBookingPalette(theme());
-    expect(s.backgroundColor).toBe(css(palette.surface));
-    expect(s.borderTopColor).toBe(css(palette.border));
+    expect(s.borderTopWidth).toBe('0px');
+    expect(byTestId('card').querySelector('.bloom-surface-paint--solid')).not.toBeNull();
   });
 
   it('without dates: placeholders, "Check availability", no note', () => {

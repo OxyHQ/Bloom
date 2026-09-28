@@ -15,6 +15,8 @@ import {
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
 import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { resolveSurfaceFill } from '../surface/shared';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { ScreenScope } from '../layout';
 import { Z_INDEX } from '../styles/z-index';
@@ -67,6 +69,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         onDismiss,
         enablePanDownToClose = true,
         backgroundComponent,
+        backgroundFill,
         backdropComponent,
         style,
         enableHandlePanningGesture = true,
@@ -599,7 +602,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             },
             sheet: {
                 ...styles.sheet,
-                backgroundColor: colors.background,
+                backgroundColor: 'transparent',
                 ...(detached ? styles.sheetDetached : styles.sheetNormal),
             },
             scrollContent: {
@@ -609,6 +612,18 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             },
         });
     }, [colors.background, theme.isDark, detached]);
+
+    // The paint is absolute: gestures, measurements and layout stay on the existing sheet.
+    const flatSurfaceStyle = StyleSheet.flatten(style as StyleProp<ViewStyle>);
+    const surfaceFill = resolveSurfaceFill(String(backgroundFill ?? flatSurfaceStyle?.backgroundColor ?? colors.background), false, colors.background);
+    const surfaceRadius = flatSurfaceStyle?.borderRadius ?? flatSurfaceStyle?.borderTopLeftRadius ?? 24;
+    const surfaceCorners: ViewStyle = {
+        ...surfaceStyle({ curve: SURFACE_SHAPES.panel.curve }),
+        borderTopLeftRadius: flatSurfaceStyle?.borderTopLeftRadius ?? surfaceRadius,
+        borderTopRightRadius: flatSurfaceStyle?.borderTopRightRadius ?? surfaceRadius,
+        borderBottomLeftRadius: flatSurfaceStyle?.borderBottomLeftRadius ?? (detached ? surfaceRadius : 0),
+        borderBottomRightRadius: flatSurfaceStyle?.borderBottomRightRadius ?? (detached ? surfaceRadius : 0),
+    };
 
     // Publish the sheet's keyboard shared value to the shell so the native
     // shell's keyboard tracker can drive it. Kept stable
@@ -651,7 +666,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
               }
             : undefined;
 
-    // The sheet paints the PAGE colour, so it RESETS the ambient surface for
+    // The sheet uses the PAGE token as its tint and nominal surface, resetting
     // everything inside it. Without this a sheet rendered inside a `ContentPanel`
     // — web keeps React context across a portal — would tell its content it is
     // sitting on the panel's card, and in-sheet chrome would paint the column's
@@ -661,11 +676,9 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // it must follow the sheet's scroller rather than `window.scrollY`
     // (`layout/screen-scope.tsx`).
     const surfaceChildren = (
-        <SurfaceLevelProvider level={0} fill={colors.background}>
-            <SheetKeyboardProvider value={keyboardHeight}>
+        <SheetKeyboardProvider value={keyboardHeight}>
                 <ScreenScope>{children}</ScreenScope>
-            </SheetKeyboardProvider>
-        </SurfaceLevelProvider>
+        </SheetKeyboardProvider>
     );
 
     // Inner content: scrollable wraps in Animated.ScrollView, non-scrollable
@@ -674,7 +687,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     const scrollViewNode = (
         <Animated.ScrollView
             ref={scrollViewRef}
-            style={[styles.scrollView, webScrollbarStyle]}
+            style={[styles.scrollView, surfaceCorners, webScrollbarStyle]}
             contentContainerStyle={dynamicStyles.scrollContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
@@ -699,7 +712,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             // Legacy mode: native gesture wraps the scroll view to coordinate
             // with the always-active body pan.
             : <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>)
-        : <View style={styles.nonScrollableContent}>{surfaceChildren}</View>;
+        : <View style={[styles.nonScrollableContent, surfaceCorners, { overflow: 'hidden' }]}>{surfaceChildren}</View>;
 
     return (
         <Shell visible={rendered} onRequestClose={dismiss} keyboardHeight={keyboardHeight}>
@@ -742,15 +755,23 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                             // `--bloom-surface` on the element that carries the
                             // fill — web CSS under the sheet reads the sheet's
                             // colour, not the colour of whatever it opened over.
-                            surfaceFillVars(colors.background),
+                            surfaceFillVars(surfaceFill),
                             sheetMarginStyle,
                             sheetStyle,
                             sheetHeightStyle,
                             style,
+                            { backgroundColor: backgroundComponent ? surfaceFill : 'transparent' },
                         ]}
                     >
-                        {backgroundComponent?.({ style: styles.background })}
+                        {backgroundComponent ? backgroundComponent({ style: styles.background }) : (
+                            <View pointerEvents="none" style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}>
+                                <View pointerEvents="none" style={[StyleSheet.absoluteFill, { bottom: detached ? 0 : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24) }]}>
+                                    <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={surfaceRadius} />
+                                </View>
+                            </View>
+                        )}
 
+                        <SurfaceLevelProvider level={0} fill={surfaceFill}>
                         {handleSlot}
 
                         {bodyContent}
@@ -758,6 +779,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         {/* Sticky nav-header overlay (Dialog nav-header mode): floats
                             above the scroll body, clipped to the sheet's rounded top. */}
                         {headerOverlay}
+                        </SurfaceLevelProvider>
                     </Animated.View>
                 </GestureDetector>
             </View>
@@ -778,7 +800,6 @@ const styles = StyleSheet.create({
     sheet: {
         position: 'absolute',
         bottom: 0,
-        overflow: 'hidden',
         maxWidth: 800,
         alignSelf: 'center',
         marginHorizontal: 'auto',

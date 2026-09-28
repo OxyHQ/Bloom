@@ -1,3 +1,4 @@
+import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import React from 'react';
 import { Pressable, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -74,7 +75,7 @@ describe('Sidebar', () => {
       paddingTop: 12,
       paddingLeft: 12,
       paddingRight: 12,
-      backgroundColor: colors.backgroundSecondary,
+      backgroundColor: 'transparent',
       borderColor: colors.borderLight,
     });
     expect(panel.paddingHorizontal).toBeUndefined();
@@ -99,7 +100,7 @@ describe('Sidebar', () => {
     // The END edge, so the hairline faces the content in either direction.
     expect(panel.borderEndWidth).toBe(1);
     expect(panel.borderRightWidth).toBeUndefined();
-    expect(panel.backgroundColor).toBe(light.panel);
+    expect(panel.backgroundColor).toBe('transparent');
     // Docked chrome uses the shared hairline against the panel surface.
     expect(panel.borderEndColor).toBe(light.dockedEdge);
     expect(panel.borderEndColor).not.toBe(light.panelBorder);
@@ -485,4 +486,15 @@ it.each(['panel', 'rail'] as const)('centers only the %s main group, keeping its
   expect(resolvedStyle(footer.props.style).flexShrink).toBe(0);
   let parent = footer.parent;
   while (parent) { expect(parent).not.toBe(region); parent = parent.parent; }
+});
+
+function SidebarSurfaceProbe() {
+  return <Text testID="sidebar-surface-probe">{`${useSurfaceLevelValue()}:${useSurfaceFill()}`}</Text>;
+}
+it('publishes custom sidebar paint while plain sidebars inherit the enclosing surface', () => {
+  for (const surface of ['card', 'plain'] as const) {
+    const screen = renderIn(<SurfaceLevelProvider level={2} fill="#abcdef"><Sidebar surface={surface} style={surface === 'card' ? { backgroundColor: '#123456' } : undefined} footer={<SidebarSurfaceProbe />} /></SurfaceLevelProvider>);
+    expect(screen.getByTestId('sidebar-surface-probe').props.children).toBe(surface === 'card' ? '1:#123456' : '2:#abcdef');
+    screen.unmount();
+  }
 });

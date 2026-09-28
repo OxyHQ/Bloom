@@ -90,3 +90,6 @@ The context bar and every limit bar are `progressbar`s named by their label, wit
 | `labels?` | `{ contextWindow?, freeSpace?, planUsageLimits?, managePlan? }` | English | Fixed strings. |
 | `style?` | `StyleProp<ViewStyle>` | — | Card style. Override padding with longhands (`paddingLeft`, …). |
 | `testID?` | `string` | — | Also derives `-context-toggle`, `-context-bar`, `-breakdown`, `-plan-button`. |
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

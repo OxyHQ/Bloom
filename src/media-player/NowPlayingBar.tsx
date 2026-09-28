@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import { hairlineOn } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
@@ -111,9 +113,11 @@ function NowPlayingBarComponent({
       testID={id('devices')}
     />
   );
+  const backing = useSurfaceBacking(theme.colors.background, style);
   const showDevice = (!!devicePicker || !!onDevicePress) && (!narrow || casting);
 
   return (
+    <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
     <View
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
       style={[
@@ -130,6 +134,7 @@ function NowPlayingBarComponent({
           borderTopColor: hairlineOn(theme, theme.colors.background),
         },
         style,
+        backing.vars,
       ]}
       testID={testID}
       {...webDataSet({ bloomPlayerLayout: layout })}
@@ -260,6 +265,7 @@ function NowPlayingBarComponent({
         ) : null}
       </View>
     </View>
+    </SurfaceLevelProvider>
   );
 }
 

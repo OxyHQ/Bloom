@@ -351,7 +351,6 @@ export interface AppShellNavigationProps {
   value?: string;
   onValueChange?: (value: string) => void;
   navigationPlacement?: AppShellNavigationPlacement;
-  navigationMaterial?: 'solid' | 'translucent';
   /** Bottom action follows scroll collapse by hiding (default), or remains visible. */
   bottomActionBehavior?: 'hide' | 'visible';
   /** Web defaults to document; native to auto. Explicit auto owns a ScrollView.

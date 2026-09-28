@@ -11,7 +11,7 @@ import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useChartProgress } from './use-chart-progress';
 
@@ -113,7 +113,7 @@ export function SleepScoreCard({
   testID,
 }: SleepScoreCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const colors = useMemo(
     () =>
@@ -162,10 +162,10 @@ export function SleepScoreCard({
     `${title}: ${total} of ${totalMax}, ${verdict}. ${metrics.map((m) => `${m.label} ${m.score} of ${m.max}`).join(', ')}`;
 
   return (
-    <ChartCardSurface
+    <ChartCardSurface radius="radius-20"
       height={height}
       testID={testID}
-      style={[{ borderRadius: 20, paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
+      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
       <View
         style={{
           width: '100%',

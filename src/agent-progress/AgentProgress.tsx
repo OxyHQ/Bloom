@@ -1,3 +1,7 @@
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
@@ -828,6 +832,9 @@ function AgentProgressComponent({
   const { messages } = useMessages(AGENT_PROGRESS_MESSAGES);
   const steps = stepsProp ?? messages.defaultSteps;
   const theme = useTheme();
+  const surfaceLayer = useSurfaceLayer();
+  const customSurface = StyleSheet.flatten(style);
+  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
   const palette = resolvePalette(theme);
   const reducedMotion = useReducedMotion();
 
@@ -974,8 +981,7 @@ function AgentProgressComponent({
   };
 
   const cardStatic: ViewStyle = {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
+    backgroundColor: 'transparent',
     boxShadow: palette.shadow,
   };
   const stepMask: WebCssStyle = IS_WEB
@@ -996,8 +1002,10 @@ function AgentProgressComponent({
     <Animated.View
       aria-live="polite"
       testID={testID}
-      style={[styles.card, cardStatic, style, cardStyle]}
+      style={[styles.card, cardStatic, style, cardStyle, { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) }]}
     >
+      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
+      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
       <Presence
         show={minimized}
         initial={false}
@@ -1110,6 +1118,7 @@ function AgentProgressComponent({
           testID={`${testID}-ring`}
         />
       </Presence>
+      </SurfaceLevelProvider>
     </Animated.View>
   );
 }
@@ -1125,7 +1134,6 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     overflow: 'hidden',
     borderRadius: CARD_RADIUS,
-    borderWidth: 1,
   },
   fill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   bar: {

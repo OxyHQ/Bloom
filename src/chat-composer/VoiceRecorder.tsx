@@ -1,3 +1,5 @@
+import { useCardFill } from '../card/use-card-fill';
+import { Surface } from '../surface';
 /**
  * The bar while a voice message is being recorded, and after: a live meter
  * (`recording`), a hands-free one with explicit buttons (`locked`), and the
@@ -10,7 +12,7 @@
  * states impossible to screenshot.
  */
 import React, { useEffect, useState } from 'react';
-import { Pressable, View, type LayoutChangeEvent } from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -22,6 +24,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Button } from '../button';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
@@ -46,7 +49,7 @@ import {
   waveformBars,
 } from './shared';
 import type { VoiceRecorderProps } from './types';
-import { IS_WEB, dataHook, useChatComposerWebCss } from './web-hooks';
+import { IS_WEB, useChatComposerWebCss } from './web-hooks';
 import { useMessages } from '../locale/messages';
 import { CHAT_COMPOSER_MESSAGES } from './messages';
 
@@ -116,8 +119,7 @@ function Waveform({
         flexDirection: 'row',
         alignItems: 'center',
         gap: WAVE_BAR_GAP,
-        overflow: 'hidden',
-      }}
+          }}
       testID={testID}>
       {bars.map((level, index) => (
         <View
@@ -152,8 +154,8 @@ export function VoiceRecorder({
   accessibilityLabel,
 }: VoiceRecorderProps) {
   const theme = useTheme();
+  const palette = resolveChatComposerPalette(theme, useCardFill(style));
   const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
-  const palette = resolveChatComposerPalette(theme);
   useChatComposerWebCss();
   const labels = { ...voiceRecorderLabels(messages), ...labelOverrides };
   const preview = state === 'preview';
@@ -165,9 +167,6 @@ export function VoiceRecorder({
     gap: 10,
     minHeight: CONTROL_SIZE + BAR_PADDING * 2,
     borderRadius: BAR_RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
     paddingLeft: 12,
     paddingRight: BAR_PADDING,
     paddingTop: BAR_PADDING,
@@ -176,7 +175,7 @@ export function VoiceRecorder({
   };
 
   return (
-    <View
+    <Surface
       accessibilityLabel={accessibilityLabel ?? labels.recording}
       style={[bar, style]}
       testID={testID}>
@@ -229,18 +228,18 @@ export function VoiceRecorder({
       ) : null}
 
       {state === 'recording' && slideToCancel ? (
-        <Pressable
-          {...dataHook('bloomChatComposerControl')}
-          accessibilityRole="button"
+        <Button
+          appearance="plain"
+          tone="neutral"
           accessibilityLabel={labels.cancel}
           onPress={onCancel}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 2, height: 'auto', minHeight: 0, padding: 0 }}
           testID={testID ? `${testID}-slide` : undefined}>
           <RiArrowLeftSLine width={16} height={16} fill={palette.textSecondary} />
           <Text variant="caption-1-regular" style={{ color: palette.textSecondary }}>
             {labels.slideToCancel}
           </Text>
-        </Pressable>
+        </Button>
       ) : null}
 
       {state === 'recording' && !slideToCancel && onCancel ? (
@@ -287,6 +286,6 @@ export function VoiceRecorder({
           testID={testID ? `${testID}-send` : undefined}
         />
       ) : null}
-    </View>
+    </Surface>
   );
 }

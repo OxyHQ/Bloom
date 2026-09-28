@@ -1,8 +1,9 @@
+import { Button } from '../button/Button.web';
 import React from 'react';
 
 import { ComposerPanelBase } from './ComposerPanelBase';
 import { ComposerPopover } from './ComposerPopover.web';
-import { ComposerPopoverContext } from './context';
+import { ComposerPopoverContext, ComposerButtonContext } from './context';
 import type { ComposerPanelProps } from './types';
 
 /**
@@ -11,9 +12,11 @@ import type { ComposerPanelProps } from './types';
  */
 export function ComposerPanel(props: ComposerPanelProps) {
   return (
+    <ComposerButtonContext.Provider value={Button}>
     <ComposerPopoverContext.Provider value={ComposerPopover}>
       <ComposerPanelBase {...props} />
     </ComposerPopoverContext.Provider>
+    </ComposerButtonContext.Provider>
   );
 }
 ComposerPanel.displayName = 'ComposerPanel';

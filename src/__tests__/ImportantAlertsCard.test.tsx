@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -23,22 +24,20 @@ function renderIn(ui: React.ReactElement) {
 }
 
 describe('ImportantAlertsCard', () => {
-  it("keeps the card chrome: 330 tall, radius 20, a border in the card's own colour, no bottom padding", () => {
+  it("keeps card geometry with the shared material and no bottom padding", () => {
     const { getByTestId } = renderIn(<ImportantAlertsCard testID="card" alerts={ALERTS} count={12} />);
     const surfaces = resolveDashboardSurfaces(buildTheme('teal', 'light'));
-    const card = resolvedStyle(getByTestId('card').props.style);
+    const card = cardLayout(getByTestId('card'));
     expect(card).toMatchObject({
       height: 330,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: surfaces.secondary,
-      backgroundColor: surfaces.secondary,
       paddingTop: 10,
       paddingLeft: 10,
       paddingRight: 10,
       overflow: 'hidden',
     });
     expect(card.paddingBottom).toBeUndefined();
+    expect(cardFill(getByTestId('card'))).toBe(surfaces.secondary);
   });
 
   it('paints icon circles from the tone, and lets an explicit colour win', () => {

@@ -1,5 +1,7 @@
+import { useComposerButton } from './context';
+import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -22,7 +24,7 @@ import { useComposerPopover } from './context';
 import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { EFFORT_WIDTH, resolveComposerPalette, type ComposerPalette } from './shared';
 import type { ComposerStatusBarFolder, ComposerStatusBarProps } from './types';
-import { dataHook, useComposerWebCss } from './web-hooks';
+import { useComposerWebCss } from './web-hooks';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 
@@ -63,6 +65,7 @@ function StatusItem({
   expanded?: boolean;
   testID?: string;
 }) {
+  const Button = useComposerButton();
   const style: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,15 +75,14 @@ function StatusItem({
     '--bloom-composer-ring': palette.focusRing,
   };
   return (
-    <Pressable
+    <Button appearance="plain" tone="neutral"
       ref={triggerRef}
       testID={testID}
-      {...dataHook('bloomComposerControl')}
       accessibilityRole="button"
       accessibilityLabel={label}
-      {...(expanded === undefined ? null : { 'aria-expanded': expanded, accessibilityState: { expanded } })}
+      aria-expanded={expanded}
       onPress={onPress}
-      style={style}>
+      style={[COMPOSER_BUTTON_LAYOUT, style]}>
       {icon}
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
@@ -88,7 +90,7 @@ function StatusItem({
         </Text>
         {caret ? <Caret open={open} color={palette.iconSecondary} /> : null}
       </View>
-    </Pressable>
+    </Button>
   );
 }
 
@@ -103,30 +105,24 @@ function FolderRow({
   onPress: () => void;
   palette: ComposerPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
+  const Button = useComposerButton();
+
   return (
-    <Pressable
-      {...dataHook('bloomComposerRow')}
+    <Button appearance="plain" tone="neutral"
       accessibilityRole="button"
       accessibilityLabel={`${folder.prefix}${folder.name}`}
-      aria-pressed={selected}
-      accessibilityState={{ selected }}
+      pressed={selected}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{
+
+      style={[COMPOSER_BUTTON_LAYOUT, {
         width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
         padding: 8,
         borderRadius: 10,
-        backgroundColor: selected || hovered || focused ? palette.hover : 'transparent',
         cursor: 'pointer',
-      }}>
+      }]} >
       <RiFolder2Line width={20} height={20} fill={palette.iconSecondary} />
       <Text variant="body-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.textSecondary }}>
         {folder.prefix}
@@ -134,7 +130,7 @@ function FolderRow({
           {folder.name}
         </Text>
       </Text>
-    </Pressable>
+    </Button>
   );
 }
 

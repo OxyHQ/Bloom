@@ -120,3 +120,6 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
 });
+
+TabBarSurface.resolveFill = (theme: TabBarSurfaceProps['theme']) =>
+  AnimatedGlassView !== null && glassIsUsable() ? theme.glassTint : theme.solidFallback;

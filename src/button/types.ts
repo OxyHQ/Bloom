@@ -1,7 +1,7 @@
 import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
 import type { ComponentType, ReactNode } from 'react';
-import type { GestureResponderEvent, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { GestureResponderEvent, LayoutChangeEvent, ViewProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -76,6 +76,16 @@ export type ButtonSize = BloomSize
   | 'icon';
 
 export interface ButtonProps {
+  onLayout?: (event: LayoutChangeEvent) => void;
+  'aria-hidden'?: boolean;
+  accessibilityElementsHidden?: boolean;
+  importantForAccessibility?: ViewProps['importantForAccessibility'];
+  /** Explicit paired brand fill and label; preserves semantic geometry. */
+  colors?: { background: string; foreground: string };
+  /** Preview lifecycle; activation remains onPress. */
+  onPressIn?: () => void;
+  onPressOut?: () => void;
+  onLongPress?: (event: GestureResponderEvent) => void;
   /** Toggle state, announced on web and native. Omit for ordinary actions. */
   pressed?: boolean;
   /** Keep an embedded action from also activating its parent. Default false. */
@@ -84,7 +94,7 @@ export interface ButtonProps {
   tone?: BloomTone;
   leading?: ReactNode;
   trailing?: ReactNode;
-  onPress?: () => void;
+  onPress?: (event: GestureResponderEvent) => void;
   children?: React.ReactNode;
   disabled?: boolean;
 
@@ -203,7 +213,7 @@ export interface ButtonProps {
 
   accessibilityLabel?: string;
   accessibilityHint?: string;
-  hitSlop?: { top: number; bottom: number; left: number; right: number };
+  hitSlop?: number | { top: number; bottom: number; left: number; right: number };
   testID?: string;
   className?: string;
 

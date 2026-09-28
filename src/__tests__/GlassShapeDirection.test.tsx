@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { GlassSurface } from '../glass/GlassSurface';
+import { SurfacePaint } from '../surface/SurfacePaint';
 
 function flatten(style: unknown): Record<string, unknown> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flatten));
@@ -12,7 +12,7 @@ describe('Glass surface logical corners', () => {
   it('mirrors the clipping pane and its rim together', () => {
     const tree = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <GlassSurface
+        <SurfacePaint
           fill="#336699"
           shape={{ radius: { topStart: 20, bottomEnd: 8 }, curve: 'smooth' }}
           direction="rtl"

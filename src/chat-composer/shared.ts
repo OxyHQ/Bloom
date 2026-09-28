@@ -102,17 +102,17 @@ export function withAlpha(color: string, alpha: number): string {
   return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${alpha})`;
 }
 
-export function resolveChatComposerPalette(theme: Theme): ChatComposerPalette {
+export function resolveChatComposerPalette(theme: Theme, backing?: string): ChatComposerPalette {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
-  const surface = theme.colors.card;
+  const surface = backing ?? theme.colors.card;
   const textPaint = surfaceTextOn(theme, surface);
   return {
     surface,
     page: theme.colors.background,
     hover: surfaceFillOn(theme, surface),
     hoverStrong: hairlineOn(theme, surface),
-    inset: theme.colors.backgroundSecondary,
+    inset: backing ? surfaceFillOn(theme, surface) : theme.colors.backgroundSecondary,
     border: hairlineOn(theme, surface),
     text: theme.colors.text,
     textSecondary: textPaint.textSecondary,

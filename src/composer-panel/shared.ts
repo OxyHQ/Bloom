@@ -7,8 +7,7 @@
  */
 import type { ComponentType } from 'react';
 
-import { BUTTON_SHADOW, resolveButtonPalette } from '../button/shared';
-import type { ButtonPalette } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import type { Props as IconProps } from '../icons/shared';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
@@ -60,9 +59,6 @@ export interface ComposerPalette {
   iconTertiary: string;
   /** `composer-panel-tab-background`. */
   tab: string;
-  /** `composer-panel-add-background` / `-hover-background`. */
-  add: string;
-  addHover: string;
   /** `composer-panel-tile-border`. */
   tileBorder: string;
   /** `composer-panel-rail-background`. */
@@ -86,8 +82,6 @@ export interface ComposerPalette {
   shadowPicker: string;
   /** Provider marks: black at 30% as exported, inverted in dark. */
   logo: string;
-  /** Main task action, every state. */
-  send: ButtonPalette;
 }
 
 /** Re-emit a resolved colour at `alpha` (parse-and-re-emit, never string concatenation). */
@@ -116,8 +110,6 @@ export function resolveComposerPalette(theme: Theme): ComposerPalette {
     iconSecondary: c.textSecondary,
     iconTertiary: c.textTertiary,
     tab: c.backgroundTertiary,
-    add: c.backgroundTertiary,
-    addHover: c.backgroundSecondary,
     tileBorder: c.borderLight,
     rail: c.backgroundSecondary,
     ringTrack: c.borderLight,
@@ -132,7 +124,6 @@ export function resolveComposerPalette(theme: Theme): ComposerPalette {
     shadowCard: '0 1px 0.5px 0 rgba(0, 0, 0, 0.02), 0 4px 2px 0 rgba(0, 0, 0, 0.02)',
     shadowPicker: '0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 4px 8px 0 rgba(0, 0, 0, 0.02)',
     logo: dark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-    send: resolveButtonPalette('solid', theme, 'action'),
   };
 }
 
@@ -278,9 +269,6 @@ export const COMPOSER_WEB_CSS = `
   outline: none;
   transition: background-color ${TRANSITION_MS}ms ease, opacity ${TRANSITION_MS}ms ease, color ${TRANSITION_MS}ms ease;
 }
-[data-bloom-composer-control="send"] {
-  transition: opacity 200ms ease;
-}
 [data-bloom-composer-control]:focus-visible {
   outline: 2px solid var(--bloom-composer-ring);
   outline-offset: 0;
@@ -289,7 +277,6 @@ export const COMPOSER_WEB_CSS = `
   text-underline-offset: 3px;
 }
 [data-bloom-composer-control="offset"]:focus-visible,
-[data-bloom-composer-control="send"]:focus-visible,
 [data-bloom-composer-control="link"]:focus-visible {
   outline-offset: 2px;
 }
@@ -328,24 +315,6 @@ export const COMPOSER_WEB_CSS = `
 }
 [data-bloom-composer-pill] [data-bloom-composer-control] {
   transition: background-color 480ms ease, border-color 480ms ease, box-shadow 480ms ease, opacity 200ms ease;
-}
-[data-bloom-composer-glass-rim] {
-  pointer-events: none;
-  padding: 0.3px;
-  background: conic-gradient(
-    from 134deg,
-    rgba(0, 0, 0, 0.1) 0deg,
-    rgba(186, 186, 186, 0.38) 70deg,
-    rgba(0, 0, 0, 0.011) 140deg,
-    rgba(255, 255, 255, 0.48) 180deg,
-    rgba(0, 0, 0, 0.011) 220deg,
-    rgba(186, 186, 186, 0.38) 290deg,
-    rgba(0, 0, 0, 0.1) 360deg
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
 }
 @media (prefers-reduced-motion: reduce) {
   [data-bloom-composer-pill] [data-bloom-composer-control] { transition: none; }

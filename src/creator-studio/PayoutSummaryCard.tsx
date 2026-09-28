@@ -10,7 +10,6 @@ import { ChartCardSurface } from '../chart-cards/primitives/ChartCardSurface';
 import { TABULAR } from '../chart-cards/primitives/ChartHeader';
 import { describeDeltaRatio, groupThousands } from '../chart-cards/primitives/format';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
-import { useChartCardPalette } from '../chart-cards/primitives/use-chart-palette';
 import { roundedBarPath, singleBarSlot } from '../chart-cards/rounded-bar-geometry';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { Chip } from '../chip';
@@ -22,6 +21,7 @@ import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { PayoutSummaryCardLabels, PayoutSummaryCardProps } from './types';
 
+import { useChartCardSurfacePalette } from '../chart-cards/primitives/use-chart-palette';
 /**
  * `PayoutSummaryCard`: what the artist has earned and when it arrives.
  *
@@ -62,7 +62,7 @@ function PayoutSummaryCardComponent({
 }: PayoutSummaryCardProps) {
   const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const labels = { ...messages.payout, ...labelOverrides };
   const tone = useMemo(() => chartHueTone(theme, 6), [theme]);
   const [activeIndex, setActiveIndex] = useActiveIndex(months.length, undefined, undefined);

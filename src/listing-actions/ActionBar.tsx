@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, { memo, useContext, useMemo } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -58,6 +60,7 @@ export function ActionBarView({
   const inset = bottomInset ?? insets?.bottom ?? 0;
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
+  const backing = useSurfaceBacking(palette.page, style);
   const barStyle: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,7 +75,8 @@ export function ActionBarView({
   };
 
   return (
-    <View testID={testID} style={[barStyle, style]}>
+    <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
+    <View testID={testID} style={[barStyle, style, backing.vars]}>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <BookingPrice
           price={price}
@@ -130,6 +134,7 @@ export function ActionBarView({
         </Button>
       </View>
     </View>
+    </SurfaceLevelProvider>
   );
 }
 

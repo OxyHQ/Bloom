@@ -1,64 +1,21 @@
 ---
 title: FrostedIconButton
-description: A translucent icon button for use over media, where a normal button has nothing to sit on.
+description: A circular Button adapter with controlled toggle state and precise icon geometry.
 order: 65
 ---
 
 # FrostedIconButton
 
-A circular icon button with a blurred, translucent background. It is for
-controls that float **over content** — a close button on a photo viewer, a
-mute toggle on a video, a back button over a hero image.
+`FrostedIconButton` composes the shared Button material. Its historical name no longer selects a separate blur engine: the default is the same opaque fill, sheen and rim as other buttons.
 
 ```tsx
 import { FrostedIconButton } from '@oxy.so/bloom/frosted-icon-button';
 
-<FrostedIconButton
-  icon={CloseIcon}
-  accessibilityLabel="Close"
-  onPress={close}
-/>
+<FrostedIconButton icon={CloseIcon} accessibilityLabel="Close" onPress={close} />
 ```
 
-The icon is a component receiving `width`, `height` and `fill`; `children` is not an icon alias. Size and tone inherit from `BloomScope`; `tone` controls the solid active state.
+Sizes `xs`, `sm`, `md`, `lg` draw 28, 32, 36, 44px circles; a number sets an exact diameter. Icon size follows the existing geometry. Size and tone inherit from BloomScope. The unchecked state is neutral; checked uses the selected semantic tone and exposes `aria-pressed` on web and selected accessibility state on native.
 
-For a controlled toggle, pass `checked` and `onCheckedChange`. The callback receives the next boolean. `onPress` remains available for ordinary actions and runs alongside the toggle callback when both are supplied; disabled controls call neither.
+`onCheckedChange` receives the next boolean; `onPress` also runs when supplied. Web additionally calls `onClick`. Disabled controls call none of them. Caller style, className, native hitSlop, accessibility name and web form props remain on the actual Button root.
 
-## Which prop decides what
-
-| prop       | decides                                             |
-| ---------- | ---------------------------------------------------- |
-| `icon`     | the glyph                                            |
-| `size`     | `xs` · `sm` · `md` · `lg`, or a number                             |
-| `checked`   | a persistent on state, for a toggle                  |
-| `disabled` | dims and disables                                    |
-| `hitSlop`  | the touch target beyond the drawn circle             |
-
-## Why it exists rather than a `Button` variant
-
-Over arbitrary media there is no background to be legible against: a photo can
-be white here and black there. The frosted fill blurs whatever is behind it so
-the glyph keeps its contrast wherever the button lands, which is not something
-a solid or ghost button can do.
-
-That also means it is the wrong choice **on** a surface. Over a card or a page
-background, frosting blurs a flat colour — it costs a blur pass to look like a
-slightly muddy circle. Use `Button`'s icon form there.
-
-## Always give it a label
-
-An icon-only button announces as "button" and nothing else. `accessibilityLabel`
-is not decoration here; it is the entire accessible name.
-
-## `hitSlop` for small buttons
-
-A 32px circle over media is usually near a screen edge and pressed with a
-thumb. `hitSlop` grows the target without growing the drawn button, which is
-preferable to drawing something bigger than the design calls for.
-
-## Web-only props
-
-`onClick`, `title`, `id`, `type` and `aria-label` are on the shared type so one
-call site type-checks on both platforms. They are consumed by the web fork,
-which renders a real DOM `<button>`, and are no-ops on native. Prefer
-`onPress` and `accessibilityLabel`, which work on both.
+The native and web entry points bind the same adapter to their respective Button implementation. No extra layout wrapper, per-control blur, animated scale, palette or interaction stylesheet remains. Keeping className on the parent-laid-out root avoids the former native layout bug where an animation wrapper absorbed sizing utilities.

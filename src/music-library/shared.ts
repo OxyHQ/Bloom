@@ -232,23 +232,24 @@ export interface MusicLibraryPaint {
  * sit on, in light and dark, without a fixed ramp stop that happens to match
  * one page colour. Text and accents come from the neutral and accent ramps.
  */
-export function resolveMusicLibraryPaint(theme: Theme): MusicLibraryPaint {
+export function resolveMusicLibraryPaint(theme: Theme, backing?: string): MusicLibraryPaint {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
-  const { background, text } = theme.colors;
+  const { text } = theme.colors;
+  const background = backing ?? theme.colors.background;
   const step = (light: number, darkAlpha: number) => mixColor(background, text, dark ? darkAlpha : light);
   return {
     accent: accent[500],
     text,
-    textMuted: surfaceTextOn(theme, step(0.03, 0.05)).textSecondary,
-    surface: step(0.03, 0.05),
+    textMuted: surfaceTextOn(theme, backing ?? step(0.03, 0.05)).textSecondary,
+    surface: backing ?? step(0.03, 0.05),
     hover: step(0.07, 0.1),
     selected: step(0.11, 0.16),
     placeholder: step(0.11, 0.16),
     field: step(0.06, 0.09),
     fieldHover: step(0.1, 0.14),
     fieldFocusBorder: text,
-    divider: hairlineOn(theme, step(0.03, 0.05)),
+    divider: hairlineOn(theme, backing ?? step(0.03, 0.05)),
     ring: accent[500],
   };
 }

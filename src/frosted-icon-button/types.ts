@@ -10,7 +10,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
  *     header/overlay action.
  *
  * A raw pixel `number` is also accepted for an exact diameter; the icon box is
- * derived as `round(size * 0.56)` (min 16px) and the blur radius scales with it.
+ * derived as `round(size * 0.56)` (min 16px) and its paint comes from Button.
  */
 export type FrostedIconButtonSize = BloomSize;
 
@@ -23,9 +23,8 @@ export interface FrostedIconButtonProps {
   tone?: BloomTone;
 
   /**
-   * Solid "on" state for toggles. When true the button drops its translucency
-   * and backdrop blur and fills with the brand `primary` token (icon tinted
-   * `primaryForeground`), so an enabled toggle reads unmistakably as active.
+   * Solid "on" state for toggles. When true the button uses the chosen
+   * semantic tone and its paired foreground, so an enabled toggle reads unmistakably as active.
    * Exposed to assistive tech as `aria-pressed` (web) / the selected a11y state.
    */
   checked?: boolean;

@@ -42,6 +42,20 @@ describe('Button', () => {
     expect(getByText('Click me')).toBeTruthy();
   });
 
+  it('keeps arrays and fragments of raw text in a native Text host', () => {
+    const { getByText } = renderWithTheme(<Button>{['Hello', <React.Fragment key="tail"> world</React.Fragment>]}</Button>);
+    expect(getByText('Hello world')).toBeTruthy();
+  });
+
+  it('keeps custom layout children outside Text hosts', () => {
+    const { getByTestId } = renderWithTheme(<Button><View testID="custom-content"><Text>Custom</Text></View></Button>);
+    let parent = getByTestId('custom-content').parent;
+    while (parent) {
+      expect(parent.type).not.toBe(Text);
+      parent = parent.parent;
+    }
+  });
+
   it('calls onPress when pressed', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
@@ -199,7 +213,7 @@ describe('layout: the button IS the node its parent lays out', () => {
     const palette = resolveButtonPalette('outline', theme, 'neutral');
     const { getByTestId } = renderWithTheme(<Button testID="icon" className="flex-1" appearance="outline" tone="neutral" />);
     const style = resolvedStyle(getByTestId('icon').props.style);
-    expect(style.backgroundColor).toBe(palette.rest.background);
+    expect(style.backgroundColor).toBe('transparent');
     expect(style.borderColor).toBe(palette.rest.border);
     expect(style.borderWidth).toBe(1);
     expect(classNamesOn(getByTestId('icon').props.style)).toContain('flex-1');
@@ -427,11 +441,11 @@ describe('button details', () => {
     expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 16, height: 16 });
   });
 
-  it('IconButton dims to 0.6 when disabled', () => {
+  it('IconButton retains material opacity when disabled', () => {
     const { getByTestId } = renderWithTheme(
       <Button testID="btn" disabled leading={<View />} accessibilityLabel="More" appearance="outline" tone="neutral" />,
     );
-    expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBe(0.5);
+    expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBe(1);
   });
 
   it('LinkButton has no container: no height, no padding, a 4px gap', () => {
@@ -468,11 +482,11 @@ describe('button details', () => {
 });
 
 describe('filled button material', () => {
-  it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)('renders two different opaque SVG stops for %s', tone => {
+  it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)('renders the shared three-stop sheen for %s', tone => {
     const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
     const stops = screen.UNSAFE_getAllByType(Stop).map(stop => stop.props.stopColor);
-    expect(stops).toHaveLength(2);
-    expect(stops[0]).not.toBe(stops[1]);
+    expect(stops).toHaveLength(3);
+    expect(stops[0]).not.toBe(stops[2]);
     expect(stops.every(color => typeof color === 'string' && !color.startsWith('rgba'))).toBe(true);
   });
 });

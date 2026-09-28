@@ -1,3 +1,6 @@
+import { useCardFill } from '../card/use-card-fill';
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 
@@ -64,7 +67,8 @@ function TripCardComponent({
 }: TripCardProps) {
   const { messages } = useMessages(BOOKING_MESSAGES);
   const theme = useTheme();
-  const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
+  const fill = useCardFill(style);
+  const palette = useMemo(() => ({ ...resolveBookingPalette(theme), surface: fill, tile: surfaceFillOn(theme, fill), highlight: surfaceFillOn(theme, fill) }), [theme, fill]);
   const resolver = useImageResolver();
   useEffect(() => {
     adoptStyleSheet(BOOKING_STYLE_ID, BOOKING_WEB_CSS);
@@ -89,10 +93,6 @@ function TripCardComponent({
   const hideContent = onPress != null;
 
   const cardStyle: ViewStyle = {
-    borderRadius: TRIP_CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
   };
 
   const overlayStyle: WebCssStyle = {
@@ -114,7 +114,7 @@ function TripCardComponent({
     : null;
 
   return (
-    <View testID={testID} onLayout={onLayout} style={[cardStyle, style]}>
+    <Card radius="radius-16" elevation="none" testID={testID} onLayout={onLayout} style={[cardStyle, style]}>
       {onPress ? (
         <Pressable
           {...webDataSet({ bloomBookingFocus: '' })}
@@ -197,7 +197,7 @@ function TripCardComponent({
           ) : null}
         </View>
       </View>
-    </View>
+    </Card>
   );
 }
 

@@ -6,6 +6,8 @@ order: 82
 
 # Sidebar
 
+Plain sidebars inherit the enclosing surface. Painted variants publish their resolved fill, and a custom background override supplies that paint rather than sitting underneath it.
+
 The floating dashboard sidebar with its team and account menus. Every row, person and link is a prop; the component owns only interaction state (collapse, search, the two menus).
 
 ```tsx
@@ -276,3 +278,7 @@ as a group in the space **above** the persistent footer, in both panel and rail.
 The destination region can still shrink and scroll on short screens. Keep an
 account control in `footer`; avoid centering the whole sidebar with `style`,
 which also moves its footer. The default `start` preserves existing placement.
+
+## Shared material
+
+Card and docked sidebar surfaces paint the shared opaque Surface material with its gradient and rim beneath their contents; plain surfaces and the navigation rail retain their existing fill. The current logo, modes, scoped sizes, tree, custom content, RTL layout, safe edges and scroll behavior are unchanged. Storybook: **Blocks / Sidebar / Glass Panel**.

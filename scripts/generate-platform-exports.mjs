@@ -53,6 +53,7 @@ const SUBPATHS = /** @type {const} */ ([
   // name is gone — two identical files were dead weight.)
   ['./provider', 'provider/index.ts'],
   ['./surfaces', 'surfaces/index.ts'],
+  ['./surface', 'surface/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
   // The locale Bloom's own strings and dates speak in (`LocaleProvider`).
   ['./locale', 'locale/index.ts'],
@@ -339,6 +340,11 @@ const WEB_FORKED_SUBPATHS = new Set([
   './connection-status',
   './media-flight',
   './surfaces',
+  './surface',
+  './button-group',
+  './social-button',
+  './zoomable-media-gallery',
+  './zoomable-image-gallery',
   './portal',
   './dialog',
   './button',
@@ -361,6 +367,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './motion',
   './composer-loader',
   './composer-panel',
+  './chat-composer',
   './agent-chat',
   './ai-chat',
   // NOT web-forked: the toast engine is ONE universal implementation that runs
@@ -689,6 +696,13 @@ function discoverWebBarrels() {
     }
   };
   walk(SRC);
+  // Bootstrap a newly published fork as well as refreshing existing barrels.
+  // The generator owns their creation; no empty hand-written barrel is needed.
+  for (const [name, source] of SUBPATHS) {
+    if (WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source) && !found.includes(source)) {
+      found.push(source);
+    }
+  }
   return found.sort();
 }
 
@@ -718,8 +732,12 @@ function resolveSpecifier(fromDir, specifier) {
 }
 
 /** Whether a resolved stem has a `.web` fork beside it. */
+const publishedWebBarrelStems = new Set(SUBPATHS
+  .filter(([name, source]) => WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source))
+  .map(([, source]) => join(SRC, source.slice(0, -3))));
+
 function hasWebFork(stem) {
-  return existsSync(`${stem}.web.ts`) || existsSync(`${stem}.web.tsx`);
+  return publishedWebBarrelStems.has(stem) || existsSync(`${stem}.web.ts`) || existsSync(`${stem}.web.tsx`);
 }
 
 /**

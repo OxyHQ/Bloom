@@ -144,3 +144,7 @@ tint halo and a semibold title, `upcoming` draws a hollow marker and secondary t
 Everything is React Native views; the only web-only addition is the keyboard focus ring,
 adopted once as a constructed stylesheet. Hover washes are colour changes that simply do
 not fire on touch.
+
+## Shared card shell
+
+HousingCard composes Bloom `Card` for tenancy, eviction and place-review blocks. It keeps radius 20, optional 20px padding and medium elevation while delegating the material and nested backing to Card. Status colors, timeline markers and selection behavior remain with their semantic components; `padded={false}` keeps edge-to-edge list layouts.

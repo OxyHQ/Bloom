@@ -205,7 +205,7 @@ describe('no surface picks its own depth', () => {
     'popover/Popover.web.tsx',
     'tooltip/Tooltip.tsx',
     'tooltip/Tooltip.web.tsx',
-    'zoomable-media-gallery/ZoomableMediaGallery.tsx',
+    'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx',
     'media-flight/MediaFlightLayer.tsx',
     // `AvatarGroup.web.tsx` and `HoverCard.web.tsx` both float their card in
     // this one panel, so it is the file that presents the surface.

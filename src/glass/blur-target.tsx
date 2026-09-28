@@ -45,7 +45,7 @@ import type { GlassBlurTargetProviderProps, GlassBlurWindowProps } from './types
  * surface it painted before. The crashing topology is not reachable by writing
  * the wrong thing; it is unreachable because the value is absent there.
  *
- * `expo-blur` is a REQUIRED peer that `GlassSurface` already imports statically,
+ * `expo-blur` is a REQUIRED peer that `SurfacePaint` already imports statically,
  * so importing `BlurTargetView` here adds no package to any graph and needs no
  * optional-`require` boundary.
  *

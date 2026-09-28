@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useComposerButton } from './context';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -10,16 +11,13 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { paintToCssImage, type ButtonStatePaint } from '../button/shared';
-import { DISABLED_OPACITY } from '../styles/tokens';
 import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiMic2Line } from '../icons/remix/RiMic2Line';
 import { RiStopFill } from '../icons/remix/RiStopFill';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { CONTROL_SIZE, TRANSITION_MS, type ComposerPalette } from './shared';
-import { dataHook, IS_WEB } from './web-hooks';
+import { CONTROL_SIZE, type ComposerPalette } from './shared';
+import { IS_WEB } from './web-hooks';
 
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
@@ -94,8 +92,8 @@ function SwapLayer({ shown, children }: { shown: boolean; children: React.ReactN
 }
 
 /**
- * Voice input: a 36px bordered white disc with
- * shadow-xs whose mic crossfades to four dancing accent-500 bars (2.5 wide, 2.5
+ * Voice input: a 36px shared Button surface with
+ * a mic that crossfades to four dancing accent-500 bars (2.5 wide, 2.5
  * apart) while listening.
  */
 export function MicButton({
@@ -107,34 +105,14 @@ export function MicButton({
   listening: boolean;
   onToggle: () => void;
   label: string;
-  palette: ComposerPalette;
+  palette: Pick<ComposerPalette, 'accent500' | 'iconPrimary'>;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const style: WebCssStyle = {
-    position: 'relative',
-    width: CONTROL_SIZE,
-    height: CONTROL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 9999,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: hovered ? palette.hover : palette.surface,
-    boxShadow: palette.shadowXs,
-    cursor: 'pointer',
-    '--bloom-composer-ring': palette.focusRing,
-  };
+  const Button = useComposerButton();
   return (
-    <Pressable
-      {...dataHook('bloomComposerControl')}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      aria-pressed={listening}
-      accessibilityState={{ selected: listening }}
-      onPress={onToggle}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      style={style}>
+    <Button
+      appearance="solid" tone="neutral" size="md" iconOnly
+      accessibilityLabel={label} pressed={listening} onPress={onToggle}
+      style={{ width: CONTROL_SIZE, height: CONTROL_SIZE, flexShrink: 0, paddingLeft: 0, paddingRight: 0 }}>
       <SwapLayer shown={listening}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2.5 }}>
           {MIC_BARS.map((bar, index) => (
@@ -145,151 +123,26 @@ export function MicButton({
       <SwapLayer shown={!listening}>
         <RiMic2Line width={20} height={20} fill={palette.iconPrimary} />
       </SwapLayer>
-    </Pressable>
+    </Button>
   );
 }
 
-let gradientId = 0;
-
-/** A two-stop top-to-bottom fill: a CSS gradient on web, an SVG rect on native. */
-function GradientFill({ paint, opacity = 1 }: { paint: ButtonStatePaint; opacity?: number }) {
-  const id = useMemo(() => `bloom-composer-send-${gradientId++}`, []);
-  const [top, bottom] = paint.gradient ?? [paint.background, paint.background];
-  if (IS_WEB) {
-    const style: WebCssStyle = {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      borderRadius: 9999,
-      backgroundImage: paintToCssImage(paint),
-      opacity,
-      transitionProperty: 'opacity',
-      transitionDuration: `${TRANSITION_MS}ms`,
-      transitionTimingFunction: 'ease',
-    };
-    return <View pointerEvents="none" style={style} />;
-  }
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity }}>
-      <Svg width="100%" height="100%">
-        <Defs>
-          <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={top} />
-            <Stop offset="1" stopColor={bottom} />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" rx={CONTROL_SIZE / 2} fill={`url(#${id})`} />
-      </Svg>
-    </View>
-  );
-}
-
-/**
- * Send (`bg-button-primary` disc): the accent gradient, its hover
- * gradient crossfading in over 150ms, the active gradient while held; disabled
- * paints the disabled gradient at the disabled opacity (200ms). Its 20px arrow uses the paired foreground.
- */
-export function SendButton({
-  disabled,
-  onPress,
-  label,
-  palette,
-}: {
-  disabled: boolean;
-  onPress: () => void;
-  label: string;
-  palette: ComposerPalette;
+/** Send delegates its material, state colours and accessible disabled behavior to Button. */
+export function SendButton({ disabled, onPress, label }: {
+  disabled: boolean; onPress: () => void; label: string;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
-  const paint = palette.send;
-  const base = disabled ? paint.disabled : pressed ? paint.active : paint.rest;
-  const style: WebCssStyle = {
-    position: 'relative',
-    width: CONTROL_SIZE,
-    height: CONTROL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 9999,
-    opacity: disabled ? DISABLED_OPACITY : 1,
-    cursor: disabled ? 'auto' : 'pointer',
-    '--bloom-composer-ring': palette.focusRing,
-  };
-  return (
-    <Pressable
-      {...dataHook('bloomComposerControl', 'send')}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      aria-disabled={disabled || undefined}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
-      onPress={onPress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      style={style}>
-      <GradientFill paint={base} />
-      {disabled ? null : <GradientFill paint={paint.hover} opacity={hovered && !pressed ? 1 : 0} />}
-      {/* Its own positioned box, so it paints above the absolutely placed fills. */}
-      <View pointerEvents="none" style={{ position: 'relative', width: 20, height: 20 }}>
-        <RiArrowUpLine width={20} height={20} fill={(hovered && !pressed && !disabled ? paint.hover : base).foreground} />
-      </View>
-    </Pressable>
-  );
+  const Button = useComposerButton();
+  return <Button appearance="solid" tone="action" size="md" iconOnly icon={RiArrowUpLine} iconSize={20}
+    disabled={disabled} onPress={onPress} accessibilityLabel={label}
+    style={{ width: CONTROL_SIZE, height: CONTROL_SIZE, flexShrink: 0, paddingLeft: 0, paddingRight: 0 }} />;
 }
 
-/**
- * Stop — send's other state, drawn on the same disc so the action sits where the
- * reader last pressed: the accent gradient (hover and active crossfading like
- * send's) with a white 20px stop mark.
- *
- * It takes no `disabled`. The composer's `disabled` locks the draft for the
- * whole turn, and the one thing that must stay possible for that whole turn is
- * cancelling it.
- */
-export function StopButton({
-  onPress,
-  label,
-  palette,
-}: {
-  onPress?: () => void;
-  label: string;
-  palette: ComposerPalette;
+/** Cancellation stays enabled while the composer's draft/send controls are disabled. */
+export function StopButton({ onPress, label }: {
+  onPress?: () => void; label: string;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
-  const paint = palette.send;
-  const base = pressed ? paint.active : paint.rest;
-  const style: WebCssStyle = {
-    position: 'relative',
-    width: CONTROL_SIZE,
-    height: CONTROL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 9999,
-    cursor: 'pointer',
-    '--bloom-composer-ring': palette.focusRing,
-  };
-  return (
-    <Pressable
-      {...dataHook('bloomComposerControl', 'stop')}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      style={style}>
-      <GradientFill paint={base} />
-      <GradientFill paint={paint.hover} opacity={hovered && !pressed ? 1 : 0} />
-      {/* Its own positioned box, so it paints above the absolutely placed fills. */}
-      <View pointerEvents="none" style={{ position: 'relative', width: 20, height: 20 }}>
-        <RiStopFill width={20} height={20} fill="#ffffff" />
-      </View>
-    </Pressable>
-  );
+  const Button = useComposerButton();
+  return <Button appearance="solid" tone="action" size="md" iconOnly icon={RiStopFill} iconSize={20}
+    onPress={onPress} accessibilityLabel={label}
+    style={{ width: CONTROL_SIZE, height: CONTROL_SIZE, flexShrink: 0, paddingLeft: 0, paddingRight: 0 }} />;
 }

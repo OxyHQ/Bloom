@@ -57,9 +57,9 @@ const FAMILIES = [
   },
   {
     name: 'FrostedIconButton',
-    styleId: 'bloom-frosted-icon-button-web-css',
-    selector: '.bloom-frosted-icon-btn',
-    varPrefix: 'bloom-frosted',
+    styleId: 'bloom-button-web-css',
+    selector: '.bloom-btn',
+    varPrefix: 'bloom-btn',
     element: <FrostedIconButton accessibilityLabel="Back" icon={() => <span />} />,
   },
   {

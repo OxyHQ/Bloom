@@ -146,12 +146,13 @@ Hovering clears whenever recharts reports no active tooltip: over the axes the c
 
 Series use the canonical nine-colour palette in token order. A series `color` overrides it; without an `activeColor`, the supplied colour is darkened 18% towards black.
 
-| | light | dark | Token |
-|---|---|---|---|
-| grid | neutral-200 | neutral-800 | `chart-track` |
-| cursor | neutral-300 | neutral-700 | `chart-cursor` |
-| tiles | card | neutral-800 at 60% over the card | `background-inner` |
-| pill | card / hover neutral-100 / border neutral-200 | neutral-800 / neutral-700 at 60% / neutral-700 | `background-primary`, `border-button` |
+| Chrome | Resolved backing |
+|---|---|
+| grid / track | one neutral step from the actual card fill |
+| cursor | hairline computed on the card fill |
+| tiles | one neutral step from the card fill |
+| pill | tile fill, another step on hover, hairline on that tile |
+
 
 ## Deviations
 
@@ -186,3 +187,9 @@ import type { SparklineProps } from '@oxy.so/bloom/chart-cards/sparkline';
 It reuses the same themed SVG implementation exported by `chart-cards`, with
 identical props on web and native. It does not link the full-size chart cards
 or their controls in Metro, which does not tree-shake barrel exports.
+
+## Shared card material
+
+Chart shells compose `Card`, including Tokens, Agents and Contributions. Their sizing, plot geometry and interactions remain chart-owned; Card owns the solid gradient/rim and publishes the actual backing for nested components. Neutral tracks, inset tiles and quiet labels derive from that backing, including an explicit `style.backgroundColor`. Data-series colors and positive/negative semantic pairs remain unchanged.
+
+The internal root palette hook resolves the upcoming card; descendant primitives read the already-published fill. This prevents both fixed page colors inside nested cards and accidental double advancement of the surface layer.

@@ -1,3 +1,5 @@
+import { useCardFill } from '../card/use-card-fill';
+import { Surface } from '../surface';
 /**
  * A controlled, presentational emoji grid.
  *
@@ -16,6 +18,7 @@
  * straight to its header instead of estimating.
  */
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Button } from '../button';
 import { FlatList, Pressable, TextInput, View } from 'react-native';
 
 import { RiEmotionLine } from '../icons/remix/RiEmotionLine';
@@ -83,7 +86,7 @@ export function EmojiPicker({
   accessibilityLabel: accessibilityLabelProp,
 }: EmojiPickerProps) {
   const theme = useTheme();
-  const palette = resolveChatComposerPalette(theme);
+  const palette = resolveChatComposerPalette(theme, useCardFill(style));
   useChatComposerWebCss();
   const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? messages.emojiPicker;
@@ -177,13 +180,11 @@ export function EmojiPicker({
             const base = emojiChar(entry);
             const char = applySkinTone(base, tone);
             return (
-              <Pressable
+              <Button appearance="plain" tone="neutral"
                 key={`${base}-${i}`}
-                {...dataHook('bloomChatComposerControl', 'inset')}
-                accessibilityRole="button"
                 accessibilityLabel={entryName(entry, char)}
                 onPress={() => onSelectEmoji?.(char)}
-                style={{
+                style={{ padding: 0, minWidth: 0, minHeight: 0, flexShrink: 0,
                   width: EMOJI_CELL,
                   height: EMOJI_CELL,
                   alignItems: 'center',
@@ -192,7 +193,7 @@ export function EmojiPicker({
                 }}
                 testID={testID ? `${testID}-emoji-${base}` : undefined}>
                 <Text variant="title-2-regular">{char}</Text>
-              </Pressable>
+              </Button>
             );
           })}
         </View>
@@ -203,16 +204,11 @@ export function EmojiPicker({
 
   const panel: WebCssStyle = {
     borderRadius: PANEL_RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    boxShadow: palette.shadowPanel,
     paddingTop: 8,
     paddingBottom: 8,
     paddingLeft: 8,
     paddingRight: 8,
     gap: 8,
-    overflow: 'hidden',
     '--bloom-chat-composer-ring': palette.focusRing,
   };
 
@@ -220,7 +216,7 @@ export function EmojiPicker({
   const activeCustom = tabs?.find((t) => t.key === tab);
 
   return (
-    <View accessibilityLabel={accessibilityLabel} style={[panel, style]} testID={testID}>
+    <Surface accessibilityLabel={accessibilityLabel} style={[panel, style]} testID={testID}>
       {tabs && tabs.length > 0 ? (
         <View
           accessibilityRole="tablist"
@@ -296,14 +292,11 @@ export function EmojiPicker({
                 testID={testID ? `${testID}-search` : undefined}
               />
             </View>
-            <Pressable
-              {...dataHook('bloomChatComposerControl')}
-              accessibilityRole="button"
+            <Button appearance="plain" tone="neutral"
               accessibilityLabel={labels.skinTone}
               aria-expanded={toneOpen}
-              accessibilityState={{ expanded: toneOpen }}
               onPress={() => setToneOpen(!toneOpen)}
-              style={{
+              style={{ padding: 0, minWidth: 0, minHeight: 0, flexShrink: 0,
                 width: 32,
                 height: 32,
                 alignItems: 'center',
@@ -313,7 +306,7 @@ export function EmojiPicker({
               }}
               testID={testID ? `${testID}-skin-tone` : undefined}>
               <Text variant="body-regular">{SKIN_TONE_SWATCHES[tone] ?? SKIN_TONE_SWATCHES[0]}</Text>
-            </Pressable>
+            </Button>
           </View>
 
           {toneOpen ? (
@@ -323,18 +316,15 @@ export function EmojiPicker({
               {SKIN_TONE_SWATCHES.map((swatch, index) => {
                 const selected = index === tone;
                 return (
-                  <Pressable
+                  <Button appearance="plain" tone="neutral"
                     key={index}
-                    {...dataHook('bloomChatComposerControl')}
-                    accessibilityRole="button"
                     accessibilityLabel={`${labels.skinTone} ${index + 1}`}
-                    aria-pressed={selected}
-                    accessibilityState={{ selected }}
+                    pressed={selected}
                     onPress={() => {
                       setTone(index);
                       setToneOpen(false);
                     }}
-                    style={{
+                    style={{ padding: 0, minWidth: 0, minHeight: 0, flexShrink: 0,
                       width: 30,
                       height: 30,
                       alignItems: 'center',
@@ -344,7 +334,7 @@ export function EmojiPicker({
                     }}
                     testID={testID ? `${testID}-skin-tone-${index}` : undefined}>
                     <Text variant="body-regular">{swatch}</Text>
-                  </Pressable>
+                  </Button>
                 );
               })}
             </View>
@@ -410,6 +400,6 @@ export function EmojiPicker({
           )}
         </>
       )}
-    </View>
+    </Surface>
   );
 }

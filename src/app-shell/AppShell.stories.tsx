@@ -22,7 +22,6 @@ const meta: Meta<typeof AppShell> = {
     "active": { control: 'boolean' },
     "value": { control: 'text' },
     "navigationPlacement": { control: 'select', options: ["auto","bottom","rail","sidebar"] },
-    "navigationMaterial": { control: 'select', options: ["solid","translucent"] },
     "bottomActionBehavior": { control: 'select', options: ["visible","hide"] },
     "scroll": { control: 'select', options: ["document","container","fixed","auto","external"] },
     "title": { control: 'text' },

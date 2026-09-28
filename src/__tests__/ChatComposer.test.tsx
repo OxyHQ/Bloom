@@ -34,6 +34,8 @@ import {
   filterEmojiGroups,
   formatRecordingTime,
 } from '../chat-composer';
+import { ComposerIconButton as WebComposerIconButton } from '../chat-composer/ComposerIconButton.web';
+import { RiAddLine } from '../icons/remix/RiAddLine';
 import { waveformBars } from '../chat-composer/shared';
 import type { ChatComposerSuggestion, EmojiGroup } from '../chat-composer/types';
 
@@ -743,5 +745,48 @@ describe('EmojiPicker', () => {
     expect(byTestId('e').textContent).toContain('gif content');
     expect(byTestId('e-tab-gifs').getAttribute('aria-selected')).toBe('true');
     expect(cells()).toEqual([]);
+  });
+});
+
+describe('ComposerIconButton shared web Button', () => {
+  it('keeps dimensions and menu ARIA on the actual button', () => {
+    const ref = React.createRef<React.ElementRef<typeof WebComposerIconButton>>();
+    mount(<WebComposerIconButton ref={ref} icon={RiAddLine} size={28} iconSize={16} accessibilityLabel="Attach" aria-expanded aria-haspopup="menu" testID="control" />);
+    const control = byTestId('control');
+    expect(control.tagName).toBe('BUTTON');
+    expect(ref.current).not.toBeNull();
+    expect(ref.current).toBe(control);
+    expect(control.classList.contains('bloom-btn')).toBe(true);
+    expect(control.style.width).toBe('28px');
+    expect(control.style.height).toBe('28px');
+    expect(control.getAttribute('aria-expanded')).toBe('true');
+    expect(control.getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('forwards a recording hold and releases it on pointer cancellation', () => {
+    jest.useFakeTimers();
+    try {
+      const onPressIn = jest.fn();
+      const onPressOut = jest.fn();
+      const onLongPress = jest.fn();
+      mount(<WebComposerIconButton icon={RiAddLine} accessibilityLabel="Record" onPressIn={onPressIn} onPressOut={onPressOut} onLongPress={onLongPress} testID="control" />);
+      act(() => byTestId('control').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 })));
+      expect(onPressIn).toHaveBeenCalledTimes(1);
+      act(() => jest.advanceTimersByTime(500));
+      expect(onLongPress).toHaveBeenCalledTimes(1);
+      act(() => document.dispatchEvent(new MouseEvent('pointercancel', { bubbles: true })));
+      expect(onPressOut).toHaveBeenCalledTimes(1);
+    } finally { jest.useRealTimers(); }
+  });
+
+  it('blocks disabled activation and recording preview', () => {
+    const onPress = jest.fn();
+    const onPressIn = jest.fn();
+    mount(<WebComposerIconButton icon={RiAddLine} accessibilityLabel="Record" disabled onPress={onPress} onPressIn={onPressIn} testID="control" />);
+    expect((byTestId('control') as HTMLButtonElement).disabled).toBe(true);
+    press(byTestId('control'));
+    act(() => byTestId('control').dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 })));
+    expect(onPress).not.toHaveBeenCalled();
+    expect(onPressIn).not.toHaveBeenCalled();
   });
 });

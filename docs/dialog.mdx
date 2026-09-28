@@ -311,3 +311,7 @@ Bottom-sheet on small screens, left drawer on `md` and wider:
 ```
 
 Removed exports: `CenteredDialog`, `CenteredDialogProps`, `BLOOM_CENTERED_DIALOG_CSS`, `CENTERED_DIALOG_BACKDROP_TESTID`, `ResponsiveSheet`, `@oxy.so/bloom/responsive-sheet` subpath.
+
+The default panel uses Bloom’s shared solid `SurfacePaint` with its gradient and rim. The paint is absolute inside the existing measured panel, so gestures, focus, imperative controls and layout retain their hosts. Explicit caller backgrounds and BottomSheet’s `backgroundComponent` remain overrides. The nominal surface color still supplies descendant tokens; the default fill is opaque and independent of the backdrop.
+
+Dialog panels publish level 0 with the exact opaque fill sent to SurfacePaint. Explicit style backgrounds are resolved against the page backing once and shared by paint, descendant context and web surface variables; opening inside a card does not leak its level into the dialog.

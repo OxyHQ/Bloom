@@ -11,12 +11,12 @@ import { describeDeltaRatio } from './primitives/format';
 import { MultiAxisPlot } from './primitives/MultiAxisPlot';
 import { PeriodChartHeader } from './primitives/PeriodChartHeader';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { roundedBarPath, singleBarSlot } from './rounded-bar-geometry';
 import { lerp, useChartProgress } from './use-chart-progress';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `EarningsChartCard` ("Earned so far"): rounded bars standing in full-height
  * tracks, a Weekly / Monthly / Yearly switcher and a count-up headline that
@@ -123,7 +123,7 @@ export function EarningsChartCard({
   testID,
 }: EarningsChartCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
   const data = selected?.data ?? dataProp ?? [];
   const headline = selected?.headline ?? headlineProp;

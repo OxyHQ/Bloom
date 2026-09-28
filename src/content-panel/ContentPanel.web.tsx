@@ -86,6 +86,7 @@
  * `md:` parts — whole class strings are selected per mode instead).
  */
 import React, { memo, useInsertionEffect } from 'react';
+import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -154,6 +155,11 @@ const RESPONSIVE_WEB: Record<
 // without reaching adjacent controls. CSS owns
 // responsive framing, including the sticky inset inherited by PageHeader.
 const PANEL_INSET_CSS = `
+@media (width < 500px) { [data-bloom-panel-material][data-bloom-panel-material="500"]::after { content: none; } }
+@media (width < 640px) { [data-bloom-panel-material][data-bloom-panel-material="640"]::after { content: none; } }
+@media (width < 768px) { [data-bloom-panel-material][data-bloom-panel-material="768"]::after { content: none; } }
+@media (width < 1024px) { [data-bloom-panel-material][data-bloom-panel-material="1024"]::after { content: none; } }
+
 [data-bloom-panel] { --bloom-panel-sticky-top: 0px; }
 [data-bloom-panel="framed"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); }
 @media (min-width: 500px) { [data-bloom-panel="500"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
@@ -197,6 +203,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const panelChrome = useOptionalPanelChrome();
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
+  const defaultFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, undefined);
+  const materialStyle = useSurfaceMaterial('[data-bloom-panel-material]', 'bloom-content-panel-material');
 
   // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
   // `false` → never framed (full-bleed).
@@ -283,7 +291,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     <ContentPanelNestingContext.Provider value={true}>
       <StyledView
         testID="content-panel-surface"
-        {...{ dataSet: { bloomPanel: boundToPanel || framed === false ? 'none' : responsive ? String(framedFrom) : 'framed' } }}
+        {...{ dataSet: { bloomPanelMaterial: defaultFill && framed !== false ? (framed === true ? 'framed' : String(framedFrom)) : undefined, bloomPanel: boundToPanel || framed === false ? 'none' : responsive ? String(framedFrom) : 'framed' } }}
         className={surfaceClass}
         style={[
           // `--bloom-surface` rides the element that carries the fill, so CSS
@@ -291,6 +299,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           // disagree about what the panel painted.
           surfaceFillVars(publishedFill),
           insetVars,
+          materialStyle,
           surfaceStyle,
         ]}
       >

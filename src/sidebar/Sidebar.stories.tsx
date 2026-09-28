@@ -543,3 +543,10 @@ export const PrimaryAction: Story = {
     return <View style={{ height: 900, maxWidth: '100%' }}><Sidebar {...args} testID="action-sidebar" style={{ height: '100%', maxWidth: '100%' }} onCollapsedChange={collapsed => updateArgs({ collapsed })} onModeChange={mode => updateArgs({ mode })} onNavigate={item => updateArgs({ selected: item.key })} /></View>;
   },
 };
+
+/** Shared material while retaining the current sidebar navigation API. */
+export const GlassPanel: Story = {
+  render: () => <div style={{ padding: 24, height: 760, width: 'fit-content', borderRadius: 28, background: 'url(https://raw.githubusercontent.com/lucasromerodb/liquid-glass-effect-macos/refs/heads/main/assets/flowers.jpg) center / 500px' }}>
+    <Sidebar testID="sidebar-glass" items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} account={DEMO_ACCOUNT} team={DEMO_TEAM} selected="home" />
+  </div>,
+};

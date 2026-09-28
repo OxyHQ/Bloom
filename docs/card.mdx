@@ -77,7 +77,7 @@ one next to it. Worse, on web it is tempting to reach for classes —
 Tailwind pipeline**. That failure is silent: the card renders as an unbordered
 transparent block, nothing throws, and it looks like a spacing bug.
 
-`Card` applies background, border, radius and shadow as resolved inline tokens,
+`Card` resolves border, radius and shadow from tokens and delegates fill to Surface,
 so the surface paints with or without a consumer's CSS pipeline.
 
 ## Pressable cards
@@ -92,10 +92,9 @@ is a `button` (the default).
 
 ## Clipping
 
-The outer card stays unclipped so its shadow and focus indicator remain visible.
-Use `clipContent` for full-bleed media. This creates one inner clipping layer;
-put its child layout and padding in `contentStyle`. `style` and `className`
-still target the outer node that the parent lays out.
+`Card` uses the shared Surface material (`material="solid"` by default, retaining the gradient and rim; `material="glass"` opts into translucent refraction), while preserving the current appearance, tone and compatibility variant APIs. On native, the outer node keeps its shadow unclipped; an inner content node clips cover images and receives resolved padding, gap and child layout. Web retains one content layout node, where CSS overflow clips children without clipping the box shadow, preserving utility-class layout.
+A surface that must *not* clip — because it has an Android elevation, or
+because a child deliberately overflows — opts out through `style`:
 
 ```tsx
 <Card clipContent radius="radius-20" contentStyle={{ gap: 12 }} />
@@ -116,33 +115,20 @@ spacing and type conventions, not requirements. A card with entirely custom
 content is a normal thing; use the parts when you want the same rhythm as every
 other card.
 
-## `Card` does not publish a surface
+`LinkPreviewCard` composes Card and inherits this material without a separate glass implementation.
 
-A `ContentPanel` tells its children what they are sitting on — level 1 of the
-ladder in [Styles](/docs/bloom/main/styles), plus the colour it actually painted
-— and a `Card` deliberately does not, even though it paints the same colour. The
-difference is ownership: a panel is a surface Bloom paints and keeps painting,
-while a `Card` is a box a consumer routinely repaints through `style` /
-`className`, and a fill Bloom cannot guarantee is worse than none — every
-`TextField`, `Tabs` rail, hovered row and `SettingsListGroup` inside it would
-then step off a colour that is not there. (`ContentPanel` hits the same wall when
-it IS repainted, and answers it with an explicit `surfaceColor` prop rather than
-a guess.)
+`appearance="plain"` is an unpainted container: it does not mount SurfacePaint or add a gradient/rim. Explicit caller backgrounds, borders and elevation remain authoritative. This differs from the legacy `variant="plain"`, which retains its solid, unelevated contract.
 
-So a component that needs to know what is behind it inside a card is still told:
-pass `SettingsListGroup`'s `variant`, or publish the surface yourself for a card
-you know you have not repainted. `SurfaceLevelProvider` ships on the `styles`
-subpath, not the root barrel:
+## Parent-aware surface hierarchy
 
-```tsx
-import { SurfaceLevelProvider } from '@oxy.so/bloom/styles';
+Neutral, non-plain cards keep `colors.card` on the page and derive nested fills from the actual parent surface. The published level caps at three; the fill continues to step from its parent, so deeper cards do not collapse into the same colour. Children receive both the resolved fill through `SurfaceLevelProvider` and its web CSS variable.
 
-<Card>
-  <SurfaceLevelProvider level={1} fill={colors.card}>
-    <SettingsListGroup title="Account">…</SettingsListGroup>
-  </SurfaceLevelProvider>
-</Card>
-```
+Explicit style backgrounds (including resolved class utilities) take precedence. Translucent solid fills are composited against the known parent before painting and publishing. Coloured semantic tones preserve their authored fill/foreground pairs. Glass publishes that same composite as an estimate for descendants; it cannot describe the exact refracted backdrop.
 
-Pass `fill` as well as `level`: the level says how deep the subtree is, the fill
-says what you actually painted, and it is the fill everything inside steps off.
+`appearance="plain"` adds neither material nor a hierarchy step. Its transparent background preserves the inherited fill. An explicit background on a plain card updates the published fill at the current level.
+
+
+Backgrounds resolved by the styled adapter into `style` participate in this contract. CSS-only paint that never reaches those resolved styles cannot be inferred without reading the DOM; use an explicit `style.backgroundColor` when descendants must follow a custom web fill. The hierarchy publishes the base fill, not sheen, images, gradients or disabled-opacity composites. No runtime style observer is installed.
+
+
+`ref` and `onLayout` address the outer card host in both passive and pressable forms. Responsive card families reuse that measurement rather than adding a layout wrapper. Dashboard, chart, booking, tenancy and specialized cards compose this base; their custom content retains its geometry and semantic colours while neutral fills derive from the surrounding surface.

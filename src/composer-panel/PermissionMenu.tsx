@@ -1,3 +1,5 @@
+import { useComposerButton } from './context';
+import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { useRef, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
@@ -49,11 +51,11 @@ export function PermissionMenu({
   labels,
   testID,
 }: PermissionMenuProps) {
+  const Button = useComposerButton();
   const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const [selected, setSelected] = useControllableState<string>({
     value,
     defaultValue: defaultValue ?? permissions[0]?.id ?? '',
@@ -76,19 +78,15 @@ export function PermissionMenu({
 
   return (
     <>
-      <Pressable
+      <Button appearance="plain" tone="neutral"
         ref={triggerRef}
         testID={testID}
-        {...dataHook('bloomComposerControl')}
         accessibilityRole="button"
         accessibilityLabel={messages.permissionTrigger(current.label)}
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
-        style={({ pressed }) => {
-          const trigger: WebCssStyle = {
+        style={[COMPOSER_BUTTON_LAYOUT, {
             // At least 30, never exactly: at the largest system font the label
             // is taller than 30 and a fixed height clipped it top and bottom.
             // A long mode name truncates at a width that still reads as a chip.
@@ -104,12 +102,8 @@ export function PermissionMenu({
             paddingBottom: 5,
             paddingLeft: 8,
             paddingRight: 10,
-            backgroundColor: hovered || pressed || open ? palette.hover : 'transparent',
             cursor: 'pointer',
-            '--bloom-composer-ring': palette.focusRing,
-          };
-          return trigger;
-        }}>
+        }]} >
         <View style={current.flip ? [FLIP, { flexShrink: 0 }] : { flexShrink: 0 }}>
           <CurrentIcon width={16} height={16} fill={palette.iconSecondary} />
         </View>
@@ -120,7 +114,7 @@ export function PermissionMenu({
           style={{ flexShrink: 1, minWidth: 0, color: palette.textSecondary }}>
           {current.label}
         </Text>
-      </Pressable>
+      </Button>
 
       <Popover
         open={open}
@@ -137,7 +131,7 @@ export function PermissionMenu({
               {labels.permissions}
             </Text>
             {onLearnMore ? (
-              <LearnMore palette={palette} label={labels.learnMore} onPress={onLearnMore} />
+              <LearnMore label={labels.learnMore} onPress={onLearnMore} />
             ) : null}
           </View>
           <View
@@ -215,36 +209,9 @@ function PermissionRow({
 }
 
 /** A secondary small `LinkButton`, a step lighter: tertiary, underline on hover. */
-function LearnMore({
-  palette,
-  label,
-  onPress,
-}: {
-  palette: ComposerPalette;
-  label: string;
-  onPress: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <Pressable
-      {...dataHook('bloomComposerControl', 'link')}
-      accessibilityRole="link"
-      accessibilityLabel={label}
-      onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      style={{ flexShrink: 0, borderRadius: 4, cursor: 'pointer' }}>
-      {({ pressed }) => (
-        <Text
-          variant="body-medium"
-          numberOfLines={1}
-          style={{
-            color: pressed ? palette.text : palette.textTertiary,
-            textDecorationLine: hovered ? 'underline' : 'none',
-          }}>
-          {label}
-        </Text>
-      )}
-    </Pressable>
-  );
+function LearnMore({ label, onPress }: { label: string; onPress: () => void }) {
+  const Button = useComposerButton();
+  return <Button variant="link" linkTone="text" underline="hover" size="sm"
+    accessibilityRole="link" accessibilityLabel={label} onPress={onPress}
+    style={COMPOSER_BUTTON_LAYOUT}>{label}</Button>;
 }

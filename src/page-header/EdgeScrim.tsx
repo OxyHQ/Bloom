@@ -41,8 +41,8 @@ import { useSvgIdPrefix } from '../styles/svg-id';
  *
  * `react-native-svg` parses `stopColor` for its RGB and DISCARDS the alpha
  * channel, so an `rgba(…, 0.4)` stop renders at FULL strength on native and
- * correctly on web. That is the exact defect documented on `GLASS_SHEEN` in
- * `theme/glass-colors.ts`, where it painted an Android pane as an achromatic
+ * correctly on web. That is the exact defect documented on `SURFACE_SHEEN` in
+ * `surface/shared.ts`, where it painted an Android pane as an achromatic
  * white-to-black wipe while every gate stayed green. The colour and the opacity
  * travel here in separate props for the same reason.
  *
@@ -65,7 +65,7 @@ import { useSvgIdPrefix } from '../styles/svg-id';
  *
  * From `useSvgIdPrefix`, which is `useId` with React's punctuation stripped.
  * Two headers on one page (a split view) must not resolve each other's
- * `url(#…)`, and a module-scope counter — which is what `GlassSurface` uses,
+ * `url(#…)`, and a module-scope counter — which is what `SurfacePaint` uses,
  * and which is right for a native-only surface — increments in a different
  * order on the server than during hydration, so an SSR'd page would reference a
  * gradient that is not there.

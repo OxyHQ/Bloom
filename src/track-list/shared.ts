@@ -115,19 +115,19 @@ export interface TrackListPaint {
   panelShadow: string;
 }
 
-export function resolveTrackListPaint(theme: Theme): TrackListPaint {
+export function resolveTrackListPaint(theme: Theme, backing = theme.colors.background): TrackListPaint {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const menu = resolveMenuPalette(theme);
   return {
     text: theme.colors.text,
-    textMuted: surfaceTextOn(theme, theme.colors.background).textSecondary,
+    textMuted: surfaceTextOn(theme, backing).textSecondary,
     accent: dark ? accent[400] : accent[600],
-    rowHover: surfaceFillOn(theme, theme.colors.background),
+    rowHover: surfaceFillOn(theme, backing),
     rowSelected: theme.colors.contrast50,
-    rowSelectedHover: surfaceFillOn(theme, surfaceFillOn(theme, theme.colors.background)),
-    hairline: hairlineOn(theme, theme.colors.background),
-    coverPlaceholder: surfaceFillOn(theme, theme.colors.background),
+    rowSelectedHover: surfaceFillOn(theme, surfaceFillOn(theme, backing)),
+    hairline: hairlineOn(theme, backing),
+    coverPlaceholder: surfaceFillOn(theme, backing),
     ring: accent[500],
     dragSurface: menu.surface,
     dragShadow: dark

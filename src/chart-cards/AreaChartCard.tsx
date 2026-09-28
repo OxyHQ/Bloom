@@ -10,7 +10,7 @@ import { ChartLegend } from './primitives/ChartLegend';
 import { ChartStatTiles } from './primitives/ChartStatTiles';
 import { compactNumber, describeDeltaRatio, formatNumber, percentTick } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange } from './primitives/use-chart-range';
 import { resolveTone } from './palette';
 import type { AreaChartCardProps, AreaPoint, AreaSeries } from './types';
@@ -81,7 +81,7 @@ export function AreaChartCard({
   style,
   testID,
 }: AreaChartCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 

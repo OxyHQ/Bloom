@@ -1,3 +1,5 @@
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
@@ -170,7 +172,8 @@ function ImportantAlertsCardComponent({
   testID,
 }: ImportantAlertsCardProps) {
   const theme = useTheme();
-  const surfaces = useMemo(() => resolveDashboardSurfaces(theme), [theme]);
+  const fill = useCardFill(style);
+  const surfaces = useMemo(() => resolveDashboardSurfaces(theme, fill), [theme, fill]);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -185,11 +188,12 @@ function ImportantAlertsCardComponent({
   const feedHook: WebDataSet = IS_WEB ? { dataSet: { bloomAlertsFeed: '' } } : {};
 
   return (
-    <View
+    <Card radius="radius-20" elevation="none" clipContent
+      contentStyle={styles.cardContent}
       testID={testID}
       style={[
         styles.card,
-        { height, backgroundColor: surfaces.secondary, borderColor: surfaces.secondary },
+        { height },
         style,
       ]}
     >
@@ -274,7 +278,7 @@ function ImportantAlertsCardComponent({
         </ScrollView>
         <TopFade color={surfaces.secondary} visible={scrolled} />
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -285,10 +289,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     minWidth: 0,
+  },
+  cardContent: {
     gap: 16,
-    overflow: 'hidden',
-    borderRadius: 20,
-    borderWidth: 1,
     paddingTop: 10,
     paddingLeft: 10,
     paddingRight: 10,

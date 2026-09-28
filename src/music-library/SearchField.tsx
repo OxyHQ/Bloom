@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
@@ -79,7 +80,8 @@ function SearchFieldComponent({
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
-  const paint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
+  const fill = useSurfaceFill();
+  const paint = useMemo(() => resolveMusicLibraryPaint(theme, fill), [theme, fill]);
   const inputRef = useRef<TextInput>(null);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);

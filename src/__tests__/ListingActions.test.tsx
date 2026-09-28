@@ -162,7 +162,7 @@ describe('computeMortgage', () => {
 // ---------------------------------------------------------------------------
 
 describe('the shared action-card chrome', () => {
-  it('draws every card with BookingCard’s shell: max 372, radius 16, padding 24, hairline, surface', () => {
+  it('draws every card with BookingCard’s shell: max 372, radius 16, padding 24 and shared material', () => {
     mount(
       <>
         <BookingCard testID="booking" price="$180" guests="1 guest" />
@@ -171,7 +171,6 @@ describe('the shared action-card chrome', () => {
         <ExchangeProposalCard testID="exchange" yourHome={{ title: 'A' }} theirHome={{ title: 'B' }} />
       </>,
     );
-    const palette = resolveBookingPalette(theme());
     const reference = getComputedStyle(byTestId('booking'));
     for (const id of ['rental', 'sale', 'exchange']) {
       const s = getComputedStyle(byTestId(id));
@@ -179,9 +178,8 @@ describe('the shared action-card chrome', () => {
       expect(s.borderTopLeftRadius).toBe('16px');
       expect(s.paddingTop).toBe('24px');
       expect(s.paddingLeft).toBe('24px');
-      expect(s.borderTopWidth).toBe('1px');
-      expect(s.backgroundColor).toBe(css(palette.surface));
-      expect(s.borderTopColor).toBe(css(palette.border));
+      expect(s.borderTopWidth).toBe('0px');
+      expect(byTestId(id).querySelector('.bloom-surface-paint--solid')).not.toBeNull();
       expect(s.boxShadow).toBe(reference.boxShadow);
     }
   });

@@ -1,5 +1,7 @@
+import { resolveButtonPalette } from '../button/shared';
+import { Text } from 'react-native';
+import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import React from 'react';
-import { DISABLED_OPACITY } from '../styles/tokens';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -51,24 +53,23 @@ describe('ComposerPanel', () => {
   it('keeps the card: radius 24, padding 10, the card surface; send is 36 round', () => {
     const { getByTestId, getByLabelText } = renderIn(<ComposerPanel testID="composer" />);
     const theme = buildTheme('teal', 'light');
-    const card = getByTestId('composer').children[0] as unknown as { props: { style: unknown } };
+    const card = getByTestId('composer').findAll(node => resolvedStyle(node.props.style).borderRadius === 24 && resolvedStyle(node.props.style).padding === 10)[0]!;
     expect(resolvedStyle(card.props.style)).toMatchObject({
       borderRadius: 24,
       padding: 10,
-      backgroundColor: theme.colors.card,
+      backgroundColor: 'transparent',
     });
+    expect(getByTestId('composer').findAll(node => node.props.fill === theme.colors.card && node.props.radius === 24).length).toBeGreaterThan(0);
     expect(resolvedStyle(getByLabelText('Send message').props.style)).toMatchObject({
       width: 36,
       height: 36,
-      opacity: 1,
     });
   });
 
   it('paints the card with the canonical card role in dark mode', () => {
     const { getByTestId } = renderIn(<ComposerPanel testID="composer" />, 'dark');
     const { colors } = buildTheme('teal', 'dark');
-    const card = getByTestId('composer').children[0] as unknown as { props: { style: unknown } };
-    expect(resolvedStyle(card.props.style).backgroundColor).toBe(colors.card);
+    expect(getByTestId('composer').findAll(node => node.props.fill === colors.card && node.props.radius === 24).length).toBeGreaterThan(0);
   });
 
   it('submits the draft from send and clears it when uncontrolled', () => {
@@ -80,12 +81,12 @@ describe('ComposerPanel', () => {
     expect(getByTestId('composer-input').props.value).toBe('');
   });
 
-  it('greys send to the disabled opacity and ignores it while disabled', () => {
+  it('uses the base disabled state and ignores send while disabled', () => {
     const onSubmit = jest.fn();
     const { getByLabelText } = renderIn(<ComposerPanel disabled onSubmit={onSubmit} />);
     const send = getByLabelText('Send message');
-    expect(send.props['aria-disabled']).toBe(true);
-    expect(resolvedStyle(send.props.style).opacity).toBe(DISABLED_OPACITY);
+    expect(send.props.accessibilityState.disabled).toBe(true);
+    expect(resolvedStyle(send.props.style).opacity ?? 1).toBe(1);
     fireEvent.press(send);
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -259,7 +260,7 @@ describe('ComposerPanel', () => {
     const trigger = getByTestId('composer-model');
     // The chip is the one that gives: it shrinks, and it is never a fixed 32.
     expect(style(trigger)).toMatchObject({ flexShrink: 1, minWidth: 0, minHeight: 32, maxWidth: 240 });
-    expect(style(trigger).height).toBeUndefined();
+    expect(style(trigger).height).toBe('auto');
     const name = within(trigger).getByText('DeepSeek: DeepSeek V4 Pro 0813');
     expect(name.props.numberOfLines).toBe(1);
     expect(style(name)).toMatchObject({ flexShrink: 1, minWidth: 0 });
@@ -315,7 +316,7 @@ describe('ComposerPanel', () => {
     // A floor, never a fixed 30: at the largest font a fixed height clipped
     // "Chat" top and bottom on Android.
     expect(style).toMatchObject({ minHeight: 30, minWidth: 0, maxWidth: 160 });
-    expect(style.height).toBeUndefined();
+    expect(style.height).toBe('auto');
     const label = within(trigger).getByText('Ask before every single change to the project');
     expect(label.props.numberOfLines).toBe(1);
     expect(label.props.ellipsizeMode).toBe('tail');
@@ -515,7 +516,7 @@ describe('ComposerPill', () => {
         <ComposerPill defaultValue="hi" onSubmit={onSubmit} disabled />
       </BloomThemeProvider>,
     );
-    expect(getByLabelText('Send message').props['aria-disabled']).toBe(true);
+    expect(getByLabelText('Send message').props.accessibilityState.disabled).toBe(true);
   });
 
   /**
@@ -576,7 +577,7 @@ describe('ComposerPill', () => {
     const { getByLabelText } = renderIn(<ComposerPill models={['Fable 5']} />);
     const trigger = getByLabelText('Fable 5');
     expect(resolvedStyle(trigger.props.style)).toMatchObject({ minHeight: 32 });
-    expect(resolvedStyle(trigger.props.style).height).toBeUndefined();
+    expect(resolvedStyle(trigger.props.style).height).toBe('auto');
   });
 
   it('keys, matches and reports the model id, drawing only the name', () => {
@@ -673,20 +674,20 @@ it.each(['light', 'dark'] as const)('composer reads canonical foreground and sur
 });
 
  it('pairs the send arrow with each action paint state', () => {
-  const palette = resolveComposerPalette(buildTheme('teal', 'light'));
-  const { getByLabelText, UNSAFE_getByType, rerender } = renderIn(<SendButton disabled={false} onPress={() => {}} label="Send" palette={palette} />);
+  const palette = resolveButtonPalette('solid', buildTheme('teal', 'light'), 'action');
+  const { getByLabelText, UNSAFE_getByType, rerender } = renderIn(<SendButton disabled={false} onPress={() => {}} label="Send" />);
   const arrow = () => UNSAFE_getByType(RiArrowUpLine).props.fill;
-  expect(arrow()).toBe(palette.send.rest.foreground);
+  expect(arrow()).toBe(palette.rest.foreground);
   fireEvent(getByLabelText('Send'), 'hoverIn');
-  expect(arrow()).toBe(palette.send.hover.foreground);
+  expect(arrow()).toBe(palette.hover.foreground);
   fireEvent(getByLabelText('Send'), 'pressIn');
-  expect(arrow()).toBe(palette.send.active.foreground);
-  rerender(<BloomThemeProvider mode="light" colorPreset="teal"><SendButton disabled onPress={() => {}} label="Send" palette={palette} /></BloomThemeProvider>);
-  expect(arrow()).toBe(palette.send.disabled.foreground);
+  expect(arrow()).toBe(palette.active.foreground);
+  rerender(<BloomThemeProvider mode="light" colorPreset="teal"><SendButton disabled onPress={() => {}} label="Send" /></BloomThemeProvider>);
+  expect(arrow()).toBe(palette.disabled.foreground);
 });
 
 describe('emptyAction', () => {
-  const call = <SendButton disabled={false} onPress={() => {}} label="Voice mode" palette={resolveComposerPalette(buildTheme('teal', 'light'))} />;
+  const call = <SendButton disabled={false} onPress={() => {}} label="Voice mode" />;
 
   it("draws the host's empty action in place of send while there is nothing to send", () => {
     const { queryByLabelText } = renderIn(<ComposerPanel emptyAction={call} />);
@@ -713,4 +714,15 @@ describe('emptyAction', () => {
     expect(queryByLabelText('Voice mode')).toBeNull();
     expect(queryByLabelText('Stop generating')).not.toBeNull();
   });
+});
+
+function ComposerSurfaceProbe() {
+  return <Text testID="composer-surface-probe">{`${useSurfaceLevelValue()}:${useSurfaceFill()}`}</Text>;
+}
+it('leaves a plain pill on its parent and publishes the filled pill backing', () => {
+  for (const surface of [false, true]) {
+    const screen = renderIn(<SurfaceLevelProvider level={2} fill="#123456"><ComposerPill surface={surface} emptyAction={<ComposerSurfaceProbe />} /></SurfaceLevelProvider>);
+    expect(screen.getByTestId('composer-surface-probe').props.children).toBe(surface ? `1:${buildTheme('teal', 'light').colors.card}` : '2:#123456');
+    screen.unmount();
+  }
 });

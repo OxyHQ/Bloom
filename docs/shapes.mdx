@@ -95,7 +95,7 @@ the other for its ring.
 Geometry does not import the theme or token recipes. Card, sidebar, menu,
 dialog and sheet consumers use these policies; capsules remain round.
 
-GlassSurface requires a shape with an explicit radius, shared with its caller.
+SurfacePaint accepts the same shape policy and direction as its caller (or a radius for circular corners).
 Its clipped layers and rim follow that policy. GlassIsland composes the same
 shape with an unclipped outer shadow. Apple's native glass tab surface keeps
 its own system-owned geometry.

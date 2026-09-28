@@ -6,12 +6,13 @@ import { AvatarGroup } from '../avatar-group';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { Card } from '../card';
+import { useCardFill } from '../card/use-card-fill';
 import { Chip, ChipRow } from '../chip';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
+import { useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { resolveAccentColors } from '../theme/accent-colors';
@@ -90,10 +91,11 @@ import type { ContactProfileCardProps } from './types';
 const TABULAR: TextStyle = { fontVariant: ['tabular-nums'] };
 
 /** The fill the content lands on, and everything derived from it. */
-function useContactPaint(onCard: boolean): ContactPaint {
+function useContactPaint(onCard: boolean, style: ContactProfileCardProps['style']): ContactPaint {
   const theme = useTheme();
   const ambient = useSurfaceFill();
-  const surface = onCard ? theme.colors.card : ambient;
+  const cardFill = useCardFill(style);
+  const surface = onCard ? cardFill : ambient;
   return useMemo(() => resolveContactPaint(theme, surface), [theme, surface]);
 }
 
@@ -127,7 +129,7 @@ function ContactProfileCardComponent({
   const theme = useTheme();
   const { messages } = useMessages(CONTACT_CARD_MESSAGES);
   const comfortable = density === 'comfortable';
-  const paint = useContactPaint(comfortable);
+  const paint = useContactPaint(comfortable, style);
   const { width, onLayout } = useContainerWidth();
   // A card that is too narrow for four tiles is too narrow for three labelled
   // buttons beside a 72 mark, so ONE measurement decides both.
@@ -330,14 +332,13 @@ function ContactProfileCardComponent({
   const coverWash = contactCoverWash(theme, coverTone);
 
   return (
-    <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
         clipContent
-        variant="outlined"
+        elevation="none"
         radius="radius-20"
         // The inner clip follows the card corners and draws no padding, so the
         // cover band can run to the edge and the content block owns the inset.
-        style={[surfaceFillVars(paint.surface), style]}
+        style={style}
         testID={testID}
       >
         <View
@@ -541,7 +542,6 @@ function ContactProfileCardComponent({
           ) : null}
         </View>
       </Card>
-    </SurfaceLevelProvider>
   );
 }
 

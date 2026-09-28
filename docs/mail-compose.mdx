@@ -6,6 +6,8 @@ order: 66
 
 # Mail Compose
 
+The default docked frame uses the shared Surface material. The sheet variant paints no extra frame, and custom background styles retain their own paint.
+
 `MailRecipientField` is one addressing row, `MailComposeHeader` is the block of
 them plus the subject, and `MailComposeSurface` is the frame around the whole
 thing.
@@ -124,3 +126,5 @@ this family where a base-layer control was passed over on purpose.
   Anchoring it would make the field a `Popover` owner, and a popover inside a
   docked panel inside a dialog is a stacking question worth answering once, on
   purpose, rather than in passing here.
+
+Docked surfaces use the shared solid paint and publish their actual resolved backing, including style backgrounds, at the next contextual level. Sheet composition adds no material and preserves the parent level/fill. Web surface variables are set on the existing root.

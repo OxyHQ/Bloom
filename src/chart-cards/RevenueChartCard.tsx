@@ -8,13 +8,13 @@ import {
   chartAccessibilityLabel,
   groupThousands,
   useActiveIndex,
-  useChartCardPalette,
 } from './ChartCard';
 import { monotoneXAreaPath, monotoneXPath, pointX, yScale } from './geometry';
 import { revenueSeriesTone } from './palette';
 import type { RevenueChartCardProps } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `RevenueChartCard`: a year of revenue against the year before.
  *
@@ -53,7 +53,7 @@ export function RevenueChartCard({
   ...frame
 }: RevenueChartCardProps) {
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => revenueSeriesTone(theme), [theme]);
   const fill = color ?? tone.color;
   const stroke = activeColor ?? color ?? tone.activeColor;

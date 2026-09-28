@@ -1,3 +1,4 @@
+import { resolveSurfaceFill } from '../surface/shared';
 import { isValidElement, type ReactNode } from 'react';
 
 import { resolveBloomColors } from '../appearance/colors';
@@ -158,6 +159,7 @@ export type ButtonGradient = readonly [top: string, bottom: string];
 export interface ButtonStatePaint {
   /** Solid fill, or the gradient's top colour when `gradient` is set. */
   background: string;
+  surface?: boolean;
   gradient: ButtonGradient | null;
   border: string;
   foreground: string;
@@ -298,11 +300,6 @@ export function mixColor(base: string, top: string, alpha: number): string {
   return `rgb(${ch(b.r, t.r)} ${ch(b.g, t.g)} ${ch(b.b, t.b)})`;
 }
 
-/** Original Bloom filled surface: the gradient is material, independent of the API names. */
-function gradientPaint(top: string, bottom: string, foreground: string): ButtonStatePaint {
-  return { background: top, gradient: [top, bottom], border: TRANSPARENT, foreground };
-}
-
 /** Shared semantic recipe. Color and fill are independent axes. */
 export const BUTTON_SIZE_ALIAS: Record<ButtonSize, ButtonResolvedSize> = { xs: 'xs', sm: 'sm', md: 'md', lg: 'lg', small: 'sm', medium: 'md', large: 'lg', icon: 'md' };
 
@@ -318,11 +315,11 @@ export function resolveButtonRecipe(variant: ButtonVariant | undefined): { appea
 }
 
 /** Legacy variants remain accepted; new appearance/tone are the shared contract. */
-export function resolveButtonPalette(appearance: BloomAppearance | ButtonVariant, theme: Theme, tone: BloomTone | ButtonLinkTone = 'accent'): ButtonPalette {
+export function resolveButtonPalette(appearance: BloomAppearance | ButtonVariant, theme: Theme, tone: BloomTone | ButtonLinkTone = 'accent', colors?: { background: string; foreground: string }): ButtonPalette {
   const legacy = !['solid', 'subtle', 'outline', 'plain'].includes(appearance);
   const recipe = resolveButtonRecipe(legacy ? appearance as ButtonVariant : undefined);
   const resolvedTone: BloomTone = tone === 'primary' ? 'accent' : tone === 'secondary' || tone === 'text' ? 'neutral' : tone;
-  const palette = resolveCanonicalButtonPalette(legacy ? recipe.appearance : appearance as BloomAppearance, theme, legacy && tone === 'accent' ? recipe.tone : resolvedTone);
+  const palette = resolveCanonicalButtonPalette(legacy ? recipe.appearance : appearance as BloomAppearance, theme, legacy && tone === 'accent' ? recipe.tone : resolvedTone, colors);
   if (appearance === 'link' && tone === 'text') return { ...palette,
     rest: { ...palette.rest, foreground: theme.colors.text },
     hover: { ...palette.hover, foreground: theme.colors.textSecondary, background: 'transparent' },
@@ -337,71 +334,33 @@ export function resolveButtonPalette(appearance: BloomAppearance | ButtonVariant
   return palette;
 }
 
+/** Semantic pairs remain authoritative; translucent subtle fills are composited once. */
 export function resolveCanonicalButtonPalette(
   appearance: BloomAppearance,
   theme: Theme,
   tone: BloomTone = 'accent',
+  colors?: { background: string; foreground: string },
 ): ButtonPalette {
   const c = theme.colors;
-  const neutralDisabled = appearance === 'solid'
-    ? gradientPaint(c.backgroundSecondary, c.backgroundTertiary, c.textTertiary)
-    : { background: appearance === 'subtle' ? c.backgroundTertiary : TRANSPARENT,
-        gradient: null, border: appearance === 'outline' ? c.border : TRANSPARENT,
-        foreground: c.textTertiary };
-  if (tone === 'neutral') {
-    // Adjacent semantic surfaces retain the gentle material gradient while
-    // following the palette's actual neutral hue, rather than a rebuilt ramp.
-    const rest = appearance === 'solid'
-      ? gradientPaint(c.backgroundSecondary, c.backgroundTertiary, c.text)
-      : { background: appearance === 'subtle' ? c.backgroundTertiary : TRANSPARENT,
-          gradient: null, border: appearance === 'outline' ? c.border : TRANSPARENT,
-          foreground: appearance === 'plain' ? c.textSecondary : c.text };
-    const hover = appearance === 'solid'
-      ? gradientPaint(c.card, c.backgroundSecondary, c.text)
-      : { ...rest, background: c.backgroundSecondary, foreground: c.text };
-    const active = appearance === 'solid'
-      ? gradientPaint(c.backgroundTertiary, c.backgroundSecondary, c.text)
-      : { ...hover, background: c.backgroundTertiary };
-    return { rest, hover, active, disabled: neutralDisabled, disabledOpacity: 0.5,
-      borderWidth: appearance === 'outline' ? 1 : 0, shadow: appearance === 'solid', ring: c.primary };
-  }
-  // Support/action are authored semantic pairs. Keep their exact fill rather
-  // than rebuilding a primary-style ramp and invalidating the paired on-color.
-  // Existing tones retain their established gradient material.
-  if (appearance === 'solid' && tone !== 'support' && tone !== 'action') {
-    const { accent } = resolveButtonRamps(theme);
-    const semantic = resolveBloomColors(theme.colors, tone, 'solid');
-    const ramp = tone === 'accent' ? accent : tone === 'danger'
-      ? colorRamp(theme.colors.negative, DANGER_TABLE)
-      : colorRamp(semantic.background, ACCENT_TABLE);
-    const foreground = tone === 'danger' ? theme.colors.negativeForeground : semantic.foreground;
-    const disabled = tone === 'danger'
-      ? theme.isDark
-        ? gradientPaint(ramp[900], ramp[950], ramp[400])
-        : gradientPaint(ramp[100], ramp[200], ramp[300])
-      : neutralDisabled;
-    return {
-      rest: gradientPaint(ramp[500], ramp[600], foreground),
-      hover: gradientPaint(ramp[400], ramp[500], foreground),
-      active: gradientPaint(ramp[600], ramp[700], foreground),
-      disabled,
-      borderWidth: 0,
-      shadow: true,
-      ring: ramp[500],
-    };
-  }
-  const rest = { ...resolveBloomColors(theme.colors, tone, appearance), gradient: null };
-  const subtle = resolveBloomColors(theme.colors, tone, 'subtle');
-  const hover = appearance === 'plain' || appearance === 'outline'
-    ? { ...rest, background: subtle.background }
-    : rest;
+  const pair = colors ?? resolveBloomColors(c, tone, appearance);
+  const surface = appearance !== 'plain';
+  const neutral = tone === 'neutral' && !colors;
+  const tint = appearance === 'outline' && !colors
+    ? resolveBloomColors(c, tone, 'subtle').background : pair.background;
+  const fill = resolveSurfaceFill(tint, false, c.card);
+  const paint = (state: 0 | 1 | 2): ButtonStatePaint => ({
+    background: !surface ? (state ? resolveBloomColors(c, tone, 'subtle').background : 'transparent')
+      : neutral ? [c.card, c.backgroundSecondary, c.backgroundTertiary][state]!
+      : state === 0 ? fill : mixColor(fill, state === 1 ? '#ffffff' : '#000000', state === 1 ? 0.06 : 0.08),
+    foreground: neutral ? (appearance === 'plain' && state === 0 ? c.textSecondary : c.text) : pair.foreground,
+    border: TRANSPARENT, gradient: null, surface,
+  });
   return {
-    rest, hover, active: hover,
-    disabled: neutralDisabled,
-    disabledOpacity: 0.5,
-    borderWidth: appearance === 'outline' ? 1 : 0,
-    shadow: appearance === 'solid',
-    ring: tone === 'support' ? theme.colors.secondary : tone === 'action' ? theme.colors.tertiary : theme.colors.primary,
+    rest: paint(0), hover: paint(1), active: paint(2),
+    disabled: { background: surface ? resolveSurfaceFill(c.backgroundSecondary, false, c.card) : TRANSPARENT,
+      foreground: c.textTertiary, border: TRANSPARENT, gradient: null, surface },
+    disabledOpacity: 1, borderWidth: appearance === 'outline' ? 1 : 0,
+    shadow: surface, ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
   };
 }
 

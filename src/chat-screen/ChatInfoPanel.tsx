@@ -1,3 +1,7 @@
+import { StyleSheet } from 'react-native';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceLevelValue } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
@@ -156,6 +160,10 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
     contentStyle,
     testID,
   } = props;
+
+  const layer = useSurfaceLayer();
+  const parentLevel = useSurfaceLevelValue();
+  const fill = resolveSurfaceFill(String(StyleSheet.flatten(style)?.backgroundColor ?? (variant === 'pane' ? layer.fill : layer.parentFill)), false, layer.parentFill);
 
   const coverImage = useResolvedImageSource(coverSource, 'large');
   const hasCover = Boolean(cover ?? coverImage);
@@ -416,8 +424,9 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
   return (
     <View
       testID={testID}
-      style={[{ minHeight: 0, backgroundColor: paint.surface }, frame, style]}
+      style={[{ minHeight: 0 }, frame, style, { backgroundColor: variant === 'pane' || StyleSheet.flatten(style)?.backgroundColor != null ? fill : 'transparent', ...surfaceFillVars(fill) }]}
     >
+      <SurfaceLevelProvider level={variant === 'pane' ? layer.level : parentLevel} fill={fill}>
       <View
         style={{
           minHeight: 52,
@@ -464,6 +473,7 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
       ) : (
         body
       )}
+      </SurfaceLevelProvider>
     </View>
   );
 }

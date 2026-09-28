@@ -1,3 +1,7 @@
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars, surfaceFillOn, surfaceTextOn, hairlineOn } from '../styles/surface-levels';
 import React, {
   memo,
   useCallback,
@@ -10,6 +14,7 @@ import React, {
 } from 'react';
 import {
   Platform,
+  StyleSheet,
   Pressable,
   TextInput,
   View,
@@ -112,8 +117,10 @@ interface QuestionnairePalette {
 }
 
 /** Canonical role palette. Pure, so a test can walk it. */
-export function resolveQuestionnairePalette(theme: Theme): QuestionnairePalette {
+export function resolveQuestionnairePalette(theme: Theme, backing?: string): QuestionnairePalette {
   const c = theme.colors;
+  const raised = backing === undefined ? c.backgroundSecondary : surfaceFillOn(theme, backing);
+  const active = backing === undefined ? c.backgroundTertiary : surfaceFillOn(theme, raised);
   return {
     surface: c.card, text: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
     rowBorder: c.borderLight, rowBorderHover: c.border,
@@ -122,6 +129,17 @@ export function resolveQuestionnairePalette(theme: Theme): QuestionnairePalette 
     pillSelected: c.primarySubtle, pillHover: c.backgroundSecondary,
     pillLabelSelected: c.primarySubtleForeground,
     checkbox: resolveCheckboxPaint(theme),
+    ...(backing === undefined ? {} : {
+      surface: backing,
+      ...surfaceTextOn(theme, backing),
+      rowBorder: hairlineOn(theme, backing),
+      rowBorderHover: hairlineOn(theme, raised),
+      rowHover: raised,
+      rowActive: active,
+      key: raised,
+      keyRaised: active,
+      pillHover: raised,
+    }),
   };
 }
 
@@ -794,7 +812,10 @@ function QuestionnaireComponent({
   testID,
 }: QuestionnaireProps) {
   const theme = useTheme();
-  const palette = useMemo(() => resolveQuestionnairePalette(theme), [theme]);
+  const surfaceLayer = useSurfaceLayer();
+  const customSurface = StyleSheet.flatten(style);
+  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
+  const palette = useMemo(() => resolveQuestionnairePalette(theme, surfaceFill), [theme, surfaceFill]);
   const reducedMotion = useReducedMotion();
   const headingId = `bloom-questionnaire-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const text = { ...DEFAULT_LABELS, ...labels };
@@ -1089,11 +1110,11 @@ function QuestionnaireComponent({
     gap: CARD_GAP,
     overflow: 'hidden',
     borderRadius: CARD_RADIUS,
-    backgroundColor: palette.surface,
+    backgroundColor: 'transparent',
     padding: CARD_PADDING,
     boxShadow: CARD_SHADOW,
     '--bloom-questionnaire-ring': palette.ring,
-    '--bloom-questionnaire-surface': palette.surface,
+    '--bloom-questionnaire-surface': surfaceFill,
     '--bloom-questionnaire-placeholder': palette.textTertiary,
   };
 
@@ -1105,8 +1126,10 @@ function QuestionnaireComponent({
       aria-labelledby={headingId}
       accessibilityLabel={question.question}
       {...(IS_WEB ? { onKeyDown } : {})}
-      style={[cardStyle, style]}
+      style={[cardStyle, style, { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) }]}
     >
+      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
+      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
       <Animated.View
         style={[
           {
@@ -1183,6 +1206,7 @@ function QuestionnaireComponent({
           </Button>
         </View>
       </View>
+      </SurfaceLevelProvider>
     </View>
   );
 }

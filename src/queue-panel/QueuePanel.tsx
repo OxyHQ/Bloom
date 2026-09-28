@@ -1,7 +1,11 @@
+import { resolveSurfaceFill } from '../surface/shared';
+import { parseRgba } from '../theme/color-utils';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { AccessibilityInfo, ScrollView, View } from 'react-native';
 
-import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { StyleSheet } from 'react-native';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiPlayListAddLine } from '../icons/remix/RiPlayListAddLine';
@@ -120,14 +124,18 @@ function QueuePanelComponent({
     [onPlay],
   );
 
+  const parentFill = useSurfaceFill();
+  const parentLevel = useSurfaceLevelValue();
   const isPanel = variant === 'panel';
+  const background = StyleSheet.flatten(style)?.backgroundColor ?? (isPanel ? paint.surface : undefined);
+  const publishedFill = typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
+    ? resolveSurfaceFill(background, false, parentFill) : undefined;
   const empty = !nowPlaying && queue.length === 0 && context.length === 0;
 
-  return (
+  const content = (
     // The panel is a surface: children step off IT, not off the page. A tab
     // strip inside used to paint its rail `neutral-800` — the panel's own fill
     // (`styles/surface-levels.ts`).
-    <SurfaceLevelProvider level={isPanel ? 1 : 0}>
     <View
       testID={testID}
       style={[
@@ -144,8 +152,10 @@ function QueuePanelComponent({
           : { width: '100%' },
         { flexDirection: 'column', minHeight: 0 },
         style,
+        surfaceFillVars(publishedFill),
       ]}
     >
+      {isPanel && publishedFill ? <SurfacePaint radius={StyleSheet.flatten(style)?.borderRadius ?? 8} /> : null}
       <View
         style={{
           flexDirection: 'row',
@@ -287,8 +297,8 @@ function QueuePanelComponent({
         </View>
       ) : null}
     </View>
-    </SurfaceLevelProvider>
   );
+  return publishedFill ? <SurfaceLevelProvider level={isPanel ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
 }
 
 export const QueuePanel = memo(QueuePanelComponent);

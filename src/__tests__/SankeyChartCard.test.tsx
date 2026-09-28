@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -69,7 +70,7 @@ describe('SankeyChartCard', () => {
     const { getByTestId, getByText } = renderCard(
       <SankeyChartCard testID="sankey" nodes={NODES} links={LINKS} axisLabels={['Category', 'App']} range="This week" />,
     );
-    expect(resolvedStyle(getByTestId('sankey').props.style)).toMatchObject({ height: 480, borderRadius: 16, paddingBottom: 12 });
+    expect(cardLayout(getByTestId('sankey'))).toMatchObject({ height: 480, borderRadius: 16, paddingBottom: 12 });
     expect(getByTestId('sankey-headline').props.children).toBe('86h');
     expect(getByText('Category')).toBeTruthy();
     expect(getByText('App')).toBeTruthy();
@@ -171,7 +172,7 @@ describe('Sankey narrow cards', () => {
     expect(resolvedStyle(getByTestId('sankey-plot').props.style).height).toBeGreaterThanOrEqual(7 * 108);
     layoutPlot(getByTestId);
     expect(queryByTestId('sankey-label-box-0')).toBeNull();
-    expect(resolvedStyle(getByTestId('sankey').props.style).height).toBe(480);
+    expect(cardLayout(getByTestId('sankey')).height).toBe(480);
   });
 
   it('packs small neighbouring nodes without overlapping full labels', () => {

@@ -25,7 +25,7 @@ import { ChartLegend } from './primitives/ChartLegend';
 import { ChartStatTiles } from './primitives/ChartStatTiles';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
@@ -168,7 +168,7 @@ export function RadialChartCard({
   style,
   testID,
 }: RadialChartCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { width: viewportWidth } = useWindowDimensions();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);

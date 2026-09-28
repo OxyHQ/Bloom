@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -75,7 +76,7 @@ describe('ComboChartCard', () => {
     expect(getByTestId('combo-headline').props.children).toBe('83,200');
     expect(getByText('+9.4%')).toBeTruthy();
     expect(getByText('This year')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('combo').props.style)).toMatchObject({ height: 329, gap: 16 });
+    expect(cardLayout(getByTestId('combo'))).toMatchObject({ height: 329, gap: 16 });
   });
 
   it('draws both axes, the two edge grid lines, bars, casing, line and dots on recharts pixels', () => {
@@ -133,7 +134,7 @@ describe('ComboChartCard', () => {
     const { getByTestId, getByText, getAllByText } = renderCard(
       <ComboChartCard testID="combo" bar={BAR} line={LINE} data={DATA} tiles />,
     );
-    expect(resolvedStyle(getByTestId('combo').props.style).height).toBeUndefined();
+    expect(cardLayout(getByTestId('combo')).height).toBeUndefined();
     let wrap = getByTestId('combo-plot').parent;
     while (wrap && resolvedStyle(wrap.props.style).height === undefined) wrap = wrap.parent;
     expect(resolvedStyle(wrap?.props.style).height).toBe(196);
@@ -199,6 +200,6 @@ describe('ComboChartCard', () => {
     layoutPlot(getByTestId, 'combo-plot');
     const casing = (UNSAFE_getAllByType('Path' as never) as unknown as Node[]).find((p) => p.props.strokeWidth === 7);
     expect(casing?.props.stroke).toBe(palette.surface);
-    expect(resolvedStyle(getByTestId('combo').props.style).backgroundColor).toBe(palette.surface);
+    expect(cardFill(getByTestId('combo'))).toBe(palette.surface);
   });
 });

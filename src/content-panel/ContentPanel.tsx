@@ -12,7 +12,7 @@
  * surface wrapping its content. The `framed` prop still drives whether that
  * surface is rounded + bordered, tri-state and resolved with pure NativeWind
  * (the breakpoint's `min-*:` variant evaluates against the window width on
- * native too — no JS breakpoint hook needed):
+ * native too — the material follows the same window breakpoint):
  *
  *  - `undefined` (DEFAULT) → responsive: full-bleed below the `framedFrom`
  *    breakpoint (default `768` / Tailwind `md`), rounded + bordered at/above it
@@ -31,7 +31,8 @@
  * native `src/**`) picks them up.
  */
 import React, { memo } from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { StyleSheet, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useOptionalPanelChrome } from '../styles/panel-chrome';
 import { StyledView } from '../styles/styled-primitives';
@@ -61,10 +62,17 @@ export const PANEL_BOTTOM_INSET = 8;
  * value is the only runtime decision.
  */
 const RESPONSIVE_SURFACE: Record<ContentPanelFramedBreakpoint, string> = {
-  500: 'min-[500px]:overflow-hidden min-[500px]:rounded-radius-28 min-[500px]:border min-[500px]:border-border',
-  640: 'sm:overflow-hidden sm:rounded-radius-28 sm:border sm:border-border',
-  768: 'md:overflow-hidden md:rounded-radius-28 md:border md:border-border',
-  1024: 'lg:overflow-hidden lg:rounded-radius-28 lg:border lg:border-border',
+  500: 'min-[500px]:rounded-radius-28 min-[500px]:border min-[500px]:border-border',
+  640: 'sm:rounded-radius-28 sm:border sm:border-border',
+  768: 'md:rounded-radius-28 md:border md:border-border',
+  1024: 'lg:rounded-radius-28 lg:border lg:border-border',
+};
+
+const RESPONSIVE_CONTENT: Record<ContentPanelFramedBreakpoint, string> = {
+  500: 'min-[500px]:overflow-hidden min-[500px]:rounded-radius-28',
+  640: 'sm:overflow-hidden sm:rounded-radius-28',
+  768: 'md:overflow-hidden md:rounded-radius-28',
+  1024: 'lg:overflow-hidden lg:rounded-radius-28',
 };
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({
@@ -85,6 +93,10 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const panelChrome = useOptionalPanelChrome();
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
+  const defaultFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, undefined);
+  const { width } = useWindowDimensions();
+  const paintsSurface = Boolean(defaultFill) && (framed ?? width >= framedFrom);
+  const radius = StyleSheet.flatten(surfaceStyle)?.borderRadius ?? 28;
 
   // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
   // framed, `false` → never framed (plain full-bleed). Whole literal class
@@ -96,9 +108,9 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     framed === undefined
       ? `flex-1 ${RESPONSIVE_SURFACE[framedFrom]}`
       : framed
-        ? 'flex-1 overflow-hidden rounded-radius-28 border border-border'
+        ? 'flex-1 rounded-radius-28 border border-border'
         : 'flex-1';
-  const surfaceClass = [surfaceBase, fill ? 'min-h-0' : '', surfaceClassName ?? 'bg-card'].filter(Boolean).join(' ');
+  const surfaceClass = [surfaceBase, fill ? 'min-h-0' : '', surfaceClassName ?? (paintsSurface ? 'bg-transparent' : 'bg-card')].filter(Boolean).join(' ');
   // Native has no overlays: the surface itself carries the edge. `none` drops
   // both, `border` keeps the class-drawn hairline, `elevated` adds the lift.
   const chromeStyle =
@@ -112,7 +124,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // bottom and a list inside it scrolls within it. What the prop adds here is
   // `min-h-0`, so a tall child cannot push the panel past the box it was given
   // — the same automatic-minimum-size trap as on web.
-  const contentClass = ['flex-1', fill ? 'min-h-0' : '', contentClassName].filter(Boolean).join(' ');
+  const contentClass = ['flex-1', framed === true ? 'overflow-hidden rounded-radius-28' : framed === undefined ? RESPONSIVE_CONTENT[framedFrom] : '', fill ? 'min-h-0' : '', contentClassName].filter(Boolean).join(' ');
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
@@ -127,7 +139,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           surfaceStyle,
         ]}
       >
-        <StyledView className={contentClass} style={contentStyle}>
+        {paintsSurface ? <SurfacePaint fill={defaultFill!} radius={radius} /> : null}
+        <StyledView className={contentClass} style={[{ borderRadius: (framed ?? width >= framedFrom) ? radius : 0 }, contentStyle]}>
           {/* The panel is a surface: everything inside is sitting on rung 1,
               painted in the colour this panel actually paints. */}
           <SurfaceLevelProvider level={1} fill={publishedFill}>

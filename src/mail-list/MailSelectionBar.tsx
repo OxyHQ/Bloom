@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -58,10 +60,12 @@ export function MailSelectionBar({
   const text = useMemo(() => mailStrings(strings, messages), [strings, messages]);
   const geo = MAIL_ROW_GEOMETRY[density];
 
+  const backing = useSurfaceBacking(paint.barFill, style);
   if (count <= 0) return null;
 
   const all = total > 0 && count >= total;
   return (
+    <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
     <View
       role="toolbar"
       accessibilityLabel={text.selectedCount(count)}
@@ -76,6 +80,7 @@ export function MailSelectionBar({
           backgroundColor: paint.barFill,
         },
         style,
+        backing.vars,
       ]}
       testID={testID}
     >
@@ -133,5 +138,6 @@ export function MailSelectionBar({
         ) : null}
       </View>
     </View>
+    </SurfaceLevelProvider>
   );
 }

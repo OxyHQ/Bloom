@@ -1,6 +1,7 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { quietText, quietTextOver } from '../styles/color-contrast';
-import { AA_TEXT, AA_TEXT_STRONG } from '../styles/surface-levels';
+import { AA_TEXT, AA_TEXT_STRONG, surfaceFillOn } from '../styles/surface-levels';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -151,7 +152,7 @@ describe('chart-cards geometry matches what recharts drew', () => {
 describe('RevenueChartCard', () => {
   it('keeps the card at 344 tall, radius 16, padding 16/16/12 in longhands, gap 24', () => {
     const { getByTestId } = renderCard(<RevenueChartCard testID="rev" data={REVENUE} />);
-    const card = resolvedStyle(getByTestId('rev').props.style);
+    const card = cardLayout(getByTestId('rev'));
     expect(card).toMatchObject({
       height: 344,
       borderRadius: 16,
@@ -290,11 +291,11 @@ describe('chart card palette', () => {
       const p = resolveChartCardPalette(buildTheme('teal', mode));
       expect(p).toMatchObject({
         surface: c.card,
-        textSecondary: quietTextOver([c.card, c.backgroundSecondary], c.text, AA_TEXT_STRONG),
-        textTertiary: quietTextOver([c.card, c.backgroundSecondary], c.text, AA_TEXT),
+        textSecondary: quietTextOver([c.card, surfaceFillOn(buildTheme('teal', mode), c.card)], c.text, AA_TEXT_STRONG),
+        textTertiary: quietTextOver([c.card, surfaceFillOn(buildTheme('teal', mode), c.card)], c.text, AA_TEXT),
         positive: { background: c.successSubtle, foreground: c.successSubtleForeground },
         negative: { background: c.errorSubtle, foreground: c.errorSubtleForeground },
-        inner: c.backgroundSecondary,
+        inner: surfaceFillOn(buildTheme('teal', mode), c.card),
       });
     }
   });

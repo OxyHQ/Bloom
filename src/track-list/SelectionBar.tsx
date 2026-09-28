@@ -1,3 +1,5 @@
+import { useCardFill } from '../card/use-card-fill';
+import { Surface } from '../surface';
 import React, { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
@@ -51,7 +53,8 @@ export function SelectionBar({
   const clearLabel = clearLabelProp ?? messages.clearSelection;
   const formatCount = formatCountProp ?? messages.selected;
   const theme = useTheme();
-  const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
+  const fill = useCardFill(style);
+  const paint = useMemo(() => resolveTrackListPaint(theme, fill), [theme, fill]);
   const window = useWindowDimensions();
   const iconOnly = (width ?? window.width) < LABELS_MIN_WIDTH;
   if (count <= 0) return null;
@@ -66,10 +69,6 @@ export function SelectionBar({
     paddingLeft: 16,
     paddingRight: 8,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: paint.panelBorder,
-    backgroundColor: paint.panel,
-    boxShadow: paint.panelShadow,
     maxWidth: '100%',
     ...(placement === 'floating'
       ? { position: 'absolute', bottom: 16, alignSelf: 'center' }
@@ -77,7 +76,7 @@ export function SelectionBar({
   };
 
   return (
-    <View role="toolbar" accessibilityLabel={countText} style={[surface, style]} testID={testID}>
+    <Surface role="toolbar" accessibilityLabel={countText} style={[surface, style]} testID={testID}>
       <Text
         variant="body-semibold"
         aria-live="polite"
@@ -123,7 +122,7 @@ export function SelectionBar({
           marginRight: 8,
           marginTop: 6,
           marginBottom: 6,
-          backgroundColor: paint.panelBorder,
+          backgroundColor: paint.hairline,
         }}
       />
       <GlyphButton
@@ -137,6 +136,6 @@ export function SelectionBar({
         onPress={onClear}
         testID={testID ? `${testID}-clear` : undefined}
       />
-    </View>
+    </Surface>
   );
 }

@@ -1,3 +1,5 @@
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -38,13 +40,14 @@ function PatientInfoCardComponent({
   testID,
 }: PatientInfoCardProps) {
   const theme = useTheme();
-  const surfaces = useMemo(() => resolveDashboardSurfaces(theme), [theme]);
+  const fill = useCardFill(style);
+  const surfaces = useMemo(() => resolveDashboardSurfaces(theme, fill), [theme, fill]);
   const letters = initials ?? name.trim().charAt(0).toUpperCase();
 
   return (
-    <View
+    <Card radius="radius-20" elevation="none"
       testID={testID}
-      style={[styles.card, { height, backgroundColor: surfaces.secondary }, style]}
+      style={[styles.card, { height }, style]}
     >
       <View style={styles.avatarWrap}>
         <Avatar
@@ -102,7 +105,7 @@ function PatientInfoCardComponent({
           );
         })}
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -115,7 +118,6 @@ const styles = StyleSheet.create({
     minWidth: 0,
     alignItems: 'center',
     gap: 15,
-    borderRadius: 20,
     paddingTop: 24,
     paddingBottom: 10,
     paddingLeft: 10,

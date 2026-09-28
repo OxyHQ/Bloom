@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
 import { CloseButton } from './CloseButton';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Card, CardBody, CardTitle, CardDescription } from '../card';
+import { LinkPreviewCard } from '../link-preview';
 import { BloomScope } from '../appearance';
 import { RiAddLine, RiArrowRightLine } from '../icons/remix';
 
@@ -55,3 +58,42 @@ export const Inherited: Story = {
 };
 export const CloseButtons: Story = {
   parameters: { controls: { disable: true } }, render: () => <View style={{flexDirection:'row',gap:16}}>{(['xs','sm','md','lg'] as const).map(size => <CloseButton key={size} size={size} accessibilityLabel="Close" />)}</View> };
+
+function PlaygroundGroup({ size }: { size: 'md' | 'sm' }) {
+  const [checked, setChecked] = useState('Week');
+  return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+    <ButtonGroup material="glass" size={size} accessibilityLabel={`Range ${size}`}>
+      {['Day', 'Week', 'Month'].map(label => <ButtonGroupItem key={label} checked={checked === label} onPress={() => setChecked(label)}>{label}</ButtonGroupItem>)}
+    </ButtonGroup>
+    <ButtonGroup size={size} accessibilityLabel={`Actions ${size}`}>
+      <ButtonGroupItem leadingIcon={RiAddLine}>Add</ButtonGroupItem>
+      <ButtonGroupItem disabled>Disabled</ButtonGroupItem>
+    </ButtonGroup>
+  </div>;
+}
+
+/** Approved material on the latest semantic Button API. */
+export const GlassPlayground: Story = {
+  render: () => (
+    <div style={{ padding: 28, borderRadius: 24, backgroundImage: 'url(https://raw.githubusercontent.com/lucasromerodb/liquid-glass-effect-macos/refs/heads/main/assets/flowers.jpg)', backgroundSize: '500px auto' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, padding: 20 }}>
+        {(['solid', 'subtle', 'outline', 'plain'] as const).map(appearance => (
+          <div key={appearance} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {(['accent', 'neutral', 'danger', 'support', 'action'] as const).map(tone => <Button key={tone} appearance={appearance} tone={tone}>{appearance} · {tone}</Button>)}
+            <Button appearance={appearance} disabled>Disabled {appearance}</Button>
+            <Button appearance={appearance} loading>Loading</Button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, padding: 20 }}>
+        <PlaygroundGroup size="md" /><PlaygroundGroup size="sm" />
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, padding: 20 }}>
+        <Card testID="glass-card" style={{ width: 280, maxWidth: '100%' }}>
+          <CardBody><CardTitle>Shared Surface</CardTitle><CardDescription>Card owns the shape; Surface paints the material.</CardDescription></CardBody>
+        </Card>
+        <LinkPreviewCard url="https://oxy.so" title="Oxy" description="Link preview inherits the Card material." onPress={() => {}} style={{ width: 280, maxWidth: '100%' }} />
+      </div>
+    </div>
+  ),
+};

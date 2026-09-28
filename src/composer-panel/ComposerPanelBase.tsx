@@ -1,4 +1,6 @@
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Text as RNText,
   TextInput,
@@ -240,7 +242,7 @@ export function ComposerPanelBase({
     width: '100%',
     flexDirection: 'column',
     borderRadius: CARD_RADIUS,
-    backgroundColor: palette.surface,
+    backgroundColor: 'transparent',
     padding: CARD_PADDING,
     boxShadow: palette.shadowCard,
     '--bloom-composer-ring': palette.focusRing,
@@ -250,7 +252,9 @@ export function ComposerPanelBase({
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
       {status ?? null}
 
-      <View style={cardStyle}>
+      <SurfaceLevelProvider level={1} fill={palette.surface}>
+      <View style={[cardStyle, surfaceFillVars(palette.surface)]}>
+        <SurfacePaint fill={palette.surface} radius={CARD_RADIUS} />
         <Collapse open={hasAttachments}>
           <View style={{ paddingBottom: 4 }}>
             <AttachmentStrip
@@ -371,17 +375,18 @@ export function ComposerPanelBase({
                 {/* Stop wins; then the host's empty action while there is
                     nothing to send; otherwise send. */}
                 {busy && onStop ? (
-                  <StopButton onPress={onStop} label={labels.stop} palette={palette} />
+                  <StopButton onPress={onStop} label={labels.stop} />
                 ) : emptyAction !== undefined && text.trim() === '' && !attachments?.length ? (
                   emptyAction
                 ) : (
-                  <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
+                  <SendButton disabled={disabled} onPress={submit} label={labels.send} />
                 )}
               </View>
             </View>
           </View>
         </View>
       </View>
+      </SurfaceLevelProvider>
     </View>
   );
 }

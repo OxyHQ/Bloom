@@ -11,7 +11,7 @@ import { compactNumber, describeDeltaRatio, formatNumber } from '../chart-cards/
 import { PeriodChartHeader } from '../chart-cards/primitives/PeriodChartHeader';
 import { PulsingDot } from '../chart-cards/primitives/PulsingDot';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from '../chart-cards/primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from '../chart-cards/primitives/use-chart-palette';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { RiAlbumLine } from '../icons/remix/RiAlbumLine';
 import { Text } from '../typography';
@@ -66,7 +66,7 @@ export function StreamsChart({
 }: StreamsChartProps) {
   const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const metricsLabel = metricsLabelProp ?? messages.streams.metrics;
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const tones = useChartTones();
 
   const [ownMetric, setOwnMetric] = useState(defaultMetric ?? metrics[0]?.id);

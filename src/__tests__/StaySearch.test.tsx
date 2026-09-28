@@ -4,6 +4,7 @@
  * The stay-search family, rendered through the REAL react-native-web so the
  * assertions read emitted DOM attributes and inline styles rather than props.
  */
+import { SurfaceLevelProvider, useSurfaceFill, surfaceFillOn } from '../styles/surface-levels';
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -240,7 +241,7 @@ describe('StaySearchBar', () => {
 });
 
 describe('StaySearchPanel', () => {
-  it('is the menu surface with radius 32, and a named dialog when labelled', () => {
+  it('uses the shared card surface with radius 32, and a named dialog when labelled', () => {
     mount(
       <StaySearchPanel width={400} accessibilityLabel="Guests" testID="p">
         x
@@ -250,8 +251,8 @@ describe('StaySearchPanel', () => {
     const p = byTestId('p');
     expect(p.style.width).toBe('400px');
     expect(p.style.borderTopLeftRadius).toBe(`${STAY_SEARCH_PANEL_RADIUS}px`);
-    expect(p.style.backgroundColor).toBe(css(menu.surface));
-    expect(p.style.borderTopColor).toBe(css(menu.border));
+    expect(p.style.getPropertyValue('--bloom-surface')).toBe(theme.colors.card);
+    expect(p.style.borderTopWidth).not.toBe('1px');
     expect(p.getAttribute('role')).toBe('dialog');
     expect(p.getAttribute('aria-label')).toBe('Guests');
   });
@@ -553,4 +554,12 @@ describe('GuestPicker — the stepper button names', () => {
       expect(byTestId(`gp-${kind}-increment`).getAttribute('aria-label')).toBe('Añadir uno');
     }
   });
+});
+
+function PanelFillProbe() { return <span data-testid="panel-fill">{useSurfaceFill()}</span>; }
+it('derives a panel from its actual parent and publishes a caller override', () => {
+  mount(<SurfaceLevelProvider level={1} fill="#30343a"><StaySearchPanel testID="nested-panel"><PanelFillProbe /></StaySearchPanel></SurfaceLevelProvider>, 'dark');
+  expect(container.querySelector('[data-testid="panel-fill"]')?.textContent).toBe(surfaceFillOn(theme, '#30343a'));
+  mount(<SurfaceLevelProvider level={1} fill="#30343a"><StaySearchPanel style={{ backgroundColor: '#654321' }}><PanelFillProbe /></StaySearchPanel></SurfaceLevelProvider>, 'dark');
+  expect(container.querySelector('[data-testid="panel-fill"]')?.textContent).toBe('#654321');
 });

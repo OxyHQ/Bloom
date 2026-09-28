@@ -2,6 +2,10 @@ jest.mock('react-native-svg', () => ({
   __esModule: true,
   default: 'Svg',
   Path: 'Path',
+  Defs: 'Defs',
+  LinearGradient: 'LinearGradient',
+  Stop: 'Stop',
+  Rect: 'Rect',
 }));
 
 import React from 'react';
@@ -21,7 +25,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { findHost, resolvedStyle } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
 
 /**
  * A `SettingsListGroup` has to know what is behind it, and it cannot see its own
@@ -80,16 +84,17 @@ function paint(mode: Mode, ui: () => React.ReactElement): { fill: string; colors
     ref.current = useTheme().colors;
     return null;
   }
-  const { toJSON } = render(
+  const { getByTestId } = render(
     <BloomThemeProvider mode={mode} colorPreset="teal">
       <Probe />
       {ui()}
     </BloomThemeProvider>,
   );
-  const host = findHost(toJSON(), SETTINGS_LIST_GROUP_TEST_ID);
-  if (!host) throw new Error('the settings group never rendered');
-  const fill = resolvedStyle(host.props.style).backgroundColor;
-  if (typeof fill !== 'string') throw new Error('the settings group painted no fill');
+  const host = getByTestId(SETTINGS_LIST_GROUP_TEST_ID);
+  expect(resolvedStyle(host.props.style).backgroundColor).toBe('transparent');
+  const materials = host.findAll(node => node.props.radius != null && typeof node.props.fill === 'string');
+  expect(materials).toHaveLength(1);
+  const fill = materials[0]!.props.fill as string;
   if (!ref.current) throw new Error('theme probe never ran');
   return { fill, colors: ref.current };
 }

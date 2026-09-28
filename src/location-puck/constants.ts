@@ -38,7 +38,7 @@ export const LOCATION_PUCK_GEOMETRY: LocationPuckGeometry = {
  * The cone's two gradient stops, as an OFFSET and an OPACITY — never as a
  * colour carrying alpha.
  *
- * Same shape, and the same reason, as `theme/glass-colors`' `GLASS_SHEEN`:
+ * Same shape, and the same reason, as `surface/shared`' `SURFACE_SHEEN`:
  * `react-native-svg` reads `stopColor` for its RGB and DISCARDS any alpha
  * channel in it, so an `rgba(…, 0.45)` stop paints at FULL strength on native
  * while web renders it correctly. A cone written that way is a hard-edged

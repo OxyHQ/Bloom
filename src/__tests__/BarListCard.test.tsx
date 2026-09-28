@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -56,7 +57,7 @@ describe('shareLabel', () => {
 describe('BarListCard', () => {
   it('keeps the card: content-sized, radius 16, padding 4 / 16 / 12, 12px under the rule', () => {
     const { getByTestId } = renderCard(<BarListCard testID="barlist" tabs={TABS} />);
-    const card = resolvedStyle(getByTestId('barlist').props.style);
+    const card = cardLayout(getByTestId('barlist'));
     expect(card.height).toBeUndefined();
     expect(card).toMatchObject({ borderRadius: 16, gap: 12, paddingTop: 4, paddingLeft: 16, paddingRight: 16, paddingBottom: 12 });
     const palette = resolveChartCardPalette(buildTheme('teal', 'light'));

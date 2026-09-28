@@ -1,5 +1,7 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { resolveSurfaceFill } from '../surface/shared';
 import React, {
   useCallback,
   useEffect,
@@ -33,7 +35,7 @@ import { useTheme } from '../theme/use-theme';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { StyledView } from '../styles/styled-primitives';
-import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { Context, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
@@ -261,7 +263,7 @@ function CenteredOrSideDialog({
     () => [
       {
         maxWidth: 500,
-        backgroundColor: theme.colors.background,
+        backgroundColor: 'transparent',
         // All four corners rounded — bloom's BottomSheet defaults to top-only
         // radius in flush mode, but we use `detached` so the whole card is
         // floating and rounded uniformly.
@@ -377,7 +379,7 @@ function CenteredOrSideDialog({
             // system gesture bar, so we don't add `insets.bottom` here.
             // Nav-header mode: the large title + screens own their padding.
             header ? null : { padding: contentPadding },
-            { backgroundColor: theme.colors.background },
+            { backgroundColor: 'transparent' },
             style,
             panelStyle,
           ]}
@@ -535,16 +537,16 @@ function SideSheet({
     [insetTop, insetBottom, anchorKey, anchorInset, sideWidth],
   );
 
+  const panelRadius = StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius;
+  const surfaceFill = resolveSurfaceFill(String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), false, theme.colors.background);
   if (!mounted) return null;
 
-  // The drawer paints the PAGE colour, so it RESETS the ambient surface for its
+  // The drawer uses the PAGE token as its tint and nominal surface for its
   // content: anything inside it that has to be opaque in "the colour I am on"
   // gets the drawer's, not that of whatever surface it was opened from. The
   // sheet path is covered by `BottomSheetBase`, which publishes the same way.
   const surfaceChildren = (
-    <SurfaceLevelProvider level={0} fill={theme.colors.background}>
-      {children}
-    </SurfaceLevelProvider>
+<>{children}</>
   );
 
   return (
@@ -580,18 +582,21 @@ function SideSheet({
           sideStyles.panel,
           // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
           // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
-          { backgroundColor: theme.colors.background, pointerEvents: 'auto' },
+          { backgroundColor: 'transparent', pointerEvents: 'auto', ...surfaceFillVars(surfaceFill) },
           panelGeometry,
           panelAnimatedStyle,
           panelStyle,
           style,
+          { backgroundColor: 'transparent' },
         ]}
       >
+        <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />
+        <SurfaceLevelProvider level={0} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer body
           // has no Dialog scroll offset to drive a collapse) over content inset
           // below the bar.
-          <View style={{ flex: 1, minHeight: 0 }}>
+          <View style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}>
             <DialogNavHeader
               controller={headerController}
               header={header}
@@ -602,8 +607,9 @@ function SideSheet({
             <DialogHeaderProvider controller={headerController}>{surfaceChildren}</DialogHeaderProvider>
           </View>
         ) : (
-          <View style={{ padding: contentPadding }}>{surfaceChildren}</View>
+          <View style={{ padding: contentPadding, borderRadius: panelRadius, overflow: 'hidden' }}>{surfaceChildren}</View>
         )}
+        </SurfaceLevelProvider>
       </AnimatedStyledView>
     </OverlayRoot>
   );
@@ -621,7 +627,6 @@ const sideStyles = StyleSheet.create({
   },
   panel: {
     position: 'absolute',
-    overflow: 'hidden',
     // `shadow-m` — the overlay role this drawer is one of. Hand-rolled here it
     // was only the NATIVE half of the split, so the web fork's drawer got none
     // of it, and its numbers drifted from every other Bloom overlay.

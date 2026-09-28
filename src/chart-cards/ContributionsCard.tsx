@@ -1,3 +1,4 @@
+import { Card } from '../card';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -32,7 +33,7 @@ import {
 } from './contributions-cells';
 import { ChartHeadline } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
-import { useChartCardPalette } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartCardPalette } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 
 // ---------------------------------------------------------------------------
@@ -352,7 +353,7 @@ export function ContributionsCard({
   style,
   testID,
 }: ContributionsCardProps) {
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
@@ -387,11 +388,15 @@ export function ContributionsCard({
   );
 
   return (
-    <View
+    <Card
+      radius="radius-16"
+      clipContent
+      contentStyle={styles.cardContent}
+      elevation="none"
       testID={testID}
       style={[
         styles.card,
-        { backgroundColor: palette.surface, height: wide ? CONTRIBUTIONS_CARD_HEIGHT : undefined },
+        { height: wide ? CONTRIBUTIONS_CARD_HEIGHT : undefined },
         style,
       ]}>
       <ChartHeadline
@@ -458,17 +463,17 @@ export function ContributionsCard({
           </ScrollView>
         )}
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     minWidth: 0,
+  },
+  cardContent: {
     flexDirection: 'column',
     gap: 16,
-    overflow: 'hidden',
-    borderRadius: 16,
     paddingTop: 16,
     paddingBottom: 16,
     paddingLeft: 16,

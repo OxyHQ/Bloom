@@ -1,3 +1,5 @@
+import { useCardFill } from '../card/use-card-fill';
+import { Surface } from '../surface';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
@@ -143,7 +145,8 @@ function LibraryPanelComponent({
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
-  const paint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
+  const fill = useCardFill(style);
+  const paint = useMemo(() => resolveMusicLibraryPaint(theme, fill), [theme, fill]);
   const labels = useMemo(
     () => mergeLabels(libraryPanelLabels(messages, common), labelsProp),
     [messages, common, labelsProp],
@@ -168,9 +171,7 @@ function LibraryPanelComponent({
   const ViewGlyph = VIEW_GLYPH[view];
 
   const surfaceStyle: WebCssStyle = {
-    backgroundColor: paint.surface,
     borderRadius: 8,
-    overflow: 'hidden',
     minHeight: 0,
   };
 
@@ -219,7 +220,7 @@ function LibraryPanelComponent({
 
   if (collapsed) {
     return (
-      <View
+      <Surface
         role="region"
         accessibilityLabel={labels.title}
         style={[surfaceStyle, { width: RAIL_WIDTH }, style]}
@@ -267,7 +268,7 @@ function LibraryPanelComponent({
             </View>
           ))}
         </ScrollView>
-      </View>
+      </Surface>
     );
   }
 
@@ -289,7 +290,7 @@ function LibraryPanelComponent({
   );
 
   return (
-    <View role="region" accessibilityLabel={labels.title} style={[surfaceStyle, style]} testID={testID}>
+    <Surface role="region" accessibilityLabel={labels.title} style={[surfaceStyle, style]} testID={testID}>
       {/* Header */}
       <View
         style={{
@@ -576,7 +577,7 @@ function LibraryPanelComponent({
           </View>
         )}
       </ScrollView>
-    </View>
+    </Surface>
   );
 }
 
