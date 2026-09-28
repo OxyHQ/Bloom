@@ -88,19 +88,19 @@ export interface EarningsPeriod {
 
 /** Every word the family speaks, in one prop. */
 export interface EarningsLabels {
-  /** Over the figure. Default `"Earned"`. */
+  /** Over the figure (`"Earned"` in English). */
   earned?: string;
-  /** Names the period switch. Default `"Earnings period"`. */
+  /** Names the period switch (`"Earnings period"` in English). */
   period?: string;
-  /** Over the breakdown. Default `"What it came from"`. */
+  /** Over the breakdown (`"What it came from"` in English). */
   breakdown?: string;
-  /** Over the payout row. Default `"Next payout"`. */
+  /** Over the payout row (`"Next payout"` in English). */
   payout?: string;
-  /** The payout states. Defaults `"Scheduled"`, `"On its way"`, `"Paid"`, `"On hold"`, `"Failed"`. */
+  /** The payout states. `"Scheduled"`, `"On its way"`, `"Paid"`, `"On hold"`, `"Failed"` in English. */
   payoutState?: Partial<Record<EarningsPayoutState, string>>;
-  /** Names the chart. Default `` (label) => `${label} earnings, by period` ``. */
+  /** Names the chart (`` (label) => `${label} earnings, by period` `` in English). */
   chart?: (label: string) => string;
-  /** The empty period's line. Default `"Nothing earned yet"`. */
+  /** The empty period's line (`"Nothing earned yet"` in English). */
   empty?: string;
 }
 
@@ -113,7 +113,7 @@ export interface EarningsBreakdownProps {
    * total and two totals on one panel is one too many.
    */
   total?: PriceTotal;
-  /** A heading over the list. Default `"What it came from"`. */
+  /** A heading over the list (`"What it came from"` in English). */
   title?: string;
   /** Hide the kinds behind a disclosure. Default `false`. */
   collapsible?: boolean;
@@ -129,7 +129,7 @@ export interface EarningsBreakdownProps {
 export interface EarningsPayoutRowProps {
   /** The payout. */
   payout: EarningsPayout;
-  /** The line over the date. Default `"Next payout"`. */
+  /** The line over the date (`"Next payout"` in English). */
   title?: string;
   /** Makes the row pressable — an app opens the payout's detail from here. */
   onPress?: () => void;
@@ -172,7 +172,7 @@ export interface EarningsSummaryProps {
   /** Draws the tiles. Default `true` when the period carries `stats`. */
   stats?: boolean;
   labels?: EarningsLabels;
-  /** Names the panel. Default `"Earnings"`. */
+  /** Names the panel (`"Earnings"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Derives `-chart`, `-stats`, `-breakdown`, `-payout`. */
