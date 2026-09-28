@@ -13,7 +13,7 @@ import { groupThousands } from './primitives/format';
 import type { ChartCardPoint, YearOverYearChartCardProps } from './types';
 import { CHART_CARDS_MESSAGES, type ChartCardsMessages } from './messages';
 import { useMessages } from '../locale/messages';
-import { monthNames } from '../locale/format-date';
+import { monthTitle } from './LineChartCard';
 
 /**
  * The dashboard variant of the chart card chrome, shared by
@@ -35,7 +35,6 @@ export const CARD_HEIGHT = 344;
 const CARD_GAP = 24;
 const LEGEND_DOT = 8;
 
-const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
  * A point labelled with an English month abbreviation (`"Jul"`) is titled with
@@ -43,8 +42,7 @@ const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'A
  * the app's own and stays unchanged.
  */
 export function defaultPointTitle(point: ChartCardPoint, locale?: string): string {
-  const month = MONTH_ABBREVIATIONS.indexOf(point.label);
-  return month === -1 ? point.label : (monthNames(locale, 'long')[month] ?? point.label);
+  return monthTitle(point.label, locale);
 }
 
 export { groupThousands };
