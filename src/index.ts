@@ -595,6 +595,8 @@ export type {
   VoiceMessageProps,
   VoicePlaybackRate,
 } from './message-media';
+export { Sticker, provideLottiePlayer, resetLottiePlayer } from './sticker';
+export type { LottiePlayerProps, StickerProps } from './sticker';
 export {
   BUBBLE_RADIUS,
   BUBBLE_TAIL_RADIUS,

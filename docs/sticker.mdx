@@ -1,0 +1,64 @@
+---
+title: Sticker
+description: A Lottie sticker that animates where it can and stays a clean still where it cannot.
+order: 140
+---
+
+# Sticker
+
+A sticker, animated when it can be and still when it cannot.
+
+```tsx
+import { Sticker } from '@oxy.so/bloom/sticker';
+
+<Sticker
+  animation={sticker.animation.url}   // Lottie JSON or .lottie
+  fallback={sticker.fallback.url}     // the still image of the same sticker
+  size={160}
+  accessibilityLabel="Sticker: sad bear"
+/>
+```
+
+Oxy's sticker catalogue (`@oxy.so/stickers`) hands out both URLs for every
+sticker, which is exactly this component's pair of props.
+
+## What a person sees
+
+| situation | shown |
+| --- | --- |
+| the animation is still loading | the still |
+| the animation loaded | the animation |
+| the animation failed to load | the still, for good |
+| the person asked for reduced motion | the still — the player is never mounted |
+| no Lottie player is installed on this platform | the still, with one dev warning naming the package |
+
+The still is always drawn first, so a sticker never flashes blank while its
+animation arrives, and every failure mode still looks like a sticker.
+
+## Players are optional peers
+
+Bloom ships no native code, so each platform's player is an OPTIONAL peer,
+loaded only when a `Sticker` with an `animation` renders:
+
+- native: `lottie-react-native` (`npx expo install lottie-react-native`)
+- web: `@lottiefiles/dotlottie-react`
+
+An app that shows no animated sticker installs neither. An app with its own
+build of a player hands it in with `provideLottiePlayer(Component)`, adapted to
+`LottiePlayerProps` (`uri`, `loop`, `paused`, `onLoad`, `onError`, `style`).
+
+## Props
+
+| prop | decides |
+| --- | --- |
+| `animation` | the Lottie file; omit it for a still sticker |
+| `fallback` | the still image — required |
+| `size` | square edge, default 128 |
+| `loop` | default true |
+| `paused` | hold the frame, e.g. while scrolled out of view |
+| `accessibilityLabel` | the name; a sticker IS its meaning, so pass its emotion |
+| `decorative` | hide it from assistive technology when its container already names it |
+
+Like `StickerMessage`, it draws **no surface** — no background, radius or
+padding. In a chat use `StickerMessage` with `animation`, which is this plus the
+press, sending and failed affordances.
