@@ -974,7 +974,7 @@ describe('standalone AppShellSplitPanes', () => {
       return <ReactNative.TextInput testID="draft" value={draft} onChangeText={setDraft} />;
     }
     function Frame({ desktop }: { desktop: boolean }) {
-      return <BloomThemeProvider mode="light"><AppShellSplitPanes testID="panes" showList={desktop} showInfo={desktop}
+      return <BloomThemeProvider mode="light"><AppShellSplitPanes variant="separated" testID="panes" showList={desktop} showInfo={desktop}
         paneScroll={false} list={<ReactNative.Text>List</ReactNative.Text>} info={<ReactNative.Text>Info</ReactNative.Text>}
         detail={<Detail />} /></BloomThemeProvider>;
     }
@@ -988,5 +988,26 @@ describe('standalone AppShellSplitPanes', () => {
     expect(mounted).toHaveBeenCalledTimes(1);
     expect(unmounted).not.toHaveBeenCalled();
     expect(screen.UNSAFE_queryAllByType(ReactNative.ScrollView)).toHaveLength(0);
+  });
+});
+
+
+describe('separated split panels', () => {
+  it.each(['joined', 'separated'] as const)('uses Bloom geometry for %s panes', (variant) => {
+    const screen = renderIn(<AppShellSplitPanes variant={variant} testID="panes" paneScroll={false}
+      list={<ReactNative.Text>List</ReactNative.Text>} detail={<ReactNative.Text>Detail</ReactNative.Text>}
+      info={<ReactNative.Text>Info</ReactNative.Text>} />);
+    const gap = resolvedStyle(screen.getByTestId('panes-list-gap').props.style);
+    expect(gap.width).toBe(variant === 'separated' ? 12 : 1);
+    expect(gap.flexShrink).toBe(0);
+    if (variant === 'separated') expect(gap.backgroundColor).toBe('transparent');
+    expect(resolvedStyle(screen.getByTestId('panes-info-gap').props.style).width).toBe(gap.width);
+    if (variant === 'separated') expect(resolvedStyle(screen.getByTestId('panes-resize-anchor').props.style)).toMatchObject({ left: '50%', width: 0 });
+  });
+  it('draws no gutter when only detail is visible', () => {
+    const screen = renderIn(<AppShellSplitPanes variant="separated" testID="panes" detail={<ReactNative.Text>Detail</ReactNative.Text>} />);
+    expect(screen.queryByTestId('panes-list-gap')).toBeNull();
+    expect(screen.queryByTestId('panes-info-gap')).toBeNull();
+    expect(screen.queryByTestId('panes-divider')).toBeNull();
   });
 });

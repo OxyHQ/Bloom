@@ -379,6 +379,8 @@ export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> & AppShellNaviga
 
 /** A bounded list/detail/info layout, independent of navigation or surfaces. */
 export interface AppShellSplitPanesProps {
+  /** Joined uses hairline dividers (default); separated leaves a 12px gutter for independent panel surfaces. */
+  variant?: 'joined' | 'separated';
   list?: ReactNode;
   detail?: ReactNode;
   info?: ReactNode;
