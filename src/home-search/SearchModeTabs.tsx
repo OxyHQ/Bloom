@@ -161,7 +161,7 @@ export function SearchModeTabs<K extends string = HomeSearchMode>({
       <SegmentedControl
         label={accessibilityLabel}
         type="tabs"
-        size="large"
+        size="lg"
         value={value}
         onChange={onValueChange}
         style={[{ alignSelf: 'stretch' }, style]}

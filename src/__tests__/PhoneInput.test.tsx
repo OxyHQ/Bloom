@@ -133,8 +133,6 @@ describe('TextField leadingAddon', () => {
       lg: { paddingLeft: 4, paddingRight: 10 },
       md: { paddingLeft: 4, paddingRight: 8 },
       sm: { paddingLeft: 4, paddingRight: 6 },
-      small: { paddingLeft: 4, paddingRight: 6 },
-      medium: { paddingLeft: 4, paddingRight: 8 },
     });
     let slot = root.getByTestId('addon').parent!;
     while (resolvedStyle(slot.props.style).marginRight === undefined) slot = slot.parent!;

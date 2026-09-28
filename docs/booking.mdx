@@ -59,7 +59,7 @@ const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0, pets:
     ],
     total: '$937',
   }}
-  footer={<Button variant="link" linkTone="secondary" size="small">Report this listing</Button>}
+  footer={<LinkButton  linkTone="secondary" size="sm">Report this listing</LinkButton>}
 />
 ```
 
@@ -187,7 +187,7 @@ Keeping it at the bottom of the screen is the screen's job:
   dates="Oct 12 – 17, 2026"
   status="confirmed"              // 'confirmed' | 'pending' | 'cancelled' | 'completed'
   onPress={() => openTrip(trip.id)}
-  actions={<Button variant="secondary" size="small" onPress={message}>Message host</Button>}
+  actions={<Button  size="sm" onPress={message} tone="neutral" appearance="outline">Message host</Button>}
 />
 ```
 
@@ -220,4 +220,4 @@ Keeping it at the bottom of the screen is the screen's job:
 
 ## Shared card shell
 
-`ActionCardShell` composes Bloom `Card`, shared by BookingCard and the listing action cards. Card owns the solid material and relative surface layer; the shell retains its 372px maximum width, 24px padding, radius 16 and medium elevation. Measurement is forwarded through Card's `onLayout` to the existing host. Explicit style backgrounds are published to descendants as their actual backing.
+`ActionCardShell` composes Bloom `Card`, shared by BookingCard and the listing action cards. Card owns the shared translucent material and relative surface layer; the shell retains its 372px maximum width, 24px padding, radius 16 and medium elevation. Measurement is forwarded through Card's `onLayout` to the existing host. The tint composited against the parent is published as the descendant backing estimate.

@@ -1,3 +1,4 @@
+import { resolveSurfaceTint } from '../surface/shared';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -37,7 +38,7 @@ describe('ImportantAlertsCard', () => {
       overflow: 'hidden',
     });
     expect(card.paddingBottom).toBeUndefined();
-    expect(cardFill(getByTestId('card'))).toBe(surfaces.secondary);
+    expect(cardFill(getByTestId('card'))).toBe(resolveSurfaceTint(surfaces.secondary));
   });
 
   it('paints icon circles from the tone, and lets an explicit colour win', () => {

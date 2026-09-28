@@ -1,4 +1,6 @@
-import { normalizeBloomSize } from '../appearance/legacy';
+import { useReducedMotion } from 'react-native-reanimated';
+import { MOTION_RECIPES } from '../motion/recipes';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useRef } from 'react';
@@ -17,11 +19,12 @@ const PADDING = 2;
 const SQUEEZE_RATIO = 0.75; // thumb height shrinks to 75% when pressed
 
 const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>(
-  ({ checked: checkedProp, value, onCheckedChange: onCheckedChangeProp, onValueChange, disabled, style, size: sizeProp, tone: toneProp, accessibilityLabel, nativeID, testID }, ref) => {
-    const checked = checkedProp ?? value ?? false;
-    const onCheckedChange = onCheckedChangeProp ?? onValueChange;
+  (props, ref) => {
+    const { checked: checkedProp, defaultChecked = false, onCheckedChange, disabled, style, size: sizeProp, tone: toneProp, accessibilityLabel, nativeID, testID } = props;
+    const [checked, setChecked] = useControllableState({ value: checkedProp ?? false, controlled: Object.prototype.hasOwnProperty.call(props, 'checked'), defaultValue: defaultChecked, onChange: onCheckedChange });
     const theme = useTheme();
-    const {size, tone} = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
+    const reducedMotion = useReducedMotion();
+    const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
     const paint = resolveBloomColors(theme.colors, tone, 'solid');
     const field = useFieldMembership({ accessibilityLabel, disabled, nativeID });
     const isDisabled = field.disabled;
@@ -34,7 +37,10 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
     const prevValueRef = useRef(checked);
     if (prevValueRef.current !== checked) {
       prevValueRef.current = checked;
-      Animated.spring(anim, {
+      if (reducedMotion) {
+        anim.stopAnimation();
+        anim.setValue(checked ? 1 : 0);
+      } else Animated.spring(anim, {
         toValue: checked ? 1 : 0,
         useNativeDriver: false,
         ...animation.spring.gentle,
@@ -43,25 +49,25 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
 
     const handlePress = useCallback(() => {
       if (isDisabled) return;
-      onCheckedChange?.(!checked);
-    }, [isDisabled, checked, onCheckedChange]);
+      setChecked(!checked);
+    }, [isDisabled, checked, setChecked]);
 
     const onPressIn = useCallback(() => {
       if (isDisabled) return;
-      Animated.spring(pressAnim, {
+      Animated.timing(pressAnim, {
         toValue: 1,
         useNativeDriver: false,
-        ...animation.spring.snappy,
+        duration: reducedMotion ? 0 : MOTION_RECIPES.press.duration,
       }).start();
-    }, [isDisabled, pressAnim]);
+    }, [isDisabled, pressAnim, reducedMotion]);
 
     const onPressOut = useCallback(() => {
-      Animated.spring(pressAnim, {
+      Animated.timing(pressAnim, {
         toValue: 0,
         useNativeDriver: false,
-        ...animation.spring.gentle,
+        duration: reducedMotion ? 0 : MOTION_RECIPES.press.duration,
       }).start();
-    }, [pressAnim]);
+    }, [pressAnim, reducedMotion]);
 
     const track = TRACK[size];
     const thumb = THUMB[size];

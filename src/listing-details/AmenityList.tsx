@@ -95,7 +95,7 @@ function AmenityListComponent({
       </View>
       {onShowAll && hasMore ? (
         <View style={{ flexDirection: 'row' }}>
-          <Button variant="secondary" onPress={onShowAll} testID={testID ? `${testID}-show-all` : undefined}>
+          <Button  onPress={onShowAll} testID={testID ? `${testID}-show-all` : undefined} tone="neutral" appearance="outline">
             {buttonLabel}
           </Button>
         </View>

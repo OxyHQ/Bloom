@@ -142,7 +142,7 @@ describe('BookingCard', () => {
     expect(s.paddingTop).toBe('24px');
     expect(s.paddingLeft).toBe('24px');
     expect(s.borderTopWidth).toBe('0px');
-    expect(byTestId('card').querySelector('.bloom-surface-paint--solid')).not.toBeNull();
+    expect(byTestId('card').querySelector('.bloom-surface-paint')).not.toBeNull();
   });
 
   it('without dates: placeholders, "Check availability", no note', () => {
@@ -326,7 +326,7 @@ describe('GuestPicker in a booking card', () => {
     return (
       <GuestPicker
         testID="gs"
-        size="small"
+        size="sm"
         value={counts}
         maxGuests={maxGuests}
         onClose={onClose}

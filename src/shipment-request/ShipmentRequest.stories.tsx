@@ -252,11 +252,11 @@ function FullForm({ maxWidth = 640, photos = true }: { maxWidth?: number; photos
         }}
         footer={
           <Button
-            variant="primary"
-            size="large"
+
+            size="lg"
             fullWidth
             disabled={!isShipmentLoadComplete(load)}
-            onPress={noop}
+            onPress={noop} tone="accent" appearance="solid"
           >
             Ask for quotes
           </Button>

@@ -182,6 +182,6 @@ describe('WriteReviewPrompt', () => {
     expect(dismiss.getAttribute('aria-label')).toBe('Dismiss');
     act(() => dismiss.click());
     expect(onDismiss).toHaveBeenCalled();
-    expect(byTestId('w').querySelector('.bloom-surface-paint--solid')).not.toBeNull();
+    expect(byTestId('w').querySelector('.bloom-surface-paint')).not.toBeNull();
   });
 });

@@ -28,10 +28,10 @@ import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { styled } from 'react-native-css';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceGeometry } from '../surface/resolve-surface-geometry';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceLevelValue } from '../styles/surface-levels';
-import { withAlpha } from '../theme/color-utils';
+import { SurfaceLevelProvider, useSurfaceLevelValue } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -73,15 +73,13 @@ const VARIANT_DEFAULTS: Record<
 const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootComponent({
   children,
   appearance: appearanceProp,
-  variant,
   tone: toneProp,
-  radius = 'radius-12',
+  radius,
   cornerCurve = SURFACE_SHAPES.card.curve,
   clipContent = false,
   contentStyle,
   elevation,
   border,
-  material = 'solid',
   style,
   className,
   onPress,
@@ -94,7 +92,8 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   const theme = useTheme();
   const layer = useSurfaceLayer();
   const parentLevel = useSurfaceLevelValue();
-  const appearance = appearanceProp ?? (variant === 'filled' ? 'subtle' : variant === 'outlined' ? 'outline' : 'solid');
+  const resolvedGeometry = resolveSurfaceGeometry(radius ? RADIUS[radius] : undefined, style, RADIUS['radius-12'], cornerCurve);
+  const appearance = appearanceProp ?? 'solid';
   const {tone} = useBloomAppearance({tone: toneProp}, {size: 'md', tone: 'neutral'});
   const paint = resolveBloomColors(theme.colors, tone, appearance);
   // Drive the press-opacity via state instead of Pressable's function-form
@@ -109,16 +108,12 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   const containerStyle = useMemo((): ViewStyle => {
     const defaults = VARIANT_DEFAULTS[appearance];
     const resolvedBorder = border ?? defaults.border;
-    const resolvedElevation =
-      elevation ??
-      (variant === 'plain' && appearanceProp == null
-        ? 'none'
-        : defaults.elevation);
+    const resolvedElevation = elevation ?? defaults.elevation;
 
     const base: ViewStyle = {
       backgroundColor:
         tone === 'neutral' && appearance !== 'plain' ? layer.fill : paint.background,
-      ...surfaceStyle({ radius: RADIUS[radius], curve: radius === 'radius-max' ? 'round' : cornerCurve }),
+      ...resolvedGeometry.style,
     };
 
     if (resolvedBorder !== 'none') {
@@ -132,28 +127,31 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
     }
 
     return base;
-  }, [appearance, appearanceProp, variant, tone, paint, radius, cornerCurve, border, elevation, theme, layer.fill]);
+  }, [appearance, appearanceProp, tone, paint, radius, cornerCurve, border, elevation, theme, layer.fill, resolvedGeometry.radius]);
 
   // Resolve class utilities on the actual layout host. Geometry remains owned
   // by the public shape axes; clipping is explicit and keeps shadows outside.
-  const shape = { radius: RADIUS[radius], curve: radius === 'radius-max' ? 'round' as const : cornerCurve };
-  const geometry = { ...surfaceStyle(shape), borderWidth: containerStyle.borderWidth ?? 0 };
+  const shape = resolvedGeometry.shape;
+  const geometry = { ...resolvedGeometry.style, borderWidth: containerStyle.borderWidth ?? 0 };
   const resolved = StyleSheet.flatten([containerStyle, style, geometry]) ?? {};
   const outerStyle: ViewStyle = { ...resolved };
-  const baseFill = String(containerStyle.backgroundColor);
-  const fill = StyleSheet.flatten(style)?.backgroundColor ?? (material === 'glass' ? withAlpha(baseFill, tone !== 'neutral' && appearance === 'solid' ? 0.94 : 0.25) : baseFill);
-  const paintsSurface = appearance !== 'plain';
-  const publishedFill = resolveSurfaceFill(String(paintsSurface ? fill : resolved.backgroundColor ?? 'transparent'), false, layer.parentFill);
-  Object.assign(outerStyle, surfaceFillVars(publishedFill));
+  const material = resolveSurfaceMaterial({
+    fill: String(resolved.backgroundColor ?? 'transparent'),
+    parentFill: layer.parentFill,
+    parentLevel,
+    paint: appearance !== 'plain',
+  });
+  const { paintFill: fill, painted: paintsSurface, publishedFill } = material;
+  Object.assign(outerStyle, material.vars);
   if (paintsSurface) outerStyle.backgroundColor = 'transparent';
   const contents = <>
-    {paintsSurface ? <SurfacePaint fill={material === 'glass' ? String(fill) : publishedFill} backdrop={layer.parentFill} radius={shape.radius} shape={shape} glass={material === 'glass'} /> : null}
-    <SurfaceLevelProvider level={paintsSurface ? layer.level : parentLevel} fill={publishedFill}>
+    {paintsSurface ? <SurfacePaint fill={String(fill)} radius={resolvedGeometry.radius} shape={shape} /> : null}
+    <SurfaceLevelProvider level={material.level} fill={publishedFill}>
       <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>
         {clipContent ? <View
           testID={testID ? `${testID}-clip` : undefined}
-          style={[contentStyle, surfaceStyle({ ...shape, radius: Math.max(0, RADIUS[radius] - geometry.borderWidth) }),
-            { overflow: 'hidden', alignSelf: 'stretch', flexGrow: 1, flexShrink: 1 }]}
+          style={[contentStyle, surfaceStyle({ ...shape, radius: typeof resolvedGeometry.radius === 'number' ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth) : undefined }),
+            { borderRadius: typeof resolvedGeometry.radius === 'number' ? Math.max(0, resolvedGeometry.radius - geometry.borderWidth) : resolvedGeometry.radius, overflow: 'hidden', alignSelf: 'stretch', flexGrow: 1, flexShrink: 1 }]}
         >{children}</View> : children}
       </CardForegroundContext.Provider>
     </SurfaceLevelProvider>

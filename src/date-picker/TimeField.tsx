@@ -9,7 +9,7 @@ import { TYPE_SCALE } from '../typography';
 import { resolveCalendarPalette } from './palette';
 import { formatTime, parseTime, snapTime, stepTime } from './time';
 import type { TimeFieldProps, TimeFieldSize } from './types';
-import { useInheritedControl } from '../control-surface';
+import { useBloomAppearance } from '../appearance';
 import { useFieldMembership } from '../field/membership';
 
 /**
@@ -45,8 +45,8 @@ import { useFieldMembership } from '../field/membership';
  */
 
 const SIZE_CONFIG: Record<TimeFieldSize, { width: number; height: number; type: 'body-medium' | 'body-2-medium' }> = {
-  small: { width: 96, height: 32, type: 'body-2-medium' },
-  medium: { width: 104, height: 38, type: 'body-medium' },
+  sm: { width: 96, height: 32, type: 'body-2-medium' },
+  md: { width: 104, height: 38, type: 'body-medium' },
 };
 
 /** `transition-colors duration-100 ease-out` on the border. Web only. */
@@ -74,8 +74,8 @@ function TimeFieldComponent({
   // `"--:--"` names nothing, so the name is a prop — or, inside a `Field`, the
   // field's label. The density contract supplies the size the same way: a
   // container can ask for `small` once instead of on every control.
-  const density = useInheritedControl('density', sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : undefined, 'md');
-  const size = density === 'sm' ? 'small' : 'medium';
+  const { size: density } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = density === 'xs' || density === 'sm' ? 'sm' : 'md';
   const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });
   const disabled = field.disabled;
   const palette = useMemo(() => resolveCalendarPalette(theme), [theme]);

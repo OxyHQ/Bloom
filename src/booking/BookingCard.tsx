@@ -188,14 +188,14 @@ function BookingCardComponent({
       </View>
 
       <Button
-        variant="primary"
-        size="large"
+
+        size="lg"
         fullWidth
         onPress={onReserve}
         disabled={reserveDisabled}
         loading={loading}
         style={{ marginTop: 16, alignSelf: 'stretch' }}
-        testID={id('reserve')}
+        testID={id('reserve')} tone="accent" appearance="solid"
       >
         {buttonLabel}
       </Button>

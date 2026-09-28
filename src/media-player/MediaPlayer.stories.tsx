@@ -251,7 +251,7 @@ export const Podcast: Story = {
                 value={sleep}
                 onValueChange={setSleep}
                 remaining={sleep === 'off' ? undefined : '24:10'}
-                size="compact"
+                size="sm"
                 testID="sleep"
               />
             ),
@@ -291,7 +291,7 @@ export const Transport: Story = {
     const [sleep, setSleep] = useState<SleepTimerValue>('off');
     return (
       <View style={{ padding: 24, gap: 24, backgroundColor: theme.colors.background }}>
-        {(['compact', 'regular', 'large'] as TransportControlsSize[]).map((size) => (
+        {(['sm', 'md', 'lg'] as TransportControlsSize[]).map((size) => (
           <View key={size} style={{ gap: 8, alignItems: 'flex-start' }}>
             <Caption>{`music — ${size}`}</Caption>
             <TransportControls
@@ -350,7 +350,7 @@ export const Transport: Story = {
           />
           <TransportControls
             variant="podcast"
-            size="large"
+            size="lg"
             playing={playing}
             onPlayPause={() => setPlaying((v) => !v)}
             onSkipBack={noop}

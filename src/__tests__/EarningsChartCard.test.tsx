@@ -1,3 +1,5 @@
+import { resolveSurfaceTint } from '../surface/shared';
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -7,7 +9,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { EarningsChartCard, formatEarningsK } from '../chart-cards/EarningsChartCard';
 import type { EarningsPoint, EarningsRange } from '../chart-cards/EarningsChartCard';
-import { chartHueTone, resolveChartCardPalette } from '../chart-cards/palette';
+import { chartHueTone } from '../chart-cards/palette';
 import { singleBarSlot } from '../chart-cards/rounded-bar-geometry';
 
 // Demo periods and fixed Y ticks. Expected pixels read off recharts 3.10's
@@ -152,6 +154,6 @@ describe('EarningsChartCard', () => {
     layoutPlot(getByTestId, 'earn-plot');
     const rects = getByTestId('earn-plot').findAllByType('Rect' as never) as unknown as Node[];
     expect(rects[0]!.props.fill).toBe(palette.track);
-    expect(cardFill(getByTestId('earn'))).toBe(palette.surface);
+    expect(cardFill(getByTestId('earn'))).toBe(resolveSurfaceTint(buildTheme('teal', 'dark').colors.card));
   });
 });

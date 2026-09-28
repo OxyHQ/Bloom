@@ -103,6 +103,7 @@ import { Platform, type ViewStyle } from 'react-native';
 
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { mixColors, quietText } from './color-contrast';
 import { RING_OFFSET_VAR } from './interactive-web-css';
 import type { WebCssStyle } from './web-view-style';
@@ -360,6 +361,13 @@ export function useSurfaceLevel(delta: number = 0): SurfaceLevelPaint {
  * app does not repeat a guess at every call site and does not have to be swept
  * when a container changes what it paints.
  */
+/** Optional ambient fill for layout containers that also work without a theme. */
+export function useOptionalSurfaceFill(): string | undefined {
+  const theme = useContext(BloomThemeContext)?.theme;
+  const { level, fill } = useContext(SurfaceLevelContext);
+  return fill ?? (theme ? levelBackground(theme, level) : undefined);
+}
+
 export function useSurfaceFill(): string {
   const theme = useTheme();
   const { level, fill } = useContext(SurfaceLevelContext);

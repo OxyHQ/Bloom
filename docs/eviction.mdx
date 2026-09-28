@@ -88,7 +88,7 @@ draws a hollow marker. The list is named "Case history" (`accessibilityLabel`).
 There is no list component — compose the cards with a `SegmentedControl`:
 
 ```tsx
-<SegmentedControl label="Show evictions" type="tabs" size="large" value={tab} onChange={setTab}>
+<SegmentedControl label="Show evictions" type="tabs" size="lg" value={tab} onChange={setTab}>
   <SegmentedControlItem value="upcoming"><SegmentedControlItemText>Upcoming</SegmentedControlItemText></SegmentedControlItem>
   <SegmentedControlItem value="past"><SegmentedControlItemText>Past</SegmentedControlItemText></SegmentedControlItem>
 </SegmentedControl>

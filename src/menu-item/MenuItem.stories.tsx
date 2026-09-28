@@ -120,7 +120,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Menu({ density }: { density?: MenuItemRowProps['density'] }) {
   const [basket, setBasket] = useState<Record<string, number>>({ ember: 2 });
   return (
-    <Card variant="plain" radius="radius-16">
+    <Card  radius="radius-16" elevation="none" appearance="solid">
       <CardBody style={{ padding: 0 }}>
         {DISHES.map((dish, index) => {
           const { id, ...rest } = dish;
@@ -171,7 +171,7 @@ export const RowStates: Story = {
     return (
       <Page>
         <Section title="Nothing in the basket, something in it, sold out, no photo, long text">
-          <Card variant="plain" radius="radius-16">
+          <Card  radius="radius-16" elevation="none" appearance="solid">
             <CardBody style={{ padding: 0 }}>
               <MenuItemRow
                 name="Ember flatbread"
@@ -267,7 +267,7 @@ export const Options: Story = {
     return (
       <Page>
         <Section title="Inline — what a desktop dialog holds">
-          <Card variant="plain" radius="radius-16">
+          <Card  radius="radius-16" elevation="none" appearance="solid">
             <CardBody>
               <MenuItemOptions
                 header={<DishHeader />}
@@ -295,7 +295,7 @@ export const OptionsInvalid: Story = {
     return (
       <Page>
         <Section title="Required, unanswered">
-          <Card variant="plain" radius="radius-16">
+          <Card  radius="radius-16" elevation="none" appearance="solid">
             <CardBody>
               <MenuItemOptions
                 groups={[

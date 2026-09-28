@@ -16,11 +16,9 @@ export interface RadioProps<Value extends string = string> {
   value: Value;
   /** Whether this option is the checked one. */
   checked?: boolean;
-  selected?: boolean;
   /** Called with `value` when the option is chosen. Selecting the already-checked
    * option is a no-op — a radio, unlike a checkbox, cannot be un-chosen. */
   onValueChange?: (value: Value) => void;
-  onSelect?: (value: Value) => void;
   /** Optional label text. */
   label?: string;
   /** Optional description shown below the label. */
@@ -61,10 +59,11 @@ export interface RadioGroupProps<Value extends string = string> {
    */
   label?: string;
   /** The selected value, or `undefined` for a group with nothing chosen yet. */
-  value: Value | undefined;
+  value?: Value;
+  /** Initial selection when uncontrolled. */
+  defaultValue?: Value;
   /** Called with the newly chosen value. */
   onValueChange?: (value: Value) => void;
-  onSelect?: (value: Value) => void;
   /** The options, in order. */
   options: ReadonlyArray<RadioOption<Value>>;
   /** Size preset, applied to every option. */
@@ -89,10 +88,8 @@ export interface RadioCardProps<Value extends string = string> {
   value: Value;
   /** Whether this card is the checked one. */
   checked?: boolean;
-  selected?: boolean;
   /** Called with `value` when the card is chosen. Re-choosing it is a no-op. */
   onValueChange?: (value: Value) => void;
-  onSelect?: (value: Value) => void;
   /** The card's title (one line); also its accessible name. */
   title: string;
   /** Optional one-line description under the title. */

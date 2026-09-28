@@ -30,7 +30,7 @@ Every group in the stack is a [`GlassIsland`](/docs/glass) and every control ins
 
 - the island paints rung 1 of the surface ladder at the chrome alpha, with the material's
   own hairline and shadow, so the stack moves with a preset change like everything else;
-- the island mounts a `ControlSurface` with `material: 'glass'`, so the items inside paint
+- the island mounts a `BloomScope` with `material: 'glass'`, so the items inside paint
   FLUSH with no `variant` written on any of them — the contract in
   [composition](/docs/composition);
 - `ButtonGroupItem` is Bloom's island-aware control. It carries a toggle's `aria-pressed`

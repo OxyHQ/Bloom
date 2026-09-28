@@ -149,7 +149,7 @@ function CallMinimisedPillComponent({
               activeIcon={RiMicOffFill}
               label={muted ? l.unmute : l.mute}
               active={muted}
-              size="small"
+              size="sm"
               accentColor={accentColor}
               onPress={() => onMutedChange(!muted)}
               testID={testID ? `${testID}-mute` : undefined}
@@ -160,7 +160,7 @@ function CallMinimisedPillComponent({
               icon={CallEndGlyph}
               label={l.endCall}
               tone="end"
-              size="small"
+              size="sm"
               accentColor={accentColor}
               onPress={onEndCall}
               testID={testID ? `${testID}-end` : undefined}

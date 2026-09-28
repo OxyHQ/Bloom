@@ -1,3 +1,4 @@
+import { useSurfaceLayer } from '../surface/use-surface-layer';
 import type { LinkButtonProps } from './types';
 import React, { forwardRef, useMemo, useRef, useEffect, memo, type ComponentType } from 'react';
 import { resolveIconSlot } from '../icons/render-icon';
@@ -20,20 +21,7 @@ import { useBloomAppearance } from '../appearance/context';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import {
-  BUTTON_GEOMETRY,
-  BUTTON_RADIUS,
-  BUTTON_SHADOW,
-  ICON_BUTTON_ICON_SIZE,
-  LINK_BUTTON_GAP,
-  isIconComponent,
-  resolveButtonRecipe,
-  BUTTON_SIZE_ALIAS,
-  resolveButtonGeometry,
-  resolveButtonPalette,
-  resolveButtonUnderline,
-  type ButtonResolvedSize,
-} from './shared';
+import { BUTTON_RADIUS, BUTTON_SHADOW, ICON_BUTTON_ICON_SIZE, LINK_BUTTON_GAP, isIconComponent, resolveLinkButtonPalette, resolveButtonGeometry, resolveButtonPalette, resolveButtonUnderline, type ButtonResolvedSize } from './shared';
 import type { ButtonProps } from './types';
 
 /** Raw text descendants need a native Text host; layout content stays unwrapped. */
@@ -82,9 +70,6 @@ export type {
  * Native fork of the button. Geometry and every state's colours come
  * from `./shared`, the same table `Button.web.tsx` reads.
  *
- * The web fork's `outline | link | destructive` are real variants here too:
- * `outline` and `link` share `secondary`/`text`'s palette, `destructive` paints
- * the negative gradient.
  */
 
 /**
@@ -206,7 +191,6 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   pressed: togglePressed,
   stopPropagation = false,
   appearance: appearanceProp,
-  variant: variantProp,
   tone: toneProp,
   size: sizeProp,
   style,
@@ -220,7 +204,7 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   renderLeadingIcon,
   renderTrailingIcon,
   iconOnly = false,
-  linkTone = 'primary',
+  linkTone,
   underline,
   textVariant,
   numberOfLines,
@@ -237,20 +221,20 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   'aria-haspopup': ariaHasPopup,
 }, ref) {
   const theme = useTheme();
-  const recipe = resolveButtonRecipe(variantProp);
-  const appearance = appearanceProp ?? recipe.appearance;
-  const { size, tone } = useBloomAppearance({ size: sizeProp ? BUTTON_SIZE_ALIAS[sizeProp] : undefined, tone: toneProp ?? (variantProp ? recipe.tone : undefined) }, { size: 'md', tone: 'accent' });
+  const layer = useSurfaceLayer();
+  const appearance = appearanceProp ?? 'solid';
+  const { size, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
   const geometry = resolveButtonGeometry(size, textVariant);
-  const isSquare = iconOnly || variantProp === 'icon' || sizeProp === 'icon' || (icon != null && children == null);
+  const isSquare = iconOnly || (icon != null && children == null);
   const isIconVariant = isSquare;
-  const isLink = appearance === 'plain' && (href != null || variantProp === 'link');
+  const isLink = appearance === 'plain' && (href != null || linkTone != null);
   const isInteractionBlocked = disabled || loading;
   const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
   const palette = useMemo(
-    () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone, colors),
-    [appearance, theme, tone, variantProp, appearanceProp, toneProp, linkTone, colors],
+    () => isLink && linkTone != null && toneProp == null ? resolveLinkButtonPalette(theme, linkTone) : resolveButtonPalette(appearance, theme, tone, colors, layer.fill),
+    [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill],
   );
-  const underlineMode = resolveButtonUnderline(isLink ? 'link' : 'primary', underline);
+  const underlineMode = resolveButtonUnderline(isLink, underline);
 
   // Pressed state drives the ACTIVE palette. Tracked through state rather than
   // Pressable's function-form `style`, which NativeWind's css-interop swallows
@@ -468,55 +452,54 @@ const styles = StyleSheet.create({
 export const Button = memo(ButtonComponent);
 Button.displayName = 'Button';
 
-export const PrimaryButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="primary" />
+export const PrimaryButton = memo((props: ButtonProps) => (
+  <Button appearance="solid" tone="accent" {...props} />
 ));
 PrimaryButton.displayName = 'PrimaryButton';
 
-export const SecondaryButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="secondary" />
+export const SecondaryButton = memo((props: ButtonProps) => (
+  <Button appearance="outline" tone="neutral" {...props} />
 ));
 SecondaryButton.displayName = 'SecondaryButton';
 
-export const IconButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="icon" />
+export const IconButton = memo((props: ButtonProps) => (
+  <Button appearance="outline" tone="neutral" {...props} iconOnly />
 ));
 IconButton.displayName = 'IconButton';
 
-export const GhostButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="ghost" />
+export const GhostButton = memo((props: ButtonProps) => (
+  <Button appearance="subtle" tone="accent" {...props} />
 ));
 GhostButton.displayName = 'GhostButton';
 
-export const InverseButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="inverse" />
-));
+export const InverseButton = memo((props: ButtonProps) => {
+  const theme = useTheme();
+  return <Button appearance="solid" tone="neutral" colors={props.appearance == null && props.tone == null ? { background: theme.colors.text, foreground: theme.colors.background } : undefined} {...props} />;
+});
 InverseButton.displayName = 'InverseButton';
 
-export const TextButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="text" />
+export const TextButton = memo((props: ButtonProps) => (
+  <Button appearance="plain" tone="accent" {...props} />
 ));
 TextButton.displayName = 'TextButton';
 
-// Web/shadcn-aligned variants. On native they normalize to existing primitives
-// (`outline → secondary`, `link → text`, `destructive → primary` tinted with the
-// negative token) inside `Button`, so these stay API-parallel with the web fork.
-export const OutlineButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="outline" />
+// Named compositions share the canonical appearance and tone axes.
+export const OutlineButton = memo((props: ButtonProps) => (
+  <Button appearance="outline" tone="neutral" {...props} />
 ));
 OutlineButton.displayName = 'OutlineButton';
 
 /**
  * `LinkButton`: an inline text action — no fill, no border, the label
- * (plus icons) in the accent or secondary colour. `variant` is its colour; pass
+ * (plus icons) in the accent or secondary colour. `linkTone` is its colour; pass
  * `href` to open a URL.
  */
-export const LinkButton = memo(({ variant = 'primary', ...props }: LinkButtonProps) => (
-  <Button {...props} variant="link" linkTone={variant} />
+export const LinkButton = memo(({ linkTone = 'primary', ...props }: LinkButtonProps) => (
+  <Button appearance="plain" {...props} linkTone={linkTone} />
 ));
 LinkButton.displayName = 'LinkButton';
 
-export const DestructiveButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="destructive" />
+export const DestructiveButton = memo((props: ButtonProps) => (
+  <Button appearance="solid" tone="danger" {...props} />
 ));
 DestructiveButton.displayName = 'DestructiveButton';

@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
@@ -21,11 +22,14 @@ function FilterTriggerButtonComponent({
   onPress,
   label: labelProp,
   accessibilityLabel,
-  size = 'medium',
+  size: sizeProp,
   disabled,
   style,
   testID,
 }: FilterTriggerButtonProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize;
+
   const { messages } = useMessages(STAY_FILTERS_MESSAGES);
   const label = labelProp ?? messages.filters;
   const applied = count > 0;
@@ -33,13 +37,13 @@ function FilterTriggerButtonComponent({
 
   const button = (
     <Button
-      variant="outline"
+
       size={size}
       leadingIcon={RiEqualizerLine}
       onPress={onPress}
       disabled={disabled}
       accessibilityLabel={name}
-      testID={testID}
+      testID={testID} tone="neutral" appearance="outline"
     >
       {label}
     </Button>

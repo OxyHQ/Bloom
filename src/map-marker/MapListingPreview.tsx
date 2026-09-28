@@ -186,13 +186,13 @@ function MapListingPreviewComponent({
 
   const closeButton = onClose ? (
     <Button
-      variant="secondary"
+
       size="xs"
       iconOnly
       leadingIcon={RiCloseLine}
       accessibilityLabel={closeLabel}
       onPress={onClose}
-      testID={testID ? `${testID}-close` : undefined}
+      testID={testID ? `${testID}-close` : undefined} tone="neutral" appearance="outline"
     />
   ) : null;
 

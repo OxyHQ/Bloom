@@ -1,0 +1,92 @@
+---
+title: Unified component API
+description: Visual inheritance, material composition, control contracts and migration.
+---
+
+# Unified component API
+
+Bloom resolves a component from its semantic props and its local environment. Containers publish facts their children need; controls keep ownership of their interaction. The shared contracts below apply on web and native, with platform-specific rendering.
+
+## Visual environment
+
+`BloomScope` is the only inherited control-size channel. It carries `size` (`xs`, `sm`, `md`, `lg`) and `tone`. Explicit props win over the nearest scope, then the component's default. Nested scopes inherit omitted fields independently. A scope adds no layout node and owns no selected value, action or disabled constraint.
+
+```tsx
+import { BloomScope } from '@oxy.so/bloom/appearance';
+import { Button } from '@oxy.so/bloom/button';
+
+<BloomScope size="sm" tone="neutral">
+  <Button>Save for later</Button>
+  <BloomScope tone="danger">
+    <Button>Delete</Button>
+  </BloomScope>
+  <Button size="lg" tone="accent">Continue</Button>
+</BloomScope>
+```
+
+Families expose the meaningful subset of sizes. A two-size control maps inherited sizes to its supported geometry; a content density (for example a condensed summary card) is a separate domain decision. Theme, locale, field membership and screen motion remain separate contexts so local state does not become an application-wide update.
+
+## Material and geometry
+
+A single internal material resolver chooses the paint fill, applies default 90% opacity, composes the estimated backing and supplies the descendant level and web variables. Explicit alpha stays explicit. Painted containers establish a backing; transparent containers inherit it. Docked chrome can publish a backing without adding depth; modal roots declare their reset.
+
+`Surface`, `Card` and `GlassIsland` share radius precedence: explicit radius prop, resolved style radius, family default. The host and paint receive the same geometry. Surface does not introduce content padding, layout wrappers or interaction behavior into its consumers.
+
+The published backing is an estimate from known fills, not a sampled image. Web backdrop blur and displacement still incur per-surface compositor cost. Native shares tint and sheen but does not pretend to implement the web filter.
+
+## Controls and overlays
+
+Use `appearance` for visual emphasis, `tone` for semantic colour and `size` for geometry. Named button adapters remain useful where they express intent; they compose the same Button implementation. `LinkButton` uses `linkTone`; `InverseButton` supplies a paired inverse palette. `iconOnly` describes square icon-control geometry.
+
+Boolean controls use `checked` / `defaultChecked` / `onCheckedChange`; value selections use `value` / `defaultValue` / `onValueChange` where uncontrolled operation is supported. Radio options retain their option value and cannot toggle themselves off. Field membership associates the visible label, help and error with the actual input. Field disabled/invalid constraints combine with the control's state rather than acting as overridable visual defaults.
+
+`ScreenScope` isolates screen navigation and scroll ownership inside an overlay while preserving theme, locale and visual scope. A retained screen must still declare whether it is active. Screen accounts for a keyboard that was already open when it mounted and removes inherited bottom-chrome clearance while it is visible.
+
+## Motion
+
+`MOTION_RECIPES` and `animateMotion` define `press`, `select`, `expand`, `present` and `dismiss` intent. They retarget existing shared values, respect reduced motion and leave direct gestures in charge of their position. Geometry and animation intent are independent: a tab capsule and a grouped selection can use the same movement without sharing semantics or DOM.
+
+## Migration
+
+These removals require a breaking release. Migrate consumers before adopting that release; there are no deprecated runtime shims.
+
+| Before | After |
+| --- | --- |
+| `ControlSurface density="small"` | `BloomScope size="sm"` from `appearance` |
+| Control sizes `small`, `medium`, `large` | `sm`, `md`, `lg` |
+| Button `size="icon"` | `size="md" iconOnly` |
+| Button `variant="primary"` | `appearance="solid" tone="accent"` |
+| Button `variant="secondary"` / `outline` | `appearance="outline" tone="neutral"` |
+| Button `variant="ghost"` | `appearance="subtle" tone="accent"` |
+| Button `variant="text"` | `appearance="plain" tone="accent"` |
+| Button `variant="destructive"` | `appearance="solid" tone="danger"` |
+| Button `variant="icon"` | `appearance="outline" tone="neutral" iconOnly` |
+| Button `variant="inverse"` / `link` | `InverseButton` / `LinkButton` |
+| LinkButton `variant` | `linkTone` |
+| Card `variant="plain"` | `appearance="solid" elevation="none"` |
+| Card `variant="elevated"` / `outlined` / `filled` | `appearance="solid"` / `outline` / `subtle` |
+| Switch `value` / `onValueChange` | `checked` / `onCheckedChange` |
+| Radio/RadioCard `selected`, radio `onSelect` | `checked`, `onValueChange` |
+| Fab `small` / `medium` / `large` | `xs` / `md` / `lg` (preserves 40/50/64 geometry) |
+| Fab placement/minimization props | Parent `Screen` / `BottomBar` coordination; explicit `collapsed` for label collapse |
+
+The package ships an import-aware codemod (requires TypeScript). From a Bloom checkout, preview first, then write:
+
+```bash
+node scripts/migrations/unify-bloom-api.mjs path/to/app
+node scripts/migrations/unify-bloom-api.mjs --write path/to/app
+```
+
+From an installed package, invoke `node node_modules/@oxy.so/bloom/scripts/migrations/unify-bloom-api.mjs` with the same arguments.
+
+It migrates package-imported literal JSX props and fenced documentation examples, preserving explicit appearance/tone overrides. Relative application components are left alone; `--internal` enables Bloom repository imports. Ambiguous spreads, name collisions and mixed legacy hook imports are reported for manual review. Dynamic variants, indirect wrappers, prop objects, namespace imports and type aliases require review and consumer typechecking. Do not use a global text replacement: unrelated components can legitimately use `variant`, and content density is not a control size.
+
+## Composition checks
+
+Storybook **System / Composition / Connected** combines post, nested link card, buttons, selection, a disabled field, menu and dialog. Its browser check exercises inherited and explicit size, field constraints, real clicks, Escape and focus restoration at narrow/wide widths in both modes.
+
+**System / Composition / Dense Feed** renders 100 posts for a repeatable material-cost diagnostic. `scripts/measure-surface-feed.mjs` reports four optical-on/off runs and verifies that liking one post does not mutate its 99 siblings. This intentionally unvirtualized stress fixture does not recommend rendering long production feeds without virtualization. Frame timings depend on hardware, browser and build; development measurements are not production Core Web Vitals.
+
+The local Chrome 146 development measurement (100 posts, 400 material layers) reported a p95 frame interval of 33.4 ms with optics and 16.7–16.8 ms with optics disabled. Liking one post produced zero DOM mutations in the other 99. Containment and compositor-promotion experiments worsened scrolling; removing offscreen posts reduced JavaScript work but did not improve that frame interval. None of these experiments changed the approved material recipe. The visible filters remain a measured performance cost; native performance has not been established by this browser test.
+
+The migration verification covered 485 distinct Jest suites across three shards and targeted reruns: 483 passed. `theme/__tests__/build-theme-from-seed-parity.test.ts` and `__tests__/color-role-foundation.test.ts` remained unverified because repeated runs terminated inside V8's VM/context machinery. This is not a complete green test run. Browser composition checks and all 59 template renders passed separately.

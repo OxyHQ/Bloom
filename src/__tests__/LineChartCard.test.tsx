@@ -1,3 +1,5 @@
+import { resolveSurfaceTint } from '../surface/shared';
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -9,7 +11,7 @@ import { LineChartCard, closedAreaPath, formatDollarsK, monthTitle } from '../ch
 import type { LinePoint, LineRange } from '../chart-cards/LineChartCard';
 import { PulsingDot } from '../chart-cards/primitives/PulsingDot';
 import { fixedDomainTicks, plotBox, pointX, scaleY } from '../chart-cards/geometry';
-import { chartHueTone, resolveChartCardPalette } from '../chart-cards/palette';
+import { chartHueTone } from '../chart-cards/palette';
 
 // The "weekly" demo period. Every expected pixel below was read off
 // recharts 3.10's SVG for that card at 480 wide (448 × 221 plot).
@@ -173,6 +175,6 @@ describe('LineChartCard', () => {
   it('paints the dark card from the neutral ramp', () => {
     const { getByTestId } = renderCard(<LineChartCard testID="line" data={WEEKLY} />, 'dark');
     const palette = resolveChartCardPalette(buildTheme('teal', 'dark'));
-    expect(cardFill(getByTestId('line'))).toBe(palette.surface);
+    expect(cardFill(getByTestId('line'))).toBe(resolveSurfaceTint(buildTheme('teal', 'dark').colors.card));
   });
 });

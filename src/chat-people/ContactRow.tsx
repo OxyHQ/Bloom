@@ -206,12 +206,12 @@ function ContactRowComponent(props: ContactRowProps) {
           </View>
         ) : (
           <Button
-            variant="secondary"
-            size="small"
+
+            size="sm"
             disabled={disabled}
             onPress={onAction}
             accessibilityLabel={messages.actionOn(actionLabel, name)}
-            testID={testID ? `${testID}-action` : undefined}
+            testID={testID ? `${testID}-action` : undefined} tone="neutral" appearance="outline"
           >
             {actionLabel}
           </Button>

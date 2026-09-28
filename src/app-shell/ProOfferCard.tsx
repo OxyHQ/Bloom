@@ -1,7 +1,7 @@
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
-import { resolveSurfaceFill } from '../surface/shared';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
@@ -164,7 +164,8 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
 
   const surfaceLayer = useSurfaceLayer();
   const customSurface = StyleSheet.flatten(style);
-  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
+  const material = resolveSurfaceMaterial({ fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill), parentFill: surfaceLayer.parentFill, parentLevel: surfaceLayer.parentLevel });
+  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
   const enter = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     enter.value = reducedMotion ? 1 : withDelay(enterDelay, withTiming(1, { duration: 300, easing: EASE_OUT }));
@@ -221,11 +222,11 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
         },
         enterStyle,
         style,
-        { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) },
+        { backgroundColor: 'transparent', ...material.vars },
       ]}
     >
-      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? 16} />
-      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
+      <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? 16} />
+      <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
       <View aria-hidden pointerEvents="none" style={backdropStyle}>
         {backdrop ?? <DefaultBackdrop from={palette.from} via={palette.via} />}
       </View>

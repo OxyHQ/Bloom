@@ -1,38 +1,23 @@
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 
-import type { ControlMaterial } from '../control-surface/types';
 import type { ButtonIconComponent } from '../button/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
 /** The two group sizes: 34px (`md`) and 30px (`sm`) items. */
-export type ButtonGroupSize = 'md' | 'sm' | 'medium' | 'small';
+export type ButtonGroupSize = 'md' | 'sm';
 
 export interface ButtonGroupProps {
   /**
-   * The material the group paints: `solid` (an opaque bordered pill, Bloom's
-   * default chrome) or `glass` (one translucent island the items sit flush on).
-   *
-   * Omitted, it is INHERITED from the nearest `ControlSurface` — which is what a
-   * `PageHeader`'s action slot mounts — and falls back to `solid`. So a group in
-   * a floating header needs no material written on it, and the same group in a
-   * card is solid without one either. Precedence and its limits:
-   * `docs/composition.mdx`.
-   */
-  material?: ControlMaterial;
-  variant?: ControlMaterial;
-  /**
    * Size for every item that does not set its own. Inherited from the nearest
-   * `ControlSurface` when omitted, then `md`.
+   * `BloomScope` when omitted, then `md`.
    */
   size?: ButtonGroupSize;
   /**
    * Whether to draw the 1px hairlines BETWEEN items.
    *
-   * Defaults to `true` for `solid` and `false` for `glass`. A divider is how a
-   * solid pill says "these are separate controls, fused"; on a translucent
-   * island the press highlight already says it, and a hairline over a moving
-   * backdrop reads as an artifact of the material.
+   * Defaults to `true`. Separators are inset
+   * vertically so they do not cross the outer rim.
    */
   dividers?: boolean;
   /** `ButtonGroupItem` children. */
@@ -54,9 +39,7 @@ export interface ButtonGroupItemProps {
   children?: React.ReactNode;
   /** Overrides the group's size. */
   size?: ButtonGroupSize;
-  /** Overrides the group's material. Rarely needed; the group owns it. */
-  material?: ControlMaterial;
-  variant?: ControlMaterial;
+  /** Material of a standalone item; items inside a group share the group Surface. */
   /** Highlights the item like its hover state and announces it as pressed. */
   checked?: boolean;
   selected?: boolean;

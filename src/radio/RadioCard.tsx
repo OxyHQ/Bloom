@@ -1,3 +1,4 @@
+import { useFieldMembership } from '../field/membership';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
@@ -63,19 +64,18 @@ ${CARD} {
 const RadioCardComponent = function RadioCard<Value extends string = string>({
   value,
   checked: checkedProp,
-  selected,
-  onValueChange: onValueChangeProp,
-  onSelect,
+  onValueChange,
   title,
   description,
-  disabled = false,
+  disabled: disabledProp = false,
   tone: toneProp,
   style,
   accessibilityLabel,
   testID,
 }: RadioCardProps<Value>) {
-  const onValueChange = onValueChangeProp ?? onSelect;
-  const checked = checkedProp ?? selected ?? false;
+  const checked = checkedProp ?? false;
+  const field = useFieldMembership({ disabled: disabledProp, accessibilityLabel, label: title, labelPlacement: 'adjacent' });
+  const disabled = field.disabled;
   const theme = useTheme();
   const ringOffset = useRingOffsetStyle();
   const { tone } = useBloomAppearance({ tone: toneProp }, {size: 'md', tone: 'accent'});
@@ -142,7 +142,10 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
       accessibilityRole="radio"
       // `aria-checked` is the one spelling both platforms honour — see `Radio`.
       aria-checked={checked}
-      accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityLabel={field.accessibilityLabel}
+      nativeID={field.nativeID}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       accessibilityHint={description}
       testID={testID}
     >

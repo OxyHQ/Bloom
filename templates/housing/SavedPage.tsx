@@ -79,10 +79,10 @@ export function SavedPage() {
                     onPress={() => go(id === 'swap' ? 'swap' : 'stay')}
                     actions={
                       <>
-                        <Button variant="secondary" size="small" leadingIcon={RiChat3Line} onPress={noop}>
+                        <Button  size="sm" leadingIcon={RiChat3Line} onPress={noop} tone="neutral" appearance="outline">
                           Message
                         </Button>
-                        <Button variant="ghost" size="small" leadingIcon={RiMapPinLine} onPress={noop}>
+                        <Button  size="sm" leadingIcon={RiMapPinLine} onPress={noop} tone="accent" appearance="subtle">
                           Directions
                         </Button>
                       </>

@@ -177,7 +177,8 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
       */}
       <Card
         clipContent
-        variant={variant ?? 'plain'}
+        appearance={variant === 'filled' ? 'subtle' : 'solid'}
+        elevation="none"
         radius="radius-16"
         style={{ backgroundColor }}
         testID={SETTINGS_LIST_GROUP_TEST_ID}

@@ -6,7 +6,7 @@ order: 3
 
 # Composition
 
-Bloom components share tokens. Sharing tokens is not the same as working together: a control still has to be told what material the container around it is painting, a label still has to be wired to the control it names, and a header still has to know which scroller it is following. Written as props, each of those is a thing the app repeats at every call site and gets wrong at one of them.
+Bloom components share tokens. Sharing tokens is not the same as working together: a control still has to inherit the density of its container, a label still has to be wired to the control it names, and a header still has to know which scroller it is following. Written as props, each of those is a thing the app repeats at every call site and gets wrong at one of them.
 
 This page is the set of small, explicit contracts that answer those questions, and the rules that keep them small. Each is a context a container publishes and a component opts into. None of them is a framework, a singleton, or a component that reads its children's types to decide what to do with them.
 
@@ -18,52 +18,35 @@ Every contract on this page resolves the same way:
 an explicit prop  >  the nearest container  >  the component's own default
 ```
 
-`undefined` is the only value that defers. Passing `material="solid"` inside a glass island paints a solid control — the container is a default, not an override, and a caller can always win.
+`undefined` is the only value that defers. Passing `size="md"` inside a compact control surface keeps that control medium-sized — the container is a default, not an override, and a caller can always win.
 
 **A constraint is not a default.** Anything that RESTRICTS a control — `disabled`, a modal's inertness, the user's reduce-transparency or reduce-motion preference — travels on its own channel and combines with `||`, never `??`. The rule above is exactly wrong for those: a descendant must not be able to re-enable an action its group disabled by passing a prop.
 
 **State does not travel either.** `checked`, `selected`, a field's value, a business datum: those belong to the component that holds them. A visual context that also carried state would make every container a place state can leak from.
 
-## Control presentation — `ControlSurface`
+## Control presentation — `BloomScope`
 
-`@oxy.so/bloom/control-surface`
+`@oxy.so/bloom/appearance`
 
-What a container tells the controls inside it about presentation, and nothing else. Two fields, both visual configuration:
-
-| field | values | meaning |
-| --- | --- | --- |
-| `material` | `'solid'` \| `'glass'` | the surface a control CONTAINER paints |
-| `density` | `'md'` \| `'sm'` (also `'medium'` \| `'small'`) | the size controls default to |
+One visual environment supplies `size="xs|sm|md|lg"` and `tone`. It renders no layout node. Each control resolves explicit props first, then the nearest scope, then its own defaults. An omitted field inherits from the enclosing scope independently of the other fields.
 
 ```tsx
-import { ControlSurface } from '@oxy.so/bloom/control-surface';
+import { BloomScope } from '@oxy.so/bloom/appearance';
 
-<ControlSurface material="glass">
-  <ButtonGroup accessibilityLabel="Playback">…</ButtonGroup>
-</ControlSurface>
+<BloomScope size="sm" tone="neutral">
+  <Button>Apply</Button>
+  <TextFieldInput label="Search" value={query} onValueChange={setQuery} />
+  <BloomScope tone="danger">
+    <Button>Delete</Button>
+  </BloomScope>
+</BloomScope>
 ```
 
-It renders no node of its own, so it can be dropped anywhere without moving anything. Bloom's own containers mount it for you — `glass/GlassIsland` does, which is why a `ButtonGroup` inside a floating `PageHeader` is glass with no prop written on it.
+Button, Switch, Select, Checkbox, ButtonGroup and text controls consume the same scope. Domain components may expose a separate content density; it must not become a competing control-size context. Each family documents any supported subset of sizes.
 
-A field left `undefined` inherits rather than resetting: `<ControlSurface density="small">` inside a glass island stays glass.
+Selection, actions and disabled state do not travel through visual scopes. A disabled `Field` constrains its controls; a component cannot re-enable itself by overriding a visual default. Surface nesting remains independent of control size.
 
-**Who reads it today:** `ButtonGroup` and `ButtonGroupItem` read `material`; `TextField`, `Textarea` and `TimeField` read `density`, and `PhoneInput` gets it by passing its `size` straight to `TextField`. `density` accepts `'medium' | 'small'` alongside `'md' | 'sm'`; legacy form sizes retain their public spellings — so a filter row can ask for `small` once instead of writing it on five controls:
-
-```tsx
-<ControlSurface density="small">
-  <TextFieldInput label="Search" value={q} onChangeText={setQ} />
-  <Textarea label="Notes" />
-  <TimeField accessibilityLabel="From" value={from} onChange={setFrom} />
-</ControlSurface>
-```
-
-A family whose sizes are a THREE-rung scale of its own (`small | medium | large`) is deliberately not a subject: a container setting `density` could not say which rung it meant.
-
-**`Button` does not read it** — a `Button` in a floating header keeps its own chrome, which is right for a primary action in its own capsule and wrong for an icon action that should sit flush on an island. Use `ButtonGroup`/`ButtonGroupItem` for the latter.
-
-Which families read it, which are exempt and why: [Adoption matrix](/docs/adoption-matrix).
-
-Precedence is gated in both directions by `src/__tests__/ControlSurface.test.tsx`, including the assertion that the context carries exactly two fields.
+See the generated [Adoption matrix](/docs/adoption-matrix) for participation and reasoned exceptions. `ControlSizeScope.test.tsx` verifies nesting and explicit overrides.
 
 ## Field membership — `Field`
 
@@ -214,7 +197,7 @@ The contracts are worth nothing if they only work in the screen they were built 
 1. **A form in a bottom sheet** — the field's error reaches the input across the sheet boundary, `Field disabled` reaches the input, the select trigger AND the switch, the switch takes its name from the field, and submit fires once per press.
 2. **An interactive card with a secondary action** — pressing "Archive" inside a pressable row does not also open the row. (React Native does not bubble a press; a web build does bubble a click, so this half is a browser check, not this one.)
 3. **A chat composer** — two presses send twice, and a disabled bar fires nothing at all.
-4. **A data screen** — a table inside a panel inside a card keeps its own accessible name and renders its empty state; a filter in a `ControlSurface density="small"` draws the small geometry rather than merely receiving a prop.
+4. **A data screen** — a table inside a panel inside a card keeps its own accessible name and renders its empty state; a filter in a `BloomScope size="sm"` draws the small geometry rather than merely receiving a prop.
 5. **A screen with overlaying chrome and a modal over it** — the page pads for its own chrome, the modal's chrome does not reach it, and a sheet on that screen clears nothing of the page.
 
 What that instrument cannot see is written at the top of the file: no paint, no layer order, no hit testing, no focus. Those have their own scripts in `scripts/verify-*.mjs`.

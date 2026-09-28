@@ -249,12 +249,12 @@ function RouteStopsComponent({
       {onAddStop ? (
         <View style={{ alignItems: 'flex-start', paddingLeft: 8, paddingTop: 4 }}>
           <Button
-            variant="text"
-            size="small"
+
+            size="sm"
             leadingIcon={addIcon}
             onPress={onAddStop}
             disabled={!canAddStop}
-            testID={testID ? `${testID}-add` : undefined}
+            testID={testID ? `${testID}-add` : undefined} tone="accent" appearance="plain"
           >
             {labels?.addStop ?? messages.addStop}
           </Button>

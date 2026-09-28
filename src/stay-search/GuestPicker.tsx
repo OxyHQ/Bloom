@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
+import { LinkButton } from '../button';
+
 import { StepperRow } from '../stepper';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -48,7 +48,7 @@ function GuestPickerComponent({
   note,
   onClose,
   closeLabel: closeLabelProp,
-  size = 'medium',
+  size,
   style,
   testID,
 }: GuestPickerProps) {
@@ -102,9 +102,9 @@ function GuestPickerComponent({
       ) : null}
       {close ? (
         <View style={{ alignItems: 'flex-end', paddingTop: 12 }}>
-          <Button variant="link" size="small" onPress={close} testID={testID ? `${testID}-close` : undefined}>
+          <LinkButton  size="sm" onPress={close} testID={testID ? `${testID}-close` : undefined}>
             {closeLabel}
-          </Button>
+          </LinkButton>
         </View>
       ) : null}
     </View>

@@ -1,45 +1,25 @@
+import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
 import { forwardRef, useImperativeHandle, useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import {
-    View,
-    StyleSheet,
-    Pressable,
-    Dimensions,
-    Platform,
-    type LayoutChangeEvent,
-    type ViewStyle,
-    type StyleProp,
-} from 'react-native';
+import { View, StyleSheet, Dimensions, Platform, type ViewStyle, type StyleProp } from 'react-native';
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
 import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { ScreenScope } from '../layout';
 import { Z_INDEX } from '../styles/z-index';
-import Animated, {
-    type AnimatedStyle,
-    interpolate,
-    runOnJS,
-    type SharedValue,
-    useAnimatedScrollHandler,
-    useAnimatedReaction,
-    useAnimatedStyle,
-    useDerivedValue,
-    useSharedValue,
-    withSpring,
-    withTiming,
-} from 'react-native-reanimated';
+import Animated, { interpolate, runOnJS, useAnimatedScrollHandler, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { useTheme } from '../theme/use-theme';
 import { SheetKeyboardProvider } from './context';
-import type { BottomSheetRef, BottomSheetProps, BottomSheetShellProps, BottomSheetBaseProps } from './types';
+import type { BottomSheetRef, BottomSheetBaseProps } from './types';
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
 function useScreenDimensions() {
@@ -56,6 +36,7 @@ function useScreenDimensions() {
 }
 
 const SPRING_CONFIG = {
+    reduceMotion: MOTION_RECIPES.expand.reduceMotion,
     damping: 25,
     stiffness: 300,
     mass: 0.8,
@@ -210,14 +191,14 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             // it eventually fires, because its captured generation is stale.
             closeGenerationRef.current += 1;
             closeGeneration.value = closeGenerationRef.current;
-            opacity.value = withTiming(1, { duration: 250 });
+            opacity.value = withTiming(1, { ...MOTION_RECIPES.present, duration: 250 });
             translateY.value = withSpring(0, SPRING_CONFIG);
         } else if (rendered) {
             // Capture the generation for THIS close cycle so the animation
             // callback (running on the UI thread, scheduled back to JS) and
             // the fallback timer agree on which cycle they belong to.
             const generation = closeGenerationRef.current;
-            opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+            opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
                 if (finished) {
                     runOnJS(finishClose)(generation);
                 }
@@ -361,7 +342,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         // bumped the generation in between.
                         const generation = closeGeneration.value;
                         translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
-                        opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+                        opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
                             if (finished) runOnJS(finishClose)(generation);
                         });
                     } else {
@@ -420,7 +401,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         ...SPRING_CONFIG,
                         velocity: velocity,
                     });
-                    opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+                    opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
                         if (finished) {
                             runOnJS(finishClose)(generation);
                         }
@@ -477,7 +458,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 if (shouldClose) {
                     const generation = closeGeneration.value;
                     translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
-                    opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+                    opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
                         if (finished) runOnJS(finishClose)(generation);
                     });
                 } else {
@@ -615,7 +596,9 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
 
     // The paint is absolute: gestures, measurements and layout stay on the existing sheet.
     const flatSurfaceStyle = StyleSheet.flatten(style as StyleProp<ViewStyle>);
-    const surfaceFill = resolveSurfaceFill(String(backgroundFill ?? flatSurfaceStyle?.backgroundColor ?? colors.background), false, colors.background);
+    const backingFill = String(backgroundFill ?? flatSurfaceStyle?.backgroundColor ?? colors.background);
+    const material = resolveSurfaceMaterial({ fill: backingFill, parentFill: colors.background, paint: !backgroundComponent, level: 0 });
+    const { paintFill, publishedFill: surfaceFill } = material;
     const surfaceRadius = flatSurfaceStyle?.borderRadius ?? flatSurfaceStyle?.borderTopLeftRadius ?? 24;
     const surfaceCorners: ViewStyle = {
         ...surfaceStyle({ curve: SURFACE_SHAPES.panel.curve }),
@@ -766,12 +749,12 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         {backgroundComponent ? backgroundComponent({ style: styles.background }) : (
                             <View pointerEvents="none" style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}>
                                 <View pointerEvents="none" style={[StyleSheet.absoluteFill, { bottom: detached ? 0 : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24) }]}>
-                                    <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={surfaceRadius} />
+                                    <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={surfaceRadius} />
                                 </View>
                             </View>
                         )}
 
-                        <SurfaceLevelProvider level={0} fill={surfaceFill}>
+                        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
                         {handleSlot}
 
                         {bodyContent}

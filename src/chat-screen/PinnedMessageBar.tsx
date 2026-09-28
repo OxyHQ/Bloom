@@ -197,8 +197,8 @@ function PinnedMessageBarComponent({
 
       {onPressList ? (
         <Button
-          variant="text"
-          size="small"
+
+          size="sm"
           iconOnly
           // An ELEMENT: `variant="text"` paints a component icon in the ACCENT,
           // and two accent glyphs beside an accent title line is three things
@@ -206,13 +206,13 @@ function PinnedMessageBarComponent({
           icon={<RiListUnordered width={18} height={18} fill={paint.textSecondary} />}
           accessibilityLabel={listLabel}
           onPress={onPressList}
-          testID={testID ? `${testID}-list` : undefined}
+          testID={testID ? `${testID}-list` : undefined} tone="accent" appearance="plain"
         />
       ) : null}
       {onDismiss ? (
         <Button
-          variant="text"
-          size="small"
+
+          size="sm"
           iconOnly
           icon={
             dismissIcon === 'unpin' ? (
@@ -223,7 +223,7 @@ function PinnedMessageBarComponent({
           }
           accessibilityLabel={resolvedDismissLabel}
           onPress={onDismiss}
-          testID={testID ? `${testID}-dismiss` : undefined}
+          testID={testID ? `${testID}-dismiss` : undefined} tone="accent" appearance="plain"
         />
       ) : null}
     </View>

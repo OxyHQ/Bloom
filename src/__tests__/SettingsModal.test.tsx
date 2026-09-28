@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, { useState } from 'react';
 import * as ReactNative from 'react-native';
 import { Text as RNText } from 'react-native';
@@ -395,5 +396,7 @@ it.each(['light', 'dark'] as const)('publishes the actual settings page backing 
   function Probe() { return <RNText testID="surface-probe">{useSurfaceFill()}</RNText>; }
   const { getByTestId } = renderWithTheme(<SettingsModal open onClose={() => {}} groups={GROUPS} pages={{general: {title: 'General', content: <Probe />}}} testID="settings" />, mode);
   flush();
-  expect(getByTestId('surface-probe').props.children).toBe(resolvedStyle(getByTestId('settings').props.style).backgroundColor);
+  const theme = buildTheme('teal', mode);
+  const expected = resolveSurfaceMaterial({ fill: resolveSettingsPalette(theme).full, parentFill: theme.colors.background }).publishedFill;
+  expect(getByTestId('surface-probe').props.children).toBe(expected);
 });

@@ -19,11 +19,11 @@ function InteractiveButton(props: FollowButtonProps) {
 const meta = {
   title: 'Controls/Follow Button', component: FollowButton,
   parameters: { layout: 'padded' },
-  args: { following: false, onFollowChange: fn(), tone: 'support', iconOnly: false, disabled: false, size: 'small' },
+  args: { following: false, onFollowChange: fn(), tone: 'support', iconOnly: false, disabled: false, size: 'sm' },
   argTypes: {
     tone: { control: 'select', options: ['support', 'action', 'neutral', 'accent'] },
     following: { control: 'boolean' }, iconOnly: { control: 'boolean' }, disabled: { control: 'boolean' },
-    size: { control: 'select', options: ['small', 'medium'] },
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
     label: { control: 'text' }, followingLabel: { control: 'text' },
     onFollowChange: { control: false }, style: { control: false }, color: { control: 'color' },
   },

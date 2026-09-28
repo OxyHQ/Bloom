@@ -110,7 +110,7 @@ export const Input: Story = {
     const [outOfTen, setOutOfTen] = useState<number | null>(7);
     return (
       <View style={{ gap: 24, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
-        {(['small', 'medium', 'large'] as const).map((size) => (
+        {(['sm', 'md', 'lg'] as const).map((size) => (
           <View key={size} style={{ gap: 8 }}>
             <Caption>{size}</Caption>
             <RatingInput
@@ -141,7 +141,7 @@ export const Input: Story = {
         <View style={{ gap: 8 }}>
           <Caption>max 10, small</Caption>
           <RatingInput
-            size="small"
+            size="sm"
             max={10}
             value={outOfTen}
             onChange={setOutOfTen}

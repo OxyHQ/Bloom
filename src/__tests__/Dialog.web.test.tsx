@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React from 'react';
 import { act } from 'react';
 import { Text } from 'react-native';
@@ -154,7 +155,7 @@ describe('Dialog.web resets the ambient surface for its content', () => {
     });
 
     const text = document.body.textContent ?? '';
-    expect(text).toContain(`fill=${theme.colors.background}`);
+    expect(text).toContain(`fill=${resolveSurfaceMaterial({ fill: theme.colors.background, parentFill: theme.colors.background, level: 0 }).publishedFill}`);
     expect(text).not.toContain(`fill=${theme.colors.card}`);
   });
 });
@@ -165,5 +166,5 @@ it('publishes an explicit dialog background rather than the nominal page token',
   function Probe() { return <Text>{`custom-fill=${useSurfaceFill()}`}</Text>; }
   act(() => root.render(<BloomThemeProvider mode="dark" colorPreset="teal"><Harness style={{backgroundColor:'#123456'}} onControl={c => {control=c;}} body={<Probe />} /></BloomThemeProvider>));
   act(() => control?.open());
-  expect(document.body.textContent).toContain('custom-fill=#123456');
+  expect(document.body.textContent).toContain(`custom-fill=${resolveSurfaceMaterial({ fill: '#123456', parentFill: buildTheme('teal', 'dark').colors.background, level: 0 }).publishedFill}`);
 });

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from '../button';
+import { Button , LinkButton } from '../button';
 import { RangeCalendar, type DateRange } from '../date-picker';
 import { Divider } from '../divider';
 import { RiBuilding2Line } from '../icons/remix/RiBuilding2Line';
@@ -661,10 +661,10 @@ function MobileFlow({ initialMode = 'rent', lockMode = false }: { initialMode?: 
           backgroundColor: theme.colors.card,
         }}
       >
-        <Button variant="link" onPress={() => set(INITIAL)}>
+        <LinkButton  onPress={() => set(INITIAL)}>
           Clear all
-        </Button>
-        <Button variant="primary" size="large" icon={RiSearchLine}>
+        </LinkButton>
+        <Button  size="lg" icon={RiSearchLine} tone="accent" appearance="solid">
           Search
         </Button>
       </View>

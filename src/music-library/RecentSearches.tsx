@@ -170,11 +170,11 @@ function RecentSearchesComponent({
       </View>
       {onClearAll && items.length > 0 ? (
         <Button
-          variant="secondary"
-          size="small"
+
+          size="sm"
           onPress={onClearAll}
           style={{ alignSelf: 'flex-start', marginTop: 8 }}
-          testID={testID ? `${testID}-clear-all` : undefined}
+          testID={testID ? `${testID}-clear-all` : undefined} tone="neutral" appearance="outline"
         >
           {clearAllLabel}
         </Button>

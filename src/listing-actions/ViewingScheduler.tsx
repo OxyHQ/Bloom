@@ -202,7 +202,7 @@ function ViewingSchedulerComponent({
         <SegmentedControl<ViewingMode>
           label={messages.viewingType}
           type="radio"
-          size="large"
+          size="lg"
           value={mode}
           onChange={(value) => onModeChange?.(value)}
           style={{ marginTop: 20, alignSelf: 'stretch' }}
@@ -235,14 +235,14 @@ function ViewingSchedulerComponent({
       ) : null}
 
       <Button
-        variant="primary"
-        size="large"
+
+        size="lg"
         fullWidth
         onPress={onSubmit}
         disabled={disabled}
         loading={loading}
         style={{ marginTop: 20, alignSelf: 'stretch' }}
-        testID={id('submit')}
+        testID={id('submit')} tone="accent" appearance="solid"
       >
         {submitLabel}
       </Button>

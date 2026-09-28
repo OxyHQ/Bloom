@@ -1,3 +1,4 @@
+import { resolveSurfaceTint } from '../surface/shared';
 /** @jest-environment node */
 import { resolveBloomColors } from '../appearance/colors';
 import { resolveButtonPalette } from '../button/shared';
@@ -15,7 +16,9 @@ it('uses exact semantic paired fills for new button roles across every preset an
     const tokens = getResolvedTokens(preset, mode);
     for (const [tone, role] of roles) {
       const button = resolveButtonPalette('solid', theme, tone);
-      expect(button.rest.background).toBe(tokens[`--${role}`]);
+      const roleFill = tokens[`--${role}`];
+      if (typeof roleFill !== 'string') throw new Error(`Missing ${role} token`);
+      expect(button.rest.background).toBe(resolveSurfaceTint(roleFill));
       expect(button.rest.foreground).toBe(tokens[`--${role}-foreground`]);
       expect(button.rest.gradient).toBeNull();
       for (const state of [button.rest, button.hover, button.active]) {
@@ -51,6 +54,6 @@ it('seed themes expose the same support/action pairs to shared consumers', () =>
 
 it('keeps accent as the default paired role with shared Surface optics', () => {
   const theme = buildTheme('oxy', 'light');
-  expect(resolveButtonPalette('solid', theme).rest).toMatchObject({ background: theme.colors.primary, foreground: theme.colors.primaryForeground, gradient: null, surface: true });
+  expect(resolveButtonPalette('solid', theme).rest).toMatchObject({ background: resolveSurfaceTint(theme.colors.primary), foreground: theme.colors.primaryForeground, gradient: null, surface: true });
   expect(resolveBloomColors(theme.colors, 'accent', 'solid').background).toBe(theme.colors.primary);
 });

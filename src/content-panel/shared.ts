@@ -14,7 +14,7 @@
  * WHICH colour is the honest answer for a given set of props.
  */
 import { useContext } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 
@@ -41,23 +41,11 @@ function repaintedByStyle(style: StyleProp<ViewStyle>): boolean {
 /**
  * The exact fill the panel publishes, or `undefined` when it cannot know it.
  *
- * Four cases, in order:
- *
- *  - `surfaceColor` given — the caller stated it; nothing beats that.
- *  - `surfaceClassName` given — the caller REPAINTED the surface with a utility
- *    Bloom cannot resolve to a colour (that is the whole point of the prop), so
- *    publishing `card` would be a confident lie. The panel falls back to
- *    publishing the rung alone, which is the weaker answer it had before —
- *    `surfaceColor` is how a caller in this case gets the exact one back.
- *  - `surfaceStyle` carrying a `backgroundColor` — the same repaint by the other
- *    door, and the panel has to stop claiming `card` for it too. The colour is
- *    right there, but WHICH of the two paints is a platform question the panel
- *    must not guess at: `styled()` appends the class descriptor AFTER the style
- *    prop, so on native the class wins the array, while on web the inline style
- *    wins the cascade. Publishing either one would be right on one platform and
- *    quietly wrong on the other, so the panel publishes neither and the caller
- *    names it with `surfaceColor`.
- *  - none of them — the panel paints `bg-card`, so it publishes `colors.card`.
+ * The explicit surfaceColor wins, followed by a string background in
+ * surfaceStyle. A class-only repaint is unknown unless its caller supplies
+ * surfaceColor. Otherwise the default card token is the raw fill.
+ * Framed hosts move this fill into translucent paint and publish its composite;
+ * unframed hosts retain the unmodified fill.
  *
  * Outside a `BloomThemeProvider` there is no palette to name, and the panel has
  * always rendered there on native, so this stays optional rather than throwing:
@@ -70,6 +58,8 @@ export function usePanelSurfaceFill(
 ): string | undefined {
   const ctx = useContext(BloomThemeContext);
   if (surfaceColor) return surfaceColor;
+  const background = StyleSheet.flatten(surfaceStyle)?.backgroundColor;
+  if (typeof background === 'string') return background;
   if (surfaceClassName) return undefined;
   if (repaintedByStyle(surfaceStyle)) return undefined;
   return ctx?.theme.colors.card;

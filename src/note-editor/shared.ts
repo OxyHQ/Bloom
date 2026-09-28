@@ -20,7 +20,7 @@ import type { NoteEditorAction, NoteEditorToolbarProps, NoteSaveState } from './
  */
 export function toolbarCapacity(
   width: number,
-  size: NonNullable<NoteEditorToolbarProps['size']> = 'medium',
+  size: NonNullable<NoteEditorToolbarProps['size']> = 'md',
 ): number {
   const item = TOOLBAR_ITEM_SIZE[size];
   const usable = width - TOOLBAR_GROUP_BORDER + TOOLBAR_DIVIDER;

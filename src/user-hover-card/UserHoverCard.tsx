@@ -1,5 +1,5 @@
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
@@ -196,7 +196,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   const parentLevel = useSurfaceLevelValue();
   const background = StyleSheet.flatten(style)?.backgroundColor ?? (bare ? undefined : palette.surface);
   const publishedFill = typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
-    ? resolveSurfaceFill(background, false, parentFill) : undefined;
+    ? resolveSurfaceMaterial({ fill: background, parentFill, paint: !bare }).publishedFill : undefined;
   const entrance = useEntrance(animateIn && !bare);
 
   const hasCover = typeof cover === 'string' && cover.length > 0;
@@ -223,7 +223,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         transformOrigin: 'top',
       };
 
-  const material = bare || !publishedFill ? null : <SurfacePaint radius={StyleSheet.flatten(style)?.borderRadius ?? RADIUS} />;
+  const material = bare || !publishedFill ? null : <SurfacePaint fill={background as string} radius={StyleSheet.flatten(style)?.borderRadius ?? RADIUS} />;
 
   // Where the avatar's visible band sits, so the action can centre on it.
   const avatarOuter = hasCover ? AVATAR_SIZE + AVATAR_RING * 2 : AVATAR_SIZE;
@@ -284,7 +284,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         testID={testID}
         aria-busy
         accessibilityState={{ busy: true }}
-        style={[cardStyle, entrance, style, surfaceFillVars(publishedFill)]}
+        style={[cardStyle, entrance, style, surfaceFillVars(publishedFill), !bare && publishedFill ? { backgroundColor: 'transparent' } : null]}
       >
         {material}
         {coverView}
@@ -360,7 +360,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   const content = (
     <Animated.View
       testID={testID}
-      style={[cardStyle, entrance, style, surfaceFillVars(publishedFill)]}
+      style={[cardStyle, entrance, style, surfaceFillVars(publishedFill), !bare && publishedFill ? { backgroundColor: 'transparent' } : null]}
     >
       {material}
       {coverView}

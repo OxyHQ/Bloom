@@ -1,3 +1,5 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { resolveSurfaceTint } from '../surface/shared';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
@@ -48,7 +50,7 @@ describe('StatCards', () => {
       'dark',
     );
     const theme = buildTheme('teal', 'dark');
-    const surfaces = resolveDashboardSurfaces(theme);
+    const surfaces = resolveDashboardSurfaces(theme, resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill);
     const band = cardLayout(getByTestId('card-band'));
     expect(band).toMatchObject({
       borderRadius: 12,
@@ -57,7 +59,7 @@ describe('StatCards', () => {
       paddingRight: 6,
       paddingLeft: 10,
     });
-    expect(cardFill(getByTestId('card-band'))).toBe(surfaces.inner);
+    expect(cardFill(getByTestId('card-band'))).toBe(resolveSurfaceTint(surfaces.inner));
     const pill = resolvedStyle(getByTestId('card-delta').props.style);
     expect(pill.backgroundColor).toBe(statusPair(theme, 'rose', surfaces.inner).background);
     expect(pill).toMatchObject({ paddingLeft: 4, paddingRight: 8, paddingTop: 2, paddingBottom: 2 });

@@ -1,3 +1,4 @@
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -13,7 +14,6 @@ import {
   type AgentsPoint,
 } from '../chart-cards/AgentsChartCard';
 import { purpleStop } from '../chart-cards/ai-profile-hues';
-import { resolveChartCardPalette } from '../chart-cards/palette';
 
 // December's bar heights, ~5px per agent.
 const DECEMBER = [

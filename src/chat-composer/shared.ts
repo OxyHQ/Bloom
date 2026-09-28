@@ -122,7 +122,7 @@ export function resolveChatComposerPalette(theme: Theme, backing?: string): Chat
     accentStrong: dark ? accent[400] : accent[600],
     onAccent: theme.colors.primaryForeground,
     destructive: colorRamp(theme.colors.negative, ACCENT_TABLE)[dark ? 400 : 500],
-    send: resolveButtonPalette('primary', theme),
+    send: resolveButtonPalette('solid', theme, 'accent'),
     shadow: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     shadowPanel: dark ? MENU_SHADOW.dark : MENU_SHADOW.light,
     focusRing: accent[500],

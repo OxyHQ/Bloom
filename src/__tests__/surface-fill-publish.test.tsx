@@ -23,6 +23,7 @@
  *    because the DOM inherits it whether or not React context agrees.
  */
 import React, { createRef } from 'react';
+import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { Platform, Text, View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
@@ -269,7 +270,7 @@ describe('ContentPanel publishes the colour it paints', () => {
     expect(probed(toJSON(), 'fill')).toBe('rgb(1 2 3)');
   });
 
-  it('stops claiming a colour when the repaint came through `surfaceStyle`', () => {
+  it('publishes an explicit style fill on an unframed panel', () => {
     // The same repaint by the other door. WHICH of the two paints is a platform
     // question — `styled()` appends the class descriptor after the style prop,
     // so the class wins the array on native while the inline style wins the
@@ -282,7 +283,7 @@ describe('ContentPanel publishes the colour it paints', () => {
       </ContentPanel>,
     );
     expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
-    expect(probed(toJSON(), 'fill')).toBe(resolveSurfaceLevel(theme, 1).background);
+    expect(probed(toJSON(), 'fill')).toBe('rgb(4 5 6)');
   });
 
   it('still publishes `colors.card` for a `surfaceStyle` that paints nothing', () => {
@@ -341,7 +342,7 @@ describe('an overlay that paints the page RESETS what the subtree is told', () =
       </ContentPanel>,
     );
     act(() => ref.current?.present());
-    expect(probed(toJSON(), 'fill')).toBe(theme.colors.background);
+    expect(probed(toJSON(), 'fill')).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.background), theme.colors.background));
     expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
   });
 
@@ -355,7 +356,7 @@ describe('an overlay that paints the page RESETS what the subtree is told', () =
         </Dialog>
       </ContentPanel>,
     );
-    expect(probed(toJSON(), 'fill')).toBe(theme.colors.background);
+    expect(probed(toJSON(), 'fill')).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.background), theme.colors.background));
     expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
   });
 });
@@ -378,7 +379,7 @@ describe('the web variable rides the element that carries the fill', () => {
     );
     const surface = findHost(toJSON(), 'content-panel-surface');
     expect(surface).not.toBeNull();
-    expect(resolvedStyle(surface?.props.style)[SURFACE_FILL_VAR]).toBe(theme.colors.card);
+    expect(resolvedStyle(surface?.props.style)[SURFACE_FILL_VAR]).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background));
   });
 
   it('is absent on native, where the hook is the answer', () => {

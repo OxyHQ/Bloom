@@ -1,3 +1,4 @@
+import { MOTION_RECIPES } from '../../motion/recipes';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/fading-tab-slot.tsx
  * (MIT © 2026 David Mokos).
@@ -9,6 +10,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  useReducedMotion,
   withTiming,
 } from 'react-native-reanimated';
 import { Screen } from 'react-native-screens';
@@ -16,12 +18,13 @@ import type { TabsDescriptor, TabsSlotRenderOptions } from 'expo-router/ui';
 
 /** Strong ease-out — entering content should feel instant, then settle. */
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
-const ENTER_DURATION = 220;
+const ENTER_DURATION = MOTION_RECIPES.present.duration;
 /** Never enter from nothing: a whisper of depth, no zoom. */
 const ENTER_SCALE = 0.985;
 
 function FadeIn({ focused, children }: PropsWithChildren<{ focused: boolean }>) {
   const progress = useSharedValue(1);
+  const reducedMotion = useReducedMotion();
   const isFirstRender = useRef(true);
 
   useEffect(() => {
@@ -30,14 +33,16 @@ function FadeIn({ focused, children }: PropsWithChildren<{ focused: boolean }>) 
       isFirstRender.current = false;
       return;
     }
-    if (focused) {
+    if (reducedMotion) {
+      progress.value = focused ? 1 : 0;
+    } else if (focused) {
       progress.value = 0;
-      progress.value = withTiming(1, { duration: ENTER_DURATION, easing: EASE_OUT });
+      progress.value = withTiming(1, { ...MOTION_RECIPES.present, duration: ENTER_DURATION, easing: EASE_OUT });
     } else {
       // Outgoing screen hides instantly (display: none) — only entries animate.
       progress.value = 0;
     }
-  }, [focused, progress]);
+  }, [focused, progress, reducedMotion]);
 
   // `progress` must stay in the deps array — see the CRITICAL note in
   // `TabBarBase`: without the worklets babel plugin (web) an omitted array

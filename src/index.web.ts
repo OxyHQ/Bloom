@@ -164,7 +164,6 @@ export * from './button/index.web';
 export { Surface } from './surface/index.web';
 export type { SurfaceProps } from './surface/index.web';
 export * from './button-group/index.web';
-export * from './control-surface';
 export {
   EDGE_GAP,
   windowEdgeGap,
@@ -183,7 +182,7 @@ export {
 } from './layout';
 export type { StickySectionProps } from './layout';
 export { Fab } from './fab/index.web';
-export type { FabProps, FabVariant, FabSize, FabPlacement, FabMinimizeBehavior } from './fab/index.web';
+export type { FabProps, FabSize } from './fab/index.web';
 export { FrostedIconButton } from './frosted-icon-button/index.web';
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button/index.web';
 export * from './divider';
@@ -295,8 +294,8 @@ export { SubtleHover } from './subtle-hover';
 export type { SubtleHoverProps } from './subtle-hover';
 
 // Motion presets (Reanimated enter/exit + directional screen transition)
-export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop, ScreenTransition } from './motion/index.web';
-export type { ScreenTransitionProps, ScreenTransitionDirection } from './motion/index.web';
+export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop, ScreenTransition, MOTION_RECIPES, animateMotion } from './motion/index.web';
+export type { ScreenTransitionProps, ScreenTransitionDirection, MotionIntent } from './motion/index.web';
 export { AnimatedCheck } from './animated-check';
 export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
 

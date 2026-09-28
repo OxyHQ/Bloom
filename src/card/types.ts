@@ -27,10 +27,7 @@ export type CardElevation = 'none' | ShadowRole;
 /** Border width role. `thin` is the 1px default; `hairline` is the 0.5px `BORDER_WIDTH.hairline`. */
 export type CardBorder = 'none' | 'hairline' | 'thin' | 'medium';
 
-/** Existing named presets; appearance is the shared presentation axis. */
-export type CardVariant = 'plain' | 'elevated' | 'outlined' | 'filled';
-
-/** Geometry is controlled by radius/cornerCurve/border, not by style overrides. */
+/** Explicit shape axes win over style; uniform borderRadius may supply the fallback. */
 type CardStyle = Omit<
   ViewStyle,
   Extract<
@@ -40,18 +37,14 @@ type CardStyle = Omit<
     | 'borderCurve'
     | 'overflow'
   >
->;
+> & Pick<ViewStyle, 'borderRadius'>;
 
 export interface CardProps {
   children?: React.ReactNode;
   /** Preset background + border + elevation. Default `solid` with small elevation. */
   appearance?: BloomAppearance;
-  /** Shared Surface material. Defaults to solid with gradient and rim; glass opts into refraction. */
-  material?: 'glass' | 'solid';
-  /** Compatibility preset. An explicit appearance takes precedence. */
-  variant?: CardVariant;
   tone?: BloomTone;
-  /** Corner rung. Default `radius-12`. */
+  /** Corner rung. Explicit prop wins over style.borderRadius; default radius-12. */
   radius?: CardRadius;
   /** Platform-adaptive curve. radius-max remains circular. */
   cornerCurve?: CornerCurve;

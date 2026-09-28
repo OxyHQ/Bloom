@@ -106,13 +106,13 @@ function ArtistChipsInputComponent({
           />
         </TextField>
         <Button
-          variant="secondary"
-          size="medium"
+
+          size="md"
           leadingIcon={RiAddLine}
           disabled={blocked || draft.trim() === ''}
           onPress={commit}
           accessibilityLabel={addName}
-          testID={testID ? `${testID}-add` : undefined}
+          testID={testID ? `${testID}-add` : undefined} tone="neutral" appearance="outline"
         >
           {addLabel}
         </Button>

@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -81,8 +81,8 @@ function MapAttributionComponent({
         style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: g.scaleGap }}
       >
         {onPressCredit ? (
-          <Button
-            variant="link"
+          <LinkButton
+
             linkTone="secondary"
             textVariant="caption-2-regular"
             underline="hover"
@@ -91,7 +91,7 @@ function MapAttributionComponent({
             testID={testID ? `${testID}-credit` : undefined}
           >
             {credit}
-          </Button>
+          </LinkButton>
         ) : (
           <Text
             variant="caption-2-regular"

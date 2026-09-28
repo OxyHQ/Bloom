@@ -27,7 +27,7 @@ export function Screen({ header, bottomBar, primaryAction, active: requestedActi
   const [measuredBottom, setBottom] = useState<number | null>(null);
   const top = measuredTop ?? headerHeight ?? (56 + (Platform.OS === 'web' ? 0 : insets?.top ?? 0));
   const bottom = measuredBottom ?? bottomBarHeight ?? (58 + windowEdgeGap(insets?.bottom ?? 0));
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(() => Platform.OS !== 'web' && (Keyboard.isVisible?.() ?? false));
   useEffect(() => {
     if (Platform.OS === 'web') return;
     const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
@@ -37,8 +37,8 @@ export function Screen({ header, bottomBar, primaryAction, active: requestedActi
   const hasBottom = !keyboardVisible && Boolean(bottomBar || primaryAction);
   const document = documentScroll && Platform.OS === 'web';
   const value = useMemo(() => ({ active, scrollY, collapseProgress, collapseTarget, activeScrollerId,
-    contentInsetsHandled: document, topInset: header ? top : 0, bottomInset: hasBottom ? bottom + contentClearance : navigationScope === 'inherit' ? inheritedNavigation?.bottomInset ?? contentClearance : contentClearance,
-  }), [active, scrollY, collapseProgress, collapseTarget, activeScrollerId, header, hasBottom, top, bottom, contentClearance, navigationScope, inheritedNavigation?.bottomInset, document]);
+    contentInsetsHandled: document, topInset: header ? top : 0, bottomInset: keyboardVisible ? contentClearance : hasBottom ? bottom + contentClearance : navigationScope === 'inherit' ? inheritedNavigation?.bottomInset ?? contentClearance : contentClearance,
+  }), [active, scrollY, collapseProgress, collapseTarget, activeScrollerId, header, hasBottom, top, bottom, contentClearance, navigationScope, inheritedNavigation?.bottomInset, document, keyboardVisible]);
   useScreenWindowBinding(value, { active: document });
   const headerNode = header ? <View testID={testID ? `${testID}-header` : undefined} pointerEvents="box-none" onLayout={event => setTop(event.nativeEvent.layout.height)} style={document ? { position: WEB_POSITION_STICKY, top: 0, zIndex: Z_INDEX.floating, marginBottom: -top } : { position: 'absolute', top: 0, left: 0, right: 0 }}>{header}</View> : null;
   const bottomNode = hasBottom ? <View testID={testID ? `${testID}-bottom` : undefined} pointerEvents="box-none" onLayout={event => setBottom(event.nativeEvent.layout.height)} style={document ? { position: WEB_POSITION_STICKY, bottom: 0, zIndex: Z_INDEX.floating, marginTop: -bottom } : { position: 'absolute', bottom: 0, left: 0, right: 0 }}>{bottomBar ?? <View pointerEvents="box-none" style={{ alignItems: 'flex-end', paddingHorizontal: 16, paddingBottom: windowEdgeGap(insets?.bottom ?? 0), minHeight: bottom }}>{primaryAction}</View>}</View> : null;

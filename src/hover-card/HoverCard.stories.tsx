@@ -50,8 +50,8 @@ function FollowButton() {
   const [following, setFollowing] = React.useState(false);
   return (
     <Button
-      size="small"
-      variant={following ? 'secondary' : 'primary'}
+      size="sm"
+      appearance={following ? 'outline' : 'solid'} tone={following ? 'neutral' : 'accent'}
       onPress={() => setFollowing((value) => !value)}>
       {following ? 'Following' : 'Follow'}
     </Button>

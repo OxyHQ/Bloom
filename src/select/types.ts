@@ -13,6 +13,8 @@ export type SelectProps = {
    */
   size?: SelectSize;
   value?: string;
+  /** Initial selection when value is uncontrolled. */
+  defaultValue?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
 };

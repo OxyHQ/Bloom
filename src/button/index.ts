@@ -15,7 +15,6 @@ export { GlyphButton } from './GlyphButton';
 
 export type {
   ButtonProps,
-  ButtonVariant,
   ButtonSize,
   ButtonIconComponent,
   ButtonLinkTone,

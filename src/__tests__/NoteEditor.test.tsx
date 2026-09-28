@@ -94,7 +94,7 @@ const action = (key: string, extra: Partial<NoteEditorAction> = {}): NoteEditorA
 
 describe('toolbarCapacity', () => {
   it('counts a group as border + n items + (n-1) hairlines', () => {
-    const item = TOOLBAR_ITEM_SIZE.medium;
+    const item = TOOLBAR_ITEM_SIZE.md;
     // Exactly three items wide: 2 + 3*34 + 2 = 106.
     const three = TOOLBAR_GROUP_BORDER + 3 * item + 2;
     expect(toolbarCapacity(three)).toBe(3);
@@ -103,7 +103,7 @@ describe('toolbarCapacity', () => {
   });
 
   it('reads the smaller rung as smaller', () => {
-    expect(toolbarCapacity(200, 'small')).toBeGreaterThan(toolbarCapacity(200, 'medium'));
+    expect(toolbarCapacity(200, 'sm')).toBeGreaterThan(toolbarCapacity(200, 'md'));
   });
 
   it('returns 0 rather than a negative count for a width that holds nothing', () => {
@@ -165,7 +165,7 @@ describe('the toolbar row', () => {
   it('collapses to a fused overflow item once it has been measured', () => {
     mount(<NoteEditorToolbar actions={TEN} accessibilityLabel="Formatting" testID="tb" />);
     // Five items' worth: 2 + 5*34 + 4 = 176. The `…` costs one, so four draw.
-    layout('tb', TOOLBAR_GROUP_BORDER + 5 * TOOLBAR_ITEM_SIZE.medium + 4);
+    layout('tb', TOOLBAR_GROUP_BORDER + 5 * TOOLBAR_ITEM_SIZE.md + 4);
     expect(byTestId('tb-more')).toBeTruthy();
     expect(maybe('tb-k3')).not.toBeNull();
     expect(maybe('tb-k4')).toBeNull();
@@ -177,7 +177,7 @@ describe('the toolbar row', () => {
     mount(<NoteEditorToolbar actions={TEN} accessibilityLabel="Formatting" testID="tb" />);
     layout('tb', 120);
     expect(byTestId('tb-more')).toBeTruthy();
-    layout('tb', TOOLBAR_GROUP_BORDER + 10 * TOOLBAR_ITEM_SIZE.medium + 9);
+    layout('tb', TOOLBAR_GROUP_BORDER + 10 * TOOLBAR_ITEM_SIZE.md + 9);
     expect(maybe('tb-more')).toBeNull();
     expect(maybe('tb-k9')).not.toBeNull();
   });

@@ -107,7 +107,7 @@ const inputInert = (props: Props) => props.editable === false;
 const SUBJECTS: Subject[] = [
   {
     name: 'switch',
-    render: (p) => <Switch testID={TID} value={false} onValueChange={() => {}} {...p} />,
+    render: (p) => <Switch testID={TID} checked={false} onCheckedChange={() => {}} {...p} />,
     ownNameProp: 'accessibilityLabel',
     isInert: pressableInert,
     describedBy: true,
@@ -125,7 +125,7 @@ const SUBJECTS: Subject[] = [
   },
   {
     name: 'radio',
-    render: (p) => <Radio testID={TID} value="a" selected={false} onSelect={() => {}} {...p} />,
+    render: (p) => <Radio testID={TID} value="a" checked={false} onValueChange={() => {}} {...p} />,
     ownNameProp: 'accessibilityLabel',
     isInert: pressableInert,
     describedBy: true,
@@ -525,7 +525,7 @@ describe('a disabled field reaches the controls INSIDE a composite', () => {
         <InputGroup testID="group">
           <TextFieldInput testID="group-input" label="Domain" value="" onChangeText={() => {}} />
           <InputGroupAddon>
-            <Button testID="group-button" size="small" variant="ghost" onPress={() => {}}>
+            <Button testID="group-button" size="sm" appearance="subtle" tone="accent" onPress={() => {}}>
               Go
             </Button>
           </InputGroupAddon>
@@ -561,7 +561,7 @@ describe('the contract is opt-IN', () => {
     const screen = wrap(
       <Field label="Anything" disabled error="Broken">
         <TextField>
-          <Switch testID="named" value={false} onValueChange={() => {}} accessibilityLabel="Own name" />
+          <Switch testID="named" checked={false} onCheckedChange={() => {}} accessibilityLabel="Own name" />
         </TextField>
       </Field>,
     );
@@ -571,7 +571,7 @@ describe('the contract is opt-IN', () => {
   });
 
   it('changes nothing outside a Field', () => {
-    const screen = wrap(<Switch testID="bare" value={false} onValueChange={() => {}} accessibilityLabel="Bare" />);
+    const screen = wrap(<Switch testID="bare" checked={false} onCheckedChange={() => {}} accessibilityLabel="Bare" />);
     const props = screen.getByTestId('bare').props as Props;
     expect(props.accessibilityLabel).toBe('Bare');
     expect(props.nativeID).toBeUndefined();

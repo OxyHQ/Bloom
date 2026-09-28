@@ -1,3 +1,4 @@
+import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import React from 'react';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { Platform } from 'react-native';
@@ -470,7 +471,7 @@ describe('TabBar', () => {
         <NativeTabBarSurface theme={theme} style={{ borderRadius: 29 }} />,
       );
       expect(hosts(UNSAFE_root, 'GlassView')).toHaveLength(0);
-      expect(UNSAFE_root.findAll(node => node.props.fill === theme.solidFallback && node.props.radius === 999).length).toBeGreaterThan(0);
+      expect(UNSAFE_root.findAll(node => node.props.fill === theme.glassTint && node.props.radius === 999).length).toBeGreaterThan(0);
     });
 
     it('renders an SF Symbol on iOS when the item carries one', () => {
@@ -503,13 +504,13 @@ describe('TabBar shared surface hierarchy', () => {
     function Probe() { actual = useSurfaceFill(); return null; }
     function Scene({ override }: { override?: string }) {
       const theme = useTheme();
-      expected = override ?? surfaceFillOn(theme, '#445566');
-      return <SurfaceLevelProvider level={3} fill="#445566"><TabBar material="solid" blur={false} theme={override ? { solidFallback: override } : undefined}><Probe /></TabBar></SurfaceLevelProvider>;
+      expected = resolveSurfaceFill(resolveSurfaceTint(override ?? resolveTabBarTheme(theme.colors).glassTint), '#445566');
+      return <SurfaceLevelProvider level={3} fill="#445566"><TabBar blur={false} theme={override ? { glassTint: override } : undefined}><Probe /></TabBar></SurfaceLevelProvider>;
     }
     const tree = render(<BloomThemeProvider mode={mode} colorPreset="teal"><Scene /></BloomThemeProvider>);
     expect(actual).toBe(expected);
     expect(actual).not.toBe('#445566');
     tree.rerender(<BloomThemeProvider mode={mode} colorPreset="teal"><Scene override="#123456" /></BloomThemeProvider>);
-    expect(actual).toBe('#123456');
+    expect(actual).toBe(expected);
   });
 });

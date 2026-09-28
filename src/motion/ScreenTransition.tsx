@@ -1,13 +1,14 @@
 import React from 'react';
-import { Platform, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
+  useReducedMotion,
   FadeOut,
   SlideInLeft,
   SlideInRight,
 } from 'react-native-reanimated';
-import type { ScreenTransitionDirection, ScreenTransitionProps } from './types';
+import type { ScreenTransitionProps } from './types';
 
 /** CSS-smooth deceleration for the native slide. */
 const SLIDE_EASING = Easing.out(Easing.exp);
@@ -30,6 +31,7 @@ export function ScreenTransition({
   children,
 }: ScreenTransitionProps) {
   const isWeb = Platform.OS === 'web';
+  const reducedMotion = useReducedMotion();
 
   const entering = isWeb
     ? enabledWeb
@@ -44,7 +46,7 @@ export function ScreenTransition({
     : FadeOut.duration(WEB_FADE_DURATION);
 
   return (
-    <Animated.View entering={entering} exiting={exiting} style={style}>
+    <Animated.View entering={reducedMotion ? undefined : entering} exiting={reducedMotion ? undefined : exiting} style={style}>
       {children}
     </Animated.View>
   );

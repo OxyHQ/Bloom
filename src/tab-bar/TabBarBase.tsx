@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
@@ -44,28 +45,24 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { moveSelection } from '../motion/selection-motion';
 import { useHaptics } from '../hooks/use-haptics';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
-import { resolveSurfaceFill } from '../surface/shared';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
-import { SolidTabBarSurface } from './surface-solid';
 import { setMinimized, useMinimizeState } from './context';
 import {
   BAR_MARGIN,
   BLUR_BLEED,
   EXPANDED_HEIGHT,
   HIGHLIGHT_EXPANDED,
-  HIGHLIGHT_FADE,
   HIGHLIGHT_MINIMIZED,
   MAX_EXPANDED_ITEM_WIDTH,
   ICON_SIZE,
@@ -76,7 +73,6 @@ import {
   MINIMIZED_HEIGHT,
   MINIMIZED_INSET,
   ROW_PAD_H,
-  SLIDE_SPRING,
   useTabBarTheme,
   type TabBarGlyphProps,
   type TabBarSurfaceComponent,
@@ -167,7 +163,6 @@ function TabBarBody({
   maxWidth,
   embedded = false,
   scrollable = false,
-  material = 'translucent',
   minimizeProgress,
   onLayout,
   style,
@@ -214,10 +209,9 @@ function TabBarBody({
   // mirrors to; react-native-web reads that from a `dir` prop, not `<html>`.
   const dirProps = useDirectionProps();
   const layer = useSurfaceLayer();
-  const solidFill = resolveSurfaceFill(themeOverrides?.solidFallback ?? layer.fill, false, layer.parentFill);
-  const theme = useTabBarTheme({ ...themeOverrides, solidFallback: solidFill });
-  const ResolvedSurface = material === 'solid' ? SolidTabBarSurface : Surface;
-  const publishedFill = resolveSurfaceFill(ResolvedSurface.resolveFill?.(theme) ?? theme.glassTint, false, layer.parentFill);
+  const theme = useTabBarTheme(themeOverrides);
+  const ResolvedSurface = Surface;
+  const publishedFill = resolveSurfaceMaterial({ fill: ResolvedSurface.resolveFill?.(theme) ?? theme.glassTint, parentFill: layer.parentFill }).publishedFill;
   const impact = useHaptics();
 
   // The pill's OUTER width (the box the animated minimize inset is applied
@@ -300,7 +294,7 @@ function TabBarBody({
       // the bar on its way out, dragging the active tint over every tab it
       // passed. Visibility is the thing that changed, so visibility is the only
       // thing that animates.
-      highlightOpacity.value = withTiming(0, HIGHLIGHT_FADE);
+      moveSelection(slideIndex, highlightOpacity, null);
       return;
     }
     // Coming back from fully hidden the capsule APPEARS at the new tab instead
@@ -314,11 +308,7 @@ function TabBarBody({
     // position: the driver is already writing `slideIndex` every frame, and a
     // spring started here would drag the capsule across the bar between two of
     // its writes.
-    if (!driven) {
-      slideIndex.value =
-        highlightOpacity.value === 0 ? activeIndex : withSpring(activeIndex, SLIDE_SPRING);
-    }
-    highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
+    moveSelection(slideIndex, highlightOpacity, activeIndex, driven);
   }, [activeIndex, hasSelection, driven, slideIndex, highlightOpacity, isDragging]);
 
   // Scrubbing: the highlight tracks the finger 1:1 while dragging (no spring —
@@ -369,7 +359,7 @@ function TabBarBody({
         if (highlightOpacity.value === 0) {
           slideIndex.value = indexAtX(event.x, progress.value);
         }
-        highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
+        moveSelection(slideIndex, highlightOpacity, slideIndex.value, true);
         lastTicked.value = Math.round(slideIndex.value);
         // Scrubbing is a deliberate bar interaction — surface the labels.
         setMinimized(minimized, 0);
@@ -391,7 +381,7 @@ function TabBarBody({
           return;
         }
         const rounded = Math.round(slideIndex.value);
-        slideIndex.value = withSpring(rounded, SLIDE_SPRING);
+        moveSelection(slideIndex, highlightOpacity, rounded);
         runOnJS(selectIndex)(rounded);
         isDragging.value = false;
       });
@@ -413,11 +403,7 @@ function TabBarBody({
         // the others and the driver carries the highlight to the tapped tab.
         // The scrub is the one gesture that does not: a finger dragging the
         // pill is manipulating the bar itself, not asking for a page.
-        if (!driven) {
-          slideIndex.value =
-            highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
-        }
-        highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
+        moveSelection(slideIndex, highlightOpacity, index, driven);
         setMinimized(minimized, 0);
         runOnJS(selectIndex)(index);
       });
@@ -656,7 +642,7 @@ function TabBarButtonBody({
     // already tracking this same focus change; springing from here as well would
     // be a second writer on one shared value.
     if (bar.driven) return;
-    bar.slideIndex.value = withSpring(index, SLIDE_SPRING);
+    moveSelection(bar.slideIndex, bar.highlightOpacity, index);
   }, [isFocused, index, bar]);
 
   // Tint follows the sliding highlight, not navigation focus: whatever the pill
@@ -735,11 +721,7 @@ function TabBarButtonBody({
           // rule the tap gesture and the controlled path follow. Skipped on the
           // driven path, where the position belongs to the driver and this
           // press will reach it as an ordinary selection.
-          if (!bar.driven) {
-            bar.slideIndex.value =
-              bar.highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
-          }
-          bar.highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
+          moveSelection(bar.slideIndex, bar.highlightOpacity, index, bar.driven);
         }
         setMinimized(minimized, 0);
         // A tap the bar's gesture already reported is not reported again

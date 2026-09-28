@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
  * Native variant of `ContentPanel` — the framed app-content surface.
  *
@@ -32,11 +33,11 @@
  */
 import React, { memo } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { StyleSheet, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 
 import { useOptionalPanelChrome } from '../styles/panel-chrome';
 import { StyledView } from '../styles/styled-primitives';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { SurfaceLevelProvider, surfaceFillVars, useOptionalSurfaceFill } from '../styles/surface-levels';
 import {
   ContentPanelNestingContext,
   useContentPanelNestingGuard,
@@ -92,10 +93,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   useContentPanelNestingGuard();
   const panelChrome = useOptionalPanelChrome();
   // What the panel tells its subtree it is painted in (`./shared.ts`).
-  const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
-  const defaultFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, undefined);
+  const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
+  const defaultFill = rawFill;
   const { width } = useWindowDimensions();
-  const paintsSurface = Boolean(defaultFill) && (framed ?? width >= framedFrom);
+  const parentFill = useOptionalSurfaceFill();
+  const paintsSurface = Boolean(defaultFill) && parentFill !== undefined && (framed ?? width >= framedFrom);
+  const publishedFill = rawFill && paintsSurface ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill : rawFill;
   const radius = StyleSheet.flatten(surfaceStyle)?.borderRadius ?? 28;
 
   // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
@@ -137,6 +140,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           surfaceFillVars(publishedFill),
           chromeStyle,
           surfaceStyle,
+          paintsSurface ? { backgroundColor: 'transparent' } : null,
         ]}
       >
         {paintsSurface ? <SurfacePaint fill={defaultFill!} radius={radius} /> : null}

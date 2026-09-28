@@ -197,8 +197,8 @@ export interface FilterTriggerButtonProps {
    * (the badge is a drawn number, so the name has to say it).
    */
   accessibilityLabel?: string;
-  /** `Button` size. Default `medium`. */
-  size?: 'small' | 'medium' | 'large';
+  /** `Button` size. Default `md`. */
+  size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;

@@ -9,6 +9,7 @@ function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
 export function useButtonLayout(ref: Ref<View> | undefined, onLayout?: (event: LayoutChangeEvent) => void, childRef?: Ref<HTMLElement>) {
   const [node, setNode] = useState<HTMLElement | null>(null);
   const callback = useRef(onLayout);
+  const measureAfterCommit = useRef<(() => void) | undefined>(undefined);
   callback.current = onLayout;
   const enabled = Boolean(onLayout);
   const setRef = useCallback((element: HTMLElement | null) => {
@@ -27,12 +28,15 @@ export function useButtonLayout(ref: Ref<View> | undefined, onLayout?: (event: L
       last = key;
       callback.current?.({ nativeEvent: { layout }, target: node, currentTarget: node } as unknown as LayoutChangeEvent);
     };
+    measureAfterCommit.current = measure;
     measure();
     const Resize = node.ownerDocument.defaultView?.ResizeObserver;
     const observer = Resize ? new Resize(measure) : undefined;
     observer?.observe(node);
     node.ownerDocument.defaultView?.addEventListener('resize', measure);
-    return () => { observer?.disconnect(); node.ownerDocument.defaultView?.removeEventListener('resize', measure); };
+    return () => { measureAfterCommit.current = undefined; observer?.disconnect(); node.ownerDocument.defaultView?.removeEventListener('resize', measure); };
   }, [node, enabled]);
+  // A sibling changing width or order moves this button without resizing it.
+  useLayoutEffect(() => { measureAfterCommit.current?.(); });
   return setRef;
 }

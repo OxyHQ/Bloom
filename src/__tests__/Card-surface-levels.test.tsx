@@ -10,7 +10,7 @@ jest.mock('../theme/use-theme', () => ({ useTheme: () => mockTheme }));
 import { Card } from '../card';
 import { LinkPreviewCard } from '../link-preview';
 import { SurfaceLevelProvider, surfaceFillOn, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { resolvedStyle } from './support/rendered-style';
 
 beforeAll(() => { jest.spyOn(StyleSheet, 'flatten').mockImplementation(style => resolvedStyle(style)); });
@@ -23,21 +23,21 @@ function value(screen: ReturnType<typeof render>, id = 'probe') {
 }
 it('keeps page card fill and raises nested cards from the actual parent fill', () => {
   const screen = render(<Card><Probe id="outer" /><Card><Probe /></Card></Card>);
-  expect(value(screen, 'outer')).toEqual({ fill:'#ffffff', level:1 });
-  expect(value(screen)).toEqual({ fill:surfaceFillOn(mockTheme, '#ffffff'), level:2 });
+  expect(value(screen, 'outer')).toEqual({ fill:'rgb(253, 253, 253)', level:1 });
+  expect(value(screen)).toEqual({ fill:resolveSurfaceFill(resolveSurfaceTint(surfaceFillOn(mockTheme, 'rgb(253, 253, 253)')),'rgb(253, 253, 253)'), level:2 });
 });
 it('keeps raising actual fills after the semantic level clamps at three', () => {
   const parent = '#777777';
-  const first = surfaceFillOn(mockTheme, parent);
+  const first = resolveSurfaceFill(resolveSurfaceTint(surfaceFillOn(mockTheme, parent)), parent);
   const screen = render(<SurfaceLevelProvider level={3} fill={parent}><Card><Probe id="first" /><Card><Probe /></Card></Card></SurfaceLevelProvider>);
   expect(value(screen, 'first')).toEqual({ fill:first, level:3 });
-  expect(value(screen)).toEqual({ fill:surfaceFillOn(mockTheme, first), level:3 });
+  expect(value(screen)).toEqual({ fill:resolveSurfaceFill(resolveSurfaceTint(surfaceFillOn(mockTheme, first)),first), level:3 });
   expect(value(screen).fill).not.toBe(first);
 });
 it('plain cards do not paint or raise the level', () => {
   const screen = render(<SurfaceLevelProvider level={2} fill="#777777"><Card appearance="plain" testID="plain"><Probe /></Card></SurfaceLevelProvider>);
   expect(value(screen)).toEqual({ fill:'#777777', level:2 });
-  expect(screen.getByTestId('plain').findAll(node => node.props.glass !== undefined && node.props.fill !== undefined)).toHaveLength(0);
+  expect(screen.getByTestId('plain').findAll(node => node.props.fill !== undefined && node.props.radius !== undefined)).toHaveLength(0);
 });
 it('publishes an explicit alpha fill composited against its actual parent', () => {
   const fill = 'rgba(255, 0, 0, 0.5)';
@@ -50,9 +50,9 @@ it('plain custom backgrounds update the fill without raising the level', () => {
 });
 it('preserves colored semantic pairs and estimates glass against its parent', () => {
   const solid = render(<Card tone="accent"><Probe /></Card>);
-  expect(value(solid).fill).toBe('#166534');
-  const glass = render(<SurfaceLevelProvider level={1} fill="#222222"><Card material="glass" style={{backgroundColor:'rgba(255,255,255,.25)'}}><Probe /></Card></SurfaceLevelProvider>);
-  expect(value(glass)).toEqual({ fill:resolveSurfaceFill('rgba(255,255,255,.25)',false,'#222222'), level:2 });
+  expect(value(solid).fill).toBe('rgb(44, 115, 71)');
+  const glass = render(<SurfaceLevelProvider level={1} fill="#222222"><Card style={{backgroundColor:'rgba(255,255,255,.25)'}}><Probe /></Card></SurfaceLevelProvider>);
+  expect(value(glass)).toEqual({ fill:resolveSurfaceFill('rgba(255,255,255,.25)','#222222'), level:2 });
 });
 
 it.each([false, true])('keeps the page role and nested outline/link preview separation in dark=%s', isDark => {
@@ -60,13 +60,13 @@ it.each([false, true])('keeps the page role and nested outline/link preview sepa
   Object.assign(mockTheme, { isDark, colors: { ...mockTheme.colors, background: isDark ? '#111111' : '#eeeeee', card: isDark ? '#333333' : '#ffffff', text: isDark ? '#eeeeee' : '#111111' } });
   try {
     const page = render(<Card appearance="outline"><Probe /></Card>);
-    expect(value(page)).toEqual({ fill: mockTheme.colors.card, level: 1 });
+    expect(value(page)).toEqual({ fill: resolveSurfaceFill(resolveSurfaceTint(mockTheme.colors.card), mockTheme.colors.background), level: 1 });
     const parent = isDark ? '#444444' : '#cccccc';
     const nested = render(<SurfaceLevelProvider level={3} fill={parent}><Card appearance="outline"><Probe /></Card></SurfaceLevelProvider>);
-    expect(value(nested)).toEqual({ fill:surfaceFillOn(mockTheme,parent), level:3 });
+    expect(value(nested)).toEqual({ fill:resolveSurfaceFill(resolveSurfaceTint(surfaceFillOn(mockTheme,parent)),parent), level:3 });
     const preview = render(<SurfaceLevelProvider level={2} fill={parent}><LinkPreviewCard url="https://oxy.so" /></SurfaceLevelProvider>);
-    const paint = preview.UNSAFE_root.find(node => typeof node.props.fill === 'string' && node.props.glass === false);
-    expect(paint.props.fill).toBe(surfaceFillOn(mockTheme,parent));
+    const paint = preview.UNSAFE_root.find(node => typeof node.props.fill === 'string' && node.props.radius !== undefined);
+    expect(paint.props.fill).toBe(resolveSurfaceTint(surfaceFillOn(mockTheme,parent)));
     const plain = render(<SurfaceLevelProvider level={3} fill={parent}><Card appearance="plain"><Probe /></Card></SurfaceLevelProvider>);
     expect(value(plain)).toEqual({ fill:parent, level:3 });
   } finally { Object.assign(mockTheme, original); }

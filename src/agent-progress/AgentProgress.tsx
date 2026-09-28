@@ -1,7 +1,7 @@
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
-import { resolveSurfaceFill } from '../surface/shared';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
@@ -834,7 +834,8 @@ function AgentProgressComponent({
   const theme = useTheme();
   const surfaceLayer = useSurfaceLayer();
   const customSurface = StyleSheet.flatten(style);
-  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
+  const material = resolveSurfaceMaterial({ fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill), parentFill: surfaceLayer.parentFill, parentLevel: surfaceLayer.parentLevel });
+  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
   const palette = resolvePalette(theme);
   const reducedMotion = useReducedMotion();
 
@@ -1002,10 +1003,10 @@ function AgentProgressComponent({
     <Animated.View
       aria-live="polite"
       testID={testID}
-      style={[styles.card, cardStatic, style, cardStyle, { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) }]}
+      style={[styles.card, cardStatic, style, cardStyle, { backgroundColor: 'transparent', ...material.vars }]}
     >
-      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
-      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
+      <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
+      <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
       <Presence
         show={minimized}
         initial={false}

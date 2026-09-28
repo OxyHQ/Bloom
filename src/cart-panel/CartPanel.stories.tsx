@@ -129,7 +129,7 @@ export const Panel: Story = {
       <Page>
         <Section title="Inline — a desktop sidebar">
           <View style={{ maxWidth: 420 }}>
-            <Card variant="plain" radius="radius-16">
+            <Card  radius="radius-16" elevation="none" appearance="solid">
               <CardBody>
                 <CartPanel
                   vendorName="Fig & Ember"
@@ -161,7 +161,7 @@ export const UnderMinimum: Story = {
       <Page>
         <Section title="Short of the minimum order">
           <View style={{ maxWidth: 420 }}>
-            <Card variant="plain" radius="radius-16">
+            <Card  radius="radius-16" elevation="none" appearance="solid">
               <CardBody>
                 <CartPanel
                   vendorName="Harbour Noodle Room"
@@ -200,7 +200,7 @@ export const Empty: Story = {
     <Page>
       <Section title="Empty">
         <View style={{ maxWidth: 420 }}>
-          <Card variant="plain" radius="radius-16">
+          <Card  radius="radius-16" elevation="none" appearance="solid">
             <CardBody>
               <CartPanel
                 vendorName="Fig & Ember"
@@ -264,7 +264,7 @@ export const AfterCheckout: Story = {
             progress={{ value: 3, max: 4, accessibilityLabel: 'Order progress', valueText: '3 of 4 steps' }}
             testID="order-bar"
           />
-          <Card variant="plain" radius="radius-16">
+          <Card  radius="radius-16" elevation="none" appearance="solid">
             <CardBody style={{ gap: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <Avatar name="Runa Velt" size="lg" />

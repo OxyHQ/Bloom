@@ -129,14 +129,14 @@ function CreditsEditorComponent({
               />
             </View>
             <Button
-              variant="secondary"
-              size="medium"
+
+              size="md"
               iconOnly
               leadingIcon={RiDeleteBinLine}
               disabled={disabled}
               accessibilityLabel={labels.remove(index, credit.name)}
               onPress={() => remove(credit.id)}
-              testID={testID ? `${testID}-remove-${index}` : undefined}
+              testID={testID ? `${testID}-remove-${index}` : undefined} tone="neutral" appearance="outline"
             />
           </View>
         );
@@ -153,13 +153,13 @@ function CreditsEditorComponent({
       })}
 
       <Button
-        variant="secondary"
-        size="medium"
+
+        size="md"
         leadingIcon={RiAddLine}
         onPress={add}
         disabled={disabled}
         style={styles.add}
-        testID={testID ? `${testID}-add` : undefined}
+        testID={testID ? `${testID}-add` : undefined} tone="neutral" appearance="outline"
       >
         {labels.add}
       </Button>

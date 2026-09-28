@@ -449,10 +449,10 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
               <SectionTitle
                 trailing={
                   <Button
-                    variant="ghost"
-                    size="small"
+
+                    size="sm"
                     leadingIcon={RiRefreshLine}
-                    onPress={() => setRecommendSeed((s) => s + 1)}
+                    onPress={() => setRecommendSeed((s) => s + 1)} tone="accent" appearance="subtle"
                   >
                     Refresh
                   </Button>
@@ -569,11 +569,11 @@ function RecommendedRow({ trackId, onAdd }: { trackId: string; onAdd: () => void
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
           <Text variant="body-2-regular">{formatDuration(track.duration)}</Text>
           <Button
-            variant="secondary"
-            size="small"
+
+            size="sm"
             leadingIcon={RiAddLine}
             onPress={onAdd}
-            accessibilityLabel={`Add ${track.title} to playlist`}
+            accessibilityLabel={`Add ${track.title} to playlist`} tone="neutral" appearance="outline"
           >
             Add
           </Button>

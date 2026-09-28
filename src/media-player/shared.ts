@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import { parseRgba } from '../theme/color-utils';
+
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { MediaArtist, RepeatMode, SleepTimerValue, TransportControlsSize } from './types';
 import {
@@ -54,7 +54,7 @@ export function artistNames(artists: string | MediaArtist[]): string {
 // ---------------------------------------------------------------------------
 
 export interface TransportGeometry {
-  play: 'small' | 'medium' | 'large';
+  play: 'sm' | 'md' | 'lg';
   /** Glyph of a secondary button. */
   glyph: number;
   /** Hit box of a secondary button. */
@@ -65,9 +65,9 @@ export interface TransportGeometry {
 }
 
 export const TRANSPORT_GEOMETRY: Record<TransportControlsSize, TransportGeometry> = {
-  compact: { play: 'small', glyph: 16, box: 32, skipGlyph: 20, gap: 8 },
-  regular: { play: 'medium', glyph: 20, box: 32, skipGlyph: 24, gap: 16 },
-  large: { play: 'large', glyph: 24, box: 40, skipGlyph: 32, gap: 24 },
+  sm: { play: 'sm', glyph: 16, box: 32, skipGlyph: 20, gap: 8 },
+  md: { play: 'md', glyph: 20, box: 32, skipGlyph: 24, gap: 16 },
+  lg: { play: 'lg', glyph: 24, box: 40, skipGlyph: 32, gap: 24 },
 };
 
 // ---------------------------------------------------------------------------

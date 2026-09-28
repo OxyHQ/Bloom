@@ -226,7 +226,7 @@ export const PayoutStates: Story = {
           note: 'Confirm your tax number before the next payout run.',
         }}
         action={
-          <Button variant="secondary" size="small" onPress={noop}>
+          <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
             Confirm the number
           </Button>
         }
@@ -241,7 +241,7 @@ export const PayoutStates: Story = {
           note: 'The bank refused the transfer. Check the account and try again.',
         }}
         action={
-          <Button variant="secondary" size="small" onPress={noop}>
+          <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
             Try again
           </Button>
         }

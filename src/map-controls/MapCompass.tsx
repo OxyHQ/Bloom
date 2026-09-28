@@ -16,7 +16,7 @@ import type { MapCompassProps } from './types';
  * while the map turns under it, and a press that puts the map back.
  *
  *   island   `GlassIsland` — one translucent capsule over content Bloom does
- *            not own. It mounts the `ControlSurface` the item inside reads, so
+ *            not own. It mounts the `BloomScope` the item inside reads, so
  *            the button paints flush with no `variant` written on it.
  *   control  `ButtonGroupItem`, the island-aware control, at the 44 map rung.
  *   needle   `RiCompass3Line` turned by MINUS the heading. The map rotates

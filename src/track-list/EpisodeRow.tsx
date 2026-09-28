@@ -128,7 +128,7 @@ function EpisodeRowComponent({
     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
       {onPlay ? (
         <PlayButton
-          size="small"
+          size="sm"
           variant="inverse"
           playing={current && playing}
           subject={episode.title}

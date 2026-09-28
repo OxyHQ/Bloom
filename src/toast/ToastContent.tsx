@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
  * Derived from sonner-native v0.26.4 — src/toast.tsx:440-689
  * (MIT © Gunnar Torfi Steinarsson), restyled with
@@ -26,9 +27,7 @@
  * `shadowOpacity`/`shadowRadius` values, so its toast has no shadow on web.
  */
 import * as React from 'react';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
-import { resolveSurfaceFill } from '../surface/shared';
-import { useTheme } from '../theme/use-theme';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import {
   Platform,
   StyleSheet,
@@ -119,7 +118,6 @@ export function ToastContent({
   backgroundComponent,
 }: ToastContentProps) {
   const colors = useToastColors({ variant, richColors });
-  const theme = useTheme();
   const isLoading = Boolean(promiseOptions) || variant === 'loading';
   // Only the built-in button is absolutely placed; a caller `close` node stays in the row.
   const showsClose = Boolean(dismissible && !close && closeButton);
@@ -139,9 +137,10 @@ export function ToastContent({
       };
 
   const customSurface = StyleSheet.flatten([styleOverrides?.toast, style]);
+  const parentFill = useSurfaceFill();
   const fill = customSurface?.backgroundColor ?? colors.surface;
   const paintsSurface = !unstyled && !backgroundComponent && typeof fill === 'string' && fill !== 'transparent' && parseRgba(fill)?.a !== 0;
-  const publishedFill = paintsSurface ? resolveSurfaceFill(fill, false, theme.colors.card) : undefined;
+  const publishedFill = paintsSurface ? resolveSurfaceMaterial({ fill: fill, parentFill: parentFill }).publishedFill : undefined;
   const textProps = { allowFontScaling, maxFontSizeMultiplier };
 
   const content = (

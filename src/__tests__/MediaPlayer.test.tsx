@@ -6,6 +6,7 @@
  * cycle, the speed / sleep selections, the collapse steps, and the artwork
  * tint's contrast guarantee and fallback.
  */
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -188,7 +189,7 @@ describe('TransportControls', () => {
   });
 
   it('draws the play button at 32 / 48 / 56 for compact / regular / large', () => {
-    for (const [size, px] of [['compact', 32], ['regular', 48], ['large', 56]] as const) {
+    for (const [size, px] of [['sm', 32], ['md', 48], ['lg', 56]] as const) {
       mount(<TransportControls size={size} playing={false} onPlayPause={noop} testID="t" />);
       expect(byTestId('t-play').style.width).toBe(`${px}px`);
     }
@@ -390,10 +391,11 @@ describe('MiniPlayer', () => {
     );
     const surface = resolveMiniPlayerSurface(theme, 'teal', '#F4E3A1');
     expect(surface.tinted).toBe(true);
-    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(surface.background);
+    const materialFill = resolveSurfaceMaterial({ fill: surface.background, parentFill: theme.colors.background }).publishedFill;
+    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(materialFill);
     const dark = immersiveDarkTheme(theme, 'teal');
     const darkText = resolveMediaControlsPaint(dark).text;
-    expect(contrastRatio(surface.background, darkText)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+    expect(contrastRatio(materialFill, darkText)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
     // The 2px line: 50 of 200 = 25%, in the dark theme's text colour.
     const fill = byTestId('m-progress-fill');
     expect(fill.style.width).toBe('25%');
@@ -404,7 +406,7 @@ describe('MiniPlayer', () => {
   it('falls back to the floating surface under the app theme without a colour', () => {
     mount(<MiniPlayer track={TRACK} playing onPlayPause={noop} position={0} duration={0} testID="m" />);
     const menu = resolveMenuPalette(theme);
-    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(theme.colors.card);
+    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill);
     expect(byTestId('m-progress-fill').style.width).toBe('0%');
   });
 

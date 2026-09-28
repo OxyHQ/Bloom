@@ -21,7 +21,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
-import { ControlSurface } from '../control-surface';
+import { BloomScope } from "../appearance";
 import { GlassIsland } from '../glass';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
@@ -59,7 +59,7 @@ import { useCommonMessages } from '../locale/common-messages';
  * ── THE ISLANDS ARE THE CONSUMER'S GROUPING ─────────────────────────────────
  *
  * The header never infers grouping by reading its children's types. The
- * `actions` slot is wrapped in a `ControlSurface` with `material: 'glass'`, so
+ * `actions` slot is wrapped in a `BloomScope` with shared control defaults, so
  * a `ButtonGroup` placed there becomes one island with no prop written on it,
  * and two `ButtonGroup`s become two islands. That is a declaration the consumer
  * makes, which is the only way the header can be right about which actions
@@ -408,7 +408,7 @@ function PageHeaderComponent({
       pointerEvents={floating ? 'box-none' : undefined}
       testID={testID ? `${testID}-actions` : undefined}
     >
-      {floating ? <ControlSurface material="glass">{actions}</ControlSurface> : actions}
+      {floating ? <BloomScope>{actions}</BloomScope> : actions}
     </View>
   ) : null;
 
@@ -447,7 +447,7 @@ function PageHeaderComponent({
         >
           {backButton}
           {floating && leading ? (
-            <ControlSurface material="glass">{leading}</ControlSurface>
+            <BloomScope>{leading}</BloomScope>
           ) : (
             leading
           )}

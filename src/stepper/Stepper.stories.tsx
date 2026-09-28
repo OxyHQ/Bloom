@@ -28,7 +28,7 @@ export const Matrix: Story = {
     const [c, setC] = useState(4);
     return (
       <View style={{ gap: 20, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
-        {(['medium', 'small'] as const).map((size) => (
+        {(['md', 'sm'] as const).map((size) => (
           <View key={size} style={{ gap: 12 }}>
             <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
               {size}
@@ -86,7 +86,7 @@ export const NarrowAndWide: Story = {
         {[280, 560].map((width) => (
           <View key={width} style={{ width, maxWidth: '100%' }}>
             <StepperRow
-              size="small"
+              size="sm"
               title="Bedrooms"
               value={bedrooms}
               onValueChange={setBedrooms}
@@ -94,7 +94,7 @@ export const NarrowAndWide: Story = {
               formatValue={(n) => (n === 0 ? 'Any' : String(n))}
               divider
             />
-            <StepperRow size="small" title="Beds" value={beds} onValueChange={setBeds} min={1} max={16} />
+            <StepperRow size="sm" title="Beds" value={beds} onValueChange={setBeds} min={1} max={16} />
           </View>
         ))}
       </View>

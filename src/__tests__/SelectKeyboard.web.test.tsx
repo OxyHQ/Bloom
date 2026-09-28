@@ -229,3 +229,34 @@ describe('Select (web) — keyboard', () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+
+it('owns selection when uncontrolled and publishes changes after keyboard activation', () => {
+  const onChange = jest.fn();
+  mount(<Select defaultValue="apple" onValueChange={onChange}>
+    <SelectTrigger label="Fruit" testID="fruit"><SelectValue placeholder="Pick one" /></SelectTrigger>
+    <SelectContent label="Fruit" items={FRUIT} renderItem={item => <SelectItem value={item.value} label={item.label} disabled={item.disabled}><SelectItemText>{item.label}</SelectItemText></SelectItem>} />
+  </Select>);
+  openWith('Enter');
+  expect(focusedLabel()).toBe('Apple');
+  press('ArrowDown');
+  press('Enter');
+  expect(onChange).toHaveBeenLastCalledWith('cherry');
+  openWith('Enter');
+  expect(focusedLabel()).toBe('Cherry');
+});
+
+
+it('keeps an explicit empty value controlled and lets its parent clear selection', () => {
+  const change = jest.fn();
+  const ui = (value: string | undefined) => <Select value={value} onValueChange={change}><SelectTrigger label="Fruit" testID="fruit"><SelectValue placeholder="Pick one" /></SelectTrigger><SelectContent label="Fruit" items={FRUIT} renderItem={item => <SelectItem value={item.value} label={item.label} disabled={item.disabled}><SelectItemText>{item.label}</SelectItemText></SelectItem>} /></Select>;
+  mount(ui(undefined));
+  openWith('Enter');
+  press('Enter');
+  expect(change).toHaveBeenCalledWith('apple');
+  expect(trigger().textContent).toContain('Pick one');
+  mount(ui('cherry'));
+  expect(trigger().textContent).toContain('Cherry');
+  mount(ui(undefined));
+  expect(trigger().textContent).toContain('Pick one');
+});

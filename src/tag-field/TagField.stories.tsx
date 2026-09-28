@@ -143,7 +143,7 @@ export const InAField: Story = {
         >
           <TagField value={tags} onChange={(next) => setTags([...next])} suggestions={VOCABULARY} testID="in-field" />
         </Field>
-        <Button variant="secondary" size="small" onPress={() => setInvalid((v) => !v)}>
+        <Button  size="sm" onPress={() => setInvalid((v) => !v)} tone="neutral" appearance="outline">
           Toggle the error
         </Button>
         <Field label="Disabled by the field" disabled>
@@ -192,7 +192,7 @@ export const LimitsAndVocabulary: Story = {
         </View>
         <View style={{ gap: 6 }}>
           <Text variant="caption-1-medium">Small, toned, disabled</Text>
-          <TagField value={['recipes', 'winter']} onChange={() => {}} size="small" tone="primary" />
+          <TagField value={['recipes', 'winter']} onChange={() => {}} size="sm" tone="primary" />
           <TagField value={['recipes', 'winter']} onChange={() => {}} disabled />
           <TagField value={[]} onChange={() => {}} invalid placeholder="Invalid and empty" label="Tags" />
         </View>

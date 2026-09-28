@@ -81,7 +81,7 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
         style={[pillStyle, style]}
       >
         <CheckboxGlyph
-          size="medium"
+          size="md"
           checked={checked}
           indeterminate={false}
           disabled={false}

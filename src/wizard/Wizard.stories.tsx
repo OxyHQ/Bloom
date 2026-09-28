@@ -52,7 +52,7 @@ export const Playground: Story = {
               <WizardProgress
                 steps={STEPS}
                 current={current}
-                action={<Button variant="secondary" size="small">Save and exit</Button>}
+                action={<Button  size="sm" tone="neutral" appearance="outline">Save and exit</Button>}
                 testID={`progress-${width}`}
               />
               <View style={{ height: 160, justifyContent: 'center' }}>

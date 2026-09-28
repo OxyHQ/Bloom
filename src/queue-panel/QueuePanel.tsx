@@ -1,4 +1,4 @@
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { AccessibilityInfo, ScrollView, View } from 'react-native';
@@ -129,7 +129,7 @@ function QueuePanelComponent({
   const isPanel = variant === 'panel';
   const background = StyleSheet.flatten(style)?.backgroundColor ?? (isPanel ? paint.surface : undefined);
   const publishedFill = typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
-    ? resolveSurfaceFill(background, false, parentFill) : undefined;
+    ? resolveSurfaceMaterial({ fill: background, parentFill, paint: isPanel }).publishedFill : undefined;
   const empty = !nowPlaying && queue.length === 0 && context.length === 0;
 
   const content = (
@@ -153,9 +153,10 @@ function QueuePanelComponent({
         { flexDirection: 'column', minHeight: 0 },
         style,
         surfaceFillVars(publishedFill),
+        isPanel && publishedFill ? { backgroundColor: 'transparent' } : null,
       ]}
     >
-      {isPanel && publishedFill ? <SurfacePaint radius={StyleSheet.flatten(style)?.borderRadius ?? 8} /> : null}
+      {isPanel && publishedFill ? <SurfacePaint fill={background as string} radius={StyleSheet.flatten(style)?.borderRadius ?? 8} /> : null}
       <View
         style={{
           flexDirection: 'row',
@@ -230,10 +231,10 @@ function QueuePanelComponent({
                   action={
                     onClearQueue ? (
                       <Button
-                        variant="text"
-                        size="small"
+
+                        size="sm"
                         onPress={onClearQueue}
-                        testID={testID ? `${testID}-clear` : undefined}
+                        testID={testID ? `${testID}-clear` : undefined} tone="accent" appearance="plain"
                       >
                         {labels.clearQueue}
                       </Button>

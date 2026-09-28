@@ -1,3 +1,4 @@
+import { materialChartPalette as resolveChartCardPalette } from './support/card-surface';
 import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -6,7 +7,7 @@ import { resolvedStyle } from './support/rendered-style';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { StepsCard, stepsBars, type StepsPoint } from '../chart-cards/StepsCard';
-import { chartHueTone, resolveChartCardPalette } from '../chart-cards/palette';
+import { chartHueTone } from '../chart-cards/palette';
 
 // The base week ("29 Jun - 5 Jul"). Every expected pixel below was read
 // off recharts' SVG for the card at 360 wide: a 351 × 232 chart.

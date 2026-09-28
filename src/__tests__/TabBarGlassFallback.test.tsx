@@ -48,7 +48,7 @@ const THEME: TabBarTheme = {
   inactiveTint: 'rgb(120 120 120)',
   highlight: 'rgb(230 230 230)',
   glassTint: 'rgba(255, 255, 255, 0.55)',
-  solidFallback: 'rgb(246 246 246)',
+
 };
 
 const STYLE = { borderRadius: 29 };
@@ -104,7 +104,7 @@ function expectSolidFallback(root: ReactTestInstance): void {
   expect(hosts(root, GLASS_HOST)).toHaveLength(0);
   const surface = hosts(root, 'Animated.View')[0];
   expect(surface).toBeTruthy();
-  expect(hosts(root, 'SurfacePaint')[0]?.props.fill).toBe(THEME.solidFallback);
+  expect(hosts(root, 'SurfacePaint')[0]?.props.fill).toBe(THEME.glassTint);
   expect(flattenStyle(surface?.props.style).backgroundColor).toBeUndefined();
   // The animated capsule radius must survive the fallback — the pill still
   // reshapes as the bar minimizes.
@@ -228,10 +228,10 @@ describe('TabBarSurface (native) — degrading when glass is unusable', () => {
     // Android device paints.
     jest.isolateModules(() => {
       const { TabBarSurface } = require('../tab-bar/surface') as { TabBarSurface: unknown };
-      const { SolidTabBarSurface } = require('../tab-bar/surface-solid') as {
-        SolidTabBarSurface: unknown;
+      const { SharedTabBarSurface } = require('../tab-bar/surface-paint') as {
+        SharedTabBarSurface: unknown;
       };
-      expect(TabBarSurface).toBe(SolidTabBarSurface);
+      expect(TabBarSurface).toBe(SharedTabBarSurface);
     });
   });
 });

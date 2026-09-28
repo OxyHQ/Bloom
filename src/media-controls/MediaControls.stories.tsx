@@ -50,7 +50,7 @@ const noop = () => {};
 /** Every control in every size, variant and state. */
 export const Matrix: Story = {
   render: function MediaControlsMatrix() {
-    const [liked, setLiked] = useState<Record<string, boolean>>({ medium: true });
+    const [liked, setLiked] = useState<Record<string, boolean>>({ md: true });
     const [volume, setVolume] = useState(0.4);
     const [muted, setMuted] = useState(false);
     return (
@@ -59,7 +59,7 @@ export const Matrix: Story = {
           <View key={variant} style={{ gap: 8 }}>
             <Caption>{`PlayButton — ${variant}`}</Caption>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-              {(['small', 'medium', 'large'] as const).map((size) => (
+              {(['sm', 'md', 'lg'] as const).map((size) => (
                 <React.Fragment key={size}>
                   <PlayButton variant={variant} size={size} playing={false} onPress={noop} />
                   <PlayButton variant={variant} size={size} playing onPress={noop} />
@@ -74,7 +74,7 @@ export const Matrix: Story = {
         <View style={{ gap: 8 }}>
           <Caption>LikeButton — small, medium, large; disabled</Caption>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {(['small', 'medium', 'large'] as const).map((size) => (
+            {(['sm', 'md', 'lg'] as const).map((size) => (
               <LikeButton
                 key={size}
                 size={size}
@@ -261,7 +261,7 @@ export const TrackRows: Story = {
                 ) : (
                   <PlayButton
                     variant="plain"
-                    size="small"
+                    size="sm"
                     playing={false}
                     subject={track.title}
                     onPress={() => {
@@ -287,7 +287,7 @@ export const TrackRows: Story = {
                 </View>
               </View>
               <LikeButton
-                size="small"
+                size="sm"
                 liked={!!liked[index]}
                 onLikedChange={(next) => setLiked((l) => ({ ...l, [index]: next }))}
               />
@@ -299,7 +299,7 @@ export const TrackRows: Story = {
         })}
         <PlayButton
           variant="inverse"
-          size="small"
+          size="sm"
           playing={playing}
           onPress={() => setPlaying((p) => !p)}
         />

@@ -84,8 +84,9 @@ function EmptyStateComponent({
 
   const renderAction = (a: EmptyStateAction, kind: 'primary' | 'secondary') => (
     <Button
-      variant={kind}
-      size={variant === 'compact' ? 'small' : 'medium'}
+      appearance={kind === 'primary' ? 'solid' : 'outline'}
+      tone={kind === 'primary' ? 'accent' : 'neutral'}
+      size={variant === 'compact' ? 'sm' : 'md'}
       onPress={a.onPress}
       disabled={a.disabled}
       loading={a.loading}

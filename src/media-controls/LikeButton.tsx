@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
@@ -39,21 +40,24 @@ import { MEDIA_CONTROLS_MESSAGES } from './messages';
  */
 
 const SIZE_CONFIG: Record<LikeButtonSize, { glyph: number; box: number }> = {
-  small: { glyph: 16, box: 32 },
-  medium: { glyph: 20, box: 32 },
-  large: { glyph: 24, box: 40 },
+  sm: { glyph: 16, box: 32 },
+  md: { glyph: 20, box: 32 },
+  lg: { glyph: 24, box: 40 },
 };
 
 function LikeButtonComponent({
   liked,
   onLikedChange,
-  size = 'medium',
+  size: sizeProp,
   activeColor,
   disabled = false,
   accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: LikeButtonProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
+
   const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? messages.saveToLibrary;
   const theme = useTheme();

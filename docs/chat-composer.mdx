@@ -68,7 +68,7 @@ What genuinely transfers is reused rather than retyped: the 56px attachment tile
 | attachment tile | 56, radius 12, 1px border; the ring is a 2px accent stroke over that border |
 | suggestion row | min 44, radius 10, in a radius-16 panel |
 | emoji cell | 36; category tabs 32; the grid body is 288 tall by default |
-| reaction cell | 36 (`small` 30), in a full-pill bar |
+| reaction cell | 36 (`sm` 30), in a full-pill bar |
 
 Full pill radius only on the button-like parts — the controls, the reaction bar, the emoji category tabs. The banner, the tiles and the panels keep normal radii.
 
@@ -238,3 +238,5 @@ All of them take `style` and `testID`.
 
 
 The composer controls compose Bloom Button, including its press-in/out recording lifecycle. Each public component has a thin platform binding; shared factories receive Button, Surface, and overlay components explicitly. Web bindings name their `.web` dependencies, so built browser packages work without Metro-style extension resolution. No additional layout wrappers are introduced.
+
+Interactive controls use canonical `sm`/`md`/`lg` sizes and inherit `BloomScope` when omitted. Their geometry remains family-specific; unsupported `xs` uses the compact rung. ReactionPicker has only `sm`/`md`, mapping scoped `lg` to `md`. Display badges and read-only rating sizes retain their existing vocabulary.

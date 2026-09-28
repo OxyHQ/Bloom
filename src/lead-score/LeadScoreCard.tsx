@@ -95,7 +95,7 @@ function LeadScoreCardComponent({
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
-        variant="outlined"
+
         radius="radius-20"
         style={[
           {
@@ -108,7 +108,7 @@ function LeadScoreCardComponent({
           },
           style,
         ]}
-        testID={testID}
+        testID={testID} appearance="outline"
       >
         {/* The tinted panel is a SURFACE of its own: everything inside it reads
             its text rungs off the wash, not off the card. */}

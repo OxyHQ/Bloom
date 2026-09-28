@@ -77,7 +77,7 @@ export const InALayout: Story = {
           <View style={{ flex: 1, maxWidth: 640, gap: 12 }}>
             <Text variant="title-1-semibold">Harbour walk — what to bring</Text>
             <Divider />
-            <Card variant="outlined">
+            <Card  appearance="outline">
               <CardBody>
                 <Text variant="body-regular">
                   {`The app scrolled to “${current?.label ?? '—'}”. OutlineNav emitted the heading; it did not move anything itself.`}

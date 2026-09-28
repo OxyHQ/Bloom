@@ -98,25 +98,25 @@ function ArtworkUploaderComponent({
             />
             <View style={styles.previewActions}>
               <Button
-                variant="secondary"
-                size="small"
+
+                size="sm"
                 leadingIcon={RiRefreshLine}
                 onPress={() => setReplacing(true)}
                 disabled={disabled}
-                testID={id('replace')}
+                testID={id('replace')} tone="neutral" appearance="outline"
               >
                 {labels.replace}
               </Button>
               {onRemove ? (
                 <Button
-                  variant="secondary"
-                  size="small"
+
+                  size="sm"
                   iconOnly
                   leadingIcon={RiDeleteBinLine}
                   accessibilityLabel={labels.remove}
                   onPress={onRemove}
                   disabled={disabled}
-                  testID={id('remove')}
+                  testID={id('remove')} tone="neutral" appearance="outline"
                 />
               ) : null}
             </View>
@@ -147,11 +147,11 @@ function ArtworkUploaderComponent({
 
       {replacing && uri ? (
         <Button
-          variant="secondary"
-          size="small"
+
+          size="sm"
           onPress={() => setReplacing(false)}
           style={styles.cancel}
-          testID={id('cancel')}
+          testID={id('cancel')} tone="neutral" appearance="outline"
         >
           {labels.cancel}
         </Button>

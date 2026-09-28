@@ -1,3 +1,4 @@
+import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
 import React, {
@@ -12,21 +13,7 @@ import React, {
 } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import {
-  MENU_WIDTH,
-  ROW_ICON_SIZE,
-  ROW_INDICATOR_END_CLASS,
-  SELECT_CHEVRON_SIZE,
-  SELECT_ITEM_CLASS,
-  SELECT_ITEM_SIZE_CLASS,
-  SELECT_ITEM_TEXT_CLASS,
-  SELECT_MAX_HEIGHT,
-  SELECT_SEPARATOR_CLASS,
-  SELECT_TRIGGER_CLASS,
-  SELECT_TRIGGER_POPUP,
-  SELECT_TRIGGER_SIZE_CLASS,
-  SELECT_VALUE_CLASS,
-} from '../floating/constants';
+import { MENU_WIDTH, SELECT_CHEVRON_SIZE, SELECT_ITEM_CLASS, SELECT_ITEM_SIZE_CLASS, SELECT_MAX_HEIGHT, SELECT_TRIGGER_CLASS, SELECT_TRIGGER_POPUP, SELECT_TRIGGER_SIZE_CLASS, SELECT_VALUE_CLASS } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { useMenuPalette } from '../floating/menu-palette';
 import { menuType, menuTypeClass } from '../floating/menu-type';
@@ -39,7 +26,7 @@ import {
   StyledText,
   StyledView,
 } from '../styles/styled-primitives';
-import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
+
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -53,17 +40,7 @@ import {
   useSelectItemContext,
   VALUE_TYPE,
 } from './shared';
-import type {
-  SelectContentProps,
-  SelectIconProps,
-  SelectItemIndicatorProps,
-  SelectItemProps,
-  SelectItemTextProps,
-  SelectProps,
-  SelectItemContextValue,
-  SelectTriggerProps,
-  SelectValueProps,
-} from './types';
+import type { SelectContentProps, SelectIconProps, SelectItemProps, SelectProps, SelectItemContextValue, SelectTriggerProps, SelectValueProps } from './types';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
@@ -182,7 +159,9 @@ function useSelectContext(): SelectContextValue {
 // Select
 // ---------------------------------------------------------------------------
 
-export function Select({ children, value, onValueChange, disabled, size: sizeProp }: SelectProps) {
+export function Select(props: SelectProps) {
+  const { children, value: valueProp, defaultValue, onValueChange: onValueChangeProp, disabled, size: sizeProp } = props;
+  const [value, onValueChange] = useControllableState<string | undefined>({ value: valueProp, defaultValue, controlled: Object.prototype.hasOwnProperty.call(props, 'value'), onChange: next => { if (next !== undefined) onValueChangeProp?.(next); } });
   const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const [isOpen, setIsOpen] = useState(false);

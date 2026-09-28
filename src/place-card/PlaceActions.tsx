@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
@@ -29,11 +30,14 @@ import type { PlaceActionsProps } from './types';
  */
 function PlaceActionsComponent({
   actions,
-  size = 'small',
+  size: sizeProp,
   accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: PlaceActionsProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'sm', tone: 'neutral' });
+  const size = inheritedSize;
+
   const { messages } = useMessages(PLACE_CARD_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? messages.actions;
   if (actions.length === 0) return null;
@@ -56,14 +60,14 @@ function PlaceActionsComponent({
       {actions.map((action) => (
         <Button
           key={action.id}
-          variant="secondary"
+
           size={size}
           leadingIcon={action.icon}
           href={action.href}
           onPress={action.onPress}
           disabled={action.disabled}
           accessibilityLabel={action.accessibilityLabel ?? action.label}
-          testID={testID ? `${testID}-${action.id}` : undefined}
+          testID={testID ? `${testID}-${action.id}` : undefined} tone="neutral" appearance="outline"
         >
           {action.label}
         </Button>

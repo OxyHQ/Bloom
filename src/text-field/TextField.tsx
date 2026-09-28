@@ -1,4 +1,3 @@
-import { normalizeBloomSize } from '../appearance/legacy';
 import { useBloomAppearance } from '../appearance';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -61,7 +60,7 @@ import type {
   TextFieldProps,
   TextFieldRevealLabels,
 } from './types';
-import { useInheritedControl } from '../control-surface';
+
 import { useFieldMembership } from '../field/membership';
 
 interface TextFieldContextValue {
@@ -181,11 +180,11 @@ export function TextField({
   const invalid = member.invalid || (group?.invalid ?? false);
   const disabled = member.disabled || (group?.disabled ?? false);
   // An `InputGroup` outranks everything: its members have to be one height. Then
-  // the caller's own prop, then the container's density (`ControlSurface`), then
+  // the caller's own prop, then the container's density (`BloomScope`), then
   // `medium` — the precedence rule in `docs/composition.mdx`, with the group's
   // geometry first because it is a constraint rather than a default.
-  const { size: scopedSize } = useBloomAppearance({ size: normalizeBloomSize(sizeProp) }, { size: 'md', tone: 'neutral' });
-  const inheritedSize = useInheritedControl('density', normalizeBloomSize(sizeProp), scopedSize);
+  const { size: scopedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const inheritedSize = scopedSize;
   const size = group?.size ?? inheritedSize;
   const inputRef = useRef<TextInput>(null);
   const [inputDisabled, setInputDisabled] = useState(false);

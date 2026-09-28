@@ -1,3 +1,5 @@
+import { useFieldMembership } from '../field/membership';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
@@ -58,18 +60,23 @@ ${CARD} {
 }
 }`;
 
-const CheckboxCardComponent: React.FC<CheckboxCardProps> = ({
-  checked,
-  onCheckedChange,
-  title,
-  description,
-  disabled = false,
-  indeterminate = false,
-  tone: toneProp,
-  style,
-  accessibilityLabel,
-  testID,
-}) => {
+const CheckboxCardComponent: React.FC<CheckboxCardProps> = (props) => {
+  const {
+    checked: checkedProp,
+    defaultChecked = false,
+    onCheckedChange,
+    title,
+    description,
+    disabled: disabledProp = false,
+    indeterminate = false,
+    tone: toneProp,
+    style,
+    accessibilityLabel,
+    testID,
+  } = props;
+  const [checked, setChecked] = useControllableState({ value: checkedProp ?? false, controlled: Object.prototype.hasOwnProperty.call(props, 'checked'), defaultValue: defaultChecked, onChange: onCheckedChange });
+  const field = useFieldMembership({ disabled: disabledProp, accessibilityLabel, label: title, labelPlacement: 'adjacent' });
+  const disabled = field.disabled;
   const theme = useTheme();
   const { tone } = useBloomAppearance({ tone: toneProp }, {size: 'md', tone: 'accent'});
   const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
@@ -81,8 +88,8 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = ({
   const highlighted = !disabled && (hovered || pressed);
 
   const handlePress = useCallback(() => {
-    if (!disabled) onCheckedChange(!checked);
-  }, [checked, disabled, onCheckedChange]);
+    if (!disabled) setChecked(!checked);
+  }, [checked, disabled, setChecked]);
 
   const cardStyle: WebCssStyle = {
     flexDirection: 'row',
@@ -121,7 +128,10 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = ({
       accessibilityRole="checkbox"
       // `aria-checked` is the one spelling both platforms honour — see `Checkbox`.
       aria-checked={indeterminate ? 'mixed' : checked}
-      accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityLabel={field.accessibilityLabel}
+      nativeID={field.nativeID}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       accessibilityHint={description}
       testID={testID}
     >

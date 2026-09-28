@@ -6,7 +6,7 @@ order: 19
 
 # TabBar
 
-A floating tab bar that sits over your content instead of boxing it in. It minimizes as you scroll down and re-expands as you scroll up, its highlight slides between tabs and can be scrubbed with a finger, and its capsule renders as real liquid glass on iOS 26, a CSS `backdrop-filter` on web, and a solid themed fill everywhere else.
+A floating tab bar that sits over your content instead of boxing it in. It minimizes as you scroll down and re-expands as you scroll up, its highlight slides between tabs and can be scrubbed with a finger, and its capsule renders as real liquid glass on iOS 26, a CSS `backdrop-filter` on web, and the shared Surface everywhere else.
 
 It works with or without a router. `@oxy.so/bloom/tab-bar` has no router dependency at all; the expo-router bindings live in a separate `@oxy.so/bloom/tab-bar/expo-router` subpath.
 
@@ -20,7 +20,7 @@ bunx expo install expo-glass-effect expo-symbols react-native-screens
 
 | Peer | Used by | Needed when |
 |------|---------|-------------|
-| `expo-glass-effect` | `tab-bar/surface.native` | Any native build that renders the bar. Its NATIVE module is Apple-only (`"platforms": ["apple"]`) and provides the iOS 26 liquid-glass capsule; on Android the package is pure JS, its own `isLiquidGlassAvailable()` answers `false`, and the bar paints the solid themed fill instead. A build whose native module is missing altogether — an OTA JS update landing on a binary built before the package was linked — degrades to that same solid fill and logs one `[Bloom]` warning, rather than throwing out of render. |
+| `expo-glass-effect` | `tab-bar/surface.native` | Any native build that renders the bar. Its NATIVE module is Apple-only (`"platforms": ["apple"]`) and provides the iOS 26 liquid-glass capsule; on Android the package is pure JS, its own `isLiquidGlassAvailable()` answers `false`, and the bar paints the shared Surface instead. A build whose native module is missing altogether — an OTA JS update landing on a binary built before the package was linked — degrades to that same shared tint and logs one `[Bloom]` warning, rather than throwing out of render. |
 | `expo-symbols` | `tab-bar/glyph.native` | Any native build that renders the bar. Apple-only as well: it draws `item.sfSymbol` as a real SF Symbol on iOS, and the bar falls back to `item.icon` everywhere else. |
 | `react-native-screens` | `tab-bar/expo-router` | Only if you use `renderFadingTabScreen`. |
 
@@ -375,8 +375,7 @@ Every color comes from the active `BloomThemeProvider` preset and mode — there
 | `activeTint` | `colors.text` | Label and glyph of the tab the highlight is over. |
 | `inactiveTint` | `colors.textSecondary` | Label and glyph of every other tab. |
 | `highlight` | `colors.contrast50` | The sliding highlight pill. |
-| `glassTint` | `colors.background` at 55% | Tint layered over the liquid glass (iOS 26) or `backdrop-filter` (web) material. |
-| `solidFallback` | `colors.backgroundSecondary` at 94% | Near-opaque background used when there is no glass to lens. |
+| `glassTint` | `colors.card` (painted at 90% opacity) | Tint layered over the liquid glass (iOS 26) or `backdrop-filter` (web) material. |
 
 Override any subset with the `theme` prop; the rest keep their token-derived values.
 
@@ -391,7 +390,7 @@ Overrides are coalesced key by key, so an explicit `undefined` in a partial can 
 | Platform | Capsule surface | Blur behind the bar |
 |----------|-----------------|---------------------|
 | iOS 26 | Real `UIGlassEffect` liquid glass under `glassTint`, with the native corner configuration (true squircle + rim lighting) tracking the animated height. | Ten thin stacked `BlurView`s — iOS has no public variable-blur API, so the falloff is built from layer coverage. |
-| iOS &lt; 26, Android | Solid `solidFallback` fill. `isLiquidGlassAvailable()` reports `false`, so `GlassView` is never mounted. | Same ten-layer stack. |
+| iOS &lt; 26, Android | Shared `SurfacePaint` body, sheen and rim. `isLiquidGlassAvailable()` reports `false`, so `GlassView` is never mounted. | Same ten-layer stack. |
 | Web | Shared `SurfacePaint` glass optics under `glassTint`, with the same sheen and rim as other Bloom surfaces. | One `backdrop-filter` faded with a `mask-image` — an order of magnitude cheaper than ten composited backdrop passes, and it traces the same curve as the native stack. |
 
 The capsule radius rides on the surface itself rather than on a clipping parent: iOS 26 glass renders its own native corner configuration, which an RN mask would flatten.
@@ -466,6 +465,6 @@ Types: `TabBarItem`, `TabBarProps`, `TabBarButtonProps`, `TabBarTheme`, `Minimiz
 
 ## Shared surface material
 
-The solid capsule and native glass fallback now use `SurfacePaint`, sharing its opaque fill, sheen and rim instead of a separate flat fill. Neutral solid fills follow the surrounding surface; `theme.solidFallback` remains an explicit override. The bar publishes the renderer's actual fill (or the composited tint estimate for explicit glass) to nested surfaces, including native solid fallbacks. Animated capsule sizing and gestures stay on their existing hosts.
+The capsule uses one shared Surface material. Web paints the body at 90% opacity and refracts a thin edge, with shared sheen and rim; native uses the same body and edge paint unless the OS liquid-glass capability is available. The bar publishes the composited tint estimate to descendants. Animated capsule sizing and gestures stay on their existing hosts.
 
-The standalone `TabBar` retains its translucent material and screen-edge blur defaults. `BottomBar` always uses the universal translucent surface, with the optional blur band off. Explicit iOS liquid glass remains platform-provided; web translucent material uses the shared Surface optics.
+`material` and `theme.solidFallback` were removed. `theme.glassTint` remains a tint override, not a separate material. Standalone `TabBar` retains its optional screen-edge blur; `BottomBar` disables that band because it owns its own backdrop treatment.

@@ -169,7 +169,7 @@ export interface GuestPickerProps {
   onClose?: () => void;
   /** `"Close"` in English; follows the locale. */
   closeLabel?: string;
-  /** Stepper size. Default `'medium'`; `'small'` for a popover. */
+  /** Stepper size. Default `'md'`; `'sm'` for a popover. */
   size?: StepperSize;
   style?: StyleProp<ViewStyle>;
   /** Derives `-<kind>` per row (then the stepper's own suffixes). */

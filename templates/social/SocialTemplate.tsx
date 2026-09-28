@@ -78,7 +78,7 @@ export function SocialTemplate({ showRightColumn = true, centerWidth = 620, righ
         testID="social-navigation-bottom"
         items={visibleDestinations.filter(item => ['home', 'explore', 'notifications', 'saved', 'profile'].includes(item.value)).map(item => ({ name: item.value, label: item.label, icon: item.icon }))}
         value={selected} onValueChange={setSelected}
-        action={<Fab accessibilityLabel="New post" icon={<RiQuillPenLine />} onPress={newPost} />}
+        action={<Fab accessibilityLabel="New post" icon={RiQuillPenLine} onPress={newPost} />}
       /> : undefined}
       value={selected}
       onValueChange={setSelected}

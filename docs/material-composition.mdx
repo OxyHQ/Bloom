@@ -5,7 +5,7 @@ description: Shared component bases, migrated surfaces and intentional exception
 
 # Material composition
 
-The default material is opaque: resolved fill, shared gradient and rim, without backdrop blur or refraction. A component keeps its layout, interaction and accessibility semantics; only its paint is shared. Explicit glass remains an opt-in experiment on Surface and Card. BottomBar is intrinsically translucent and shares the glass paint; it has no material variant. Its optional blur band remains independent.
+Surface has one shared material: a 90%-opaque body, gradient and rim, with subtle backdrop refraction on web. There is no solid/glass selector. A component keeps its layout, interaction and accessibility semantics; only its paint is shared. Semantic actions keep their fill and foreground pairs with the same subtle transparency. BottomBar's optional blur band remains independent.
 
 ## Choose the existing base
 
@@ -20,9 +20,9 @@ The default material is opaque: resolved fill, shared gradient and rim, without 
 | Anchored overlay behavior | FloatingPanel | Web Popover, DropdownMenu, ContextMenu, Menubar, Select and HoverCard |
 | Modal/sheet behavior | Dialog / BottomSheet / SheetShell | AlertDialog, Command and existing native overlay adapters |
 
-`SurfacePaint` can own a supplied fill, or omit `fill` to add only the gradient and rim over a host-owned background. This preserves explicit consumer backgrounds and existing surface-level colors without painting a second opaque layer. Native uses one SVG, one base rectangle when needed and one sheen gradient; stop opacity remains explicit. Its IDs use the shared SSR-safe SVG helper. The web host hook adds a pseudo-element, not a wrapper, observer or per-frame work.
+`SurfacePaint` can own a supplied fill, or omit `fill` to add only the gradient and rim over a host-owned background. Hosts that hand their fill to the material stay transparent so they do not hide the backdrop. Explicit alpha is preserved; default fills retain 90% opacity. Native uses one SVG, one base rectangle when needed and one sheen gradient; stop opacity remains explicit. Its IDs use the shared SSR-safe SVG helper. The web host hook adds shared pseudo-elements, without a wrapper or a per-frame JavaScript loop. Backdrop filtering still incurs compositor cost per painted surface.
 
-Surface and painted Card resolve depth from the actual parent and publish the resolved backing through both React context and the web CSS variable. Plain transparent containers inherit; a plain explicit background publishes that backing without increasing the level. Material does not own padding, dimensions, geometry, elevation or state. Foreground/fill pairs stay with the semantic palette. A surface-level context must continue to describe the fill its descendants actually sit on. Never replace the parent's layout node just to paint material.
+Surface and painted Card resolve depth from the actual parent and publish the fill composited against that backing through both React context and the web CSS variable. Plain transparent containers inherit; a plain explicit background publishes that backing without increasing the level. Material does not own padding, dimensions, geometry, elevation or state. Foreground/fill pairs stay with the semantic palette. A surface-level context must continue to describe the fill its descendants actually sit on. Never replace the parent's layout node just to paint material.
 
 ## Intentional exceptions
 

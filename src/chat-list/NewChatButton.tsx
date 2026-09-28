@@ -9,12 +9,8 @@ import { CHAT_LIST_MESSAGES } from './messages';
 /**
  * The round "New chat" action.
  *
- * It IS Bloom's `Fab` — placement, sizing, the minimize behaviour that follows a
- * tab bar and the web/native fork all come from there; this only fixes the glyph
- * and the name, so every messaging screen spells the same action the same way
- * instead of each one picking an icon. Every `Fab` prop passes through, so a
- * screen that wants it bottom-LEFT, small, or `static` inside its own container
- * says so exactly as it would to a `Fab`.
+ * Bloom Fab owns the action. Screen/BottomBar own its position and scroll behavior.
+ * This wrapper supplies the chat glyph and localized accessible name.
  *
  * `extended` promotes it to the pill, with `accessibilityLabel` as the text — the
  * one place the name is also the label, which is why it is not a separate prop.
@@ -31,7 +27,7 @@ function NewChatButtonComponent({
   return (
     <Fab
       {...rest}
-      icon={icon ?? <RiChatNewLine />}
+      icon={icon ?? RiChatNewLine}
       label={extended ? accessibilityLabel : undefined}
       accessibilityLabel={accessibilityLabel}
     />

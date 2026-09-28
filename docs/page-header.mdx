@@ -44,7 +44,7 @@ Three things that used to be one flag are three props now:
 
 ### The islands are yours to declare
 
-The header never infers grouping from its children's types. The `actions` slot is wrapped in a `ControlSurface` with `material: 'glass'`, so a `ButtonGroup` placed there becomes one island with no prop written on it, two `ButtonGroup`s become two islands, and a `Button` keeps its own chrome — which is what a primary action in its own accent capsule should do.
+The header never infers grouping from its children's types. The `actions` slot is wrapped in a `BloomScope` with shared control defaults, so a `ButtonGroup` placed there becomes one island with no prop written on it, two `ButtonGroup`s become two islands, and a `Button` keeps its own chrome — which is what a primary action in its own accent capsule should do.
 
 ```tsx
 actions={
@@ -90,7 +90,7 @@ Leaving both at their defaults over a hero photo is the one combination that rea
 | `placement` | `'inline'` | `'overlay'` positions the header over the content and claims the top edge. |
 | `onBack` / `backLabel` | — / `"Back"` | `backLabel` is the button's accessible name — localise it. |
 | `leading` | — | After the back capsule, before the title (an avatar, a logo). |
-| `actions` | — | End of the bar. Floating: wrapped in a glass `ControlSurface`. |
+| `actions` | — | End of the bar. Floating: wrapped in a glass `BloomScope`. |
 | `scrim` | `'auto'` | `presentation="floating"` only. `auto` \| `always` \| `none`. |
 | `scrimColor` | `theme.colors.background` | The opaque colour the edge effect fades from. Pass it when the screen paints a background the theme does not know about. |
 | `border` | `'auto'` | `presentation="bar"` only. `auto` fades the separator in with scroll; `always`; `none`. |
@@ -104,7 +104,7 @@ Leaving both at their defaults over a hero photo is the one combination that rea
 
 - Bar min-height 56; side inset 16 below `sm`, 24 from `sm` — measured against the header's **container**, not the window, so a narrow desktop panel gets the narrow inset.
 - Islands are 36 tall (a 34 control plus the hairline), 8 apart. The back capsule carries 4px of hit slop on every side, which makes it a 44pt target with nothing beside it to steal from. **A grouped item is 34 × 34 with no slop** — items in a group are adjacent, and slop on one overlaps its neighbour. Where the 44pt floor matters for every action, give each one its own island instead of grouping them.
-- Island material: rung 1 of the surface ladder (the fill a card and a menu panel paint) at the chrome alpha — 0.72 light, 0.80 dark. See [Glass](/docs/glass) for what those two numbers buy and cost.
+- Island material: the shared Surface body, sheen and rim. Default fills use 90% opacity; web refraction is visible around the edge. See [Glass](/docs/glass).
 - Title `headline-medium` text-primary, subtitle `body-2-regular` secondary. Both truncate to one line.
 - `bar`: background `background/full` (card; dark neutral-925), separator 1px (neutral-200; dark neutral-800), shadow `shadow-xs` once scrolled.
 - No press scale. Every fade is scroll-linked, not timed, so there is no motion to reduce.
@@ -172,41 +172,12 @@ The context is what makes a desktop panel work: `window.scrollY` never moves ins
 - The container carries no landmark role. `role="banner"` would be one banner per header, and an app shell already owns the page's banner; a page header inside `main` is not a landmark in HTML either.
 - The back button is named by `backLabel`. Its island carries no `role="group"` — a group of one is a container a screen reader steps into for nothing.
 - The gradient is `pointerEvents: none` and is not in the accessibility tree. The bar and the actions row are `box-none`, so the gaps between islands stay transparent to touch — a floating header covers content it does not own, and an invisible rectangle that swallowed presses across the screen would be total and silent.
-- **Reduced transparency is not yet wired.** The islands are translucent on every device. Where the platform reports a reduce-transparency preference, Bloom does not currently read it; the material is legible over both ends of the backdrop range (see [Glass](/docs/glass)), but that is a legibility argument, not the preference being honoured.
+- Reduced-transparency preferences are not currently read. Default island bodies use 90% opacity; explicit alpha remains a caller choice.
 
 ## Platform notes
 
-- **Web.** The material is `backdrop-filter` through `expo-blur`'s real web build; the gradient is `react-native-svg`. A browser without `backdrop-filter` still gets the tint and the hairline — the island keeps its geometry and its legibility, it just stops blurring.
-- **iOS.** `expo-blur` provides the radius. `expo-glass-effect` is NOT used here; the tab bar is the only family on it.
-- **Android.** The islands paint tint, hairline, sheen and rim with **no blur**, deliberately. `expo-blur` needs a `blurTarget` pointing at a `BlurTargetView` wrapping the content to blur, and a `BlurView` that is a descendant of the view it points at takes the process down with SIGSEGV — which is the only topology available to a surface that fills its own caller. The mechanism is in [Glass](/docs/glass); it has not changed for this header.
-
-## What was measured, and where
-
-Everything about a translucent surface that matters is a property of **painted pixels**, and jest sees markup. `scripts/verify-header-islands.mjs` drives a real Chrome over the Storybook stories, screenshots them, reloads the PNG into the page and samples a canvas — the round trip being the only way to read the composited result of a `backdrop-filter`, which exists nowhere in the DOM.
-
-```bash
-bun run storybook
-node scripts/verify-header-islands.mjs --out docs/page-header-islands.png
-```
-
-Measured at 900 × 780, device scale 1, on the `teal` preset:
-
-| property | how | result |
-| --- | --- | --- |
-| islands, not a strip | runs of chrome ≥20px along a line through the bar | **2** light (48, 126), **3** dark (36, 70, 36) |
-| the island is translucent | the same back capsule over the page and over a photograph | moved **35** of 255 |
-| the edge ends in nothing | the ramp against a deliberately mismatched scrim colour | travelled **67** of 255 |
-| no horizontal cut | the largest single-row step down that ramp | **2** of 255 |
-| a matched scrim is invisible | the same ramp with `scrimColor` = the page colour | travelled **0** |
-| control | the same row sampler on `presentation="bar"` | **0** runs — a strip is one colour |
-
-Three of those readings deserve their real explanation rather than a round number.
-
-The ramp is measured against a **deliberately mismatched** `scrimColor`, because that is the only configuration in which its shape is visible at all: a correctly configured scrim is the page's own colour, so over the page it paints nothing and its profile is a flat line. The row below it measures exactly that — the same header, the same `scrim="always"`, the colour handed over, travelling 0.
-
-In **light** mode the sampler reports two island runs, not three: the two action islands are 8px apart and their drop shadows meet in the gap, so at a 1-level tolerance the gap is not backdrop. The gap is visible; it is not *measurably* backdrop. In **dark** mode, where the shadow is weaker against a dark page, all three separate cleanly.
-
-And the island fill in light mode is the card fill over a near-white page — the same relation a `Card` has to the page, read by its hairline and shadow rather than by its fill. That is deliberate, and it is why an island reads as Bloom chrome rather than as a new material.
+- **Web.** Shared Surface CSS uses backdrop blur and SVG displacement at the rim, with a 90%-opaque body and sheen. Without filter support, the body and decorative rim remain.
+- **iOS and Android.** Shared SurfacePaint draws the body, sheen and rim without refraction or inline blur. Outer shadows remain unclipped.
 
 ![The floating header over a list, light](./page-header-islands.png)
 
@@ -216,7 +187,7 @@ And the island fill in light mode is the card fill over a near-white page — th
 
 ![The islands over a photograph, title held back](./page-header-islands-photo.png)
 
-**Not verified on a device.** Every number above is Chrome on Linux. iOS and Android have not been run for this change: the material is `expo-blur` on both and is unchanged from the `GlassSurface` the library already shipped, but the geometry, the safe-area padding, the top-edge claim and the scroll linkage have only been exercised in jest and in a browser. Android additionally paints **no blur at all** here, by the design described above, so what a device would show is the tint, the hairline, the sheen and the rim.
+**Not verified on a device.** The historical measurements above are Chrome on Linux. Native geometry, safe-area padding and scroll linkage still need device verification; native SurfacePaint does not refract the backdrop.
 
 ## Not included
 
@@ -234,7 +205,7 @@ And the island fill in light mode is the card fill over a near-white page — th
 
 **`border` and `transparent` apply to `presentation="bar"` only.** They are ignored by the floating presentation, which has no strip and no separator; `scrim` is its counterpart.
 
-**Icon actions want `ButtonGroupItem`.** A `Button appearance="outline" tone="neutral"` in a floating header's actions paints its own opaque fill, which reads as a card floating over the content. It still works; it is just not the shape the islands are for.
+**Icon actions want `ButtonGroupItem`.** A `Button appearance="outline" tone="neutral"` in a floating header's actions paints its own shared translucent Surface. It still works; it is just not the shape the islands are for.
 
 ## Migrating from app headers
 

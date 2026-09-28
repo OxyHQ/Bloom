@@ -88,3 +88,10 @@ Full-screen stories that demonstrate document scrolling declare
 uses a minimum viewport height, allowing the document to grow. Contained demos
 keep a bounded height. This is a preview host choice, not an application prop;
 consumer roots must likewise allow the document to grow.
+
+Native keyboard visibility is read on mount, so a screen opened while the
+keyboard is already visible does not briefly reserve bottom navigation. While
+visible, both owned and inherited bottom chrome leave only content clearance.
+`ScreenScope` also isolates navigation progress and scroll ownership; overlays
+mount this shared boundary automatically while retaining theme, locale and
+`BloomScope` appearance.

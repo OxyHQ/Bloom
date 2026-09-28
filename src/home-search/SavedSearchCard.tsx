@@ -193,24 +193,24 @@ function SavedSearchCardComponent({
         </Text>
         {onEdit ? (
           <Button
-            variant="secondary"
-            size="small"
+
+            size="sm"
             onPress={onEdit}
             accessibilityLabel={messages.actionOn(editLabel, title)}
-            testID={testID ? `${testID}-edit` : undefined}
+            testID={testID ? `${testID}-edit` : undefined} tone="neutral" appearance="outline"
           >
             {editLabel}
           </Button>
         ) : null}
         {onDelete ? (
           <Button
-            variant="secondary"
-            size="small"
+
+            size="sm"
             iconOnly
             icon={RiDeleteBinLine}
             onPress={onDelete}
             accessibilityLabel={messages.actionOn(deleteLabel, title)}
-            testID={testID ? `${testID}-delete` : undefined}
+            testID={testID ? `${testID}-delete` : undefined} tone="neutral" appearance="outline"
           />
         ) : null}
       </View>

@@ -135,11 +135,11 @@ export function StudioApp({ initialPage = 'dashboard' }: { initialPage?: StudioP
         title={title}
         actions={
           page === 'new-release' ? (
-            <Button variant="secondary" size="small">
+            <Button  size="sm" tone="neutral" appearance="outline">
               Save draft
             </Button>
           ) : (
-            <Button variant="primary" size="small" leadingIcon={RiAddFill} onPress={() => setPage('new-release')}>
+            <Button  size="sm" leadingIcon={RiAddFill} onPress={() => setPage('new-release')} tone="accent" appearance="solid">
               New release
             </Button>
           )
@@ -468,10 +468,10 @@ function NewRelease() {
             />
             {artwork ? null : (
               <Button
-                variant="secondary"
-                size="small"
+
+                size="sm"
                 style={{ alignSelf: 'flex-start' }}
-                onPress={() => setArtwork(ALBUM_BY_ID['blue-hour-ep']!.artwork)}
+                onPress={() => setArtwork(ALBUM_BY_ID['blue-hour-ep']!.artwork)} tone="neutral" appearance="outline"
               >
                 Use the draft cover
               </Button>

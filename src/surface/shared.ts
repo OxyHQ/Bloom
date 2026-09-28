@@ -36,9 +36,14 @@ export function surfaceSvgStop(color: string): { color: string; opacity: number 
 }
 
 
-/** Solid material flattens a translucent tint onto its resolved backing. */
-export function resolveSurfaceFill(fill: string, glass: boolean, backdrop: string): string {
-  if (glass) return fill;
+/** One subtle material: retain explicit alpha; opaque fills transmit ten percent. */
+export function resolveSurfaceTint(fill: string): string {
+  const parsed = parseRgba(fill);
+  return parsed?.a === 1 ? withAlpha(fill, 0.9) : fill;
+}
+
+/** Estimate the backing descendants see by compositing tint onto its parent. */
+export function resolveSurfaceFill(fill: string, backdrop: string): string {
   if (fill.trim().toLowerCase() === 'transparent') return backdrop;
   const tint = parseRgba(fill);
   const base = parseRgba(backdrop);

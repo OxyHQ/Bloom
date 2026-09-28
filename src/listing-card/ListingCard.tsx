@@ -35,30 +35,7 @@ import {
   ListingPriceLines,
   ListingStatusPill,
 } from './parts';
-import {
-  COMPACT_PHOTO_RADIUS,
-  COMPACT_PHOTO_SIZE,
-  describeFacts,
-  describePriceLine,
-  DOT_INACTIVE_OPACITY,
-  DOT_SIZE,
-  dotWindow,
-  HORIZONTAL_PHOTO_WIDTH,
-  IS_WEB,
-  LISTING_CARD_CSS,
-  LISTING_CARD_STYLE_ID,
-  PHOTO_ASPECT_RATIO,
-  PHOTO_RADIUS,
-  PHOTO_ZOOM_SCALE,
-  resolveListingCardPaint,
-  locationText,
-  resolvePhoto,
-  resolvePriceLines,
-  STATUS_WASH_OPACITY,
-  statusLabelFor,
-  uniqueOfferings,
-  type ListingCardPaint,
-} from './shared';
+import { COMPACT_PHOTO_RADIUS, COMPACT_PHOTO_SIZE, describeFacts, describePriceLine, DOT_INACTIVE_OPACITY, DOT_SIZE, dotWindow, HORIZONTAL_PHOTO_WIDTH, IS_WEB, LISTING_CARD_CSS, LISTING_CARD_STYLE_ID, PHOTO_ASPECT_RATIO, PHOTO_RADIUS, resolveListingCardPaint, locationText, resolvePhoto, resolvePriceLines, STATUS_WASH_OPACITY, statusLabelFor, uniqueOfferings, type ListingCardPaint } from './shared';
 import type { ListingCardLayout, ListingCardProps } from './types';
 import { useMessages } from '../locale/messages';
 import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
@@ -900,13 +877,13 @@ function ListingCardComponent(props: ListingCardProps) {
                 style={{ position: 'absolute', left: 8, top: '50%', marginTop: -16 }}
               >
                 <Button
-                  variant="secondary"
-                  size="small"
+
+                  size="sm"
                   iconOnly
                   leadingIcon={RiArrowLeftSLine}
                   accessibilityLabel={previousPhotoLabel}
                   onPress={() => goTo(active - 1)}
-                  testID={testID ? `${testID}-previous` : undefined}
+                  testID={testID ? `${testID}-previous` : undefined} tone="neutral" appearance="outline"
                 />
               </View>
             ) : null}
@@ -916,13 +893,13 @@ function ListingCardComponent(props: ListingCardProps) {
                 style={{ position: 'absolute', right: 8, top: '50%', marginTop: -16 }}
               >
                 <Button
-                  variant="secondary"
-                  size="small"
+
+                  size="sm"
                   iconOnly
                   leadingIcon={RiArrowRightSLine}
                   accessibilityLabel={nextPhotoLabel}
                   onPress={() => goTo(active + 1)}
-                  testID={testID ? `${testID}-next` : undefined}
+                  testID={testID ? `${testID}-next` : undefined} tone="neutral" appearance="outline"
                 />
               </View>
             ) : null}

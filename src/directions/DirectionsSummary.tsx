@@ -214,11 +214,11 @@ function DirectionsSummaryComponent({
 
       {onStart && chosen ? (
         <Button
-          variant="primary"
-          size="medium"
+
+          size="md"
           leadingIcon={ModeIcon}
           onPress={onStart}
-          testID={id('start')}
+          testID={id('start')} tone="accent" appearance="solid"
         >
           {labels?.start ?? messages.start}
         </Button>

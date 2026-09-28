@@ -81,10 +81,10 @@ export type CallControlKey =
   | 'addParticipant';
 
 /**
- * `small` 40px buttons (the top bar, the minimised pill), `medium` 48 (a
- * banner or a sheet), `large` 56 (the full screen's own bar).
+ * `sm` 40px buttons (the top bar, the minimised pill), `md` 48 (a
+ * banner or a sheet), `lg` 56 (the full screen's own bar).
  */
-export type CallControlSize = 'small' | 'medium' | 'large';
+export type CallControlSize = 'sm' | 'md' | 'lg';
 
 /** How a control button is painted. */
 export type CallControlTone = 'default' | 'end' | 'accept';

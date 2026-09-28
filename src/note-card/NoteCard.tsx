@@ -227,7 +227,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
       testID={testID ? `${testID}-checkbox` : undefined}
     >
       <CheckboxGlyph
-        size="medium"
+        size="md"
         checked={selected}
         indeterminate={false}
         disabled={false}
@@ -262,7 +262,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
             style={{ flexDirection: 'row', alignItems: 'flex-start', minWidth: 0 }}
           >
             <CheckboxGlyph
-              size="small"
+              size="sm"
               checked={item.done === true}
               indeterminate={false}
               disabled={false}
@@ -359,7 +359,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
     ) : null;
 
   const body = (
-    <Card variant="outlined" radius={geo.radius} border={selected ? 'medium' : 'thin'} style={cardStyle}>
+    <Card  radius={geo.radius} border={selected ? 'medium' : 'thin'} style={cardStyle} appearance="outline">
       <SurfaceLevelProvider level={1} fill={background}>
         {checkbox}
         <View style={{ flex: 1, minWidth: 0 }}>

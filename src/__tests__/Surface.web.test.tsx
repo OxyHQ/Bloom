@@ -1,4 +1,5 @@
 /** @jest-environment jsdom */
+import { SURFACE_RIM, resolveSurfaceTint, resolveSurfaceFill } from '../surface/shared';
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -31,37 +32,45 @@ it('uses real RN web layout styles and keeps the material on the same root', () 
   act(() => root.render(<Surface testID="surface" className="caller-surface" style={[{ paddingHorizontal: 16 }, { flexDirection: 'row', borderRadius: 13 }]}><span>Content</span></Surface>));
   const surface = container.querySelector('[data-testid="surface"]') as HTMLElement;
   expect(surface.className).toContain('caller-surface');
-  expect(surface.className).toContain('bloom-surface--solid');
+  expect(surface.className).toContain('bloom-surface--material');
   expect(getComputedStyle(surface).display).toBe('flex');
   expect(getComputedStyle(surface).flexDirection).toBe('row');
   expect(getComputedStyle(surface).paddingLeft).toBe('16px');
   expect(getComputedStyle(surface).paddingRight).toBe('16px');
   expect(getComputedStyle(surface).borderTopLeftRadius).toBe('13px');
-  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('#ffffff');
+  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255, 255, 255, 0.9)');
 });
 
-it('keeps default Surface and disabled Button solid with the same gradient and rim', () => {
+it('shares one refractive material across Surface and disabled Button', () => {
   document.getElementById(`${SURFACE_REFRACTION_ID}-defs`)?.remove();
   act(() => root.render(<><Surface testID="surface"><span>Panel</span></Surface><Button disabled>Disabled</Button></>));
-  expect(document.querySelectorAll(`#${SURFACE_REFRACTION_ID}`)).toHaveLength(0);
+  expect(document.querySelectorAll(`#${SURFACE_REFRACTION_ID}`)).toHaveLength(1);
   const surfaceCss = document.getElementById('bloom-surface-web-css')!.textContent!;
   const buttonCss = document.getElementById('bloom-button-web-css')!.textContent!;
-  for (const rule of ['inset 2px 2px 1px', 'rgba(255, 255, 255, 0.18)']) {
+  // Expanding the filtered pane leaks rectangular pixels outside rounded hosts.
+  for (const css of [surfaceCss, buttonCss]) {
+    const sampler = css.match(/::before\s*\{([^}]+)\}/)?.[1];
+    expect(sampler).toMatch(/inset:\s*0;/);
+    expect(sampler).toContain(`filter: url(#${SURFACE_REFRACTION_ID})`);
+    expect(css).not.toContain('background-clip: padding-box');
+    expect(css).not.toContain('border: 1px solid transparent');
+  }
+  for (const rule of [SURFACE_RIM, 'rgba(255, 255, 255, 0.18)']) {
     expect(surfaceCss).toContain(rule);
     expect(buttonCss).toContain(rule);
   }
 });
 
-it('solid material removes the glass layer while retaining caller fill', () => {
-  act(() => root.render(<Surface material="solid" fill="rgb(9, 20, 30)" testID="solid" />));
+it('retains caller colour with subtle translucency beneath the optical edge', () => {
+  act(() => root.render(<Surface fill="rgb(9, 20, 30)" testID="solid" />));
   const surface = container.querySelector('[data-testid="solid"]') as HTMLElement;
-  expect(surface.className).not.toContain('bloom-surface--glass');
-  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgb(9, 20, 30)');
+  expect(surface.className).toContain('bloom-surface--material');
+  expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(9, 20, 30, 0.9)');
 });
 
 it('the universal paint entry renders web optics without a platform barrel', () => {
-  act(() => root.render(<SurfacePaint fill="rgba(12, 34, 56, 0.25)" radius={19} glass />));
-  const paint = container.querySelector('.bloom-surface-paint--glass') as HTMLElement;
+  act(() => root.render(<SurfacePaint fill="rgba(12, 34, 56, 0.25)" radius={19} />));
+  const paint = container.querySelector('.bloom-surface-paint') as HTMLElement;
   expect(paint).not.toBeNull();
   expect(paint.style.getPropertyValue('--bloom-surface-paint-fill')).toBe('rgba(12, 34, 56, 0.25)');
   expect(getComputedStyle(paint).position).toBe('absolute');
@@ -77,7 +86,7 @@ it.each(['solid', 'subtle', 'outline'] as const)('keeps %s disabled material and
   const button = container.querySelector('button')!;
   expect(button.disabled).toBe(true);
   expect(button.className).toContain('bloom-btn--surface');
-  expect(document.getElementById(SURFACE_REFRACTION_ID)).toBeNull();
+  expect(document.getElementById(SURFACE_REFRACTION_ID)).not.toBeNull();
 });
 it('keeps plain actions unfilled and forwards the original activation event', () => {
   const onPress = jest.fn();
@@ -91,18 +100,18 @@ it('uses the explicit brand pair and exposes persistent pressed state', () => {
   act(() => root.render(<Button pressed colors={{ background: '#123456', foreground: '#ffffff' }}>Brand</Button>));
   const button = container.querySelector('button')!;
   expect(button.getAttribute('aria-pressed')).toBe('true');
-  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgb(17 48 79)');
+  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('rgba(17, 48, 79, 0.9)');
   expect(button.style.getPropertyValue('--bloom-btn-fg')).toBe('#ffffff');
 });
 
 it('can omit sheen without dropping the refractive pane or rim', () => {
   act(() => root.render(<SurfacePaint testID="pane" fill="rgba(255,255,255,.25)" radius={20} sheen={false} />));
   const pane = container.querySelector('[data-testid="pane"]')!;
-  expect(pane.className).toContain('bloom-surface-paint--solid');
+  expect(pane.className).toContain('bloom-surface-paint');
   expect(pane.className).toContain('bloom-surface-paint--no-sheen');
   const css = document.getElementById('bloom-surface-paint-web-css')!.textContent!;
   expect(css).toContain('background-image: none');
-  expect(css).toContain('inset 2px 2px 1px');
+  expect(css).toContain(SURFACE_RIM);
 });
 
 // The glass rim owns the edge even on semantic outline buttons.
@@ -124,9 +133,11 @@ it('publishes its actual fill to hooks and CSS and steps again inside a nested s
   act(() => root.render(<Surface fill="#123456" testID="outer"><Surface testID="inner"><SurfaceProbe /></Surface></Surface>));
   const outer = container.querySelector('[data-testid="outer"]') as HTMLElement;
   const inner = container.querySelector('[data-testid="inner"]') as HTMLElement;
-  const expected = surfaceFillOn(useTheme(), '#123456');
-  expect(outer.style.getPropertyValue('--bloom-surface')).toBe('#123456');
-  expect(inner.style.getPropertyValue('--bloom-surface-fill')).toBe(expected);
+  const outerFill = resolveSurfaceFill(resolveSurfaceTint('#123456'), '#ffffff');
+  const innerTint = resolveSurfaceTint(surfaceFillOn(useTheme(), outerFill));
+  const expected = resolveSurfaceFill(innerTint, outerFill);
+  expect(outer.style.getPropertyValue('--bloom-surface')).toBe(outerFill);
+  expect(inner.style.getPropertyValue('--bloom-surface-fill')).toBe(innerTint);
   expect(inner.style.getPropertyValue('--bloom-surface')).toBe(expected);
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-fill')).toBe(expected);
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-level')).toBe('2');
@@ -135,14 +146,14 @@ it('publishes its actual fill to hooks and CSS and steps again inside a nested s
 it('continues stepping off the real parent after the named ladder ends', () => {
   act(() => root.render(<SurfaceLevelProvider level={3} fill="#123456"><Surface testID="deep"><SurfaceProbe /></Surface></SurfaceLevelProvider>));
   const pane = container.querySelector('[data-testid="deep"]') as HTMLElement;
-  expect(pane.style.getPropertyValue('--bloom-surface-fill')).toBe(surfaceFillOn(useTheme(), '#123456'));
+  expect(pane.style.getPropertyValue('--bloom-surface-fill')).toBe(resolveSurfaceTint(surfaceFillOn(useTheme(), '#123456')));
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-level')).toBe('3');
 });
 
-it('composites a caller alpha fill on the parent and publishes exactly the solid result', () => {
+it('preserves caller alpha while publishing its estimated composite over the parent', () => {
   act(() => root.render(<SurfaceLevelProvider level={1} fill="#000000"><Surface style={{ backgroundColor: 'rgba(255,255,255,0.5)' }} testID="custom"><SurfaceProbe /></Surface></SurfaceLevelProvider>));
   const pane = container.querySelector('[data-testid="custom"]') as HTMLElement;
-  expect(pane.style.getPropertyValue('--bloom-surface-fill')).toBe('rgb(128, 128, 128)');
+  expect(pane.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(255,255,255,0.5)');
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-fill')).toBe('rgb(128, 128, 128)');
 });
 
@@ -155,9 +166,9 @@ it('forwards the original layout host ref and accessibility semantics', () => {
   expect(host?.getAttribute('aria-label')).toBe('Tools');
 });
 
-it('keeps an explicitly transparent solid surface on its enclosing fill and depth', () => {
+it('keeps an explicitly transparent surface on its enclosing fill and depth', () => {
   act(() => root.render(<SurfaceLevelProvider level={2} fill="#123456"><Surface style={{ backgroundColor: 'transparent' }} testID="clear"><SurfaceProbe /></Surface></SurfaceLevelProvider>));
-  expect(container.querySelector('[data-testid="clear"]')?.className).not.toContain('bloom-surface--solid');
+  expect(container.querySelector('[data-testid="clear"]')?.className).not.toContain('bloom-surface--material');
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-fill')).toBe('#123456');
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-level')).toBe('2');
 });
@@ -175,4 +186,10 @@ it.each([
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-fill')).toBe(expected);
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-level')).toBe('2');
   expect((container.querySelector('[data-testid="docked"]') as HTMLElement).style.getPropertyValue('--bloom-surface')).toBe(background === 'transparent' ? '' : expected);
+});
+
+it('gives an explicit radius precedence over caller style on the material host', () => {
+  act(() => root.render(<Surface testID="explicit-radius" radius={20} style={{ borderRadius: 8 }} />));
+  const pane = container.querySelector('[data-testid="explicit-radius"]') as HTMLElement;
+  expect(getComputedStyle(pane).borderTopLeftRadius).toBe('20px');
 });

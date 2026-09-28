@@ -233,7 +233,7 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell'];
 // writes none. `DeliverySlotOption` always passes one — the window, what is
 // left of it and its surcharge, as one utterance — because a row built from
 // three separate Texts is three stops otherwise.
-const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'Item', 'MediaPressable', 'MenuRowShell'];
+const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'Item', 'LinkButton', 'MediaPressable', 'MenuRowShell'];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the

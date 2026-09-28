@@ -82,7 +82,7 @@ function SleepTimerMenuComponent({
   children,
   open,
   onOpenChange,
-  size = 'regular',
+  size = 'md',
   disabled,
   ...rows
 }: SleepTimerMenuProps) {

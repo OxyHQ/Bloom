@@ -1,3 +1,6 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { surfaceFillOn } from '../styles/surface-levels';
+import { resolveSurfaceTint } from '../surface/shared';
 import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import * as ReactNative from 'react-native';
@@ -52,7 +55,7 @@ describe('AuthCard', () => {
   it('paints the dark card through the shared material', () => {
     const { getByTestId } = renderCard(<AuthCard testID="auth" />, 'dark');
     const { colors } = buildTheme('teal', 'dark');
-    expect(cardFill(getByTestId('auth'))).toBe(colors.card);
+    expect(cardFill(getByTestId('auth'))).toBe(resolveSurfaceTint(colors.card));
   });
 
   it('hands the sign-in form to onSubmit as typed values, remember defaulting on', () => {
@@ -109,7 +112,9 @@ describe('AuthCard', () => {
 
   it('paints the provider button as the secondary button surface', () => {
     const { getByTestId } = renderCard(<AuthCard testID="auth" providers={['github']} />);
-    const palette = resolveButtonPalette('outline', buildTheme('teal', 'light'), 'neutral');
+    const theme = buildTheme('teal', 'light');
+    const backing = resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill;
+    const palette = resolveButtonPalette('outline', theme, 'neutral', undefined, surfaceFillOn(theme, backing));
     expect(cardFill(getByTestId('auth-provider-github'))).toBe(palette.rest.background);
     expect(resolvedStyle(getByTestId('auth-provider-github').props.style)).toMatchObject({
       borderColor: palette.rest.border,

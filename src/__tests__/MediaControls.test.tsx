@@ -121,7 +121,7 @@ describe('PlayButton', () => {
   });
 
   it('draws the sizes 32 / 48 / 56 as circles', () => {
-    for (const [size, px] of [['small', 32], ['medium', 48], ['large', 56]] as const) {
+    for (const [size, px] of [['sm', 32], ['md', 48], ['lg', 56]] as const) {
       mount(<PlayButton playing={false} size={size} testID="p" />);
       const style = byTestId('p').style;
       expect(style.width).toBe(`${px}px`);
@@ -176,13 +176,13 @@ describe('LikeButton', () => {
   });
 
   it('keeps a hit area of at least 32 and paints the liked heart in the accent or activeColor', () => {
-    mount(<LikeButton size="small" liked onLikedChange={() => {}} testID="l" />);
+    mount(<LikeButton size="sm" liked onLikedChange={() => {}} testID="l" />);
     expect(byTestId('l').style.width).toBe('32px');
     const accent = resolveMediaControlsPaint(theme).accent;
     const path = () => byTestId('l').querySelector('path');
     expect(path()?.getAttribute('fill')).toBe(accent);
 
-    mount(<LikeButton size="large" liked onLikedChange={() => {}} activeColor="#E0457B" testID="l" />);
+    mount(<LikeButton size="lg" liked onLikedChange={() => {}} activeColor="#E0457B" testID="l" />);
     expect(byTestId('l').style.width).toBe('40px');
     expect(path()?.getAttribute('fill')).toBe('#E0457B');
   });

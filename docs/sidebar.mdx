@@ -281,4 +281,8 @@ which also moves its footer. The default `start` preserves existing placement.
 
 ## Shared material
 
-Card and docked sidebar surfaces paint the shared opaque Surface material with its gradient and rim beneath their contents; plain surfaces and the navigation rail retain their existing fill. The current logo, modes, scoped sizes, tree, custom content, RTL layout, safe edges and scroll behavior are unchanged. Storybook: **Blocks / Sidebar / Glass Panel**.
+Card and docked sidebar surfaces paint the shared Surface material at 90% body opacity with its gradient and rim beneath their contents; plain surfaces and the navigation rail retain their existing fill. The current logo, modes, scoped sizes, tree, custom content, RTL layout, safe edges and scroll behavior are unchanged. Storybook: **Blocks / Sidebar / Glass Panel**.
+
+### Shared surface paint
+
+The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.

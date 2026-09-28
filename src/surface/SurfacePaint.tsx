@@ -10,12 +10,11 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { surfaceMaterialCss } from './web-material';
 import { useSurfaceRefraction } from './web-refraction';
 import { useTheme } from '../theme/use-theme';
-import { resolveSurfaceFill, resolveSurfaceOptics, surfaceSvgStop } from './shared';
+import { resolveSurfaceTint, resolveSurfaceOptics, surfaceSvgStop } from './shared';
 
 const WEB_PAINT_CSS = `
 .bloom-surface-paint { isolation: isolate; overflow: hidden; }
-${surfaceMaterialCss('.bloom-surface-paint--solid', 'var(--bloom-surface-paint-fill)')}
-${surfaceMaterialCss('.bloom-surface-paint--glass', 'var(--bloom-surface-paint-fill)', 'none', true)}
+${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)')}
 .bloom-surface-paint--no-sheen::after { background-image: none; }
 `;
 
@@ -27,21 +26,16 @@ ${surfaceMaterialCss('.bloom-surface-paint--glass', 'var(--bloom-surface-paint-f
  */
 export const SurfacePaint = memo(function SurfacePaint({
   fill,
-  backdrop,
   radius,
   shape,
   direction = 'ltr',
-  glass = false,
   sheen = true,
   testID,
 }: {
-  glass?: boolean;
   sheen?: boolean;
   testID?: string;
   /** Omit for sheen/rim only on a host that already owns its fill. */
   fill?: string;
-  /** Actual parent fill when compositing a solid material. */
-  backdrop?: string;
   radius?: NonNullable<ViewStyle['borderRadius']>;
   /** Same policy as the host; radius can remain owned by an animated host. */
   shape?: SurfaceShape;
@@ -50,10 +44,10 @@ export const SurfacePaint = memo(function SurfacePaint({
   const geometry = { ...(radius === undefined ? {} : { borderRadius: radius }), ...surfaceStyle(shape ?? { curve: 'round' }, direction) };
   const theme = useTheme();
   const optics = resolveSurfaceOptics(theme.isDark);
-  const resolvedFill = fill === undefined ? 'transparent' : resolveSurfaceFill(fill, glass, backdrop ?? theme.colors.card);
+  const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
   const id = useSvgIdPrefix('bloom-surface');
   const isWeb = Platform.OS === 'web';
-  useSurfaceRefraction(isWeb && glass);
+  useSurfaceRefraction(isWeb);
   useEffect(() => {
     if (isWeb) adoptStyleSheet('bloom-surface-paint-web-css', WEB_PAINT_CSS);
   }, [isWeb]);
@@ -67,7 +61,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       '--bloom-surface-rim': optics.rim,
       '--bloom-surface-sheen': optics.sheenCss,
     };
-    return <StyledView testID={testID} pointerEvents="none" className={`${glass ? 'bloom-surface-paint bloom-surface-paint--glass' : 'bloom-surface-paint bloom-surface-paint--solid'}${sheen ? '' : ' bloom-surface-paint--no-sheen'}`} style={paintStyle} />;
+    return <StyledView testID={testID} pointerEvents="none" className={`bloom-surface-paint${sheen ? '' : ' bloom-surface-paint--no-sheen'}`} style={paintStyle} />;
   }
   const base = surfaceSvgStop(resolvedFill);
   return (
@@ -89,4 +83,3 @@ export const SurfacePaint = memo(function SurfacePaint({
     </View>
   );
 });
-

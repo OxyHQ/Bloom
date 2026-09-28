@@ -1,4 +1,4 @@
-import { normalizeBloomSize } from '../appearance/legacy';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
@@ -81,21 +81,24 @@ ${ROW}:focus-visible {
 }`,
 });
 
-const CheckboxComponent: React.FC<CheckboxProps> = ({
-  checked,
-  onCheckedChange,
-  label,
-  description,
-  size: sizeProp,
-  disabled = false,
-  indeterminate = false,
-  tone: toneProp,
-  style,
-  labelStyle,
-  accessibilityLabel,
-  nativeID,
-  testID,
-}) => {
+const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
+  const {
+    checked: checkedProp,
+    defaultChecked = false,
+    onCheckedChange,
+    label,
+    description,
+    size: sizeProp,
+    disabled = false,
+    indeterminate = false,
+    tone: toneProp,
+    style,
+    labelStyle,
+    accessibilityLabel,
+    nativeID,
+    testID,
+  } = props;
+  const [checked, setChecked] = useControllableState({ value: checkedProp ?? false, controlled: Object.prototype.hasOwnProperty.call(props, 'checked'), defaultValue: defaultChecked, onChange: onCheckedChange });
   const theme = useTheme();
   // The label is ADJACENT — the words beside the box ARE the control, so they
   // name it and a `Field` around it only supplies what is missing. `disabled`
@@ -108,7 +111,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
     nativeID,
   });
   const isDisabled = field.disabled;
-  const { size: scopedSize, tone } = useBloomAppearance({ size: normalizeBloomSize(sizeProp), tone: toneProp }, { size: 'md', tone: 'accent' });
+  const { size: scopedSize, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
   const size = scopedSize;
   const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, BLOOM_CHECKBOX_CSS);
@@ -123,9 +126,9 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
 
   const handlePress = useCallback(() => {
     if (!isDisabled) {
-      onCheckedChange(!checked);
+      setChecked(!checked);
     }
-  }, [checked, isDisabled, onCheckedChange]);
+  }, [checked, isDisabled, setChecked]);
 
   const hasText = Boolean(label || description);
 

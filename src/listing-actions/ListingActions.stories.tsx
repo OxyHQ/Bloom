@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BookingBar } from '../booking';
-import { Button } from '../button';
+import { LinkButton } from '../button';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
 import { RiShareLine } from '../icons/remix/RiShareLine';
@@ -94,9 +94,9 @@ const SALE_FACTS: KeyFact[] = [
 
 function ReportLink() {
   return (
-    <Button variant="link" linkTone="secondary" size="small" leadingIcon={RiFlagLine} onPress={() => undefined}>
+    <LinkButton  linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
       Report this listing
-    </Button>
+    </LinkButton>
   );
 }
 

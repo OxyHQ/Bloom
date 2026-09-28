@@ -92,7 +92,7 @@ is a `button` (the default).
 
 ## Clipping
 
-`Card` uses the shared Surface material (`material="solid"` by default, retaining the gradient and rim; `material="glass"` opts into translucent refraction), while preserving the current appearance, tone and compatibility variant APIs. On native, the outer node keeps its shadow unclipped; an inner content node clips cover images and receives resolved padding, gap and child layout. Web retains one content layout node, where CSS overflow clips children without clipping the box shadow, preserving utility-class layout.
+`Card` uses the shared Surface material (90%-opaque body, gradient, rim and web refraction), with the shared `appearance` and `tone` vocabulary. On native, the outer node keeps its shadow unclipped; an inner content node clips cover images and receives resolved padding, gap and child layout. Web retains one content layout node, where CSS overflow clips children without clipping the box shadow, preserving utility-class layout.
 A surface that must *not* clip — because it has an Android elevation, or
 because a child deliberately overflows — opts out through `style`:
 
@@ -105,8 +105,7 @@ iOS continuous curves, circular corners on Android and unsupported browsers.
 `cornerCurve="round"` is circular everywhere. `radius-max` always remains a pill.
 `border="medium"` supplies a 2px selection border.
 Both layers use the same curve; the inner radius accounts for the border width.
-`radius`, `cornerCurve` and `border` own geometry. Set layout and paint in `style`,
-not border radii, border widths or overflow; `contentStyle` follows the same rule.
+Explicit `radius`, `cornerCurve` and `border` own geometry. With no radius prop, a resolved `style.borderRadius` is used before the family default, matching Surface and GlassIsland. Individual corner radii, border widths and overflow remain controlled by the shape, border and clipping props. `contentStyle` cannot replace the resolved clip geometry.
 
 ## Parts
 
@@ -117,13 +116,13 @@ other card.
 
 `LinkPreviewCard` composes Card and inherits this material without a separate glass implementation.
 
-`appearance="plain"` is an unpainted container: it does not mount SurfacePaint or add a gradient/rim. Explicit caller backgrounds, borders and elevation remain authoritative. This differs from the legacy `variant="plain"`, which retains its solid, unelevated contract.
+`appearance="plain"` is an unpainted container: it does not mount SurfacePaint or add a gradient/rim. Explicit caller backgrounds, borders and elevation remain authoritative. The removed `variant="plain"` maps to `appearance="solid" elevation="none"`; `elevated`, `outlined` and `filled` map to `solid`, `outline` and `subtle`.
 
 ## Parent-aware surface hierarchy
 
 Neutral, non-plain cards keep `colors.card` on the page and derive nested fills from the actual parent surface. The published level caps at three; the fill continues to step from its parent, so deeper cards do not collapse into the same colour. Children receive both the resolved fill through `SurfaceLevelProvider` and its web CSS variable.
 
-Explicit style backgrounds (including resolved class utilities) take precedence. Translucent solid fills are composited against the known parent before painting and publishing. Coloured semantic tones preserve their authored fill/foreground pairs. Glass publishes that same composite as an estimate for descendants; it cannot describe the exact refracted backdrop.
+Explicit style backgrounds (including resolved class utilities) take precedence. Default fills use 90% opacity; explicit caller alpha is preserved. Translucent paint is composited against the known parent only when publishing its estimate for descendants; it cannot describe the exact refracted backdrop.
 
 `appearance="plain"` adds neither material nor a hierarchy step. Its transparent background preserves the inherited fill. An explicit background on a plain card updates the published fill at the current level.
 
@@ -132,3 +131,5 @@ Backgrounds resolved by the styled adapter into `style` participate in this cont
 
 
 `ref` and `onLayout` address the outer card host in both passive and pressable forms. Responsive card families reuse that measurement rather than adding a layout wrapper. Dashboard, chart, booking, tenancy and specialized cards compose this base; their custom content retains its geometry and semantic colours while neutral fills derive from the surrounding surface.
+
+Material resolution is shared with Surface and overlays: one resolver chooses paint alpha, composited backing, depth and CSS aliases. Plain cards publish explicit backing without applying material or incrementing depth.

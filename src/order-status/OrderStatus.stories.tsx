@@ -163,7 +163,7 @@ export const Bar: Story = {
           detail="Nobody at the address. We will try again tomorrow."
           icon={RiCloseCircleLine}
           tone="error"
-          action={<Button variant="secondary" size="small" onPress={noop}>Reschedule</Button>}
+          action={<Button  size="sm" onPress={noop} tone="neutral" appearance="outline">Reschedule</Button>}
         />
       </Section>
       <Section title="Plain, inside a card that already paints">

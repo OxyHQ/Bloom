@@ -74,20 +74,20 @@ function WriteReviewPromptComponent({
             </Text>
           </View>
         </View>
-        <Button variant="primary" size="small" leadingIcon={RiQuillPenLine} onPress={onStart} testID={id('start')}>
+        <Button  size="sm" leadingIcon={RiQuillPenLine} onPress={onStart} testID={id('start')} tone="accent" appearance="solid">
           {actionLabel}
         </Button>
       </View>
       {onDismiss ? (
         <View style={{ position: 'absolute', top: 12, right: 12 }}>
           <Button
-            variant="secondary"
+
             size="xs"
             iconOnly
             leadingIcon={RiCloseLine}
             accessibilityLabel={dismissLabel}
             onPress={onDismiss}
-            testID={id('dismiss')}
+            testID={id('dismiss')} tone="neutral" appearance="outline"
           />
         </View>
       ) : null}

@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -99,7 +100,7 @@ function TransportControlsComponent({
   loading,
   subject,
   variant = 'music',
-  size = 'regular',
+  size: sizeProp,
   onPrevious,
   onNext,
   previousDisabled,
@@ -120,6 +121,8 @@ function TransportControlsComponent({
   style,
   testID,
 }: TransportControlsProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
   const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const common = useCommonMessages();

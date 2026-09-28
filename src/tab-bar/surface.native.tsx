@@ -1,9 +1,10 @@
+import { resolveSurfaceTint } from '../surface/shared';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
  * (MIT © 2026 David Mokos).
  *
  * NATIVE variant of the tab bar's capsule surface — real liquid glass, degrading
- * to the solid surface whenever the glass is not actually usable.
+ * to the shared surface whenever the glass is not actually usable.
  *
  * `expo-glass-effect` is imported STATICALLY and this file is the only place it
  * appears: Metro selects `.native` on iOS/Android, so the import never reaches
@@ -15,7 +16,7 @@
  *
  * `isLiquidGlassAvailable()` is false on Android and pre-iOS-26, where the
  * package's `GlassView` has no material to render; those platforms get the same
- * opaque fallback the neutral variant paints. "Installed" is not "usable"
+ * tinted fallback the neutral variant paints. "Installed" is not "usable"
  * though, and BOTH remaining hazards sit at MODULE scope, which is why neither
  * can be handled by a branch inside the component:
  *
@@ -42,7 +43,7 @@
  * anyway. A missing probe therefore means "not applicable", never "unavailable";
  * reading it the other way would delete the glass look from every working device.
  *
- * Everything that fails routes to the SAME solid surface Android already paints —
+ * Everything that fails routes to the SAME shared surface Android already paints —
  * the intended fallback path, not a new one.
  */
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
@@ -50,7 +51,7 @@ import { StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import type { TabBarSurfaceProps } from './shared';
-import { SolidTabBarSurface } from './surface-solid';
+import { SharedTabBarSurface } from './surface-paint';
 
 /**
  * The animated glass view, or `null` when the package did not deliver the two
@@ -86,7 +87,7 @@ function glassIsUsable(): boolean {
     // eslint-disable-next-line no-console
     console.warn(
       '[Bloom] TabBar: expo-glass-effect could not report liquid-glass availability, ' +
-        'so the bar is painting its solid surface. Install expo-glass-effect and ' +
+        'so the bar is painting its shared surface. Install expo-glass-effect and ' +
         'rebuild the native app to get the glass capsule.',
       error,
     );
@@ -103,14 +104,14 @@ export function TabBarSurface({ theme, style }: TabBarSurfaceProps) {
         style={[
           StyleSheet.absoluteFill,
           styles.surface,
-          { backgroundColor: theme.glassTint },
+          { backgroundColor: resolveSurfaceTint(theme.glassTint) },
           style,
         ]}
       />
     );
   }
 
-  return <SolidTabBarSurface theme={theme} style={style} />;
+  return <SharedTabBarSurface theme={theme} style={style} />;
 }
 
 TabBarSurface.displayName = 'TabBarSurface';
@@ -122,4 +123,4 @@ const styles = StyleSheet.create({
 });
 
 TabBarSurface.resolveFill = (theme: TabBarSurfaceProps['theme']) =>
-  AnimatedGlassView !== null && glassIsUsable() ? theme.glassTint : theme.solidFallback;
+  AnimatedGlassView !== null && glassIsUsable() ? theme.glassTint : theme.glassTint;

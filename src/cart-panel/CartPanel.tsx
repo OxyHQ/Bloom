@@ -303,12 +303,12 @@ function CartPanelComponent({
 
       {hasLines && onCheckout ? (
         <Button
-          variant="primary"
-          size="large"
+
+          size="lg"
           fullWidth
           disabled={checkoutDisabled}
           onPress={onCheckout}
-          testID={testID ? `${testID}-checkout` : undefined}
+          testID={testID ? `${testID}-checkout` : undefined} tone="accent" appearance="solid"
         >
           {checkoutLabel}
         </Button>

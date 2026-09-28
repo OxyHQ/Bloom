@@ -96,7 +96,7 @@ function PlayGlyph({ playing }: { playing: boolean }) {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <PlayButton playing={playing} size="medium" variant="inverse" interactive={false} />
+      <PlayButton playing={playing} size="md" variant="inverse" interactive={false} />
     </View>
   );
 }

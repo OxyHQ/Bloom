@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
-import { Button } from '../../src/button';
+import { Button , InverseButton } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
 import { CategoryBar } from '../../src/category-bar';
 import { useDialogControl } from '../../src/dialog';
@@ -337,15 +337,15 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
           zIndex: Z_INDEX.floating,
         }}
       >
-        <Button
-          variant="inverse"
-          size="large"
+        <InverseButton
+
+          size="lg"
           leadingIcon={showMap ? RiListUnordered : RiMap2Line}
           onPress={() => setShowMap((s) => !s)}
           testID="housing-map-toggle"
         >
           {showMap ? 'Show list' : 'Show map'}
-        </Button>
+        </InverseButton>
       </View>
 
       <FiltersDialog

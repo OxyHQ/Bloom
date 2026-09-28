@@ -93,7 +93,7 @@ function EpisodeCardComponent({
     row || progressLine || actions ? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }} pointerEvents="box-none">
         {row && onPlay ? (
-          <PlayButton playing={playing} loading={loading} onPress={onPlay} subject={title} size="small" testID={testID ? `${testID}-play` : undefined} />
+          <PlayButton playing={playing} loading={loading} onPress={onPlay} subject={title} size="sm" testID={testID ? `${testID}-play` : undefined} />
         ) : null}
         {progressLine}
         <View style={{ flex: 1 }} pointerEvents="none" />

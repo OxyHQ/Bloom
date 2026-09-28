@@ -287,7 +287,7 @@ function ContactCardComponent({
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }} testID={testID ? `${testID}-actions` : undefined}>
         {onMessage ? (
           <Button
-            variant={role === 'host' ? 'secondary' : 'primary'}
+            appearance={role === 'host' ? 'outline' : 'solid'} tone={role === 'host' ? 'neutral' : 'accent'}
             onPress={onMessage}
             testID={testID ? `${testID}-message` : undefined}
           >
@@ -295,7 +295,7 @@ function ContactCardComponent({
           </Button>
         ) : null}
         {onCall ? (
-          <Button variant="secondary" leadingIcon={RiPhoneLine} onPress={onCall} testID={testID ? `${testID}-call` : undefined}>
+          <Button  leadingIcon={RiPhoneLine} onPress={onCall} testID={testID ? `${testID}-call` : undefined} tone="neutral" appearance="outline">
             {callLabel}
           </Button>
         ) : null}
@@ -316,11 +316,11 @@ function ContactCardComponent({
               </View>
             ) : (
               <Button
-                variant="secondary"
+
                 leadingIcon={RiPhoneLine}
                 onPress={revealPhone}
                 textStyle={phoneRevealed ? { fontVariant: ['tabular-nums'] } : undefined}
-                testID={testID ? `${testID}-phone` : undefined}
+                testID={testID ? `${testID}-phone` : undefined} tone="neutral" appearance="outline"
               >
                 {phoneRevealed ? phone : showPhoneLabel}
               </Button>

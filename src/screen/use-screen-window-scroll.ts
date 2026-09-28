@@ -1,5 +1,6 @@
+import { animateMotion } from '../motion/recipes';
 import { useEffect } from 'react';
-import { useReducedMotion, withSpring } from 'react-native-reanimated';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useScreen, type ScreenContextValue } from './context';
 import { useScreenScroll } from './use-screen-scroll';
 import type { ScreenScrollOptions } from './types';
@@ -28,7 +29,7 @@ export function useScreenWindowBinding(screen: ScreenContextValue, options: Scre
       const target = y < 24 ? 0 : delta > 3 ? 1 : delta < -3 ? 0 : screen.collapseTarget.value;
       if (target !== screen.collapseTarget.value) {
         screen.collapseTarget.value = target;
-        screen.collapseProgress.value = reducedMotion ? target : withSpring(target, { duration: 380, dampingRatio: 1 });
+        animateMotion(screen.collapseProgress, target, 'expand', reducedMotion);
       }
     };
     if (screen.activeScrollerId.value === owner) screen.scrollY.value = previous;

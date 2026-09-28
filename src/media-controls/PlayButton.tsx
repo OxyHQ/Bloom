@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -51,16 +52,16 @@ import { MEDIA_CONTROLS_MESSAGES } from './messages';
  */
 
 const SIZE_CONFIG: Record<PlayButtonSize, { box: number; glyph: number }> = {
-  small: { box: 32, glyph: 16 },
-  medium: { box: 48, glyph: 24 },
-  large: { box: 56, glyph: 28 },
+  sm: { box: 32, glyph: 16 },
+  md: { box: 48, glyph: 24 },
+  lg: { box: 56, glyph: 28 },
 };
 
 function PlayButtonComponent({
   playing,
   onPress,
   interactive = true,
-  size = 'medium',
+  size: sizeProp,
   variant = 'accent',
   loading = false,
   disabled = false,
@@ -71,6 +72,9 @@ function PlayButtonComponent({
   style,
   testID,
 }: PlayButtonProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
+
   const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
   useEffect(() => {

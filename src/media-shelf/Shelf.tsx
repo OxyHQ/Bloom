@@ -205,24 +205,24 @@ function ShelfComponent({
           {showArrows ? (
             <View {...webDataSet({ bloomShelfArrows: '' })} style={{ flexDirection: 'row', gap: 8 }}>
               <Button
-                variant="secondary"
-                size="small"
+
+                size="sm"
                 iconOnly
                 leadingIcon={RiArrowLeftSLine}
                 accessibilityLabel={`${previousLabel}: ${title}`}
                 disabled={!overflow.previous}
                 onPress={() => page(-1)}
-                testID={testID ? `${testID}-previous` : undefined}
+                testID={testID ? `${testID}-previous` : undefined} tone="neutral" appearance="outline"
               />
               <Button
-                variant="secondary"
-                size="small"
+
+                size="sm"
                 iconOnly
                 leadingIcon={RiArrowRightSLine}
                 accessibilityLabel={`${nextLabel}: ${title}`}
                 disabled={!overflow.next}
                 onPress={() => page(1)}
-                testID={testID ? `${testID}-next` : undefined}
+                testID={testID ? `${testID}-next` : undefined} tone="neutral" appearance="outline"
               />
             </View>
           ) : null}

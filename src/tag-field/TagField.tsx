@@ -1,4 +1,3 @@
-import { normalizeBloomSize } from '../appearance/legacy';
 import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -11,7 +10,7 @@ import {
 } from 'react-native';
 
 import { Chip } from '../chip';
-import { useInheritedControl } from '../control-surface';
+import { useBloomAppearance } from '../appearance';
 import { useFieldMembership } from '../field/membership';
 import { DEFAULT_SIDE_OFFSET } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
@@ -147,10 +146,10 @@ export function TagField({
   style,
   testID,
 }: TagFieldProps) {
-  // The size vocabulary IS the density pair, so a `ControlSurface density="small"`
+  // The size vocabulary IS the density pair, so a `BloomScope size="sm"`
   // around a filter row reaches this field exactly as it reaches the text fields
   // beside it — `docs/composition.mdx` §Control presentation.
-  const size = useInheritedControl('density', normalizeBloomSize(sizeProp), 'md');
+  const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
   const palette = useTextFieldPalette();
   const menu = useMenuPalette();
   const { messages } = useMessages(TAG_FIELD_MESSAGES);

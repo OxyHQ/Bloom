@@ -102,7 +102,7 @@ function IconAction({ icon, label }: { icon: typeof RiMore2Line; label: string }
 /**
  * The canonical floating header: back in its own capsule, two related actions
  * sharing one island, a primary action in its own. Nothing here names a
- * material — the island's `ControlSurface` does.
+ * material — the island's `BloomScope` does.
  */
 function PageActions() {
   return (

@@ -272,8 +272,8 @@ export const PodcastsAndBooks: Story = {
     const [playing, setPlaying] = useState(false);
     const actions = (
       <>
-        <Button variant="ghost" size="small" iconOnly leadingIcon={RiAddCircleLine} accessibilityLabel="Save episode" onPress={noop} />
-        <Button variant="ghost" size="small" iconOnly leadingIcon={RiDownloadLine} accessibilityLabel="Download episode" onPress={noop} />
+        <Button  size="sm" iconOnly leadingIcon={RiAddCircleLine} accessibilityLabel="Save episode" onPress={noop} tone="accent" appearance="subtle" />
+        <Button  size="sm" iconOnly leadingIcon={RiDownloadLine} accessibilityLabel="Download episode" onPress={noop} tone="accent" appearance="subtle" />
       </>
     );
     return (
@@ -326,21 +326,21 @@ export const BrowseAndSocial: Story = {
       </Section>
       <Section title="Events">
         <Wrap>
-          <EventCard title="Mara Vell" month="Oct" day="14" venue="The Lantern Hall" city="Porto" time="Fri 20:00" image={cover(260, 320)} action={<Button size="small" onPress={noop}>Tickets</Button>} onPress={noop} testID="event" />
+          <EventCard title="Mara Vell" month="Oct" day="14" venue="The Lantern Hall" city="Porto" time="Fri 20:00" image={cover(260, 320)} action={<Button size="sm" onPress={noop}>Tickets</Button>} onPress={noop} testID="event" />
           <EventCard title="Juno Park" month="Nov" day="2" venue="Pier Seven" city="Valmere" time="Sun 19:30" image={cover(190, 230, 'wave')} soldOut onPress={noop} testID="event-sold-out" />
         </Wrap>
         <View style={{ maxWidth: 560 }}>
-          <EventCard layout="row" title="Mara Vell" month="Oct" day="14" venue="The Lantern Hall" city="Porto" time="Fri 20:00" action={<Button size="small" variant="secondary" onPress={noop}>Tickets</Button>} onPress={noop} testID="event-row" />
+          <EventCard layout="row" title="Mara Vell" month="Oct" day="14" venue="The Lantern Hall" city="Porto" time="Fri 20:00" action={<Button size="sm"  onPress={noop} tone="neutral" appearance="outline">Tickets</Button>} onPress={noop} testID="event-row" />
           <EventCard layout="row" title="Juno Park" month="Nov" day="2" venue="Pier Seven" city="Valmere" soldOut onPress={noop} />
         </View>
       </Section>
       <Section title="Profiles">
         <Wrap>
-          <ProfileCard name="Maya Ortiz" followsYou artwork={face(330)} action={<Button size="small" variant="secondary" onPress={noop}>Follow</Button>} onPress={noop} testID="profile" />
+          <ProfileCard name="Maya Ortiz" followsYou artwork={face(330)} action={<Button size="sm"  onPress={noop} tone="neutral" appearance="outline">Follow</Button>} onPress={noop} testID="profile" />
           <ProfileCard name="Teo Marsh" followers="214 followers" artwork={face(90)} onPress={noop} />
         </Wrap>
         <View style={{ maxWidth: 560 }}>
-          <ProfileCard layout="row" name="Maya Ortiz" followsYou artwork={face(330)} action={<Button size="small" variant="secondary" onPress={noop}>Follow</Button>} onPress={noop} />
+          <ProfileCard layout="row" name="Maya Ortiz" followsYou artwork={face(330)} action={<Button size="sm"  onPress={noop} tone="neutral" appearance="outline">Follow</Button>} onPress={noop} />
         </View>
       </Section>
       <Section title="Friend activity">

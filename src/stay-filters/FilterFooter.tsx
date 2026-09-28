@@ -1,8 +1,8 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
+import { Button , LinkButton } from '../button';
+
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { STAY_FILTERS_MESSAGES } from './messages';
@@ -56,11 +56,11 @@ function FilterFooterComponent({
         style,
       ]}
     >
-      <Button
-        variant="link"
+      <LinkButton
+
         linkTone="text"
         underline="rest"
-        size="small"
+        size="sm"
         textVariant="body-semibold"
         style={{ paddingTop: 6, paddingBottom: 6, marginTop: -6, marginBottom: -6 }}
         onPress={onClear}
@@ -68,15 +68,15 @@ function FilterFooterComponent({
         testID={testID ? `${testID}-clear` : undefined}
       >
         {clearLabel}
-      </Button>
+      </LinkButton>
       <Button
-        variant="primary"
-        size="large"
+
+        size="lg"
         onPress={onApply}
         loading={loading}
         disabled={applyDisabled}
         accessibilityLabel={resultsLabel}
-        testID={testID ? `${testID}-apply` : undefined}
+        testID={testID ? `${testID}-apply` : undefined} tone="accent" appearance="solid"
       >
         {resultsLabel}
       </Button>

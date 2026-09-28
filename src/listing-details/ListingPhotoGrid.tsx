@@ -286,11 +286,11 @@ function ListingPhotoGridComponent({
         {onShowAll ? (
           <View style={{ position: 'absolute', right: 24, bottom: 24 }}>
             <Button
-              variant="secondary"
-              size="small"
+
+              size="sm"
               leadingIcon={RiLayoutGridLine}
               onPress={onShowAll}
-              testID={testID ? `${testID}-show-all` : undefined}
+              testID={testID ? `${testID}-show-all` : undefined} tone="neutral" appearance="outline"
             >
               {showAllLabel}
             </Button>

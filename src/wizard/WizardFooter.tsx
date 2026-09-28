@@ -1,8 +1,8 @@
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo, useState } from 'react';
 import { Platform, View } from 'react-native';
 
-import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
+import { Button , LinkButton } from '../button';
+
 import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -72,11 +72,11 @@ function WizardFooterComponent({
     >
       {onBack ? (
         <View>
-          <Button
-            variant="link"
+          <LinkButton
+
             linkTone="text"
             underline="rest"
-            size="small"
+            size="sm"
             textVariant="body-semibold"
             style={{ paddingTop: 6, paddingBottom: 6, marginTop: -6, marginBottom: -6 }}
             onPress={onBack}
@@ -84,7 +84,7 @@ function WizardFooterComponent({
             testID={testID ? `${testID}-back` : undefined}
           >
             {backLabel}
-          </Button>
+          </LinkButton>
         </View>
       ) : (
         <View />
@@ -100,13 +100,13 @@ function WizardFooterComponent({
         </Text>
       ) : null}
       <Button
-        variant="primary"
-        size="large"
+
+        size="lg"
         onPress={onNext}
         loading={loading}
         disabled={nextDisabled}
         accessibilityLabel={nextLabel}
-        testID={testID ? `${testID}-next` : undefined}
+        testID={testID ? `${testID}-next` : undefined} tone="accent" appearance="solid"
       >
         {nextLabel}
       </Button>

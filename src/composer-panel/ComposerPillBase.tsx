@@ -1,7 +1,7 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseRgba } from '../theme/color-utils';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -73,7 +73,7 @@ function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; da
   const fade = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
   if (!mounted) return null;
   return <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, fade]}>
-    <SurfacePaint fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`} radius={radius} glass />
+    <SurfacePaint fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`} radius={radius} />
   </Animated.View>;
 }
 
@@ -587,7 +587,7 @@ export function ComposerPillBase({
   const paintsSurface = surface && typeof surfaceFill === 'string' && surfaceFill !== 'transparent' && parseRgba(surfaceFill)?.a !== 0;
   const ownFill = paintsSurface ? surfaceFill : customSurface?.backgroundColor;
   const publishedFill = typeof ownFill === 'string' && ownFill !== 'transparent' && parseRgba(ownFill)?.a !== 0
-    ? resolveSurfaceFill(ownFill, false, paintsSurface ? theme.colors.card : parentFill) : undefined;
+    ? resolveSurfaceMaterial({ fill: ownFill, parentFill, paint: paintsSurface }).publishedFill : undefined;
   const pillStyle: WebCssStyle = {
     width: '100%',
     height: pillHeight,

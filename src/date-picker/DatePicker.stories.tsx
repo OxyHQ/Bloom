@@ -215,8 +215,8 @@ export const TimeFields: Story = {
           <Text>{`09:00 – 20:00, every 15 min — value: ${booking ?? 'null'}`}</Text>
         </View>
         <View style={row}>
-          <TimeField value={small} onChange={setSmall} size="small" accessibilityLabel="Start" testID="tf-small" />
-          <TimeField value={null} onChange={() => {}} size="small" accessibilityLabel="End" testID="tf-empty" />
+          <TimeField value={small} onChange={setSmall} size="sm" accessibilityLabel="Start" testID="tf-small" />
+          <TimeField value={null} onChange={() => {}} size="sm" accessibilityLabel="End" testID="tf-empty" />
           <TimeField value="12:00" onChange={() => {}} disabled accessibilityLabel="Locked" testID="tf-disabled" />
         </View>
       </View>

@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useCardFill } from '../card/use-card-fill';
 import type { Surface as SurfaceComponent } from '../surface';
@@ -27,8 +28,8 @@ export function createReactionPicker({ Surface, Button }: {
   Button: typeof ButtonComponent;
 }) {
 
-  const BOX = { small: 30, medium: 36 } as const;
-  const GLYPH = { small: 'title-3-regular', medium: 'title-2-regular' } as const;
+  const BOX = { sm: 30, md: 36 } as const;
+  const GLYPH = { sm: 'title-3-regular', md: 'title-2-regular' } as const;
 
   function ReactionPicker({
     emojis = REACTION_PICKER_EMOJIS,
@@ -36,13 +37,16 @@ export function createReactionPicker({ Surface, Button }: {
     onSelectEmoji,
     onMorePress,
     moreLabel: moreLabelProp,
-    size = 'medium',
+    size: sizeProp,
     surface = true,
     style,
     testID,
     accessibilityLabel: accessibilityLabelProp,
     emojiLabel,
   }: ReactionPickerProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
+
     const theme = useTheme();
     const raisedFill = useCardFill(style);
     const parentFill = useSurfaceFill();

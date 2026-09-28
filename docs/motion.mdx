@@ -103,3 +103,21 @@ polyfill as side-effectful but not that bridge. Storybook narrowly marks the rea
 `expo-modules-core/src/ensureNativeModulesAreInstalled.ts` module as side-effectful;
 it neither mocks Expo nor creates a replacement global. A minimal production
 bundle confirmed the installer precedes the first NativeModule read.
+
+### Intent recipes
+
+`MOTION_RECIPES` and `animateMotion(value, target, intent, reducedMotion?)` share
+press, select, expand, present and dismiss behavior. The helper retargets the
+existing shared value without resetting its position; selection and expansion
+use springs so rapid reversals remain interruptible. All recipes respect the
+system reduced-motion setting, and a true override settles immediately.
+Components retain geometry, gesture velocity and completion callbacks. Overlay
+presentation can retain its existing duration while sharing the accessibility
+policy; callbacks still run when Reanimated settles immediately.
+
+Screen collapse and TabBar minimization share the expansion recipe. Selected
+capsules share selection motion. Retained tab entries and ScreenTransition omit
+spatial transitions under reduced motion. Native Screen initializes keyboard
+visibility before reserving bottom chrome, including inherited shell clearance.
+Portaled overlays isolate screen navigation state while preserving theme and
+locale; scrolling their content cannot collapse the navigation behind them.

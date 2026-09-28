@@ -114,7 +114,7 @@ function AudienceOverviewComponent({
           ) : null}
         </View>
         <View testID={testID ? `${testID}-period` : undefined} style={stacked ? styles.periodStacked : null}>
-          <SegmentedControl label={periodLabel} type="radio" size="small" value={period} onChange={onPeriodChange}>
+          <SegmentedControl label={periodLabel} type="radio" size="sm" value={period} onChange={onPeriodChange}>
             {periods.map((option) => (
               <SegmentedControlItem
                 key={option.value}

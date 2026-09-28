@@ -1,7 +1,7 @@
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
-import { resolveSurfaceFill } from '../surface/shared';
-import { SurfaceLevelProvider, surfaceFillVars, surfaceFillOn, surfaceTextOn, hairlineOn } from '../styles/surface-levels';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { SurfaceLevelProvider, surfaceFillOn, surfaceTextOn, hairlineOn } from '../styles/surface-levels';
 import React, {
   memo,
   useCallback,
@@ -810,7 +810,8 @@ function QuestionnaireComponent({
   const theme = useTheme();
   const surfaceLayer = useSurfaceLayer();
   const customSurface = StyleSheet.flatten(style);
-  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
+  const material = resolveSurfaceMaterial({ fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill), parentFill: surfaceLayer.parentFill, parentLevel: surfaceLayer.parentLevel });
+  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
   const palette = useMemo(() => resolveQuestionnairePalette(theme, surfaceFill), [theme, surfaceFill]);
   const reducedMotion = useReducedMotion();
   const headingId = `bloom-questionnaire-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
@@ -1131,10 +1132,10 @@ function QuestionnaireComponent({
       aria-labelledby={headingId}
       accessibilityLabel={question.question}
       {...(IS_WEB ? { onKeyDown } : {})}
-      style={[cardStyle, style, { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) }]}
+      style={[cardStyle, style, { backgroundColor: 'transparent', ...material.vars }]}
     >
-      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
-      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
+      <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
+      <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
       <Animated.View
         style={[
           {

@@ -1,5 +1,5 @@
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
+import { SurfaceLevelProvider, surfaceFillVars, useOptionalSurfaceFill } from '../styles/surface-levels';
 /**
  * The composer's anchored panel — NATIVE.
  *
@@ -66,10 +66,11 @@ export function ComposerPopover({
 }: ComposerPopoverProps) {
   const theme = useContext(BloomThemeContext)?.theme;
   const panelStyle = StyleSheet.flatten(style);
+  const parentFill = useOptionalSurfaceFill() ?? theme?.colors.background ?? 'transparent';
   const fill = panelStyle?.backgroundColor ?? theme?.colors.card;
   const paintsSurface = Boolean(theme) && typeof fill === 'string' && fill !== 'transparent' && parseRgba(fill)?.a !== 0;
 
-  const publishedFill = paintsSurface ? resolveSurfaceFill(fill as string, false, theme!.colors.card) : undefined;
+  const publishedFill = paintsSurface ? resolveSurfaceMaterial({ fill: fill as string, parentFill: parentFill }).publishedFill : undefined;
   const content = publishedFill ? <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider> : children;
   const common = useCommonMessages();
   const window = useWindowDimensions();

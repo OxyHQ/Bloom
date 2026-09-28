@@ -67,6 +67,7 @@
  * component must not lose.
  */
 import { surfaceFillOn } from '../styles/surface-levels';
+import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { SettingsListGroupVariant } from './types';
 
@@ -99,14 +100,13 @@ export function settingsGroupSurface(
 ): string {
   if (variant === 'filled') return theme.colors.backgroundSecondary;
   if (variant === 'plain') return theme.colors.card;
-  // A string equality, and deliberately: every Bloom surface publishes a colour
-  // read off the SAME theme object — level 0 resolves to `colors.background`,
-  // `Dialog` and the sheet shell publish it verbatim, a panel repainted as the
-  // page publishes it through `surfaceColor` — so the two are identical by
-  // construction, not by luck. A consumer publishing an equal-but-differently-
-  // spelled colour falls through to the step, which is a legible surface on the
-  // page too — just not the one the palette names. Wrong-but-legible, never
-  // invisible, which is the direction this failure has to fall.
-  if (ambientFill === theme.colors.background) return theme.colors.card;
+  // Composition may re-emit the same colour in another CSS syntax. Compare
+  // resolved channels so an unchanged page backing stays on the page branch.
+  const actual = parseRgba(ambientFill);
+  const page = parseRgba(theme.colors.background);
+  if (ambientFill === theme.colors.background || (actual && page &&
+      actual.r === page.r && actual.g === page.g && actual.b === page.b && actual.a === page.a)) {
+    return theme.colors.card;
+  }
   return surfaceFillOn(theme, ambientFill);
 }

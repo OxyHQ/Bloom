@@ -56,7 +56,7 @@ function CartTipPickerComponent({
       <SegmentedControl
         label={label}
         type="radio"
-        size="large"
+        size="lg"
         value={value ?? ''}
         onChange={onValueChange}
         disabled={disabled}

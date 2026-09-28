@@ -169,7 +169,7 @@ function rootBarrelFamilies(): Set<string> {
  */
 const DOC_ALIASES: Readonly<Record<string, string>> = {
   surfaces: 'alert',
-  'control-surface': 'composition',
+  'appearance': 'composition',
   field: 'field',
 };
 
@@ -246,7 +246,7 @@ const FORM_CONTROL_RE =
  * container that set `density` could not say which of its rungs it meant.
  */
 const DENSITY_PROP_RE =
-  /(size|density)\??:\s*(TextFieldSize|ButtonGroupSize|TimeFieldSize|ControlDensity)\s*;|(size|density)\??:\s*'(medium|small)'\s*\|\s*'(small|medium)'\s*;/;
+  /(size|density)\??:\s*(BloomSize|ButtonSize|TextFieldSize|ButtonGroupSize|TimeFieldSize|CheckboxSize|SelectSize)\s*;|(size|density)\??:\s*'(medium|small)'\s*\|\s*'(small|medium)'\s*;/;
 
 /** Both halves of a controlled pair, declared as props by this family. */
 function declaresControlledPair(text: string): boolean {
@@ -278,13 +278,13 @@ export const CONTRACTS: Contract[] = [
     reads: (text) => /field\/(membership|context)|useFieldMembership|useFieldControl/.test(text),
   },
   {
-    key: 'control-surface',
+    key: 'appearance',
     title: 'Control presentation',
-    source: 'control-surface/context.ts',
+    source: 'appearance/context.ts',
     blurb:
-      'The material and density a container asks the controls inside it for. Applies to a family that PAINTS a container material, or whose size prop is the density pair `medium | small`',
+      'The size and tone inherited from the nearest BloomScope. Explicit control props override this visual default; constraints remain separate. Applies to controls using the canonical size vocabulary',
     applies: (text) => DENSITY_PROP_RE.test(text),
-    reads: (text) => /control-surface|useInheritedControl|useControlSurface/.test(text),
+    reads: (text) => /appearance\/|useBloomAppearance/.test(text),
   },
   {
     key: 'trigger',
@@ -412,46 +412,21 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason: SELECTION_ROW,
     },
   },
-  'control-surface': {
-    'place-card': {
-      verdict: 'does-not-apply',
-      reason:
-        'its `density` is the CARD\u2019s \u2014 a result row against a detail header \u2014 not a control\u2019s size, and the only controls it draws are `Button`s, which read nothing by design (`docs/composition.mdx`).',
-    },
-    'note-editor': {
-      verdict: 'delegated',
-      reason:
-        'the toolbar passes `size` straight to `ButtonGroup`, which reads the contract \u2014 so a `ControlSurface` reaches the formatting row without this family reading anything.',
-    },
+  'appearance': {
     'phone-input': {
       verdict: 'delegated',
       reason:
-        'passes `size` straight through to `TextField`, which inherits density — so a `ControlSurface` reaches the phone field without this family reading anything.',
-    },
-    'chat-composer': {
-      verdict: 'does-not-apply',
-      reason:
-        'the `small | medium` prop sizes a composer PART (an attachment row), not a control a container would set the density of.',
+        'passes `size` straight through to `TextField`, which inherits density — so a `BloomScope` reaches the phone field without this family reading anything.',
     },
     'chat-people': {
       verdict: 'does-not-apply',
       reason:
         'sizes an avatar row of its own, not a control: there is nothing for a container\u2019s density to mean here, and honouring it would resize a presentation block.',
     },
-    'chat-screen': {
-      verdict: 'does-not-apply',
-      reason:
-        'sizes the chat HEADER, which is chrome around the screen rather than a control a container sets the density of.',
-    },
     'creator-studio': {
       verdict: 'does-not-apply',
       reason:
         'sizes a studio stat block — a presentation part, whose two sizes happen to be spelled with the same two words as the density pair.',
-    },
-    tenancy: {
-      verdict: 'does-not-apply',
-      reason:
-        'sizes a tenancy summary row: a presentation part, for the same reason as `creator-studio` and `chat-people`.',
     },
   },
   trigger: {

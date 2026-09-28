@@ -1,3 +1,4 @@
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -24,9 +25,9 @@ for (const mode of ['light', 'dark'] as const) {
       const screen = render(<BloomThemeProvider mode={mode} colorPreset="teal"><SurfaceLevelProvider level={3} fill={parent}>
         <Shell><Probe /></Shell>
       </SurfaceLevelProvider></BloomThemeProvider>);
-      const fill = surfaceFillOn(theme, parent);
-      expect(JSON.parse(screen.getByTestId('backing').props.children)).toEqual({ fill, level: 3 });
-      expect(cardFill(screen.UNSAFE_root)).toBe(fill);
+      const material = resolveSurfaceMaterial({ fill: surfaceFillOn(theme, parent), parentFill: parent, parentLevel: 3 });
+      expect(JSON.parse(screen.getByTestId('backing').props.children)).toEqual({ fill: material.publishedFill, level: 3 });
+      expect(cardFill(screen.UNSAFE_root)).toBe(material.paintFill);
     },
   );
 

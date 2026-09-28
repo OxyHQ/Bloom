@@ -232,7 +232,7 @@ function ThemeOverrideScreen() {
       <ScrollView contentContainerStyle={CONTENT_STYLE}>
         <Feed
           heading="Theme override"
-          caption="Only the highlight and the active tint are overridden — the inactive tint, the glass tint and the solid fallback still come from the active preset."
+          caption="Only the highlight and the active tint are overridden — the inactive tint, the glass tint still come from the active preset."
         />
       </ScrollView>
       <ControlledBar
@@ -273,9 +273,9 @@ export const ThemeOverride: Story = {
 };
 
 export const Playground: Story = {
-  args: { activeIndex: 0, material: 'solid', haptics: false, blur: false, maxWidth: 420 },
+  args: { activeIndex: 0, haptics: false, blur: false, maxWidth: 420 },
   parameters: { controls: { disable: false, include: ['activeIndex', 'material', 'haptics', 'blur', 'maxWidth'] } },
-  argTypes: { activeIndex: { control: { type: 'number', min: -1, max: 3 } }, material: { control: 'select', options: ['solid', 'translucent'] }, haptics: { control: 'boolean' }, blur: { control: 'boolean' }, maxWidth: { control: { type: 'range', min: 240, max: 640 } } },
+  argTypes: { activeIndex: { control: { type: 'number', min: -1, max: 3 } }, haptics: { control: 'boolean' }, blur: { control: 'boolean' }, maxWidth: { control: { type: 'range', min: 240, max: 640 } } },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
     return <GestureHandlerRootView style={{ width: 640, maxWidth: '100%', height: 180 }}><TabBar {...args} onIndexChange={activeIndex => updateArgs({ activeIndex })}>{ITEMS.map((item, index) => <TabBarButton key={item.name} item={item} index={index} />)}</TabBar></GestureHandlerRootView>;

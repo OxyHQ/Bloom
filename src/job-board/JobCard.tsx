@@ -373,15 +373,15 @@ function JobCardComponent({
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} testID={id('actions')}>
         {onPass && !closed ? (
           <Button
-            variant="text"
-            size="medium"
+
+            size="md"
             iconOnly={!labelled}
             leadingIcon={RiCloseLine}
             onPress={() => onPass(job.id)}
             disabled={disabled}
             hitSlop={JOB_BOARD_GEOMETRY.actionHit}
             accessibilityLabel={`${labels.pass} ${job.load}`}
-            testID={id('pass')}
+            testID={id('pass')} tone="accent" appearance="plain"
           >
             {labelled ? labels.pass : undefined}
           </Button>
@@ -400,12 +400,12 @@ function JobCardComponent({
           />
         ) : onTake ? (
           <Button
-            variant="primary"
-            size="medium"
+
+            size="md"
             onPress={() => onTake(job.id)}
             disabled={disabled}
             accessibilityLabel={`${labels.take} ${job.load}, ${job.pay}`}
-            testID={id('take')}
+            testID={id('take')} tone="accent" appearance="solid"
           >
             {labels.take}
           </Button>
@@ -416,7 +416,7 @@ function JobCardComponent({
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
-        variant="outlined"
+
         radius="radius-20"
         border={selected ? 'medium' : 'thin'}
         style={[
@@ -425,7 +425,7 @@ function JobCardComponent({
           inert ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}
-        testID={testID}
+        testID={testID} appearance="outline"
       >
         <View
           // The card measures ITSELF, not the window: this same card is 358

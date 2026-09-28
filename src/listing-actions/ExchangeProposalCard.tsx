@@ -197,14 +197,14 @@ function ExchangeProposalCardComponent({
       ) : null}
 
       <Button
-        variant="primary"
-        size="large"
+
+        size="lg"
         fullWidth
         onPress={onPropose}
         disabled={proposeDisabled}
         loading={loading}
         style={{ marginTop: 16, alignSelf: 'stretch' }}
-        testID={id('propose')}
+        testID={id('propose')} tone="accent" appearance="solid"
       >
         {proposeLabel}
       </Button>

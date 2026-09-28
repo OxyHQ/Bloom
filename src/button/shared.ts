@@ -1,4 +1,5 @@
-import { resolveSurfaceFill } from '../surface/shared';
+import { surfaceFillOn } from '../styles/surface-levels';
+import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { isValidElement, type ReactNode } from 'react';
 
 import { resolveBloomColors } from '../appearance/colors';
@@ -9,7 +10,7 @@ import { parseRgba, withAlpha } from '../theme/color-utils';
 import { TYPE_SCALE, type TypeScaleStyle, type TypeScaleVariant } from '../typography/scale';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import type { Theme } from '../theme/types';
-import type { ButtonIconComponent, ButtonSize, ButtonVariant, ButtonLinkTone, ButtonUnderline } from './types';
+import type { ButtonIconComponent, ButtonLinkTone, ButtonUnderline } from './types';
 
 /** Geometry shared by web and native: xs 24, sm 32, md 36, lg 44.
  * Icon actions are squares; native expands compact touch targets with hitSlop.
@@ -301,37 +302,18 @@ export function mixColor(base: string, top: string, alpha: number): string {
 }
 
 /** Shared semantic recipe. Color and fill are independent axes. */
-export const BUTTON_SIZE_ALIAS: Record<ButtonSize, ButtonResolvedSize> = { xs: 'xs', sm: 'sm', md: 'md', lg: 'lg', small: 'sm', medium: 'md', large: 'lg', icon: 'md' };
+/** Resolve the shared appearance/tone contract. */
+export const resolveButtonPalette = resolveCanonicalButtonPalette;
 
-export function resolveButtonRecipe(variant: ButtonVariant | undefined): { appearance: BloomAppearance; tone: BloomTone } {
-  switch (variant) {
-    case 'secondary': case 'outline': case 'icon': return { appearance: 'outline', tone: 'neutral' };
-    case 'ghost': return { appearance: 'subtle', tone: 'accent' };
-    case 'text': case 'link': return { appearance: 'plain', tone: 'accent' };
-    case 'destructive': return { appearance: 'solid', tone: 'danger' };
-    case 'inverse': return { appearance: 'solid', tone: 'neutral' };
-    default: return { appearance: 'solid', tone: 'accent' };
-  }
-}
-
-/** Legacy variants remain accepted; new appearance/tone are the shared contract. */
-export function resolveButtonPalette(appearance: BloomAppearance | ButtonVariant, theme: Theme, tone: BloomTone | ButtonLinkTone = 'accent', colors?: { background: string; foreground: string }): ButtonPalette {
-  const legacy = !['solid', 'subtle', 'outline', 'plain'].includes(appearance);
-  const recipe = resolveButtonRecipe(legacy ? appearance as ButtonVariant : undefined);
-  const resolvedTone: BloomTone = tone === 'primary' ? 'accent' : tone === 'secondary' || tone === 'text' ? 'neutral' : tone;
-  const palette = resolveCanonicalButtonPalette(legacy ? recipe.appearance : appearance as BloomAppearance, theme, legacy && tone === 'accent' ? recipe.tone : resolvedTone, colors);
-  if (appearance === 'link' && tone === 'text') return { ...palette,
-    rest: { ...palette.rest, foreground: theme.colors.text },
-    hover: { ...palette.hover, foreground: theme.colors.textSecondary, background: 'transparent' },
-    active: { ...palette.active, foreground: theme.colors.textSecondary, background: 'transparent' },
+/** Link actions retain their inline foreground and never add hover fill. */
+export function resolveLinkButtonPalette(theme: Theme, tone: ButtonLinkTone): ButtonPalette {
+  const palette = resolveCanonicalButtonPalette('plain', theme, tone === 'primary' ? 'accent' : 'neutral');
+  const foreground = tone === 'primary' ? theme.colors.primary : tone === 'text' ? theme.colors.text : theme.colors.textSecondary;
+  return { ...palette,
+    rest: { ...palette.rest, foreground },
+    hover: { ...palette.hover, foreground: tone === 'text' ? theme.colors.textSecondary : foreground, background: 'transparent' },
+    active: { ...palette.active, foreground: tone === 'text' ? theme.colors.textSecondary : foreground, background: 'transparent' },
   };
-  if (appearance === 'link') return { ...palette, hover: { ...palette.hover, foreground: palette.rest.foreground, background: 'transparent' }, active: { ...palette.active, foreground: palette.rest.foreground, background: 'transparent' } };
-  if (appearance === 'inverse') return { ...palette,
-    rest: { ...palette.rest, gradient: null, background: theme.colors.text, foreground: theme.colors.background },
-    hover: { ...palette.hover, gradient: null, background: theme.colors.textSecondary, foreground: theme.colors.background },
-    active: { ...palette.active, gradient: null, background: theme.colors.text, foreground: theme.colors.background },
-  };
-  return palette;
 }
 
 /** Semantic pairs remain authoritative; translucent subtle fills are composited once. */
@@ -340,6 +322,7 @@ export function resolveCanonicalButtonPalette(
   theme: Theme,
   tone: BloomTone = 'accent',
   colors?: { background: string; foreground: string },
+  neutralFill?: string,
 ): ButtonPalette {
   const c = theme.colors;
   const pair = colors ?? resolveBloomColors(c, tone, appearance);
@@ -347,17 +330,22 @@ export function resolveCanonicalButtonPalette(
   const neutral = tone === 'neutral' && !colors;
   const tint = appearance === 'outline' && !colors
     ? resolveBloomColors(c, tone, 'subtle').background : pair.background;
-  const fill = resolveSurfaceFill(tint, false, c.card);
+  const fill = resolveSurfaceFill(tint, c.card);
+  const neutralBase = neutralFill ?? c.card;
+  const neutralHover = neutralFill ? surfaceFillOn(theme, neutralBase) : c.backgroundSecondary;
+  const neutralActive = neutralFill ? surfaceFillOn(theme, neutralHover) : c.backgroundTertiary;
+  const semanticAlpha = colors ? parseRgba(tint)?.a ?? 1 : 1;
   const paint = (state: 0 | 1 | 2): ButtonStatePaint => ({
     background: !surface ? (state ? resolveBloomColors(c, tone, 'subtle').background : 'transparent')
-      : neutral ? [c.card, c.backgroundSecondary, c.backgroundTertiary][state]!
-      : state === 0 ? fill : mixColor(fill, state === 1 ? '#ffffff' : '#000000', state === 1 ? 0.06 : 0.08),
+      : resolveSurfaceTint(neutral ? [neutralBase, neutralHover, neutralActive][state]!
+        : state === 0 ? (colors ? tint : fill)
+        : withAlpha(mixColor(fill, state === 1 ? '#ffffff' : '#000000', state === 1 ? 0.06 : 0.08), semanticAlpha)),
     foreground: neutral ? (appearance === 'plain' && state === 0 ? c.textSecondary : c.text) : pair.foreground,
     border: TRANSPARENT, gradient: null, surface,
   });
   return {
     rest: paint(0), hover: paint(1), active: paint(2),
-    disabled: { background: surface ? resolveSurfaceFill(c.backgroundSecondary, false, c.card) : TRANSPARENT,
+    disabled: { background: surface ? resolveSurfaceTint(neutralHover) : TRANSPARENT,
       foreground: c.textTertiary, border: TRANSPARENT, gradient: null, surface },
     disabledOpacity: 1, borderWidth: appearance === 'outline' ? 1 : 0,
     shadow: surface, ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
@@ -396,11 +384,11 @@ export function resolveCloseButtonPaint(theme: Theme): CloseButtonPaint {
  * everything else keeps none, unless the caller says otherwise.
  */
 export function resolveButtonUnderline(
-  variant: ButtonVariant,
+  isLink: boolean,
   underline: ButtonUnderline | undefined,
 ): ButtonUnderline {
   if (underline !== undefined) return underline;
-  return variant === 'link' ? 'hover' : 'none';
+  return isLink ? 'hover' : 'none';
 }
 
 // ---------------------------------------------------------------------------

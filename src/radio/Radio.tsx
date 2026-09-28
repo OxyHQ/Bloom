@@ -1,4 +1,4 @@
-import { normalizeBloomSize } from '../appearance/legacy';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
@@ -92,9 +92,7 @@ const IS_WEB = Platform.OS === 'web';
 const RadioComponent = function Radio<Value extends string = string>({
   value,
   checked: checkedProp,
-  selected,
-  onValueChange: onValueChangeProp,
-  onSelect,
+  onValueChange,
   label,
   description,
   size: sizeProp,
@@ -106,8 +104,7 @@ const RadioComponent = function Radio<Value extends string = string>({
   nativeID,
   testID,
 }: RadioProps<Value>) {
-  const onValueChange = onValueChangeProp ?? onSelect;
-  const checked = checkedProp ?? selected ?? false;
+  const checked = checkedProp ?? false;
   const theme = useTheme();
   // ADJACENT label (see `field/membership.ts`); the field's `disabled` is a
   // constraint, so a radio inside a disabled field cannot re-enable itself.
@@ -120,7 +117,7 @@ const RadioComponent = function Radio<Value extends string = string>({
   });
   const isDisabled = field.disabled;
   const ringOffset = useRingOffsetStyle();
-  const { size: scopedSize, tone } = useBloomAppearance({ size: normalizeBloomSize(sizeProp), tone: toneProp }, { size: 'md', tone: 'accent' });
+  const { size: scopedSize, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
   const size = scopedSize;
   const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, BLOOM_RADIO_CSS);
@@ -208,21 +205,23 @@ export const Radio = memo(RadioComponent) as typeof RadioComponent;
  * lets the group carry `role="radiogroup"` and its accessible name — a
  * screen reader announces "2 of 4" only when the options are inside one.
  */
-const RadioGroupComponent = function RadioGroup<Value extends string = string>({
-  label,
-  value,
-  onValueChange: onValueChangeProp,
-  onSelect,
-  options,
-  size: sizeProp,
-  disabled = false,
-  tone: toneProp,
-  style,
-  labelStyle,
-  variant = 'default',
-  testID,
-}: RadioGroupProps<Value>) {
-  const onValueChange = onValueChangeProp ?? onSelect;
+const RadioGroupComponent = function RadioGroup<Value extends string = string>(props: RadioGroupProps<Value>) {
+  const {
+    label,
+    value: valueProp,
+    defaultValue,
+    onValueChange: onValueChangeProp,
+    options,
+    size: sizeProp,
+    disabled = false,
+    tone: toneProp,
+    style,
+    labelStyle,
+    variant = 'default',
+    testID,
+  } = props;
+  const [value, setValue] = useControllableState<Value | undefined>({ value: valueProp, defaultValue, controlled: Object.prototype.hasOwnProperty.call(props, 'value'), onChange: next => { if (next !== undefined) onValueChangeProp?.(next); } });
+  const onValueChange = (next: Value) => setValue(next);
   // The group is one control made of several, so a `Field` around it names the
   // GROUP and disables every option — `multiple` is the field's side of that
   // (`docs/field.mdx`), and each radio keeps its own id and its own name.
@@ -230,7 +229,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
   // own — so it goes in as the caller's name and outranks the field's.
   const field = useFieldMembership({ accessibilityLabel: label, disabled });
   const isDisabled = field.disabled;
-  const { size: scopedSize, tone } = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
+  const { size: scopedSize, tone } = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const size = scopedSize;
   return (
     <View

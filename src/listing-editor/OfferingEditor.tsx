@@ -158,7 +158,7 @@ function OfferingEditorComponent({
             min={1}
             max={60}
             formatValue={labels.months}
-            size="small"
+            size="sm"
             disabled={disabled}
             style={{ paddingTop: 0, paddingBottom: 0 }}
             testID={tid('rent-minimum')}
@@ -236,7 +236,7 @@ function OfferingEditorComponent({
             min={1}
             max={90}
             formatValue={labels.nights}
-            size="small"
+            size="sm"
             disabled={disabled}
             style={{ paddingTop: 0, paddingBottom: 0 }}
             testID={tid('stay-minimum')}

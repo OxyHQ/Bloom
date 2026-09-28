@@ -13,6 +13,7 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Rating, RatingBar, RatingInput } from '../rating';
+import { Field } from '../field';
 import { formatRatingValue, parseRatingValue, starFill } from '../rating/Rating';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -457,11 +458,20 @@ describe('RatingInput', () => {
   });
 
   it('sizes the star 24 / 32 / 40', () => {
-    mount(<RatingInput size="small" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
+    mount(<RatingInput size="sm" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
     expect(byTestId('ri-star-1').querySelector('svg')?.getAttribute('width')).toBe('24');
     mount(<RatingInput value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
     expect(byTestId('ri-star-1').querySelector('svg')?.getAttribute('width')).toBe('32');
-    mount(<RatingInput size="large" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
+    mount(<RatingInput size="lg" value={1} onChange={() => {}} accessibilityLabel="a" testID="ri" />);
     expect(byTestId('ri-star-1').querySelector('svg')?.getAttribute('width')).toBe('40');
   });
+});
+
+
+it('exposes required and invalid Field state on the rating radiogroup', () => {
+  mount(<Field label="Overall" required error="Choose a rating"><RatingInput value={null} onChange={() => {}} testID="ri" /></Field>);
+  const group = byTestId('ri');
+  expect(group.getAttribute('aria-required')).toBe('true');
+  expect(group.getAttribute('aria-invalid')).toBe('true');
+  expect(document.getElementById(group.getAttribute('aria-describedby')!)?.textContent).toContain('Choose a rating');
 });

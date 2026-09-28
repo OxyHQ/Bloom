@@ -63,7 +63,7 @@ function PlaybackSpeedMenuComponent({
   children,
   open,
   onOpenChange,
-  size = 'regular',
+  size = 'md',
   disabled,
   testID,
 }: PlaybackSpeedMenuProps) {

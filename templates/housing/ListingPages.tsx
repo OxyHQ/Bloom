@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { BookingBar, BookingCard } from '../../src/booking';
-import { Button } from '../../src/button';
+import { Button , LinkButton } from '../../src/button';
 import { RangeCalendar, type DateRange } from '../../src/date-picker';
 import { Dialog, useDialogControl } from '../../src/dialog';
 import { RiFlagLine, RiHeart3Fill, RiHeart3Line, RiShareLine } from '../../src/icons/remix';
@@ -206,9 +206,9 @@ function Paragraphs({ text }: { text: string }) {
 
 function ReportLink() {
   return (
-    <Button variant="link" linkTone="secondary" size="small" leadingIcon={RiFlagLine} onPress={noop}>
+    <LinkButton  linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={noop}>
       Report this listing
-    </Button>
+    </LinkButton>
   );
 }
 
@@ -540,10 +540,10 @@ function DatesDialog({
         </View>
         <RangeCalendar value={value} onChange={onChange} visibleMonths={md ? 2 : 1} defaultMonth={START_MONTH} />
         <View style={{ alignSelf: 'stretch', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Button variant="link" onPress={() => onChange(null)} disabled={!value}>
+          <LinkButton  onPress={() => onChange(null)} disabled={!value}>
             Clear dates
-          </Button>
-          <Button variant="primary" onPress={() => control.close()} testID="housing-dates-done">
+          </LinkButton>
+          <Button  onPress={() => control.close()} testID="housing-dates-done" tone="accent" appearance="solid">
             Done
           </Button>
         </View>
@@ -618,7 +618,7 @@ export function StayListingPage() {
             onGuestsOpenChange={setGuestsOpen}
             guestPicker={
               <GuestPicker
-                size="small"
+                size="sm"
                 value={guests}
                 onChange={setGuests}
                 maxGuests={STAY_LISTING.maxGuests}

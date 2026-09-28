@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -47,13 +48,15 @@ import type { NoteEditorToolbarProps } from './types';
 
 export function NoteEditorToolbar({
   actions,
-  size = 'medium',
+  size: sizeProp,
   disabled = false,
   accessibilityLabel,
   labels: labelsProp,
   style,
   testID,
 }: NoteEditorToolbarProps) {
+  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const { messages } = useMessages(NOTE_EDITOR_MESSAGES);
   const { width, onLayout } = useContainerWidth();
   const labels = { ...messages.toolbar, ...labelsProp };

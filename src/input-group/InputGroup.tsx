@@ -1,4 +1,3 @@
-import { normalizeBloomSize } from '../appearance/legacy';
 import { useBloomAppearance, type BloomSize } from '../appearance';
 import React, {
   Children,
@@ -166,7 +165,7 @@ const InputGroupComponent = function InputGroup({
   // neither the field nor the text-field group. The group publishes no name — it
   // does not know which of its children is the control the label points at, so
   // that stays the field's `nativeID` and the input's to apply.
-  const { size } = useBloomAppearance({size: normalizeBloomSize(sizeProp)}, {size: 'md', tone: 'neutral'});
+  const { size } = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   const member = useFieldMembership({ disabled: disabledProp, invalid: invalidNew ?? isInvalid });
   const disabled = member.disabled;
   const invalid = member.invalid;

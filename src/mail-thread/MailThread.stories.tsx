@@ -162,7 +162,7 @@ export const Thread: Story = {
           onStarredChange={setStarred}
           messages={MESSAGES}
           quickReply={
-            <Button variant="secondary" size="small" onPress={() => undefined}>
+            <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
               Reply to Mireia
             </Button>
           }

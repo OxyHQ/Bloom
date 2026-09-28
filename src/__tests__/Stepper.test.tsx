@@ -13,6 +13,8 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Stepper, StepperRow } from '../stepper';
+import { BloomScope } from '../appearance';
+import { Field } from '../field';
 import type { StepperProps } from '../stepper';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -187,7 +189,7 @@ describe('Stepper behaviour', () => {
   it('keeps the value box a fixed minimum width per size, so 9 → 10 does not shift the row', () => {
     mount(<Stepper value={9} onValueChange={() => {}} accessibilityLabel="A" testID="st" />);
     expect(getComputedStyle(byTestId('st-value')).minWidth).toBe('32px');
-    mount(<Stepper value={9} size="small" onValueChange={() => {}} accessibilityLabel="A" testID="st" />);
+    mount(<Stepper value={9} size="sm" onValueChange={() => {}} accessibilityLabel="A" testID="st" />);
     expect(getComputedStyle(byTestId('st-value')).minWidth).toBe('24px');
   });
 });
@@ -257,4 +259,21 @@ describe('StepperRow', () => {
     mount(<StepperRow title="Adults" accessibilityLabel="Adult guests" value={2} onValueChange={() => {}} testID="s" />);
     expect(byTestId('s').getAttribute('aria-label')).toBe('Adult guests');
   });
+});
+
+
+it('inherits canonical scoped size and lets an explicit size override it', () => {
+  mount(<BloomScope size="sm"><Stepper value={1} onValueChange={() => {}} accessibilityLabel="Guests" testID="st" /></BloomScope>);
+  expect(byTestId('st-value').style.height).toBe('32px');
+  mount(<BloomScope size="sm"><Stepper size="md" value={1} onValueChange={() => {}} accessibilityLabel="Guests" testID="st" /></BloomScope>);
+  expect(byTestId('st-value').style.height).toBe('36px');
+});
+
+it('announces Field errors from the keyboard-focused value control', () => {
+  mount(<Field label="Guests" error="Choose fewer guests"><Stepper value={4} onValueChange={() => {}} testID="st" /></Field>);
+  const value = byTestId('st-value');
+  expect(value.getAttribute('aria-invalid')).toBe('true');
+  const description = value.getAttribute('aria-describedby');
+  expect(description).toBeTruthy();
+  expect(document.getElementById(description!)?.textContent).toContain('Choose fewer guests');
 });

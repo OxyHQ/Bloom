@@ -1,3 +1,4 @@
+import { ScreenScope } from '../layout/screen-scope';
 /**
  * The shared plumbing every portaled surface needs: an interactive ROOT and a
  * press-to-dismiss BACKDROP. Dialog, BottomSheet, the image gallery, menus and
@@ -39,7 +40,7 @@
  * Use `<OverlayRoot>` for the surface's outermost node and `<Backdrop>` for its
  * dimming layer; do not re-implement either with raw `View`s.
  */
-import { createContext, memo, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, memo, useContext, useMemo } from 'react';
 import { BlurView } from 'expo-blur';
 
 import { useWindowedBlurTarget } from '../glass/blur-target';
@@ -225,15 +226,10 @@ function OverlayRootView({
             `bottom-sheet/…Base`       level 0, fill `theme.colors.background`
             `floating/FloatingPanel`   level 1 — the menu/popover surface
 
-          Two portaled surfaces still paint something they do not publish:
-          `SettingsModal` paints `resolveSettingsPalette(theme).full` and
-          `Tooltip` the menu palette, so content inside either reads the page
-          rung rather than their real fill. That is an approximation inherited
-          from before the ladder existed, not a claim made here — and the fix is
-          for each of them to publish its own `fill`, not for this root to guess
-          one on their behalf.
         */}
-        <SurfaceLevelProvider level={0}>{children}</SurfaceLevelProvider>
+        <ScreenScope>
+            <SurfaceLevelProvider level={0}>{children}</SurfaceLevelProvider>
+          </ScreenScope>
       </StyledView>
     </OverlayLayerContext.Provider>
   );

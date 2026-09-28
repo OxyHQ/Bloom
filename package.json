@@ -286,20 +286,6 @@
         "default": "./lib/commonjs/appearance/index.js"
       }
     },
-    "./control-surface": {
-      "react-native": {
-        "types": "./lib/typescript/module/control-surface/index.d.ts",
-        "default": "./src/control-surface/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/control-surface/index.d.ts",
-        "default": "./lib/module/control-surface/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/control-surface/index.d.ts",
-        "default": "./lib/commonjs/control-surface/index.js"
-      }
-    },
     "./screen": {
       "react-native": {
         "types": "./lib/typescript/module/screen/index.d.ts",
@@ -3287,6 +3273,7 @@
   "files": [
     "NOTICE",
     "scripts/migrate-icons-to-remix.mjs",
+    "scripts/migrations/unify-bloom-api.mjs",
     "src",
     "lib",
     "docs/*.mdx",
@@ -3590,9 +3577,6 @@
       ],
       "appearance": [
         "./lib/typescript/module/appearance/index.d.ts"
-      ],
-      "control-surface": [
-        "./lib/typescript/module/control-surface/index.d.ts"
       ],
       "screen": [
         "./lib/typescript/module/screen/index.d.ts"

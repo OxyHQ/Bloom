@@ -5,25 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BottomSheet } from '../bottom-sheet';
 import { Button } from '../button';
 import { ContentPanel } from '../content-panel';
-import {
-  RiBankCardLine,
-  RiBookmarkLine,
-  RiFileCopyLine,
-  RiGlobalLine,
-  RiLeafLine,
-  RiMapPinLine,
-  RiParkingBoxLine,
-  RiPencilLine,
-  RiPhoneLine,
-  RiQrCodeLine,
-  RiRouteLine,
-  RiShare2Line,
-  RiSunLine,
-  RiVolumeUpLine,
-  RiWalkLine,
-  RiWheelchairLine,
-  RiWifiLine,
-} from '../icons/remix';
+import { RiBankCardLine, RiBookmarkLine, RiGlobalLine, RiLeafLine, RiMapPinLine, RiParkingBoxLine, RiPencilLine, RiPhoneLine, RiQrCodeLine, RiRouteLine, RiShare2Line, RiSunLine, RiVolumeUpLine, RiWheelchairLine, RiWifiLine } from '../icons/remix';
 import { ListingPhotoGrid, ListingSection } from '../listing-details';
 import { PlaceCard } from '../place-card';
 import { PlaceReviewCard, PlaceReviewSummary } from '../place-reviews';
@@ -409,7 +391,7 @@ function PlaceScreenBody() {
           onPressStop={noop}
           footer={
             <View style={{ flexDirection: 'row' }}>
-              <Button variant="secondary" size="small" onPress={noop}>
+              <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
                 All nearby stops
               </Button>
             </View>

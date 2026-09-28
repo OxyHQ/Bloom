@@ -32,7 +32,7 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
 | `min` / `max`                       | bounds (default `0` / unbounded); the matching button disables at each   |
 | `step`                              | the change per press or key (default `1`); fractional steps do not drift |
 | `disabled`                          | disables both buttons and the keyboard                                   |
-| `size`                              | `'small'` (32px buttons, body text) or `'medium'` (default, 36px, headline text) |
+| `size`                              | `'sm'` (32px buttons, body text) or `'md'` (default, 36px, headline text) |
 | `formatValue`                       | the drawn and announced text, e.g. `(n) => (n === 8 ? '8+' : String(n))` |
 | `accessibilityLabel`                | **required** — what is being counted                                     |
 | `decrementLabel` / `incrementLabel` | the buttons' names, `"Decrease"` / `"Increase"` in English, localised via `BloomProvider locale` |
@@ -48,8 +48,8 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
 - **Buttons** Bloom `Button`s — `secondary`, icon-only, full pill — drawing
   `RiSubtractLine` and `RiAddLine`. They change colour on hover and press and
   never scale.
-- **Value** `headline-semibold` (`body-semibold` at `small`), tabular figures,
-  centred in a fixed minimum width (32, or 24 at `small`), so going from 9 to 10
+- **Value** `headline-semibold` (`body-semibold` at `sm`), tabular figures,
+  centred in a fixed minimum width (32, or 24 at `sm`), so going from 9 to 10
   does not move the buttons.
 - **Row** title `headline-medium` text-primary over a `body-regular`
   text-secondary description, the stepper on the right, 16 above and below.
@@ -106,3 +106,5 @@ The value's focus ring is built by `interactiveWebCss()`
 readout, not a button, so it takes no `<button>` reset, no hover rule and no
 press scale. Its ring gap takes the surface colour rather than the white it used
 to hardcode.
+
+Control sizes use `sm` and `md`. When omitted, they inherit `BloomScope`; `xs` maps to the compact rung and `lg` to the regular rung. An explicit size overrides the scope.

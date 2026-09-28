@@ -1,8 +1,7 @@
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
-import { resolveSurfaceFill } from '../surface/shared';
-import { useTheme } from '../theme/use-theme';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { parseRgba, withAlpha } from '../theme/color-utils';
+import { parseRgba } from '../theme/color-utils';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { useBloomAppearance } from '../appearance';
@@ -213,14 +212,13 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const noResultsLabel = noResultsLabelProp ?? messages.noResults;
   const modesLabel = modesLabelProp ?? messages.mode;
   const palette = useSidebarPalette();
-  const theme = useTheme();
   const parentFill = useSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
   const customSurface = StyleSheet.flatten(style);
-  const surfaceFill = customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : withAlpha(palette.panel, 0.25));
+  const surfaceFill = customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : (palette.panel));
   const hasFill = typeof surfaceFill === 'string' && surfaceFill !== 'transparent' && parseRgba(surfaceFill)?.a !== 0;
   const paintsSurface = surface !== 'plain' && hasFill;
-  const publishedFill = hasFill ? resolveSurfaceFill(surfaceFill, false, paintsSurface ? theme.colors.card : parentFill) : undefined;
+  const publishedFill = hasFill ? resolveSurfaceMaterial({ fill: surfaceFill, parentFill, paint: paintsSurface }).publishedFill : undefined;
   const canonicalSize = sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp === 'large' ? 'lg' : sizeProp;
   const {size: scopedSize} = useBloomAppearance({size: canonicalSize}, {size: 'md', tone: 'neutral'});
   const size = scopedSize === 'xs' ? 'sm' : scopedSize;

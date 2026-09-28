@@ -210,3 +210,8 @@ The web option reserves a 30px indicator gutter and paints the indicator into it
 Composing would mean flattening one of those two, and both are visible: the first as a label that jumps sideways on selection, the second as a selected row painted in a colour no other menu row uses. So select keeps its own row, and `radio-indicator` stays the one indicator both it and `Radio` draw.
 
 Inside a required Field, the trigger announces the localized required constraint through a description on web and a native accessibility hint. It remains a menu button; `aria-required` is reserved for roles that support it.
+
+
+`value` controls selection; `defaultValue` initializes uncontrolled selection. `onValueChange` reports changes in either mode. Size inherits from the nearest `BloomScope`; an explicit `size` wins.
+
+An explicitly supplied `value={undefined}` is a controlled empty selection. Omit `value` to opt into uncontrolled state with `defaultValue`; callbacks do not commit a controlled selection until its parent updates the prop.

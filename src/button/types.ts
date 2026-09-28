@@ -1,79 +1,13 @@
 import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { GestureResponderEvent, LayoutChangeEvent, ViewProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { TypeScaleVariant } from '../typography/scale';
 
-/**
- * Bloom's canonical button variants (shared across native + web) plus the
- * web/shadcn set that DOM apps (auth, console, website) rely on:
- *
- *   - `primary | secondary | inverse | icon | ghost | text` — the original
- *     Bloom set, rendered identically on both platforms.
- *   - `outline | link | destructive` — web additions. They are styled from the
- *     SAME Bloom design tokens so they stay visually consistent with the rest of
- *     the set. On native they fall back to a sensible equivalent
- *     (`outline → secondary`, `link → text`, `destructive → primary` tinted with
- *     the negative token) so passing them never crashes a native consumer.
- *
- * `text` (and its web alias `link`) is DELIBERATELY not a transparent `ghost`:
- * it is the compact inline affordance, so it overrides the size config's padding
- * down to 4/8 on BOTH platforms. `ghost` keeps the full padding — it is a
- * regular button that happens to have no background. The one geometry that does
- * differ by platform is `minHeight`: web clears it for `text`/`link` so the
- * control hugs its label and sits inline, native keeps the size config's value
- * because a finger needs the target and a cursor does not.
- *
- * WHICH ONE IS THE NEUTRAL TRANSPARENT AFFORDANCE — the question five families
- * answered with their own copy before this list said so:
- *
- * - **`ghost` IS NOT TRANSPARENT.** It paints an accent WASH at rest
- *   (`accent-100` / dark `accent-900`) with an accent label. It is the low-
- *   emphasis ACCENT action — the third button in a row that is still part of the
- *   accent family — and it is the wrong control for a neutral ⋯ / × / clear
- *   affordance, which lands tinted. A DESTRUCTIVE action in it is worse: a red
- *   label on a blue wash, which is what `track-list`'s selection bar shipped.
- * - **The neutral transparent ICON button is {@link GlyphButtonProps}**
- *   (`GlyphButton`, beside `Button` in `src/button`): an arbitrary round size, a
- *   neutral glyph, no fill at rest and a neutral wash on hover. Reach for it for
- *   every ⋯, ×, clear, shuffle, repeat and toggle glyph.
- * - `icon` is the neutral icon button WITH A SURFACE (`secondary`'s card +
- *   border) at the fixed 24 / 32 / 36 / 44 heights.
- * - `text` is the transparent LABELLED button: an accent label, a NEUTRAL hover
- *   wash, no fill at rest. Use it where `ghost`'s wash is too loud; colour a
- *   destructive one through `textStyle` plus an `icon` ELEMENT you paint
- *   yourself, or reach for `destructive`.
- * - `link` is running text: no container, no padding, `linkTone` for the colour
- *   and `underline` for whether the underline is the affordance at rest.
- */
-export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'inverse'
-  | 'icon'
-  | 'ghost'
-  | 'text'
-  | 'outline'
-  | 'link'
-  | 'destructive';
-
-/**
- * Bloom sizes plus shadcn-style aliases. `sm | md | lg` map onto
- * `small | medium | large`; `icon` maps onto a square icon button at the medium
- * height. The aliases exist so web consumers migrating from shadcn keep their
- * call sites unchanged. `xs` (24px) is the compact tier.
- */
-export type ButtonSize = BloomSize
-  | 'xs'
-  | 'small'
-  | 'medium'
-  | 'large'
-  | 'sm'
-  | 'md'
-  | 'lg'
-  | 'icon';
+/** Shared control size; square geometry is expressed with iconOnly. */
+export type ButtonSize = BloomSize;
 
 export interface ButtonProps {
   onLayout?: (event: LayoutChangeEvent) => void;
@@ -98,7 +32,6 @@ export interface ButtonProps {
   children?: React.ReactNode;
   disabled?: boolean;
 
-  variant?: ButtonVariant;
   size?: ButtonSize;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
@@ -113,11 +46,10 @@ export interface ButtonProps {
   iconPosition?: 'left' | 'right';
 
   /**
-   * The `link` variant's colour. `primary` is the accent label, `secondary` the
+   * The inline link colour. `primary` is the accent label, `secondary` the
    * secondary-text label, `text` the READING colour (`text` at rest, secondary
    * under a pointer or a press) — the tone an underlined action takes when it
-   * sits inside a sentence and must not read as the accent. Ignored by other
-   * variants.
+   * sits inside a sentence and must not read as the accent. Used by LinkButton and plain inline actions.
    */
   linkTone?: ButtonLinkTone;
 
@@ -125,9 +57,9 @@ export interface ButtonProps {
    * When the label carries its underline. `rest` underlines always — the
    * underline IS the affordance, which is what an inline text action inside
    * running copy needs; `hover` underlines only under a pointer (the `link`
-   * variant's default, and web-only: native has no hover); `none` never does.
+   * action's default, and web-only: native has no hover); `none` never does.
    *
-   * Defaults to `hover` for `link` and `none` for every other variant, so an
+   * Defaults to `hover` for `link` and `none` for other actions, so an
    * existing call site is unchanged. Four families hand-rolled an underlined
    * `Pressable` for exactly this: `stay-filters`, `booking`, `listing-details`
    * and `media-header`.
@@ -307,10 +239,8 @@ export type ButtonLinkTone = 'primary' | 'secondary' | 'text';
 /** When {@link ButtonProps.underline} draws the label's underline. */
 export type ButtonUnderline = 'rest' | 'hover' | 'none';
 
-/** Props of `LinkButton`: its `variant` is the link colour. */
-export interface LinkButtonProps extends Omit<ButtonProps, 'variant' | 'linkTone'> {
-  variant?: ButtonLinkTone;
-}
+/** Inline action with explicit link colour and underline behavior. */
+export type LinkButtonProps = ButtonProps;
 
 /** Props of `CloseButton`. */
 export interface CloseButtonProps {

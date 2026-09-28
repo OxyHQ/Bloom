@@ -219,3 +219,30 @@ describe('RadioCard', () => {
     expect(onValueChange).toHaveBeenCalledWith('weekly');
   });
 });
+
+
+it('supports uncontrolled group selection and does not clear the chosen option', () => {
+  const onChange = jest.fn();
+  const screen = renderWithTheme(<RadioGroup defaultValue="daily" onValueChange={onChange} label="Frequency" options={[{value:'daily',label:'Daily'}, {value:'weekly',label:'Weekly'}]} />);
+  fireEvent.press(screen.getByLabelText('Weekly'));
+  expect(screen.getByLabelText('Weekly').props['aria-checked']).toBe(true);
+  expect(screen.getByLabelText('Daily').props['aria-checked']).toBe(false);
+  expect(onChange).toHaveBeenLastCalledWith('weekly');
+  fireEvent.press(screen.getByLabelText('Weekly'));
+  expect(onChange).toHaveBeenCalledTimes(1);
+});
+
+
+it('keeps an explicitly undefined selection controlled until the parent updates it', () => {
+  const change = jest.fn();
+  const options = [{value:'daily',label:'Daily'}, {value:'weekly',label:'Weekly'}];
+  const ui = (value: string | undefined) => <BloomThemeProvider><RadioGroup value={value} onValueChange={change} label="Frequency" options={options} /></BloomThemeProvider>;
+  const screen = render(ui(undefined));
+  fireEvent.press(screen.getByLabelText('Weekly'));
+  expect(change).toHaveBeenCalledWith('weekly');
+  expect(screen.getByLabelText('Weekly').props['aria-checked']).toBe(false);
+  screen.rerender(ui('weekly'));
+  expect(screen.getByLabelText('Weekly').props['aria-checked']).toBe(true);
+  screen.rerender(ui(undefined));
+  expect(screen.getByLabelText('Weekly').props['aria-checked']).toBe(false);
+});

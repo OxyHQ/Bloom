@@ -2,13 +2,14 @@ import type { BloomSize } from '../appearance';
 import type { BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
-export type CheckboxSize = BloomSize | 'small' | 'medium' | 'large';
+export type CheckboxSize = BloomSize;
 
 export interface CheckboxProps {
   /** Whether the checkbox is checked. */
-  checked: boolean;
+  checked?: boolean;
+  defaultChecked?: boolean;
   /** Called when the checked state changes. */
-  onCheckedChange: (checked: boolean) => void;
+  onCheckedChange?: (checked: boolean) => void;
   /** Optional label text. */
   label?: string;
   /** Optional description shown below the label. */
@@ -34,9 +35,10 @@ export interface CheckboxProps {
 
 export interface CheckboxCardProps {
   /** Whether the card's checkbox is checked. */
-  checked: boolean;
+  checked?: boolean;
+  defaultChecked?: boolean;
   /** Called when the checked state changes. A press anywhere on the card toggles it. */
-  onCheckedChange: (checked: boolean) => void;
+  onCheckedChange?: (checked: boolean) => void;
   /** The card's title (one line); also its accessible name. */
   title: string;
   /** Optional one-line description under the title. */

@@ -103,7 +103,7 @@ export interface PageHeaderProps {
   leading?: ReactNode;
   /**
    * Rendered at the end of the bar. In the floating presentation this slot is
-   * wrapped in a `ControlSurface` with `material: 'glass'`, so a `ButtonGroup`
+   * wrapped in a `BloomScope` with shared control defaults, so a `ButtonGroup`
    * inside it becomes one island with no prop written on it. Declare the
    * grouping yourself — the header never infers it by reading children.
    */

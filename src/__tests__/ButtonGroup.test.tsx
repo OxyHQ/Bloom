@@ -17,7 +17,7 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 describe('ButtonGroup', () => {
-  it('is one bordered pill with hairlines only BETWEEN items', () => {
+  it('is one rimmed surface with inset separators between items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
       <View testID="host">
         <ButtonGroup testID="group">
@@ -29,8 +29,8 @@ describe('ButtonGroup', () => {
     );
     const group = resolvedStyle(getByTestId('group').props.style);
     expect(group.borderRadius).toBe(BUTTON_RADIUS);
-    expect(group.borderWidth).toBe(1);
-    // 3 items + 2 dividers.
+    expect(group.borderWidth ?? 0).toBe(0);
+    // Three controls and two separators; the parent owns the shared material.
     expect(renderedChildren(toJSON(), 'group-items')).toHaveLength(5);
   });
 

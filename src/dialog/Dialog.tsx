@@ -1,7 +1,8 @@
+import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, {
   useCallback,
   useEffect,
@@ -11,14 +12,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   type AnimatedStyle,
   cancelAnimation,
@@ -35,8 +29,8 @@ import { useTheme } from '../theme/use-theme';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { StyledView } from '../styles/styled-primitives';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
-import { Context, useDialogControl } from './context';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { Context } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
@@ -58,12 +52,7 @@ import {
   physicalDialogSide,
   type DialogSidePlacement,
 } from './placement';
-import type {
-  DialogAction,
-  DialogControlProps,
-  DialogInset,
-  DialogProps,
-} from './types';
+import type { DialogControlProps, DialogInset, DialogProps } from './types';
 import { useMessages } from '../locale/messages';
 import { DIALOG_MESSAGES } from './messages';
 
@@ -492,7 +481,7 @@ function SideSheet({
 
   useEffect(() => {
     cancelAnimation(progress);
-    const timing = { duration: ANIMATION_DURATION, easing: Easing.out(Easing.cubic) };
+    const timing = { ...MOTION_RECIPES[open ? 'present' : 'dismiss'], duration: ANIMATION_DURATION, easing: Easing.out(Easing.cubic) };
     if (open) {
       setMounted(true);
       progress.value = withTiming(1, timing);
@@ -538,7 +527,8 @@ function SideSheet({
   );
 
   const panelRadius = StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius;
-  const surfaceFill = resolveSurfaceFill(String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), false, theme.colors.background);
+  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const { paintFill, publishedFill: surfaceFill } = material;
   if (!mounted) return null;
 
   // The drawer uses the PAGE token as its tint and nominal surface for its
@@ -582,7 +572,7 @@ function SideSheet({
           sideStyles.panel,
           // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
           // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
-          { backgroundColor: 'transparent', pointerEvents: 'auto', ...surfaceFillVars(surfaceFill) },
+          { backgroundColor: 'transparent', pointerEvents: 'auto', ...material.vars },
           panelGeometry,
           panelAnimatedStyle,
           panelStyle,
@@ -590,8 +580,8 @@ function SideSheet({
           { backgroundColor: 'transparent' },
         ]}
       >
-        <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />
-        <SurfaceLevelProvider level={0} fill={surfaceFill}>
+        <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />
+        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer body
           // has no Dialog scroll offset to drive a collapse) over content inset

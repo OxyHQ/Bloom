@@ -259,7 +259,7 @@ function MediaCardComponent(props: MediaCardProps) {
           loading={loading}
           onPress={onPlay}
           subject={title}
-          size={row || size === 'small' ? 'small' : 'medium'}
+          size={row || size === 'small' ? 'sm' : 'md'}
           variant={row ? 'inverse' : 'accent'}
         />
       </View>

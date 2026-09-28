@@ -1,7 +1,8 @@
+import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { resolveSurfaceFill } from '../surface/shared';
+import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
  * `Dialog` — WEB: a pure-DOM modal overlay rendered into Bloom's `Portal`.
  *
@@ -25,15 +26,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useSharedValue,
@@ -46,13 +39,13 @@ import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { StyledView } from '../styles/styled-primitives';
 import { Portal } from '../portal/index.web';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { useIsRtl } from '../hooks/use-is-rtl';
-import { Context, useDialogContext, useDialogControl } from './context';
+import { Context, useDialogContext } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
@@ -319,8 +312,8 @@ function CenterOrSideDialog({
       return;
     }
     backdropFade.value = isClosing
-      ? withTiming(0, { duration: FADE_OUT_DURATION, easing: Easing.in(Easing.ease) })
-      : withTiming(1, { duration: BACKDROP_FADE_IN_DURATION, easing: Easing.out(Easing.ease) });
+      ? withTiming(0, { ...MOTION_RECIPES.dismiss, duration: FADE_OUT_DURATION, easing: Easing.in(Easing.ease) })
+      : withTiming(1, { ...MOTION_RECIPES.present, duration: BACKDROP_FADE_IN_DURATION, easing: Easing.out(Easing.ease) });
   }, [backdropFade, isOpen, isClosing]);
 
   useImperativeHandle(
@@ -477,7 +470,8 @@ function DialogPanel({
   const headerController = useDialogHeaderController();
   const { height: viewportHeight } = useWindowDimensions();
   const heightRatio = maxHeightRatio ?? DEFAULT_MAX_HEIGHT_RATIO;
-  const surfaceFill = resolveSurfaceFill(String(StyleSheet.flatten(style)?.backgroundColor ?? theme.colors.background), false, theme.colors.background);
+  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten(style)?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const { paintFill, publishedFill: surfaceFill } = material;
 
   // Size morphing across an in-place content swap. The centered card is the one
   // placement whose width can vary too, so `maxWidth` is handed over as well.
@@ -538,7 +532,7 @@ function DialogPanel({
           // `--bloom-surface` on the element that carries the fill, so web CSS
           // inside the dialog reads the dialog's colour and not the colour of
           // whatever surface it was opened over.
-          ...surfaceFillVars(surfaceFill),
+          ...material.vars,
           borderWidth: 1,
           borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
           // Design-system overlay elevation (`shadow-m`) as a `boxShadow` — RN-Web
@@ -560,8 +554,8 @@ function DialogPanel({
         { backgroundColor: 'transparent' },
       ]}
     >
-      <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />
-      <SurfaceLevelProvider level={0} fill={surfaceFill}>
+      <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />
+      <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
       {header ? (
         // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
         // collapsing title over its own scroll content (see `DialogHeader`). The
@@ -750,7 +744,8 @@ function SheetSurface({
     if (dismissOnBackdrop) onDismiss();
   }, [dismissOnBackdrop, onDismiss]);
 
-  const surfaceFill = resolveSurfaceFill(String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), false, theme.colors.background);
+  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const { paintFill, publishedFill: surfaceFill } = material;
 
   // The drawer uses the PAGE token as its tint and nominal surface for its
   // content — see `DialogPanel`'s own wrap for why a portal does not do that on
@@ -790,7 +785,7 @@ function SheetSurface({
         className={panelClassName}
         style={[
           sheetStyles.panel,
-          surfaceFillVars(surfaceFill),
+          material.vars,
           {
             backgroundColor: 'transparent',
             // Above this surface's OWN backdrop, and nothing more: `OverlayRoot`
@@ -810,8 +805,8 @@ function SheetSurface({
           { backgroundColor: 'transparent' },
         ]}
       >
-        <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius} />
-        <SurfaceLevelProvider level={0} fill={surfaceFill}>
+        <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius} />
+        <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer
           // body does not own a Dialog scroll offset to drive a collapse) over

@@ -90,7 +90,7 @@ export function MailSelectionBar({
             checked={all}
             indeterminate={!all}
             onCheckedChange={onSelectAll}
-            size={density === 'compact' ? 'small' : 'medium'}
+            size={density === 'compact' ? 'sm' : 'md'}
             accessibilityLabel={text.selectAll}
             testID={testID ? `${testID}-select-all` : undefined}
           />

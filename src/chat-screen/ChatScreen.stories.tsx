@@ -6,7 +6,7 @@ import { Avatar } from '../avatar';
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
-import { RiFileList2Line } from '../icons/remix/RiFileList2Line';
+
 import { RiFolderLine } from '../icons/remix/RiFolderLine';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { RiImageLine } from '../icons/remix/RiImageLine';
@@ -265,8 +265,8 @@ function SettingsBlock() {
         icon={<RiNotification3Line width={20} height={20} fill={paint.textSecondary} />}
         rightElement={
           <Switch
-            value={notifications}
-            onValueChange={setNotifications}
+            checked={notifications}
+            onCheckedChange={setNotifications}
             accessibilityLabel="Notifications for this conversation"
           />
         }
@@ -417,7 +417,7 @@ function ComposerStub() {
           Message
         </Text>
       </View>
-      <Button variant="primary" size="medium" iconOnly icon={RiChat3Line} accessibilityLabel="Send" />
+      <Button  size="md" iconOnly icon={RiChat3Line} accessibilityLabel="Send" tone="accent" appearance="solid" />
     </View>
   );
 }

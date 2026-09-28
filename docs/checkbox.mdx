@@ -121,3 +121,8 @@ Tailwind's `ring-offset-color` default, never overridden — so in dark mode a
 focused checkbox drew a white halo on a near-black page. `FOCUS_RING_OFFSET_COLOR`
 survives only as a deprecated alias of the fallback. See
 [Styles → The focus ring gap](/docs/bloom/main/styles).
+
+
+Use `checked` for controlled state or `defaultChecked` for an initial uncontrolled state. `onCheckedChange` reports either mode. Size uses `xs`, `sm`, `md`, `lg` and inherits from `BloomScope`.
+
+An explicitly supplied `checked={undefined}` is controlled and reads as false. Omit `checked` to let `defaultChecked` initialize internal state.

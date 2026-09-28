@@ -64,7 +64,7 @@ function EpisodeHeaderComponent({
         <PlayButton
           playing={playing}
           onPress={onPlayPress}
-          size="large"
+          size="lg"
           subject={title}
           testID={testID ? `${testID}-play` : undefined}
         />

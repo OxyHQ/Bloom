@@ -244,24 +244,24 @@ function TrackUploadRowComponent({
       <View style={styles.actions}>
         {status === 'failed' && onRetry ? (
           <Button
-            variant="secondary"
+
             size="xs"
             leadingIcon={RiRefreshLine}
             onPress={onRetry}
-            testID={testID ? `${testID}-retry` : undefined}
+            testID={testID ? `${testID}-retry` : undefined} tone="neutral" appearance="outline"
           >
             {labels.retry}
           </Button>
         ) : null}
         {onRemove ? (
           <Button
-            variant="secondary"
-            size="small"
+
+            size="sm"
             iconOnly
             leadingIcon={RiCloseLine}
             accessibilityLabel={labels.remove(fileName)}
             onPress={onRemove}
-            testID={testID ? `${testID}-remove` : undefined}
+            testID={testID ? `${testID}-remove` : undefined} tone="neutral" appearance="outline"
           />
         ) : null}
       </View>

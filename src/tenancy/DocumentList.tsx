@@ -121,12 +121,12 @@ function DocumentListComponent({
                     {document.onSign ? (
                       <View style={{ marginRight: 6 }}>
                         <Button
-                          variant="primary"
-                          size="small"
+
+                          size="sm"
                           leadingIcon={wide ? RiQuillPenLine : undefined}
                           accessibilityLabel={signName(document.name)}
                           onPress={document.onSign}
-                          testID={id(`sign-${index}`)}
+                          testID={id(`sign-${index}`)} tone="accent" appearance="solid"
                         >
                           {signLabel}
                         </Button>
@@ -134,24 +134,24 @@ function DocumentListComponent({
                     ) : null}
                     {document.onView ? (
                       <Button
-                        variant="secondary"
-                        size="small"
+
+                        size="sm"
                         iconOnly
                         leadingIcon={RiEyeLine}
                         accessibilityLabel={viewLabel(document)}
                         onPress={document.onView}
-                        testID={id(`view-${index}`)}
+                        testID={id(`view-${index}`)} tone="neutral" appearance="outline"
                       />
                     ) : null}
                     {document.onDownload ? (
                       <Button
-                        variant="secondary"
-                        size="small"
+
+                        size="sm"
                         iconOnly
                         leadingIcon={RiDownload2Line}
                         accessibilityLabel={downloadLabel(document)}
                         onPress={document.onDownload}
-                        testID={id(`download-${index}`)}
+                        testID={id(`download-${index}`)} tone="neutral" appearance="outline"
                       />
                     ) : null}
                   </View>

@@ -167,10 +167,10 @@ function CarrierQuoteListComponent({
         {Array.from({ length: Math.max(1, loadingCount) }, (_unused, index) => (
           <Card
             key={index}
-            variant="outlined"
+
             radius="radius-20"
             style={surfaceFillVars(theme.colors.card)}
-            testID={id(`placeholder-${index}`)}
+            testID={id(`placeholder-${index}`)} appearance="outline"
           >
             <View
               style={{

@@ -7,7 +7,6 @@ import { RiAddLine as Plus, RiArrowLeftLine as ArrowLeft, RiArrowRightLine as Ar
 
 const meta: Meta<typeof ButtonGroup> = {
   argTypes: {
-    "material": { control: 'select', options: ["solid","glass"] },
     "size": { control: 'select', options: ["sm","md"] },
     "dividers": { control: 'boolean' }
   },
@@ -71,10 +70,10 @@ export const Matrix: Story = {
   ),
 };
 
-/** One pane with flush item hit targets; no nested material or default divider. */
+/** One pane with flush item hit targets; no nested item material. */
 export const Glass: Story = {
-  args: { material: "glass" },
-  parameters: { controls: { include: ["material","size","dividers"] } },
+  args: {},
+  parameters: { controls: { include: ["size","dividers"] } },
   render: (args) => (
     <View style={{ padding: 24, alignItems: 'flex-start', backgroundColor: '#dcece6' }}>
       <ButtonGroup {...args}  accessibilityLabel="Floating actions">
