@@ -53,19 +53,15 @@ Five opt-in container contexts; model in the docs. Traps:
 - **Modals/sheets need their OWN `layout/ScreenScope`.** Otherwise chrome claims the underlying page edge (padding appears/disappears) and follows an untouched scroller. DialogBody/BottomSheetBase mount it for all three dialog placements and sheets. `ScreenScope.test.tsx` tests both directions.
 - **Adoption matrix is GENERATED:** `bun run generate:adoption-matrix`, shared derivation `src/__tests__/support/adoption-matrix.ts`; manual edits are overwritten. Applicability follows what a family RENDERS; non-adopters require reasoned classifications pinned by EQUALITY (new UNCLASSIFIED and stale entries fail). Never resolve transitively: nearly all families eventually reach text-field, once falsely passing17 raw-TextInput families.
 
-## Getting a COMPLETE test pass: shard it
+## Complete test passes
 
-**Jest can crash Node vm/contextify**, arbitrarily killing workers with SIGSEGV/SIGTRAP/SIGABRT, sometimes `# Fatal error in , line 0`. Reproduces on main: glass-colors most often, four color suites at maxWorkers2, six on another tree. Check suspects against main before blaming changes.
+**Jest crashes Node vm/contextify** with SIGSEGV/SIGTRAP/SIGABRT, sometimes `# Fatal error in , line 0`. Also on main: compare first. Victims: usually glass-colors, four color suites at maxWorkers2, six on another tree.
 
-History: 2026-08-26 main passed3/4, branch with~20 more files0/6. More files/worker worsened it; fewer workers WORSE. Not memory (83GB free) or cache (`--no-cache` still crashes). By2026-09-07 Node24.20.0 `theme/__tests__/glass-colors.test.ts`/`theme/__tests__/color-preset-registry.test.ts` failed alone AND `--runInBand` with `Context::GetNumberOfEmbedderDataFields Not a native context`; `theme/__tests__/theme-colors-parity.test.ts` joined by2026-09-17 on unmodified origin/main. All three also passed inside full unsharded runs. Node24.14.1 also crashes; Node22.17 IS a control (`bun build jest.config.ts --format cjs` → `--config` JSON): it passed 2026-09-28's ten crashers. A partial pass (191/193) names its missing suites, never claims completion.
+2026-08-26: main passed3/4, branch with~20 extra files0/6; more files/worker worsened it, fewer workers WORSE. Not memory (83GB free) or cache (`--no-cache` crashes). By2026-09-07 Node24.20 `glass-colors.test.ts`/`color-preset-registry.test.ts` failed alone AND `--runInBand` with `Context::GetNumberOfEmbedderDataFields Not a native context`; `theme-colors-parity.test.ts` joined on unmodified main2026-09-17. All three also passed full unsharded runs. Node24.14.1 crashes too. 2026-09-28 Node22.17 passed ten crashers with Bun-serialized `jest.config.ts` JSON (`rootDir`, `--config`, no ts-node), but workers crashed PageHeader in a full run.
 
-```bash
-for i in 1 2 3; do bunx jest --watchman=false --shard=$i/3; done
-```
+Shards65/64/64 passed where one193-suite run failed: `bunx jest --watchman=false --shard=N/3` for N=1,2,3. **Verify SUITE union against whole `--listTests`, not just sum.** Test totals changed3502→3514 unchanged; not fingerprints (unverified: gates see lib after build). A partial191/193 names missing suites, never claims completion.
 
-Three shards65/64/64 completed where one193-suite run failed. **Count SUITES:** union of shard `--listTests` must equal whole (193), not just sum. Test totals changed3502→3514 unchanged; never fingerprint runs with them. Unverified hypothesis: directory-derived gates see lib after build.
-
-Node24 mitigation: `node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=3` (focused suites pass). `NODE_OPTIONS` forbids that flag; pass it directly. Still verify coverage. On2026-09-28 Node24.21 still crashed five suites under nine shards/maxWorkers2 even with `--no-opt`. CI uses Node22.17 for tests: serialize `jest.config.ts` with Bun to JSON (including `rootDir`), then pass `--config` to Jest; no added `ts-node` dependency. Build/typecheck stay on Node24.
+`node --no-opt …jest.js --maxWorkers=3` mitigates focused crashes; `NODE_OPTIONS` forbids that flag. Node24.21 still crashed5/479 suites under nine shards/maxWorkers2 on2026-09-28.
 
 ## Jest does not resolve `.native.*`
 
