@@ -5,15 +5,16 @@ import { Chip } from '../chip';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
 import { resolveSelectionPaint, SelectionCard } from '../listing-editor/SelectionCard';
+import { useMessages } from '../locale/messages';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
+  builtInVehicleOptions,
   VEHICLE_ICON,
-  VEHICLE_OPTIONS,
   VEHICLE_PICKER_GEOMETRY,
-  VEHICLE_PICKER_LABELS,
 } from './constants';
+import { VEHICLE_PICKER_MESSAGES } from './messages';
 import { vehicleOptionName } from './shared';
 import type { VehicleKind, VehicleOption, VehiclePickerProps } from './types';
 
@@ -51,18 +52,27 @@ const TABULAR: TextStyle = { fontVariant: ['tabular-nums'] };
 export function VehiclePicker<T extends string = VehicleKind>({
   value,
   onValueChange,
-  options = VEHICLE_OPTIONS as unknown as readonly VehicleOption<T>[],
+  options: optionsProp,
   title,
   description,
   disabled = false,
   labels: labelOverrides,
-  accessibilityLabel = 'Vehicle',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: VehiclePickerProps<T>) {
+  const { messages } = useMessages(VEHICLE_PICKER_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.vehicle;
+  const options = useMemo(
+    () => optionsProp ?? (builtInVehicleOptions(messages) as unknown as readonly VehicleOption<T>[]),
+    [optionsProp, messages],
+  );
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
-  const labels = useMemo(() => ({ ...VEHICLE_PICKER_LABELS, ...labelOverrides }), [labelOverrides]);
+  const labels = useMemo(
+    () => ({ from: messages.from, fits: messages.fits, unavailable: messages.unavailable, ...labelOverrides }),
+    [messages, labelOverrides],
+  );
   // The picker measures ITSELF: the same component is a full phone column and a
   // 420-wide panel beside a map, and the window cannot tell those apart.
   const { width, onLayout } = useContainerWidth();

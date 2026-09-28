@@ -40,7 +40,7 @@ export interface CartLineEntry {
   photoVariant?: string;
   /** The kitchen ran out after it went in the basket. */
   unavailable?: boolean;
-  /** Default `"Sold out"`. */
+  /** `"Sold out"` in English. */
   unavailableLabel?: string;
 }
 
@@ -49,7 +49,7 @@ export interface CartLineProps extends Omit<CartLineEntry, 'id'> {
   onQuantityChange?: (quantity: number) => void;
   /** The remove control. Without it no remove control is drawn. */
   onRemove?: () => void;
-  /** Names the remove control, which draws no text. Default `"Remove <name>"`. */
+  /** Names the remove control, which draws no text (`"Remove <name>"` in English). */
   removeLabel?: string;
   /**
    * Moves removal INTO the stepper: at quantity 1 its `−` becomes a trash button
@@ -79,7 +79,7 @@ export interface CartTipPickerProps {
   /** The chosen option's `id`, or `undefined` while nothing is chosen. */
   value?: string;
   onValueChange: (id: string) => void;
-  /** The question above the row. Default `"Tip"`. */
+  /** The question above the row (`"Tip"` in English). */
   label?: string;
   /** A quieter line under the row — "It goes to the courier, in full." */
   description?: string;
@@ -102,13 +102,13 @@ export interface CartPromoFieldProps {
   applied?: string;
   /** Removes the applied code. Without it the pill is not removable. */
   onRemove?: () => void;
-  /** Names the remove control. Default `"Remove <code>"`. */
+  /** Names the remove control (`"Remove <code>"` in English). */
   removeLabel?: string;
-  /** The field's label. Default `"Promo code"`. */
+  /** The field's label (`"Promo code"` in English). */
   label?: string;
   /** The input's placeholder. */
   placeholder?: string;
-  /** The apply control's label. Default `"Apply"`. */
+  /** The apply control's label (`"Apply"` in English). */
   applyLabel?: string;
   /** A rejection — "That code has expired". A non-empty string paints the field invalid. */
   error?: string | null;
@@ -181,21 +181,21 @@ export interface CartPanelProps {
 
   /** The checkout control. Without it no footer is drawn. */
   onCheckout?: () => void;
-  /** Default `"Go to checkout"`. */
+  /** `"Go to checkout"` in English. */
   checkoutLabel?: string;
   /** Blocks checkout — under the minimum, a line gone. */
   checkoutDisabled?: boolean;
 
   /** Replaces the whole empty block, drawn when `lines` is empty. */
   empty?: ReactNode;
-  /** Default `"Your basket is empty"`. */
+  /** `"Your basket is empty"` in English. */
   emptyTitle?: string;
-  /** Default `"Add something from the menu and it will show up here."` */
+  /** `"Add something from the menu and it will show up here."` in English. */
   emptyDescription?: string;
 
   /** Default `comfortable`. */
   density?: CartDensity;
-  /** Names the list of lines. Default `"Basket"`. */
+  /** Names the list of lines (`"Basket"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

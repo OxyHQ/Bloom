@@ -1,0 +1,206 @@
+import type { MessageCatalog } from '../locale/messages';
+
+/**
+ * Every fixed string the cart panel draws or announces, in each Bloom
+ * language. Prices and names arrive formatted. A caller's `*Label`,
+ * `emptyTitle`, `emptyDescription` and `accessibilityLabel` still win.
+ */
+export interface CartPanelMessages {
+  /** Names the panel. */
+  basket: string;
+  checkout: string;
+  emptyTitle: string;
+  emptyDescription: string;
+  /** A line that cannot be ordered. */
+  soldOut: string;
+  /** Names a line's remove control, or an applied code's: "Remove Margherita". */
+  removeItem: (name: string) => string;
+  /** A discounted price in a line's name: "€9, originally €12". */
+  originally: (price: string, original: string) => string;
+  promoCode: string;
+  apply: string;
+  tip: string;
+}
+
+export const CART_PANEL_MESSAGES: MessageCatalog<CartPanelMessages> = {
+  en: {
+    basket: 'Basket',
+    checkout: 'Go to checkout',
+    emptyTitle: 'Your basket is empty',
+    emptyDescription: 'Add something from the menu and it will show up here.',
+    soldOut: 'Sold out',
+    removeItem: (name) => `Remove ${name}`,
+    originally: (price, original) => `${price}, originally ${original}`,
+    promoCode: 'Promo code',
+    apply: 'Apply',
+    tip: 'Tip',
+  },
+  es: {
+    basket: 'Cesta',
+    checkout: 'Ir a pagar',
+    emptyTitle: 'Tu cesta está vacía',
+    emptyDescription: 'Añade algo del menú y aparecerá aquí.',
+    soldOut: 'Agotado',
+    removeItem: (name) => `Quitar ${name}`,
+    originally: (price, original) => `${price}, antes ${original}`,
+    promoCode: 'Código promocional',
+    apply: 'Aplicar',
+    tip: 'Propina',
+  },
+  ca: {
+    basket: 'Cistella',
+    checkout: 'Ves al pagament',
+    emptyTitle: 'La cistella és buida',
+    emptyDescription: 'Afegeix alguna cosa del menú i apareixerà aquí.',
+    soldOut: 'Esgotat',
+    removeItem: (name) => `Treu ${name}`,
+    originally: (price, original) => `${price}, abans ${original}`,
+    promoCode: 'Codi promocional',
+    apply: 'Aplica',
+    tip: 'Propina',
+  },
+  de: {
+    basket: 'Warenkorb',
+    checkout: 'Zur Kasse',
+    emptyTitle: 'Dein Warenkorb ist leer',
+    emptyDescription: 'Füge etwas aus der Speisekarte hinzu, dann erscheint es hier.',
+    soldOut: 'Ausverkauft',
+    removeItem: (name) => `${name} entfernen`,
+    originally: (price, original) => `${price}, statt ${original}`,
+    promoCode: 'Gutscheincode',
+    apply: 'Einlösen',
+    tip: 'Trinkgeld',
+  },
+  fr: {
+    basket: 'Panier',
+    checkout: 'Passer au paiement',
+    emptyTitle: 'Votre panier est vide',
+    emptyDescription: 'Ajoutez un article depuis le menu et il apparaîtra ici.',
+    soldOut: 'Épuisé',
+    removeItem: (name) => `Retirer ${name}`,
+    originally: (price, original) => `${price}, au lieu de ${original}`,
+    promoCode: 'Code promo',
+    apply: 'Appliquer',
+    tip: 'Pourboire',
+  },
+  it: {
+    basket: 'Carrello',
+    checkout: 'Vai al pagamento',
+    emptyTitle: 'Il carrello è vuoto',
+    emptyDescription: 'Aggiungi qualcosa dal menu e comparirà qui.',
+    soldOut: 'Esaurito',
+    removeItem: (name) => `Rimuovi ${name}`,
+    originally: (price, original) => `${price}, prima ${original}`,
+    promoCode: 'Codice promozionale',
+    apply: 'Applica',
+    tip: 'Mancia',
+  },
+  pt: {
+    basket: 'Sacola',
+    checkout: 'Ir para o pagamento',
+    emptyTitle: 'Sua sacola está vazia',
+    emptyDescription: 'Adicione algo do cardápio e ele aparecerá aqui.',
+    soldOut: 'Esgotado',
+    removeItem: (name) => `Remover ${name}`,
+    originally: (price, original) => `${price}, antes ${original}`,
+    promoCode: 'Cupom',
+    apply: 'Aplicar',
+    tip: 'Gorjeta',
+  },
+  ru: {
+    basket: 'Корзина',
+    checkout: 'К оформлению',
+    emptyTitle: 'Корзина пуста',
+    emptyDescription: 'Добавьте что-нибудь из меню, и это появится здесь.',
+    soldOut: 'Нет в наличии',
+    removeItem: (name) => `Удалить «${name}»`,
+    originally: (price, original) => `${price}, вместо ${original}`,
+    promoCode: 'Промокод',
+    apply: 'Применить',
+    tip: 'Чаевые',
+  },
+  tr: {
+    basket: 'Sepet',
+    checkout: 'Ödemeye geç',
+    emptyTitle: 'Sepetin boş',
+    emptyDescription: 'Menüden bir şey ekle, burada görünecek.',
+    soldOut: 'Tükendi',
+    removeItem: (name) => `${name} ürününü kaldır`,
+    originally: (price, original) => `${price}, önceki fiyat ${original}`,
+    promoCode: 'Promosyon kodu',
+    apply: 'Uygula',
+    tip: 'Bahşiş',
+  },
+  ja: {
+    basket: 'カート',
+    checkout: 'レジに進む',
+    emptyTitle: 'カートは空です',
+    emptyDescription: 'メニューから追加するとここに表示されます。',
+    soldOut: '売り切れ',
+    removeItem: (name) => `${name}を削除`,
+    originally: (price, original) => `${price}（通常 ${original}）`,
+    promoCode: 'プロモーションコード',
+    apply: '適用',
+    tip: 'チップ',
+  },
+  zh: {
+    basket: '购物车',
+    checkout: '去结算',
+    emptyTitle: '购物车是空的',
+    emptyDescription: '从菜单中添加商品后会显示在这里。',
+    soldOut: '已售罄',
+    removeItem: (name) => `移除${name}`,
+    originally: (price, original) => `${price}，原价 ${original}`,
+    promoCode: '优惠码',
+    apply: '使用',
+    tip: '小费',
+  },
+  ar: {
+    basket: 'السلة',
+    checkout: 'المتابعة إلى الدفع',
+    emptyTitle: 'سلتك فارغة',
+    emptyDescription: 'أضف شيئًا من القائمة وسيظهر هنا.',
+    soldOut: 'نفدت الكمية',
+    removeItem: (name) => `إزالة ${name}`,
+    originally: (price, original) => `${price}، بدلًا من ${original}`,
+    promoCode: 'رمز الخصم',
+    apply: 'تطبيق',
+    tip: 'إكرامية',
+  },
+  hi: {
+    basket: 'बास्केट',
+    checkout: 'चेकआउट पर जाएँ',
+    emptyTitle: 'आपकी बास्केट खाली है',
+    emptyDescription: 'मेन्यू से कुछ जोड़ें, वह यहाँ दिखेगा।',
+    soldOut: 'बिक गया',
+    removeItem: (name) => `${name} हटाएँ`,
+    originally: (price, original) => `${price}, पहले ${original}`,
+    promoCode: 'प्रोमो कोड',
+    apply: 'लागू करें',
+    tip: 'टिप',
+  },
+  bn: {
+    basket: 'ঝুড়ি',
+    checkout: 'চেকআউটে যান',
+    emptyTitle: 'আপনার ঝুড়ি খালি',
+    emptyDescription: 'মেনু থেকে কিছু যোগ করুন, তা এখানে দেখা যাবে।',
+    soldOut: 'বিক্রি শেষ',
+    removeItem: (name) => `${name} সরান`,
+    originally: (price, original) => `${price}, আগে ছিল ${original}`,
+    promoCode: 'প্রোমো কোড',
+    apply: 'প্রয়োগ করুন',
+    tip: 'টিপ',
+  },
+  id: {
+    basket: 'Keranjang',
+    checkout: 'Lanjut ke pembayaran',
+    emptyTitle: 'Keranjangmu kosong',
+    emptyDescription: 'Tambahkan sesuatu dari menu dan akan muncul di sini.',
+    soldOut: 'Habis',
+    removeItem: (name) => `Hapus ${name}`,
+    originally: (price, original) => `${price}, sebelumnya ${original}`,
+    promoCode: 'Kode promo',
+    apply: 'Terapkan',
+    tip: 'Tip',
+  },
+};

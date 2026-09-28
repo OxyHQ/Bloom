@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { PaymentMethodMark } from '../payment-method';
 import {
   CardFormCountry,
@@ -11,7 +12,8 @@ import {
   CardFormPostcode,
   CardFormSecurityCode,
 } from './CardFormParts';
-import { CARD_FORM_EMPTY_VALUE, CARD_FORM_GAP, CARD_FORM_LABELS } from './constants';
+import { CARD_FORM_EMPTY_VALUE, CARD_FORM_GAP } from './constants';
+import { CARD_FORM_MESSAGES } from './messages';
 import { matchCardScheme, cardDigits, schemeSecurityCodeLength } from './shared';
 import type { CardFormFieldName, CardFormProps, CardFormValue } from './types';
 
@@ -66,6 +68,7 @@ function CardFormComponent({
   style,
   testID,
 }: CardFormProps) {
+  const { messages } = useMessages(CARD_FORM_MESSAGES);
   const controlled = useMemo(
     () => (value === undefined ? undefined : { ...CARD_FORM_EMPTY_VALUE, ...value }),
     [value],
@@ -97,7 +100,7 @@ function CardFormComponent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schemeId]);
 
-  const word = (key: CardFormFieldName): string => labels?.[key] ?? CARD_FORM_LABELS[key];
+  const word = (key: CardFormFieldName): string => labels?.[key] ?? messages.labels[key];
   const showName = fields?.name !== false;
   const showPostcode = fields?.postcode === true;
   const showCountry = fields?.country === true && countries !== undefined;

@@ -1,14 +1,11 @@
+import { CARD_FORM_MESSAGES } from './messages';
 import type { CardFormLabels, CardFormValue } from './types';
 
-/** The words above each box, when the caller names none. */
-export const CARD_FORM_LABELS: Required<CardFormLabels> = {
-  number: 'Card number',
-  expiry: 'Expiry date',
-  securityCode: 'Security code',
-  name: 'Name on card',
-  postcode: 'Postcode',
-  country: 'Country',
-};
+/**
+ * The words above each box, when the caller names none — in English. The form
+ * speaks `CARD_FORM_MESSAGES` in the resolved locale.
+ */
+export const CARD_FORM_LABELS: Required<CardFormLabels> = CARD_FORM_MESSAGES.en.labels;
 
 /**
  * The two boxes whose SHAPE is not obvious from their label.

@@ -6,10 +6,12 @@ import { Chip } from '../chip';
 import { Field } from '../field';
 import { RiTicketLine } from '../icons/remix/RiTicketLine';
 import { InputGroup, InputGroupAddon } from '../input-group';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { TextFieldInput } from '../text-field';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
+import { CART_PANEL_MESSAGES } from './messages';
 import { resolveCartPaint } from './shared';
 import type { CartPromoFieldProps } from './types';
 
@@ -41,14 +43,17 @@ function CartPromoFieldComponent({
   applied,
   onRemove,
   removeLabel,
-  label = 'Promo code',
+  label: labelProp,
   placeholder,
-  applyLabel = 'Apply',
+  applyLabel: applyLabelProp,
   error,
   disabled = false,
   style,
   testID,
 }: CartPromoFieldProps) {
+  const { messages } = useMessages(CART_PANEL_MESSAGES);
+  const label = labelProp ?? messages.promoCode;
+  const applyLabel = applyLabelProp ?? messages.apply;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveCartPaint(theme, surface), [theme, surface]);
@@ -67,7 +72,7 @@ function CartPromoFieldComponent({
             surface={paint.wash}
             startIcon={<RiTicketLine width={PROMO_GLYPH} height={PROMO_GLYPH} fill={glyph} />}
             onClose={disabled ? undefined : onRemove}
-            closeLabel={removeLabel ?? `Remove ${applied}`}
+            closeLabel={removeLabel ?? messages.removeItem(applied)}
             testID={testID ? `${testID}-applied` : undefined}
           >
             {applied}

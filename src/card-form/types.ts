@@ -154,7 +154,7 @@ export interface CardFormPostcodeProps extends CardFormPartProps {}
 export interface CardFormCountryProps extends Omit<CardFormPartProps, 'placeholder' | 'autoFocus'> {
   /** The countries to choose from, in the order they should be read. */
   countries: readonly CardFormCountryOption[];
-  /** Drawn in the trigger while nothing is chosen. Default `"Select a country"`. */
+  /** Drawn in the trigger while nothing is chosen (`"Select a country"` in English). */
   placeholder?: string;
 }
 
