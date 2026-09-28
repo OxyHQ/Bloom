@@ -18,6 +18,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { Text, TYPE_SCALE } from '../typography';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { CALENDAR_MESSAGES, type CalendarMessages } from './messages';
 import { CalendarViewEventDetails } from './CalendarViewEventDetails';
 import {
   createHueResolver,
@@ -235,6 +237,7 @@ interface DayCellProps {
   denseHeight: number;
   palette: CalendarViewPalette;
   hue: HueResolver;
+  moreEvents: CalendarMessages['moreEvents'];
   onHighlightEnd: () => void;
   onSelectEvent: (event: CalendarViewEvent, card: View | null) => void;
   testID?: string;
@@ -252,6 +255,7 @@ const DayCell = memo(function DayCell({
   denseHeight,
   palette,
   hue,
+  moreEvents,
   onHighlightEnd,
   onSelectEvent,
   testID,
@@ -340,7 +344,7 @@ const DayCell = memo(function DayCell({
                   { color: palette.textSecondary },
                 ]}
               >
-                {`+${hidden} more`}
+                {moreEvents(hidden)}
               </Text>
             ) : null}
             {visible.map((event) => (
@@ -369,7 +373,7 @@ export function CalendarViewMonthGrid({
   compact = false,
   onSelectEvent,
   showEventDetails = true,
-  locale,
+  locale: localeProp,
   gmtLabel,
   onJoinMeeting,
   onEditTimeZone,
@@ -378,6 +382,7 @@ export function CalendarViewMonthGrid({
   style,
   testID,
 }: CalendarViewMonthGridProps) {
+  const { locale, messages } = useMessages(CALENDAR_MESSAGES, localeProp);
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const hue = useMemo(() => createHueResolver(theme.colors.primary), [theme.colors.primary]);
@@ -438,7 +443,7 @@ export function CalendarViewMonthGrid({
   return (
     <View
       role="table"
-      accessibilityLabel="Month"
+      accessibilityLabel={messages.month}
       testID={testID}
       style={[
         dense
@@ -521,6 +526,7 @@ export function CalendarViewMonthGrid({
                 denseHeight={denseHeight}
                 palette={palette}
                 hue={hue}
+                moreEvents={messages.moreEvents}
                 onHighlightEnd={handleHighlightEnd}
                 onSelectEvent={handleSelect}
                 testID={testID ? `${testID}-day-${dayKey(date)}` : undefined}
@@ -535,7 +541,7 @@ export function CalendarViewMonthGrid({
         // with every chip pressed — `PopoverTrigger` can only wrap a fixed one.
         <PopoverProvider value={popover}>
           <PopoverContent
-            label="Event details"
+            label={messages.eventDetails}
             side="right"
             align="start"
             sideOffset={6}

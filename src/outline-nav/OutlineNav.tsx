@@ -3,12 +3,14 @@ import { Platform, Pressable, View, type GestureResponderEvent } from 'react-nat
 
 import { Meter } from '../stat-bar';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useMessages } from '../locale/messages';
 import { surfaceTextOn, useRingOffsetStyle, useSurfaceFill } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { OUTLINE_NAV_MESSAGES } from './messages';
 import { buildOutlineTree, compactHeadings, outlineProgress, type OutlineNode } from './shared';
 import type { OutlineHeading, OutlineNavLabels, OutlineNavProps } from './types';
 
@@ -54,11 +56,6 @@ const OUTLINE_NAV_CSS = interactiveWebCss({
   transition: 'color 120ms ease',
   outlineOffset: 2,
 });
-
-const DEFAULT_LABELS: Required<OutlineNavLabels> = {
-  outline: 'On this page',
-  progress: (at, of) => `Heading ${at} of ${of}`,
-};
 
 /** 14px per level, carried by the nested list so the indent IS the structure. */
 const INDENT = 14;
@@ -217,7 +214,11 @@ export function OutlineNav({
   const theme = useTheme();
   const surface = useSurfaceFill();
   useInteractiveWebCss(STYLE_ID, OUTLINE_NAV_CSS);
-  const labels = { ...DEFAULT_LABELS, ...labelsProp };
+  const { messages } = useMessages(OUTLINE_NAV_MESSAGES);
+  const labels: Required<OutlineNavLabels> = {
+    outline: labelsProp?.outline ?? messages.outline,
+    progress: labelsProp?.progress ?? messages.progress,
+  };
   const compact = variant === 'compact';
 
   const shown = useMemo(

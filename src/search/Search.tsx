@@ -2,6 +2,9 @@ import { forwardRef, useCallback, useMemo, useRef } from 'react';
 import { Platform, type TextInput, View } from 'react-native';
 
 import { mergeRefs } from '../hooks/merge-refs';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { SEARCH_MESSAGES } from './messages';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
@@ -20,8 +23,11 @@ type SearchProps = Omit<TextFieldInputProps, 'label'> & {
 };
 
 export const Search = forwardRef<TextInput, SearchProps>(
-  function Search({ value, label = 'Search', onClearText, onFocus, onPressIn, ...rest }, ref) {
+  function Search({ value, label: labelProp, onClearText, onFocus, onPressIn, ...rest }, ref) {
     const theme = useTheme();
+    const common = useCommonMessages();
+    const { messages } = useMessages(SEARCH_MESSAGES);
+    const label = labelProp ?? common.search;
     const showClear = value != null && value.length > 0;
 
     // Select-on-focus, done here rather than through RN's `selectTextOnFocus`.
@@ -99,7 +105,7 @@ export const Search = forwardRef<TextInput, SearchProps>(
             <GlyphButton
               testID="searchTextInputClearBtn"
               onPress={onClearText}
-              accessibilityLabel="Clear search query"
+              accessibilityLabel={messages.clearQuery}
               size={28}
               icon={X}
               glyphSize={16}

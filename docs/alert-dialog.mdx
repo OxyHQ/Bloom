@@ -36,6 +36,8 @@ import { AlertDialog } from '@oxy.so/bloom/alert-dialog';
 | `hideCancel`    | one button only — an acknowledgement, not a choice            |
 | `dismissible`   | whether a backdrop press or Escape closes it                  |
 
+The default Confirm / Cancel words are localised via `BloomProvider locale`; `confirmLabel` / `cancelLabel` still win.
+
 There is no free-form action array: the shape is confirm-and-cancel, and that
 constraint is the point. A dialog with three or four actions is a menu wearing
 a dialog's clothes, and the user has to read all of them before deciding.

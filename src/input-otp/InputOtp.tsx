@@ -19,6 +19,8 @@ import {
   TEXT_FIELD_TRANSITION_MS,
 } from '../text-field/shared';
 import { TYPE_SCALE } from '../typography/scale';
+import { useMessages } from '../locale/messages';
+import { INPUT_OTP_MESSAGES } from './messages';
 import type { InputOtpProps, InputOtpType } from './types';
 import { useFieldMembership } from '../field/membership';
 
@@ -206,11 +208,12 @@ export function InputOtp({
   testID,
 }: InputOtpProps) {
   const theme = useTheme();
+  const { messages } = useMessages(INPUT_OTP_MESSAGES);
   const palette = useMemo(() => resolveInputOtpPalette(theme), [theme]);
   // SEVERAL controls behind one name: the boxes are the field's `multiple` case
   // (`docs/field.mdx`), so the GROUP takes the field's name and description and
   // each box keeps its own name and its own `aria-invalid`. A caller's own
-  // `accessibilityLabel` still wins; `'One-time code'` is the last resort rather
+  // `accessibilityLabel` still wins; the catalog's "One-time code" is the last resort rather
   // than a default that would outrank the field's label.
   const membership = useFieldMembership({
     accessibilityLabel,
@@ -219,7 +222,7 @@ export function InputOtp({
   });
   const disabled = membership.disabled;
   const invalid = membership.invalid;
-  const groupName = membership.accessibilityLabel ?? 'One-time code';
+  const groupName = membership.accessibilityLabel ?? messages.oneTimeCode;
 
   const inputsRef = useRef<Array<TextInput | null>>([]);
   const [internal, setInternal] = useState(() => clean(defaultValue, length, type));
@@ -228,7 +231,7 @@ export function InputOtp({
 
   const controlled = value !== undefined;
   const code = clean(controlled ? value : internal, length, type);
-  const unit = type === 'alphanumeric' ? 'Character' : 'Digit';
+  const boxName = type === 'alphanumeric' ? messages.characterOf : messages.digitOf;
 
   const commit = useCallback(
     (next: string) => {
@@ -341,7 +344,7 @@ export function InputOtp({
             selectTextOnFocus={IS_WEB}
             caretHidden={false}
             editable={!disabled}
-            accessibilityLabel={`${unit} ${index + 1} of ${length}`}
+            accessibilityLabel={boxName(index + 1, length)}
             aria-invalid={invalid || undefined}
             aria-disabled={disabled || undefined}
             value={digit === ' ' ? '' : digit}

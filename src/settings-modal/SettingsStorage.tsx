@@ -25,6 +25,8 @@ import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { Pagination } from '../pagination';
 import { Select, SelectContent, SelectIcon, SelectItem, SelectItemIndicator, SelectItemText, SelectTrigger, SelectValue } from '../select';
 import { borderRadius } from '../styles/tokens';
@@ -33,6 +35,7 @@ import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text } from '../typography';
 import { useSettingsLayout, useSettingsPalette } from './context';
+import { SETTINGS_MODAL_MESSAGES, type SettingsModalMessages } from './messages';
 import type { SettingsPalette } from './palette';
 import { settingsRingVars } from './SettingsRows';
 import type {
@@ -103,12 +106,13 @@ function SortableHeader({
   sort: SortState;
   onSort: (key: SortKey) => void;
 }) {
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   const palette = useSettingsPalette();
   const active = sort?.key === sortKey;
   return (
     <Pressable
       role="button"
-      accessibilityLabel={`Sort by ${label}`}
+      accessibilityLabel={messages.storage.sortBy[sortKey]}
       {...webDataSet({ bloomSettingsPress: '', ringOffset: '' })}
       onPress={() => onSort(sortKey)}
       style={styles.sortable}
@@ -151,11 +155,13 @@ function HoverTooltip({ label, children }: { label: string; children: ReactNode 
   );
 }
 
-const DEFAULT_FILE_ACTIONS: SettingsMenuAction[] = [
-  { id: 'download', label: 'Download file', icon: RiDownload2Line },
-  { id: 'rename', label: 'Rename', icon: RiEditLine },
-  { id: 'copy-link', label: 'Copy link', icon: RiFileCopyLine },
-];
+function defaultFileActions(messages: SettingsModalMessages): SettingsMenuAction[] {
+  return [
+    { id: 'download', label: messages.storage.downloadFile, icon: RiDownload2Line },
+    { id: 'rename', label: messages.storage.rename, icon: RiEditLine },
+    { id: 'copy-link', label: messages.storage.copyLink, icon: RiFileCopyLine },
+  ];
+}
 
 function RowMoreMenu({
   file,
@@ -166,13 +172,14 @@ function RowMoreMenu({
   actions: SettingsMenuAction[];
   onAction?: (fileId: string, actionId: string) => void;
 }) {
+  const common = useCommonMessages();
   const palette = useSettingsPalette();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const label = `More actions for ${file.name}`;
+  const label = common.labelFor(common.moreActions, file.name);
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <HoverTooltip label="More actions">
+      <HoverTooltip label={common.moreActions}>
         <DropdownMenuTrigger asChild label={label} style={CENTERED}>
           <Pressable
             role="button"
@@ -322,34 +329,43 @@ function ToolbarSelect({
 //  Page
 // ---------------------------------------------------------------------------
 
-const DEFAULT_KINDS: SettingsFileKind[] = [
-  { value: 'document', label: 'Documents' },
-  { value: 'spreadsheet', label: 'Spreadsheets' },
-  { value: 'video', label: 'Videos' },
-];
-
-const ORDER_ITEMS: SettingsFileKind[] = [
-  { value: 'newest', label: 'Modified' },
-  { value: 'oldest', label: 'Oldest first' },
-];
+function defaultKinds(messages: SettingsModalMessages): SettingsFileKind[] {
+  return [
+    { value: 'document', label: messages.storage.documents },
+    { value: 'spreadsheet', label: messages.storage.spreadsheets },
+    { value: 'video', label: messages.storage.videos },
+  ];
+}
 
 export function SettingsStoragePage({
   files,
-  kinds = DEFAULT_KINDS,
+  kinds: kindsProp,
   selectedIds,
   defaultSelectedIds = [],
   onSelectionChange,
   pageSize = 6,
   onDeleteFile,
-  fileActions = DEFAULT_FILE_ACTIONS,
+  fileActions: fileActionsProp,
   onFileAction,
   renderFileIcon,
   upload,
   style,
   testID,
 }: SettingsStoragePageProps) {
+  const { locale, messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+  const common = useCommonMessages();
+  const copy = messages.storage;
   useSettingsWebCss();
   const palette = useSettingsPalette();
+  const kinds = useMemo(() => kindsProp ?? defaultKinds(messages), [kindsProp, messages]);
+  const fileActions = useMemo(() => fileActionsProp ?? defaultFileActions(messages), [fileActionsProp, messages]);
+  const orderItems = useMemo<SettingsFileKind[]>(
+    () => [
+      { value: 'newest', label: copy.modified },
+      { value: 'oldest', label: copy.oldestFirst },
+    ],
+    [copy],
+  );
   const [selected, setSelected] = useControllableState<string[]>({
     value: selectedIds,
     defaultValue: defaultSelectedIds,
@@ -442,7 +458,7 @@ export function SettingsStoragePage({
   // toolbar wraps and the search takes the remaining width.
   const compact = useSettingsLayout() === 'compact';
 
-  const typeItems = useMemo(() => [{ value: 'all', label: 'File type' }, ...kinds], [kinds]);
+  const typeItems = useMemo(() => [{ value: 'all', label: copy.fileType }, ...kinds], [copy, kinds]);
 
   return (
     <View testID={testID} style={[styles.page, settingsRingVars(palette), style]}>
@@ -457,15 +473,15 @@ export function SettingsStoragePage({
         <View style={styles.toolbar}>
           <View>
             <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
-              Stored in
+              {copy.storedIn}
             </Text>
             <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
-              {filtered.length.toLocaleString()} files
+              {copy.fileCount(filtered.length, filtered.length.toLocaleString(locale))}
             </Text>
           </View>
           <View style={[styles.tools, compact ? styles.toolsCompact : null]}>
             <ToolbarSelect
-              label="Filter by file type"
+              label={copy.filterByType}
               value={kindFilter}
               onChange={(v) => {
                 setKindFilter(v);
@@ -474,21 +490,21 @@ export function SettingsStoragePage({
               items={typeItems}
             />
             <ToolbarSelect
-              label="Order by"
+              label={copy.orderBy}
               value={recency}
               onChange={(v) => {
                 setRecency(v === 'oldest' ? 'oldest' : 'newest');
                 setSort(null);
                 setPage(1);
               }}
-              items={ORDER_ITEMS}
+              items={orderItems}
             />
             <View style={[styles.search, compact ? styles.searchCompact : null]}>
               <TextField radius={borderRadius.full}>
                 <TextFieldIcon icon={RiSearchLine} />
                 <TextFieldInput
-                  label="Search files"
-                  placeholder="Search"
+                  label={copy.searchFiles}
+                  placeholder={common.search}
                   value={query}
                   onValueChange={(text) => {
                     setQuery(text);
@@ -511,23 +527,23 @@ export function SettingsStoragePage({
               checked={allOnPage}
               indeterminate={someOnPage}
               onCheckedChange={toggleAll}
-              accessibilityLabel="Select all files on this page"
+              accessibilityLabel={copy.selectAllOnPage}
             />
-            <SortableHeader label="File name" sortKey="name" sort={sort} onSort={onSort} />
+            <SortableHeader label={copy.fileName} sortKey="name" sort={sort} onSort={onSort} />
           </View>
           {compact ? null : (
             <>
               <View style={[styles.cell, styles.dateCol]}>
-                <SortableHeader label="Uploaded on" sortKey="uploadedAt" sort={sort} onSort={onSort} />
+                <SortableHeader label={copy.uploadedOn} sortKey="uploadedAt" sort={sort} onSort={onSort} />
               </View>
               <View style={[styles.cell, styles.sizeCol]}>
-                <SortableHeader label="File size" sortKey="size" sort={sort} onSort={onSort} />
+                <SortableHeader label={copy.fileSize} sortKey="size" sort={sort} onSort={onSort} />
               </View>
             </>
           )}
           <View style={[styles.cell, compact ? null : styles.actionsCol]}>
             <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
-              Actions
+              {messages.actions}
             </Text>
           </View>
         </View>
@@ -549,7 +565,7 @@ export function SettingsStoragePage({
                     <Checkbox
                       checked={selectedSet.has(file.id)}
                       onCheckedChange={(on) => toggleRow(file.id, on)}
-                      accessibilityLabel={`Select ${file.name}`}
+                      accessibilityLabel={copy.selectFile(file.name)}
                     />
                     <View style={styles.fileName2}>
                       {renderFileIcon ? renderFileIcon(file) : defaultStoredIcon(file.kind, palette)}
@@ -573,8 +589,8 @@ export function SettingsStoragePage({
                     </>
                   )}
                   <View style={[styles.cell, compact ? null : styles.actionsCol, styles.actions]}>
-                    <HoverTooltip label="Delete file">
-                      <Button size="sm" icon={RiDeleteBin6Line} accessibilityLabel={`Delete ${file.name}`} onPress={() => deleteFile(file.id)} appearance="plain" tone="neutral" />
+                    <HoverTooltip label={copy.deleteFile}>
+                      <Button size="sm" icon={RiDeleteBin6Line} accessibilityLabel={copy.deleteNamed(file.name)} onPress={() => deleteFile(file.id)} appearance="plain" tone="neutral" />
                     </HoverTooltip>
                     <RowMoreMenu file={file} actions={fileActions} onAction={onFileAction} />
                   </View>
@@ -584,7 +600,7 @@ export function SettingsStoragePage({
           ) : (
             <View style={styles.empty}>
               <Text variant="body-medium" style={{ color: palette.textTertiary }}>
-                No files match your filters.
+                {copy.noMatches}
               </Text>
             </View>
           )}

@@ -63,7 +63,7 @@ export interface CalendarViewFeedAccount {
 
 export interface CalendarViewEventDetailsProps {
   event: CalendarViewEvent;
-  /** BCP 47 locale for the date line. Defaults to the runtime's. */
+  /** BCP 47 locale for the date line and the panel's words. Defaults to `BloomProvider locale`, then the runtime's. */
   locale?: string;
   /**
    * The `GMT±N` label in the timezone row. Defaults to the runtime's current
@@ -128,10 +128,12 @@ export interface CalendarViewInboxMenuProps {
   accounts: readonly CalendarViewFeedAccount[];
   onSelectFeed?: (feed: CalendarViewFeed, account: CalendarViewFeedAccount) => void;
   onAddAccount?: () => void;
-  /** Defaults to `'Add new account'`. */
+  /** The footer button (`'Add new account'` in English). */
   addAccountLabel?: string;
-  /** Names the trigger. Defaults to `'Inbox'`. */
+  /** Names the trigger (`'Inbox'` in English). */
   accessibilityLabel?: string;
+  /** BCP 47 locale of the menu's own words. Defaults to `BloomProvider locale`, then the runtime's. */
+  locale?: string;
   testID?: string;
 }
 
@@ -151,7 +153,7 @@ export interface CalendarViewHeaderProps {
   onSelectFeed?: CalendarViewInboxMenuProps['onSelectFeed'];
   onAddAccount?: () => void;
   onNewEvent?: () => void;
-  /** Defaults to `'New event'`. */
+  /** `'New event'` in English. */
   newEventLabel?: string;
   /** Shows the "Open navigation" menu button below the `lg` breakpoint. */
   onMenuPress?: () => void;

@@ -15,6 +15,8 @@ import { Text } from '../typography';
 import { CountryFlag } from './CountryFlag';
 import { COUNTRIES } from './countries';
 import { findCountry } from './find-country';
+import { useMessages } from '../locale/messages';
+import { PHONE_INPUT_MESSAGES } from './messages';
 import type { Country, CountryCodeSelectProps } from './types';
 
 /**
@@ -54,10 +56,12 @@ export function CountryCodeSelect({
   defaultValue = 'US',
   onValueChange,
   countries = COUNTRIES,
-  label = 'Country code',
+  label: labelProp,
   disabled,
 }: CountryCodeSelectProps) {
   const theme = useTheme();
+  const { messages } = useMessages(PHONE_INPUT_MESSAGES);
+  const label = labelProp ?? messages.countryCode;
   // `text-text-secondary` (value) and `text-text-tertiary` (row dial codes).
   const secondary = theme.colors.textSecondary;
   const tertiary = theme.colors.textSecondary;

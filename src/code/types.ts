@@ -70,9 +70,9 @@ export interface CodeLinesProps {
 }
 
 export interface CodeBlockLabels {
-  /** Default `'Copy code'`. */
+  /** `'Copy code'` in English. */
   copy?: string;
-  /** Default `'Code copied'`. */
+  /** `'Code copied'` in English. */
   copied?: string;
 }
 

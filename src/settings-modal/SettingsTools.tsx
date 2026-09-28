@@ -17,11 +17,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useSettingsPalette } from './context';
+import { SETTINGS_MODAL_MESSAGES, type SettingsModalMessages } from './messages';
 import type { SettingsPalette } from './palette';
 import { SettingsCard, SettingsRow, SettingsSection, settingsRingVars, useSettingsRowIsLast } from './SettingsRows';
 import type {
@@ -58,11 +61,13 @@ import { webDataSet } from '../styles/web-data';
 const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 const THUMB_EASE = Easing.bezier(0.34, 1.2, 0.64, 1);
 
-const DEFAULT_SERVER_ACTIONS: SettingsMenuAction[] = [
-  { id: 'output', label: 'Show output' },
-  { id: 'refresh', label: 'Refresh tools' },
-  { id: 'remove', label: 'Remove server' },
-];
+function defaultServerActions(messages: SettingsModalMessages): SettingsMenuAction[] {
+  return [
+    { id: 'output', label: messages.tools.showOutput },
+    { id: 'refresh', label: messages.tools.refreshTools },
+    { id: 'remove', label: messages.tools.removeServer },
+  ];
+}
 
 /** The tile swatches (`bg-*-200 text-*-700`), from the theme's hues. */
 function tileColors(tone: SettingsServerTone, theme: Theme, palette: SettingsPalette) {
@@ -221,10 +226,12 @@ function ServerMenu({
   actions: SettingsMenuAction[];
   onAction?: (serverId: string, actionId: string) => void;
 }) {
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+  const common = useCommonMessages();
   const palette = useSettingsPalette();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const label = `Actions for ${server.name}`;
+  const label = common.labelFor(messages.actions, server.name);
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild label={label} style={CENTERED}>
@@ -274,6 +281,8 @@ function ServerRow({
   onShowOutput?: (serverId: string) => void;
   testID?: string;
 }) {
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+  const copy = messages.tools;
   const palette = useSettingsPalette();
   const last = useSettingsRowIsLast();
   const [expanded, setExpanded] = useState(false);
@@ -295,8 +304,8 @@ function ServerRow({
               {server.name}
             </Text>
             <InlineAction
-              label="Logout"
-              accessibilityLabel={`Log out of ${server.name}`}
+              label={copy.logout}
+              accessibilityLabel={copy.logOutOf(server.name)}
               onPress={() => onLogout?.(server.id)}
             />
           </View>
@@ -312,7 +321,7 @@ function ServerRow({
               {hasTools ? (
                 <Pressable
                   role="button"
-                  accessibilityLabel={`${expanded ? 'Hide' : 'Show'} ${server.name} tools`}
+                  accessibilityLabel={expanded ? copy.hideTools(server.name) : copy.showTools(server.name)}
                   aria-expanded={expanded}
                   accessibilityState={{ expanded }}
                   {...webDataSet({ bloomSettingsPress: '' })}
@@ -329,14 +338,14 @@ function ServerRow({
           ) : (
             <View style={styles.statusLine}>
               <Text variant="body-2-regular" style={{ color: palette.textSecondary }}>
-                Error
+                {copy.error}
               </Text>
               <Text variant="body-2-regular" style={{ color: palette.textTertiary }}>
                 –
               </Text>
               <InlineAction
-                label="Show Output"
-                accessibilityLabel={`Show ${server.name} output`}
+                label={copy.showOutputLink}
+                accessibilityLabel={copy.showOutputOf(server.name)}
                 onPress={() => onShowOutput?.(server.id)}
               />
             </View>
@@ -404,14 +413,16 @@ function NewServerRow({
 export function SettingsServerList({
   servers,
   onAddServer,
-  addServerLabel = 'New MCP Server',
-  addServerDescription = 'Add a Custom MCP Server',
-  actions = DEFAULT_SERVER_ACTIONS,
+  addServerLabel,
+  addServerDescription,
+  actions: actionsProp,
   onServerAction,
   onLogout,
   onShowOutput,
   testID,
 }: SettingsServerListProps) {
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+  const actions = actionsProp ?? defaultServerActions(messages);
   return (
     <SettingsCard testID={testID}>
       {servers.map((server) => (
@@ -426,7 +437,11 @@ export function SettingsServerList({
         />
       ))}
       {onAddServer ? (
-        <NewServerRow label={addServerLabel} description={addServerDescription} onPress={onAddServer} />
+        <NewServerRow
+          label={addServerLabel ?? messages.tools.newServer}
+          description={addServerDescription ?? messages.tools.newServerDescription}
+          onPress={onAddServer}
+        />
       ) : null}
     </SettingsCard>
   );
@@ -452,6 +467,7 @@ function ScopePills({
   value: string;
   onChange: (id: string) => void;
 }) {
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   const palette = useSettingsPalette();
   const reducedMotion = useReducedMotion();
   const [boxes, setBoxes] = useState<Record<string, Box>>({});
@@ -485,7 +501,7 @@ function ScopePills({
       style={styles.pillScroller}
       contentContainerStyle={styles.pillList}
     >
-      <View role="group" aria-label="Project scope" style={styles.pillRow}>
+      <View role="group" aria-label={messages.tools.projectScope} style={styles.pillRow}>
         <Animated.View
           pointerEvents="none"
           style={[styles.pillThumb, { backgroundColor: palette.tertiary }, thumb]}
@@ -543,13 +559,15 @@ export function SettingsToolsPage({
   onConfigureTeam,
   pluginServers,
   onAddServer,
-  serverActions = DEFAULT_SERVER_ACTIONS,
+  serverActions,
   onServerAction,
   onLogout,
   onShowOutput,
   style,
   testID,
 }: SettingsToolsPageProps) {
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+  const copy = messages.tools;
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const [scopeId, setScopeId] = useControllableState<string>({
@@ -564,16 +582,16 @@ export function SettingsToolsPage({
     <View testID={testID} style={[styles.page, settingsRingVars(palette), style]}>
       {scopes.length > 0 ? <ScopePills scopes={scopes} value={scope?.id ?? ''} onChange={setScopeId} /> : null}
 
-      <SettingsSection label="Authentication" inset={8}>
+      <SettingsSection label={copy.authentication} inset={8}>
         <SettingsCard>
           <SettingsRow
-            label="Wait for MCP Authentication"
-            description="Wait indefinitely to authenticate when prompted. When off, skip authentication prompts after 30 seconds."
+            label={copy.waitForAuth}
+            description={copy.waitForAuthDescription}
           >
             <Switch
               checked={waitForAuthentication}
               onCheckedChange={onWaitForAuthenticationChange}
-              accessibilityLabel="Wait for MCP authentication"
+              accessibilityLabel={copy.waitForAuthSwitch}
             />
           </SettingsRow>
         </SettingsCard>
@@ -581,8 +599,8 @@ export function SettingsToolsPage({
 
       {scope ? (
         <SettingsSection
-          label={`${scope.label} MCP Servers`}
-          description={`Servers available from ${scope.label}.`}
+          label={copy.scopeServers(scope.label)}
+          description={copy.scopeServersDescription(scope.label)}
           inset={8}
         >
           <SettingsServerList
@@ -595,12 +613,12 @@ export function SettingsToolsPage({
       ) : null}
 
       <SettingsSection
-        label="Team MCP Servers"
-        description="Configured in the dashboard"
+        label={copy.teamServers}
+        description={copy.teamServersDescription}
         inset={8}
         action={
           <Button size="sm" onPress={onManageTeam} appearance="subtle" tone="neutral">
-            Manage
+            {copy.manage}
           </Button>
         }
       >
@@ -610,22 +628,21 @@ export function SettingsToolsPage({
           <View style={[styles.empty, { backgroundColor: palette.secondary }]}>
             <View style={styles.emptyText}>
               <Text variant="body-medium" style={[styles.center, { color: palette.text }]}>
-                No Team MCP Servers
+                {copy.noTeamServers}
               </Text>
               <Text variant="body-2-regular" style={[styles.center, styles.emptyBody, { color: palette.textSecondary }]}>
-                Configure MCP servers in the dashboard to make them available on desktop and in the
-                cloud.
+                {copy.noTeamServersBody}
               </Text>
             </View>
             <Button size="sm" onPress={onConfigureTeam} appearance="subtle" tone="neutral">
-              Configure Team MCP Servers
+              {copy.configureTeam}
             </Button>
           </View>
         )}
       </SettingsSection>
 
       {pluginServers && pluginServers.length > 0 ? (
-        <SettingsSection label="Plugin MCP Servers" inset={8}>
+        <SettingsSection label={copy.pluginServers} inset={8}>
           <SettingsServerList servers={pluginServers} {...listProps} />
         </SettingsSection>
       ) : null}

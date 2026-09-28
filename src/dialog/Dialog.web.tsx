@@ -80,6 +80,8 @@ import type {
   DialogInset,
   DialogProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { DIALOG_MESSAGES } from './messages';
 
 const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
 
@@ -207,6 +209,7 @@ function CenterOrSideDialog({
   // stylesheet is present by the time the animated surface mounts).
   useDialogCss();
 
+  const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
   const isControlled = controlledOpen !== undefined;
@@ -357,7 +360,7 @@ function CenterOrSideDialog({
               <Backdrop
                 onPress={() => close()}
                 disabled={!dismissOnBackdrop}
-                accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+                accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
                 // The fade rides on the LAYERS, never on the press target: an
                 // opacity animation on the blur's ancestor composites the group in
                 // isolation and leaves `backdrop-filter` nothing to sample.
@@ -667,6 +670,7 @@ function SheetSurface({
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }) {
+  const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
   const titleId = useId();
   const descriptionId = useId();
@@ -753,7 +757,7 @@ function SheetSurface({
       <ModalKeyboard panelRef={panelRef} closing={!shown} dismissible={dismissOnBackdrop} dismiss={onDismiss} />
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-        accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+        accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         // Same reason as the centred dialog: the transition and the opacity it

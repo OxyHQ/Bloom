@@ -26,6 +26,8 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { PopoverProvider, usePopover } from './context';
 import { POPOVER_PADDING } from './surface';
 import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './types';
+import { useMessages } from '../locale/messages';
+import { POPOVER_MESSAGES } from './messages';
 
 export function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
@@ -72,11 +74,13 @@ export function PopoverTrigger({
 
 export function PopoverContent({
   children,
-  label = 'Popover',
+  label: labelProp,
   className,
   style,
   testID,
 }: PopoverContentProps) {
+  const { messages } = useMessages(POPOVER_MESSAGES);
+  const label = labelProp ?? messages.popover;
   const popover = usePopover();
   const { control, onSheetClose } = useSheetOpenBridge(popover.open, popover.setOpen);
 

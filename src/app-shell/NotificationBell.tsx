@@ -5,11 +5,13 @@ import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { mirrorAlign, useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { RiNotificationLine } from '../icons/remix/RiNotificationLine';
+import { useMessages } from '../locale/messages';
 import { NotificationCenter } from '../notification-center';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { borderRadius } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { APP_SHELL_MESSAGES } from './messages';
 import type { NotificationBellProps } from './types';
 
 /**
@@ -30,9 +32,11 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
   onMarkAllRead,
   defaultTab,
   width = 440,
-  accessibilityLabel = 'Notifications',
+  accessibilityLabel: accessibilityLabelProp,
   testID,
 }) => {
+  const { messages } = useMessages(APP_SHELL_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.notifications;
   const theme = useTheme();
   const rtl = useIsRtl();
   const dirProps = useDirectionProps();

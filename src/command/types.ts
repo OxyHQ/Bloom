@@ -28,9 +28,9 @@ export interface CommandProps {
   onClose: () => void;
   /** Command items. */
   items: CommandItem[];
-  /** Input placeholder. Defaults to `'Type a command or search…'`. */
+  /** Input placeholder (`'Type a command or search…'` in English). */
   placeholder?: string;
-  /** Shown when no items match. Defaults to `'No results found.'`. */
+  /** Shown when no items match (`'No results found.'` in English). */
   emptyText?: string;
   /** Controlled query. When omitted the palette owns the query. */
   query?: string;

@@ -23,6 +23,8 @@ import type {
   ContextMenuProps,
   ContextMenuTriggerProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { CONTEXT_MENU_MESSAGES } from './messages';
 
 export function ContextMenu({ children, onOpenChange }: ContextMenuProps) {
   const [open, setOpen] = useState(false);
@@ -88,9 +90,11 @@ export function ContextMenuTrigger({
 
 export function ContextMenuContent({
   children,
-  label = 'Context menu',
+  label: labelProp,
   style,
 }: ContextMenuContentProps) {
+  const { messages } = useMessages(CONTEXT_MENU_MESSAGES);
+  const label = labelProp ?? messages.contextMenu;
   const menu = useContextMenu();
   const setOpen = useCallback(
     (next: boolean) => {

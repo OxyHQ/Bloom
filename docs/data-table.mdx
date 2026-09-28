@@ -80,7 +80,7 @@ With `inset`, give columns `flex` shares (`flex: 1.4` for the first, `1` for the
 
 ## Columns
 
-- **`accessor`** is the value a column sorts by, and the cell text when there is no `cell`. A column with an accessor is sortable unless `sortable: false`.
+- **`accessor`** is the value a column sorts by, and the cell text when there is no `cell`. A column with an accessor is sortable unless `sortable: false`; a `Date` value prints as the locale's short date (`BloomProvider locale`).
 - **`cell({ row, rowId, index, size, selected })`** renders anything. `size` is the current density — chips move to `caption` and selects to `sm` on Compact, and the renderer is where that happens.
 - **`basis`** behaves like a `w-[240px]` column class inside an HTML table: a preferred width that grows and shrinks in proportion with the other `basis` columns. `width` (fixed) and `flex` (a share of the remainder, from zero) are `Table`'s and still work; `minWidth` floors any of them — the actions column grows to 140 to fit three 32px buttons.
 
@@ -93,7 +93,7 @@ With `inset`, give columns `flex` shares (`flex: 1.4` for the first, `1` for the
 
 ## Selection
 
-`selectable` puts a checkbox in the first column. The header checkbox is **page-scoped**, like TanStack's `toggleAllPageRowsSelected`: checked when every row on the page is selected, `mixed` when some are, and pressing it selects (or clears) the page only. Selection is by `getRowId`, so it survives sorting, paging and filtering. A selectable table's rows carry `aria-selected` (web) and `accessibilityState.selected` (native); a non-selectable table's rows carry neither.
+`selectable` puts a checkbox in the first column. The header checkbox is **page-scoped**, like TanStack's `toggleAllPageRowsSelected`: checked when every row on the page is selected, `mixed` when some are, and pressing it selects (or clears) the page only. Selection is by `getRowId`, so it survives sorting, paging and filtering. A selectable table's rows carry `aria-selected` (web) and `accessibilityState.selected` (native); a non-selectable table's rows carry neither. The checkboxes' names ("Select all rows on this page", "Select row …") and the density control's words are English defaults, localised via `BloomProvider locale`; `selectAllLabel`, `getSelectRowLabel` and `sizeToggle*` props still win.
 
 ## `DataTableRowAction`
 

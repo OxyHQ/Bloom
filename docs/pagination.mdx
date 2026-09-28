@@ -50,6 +50,8 @@ Below 420px of width (measured with `onLayout`, so it works on native too) Previ
 
 The row is a `navigation` landmark named `"Pagination"`. Every page is a button named `"Go to page N"` (`getPageLabel` to localise). The current page carries `aria-current="page"` on web and `accessibilityState.selected` on native — `aria-selected` is invalid on a button.
 
+The English defaults below (`"Pagination"`, `Go to page N`, Previous / Next) are localised via `BloomProvider locale`; the props still win.
+
 ## Props
 
 | Prop | Type | Default | Description |

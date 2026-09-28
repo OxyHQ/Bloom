@@ -61,6 +61,8 @@ import type {
   SelectValueProps,
 } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useMessages } from '../locale/messages';
+import { SELECT_MESSAGES } from './messages';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -306,7 +308,7 @@ type SelectContentInnerProps<T> = SelectContentProps<T> &
   };
 
 function SelectContentInner<T>({
-  label = 'Select an option',
+  label: labelProp,
   items,
   renderItem,
   valueExtractor = defaultItemValueExtractor,
@@ -315,6 +317,8 @@ function SelectContentInner<T>({
   ...contextValues
 }: SelectContentInnerProps<T>) {
   const theme = useTheme();
+  const { messages } = useMessages(SELECT_MESSAGES);
+  const label = labelProp ?? messages.selectOption;
 
   const render = useCallback(
     ({ item, index }: { item: T; index: number }) => {

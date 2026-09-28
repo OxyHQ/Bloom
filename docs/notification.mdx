@@ -72,7 +72,7 @@ The card, description and timestamp use the shared card and text roles.
 | `avatar?` | `AvatarProps` minus `size`, plus `presence?` | Takes precedence over `icon`. |
 | `actions?` | `{ label, onPress?, variant? }[]` | |
 | `dismissible?` | `boolean` | Default `true`. |
-| `closeLabel?` | `string` | Close button NAME. Default `Dismiss notification`. |
+| `closeLabel?` | `string` | Close button NAME. Default `Dismiss notification`, localised via `BloomProvider locale`. |
 | `onDismiss?` | `() => void` | Fires after the exit animation, once the card has unmounted. |
 | `autoDismissDuration?` | `number` (ms) | Dismisses after this long (plus `introDelay`) and draws the countdown bar. |
 | `introDelay?` | `number` (**seconds**) | Opts into the entrance animation. |

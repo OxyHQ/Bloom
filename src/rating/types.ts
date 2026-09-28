@@ -24,9 +24,9 @@ export interface RatingProps {
   count?: number | string;
   /** Default `parenthesis`. */
   countStyle?: RatingCountStyle;
-  /** The word after the count in the `reviews` style and in the accessible name. Default `"reviews"`. */
+  /** The word after the count in the `reviews` style and in the accessible name, drawn after the count as given. Default: the locale's pluralised word (`"reviews"` in English). */
   reviewsLabel?: string;
-  /** Drawn (and announced) when there is no rating yet. Default `"New"`. */
+  /** Drawn (and announced) when there is no rating yet (`"New"` in English). */
   newLabel?: string;
   /** Default `medium`. */
   size?: RatingSize;
@@ -89,8 +89,8 @@ export interface RatingInputProps {
    */
   accessibilityLabel?: string;
   /**
-   * Each star's own name, which is English by default (`"1 star"`,
-   * `"4 stars"`). Pass a translated formatter.
+   * Each star's own name. Default: the locale's (`"1 star"`, `"4 stars"` in
+   * English); a formatter passed here wins.
    */
   formatStarLabel?: (value: number, max: number) => string;
   style?: StyleProp<ViewStyle>;

@@ -13,7 +13,7 @@ export interface BreadcrumbProps {
    * rendered as given.
    */
   separator?: ReactNode;
-  /** Names the navigation landmark. Default `"Breadcrumb"`. */
+  /** Names the navigation landmark; `"Breadcrumb"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

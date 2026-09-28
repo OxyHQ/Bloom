@@ -46,7 +46,7 @@ export interface NotificationProps {
   actions?: NotificationAction[];
   /** Show the close button. Defaults to `true`. */
   dismissible?: boolean;
-  /** Accessible name of the close button. Defaults to `Dismiss notification`. */
+  /** Accessible name of the close button (`Dismiss notification` in English). */
   closeLabel?: string;
   /** Called after the dismiss exit animation completes. */
   onDismiss?: () => void;

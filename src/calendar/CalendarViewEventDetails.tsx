@@ -12,6 +12,8 @@ import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { CALENDAR_MESSAGES } from './messages';
 import { resolveCalendarViewPalette, type CalendarViewPalette } from './palette';
 import { currentGmtLabel, durationLabel, formatEventDate } from './shared';
 import type { CalendarViewEventDetailsProps } from './types';
@@ -122,7 +124,7 @@ function RowButton({
 
 export function CalendarViewEventDetails({
   event,
-  locale,
+  locale: localeProp,
   gmtLabel,
   onJoinMeeting,
   onEditTimeZone,
@@ -132,6 +134,7 @@ export function CalendarViewEventDetails({
   style,
   testID,
 }: CalendarViewEventDetailsProps) {
+  const { locale, messages } = useMessages(CALENDAR_MESSAGES, localeProp);
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const secondary = { color: palette.textSecondary };
@@ -213,7 +216,7 @@ export function CalendarViewEventDetails({
           >
             <InfoChip palette={palette}>{event.meeting.code}</InfoChip>
             <Button size="xs" onPress={onJoinMeeting ? () => onJoinMeeting(event) : undefined} appearance="solid" tone="accent">
-              Join
+              {messages.join}
             </Button>
           </View>
         </DetailRow>
@@ -234,7 +237,7 @@ export function CalendarViewEventDetails({
             </View>
           </RowLead>
           {event.endTime ? (
-            <InfoChip palette={palette}>{durationLabel(event.time!, event.endTime)}</InfoChip>
+            <InfoChip palette={palette}>{durationLabel(event.time!, event.endTime, messages.duration)}</InfoChip>
           ) : null}
         </DetailRow>
       ) : null}
@@ -252,7 +255,7 @@ export function CalendarViewEventDetails({
           </RowLead>
           <RowButton
             icon={RiCornerDownLeftLine}
-            label="Edit timezone"
+            label={messages.editTimeZone}
             palette={palette}
             onPress={onEditTimeZone ? () => onEditTimeZone(event) : undefined}
           />
@@ -265,12 +268,12 @@ export function CalendarViewEventDetails({
             <RowLead>
               <RiGlobalLine width={ROW_ICON} height={ROW_ICON} fill={palette.iconSecondary} />
               <Text variant="body-2-medium" numberOfLines={1} style={secondary}>
-                Participants
+                {messages.participants}
               </Text>
             </RowLead>
             <RowButton
               icon={RiGroupLine}
-              label="Edit participants"
+              label={messages.editParticipants}
               palette={palette}
               onPress={onEditParticipants ? () => onEditParticipants(event) : undefined}
             />
@@ -304,14 +307,14 @@ export function CalendarViewEventDetails({
             <RiNotification2Line width={ROW_ICON} height={ROW_ICON} fill={palette.iconSecondary} />
             <Text variant="body-2-medium" numberOfLines={1}>
               <Text variant="body-2-medium" style={secondary}>
-                Reminders
+                {messages.reminders}
               </Text>
               {` ${event.reminder}`}
             </Text>
           </RowLead>
           <RowButton
             icon={RiCornerDownLeftLine}
-            label="Edit reminders"
+            label={messages.editReminders}
             palette={palette}
             onPress={onEditReminders ? () => onEditReminders(event) : undefined}
           />

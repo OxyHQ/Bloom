@@ -67,11 +67,11 @@ export interface NotificationCenterProps {
   onAction?: (notificationId: string, actionId: string) => void;
   /** "Mark all read" was pressed; every unread item is marked read locally first. */
   onMarkAllRead?: () => void;
-  /** Defaults to "Notifications". */
+  /** The heading ("Notifications" in English). */
   title?: string;
-  /** Empty-state headline. Defaults to "You’re all caught up." */
+  /** Empty-state headline ("You’re all caught up." in English). */
   emptyMessage?: string;
-  /** Empty-state supporting line. Defaults to "New activity will appear here when it arrives." */
+  /** Empty-state supporting line ("New activity will appear here when it arrives." in English). */
   emptyDescription?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

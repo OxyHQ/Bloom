@@ -45,6 +45,8 @@ import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
 import type { SidebarNavItem, SidebarProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { SIDEBAR_MESSAGES } from './messages';
 
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
@@ -153,7 +155,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   modes,
   mode,
   onModeChange,
-  modesLabel,
+  modesLabel: modesLabelProp,
   selected,
   onNavigate,
   collapsed: collapsedProp,
@@ -161,10 +163,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   onCollapsedChange,
   mobile = false,
   onClose,
-  accessibilityLabel = 'Sidebar',
-  collapseLabel = 'Collapse sidebar',
-  expandLabel = 'Expand sidebar',
-  closeLabel = 'Close sidebar',
+  accessibilityLabel: accessibilityLabelProp,
+  collapseLabel: collapseLabelProp,
+  expandLabel: expandLabelProp,
+  closeLabel: closeLabelProp,
   fluid = false,
   surface = 'card',
   size: sizeProp,
@@ -174,12 +176,12 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   searchShortcut = true,
   searchQuery,
   onSearchQueryChange,
-  searchLabel = 'Quick Search',
+  searchLabel: searchLabelProp,
   searchButtonLabel: searchButtonLabelProp,
   searchPlaceholder,
-  filterLabel = 'Filter navigation',
-  clearSearchLabel = 'Clear navigation search',
-  noResultsLabel = 'No results',
+  filterLabel: filterLabelProp,
+  clearSearchLabel: clearSearchLabelProp,
+  noResultsLabel: noResultsLabelProp,
   logo,
   account,
   team,
@@ -191,7 +193,17 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   testID,
 }) => {
   const common = useCommonMessages();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
   const searchButtonLabel = searchButtonLabelProp ?? common.search;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.sidebar;
+  const collapseLabel = collapseLabelProp ?? messages.collapse;
+  const expandLabel = expandLabelProp ?? messages.expand;
+  const closeLabel = closeLabelProp ?? messages.close;
+  const searchLabel = searchLabelProp ?? messages.quickSearch;
+  const filterLabel = filterLabelProp ?? messages.filter;
+  const clearSearchLabel = clearSearchLabelProp ?? messages.clearSearch;
+  const noResultsLabel = noResultsLabelProp ?? messages.noResults;
+  const modesLabel = modesLabelProp ?? messages.mode;
   const palette = useSidebarPalette();
   const canonicalSize = sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp === 'large' ? 'lg' : sizeProp;
   const {size: scopedSize} = useBloomAppearance({size: canonicalSize}, {size: 'md', tone: 'neutral'});
@@ -423,7 +435,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // `var(--bloom-sidebar-ring)`, which resolves to nothing — no ring at all —
   // on a node that does not set it.
   const iconButtonRing = { borderRadius: 6, '--bloom-sidebar-ring': palette.ring } as WebCssStyle;
-  const placeholder = searchPlaceholder ?? (flatMobile ? 'Search...' : 'Search navigation…');
+  const placeholder = searchPlaceholder ?? (flatMobile ? messages.searchPlaceholderCompact : messages.searchPlaceholder);
 
   const toggleCollapse = () => {
     const expanding = collapsedState;

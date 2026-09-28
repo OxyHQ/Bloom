@@ -37,7 +37,7 @@ import { Slider } from '@oxy.so/bloom/slider';
 | `showTooltip`       | the value bubble above the thumb (default `true`)          |
 | `formatValue`       | the text in the bubble                                     |
 
-`RangeSlider` takes the same props with `value: [number, number]` (and `onValueChange` / `onSlidingComplete` receiving the pair), `formatValue(value, index)`, and `thumbLabels` — the accessible name of each thumb, default `['Minimum', 'Maximum']`. The thumbs cannot pass each other; the fill runs between them; each carries its own bubble, and each is its own `adjustable` control with its own value.
+`RangeSlider` takes the same props with `value: [number, number]` (and `onValueChange` / `onSlidingComplete` receiving the pair), `formatValue(value, index)`, and `thumbLabels` — the accessible name of each thumb, default `['Minimum', 'Maximum']` in English, localised via `BloomProvider locale`. The thumbs cannot pass each other; the fill runs between them; each carries its own bubble, and each is its own `adjustable` control with its own value.
 
 ## What it looks like
 

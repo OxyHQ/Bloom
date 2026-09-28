@@ -47,11 +47,11 @@ export interface ErrorBoundaryProps {
    * Backward-compatible: passing a static node continues to work unchanged.
    */
   fallback?: ErrorBoundaryFallback;
-  /** Error title (defaults to "Something went wrong") */
+  /** Error title (`'Something went wrong'` in English, localised via `BloomProvider locale`) */
   title?: string;
-  /** Error message (defaults to "An unexpected error occurred") */
+  /** Error message (`'An unexpected error occurred'` in English) */
   message?: string;
-  /** Retry button label (defaults to "Try Again") */
+  /** Retry button label (`'Try Again'` in English) */
   retryLabel?: string;
   /** Callback when an error is caught */
   onError?: (error: Error, errorInfo: ErrorInfo) => void;

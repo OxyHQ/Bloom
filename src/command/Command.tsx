@@ -23,6 +23,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import type { DialogProps } from '../dialog';
 import { useDialogControl } from '../dialog/context';
 import type { CommandItem, CommandProps } from './types';
+import { useMessages } from '../locale/messages';
+import { COMMAND_MESSAGES } from './messages';
 
 type DialogComponent = React.ComponentType<DialogProps>;
 
@@ -76,8 +78,8 @@ export function createCommand(Dialog: DialogComponent) {
     visible,
     onClose,
     items,
-    placeholder = 'Type a command or search…',
-    emptyText = 'No results found.',
+    placeholder: placeholderProp,
+    emptyText: emptyTextProp,
     query: queryProp,
     onQueryChange,
     filter = defaultFilter,
@@ -85,6 +87,9 @@ export function createCommand(Dialog: DialogComponent) {
     style,
     testID,
   }: CommandProps) {
+    const { messages } = useMessages(COMMAND_MESSAGES);
+    const placeholder = placeholderProp ?? messages.placeholder;
+    const emptyText = emptyTextProp ?? messages.empty;
     const control = useDialogControl();
     const searchRef = useRef<TextInput>(null);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -248,7 +253,7 @@ export function createCommand(Dialog: DialogComponent) {
       // ScrollView, so the Dialog adds neither padding nor a wrapping scroller.
       contentPadding={0}
       scrollable={false}
-      label="Command palette"
+      label={messages.palette}
       // The palette is the floating menu surface: card/neutral-800 panel,
       // 1px border, radius 16, `shadow-dropdown`, edge-to-edge content.
       style={[
@@ -279,7 +284,7 @@ export function createCommand(Dialog: DialogComponent) {
             style={[styles.searchInput, SEARCH_WEB_RESET, { color: palette.text }]}
           />
           {query ? (
-            <CloseButton size="xs" accessibilityLabel="Clear search" onPress={() => setQuery('')} />
+            <CloseButton size="xs" accessibilityLabel={messages.clearSearch} onPress={() => setQuery('')} />
           ) : null}
         </View>
         <View style={[styles.separator, { backgroundColor: palette.border }]} />
