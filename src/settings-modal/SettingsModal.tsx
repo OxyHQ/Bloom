@@ -25,6 +25,7 @@ import { PageHeader } from '../page-header';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { Backdrop, OverlayRoot } from '../overlay';
+import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
@@ -135,6 +136,7 @@ export function SettingsModal({
   labels,
   testID,
 }: SettingsModalProps) {
+  const panelRef = useRef<View>(null);
   const common = useCommonMessages();
   useSettingsWebCss();
   const palette = useSettingsPalette();
@@ -248,21 +250,6 @@ export function SettingsModal({
     if (mayLeave('navigation')) setCompactPageOpen(false);
   }, [mayLeave]);
 
-  // Escape closes (web). On `window`, not `document`: a menu or popover opened
-  // inside the modal handles Escape on `document` and stops propagation there,
-  // so the innermost surface closes first and the modal stays open.
-  useEffect(() => {
-    if (!mounted || !IS_WEB || typeof window === 'undefined') return;
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        requestClose();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [mounted, requestClose]);
-
   const compactPageOpenRef = useRef(false);
   compactPageOpenRef.current = compactPageOpen && layoutRef.current === 'compact';
 
@@ -350,6 +337,14 @@ export function SettingsModal({
     <ModalPortal>
       <SettingsModalContext.Provider value={context}>
         <OverlayRoot onRequestClose={onHardwareBack} modal>
+          {IS_WEB ? (
+            <ModalKeyboard
+              panelRef={panelRef}
+              closing={!visible && wasVisible.current}
+              dismissible
+              dismiss={requestClose}
+            />
+          ) : null}
           <Backdrop
             onPress={requestClose}
             progress={progress}
@@ -372,6 +367,8 @@ export function SettingsModal({
                 ]}
               >
                 <View
+                  ref={panelRef}
+                  tabIndex={IS_WEB ? -1 : undefined}
                   role="dialog"
                   aria-modal
                   aria-label={labels?.dialog ?? 'Settings'}

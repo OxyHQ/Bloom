@@ -83,7 +83,7 @@ Every layout uses `PageHeader` with its floating islands. A `ButtonGroupItem` su
 
 This shell differs from `Dialog`'s centered card in every load-bearing way: black 70% backdrop with no blur, 24px radius on `background/full`, a fixed 871×614 size, a fade + scale-from-0.85 + 4px blur on `cubic-bezier(0.32, 0.72, 0, 1)`, and a **Saved toast that straddles the panel's bottom edge** — outside the panel's clip, which `Dialog`'s card owns. So the shell is built from the same authorities `Dialog` uses — `Portal`, `OverlayRoot` (the one stacking rank) and `Backdrop` (the pointer-events contract) — and accepts `Dialog`'s `control`.
 
-Menus, selects, tooltips and the date popover opened inside a page stack above it through the overlay stack. **Escape closes the innermost surface first:** the modal listens on `window`, and the floating surfaces stop the key on `document`.
+Menus, selects, tooltips and the date popover opened inside a page stack above it through the overlay stack. **Escape closes the innermost surface first:** shared `ModalKeyboard` checks overlay and floating-surface ownership before claiming the key. Its capture/deferred handling also hears Escape from React Native Web text fields. Focus moves into the panel on open, Tab remains inside, and closing restores the opener.
 
 ## The saved toast
 
