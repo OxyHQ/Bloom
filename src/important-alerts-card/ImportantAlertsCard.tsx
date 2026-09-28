@@ -1,3 +1,5 @@
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
@@ -17,11 +19,13 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { BUTTON_SHADOW } from '../button/shared';
+import { useMessages } from '../locale/messages';
 import { resolveDashboardSurfaces, toneColor, type DashboardSurfaces } from '../stat-cards/tones';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { IMPORTANT_ALERTS_CARD_MESSAGES } from './messages';
 import type {
   ImportantAlertsCardAlert,
   ImportantAlertsCardProps,
@@ -162,15 +166,19 @@ function TopFade({ color, visible }: { color: string; visible: boolean }) {
 function ImportantAlertsCardComponent({
   alerts,
   count,
-  title = 'Important alerts',
-  countCaption = 'this week',
+  title: titleProp,
+  countCaption: countCaptionProp,
   rangeLabel,
   height = CARD_HEIGHT,
   style,
   testID,
 }: ImportantAlertsCardProps) {
+  const { messages } = useMessages(IMPORTANT_ALERTS_CARD_MESSAGES);
+  const title = titleProp ?? messages.title;
+  const countCaption = countCaptionProp ?? messages.thisWeek;
   const theme = useTheme();
-  const surfaces = useMemo(() => resolveDashboardSurfaces(theme), [theme]);
+  const fill = useCardFill(style);
+  const surfaces = useMemo(() => resolveDashboardSurfaces(theme, fill), [theme, fill]);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -185,11 +193,12 @@ function ImportantAlertsCardComponent({
   const feedHook: WebDataSet = IS_WEB ? { dataSet: { bloomAlertsFeed: '' } } : {};
 
   return (
-    <View
+    <Card radius="radius-20" elevation="none" clipContent
+      contentStyle={styles.cardContent}
       testID={testID}
       style={[
         styles.card,
-        { height, backgroundColor: surfaces.secondary, borderColor: surfaces.secondary },
+        { height },
         style,
       ]}
     >
@@ -274,7 +283,7 @@ function ImportantAlertsCardComponent({
         </ScrollView>
         <TopFade color={surfaces.secondary} visible={scrolled} />
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -285,10 +294,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     minWidth: 0,
+  },
+  cardContent: {
     gap: 16,
-    overflow: 'hidden',
-    borderRadius: 20,
-    borderWidth: 1,
     paddingTop: 10,
     paddingLeft: 10,
     paddingRight: 10,

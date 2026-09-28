@@ -26,6 +26,11 @@ import {
   type TextStyleProp,
 } from '../styles';
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
+import { RiEyeLine } from '../icons/remix/RiEyeLine';
+import { RiEyeOffLine } from '../icons/remix/RiEyeOffLine';
+import { GlyphButton } from '../button/GlyphButton';
+import { useMessages } from '../locale/messages';
+import { TEXT_FIELD_MESSAGES } from './messages';
 import { Text } from '../typography';
 import {
   SANS_FONT_FAMILY,
@@ -54,6 +59,7 @@ import type {
   TextFieldInputProps,
   TextFieldLabelProps,
   TextFieldProps,
+  TextFieldRevealLabels,
 } from './types';
 import { useInheritedControl } from '../control-surface';
 import { useFieldMembership } from '../field/membership';
@@ -352,10 +358,19 @@ export function TextFieldInput({
   inputRef,
   style,
   floatingLabel = false,
+  secureTextEntry,
+  revealable = false,
+  revealLabels,
+  locale,
   ...rest
 }: TextFieldInputProps) {
   const theme = useTheme();
   const invalidProp = invalidNew ?? isInvalid;
+  // Hidden until asked. Only a secure field can be revealed; for any other the
+  // prop is inert, so `secureTextEntry` passes through untouched.
+  const [revealed, setRevealed] = useState(false);
+  const canReveal = revealable && secureTextEntry === true;
+  const secure = secureTextEntry === true && !(canReveal && revealed);
   const onValueChange = onValueChangeProp ?? onChangeText;
   // Read directly rather than through `useTextFieldContext`: a missing root is
   // not an error here, it is the branch below.
@@ -401,6 +416,10 @@ export function TextFieldInput({
           inputRef={inputRef}
           onFocus={onFocus}
           onBlur={onBlur}
+          secureTextEntry={secureTextEntry}
+          revealable={revealable}
+          revealLabels={revealLabels}
+          locale={locale}
           {...rest}
         />
       </TextField>
@@ -446,6 +465,15 @@ export function TextFieldInput({
   // at all and this prop is the only name the control has.
   const accessibleName = field?.labelText ?? label;
   const webDisabled = IS_WEB && fieldDisabled ? ({ disabled: true } as Record<string, unknown>) : undefined;
+  const reveal = canReveal ? (
+    <RevealButton
+      revealed={revealed}
+      onToggle={() => setRevealed((current) => !current)}
+      invalid={invalid}
+      labels={revealLabels}
+      locale={locale}
+    />
+  ) : null;
 
   if (floatingLabel) {
     // The ids and the described-by still travel, so the error is announced —
@@ -454,20 +482,24 @@ export function TextFieldInput({
     // alternatives, not layers: use one or the other. `docs/field.mdx` says so
     // where a caller will read it.
     return (
-      <FloatingLabelInput
-        label={accessibleName}
-        value={value}
-        onValueChange={onValueChange}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        invalid={invalid}
-        refs={refs}
-        style={style}
-        {...rest}
-        {...fieldProps}
-        {...disabledProps}
-        {...webDisabled}
-      />
+      <>
+        <FloatingLabelInput
+          label={accessibleName}
+          value={value}
+          onValueChange={onValueChange}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          invalid={invalid}
+          refs={refs}
+          style={style}
+          {...rest}
+          {...fieldProps}
+          {...disabledProps}
+          {...webDisabled}
+          secureTextEntry={secure}
+        />
+        {reveal}
+      </>
     );
   }
 
@@ -539,11 +571,96 @@ export function TextFieldInput({
         placeholder={placeholder === null ? undefined : placeholder || label}
         placeholderTextColor={resolvePlaceholderColor(ctx.palette, state)}
         keyboardAppearance={theme.mode === 'light' ? 'light' : 'dark'}
+        secureTextEntry={secure}
         style={flattened}
       />
 
+      {reveal}
+
       <Chrome invalid={invalid} />
     </>
+  );
+}
+
+/**
+ * The reveal button's box sits 4px inside the shell's height (28 in the 36px
+ * `md` shell, 24 in the 32px `sm`); its glyph is the 20px icon size, less
+ * where the box would crowd it (18 in 24).
+ */
+function revealGeometry(size: TextFieldSize): { box: number; glyph: number } {
+  const box = TEXT_FIELD_GEOMETRY[size].height - 8;
+  return { box, glyph: Math.min(TEXT_FIELD_ICON_SIZE, box - 6) };
+}
+
+/**
+ * Web: `preventDefault` on mousedown, so a pointer press never takes focus
+ * from the input. The click needs nothing here: react-native-web's
+ * `PressResponder` stops a pressable's click itself, so the shell's own
+ * click-to-focus never pulls a keyboard user off the button
+ * (`TextFieldRevealWeb.test.tsx` pins it).
+ */
+const KEEP_FOCUS_WHERE_IT_IS = IS_WEB
+  ? ({ onMouseDown: (event: { preventDefault: () => void }) => event.preventDefault() } as Record<string, unknown>)
+  : undefined;
+
+/**
+ * The eye / eye-off after a `revealable` secure input. It sits where a trailing
+ * `TextFieldIcon` would, its GLYPH on the icon's 8px gap and the shell's
+ * padding — the round hover wash reaches past both, into the padding.
+ *
+ * Focus stays in the input. On web the mousedown is cancelled, so the input
+ * never blurs (and a caller's `onBlur` validation never runs mid-typing); on
+ * native a tap on a sibling does not blur a `TextInput`, and if something did
+ * (a parent `ScrollView` handling the tap), the input is focused again. A
+ * keyboard user who tabbed to the button keeps focus on the button.
+ *
+ * Its state is its NAME ("Show password" ↔ "Hide password"), so it carries no
+ * `aria-pressed`: a toggle whose label also flips announces its state twice.
+ */
+function RevealButton({
+  revealed,
+  onToggle,
+  invalid,
+  labels,
+  locale,
+}: {
+  revealed: boolean;
+  onToggle: () => void;
+  /** The input's own invalid state, which may be set without the field's. */
+  invalid: boolean;
+  labels?: TextFieldRevealLabels;
+  locale?: string;
+}) {
+  const ctx = useTextFieldContext();
+  const { messages } = useMessages(TEXT_FIELD_MESSAGES, locale);
+  const inputWasFocused = useRef(false);
+  const { box: size, glyph } = revealGeometry(ctx.size);
+  const inset = (size - glyph) / 2;
+  const label = revealed ? (labels?.hide ?? messages.hidePassword) : (labels?.show ?? messages.showPassword);
+
+  return (
+    <View
+      style={[a.z_20, { marginLeft: TEXT_FIELD_TRAILING_GAP - inset, marginRight: -inset }]}
+      onTouchStart={() => {
+        inputWasFocused.current = ctx.inputRef.current?.isFocused() ?? false;
+      }}
+      {...KEEP_FOCUS_WHERE_IT_IS}>
+      <GlyphButton
+        size={size}
+        glyphSize={glyph}
+        icon={revealed ? RiEyeOffLine : RiEyeLine}
+        accessibilityLabel={label}
+        color={resolveIconColor(ctx.palette, { invalid, disabled: ctx.disabled })}
+        hoverColor={ctx.palette.text}
+        disabled={ctx.disabled}
+        onPress={() => {
+          onToggle();
+          const input = ctx.inputRef.current;
+          if (!IS_WEB && inputWasFocused.current && input && !input.isFocused()) input.focus();
+          inputWasFocused.current = false;
+        }}
+      />
+    </View>
   );
 }
 
@@ -722,6 +839,7 @@ export function TextFieldLabel({
 }: TextFieldLabelProps) {
   const theme = useTheme();
   const palette = useTextFieldPalette();
+  const { messages } = useMessages(TEXT_FIELD_MESSAGES);
   return (
     <View
       style={[
@@ -734,7 +852,7 @@ export function TextFieldLabel({
         {children}
       </Text>
       {required ? (
-        <Text variant="body-medium" accessibilityLabel="required" style={{ color: palette.error }}>
+        <Text variant="body-medium" accessibilityLabel={messages.required} style={{ color: palette.error }}>
           *
         </Text>
       ) : null}

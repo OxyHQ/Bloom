@@ -167,3 +167,5 @@ control — it draws no press target — so it stays inside.
 `PaymentMethodMark` is the whole mark, and `card-form` uses it for the scheme it detects.
 Use it anywhere a method has to be identified without a row: a receipt line, a
 confirmation screen, a settings header.
+
+Picker rows with `expired` or `declined` state cannot be selected; management-list rows remain actionable so users can update those methods. Read-only pickers still expose each radio’s checked state. A required enclosing Field marks the radiogroup required.

@@ -99,9 +99,9 @@ export interface DataTableProps<T> {
   /** Initial selection when uncontrolled. */
   defaultSelectedRowIds?: readonly string[];
   onSelectionChange?: (rowIds: string[]) => void;
-  /** Name of the header checkbox. Default `"Select all rows on this page"`. */
+  /** Name of the header checkbox (`"Select all rows on this page"` in English). */
   selectAllLabel?: string;
-  /** Name of a row checkbox. Default `` `Select row ${rowId}` ``. */
+  /** Name of a row checkbox (`` `Select row ${rowId}` `` in English). */
   getSelectRowLabel?: (row: T, rowId: string) => string;
 
   // Pagination ------------------------------------------------------------
@@ -121,9 +121,9 @@ export interface DataTableProps<T> {
   onSizeChange?: (size: DataTableSize) => void;
   /** Shows the Normal / Compact segmented control under the table. Defaults to `false`. */
   showSizeToggle?: boolean;
-  /** Labels of the density control. Defaults to `{ md: 'Normal', sm: 'Compact' }`. */
+  /** Labels of the density control (`{ md: 'Normal', sm: 'Compact' }` in English). */
   sizeToggleLabels?: { md: string; sm: string };
-  /** Accessible name of the density control. Default `"Table density"`. */
+  /** Accessible name of the density control (`"Table density"` in English). */
   sizeToggleAccessibilityLabel?: string;
 
   /** Shown in the 160px empty band when `rows` is empty. */
@@ -181,7 +181,7 @@ export interface DataTableRowActionsProps {
   actions?: readonly DataTableRowActionItem[];
   /** The "⋮" menu's entries. Without any, no menu button is drawn. */
   menu?: readonly DataTableRowActionItem[];
-  /** The menu button's tooltip. Default `"More actions"`. */
+  /** The menu button's tooltip (`"More actions"` in English). */
   menuLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -209,7 +209,7 @@ export interface DataTableSearchProps {
   label: string;
   value?: string;
   onValueChange?: (text: string) => void;
-  /** Default `"Search"`. */
+  /** `"Search"` in English. */
   placeholder?: string;
   testID?: string;
 }

@@ -1,3 +1,4 @@
+import { LOCATION_PUCK_MESSAGES } from './messages';
 import type { LocationPuckState } from './types';
 
 export interface LocationPuckGeometry {
@@ -37,7 +38,7 @@ export const LOCATION_PUCK_GEOMETRY: LocationPuckGeometry = {
  * The cone's two gradient stops, as an OFFSET and an OPACITY — never as a
  * colour carrying alpha.
  *
- * Same shape, and the same reason, as `theme/glass-colors`' `GLASS_SHEEN`:
+ * Same shape, and the same reason, as `surface/shared`' `SURFACE_SHEEN`:
  * `react-native-svg` reads `stopColor` for its RGB and DISCARDS any alpha
  * channel in it, so an `rgba(…, 0.45)` stop paints at FULL strength on native
  * while web renders it correctly. A cone written that way is a hard-edged
@@ -62,9 +63,9 @@ export const LOCATION_PUCK_STALE_OPACITY = 0.5;
 /** One full breath of the `locating` pulse. */
 export const LOCATION_PUCK_PULSE_MS = 1600;
 
-/** The English default state words, in the order a sentence wants them. */
-export const LOCATION_PUCK_STATE_LABELS: Readonly<Record<LocationPuckState, string>> = {
-  locating: 'Finding your location',
-  located: 'Your location',
-  stale: 'Your last known location',
-};
+/**
+ * The English state words. The puck itself speaks `LOCATION_PUCK_MESSAGES` in
+ * the app's locale; this stays for callers that read the English set.
+ */
+export const LOCATION_PUCK_STATE_LABELS: Readonly<Record<LocationPuckState, string>> =
+  LOCATION_PUCK_MESSAGES.en.states;

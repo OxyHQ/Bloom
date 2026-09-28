@@ -6,8 +6,11 @@ import { WEB_POSITION_STICKY } from '../styles/web-view-style';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CELL, DEFAULT_LABELS, IS_WEB, rowGeometry, resolveTrackListPaint } from './shared';
+import { CELL, IS_WEB, rowGeometry, resolveTrackListPaint, trackListLabels } from './shared';
 import type { TrackListHeaderProps } from './types';
+import { useMessages } from '../locale/messages';
+import { useCommonMessages } from '../locale/common-messages';
+import { TRACK_LIST_MESSAGES } from './messages';
 
 /**
  * The column labels above a track table: "#", "Title", "Album", "Date added",
@@ -35,9 +38,11 @@ function TrackListHeaderComponent({
   style,
   testID,
 }: TrackListHeaderProps) {
+  const { messages } = useMessages(TRACK_LIST_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
-  const labels = { ...DEFAULT_LABELS, ...labelsProp };
+  const labels = { ...trackListLabels(messages, common), ...labelsProp };
   const geo = rowGeometry(density, false);
   const has = (column: (typeof columns)[number]) => columns.includes(column);
   const gap = { marginLeft: geo.gap };

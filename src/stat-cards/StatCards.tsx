@@ -1,3 +1,5 @@
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -13,12 +15,14 @@ import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
 import { RiArrowUpCircleFill } from '../icons/remix/RiArrowUpCircleFill';
 import { RiIndeterminateCircleFill } from '../icons/remix/RiIndeterminateCircleFill';
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { STAT_CARDS_MESSAGES } from './messages';
 import { resolveDashboardSurfaces, statusPair, toneColor, type DashboardSurfaces } from './tones';
 import type {
   StatCardProps,
@@ -242,8 +246,10 @@ function StatHint({
 }
 
 function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardProps) {
+  const { messages } = useMessages(STAT_CARDS_MESSAGES);
   const theme = useTheme();
-  const surfaces = useMemo(() => resolveDashboardSurfaces(theme), [theme]);
+  const fill = useCardFill(style);
+  const surfaces = useMemo(() => resolveDashboardSurfaces(theme, fill), [theme, fill]);
 
   useEffect(() => {
     if (IS_WEB) adoptStyleSheet(STYLE_ID, STAT_CARDS_CSS);
@@ -254,9 +260,9 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
   if (variant === 'footer') {
     const gradient = tileGradient(theme, stat.tone ?? 'blue');
     return (
-      <View
+      <Card radius="radius-16" elevation="none"
         testID={testID}
-        style={[styles.footerCard, { backgroundColor: surfaces.secondary }, style]}
+        style={[styles.footerCard, style]}
       >
         <View style={styles.footerHeader}>
           <GradientTile colors={gradient}>
@@ -264,7 +270,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
           </GradientTile>
           {stat.hint ? (
             <StatHint
-              label={stat.hintLabel ?? `About ${stat.label}`}
+              label={stat.hintLabel ?? messages.about(stat.label)}
               hint={stat.hint}
               surfaces={surfaces}
               testID={testID ? `${testID}-hint` : undefined}
@@ -289,19 +295,16 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
           </Text>
         </View>
 
-        <View
+        <Card radius="radius-12" elevation="none"
           testID={testID ? `${testID}-band` : undefined}
-          style={[
-            styles.band,
-            { backgroundColor: surfaces.inner, boxShadow: surfaces.cardShadow },
-          ]}
+          style={styles.band}
         >
           <Text
             variant="body-regular"
             numberOfLines={1}
             style={[styles.caption, { color: surfaces.textSecondary }]}
           >
-            {stat.caption ?? 'From last month'}
+            {stat.caption ?? messages.fromLastMonth}
           </Text>
           <DeltaPill
             delta={stat.delta}
@@ -310,15 +313,15 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
             surface={surfaces.inner}
             testID={testID ? `${testID}-delta` : undefined}
           />
-        </View>
-      </View>
+        </Card>
+      </Card>
     );
   }
 
   return (
-    <View
+    <Card radius="radius-16" elevation="none"
       testID={testID}
-      style={[styles.plainCard, { backgroundColor: surfaces.secondary }, style]}
+      style={[styles.plainCard, style]}
     >
       {stat.accessory != null ? (
         <View style={styles.plainHeader}>
@@ -354,7 +357,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
           </Chip>
         </View>
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -424,7 +427,6 @@ const styles = StyleSheet.create({
   plainCard: {
     height: 132,
     minWidth: 0,
-    borderRadius: 16,
     paddingTop: 16,
     paddingBottom: 16,
     paddingLeft: 16,
@@ -459,7 +461,6 @@ const styles = StyleSheet.create({
   },
   footerCard: {
     minWidth: 0,
-    borderRadius: 16,
     paddingTop: 8,
     paddingBottom: 8,
     paddingLeft: 8,

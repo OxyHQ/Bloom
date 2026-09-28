@@ -17,8 +17,8 @@ export interface BottomBarProps {
   actionPlacement?: 'auto' | 'beside' | 'above';
   /** Hide the accessory while minimizing, returning on upward scroll. Default hide; standalone actions remain visible. */
   actionBehavior?: 'hide' | 'visible';
-  material?: 'solid' | 'translucent';
   minimizeProgress?: SharedValue<number>;
+  /** Optional screen-edge blur band; disabled by default. */
   blur?: boolean;
   maxWidth?: number;
   style?: StyleProp<ViewStyle>;

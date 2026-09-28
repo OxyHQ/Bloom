@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
  * (MIT © 2026 David Mokos).
@@ -53,7 +55,9 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
-import { useTheme } from '../theme/use-theme';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { SolidTabBarSurface } from './surface-solid';
 import { setMinimized, useMinimizeState } from './context';
 import {
@@ -75,7 +79,7 @@ import {
   SLIDE_SPRING,
   useTabBarTheme,
   type TabBarGlyphProps,
-  type TabBarSurfaceProps,
+  type TabBarSurfaceComponent,
 } from './shared';
 import type { TabBarButtonProps, TabBarProps, TabBarTheme } from './types';
 
@@ -141,7 +145,7 @@ function OptionalGesture({ enabled, children, ...props }: ComponentProps<typeof 
 
 
 interface TabBarBodyProps extends TabBarProps {
-  Surface: ComponentType<TabBarSurfaceProps>;
+  Surface: TabBarSurfaceComponent;
   Blur: ComponentType<ProgressiveBlurProps>;
 }
 
@@ -201,7 +205,6 @@ function TabBarBody({
   const highlightOpacity = useSharedValue(hasSelection ? 1 : 0);
   const isDragging = useSharedValue(false);
   const lastTicked = useSharedValue(-1);
-  const { colors } = useTheme();
   // The tabs are a flex row, so they mirror under RTL by themselves; the
   // highlight is a `translateX` from the start edge and the scrub reads a
   // PHYSICAL `event.x`, so both take the direction explicitly.
@@ -210,7 +213,11 @@ function TabBarBody({
   // The capsule's `insetInlineStart` must resolve on the same side the row
   // mirrors to; react-native-web reads that from a `dir` prop, not `<html>`.
   const dirProps = useDirectionProps();
-  const theme = useTabBarTheme(material === 'solid' ? { ...themeOverrides, solidFallback: themeOverrides?.solidFallback ?? colors.backgroundSecondary } : themeOverrides);
+  const layer = useSurfaceLayer();
+  const solidFill = resolveSurfaceFill(themeOverrides?.solidFallback ?? layer.fill, false, layer.parentFill);
+  const theme = useTabBarTheme({ ...themeOverrides, solidFallback: solidFill });
+  const ResolvedSurface = material === 'solid' ? SolidTabBarSurface : Surface;
+  const publishedFill = resolveSurfaceFill(ResolvedSurface.resolveFill?.(theme) ?? theme.glassTint, false, layer.parentFill);
   const impact = useHaptics();
 
   // The pill's OUTER width (the box the animated minimize inset is applied
@@ -568,7 +575,6 @@ function TabBarBody({
     [scrollable, progress, slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex],
   );
 
-  const ResolvedSurface = material === 'solid' ? SolidTabBarSurface : Surface;
   return (
     <View {...viewProps} {...dirProps} onLayout={(event) => { setContainerWidth(event.nativeEvent.layout.width); onLayout?.(event); }} pointerEvents="box-none" style={[embedded ? { width: '100%' } : styles.root, style]}>
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
@@ -594,13 +600,13 @@ function TabBarBody({
       )}
       <View pointerEvents="box-none" style={[embedded ? undefined : styles.barWrap, { marginBottom: bottomOffset }, constrainedWrapStyle]}>
         <OptionalGesture enabled={!scrollable} gesture={gesture}>
-          <Animated.View style={barStyle}>
+          <Animated.View style={[barStyle, surfaceFillVars(publishedFill)]}>
             <ResolvedSurface theme={theme} style={shapeStyle} />
             <Animated.View
               style={[styles.highlight, { backgroundColor: theme.highlight }, highlightStyle]}
             />
             <View accessibilityRole="tablist" style={styles.itemRow}>
-              <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
+              <SurfaceLevelProvider level={layer.level} fill={publishedFill}><BarContext.Provider value={barContext}>{children}</BarContext.Provider></SurfaceLevelProvider>
             </View>
           </Animated.View>
         </OptionalGesture>
@@ -787,7 +793,7 @@ function TabBarButtonBody({
  * `BottomSheet` makes with its `Shell`.
  */
 export function createTabBar(
-  Surface: ComponentType<TabBarSurfaceProps>,
+  Surface: TabBarSurfaceComponent,
   Blur: ComponentType<ProgressiveBlurProps>,
 ) {
   const TabBar = (props: TabBarProps) => <TabBarBody {...props} Surface={Surface} Blur={Blur} />;
@@ -822,7 +828,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     // The START edge: the translate above runs from it, signed by direction.
     insetInlineStart: 0,
-    borderCurve: 'continuous',
+    ...surfaceStyle(SURFACE_SHAPES.capsule),
   },
   itemRow: {
     flex: 1,

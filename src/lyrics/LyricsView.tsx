@@ -12,11 +12,12 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
+import { LYRICS_MESSAGES } from './messages';
 import { TYPE_SCALE } from '../typography/scale';
 import { LyricsLineRow, LyricsPill, type LyricLineState } from './LyricsParts';
 import {
-  DEFAULT_EMPTY_TEXT,
   IS_WEB,
   LYRICS_CSS,
   LYRICS_STYLE_ID,
@@ -70,15 +71,19 @@ function LyricsViewComponent({
   artworkColor,
   providerText,
   footer,
-  emptyText = DEFAULT_EMPTY_TEXT,
-  backToCurrentLabel = 'Back to current line',
+  emptyText: emptyTextProp,
+  backToCurrentLabel: backToCurrentLabelProp,
   resumeDelay = 3000,
   anchor = 1 / 3,
   size: sizeProp,
-  accessibilityLabel = 'Lyrics',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: LyricsViewProps) {
+  const { messages } = useMessages(LYRICS_MESSAGES);
+  const emptyText = emptyTextProp ?? messages.empty;
+  const backToCurrentLabel = backToCurrentLabelProp ?? messages.backToCurrent;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.lyrics;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(LYRICS_STYLE_ID, LYRICS_CSS);

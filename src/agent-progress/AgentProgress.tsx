@@ -1,3 +1,7 @@
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
@@ -19,6 +23,7 @@ import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import { BUTTON_SHADOW } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { parseRgba } from '../theme/color-utils';
@@ -27,6 +32,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { AgentProgressLoadingText } from './AgentProgressLoadingText';
+import { AGENT_PROGRESS_MESSAGES } from './messages';
 import type { AgentProgressProps } from './types';
 
 /**
@@ -60,13 +66,8 @@ import type { AgentProgressProps } from './types';
  * filter — and every animation snaps under reduced motion.
  */
 
-export const DEFAULT_AGENT_PROGRESS_STEPS = [
-  'Read project files',
-  'Update and install light mode tokens',
-  'Implement dark mode tokens',
-  'Add reusable registered theme toggle',
-  'Run registry, lint and production build',
-] as const;
+/** The demo workflow in English; the component shows it in the locale's language. */
+export const DEFAULT_AGENT_PROGRESS_STEPS: readonly string[] = AGENT_PROGRESS_MESSAGES.en.defaultSteps;
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -814,12 +815,8 @@ const rowStyles = StyleSheet.create({
 //  AgentProgress
 // ---------------------------------------------------------------------------
 
-function defaultStepsLeft(remaining: number): string {
-  return `${remaining} ${remaining === 1 ? 'step' : 'steps'} left`;
-}
-
 function AgentProgressComponent({
-  steps = DEFAULT_AGENT_PROGRESS_STEPS,
+  steps: stepsProp,
   stepDuration = DEFAULT_STEP_DURATION_MS,
   completionDelay = DEFAULT_COMPLETION_DELAY_MS,
   onFinished,
@@ -832,7 +829,12 @@ function AgentProgressComponent({
   style,
   testID = 'agent-progress',
 }: AgentProgressProps) {
+  const { messages } = useMessages(AGENT_PROGRESS_MESSAGES);
+  const steps = stepsProp ?? messages.defaultSteps;
   const theme = useTheme();
+  const surfaceLayer = useSurfaceLayer();
+  const customSurface = StyleSheet.flatten(style);
+  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
   const palette = resolvePalette(theme);
   const reducedMotion = useReducedMotion();
 
@@ -840,7 +842,7 @@ function AgentProgressComponent({
     if (IS_WEB) adoptStyleSheet(STYLE_ID, WEB_CSS);
   }, []);
 
-  const progressSteps: readonly string[] = steps.length > 0 ? steps : DEFAULT_AGENT_PROGRESS_STEPS;
+  const progressSteps: readonly string[] = steps.length > 0 ? steps : messages.defaultSteps;
   const stepCount = progressSteps.length;
   const safeStepDuration = Math.max(0, stepDuration);
   const expandedHeight = agentProgressExpandedHeight(stepCount);
@@ -968,8 +970,8 @@ function AgentProgressComponent({
   }, [processingStarted, complete, completedCount, stepCount, paused, reducedMotion, safeStepDuration, ring]);
 
   const statusLabel = complete
-    ? (labels?.allCompleted ?? 'All steps completed')
-    : (labels?.stepsLeft ?? defaultStepsLeft)(remainingCount);
+    ? (labels?.allCompleted ?? messages.allCompleted)
+    : (labels?.stepsLeft ?? messages.stepsLeft)(remainingCount);
 
   const minimize = () => setMinimized(true);
   const expand = () => {
@@ -979,8 +981,7 @@ function AgentProgressComponent({
   };
 
   const cardStatic: ViewStyle = {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
+    backgroundColor: 'transparent',
     boxShadow: palette.shadow,
   };
   const stepMask: WebCssStyle = IS_WEB
@@ -1001,8 +1002,10 @@ function AgentProgressComponent({
     <Animated.View
       aria-live="polite"
       testID={testID}
-      style={[styles.card, cardStatic, style, cardStyle]}
+      style={[styles.card, cardStatic, style, cardStyle, { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) }]}
     >
+      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
+      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
       <Presence
         show={minimized}
         initial={false}
@@ -1014,7 +1017,7 @@ function AgentProgressComponent({
         <Pressable
           testID={`${testID}-minimized`}
           accessibilityRole="button"
-          accessibilityLabel={labels?.expand ?? 'Expand steps'}
+          accessibilityLabel={labels?.expand ?? messages.expand}
           onPress={expand}
           onHoverIn={() => setHovered(true)}
           onHoverOut={() => setHovered(false)}
@@ -1060,7 +1063,7 @@ function AgentProgressComponent({
             <StatusLabel label={statusLabel} color={palette.textSecondary} grow />
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={labels?.minimize ?? 'Minimize steps'}
+              accessibilityLabel={labels?.minimize ?? messages.minimize}
               onPress={minimize}
               onHoverIn={() => setMinimizeHovered(true)}
               onHoverOut={() => setMinimizeHovered(false)}
@@ -1115,6 +1118,7 @@ function AgentProgressComponent({
           testID={`${testID}-ring`}
         />
       </Presence>
+      </SurfaceLevelProvider>
     </Animated.View>
   );
 }
@@ -1130,7 +1134,6 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     overflow: 'hidden',
     borderRadius: CARD_RADIUS,
-    borderWidth: 1,
   },
   fill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   bar: {

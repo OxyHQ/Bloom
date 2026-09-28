@@ -9,6 +9,7 @@ import { AA_TEXT, resolveSurfaceLevel, surfaceFillOn, hairlineOn } from '../styl
 import type { Theme } from '../theme/types';
 import type { EnergyClass } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -153,15 +154,15 @@ export function resolveEnergyTones(theme: Theme): EnergyTone[] {
 //  Formatting
 // ---------------------------------------------------------------------------
 
-/** The default price format: `€385,000`. Apps pass their own `format` for currency and locale. */
-export const formatEuros = (value: number) => `€${groupThousands(value)}`;
+/**
+ * The default price format: `€385,000` (en), `385.000 €` (es). Apps pass their
+ * own `format` for another currency.
+ */
+export const formatEuros = (value: number, locale?: string) => formatCurrency(value, 'EUR', locale);
 
-/** The default axis format: `€385K`, `€1.2M`. */
-export function formatEurosCompact(value: number): string {
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000) return `€${Number((value / 1_000_000).toFixed(1))}M`;
-  if (abs >= 1_000) return `€${Math.round(value / 1_000)}K`;
-  return `€${Math.round(value)}`;
+/** The default axis format: `€385K`, `€1.2M` (en), `385 mil €` (es). */
+export function formatEurosCompact(value: number, locale?: string): string {
+  return formatCompactCurrency(value, 'EUR', locale);
 }
 
 // ---------------------------------------------------------------------------

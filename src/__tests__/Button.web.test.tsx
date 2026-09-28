@@ -446,10 +446,11 @@ describe('Button.web', () => {
     it('paints through custom properties so interaction rules can override the fill', () => {
       const c = mount(<Button>Go</Button>);
       const btn = getByRole(c, 'button', { name: 'Go' });
-      expect(btn).toHaveClass('bloom-btn--gradient');
-      expect(btn.style.getPropertyValue('--bloom-btn-bg-image')).toContain('linear-gradient');
-      expect(btn.style.getPropertyValue('--bloom-btn-bg-image-hover')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg-image'));
-      expect(btn.style.getPropertyValue('--bloom-btn-bg-image-active')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg-image'));
+      expect(btn).toHaveClass('bloom-btn--surface');
+      expect(BLOOM_BUTTON_CSS).not.toContain('backdrop-filter:');
+      expect(BLOOM_BUTTON_CSS).toContain('inset 2px 2px 1px');
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-hover')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg'));
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-active')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg'));
       expect(btn.style.getPropertyValue('--bloom-btn-bg')).not.toBe('');
       expect(btn.style.backgroundColor).toBe('');
     });
@@ -459,9 +460,9 @@ describe('Button.web', () => {
       expect(getByRole(c, 'button', { name: 'Go' }).style.getPropertyValue('--bloom-btn-press-scale')).toBe('1');
     });
 
-    it('keeps outline appearances flat', () => {
+    it('gives outline appearances the shared material', () => {
       const c = mount(<Button appearance="outline" tone="neutral">Cancel</Button>);
-      expect(getByRole(c, 'button', { name: 'Cancel' })).not.toHaveClass('bloom-btn--gradient');
+      expect(getByRole(c, 'button', { name: 'Cancel' })).toHaveClass('bloom-btn--surface');
     });
 
     it('iconOnly sizes the icon component and drops the label', () => {

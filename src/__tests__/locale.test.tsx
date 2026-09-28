@@ -8,7 +8,8 @@ import { DATE_PICKER_MESSAGES } from '../date-picker/messages';
 import { BLOOM_LANGUAGES, LocaleProvider, resolveBloomLanguage, useBloomLocale } from '../locale';
 import { formatGregorian } from '../locale/format-date';
 import { pickMessages } from '../locale/messages';
-import { plural, pluralCategory } from '../locale/plural';
+import { countValue, plural, pluralCategory } from '../locale/plural';
+import { messagesIn } from './support/messages-in';
 
 describe('resolveBloomLanguage', () => {
   it('reads the primary subtag of any BCP 47 spelling', () => {
@@ -51,6 +52,22 @@ describe('pluralCategory (CLDR cardinals, whole numbers)', () => {
     expect(pluralCategory('zh', 2)).toBe('other');
   });
 
+  it('reads a count that arrives already formatted, and shows it as given', () => {
+    expect(countValue('1,234')).toBe(1234);
+    expect(countValue('1.234')).toBe(1234);
+    expect(countValue('1\u202f234')).toBe(1234);
+    expect(countValue('٢١')).toBe(21);
+    expect(countValue('२१')).toBe(21);
+    expect(countValue('২১')).toBe(21);
+    expect(countValue('4.5')).toBe(4);
+    expect(countValue('—')).toBeNaN();
+    expect(countValue('2.1K')).toBeNaN();
+    expect(countValue('12,5 mil')).toBeNaN();
+    expect(plural('ru', '2.1K', { one: '{n} просмотр', few: '{n} просмотра', many: '{n} просмотров', other: '{n} просмотра' })).toBe('2.1K просмотров');
+    expect(plural('ru', '1,021', { one: '{n} отзыв', few: '{n} отзыва', many: '{n} отзывов', other: '{n} отзыва' })).toBe('1,021 отзыв');
+    expect(plural('en', '1,234', { one: '{n} review', other: '{n} reviews' })).toBe('1,234 reviews');
+  });
+
   it('falls back to other for a category the forms leave out', () => {
     expect(plural('ru', 3, { other: '{n} x' })).toBe('3 x');
   });
@@ -60,7 +77,7 @@ describe('message catalogs', () => {
   it('ships the date-picker family in every Bloom language, each translated', () => {
     const english = DATE_PICKER_MESSAGES.en;
     for (const language of BLOOM_LANGUAGES) {
-      const messages = DATE_PICKER_MESSAGES[language];
+      const messages = messagesIn(DATE_PICKER_MESSAGES, language);
       expect(Object.keys(messages).sort()).toEqual(Object.keys(english).sort());
       expect(Object.keys(messages.presets).sort()).toEqual(Object.keys(english.presets).sort());
       if (language !== 'en') {

@@ -9,6 +9,8 @@ import { useSidebarGeometry } from './geometry';
 import { useSidebarPalette } from './palette';
 import { Collapsible, IS_WEB, SidebarAvatarView, useSidebarCollapseProgress, useInSidebar } from './parts';
 import type { SidebarPlanCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { SIDEBAR_MESSAGES } from './messages';
 
 /**
  * The plan card at the foot of the AI chat's rail.
@@ -23,6 +25,7 @@ import type { SidebarPlanCardProps } from './types';
  */
 function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: SidebarPlanCardProps) {
   const palette = useSidebarPalette();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
   const progress = useSidebarCollapseProgress(collapsed);
   const inSidebar = useInSidebar();
   const lane = useSidebarGeometry();
@@ -100,7 +103,7 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
       <View pointerEvents={collapsed ? 'none' : 'auto'} aria-hidden={collapsed} accessibilityElementsHidden={collapsed} importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'} {...(IS_WEB && collapsed ? { inert: true } : {})}>
       <Collapsible collapsed={collapsed}>
       <Button size="sm" onPress={plan.onAction} appearance="subtle" tone="neutral">
-        {plan.actionLabel ?? 'Upgrade'}
+        {plan.actionLabel ?? messages.upgrade}
       </Button>
       </Collapsible>
       </View>

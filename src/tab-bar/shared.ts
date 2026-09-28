@@ -8,7 +8,7 @@
  * this module is pulled into the native bundle, the web bundle and a consumer's
  * `tsc` alike.
  */
-import { useMemo } from 'react';
+import { useMemo, type ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { AnimatedStyle } from 'react-native-reanimated';
 
@@ -154,6 +154,11 @@ export function useTabBarTheme(overrides?: Partial<TabBarTheme>): TabBarTheme {
 //  Metro picks `*.native.tsx`, the `browser` export condition picks the entry
 //  that imports `*.web.tsx`, everything else gets the neutral file.
 // ---------------------------------------------------------------------------
+
+/** Renderer reports its actual fill, including platform capability fallbacks. */
+export type TabBarSurfaceComponent = ComponentType<TabBarSurfaceProps> & {
+  resolveFill?: (theme: TabBarTheme) => string;
+};
 
 export interface TabBarSurfaceProps {
   /** Resolved theme — the surface picks `glassTint` or `solidFallback`. */

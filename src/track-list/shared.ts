@@ -10,6 +10,8 @@ import type {
   TrackListDensity,
   TrackListLabels,
 } from './types';
+import { COMMON_MESSAGES, type CommonMessages } from '../locale/common-messages';
+import { TRACK_LIST_MESSAGES, type TrackListMessages } from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -113,19 +115,19 @@ export interface TrackListPaint {
   panelShadow: string;
 }
 
-export function resolveTrackListPaint(theme: Theme): TrackListPaint {
+export function resolveTrackListPaint(theme: Theme, backing = theme.colors.background): TrackListPaint {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const menu = resolveMenuPalette(theme);
   return {
     text: theme.colors.text,
-    textMuted: surfaceTextOn(theme, theme.colors.background).textSecondary,
+    textMuted: surfaceTextOn(theme, backing).textSecondary,
     accent: dark ? accent[400] : accent[600],
-    rowHover: surfaceFillOn(theme, theme.colors.background),
+    rowHover: surfaceFillOn(theme, backing),
     rowSelected: theme.colors.contrast50,
-    rowSelectedHover: surfaceFillOn(theme, surfaceFillOn(theme, theme.colors.background)),
-    hairline: hairlineOn(theme, theme.colors.background),
-    coverPlaceholder: surfaceFillOn(theme, theme.colors.background),
+    rowSelectedHover: surfaceFillOn(theme, surfaceFillOn(theme, backing)),
+    hairline: hairlineOn(theme, backing),
+    coverPlaceholder: surfaceFillOn(theme, backing),
     ring: accent[500],
     dragSurface: menu.surface,
     dragShadow: dark
@@ -140,20 +142,26 @@ export function resolveTrackListPaint(theme: Theme): TrackListPaint {
   };
 }
 
-export const DEFAULT_LABELS: Required<TrackListLabels> = {
-  index: '#',
-  title: 'Title',
-  album: 'Album',
-  dateAdded: 'Date added',
-  plays: 'Plays',
-  duration: 'Duration',
-  moreOptions: 'More options',
-  moveUp: 'Move up',
-  moveDown: 'Move down',
-  reorder: 'Reorder',
-  downloaded: 'Downloaded',
-  unavailable: 'Unavailable',
-};
+/** Every `TrackListLabels` entry in one language. */
+export function trackListLabels(messages: TrackListMessages, common: CommonMessages): Required<TrackListLabels> {
+  return {
+    index: '#',
+    title: messages.title,
+    album: messages.album,
+    dateAdded: messages.dateAdded,
+    plays: messages.plays,
+    duration: messages.duration,
+    moreOptions: common.moreOptions,
+    moveUp: messages.moveUp,
+    moveDown: messages.moveDown,
+    reorder: messages.reorder,
+    downloaded: messages.downloaded,
+    unavailable: messages.unavailable,
+  };
+}
+
+/** The English labels; the rows speak the locale's (`BloomProvider locale`). */
+export const DEFAULT_LABELS: Required<TrackListLabels> = trackListLabels(TRACK_LIST_MESSAGES.en, COMMON_MESSAGES.en);
 
 // ---------------------------------------------------------------------------
 //  Selection
@@ -262,17 +270,20 @@ ${ROW}:focus-visible [data-bloom-track-number] {
 //  Episode times
 // ---------------------------------------------------------------------------
 
-/** "45 min", "1 hr", "1 hr 12 min". Under a minute rounds up to "1 min". */
-export function formatEpisodeLength(seconds: number): string {
+/**
+ * "45 min", "1 hr", "1 hr 12 min". Under a minute rounds up to "1 min". The
+ * words are `messages`' (English unless given).
+ */
+export function formatEpisodeLength(seconds: number, messages: TrackListMessages = TRACK_LIST_MESSAGES.en): string {
   const total = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
   const minutes = Math.max(total > 0 ? 1 : 0, Math.round(total / 60));
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (h === 0) return `${m} min`;
-  return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
+  if (h === 0) return messages.minutes(m);
+  return m === 0 ? messages.hours(h) : messages.hoursMinutes(h, m);
 }
 
 /** "12 min left". */
-export function formatEpisodeRemaining(seconds: number): string {
-  return `${formatEpisodeLength(seconds)} left`;
+export function formatEpisodeRemaining(seconds: number, messages: TrackListMessages = TRACK_LIST_MESSAGES.en): string {
+  return messages.remaining(formatEpisodeLength(seconds, messages));
 }

@@ -25,10 +25,12 @@ let root: Root;
 function Harness({
   onControl,
   body,
+  style,
 }: {
   onControl: (control: ReturnType<typeof useDialogControl>) => void;
   /** Dialog content, for the suites that assert what the dialog tells it. */
   body?: React.ReactNode;
+  style?: React.ComponentProps<typeof Dialog>['style'];
 }) {
   const control = useDialogControl();
   React.useEffect(() => {
@@ -36,6 +38,7 @@ function Harness({
   }, [control, onControl]);
   return (
     <Dialog
+      style={style}
       control={control}
       title="Delete item?"
       description="This cannot be undone."
@@ -154,4 +157,13 @@ describe('Dialog.web resets the ambient surface for its content', () => {
     expect(text).toContain(`fill=${theme.colors.background}`);
     expect(text).not.toContain(`fill=${theme.colors.card}`);
   });
+});
+
+
+it('publishes an explicit dialog background rather than the nominal page token', () => {
+  let control: ReturnType<typeof useDialogControl> | undefined;
+  function Probe() { return <Text>{`custom-fill=${useSurfaceFill()}`}</Text>; }
+  act(() => root.render(<BloomThemeProvider mode="dark" colorPreset="teal"><Harness style={{backgroundColor:'#123456'}} onControl={c => {control=c;}} body={<Probe />} /></BloomThemeProvider>));
+  act(() => control?.open());
+  expect(document.body.textContent).toContain('custom-fill=#123456');
 });

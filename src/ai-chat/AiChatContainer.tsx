@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, {
   forwardRef,
   useCallback,
@@ -50,13 +52,11 @@ import {
   useAiChatWebCss,
 } from './shared';
 import { WEB_POSITION_STICKY, webViewportHeightMinus } from '../styles/web-view-style';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatContainerProps, AiChatThreadHandle, AiChatThreadProps } from './types';
 
-const DEFAULT_LABELS = {
-  breadcrumb: 'Chat location',
-  share: 'Share chat',
-  more: 'More options',
-};
 
 /** The thread's own top padding: the gap between the header and the first turn. */
 const THREAD_PAD_TOP = 16;
@@ -135,7 +135,9 @@ export function AiChatContainerBase({
 }: AiChatContainerProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const common = useCommonMessages();
+  const l = useMemo(() => ({ ...messages.container, more: common.moreOptions, ...labels }), [messages, common, labels]);
   const documentScroll = useAiChatShell()?.documentScroll ?? false;
   const gutterColor = useContext(AiChatDocumentGutterContext);
 
@@ -185,6 +187,7 @@ export function AiChatContainerBase({
     </View>
   ) : null;
 
+  const backing = useSurfaceBacking(surface ? palette.secondary : undefined, style, !background);
   const rootStyle: StyleProp<ViewStyle> = [
     {
       height: '100%',
@@ -196,15 +199,17 @@ export function AiChatContainerBase({
       backgroundColor: surface ? palette.secondary : 'transparent',
     },
     style,
+    backing.vars,
   ];
 
   if (documentScroll) {
     return (
+      <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
       <FloatingChrome
         documentScroll
         testID={testID}
-        rootStyle={style}
-        surfaceColor={surface ? palette.secondary : null}
+        rootStyle={[style, backing.vars]}
+        surfaceColor={surface ? String(StyleSheet.flatten(style)?.backgroundColor ?? palette.secondary) : null}
         backgroundLayer={
           background ? (
             <View pointerEvents="none" style={[DOCUMENT_LAYER, { overflow: 'hidden' }]}>
@@ -215,15 +220,17 @@ export function AiChatContainerBase({
         header={header}
         crumbRow={crumbRow}
         footerBody={footerBody}
-        fadeColor={surface ? palette.secondary : null}
+        fadeColor={surface ? backing.fill : null}
         gutterColor={gutterColor}>
         {children}
       </FloatingChrome>
+      </SurfaceLevelProvider>
     );
   }
 
   if (floatingChrome) {
     return (
+      <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
       <FloatingChrome
         testID={testID}
         rootStyle={rootStyle}
@@ -231,13 +238,15 @@ export function AiChatContainerBase({
         header={header}
         crumbRow={crumbRow}
         footerBody={footerBody}
-        fadeColor={surface ? palette.secondary : null}>
+        fadeColor={surface ? backing.fill : null}>
         {children}
       </FloatingChrome>
+      </SurfaceLevelProvider>
     );
   }
 
   return (
+    <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
     <View testID={testID} style={rootStyle}>
       {backgroundLayer}
       {header}
@@ -249,6 +258,7 @@ export function AiChatContainerBase({
         {footerBody}
       </View>
     </View>
+    </SurfaceLevelProvider>
   );
 }
 
@@ -453,6 +463,10 @@ function DocumentCard({
   children: ReactNode;
 }) {
   const { ContentPanel } = useAiChatPlatform();
+  // The container already composed alpha over its parent before entering this host.
+  const backing = useSurfaceBacking(undefined);
+  const { backgroundColor, ...layoutStyle } = StyleSheet.flatten(style) ?? {};
+  const paintedFill = backgroundColor ?? surfaceColor ?? 'transparent';
   return (
     <ContentPanel
       framed
@@ -462,14 +476,14 @@ function DocumentCard({
       chrome="none"
       overlayInset={SHELL_GUTTER}
       maskColor={gutterColor ?? undefined}
-      surfaceStyle={{ backgroundColor: surfaceColor ?? 'transparent' }}
-      surfaceColor={surfaceColor ?? undefined}
+      surfaceStyle={{ backgroundColor: paintedFill }}
+      surfaceColor={String(paintedFill)}
       contentStyle={{ flexDirection: 'column' }}>
       <View
         testID={testID}
         // One screen at the least, growing with the conversation.
-        style={[{ minHeight: webViewportHeightMinus(SHELL_GUTTER * 2), flexGrow: 1, flexDirection: 'column' }, style]}>
-        {children}
+        style={[{ minHeight: webViewportHeightMinus(SHELL_GUTTER * 2), flexGrow: 1, flexDirection: 'column' }, layoutStyle, surfaceFillVars(backing.fill)]}>
+        <SurfaceLevelProvider level={backing.level} fill={backing.fill}>{children}</SurfaceLevelProvider>
       </View>
     </ContentPanel>
   );

@@ -220,7 +220,13 @@ function exportedPascalValues(file: string, kind: ts.ScriptKind): string[] {
       names.push(stmt.name.text);
     } else if (ts.isVariableStatement(stmt)) {
       for (const d of stmt.declarationList.declarations) {
-        if (ts.isIdentifier(d.name)) names.push(d.name.text);
+        const collectBinding = (binding: ts.BindingName): void => {
+          if (ts.isIdentifier(binding)) names.push(binding.text);
+          else for (const element of binding.elements) {
+            if (ts.isBindingElement(element)) collectBinding(element.name);
+          }
+        };
+        collectBinding(d.name);
       }
     }
   }
@@ -438,6 +444,8 @@ describe('the coverage census reads real artifacts', () => {
     expect(publishedComponents('button')).toContain('Button');
     // Declared in a `.tsx`, exported through `memo(X) as typeof X`.
     expect(publishedComponents('radio')).toContain('Radio');
+    // A factory destructured directly in its .tsx implementation.
+    expect(publishedComponents('button-group')).toEqual(expect.arrayContaining(['ButtonGroup', 'ButtonGroupItem']));
     // Declared in a `.ts` BARREL by a factory call — the branch whose absence
     // would exempt four families that plainly render.
     expect(factoryBoundComponents('alert-dialog')).toContain('AlertDialog');

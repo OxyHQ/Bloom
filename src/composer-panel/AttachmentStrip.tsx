@@ -1,5 +1,7 @@
+import { useComposerButton } from './context';
+import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Image, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -53,12 +55,12 @@ function TileDismiss({
   visible: boolean;
   palette: ComposerPalette;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const Button = useComposerButton();
   const glyph = 6.8;
   const inset = 0.57;
   // Over a photo the glyph stays white on a frosted white/50 disc; over the plain
   // tile it is the secondary icon, text-primary on hover, on tertiary/50.
-  const color = overImage ? '#ffffff' : hovered ? palette.text : palette.iconSecondary;
+  const color = overImage ? '#ffffff' : palette.iconSecondary;
   const style: WebCssStyle = {
     position: 'absolute',
     top: 3,
@@ -68,9 +70,7 @@ function TileDismiss({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: overImage ? 'rgba(255, 255, 255, 0.5)' : mixColor(palette.surface, palette.tertiary, 0.5),
     opacity: visible ? 1 : 0,
-    pointerEvents: visible ? 'auto' : 'none',
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
     ...(IS_WEB
@@ -84,22 +84,22 @@ function TileDismiss({
       : {}),
   };
   return (
-    <Pressable
-      {...dataHook('bloomComposerControl', 'offset')}
+    <Button appearance="solid" colors={{ background: overImage ? 'rgba(255,255,255,0.5)' : mixColor(palette.surface, palette.tertiary, 0.5), foreground: color }}
+      disabled={!visible}
+      aria-hidden={!visible}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityElementsHidden={!visible}
       importantForAccessibility={visible ? 'auto' : 'no-hide-descendants'}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+
       hitSlop={6}
-      style={style}>
+      style={[COMPOSER_BUTTON_LAYOUT, style]}>
       <Svg width={glyph} height={glyph} viewBox={`0 0 ${glyph} ${glyph}`} fill="none">
         <Path d={`M${inset} ${inset}L${glyph - inset} ${glyph - inset}`} stroke={color} strokeWidth={1.6} strokeLinecap="round" />
         <Path d={`M${glyph - inset} ${inset}L${inset} ${glyph - inset}`} stroke={color} strokeWidth={1.6} strokeLinecap="round" />
       </Svg>
-    </Pressable>
+    </Button>
   );
 }
 
@@ -109,7 +109,7 @@ function TileDismiss({
  * hover.
  */
 function TileRetry({ label, onPress, palette }: { label: string; onPress: () => void; palette: ComposerPalette }) {
-  const [hovered, setHovered] = useState(false);
+  const Button = useComposerButton();
   const style: WebCssStyle = {
     position: 'absolute',
     top: 3,
@@ -119,22 +119,19 @@ function TileRetry({ label, onPress, palette }: { label: string; onPress: () => 
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: palette.surface,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
   return (
-    <Pressable
-      {...dataHook('bloomComposerControl', 'offset')}
+    <Button appearance="solid" colors={{ background: palette.surface, foreground: palette.errorText }}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+
       hitSlop={4}
-      style={style}>
-      <RiRefreshLine width={14} height={14} fill={hovered ? palette.text : palette.errorText} />
-    </Pressable>
+      style={[COMPOSER_BUTTON_LAYOUT, style]}>
+      <RiRefreshLine width={14} height={14} fill={palette.errorText} />
+    </Button>
   );
 }
 
@@ -161,8 +158,10 @@ interface TileProps {
   palette: ComposerPalette;
   onRemove?: () => void;
   onRetry?: () => void;
-  removeLabel: string;
-  retryLabel: string;
+  /** The dismiss's name for a file. */
+  removeLabel: (name: string) => string;
+  /** A failed tile's retry's name for a file. */
+  retryLabel: (name: string) => string;
 }
 
 /**
@@ -280,7 +279,7 @@ export const AttachmentTile = memo(function AttachmentTile({
             }}>
             {error}
           </Text>
-          {onRetry ? <TileRetry label={`${retryLabel} ${attachment.name}`} onPress={onRetry} palette={palette} /> : null}
+          {onRetry ? <TileRetry label={retryLabel(attachment.name)} onPress={onRetry} palette={palette} /> : null}
         </View>
       ) : null}
 
@@ -321,7 +320,7 @@ export const AttachmentTile = memo(function AttachmentTile({
 
       {onRemove ? (
         <TileDismiss
-          label={`${removeLabel} ${attachment.name}`}
+          label={removeLabel(attachment.name)}
           onPress={onRemove}
           overImage={!!image}
           visible={!inFlight}
@@ -377,8 +376,10 @@ interface StripProps {
   palette: ComposerPalette;
   onRemove?: (id: string) => void;
   onRetry?: (id: string) => void;
-  removeLabel: string;
-  retryLabel: string;
+  /** The dismiss's name for a file. */
+  removeLabel: (name: string) => string;
+  /** A failed tile's retry's name for a file. */
+  retryLabel: (name: string) => string;
 }
 
 /**

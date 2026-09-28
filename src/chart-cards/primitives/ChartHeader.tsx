@@ -9,6 +9,7 @@ import { FadeOnChange } from './FadeOnChange';
 import { formatNumber, type ChartDelta } from './format';
 import type { ChartRangeOption } from './use-chart-range';
 import { useChartCardPalette } from './use-chart-palette';
+import { useBloomLocale } from '../../locale/context';
 
 export const TABULAR: TextStyle = { fontVariant: ['tabular-nums'] };
 
@@ -47,7 +48,7 @@ export interface ChartHeadlineProps {
 export function ChartHeadline({
   label,
   value,
-  format = formatNumber,
+  format: formatProp,
   delta,
   hovering = false,
   fadeKey = 'rest',
@@ -55,6 +56,8 @@ export function ChartHeadline({
   style,
   testID,
 }: ChartHeadlineProps) {
+  const locale = useBloomLocale();
+  const format = formatProp ?? ((value: number) => formatNumber(value, locale));
   const palette = useChartCardPalette();
   const display = useCountUpPrecise(value ?? 0);
   const chip = delta

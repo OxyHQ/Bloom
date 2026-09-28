@@ -92,7 +92,8 @@ Two decisions of its own:
   said it could be pressed, while native read it correctly. Same class as
   `accessibilityState`, same fix: the name is the one spelling that reaches both. It goes
   last ("Address: Plaça de les Bruixes 4, Copy"), because the fact is what the reader came
-  for. `PLACE_INFO_ACTION_LABELS` holds the English words; `actionLabels` replaces them.
+  for. `PLACE_INFO_ACTION_LABELS` holds the English words, the list speaks them localised via `BloomProvider locale`;
+  `actionLabels` replaces them.
 
 `action` is a closed list rather than a slot for the same reason: one row, one action.
 Nothing here touches the clipboard, the dialler or the browser — `onPress` is handed the
@@ -139,7 +140,7 @@ place's was the noun, and a noun is not a component.
 
 `layout="chips"` is the one thing a listing page does not have: a wrapping strip of `Chip`s
 for the top of a sheet, where four attributes have to read at a glance. Same items, same
-unavailable treatment, different density.
+unavailable treatment, different density. Both layouts show a translated expansion button when `onShowAll` is provided and `limit` or `total` indicates more amenities. The list also resolves its text against the ambient surface.
 
 The name sits on the strip's `listitem` and not on the chip, because a non-pressable `Chip`
 is a plain `View` — and on web a `div` carrying an `aria-label` and no role is not
@@ -171,9 +172,9 @@ The chart is ONE image with one name ("Wednesday, busiest at 9, now 18, busier t
 Twenty-four bars two pixels wide would be twenty-four tab stops saying a number each, which
 is not a reading of anything. The axis labels every hour that fits and every second or third
 below that — twenty-four labels across a phone is sixteen pixels each — and the current
-hour keeps its label whatever the step.
+hour keeps its label whatever the step; regular labels whose slots overlap it are omitted. If a selected day disappears from `days`, the selector and chart both fall back to the first available day.
 
-`PLACE_BUSY_LABELS` holds the three English trend sentences; `trendLabel` replaces one.
+`PLACE_BUSY_LABELS` holds the three English trend sentences (the chart speaks them localised via `BloomProvider locale`); `trendLabel` replaces one.
 
 ## `PlaceTransit` reuses the line badge
 

@@ -1,3 +1,6 @@
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Platform,
@@ -10,7 +13,6 @@ import {
 } from 'react-native';
 
 import { Button } from '../button';
-import { BUTTON_SHADOW } from '../button/shared';
 import { Checkbox } from '../checkbox';
 import { Divider } from '../divider';
 import { useInteractionStates } from '../hooks/use-interaction-state';
@@ -24,7 +26,9 @@ import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel } from '../tex
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { AuthCardProps, AuthCardValues, AuthMode } from './types';
+import { useMessages } from '../locale/messages';
+import { AUTH_CARD_MESSAGES } from './messages';
+import type { AuthCardProps, AuthCardValues } from './types';
 
 /**
  * `AuthCard`: sign-in, sign-up and one-time-code cards built on the provider
@@ -53,34 +57,10 @@ import type { AuthCardProps, AuthCardValues, AuthMode } from './types';
  * and hands them to `onSubmit` as a typed object.
  */
 
-const COPY: Record<
-  AuthMode,
-  { title: string; description: string; cta: string; switchLead: string; switchAction: string }
-> = {
-  signin: {
-    title: 'Welcome back',
-    description: 'Sign in to pick up where you left off.',
-    cta: 'Sign in',
-    switchLead: 'New here?',
-    switchAction: 'Create an account',
-  },
-  signup: {
-    title: 'Create your account',
-    description: 'Start building in a couple of minutes.',
-    cta: 'Create account',
-    switchLead: 'Already have an account?',
-    switchAction: 'Sign in',
-  },
-  verify: {
-    title: 'Check your inbox',
-    description: 'Enter the code we sent to finish signing in.',
-    cta: 'Verify and continue',
-    switchLead: 'Code not arriving?',
-    switchAction: 'Send a new one',
-  },
-};
-
 const IS_WEB = Platform.OS === 'web';
+
+/** Marks where `codeSentTo` puts the address; never typed by a person. */
+const EMAIL_SLOT = '\u0000';
 
 /**
  * The text links' transition and keyboard ring. They are react-native-web
@@ -109,10 +89,7 @@ ${LINK_SELECTOR}:focus-visible {
 const LINK_DATASET: Record<string, unknown> = IS_WEB ? { dataSet: { bloomAuthLink: '' } } : {};
 
 interface AuthPalette {
-  surface: string;
-  border: string;
   mediaSurface: string;
-  shadow: string;
   text: string;
   textSecondary: string;
   textTertiary: string;
@@ -126,10 +103,7 @@ interface AuthPalette {
 function resolveAuthPalette(theme: Theme): AuthPalette {
   const c = theme.colors;
   return {
-    surface: c.card,
-    border: c.borderLight,
     mediaSurface: c.backgroundSecondary,
-    shadow: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     text: c.text,
     textSecondary: c.textSecondary,
     textTertiary: c.textTertiary,
@@ -294,12 +268,14 @@ function AuthCardComponent({
 }: AuthCardProps) {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, AUTH_CARD_WEB_CSS);
-  const palette = useMemo(() => resolveAuthPalette(theme), [theme]);
+  const fill = useCardFill(footnote ? undefined : style);
+  const palette = useMemo(() => ({ ...resolveAuthPalette(theme), mediaSurface: surfaceFillOn(theme, fill) }), [theme, fill]);
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
   const split = media != null && viewport >= BREAKPOINTS.md;
 
-  const copy = COPY[mode];
+  const { messages } = useMessages(AUTH_CARD_MESSAGES);
+  const copy = messages.modes[mode];
   const signup = mode === 'signup';
   const verify = mode === 'verify';
 
@@ -333,15 +309,19 @@ function AuthCardComponent({
 
   const textAlign: TextStyle['textAlign'] = centered ? 'center' : undefined;
 
+  // The sentence is the language's; the address is cut out of it so it can
+  // take the heavier weight wherever the language puts it.
+  const [codeSentBefore = '', codeSentAfter = ''] = messages.codeSentTo(EMAIL_SLOT).split(EMAIL_SLOT);
+
   const descriptionNode =
     description ??
     (verify && email ? (
       <Text variant="body-regular" style={{ color: palette.textSecondary, textAlign }}>
-        {'Enter the code we sent to '}
+        {codeSentBefore}
         <Text variant="body-medium" style={{ color: palette.text }}>
           {email}
         </Text>
-        {' to finish signing in.'}
+        {codeSentAfter}
       </Text>
     ) : (
       copy.description
@@ -397,7 +377,7 @@ function AuthCardComponent({
         {verify ? (
           <View style={{ gap: 6 }}>
             <Text variant="body-medium" style={{ color: palette.textSecondary }}>
-              Verification code
+              {messages.verificationCode}
             </Text>
             <InputOtp
               testID={testID ? `${testID}-code` : undefined}
@@ -406,7 +386,7 @@ function AuthCardComponent({
               onComplete={onComplete}
               length={codeLength}
               groupEvery={codeLength % 2 === 0 ? codeLength / 2 : undefined}
-              accessibilityLabel="Verification code"
+              accessibilityLabel={messages.verificationCode}
               style={{ justifyContent: 'flex-start' }}
             />
           </View>
@@ -414,8 +394,8 @@ function AuthCardComponent({
 
         {signup && !confirmPassword ? (
           <AuthField
-            label="Full name"
-            placeholder="Ada Lovelace"
+            label={messages.fullName}
+            placeholder={messages.namePlaceholder}
             value={values.name}
             onChangeText={set('name')}
             autoComplete="name"
@@ -425,29 +405,29 @@ function AuthCardComponent({
         {verify ? null : (
           <AuthField
             testID={testID ? `${testID}-email` : undefined}
-            label="Email"
-            placeholder="you@company.com"
+            label={messages.email}
+            placeholder={messages.emailPlaceholder}
             value={values.email}
             onChangeText={set('email')}
             autoComplete="email"
             keyboardType="email-address"
-            hint={signup ? 'We use this to contact you, and never share it.' : undefined}
+            hint={signup ? messages.emailHint : undefined}
           />
         )}
 
         {verify ? null : signup && confirmPassword ? (
           <>
             <AuthField
-              label="Password"
-              placeholder="At least 8 characters"
+              label={messages.password}
+              placeholder={messages.newPasswordPlaceholder}
               value={values.password}
               onChangeText={set('password')}
               secure
               autoComplete="new-password"
             />
             <AuthField
-              label="Confirm password"
-              placeholder="Repeat your password"
+              label={messages.confirmPassword}
+              placeholder={messages.confirmPasswordPlaceholder}
               value={values.confirmPassword}
               onChangeText={set('confirmPassword')}
               secure
@@ -458,8 +438,8 @@ function AuthCardComponent({
         ) : (
           <AuthField
             testID={testID ? `${testID}-password` : undefined}
-            label="Password"
-            placeholder={signup ? 'At least 8 characters' : 'Enter your password'}
+            label={messages.password}
+            placeholder={signup ? messages.newPasswordPlaceholder : messages.passwordPlaceholder}
             value={values.password}
             onChangeText={set('password')}
             secure
@@ -473,7 +453,7 @@ function AuthCardComponent({
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Checkbox
               size="sm"
-              label="Remember me"
+              label={messages.rememberMe}
               checked={remember}
               onCheckedChange={setRemember}
             />
@@ -482,7 +462,7 @@ function AuthCardComponent({
               onPress={onForgotPassword}
               onNavigate={onNavigate}
               palette={palette}>
-              Forgot password?
+              {messages.forgotPassword}
             </AuthLink>
           </View>
         )}
@@ -493,7 +473,7 @@ function AuthCardComponent({
 
         {signup && !footnote ? (
           <Text variant="caption-1-regular" style={{ color: palette.textTertiary }}>
-            By creating an account you agree to our Terms of Service and Privacy Policy.
+            {messages.terms}
           </Text>
         ) : null}
       </View>
@@ -501,7 +481,7 @@ function AuthCardComponent({
       {!verify && providers.length > 0 ? (
         <>
           <View style={{ marginVertical: 20 }}>
-            <Divider>or continue with</Divider>
+            <Divider>{messages.orContinueWith}</Divider>
           </View>
           {social}
         </>
@@ -540,18 +520,16 @@ function AuthCardComponent({
   const shell: WebCssStyle = {
     width: '100%',
     maxWidth: media != null ? 880 : 400,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    boxShadow: palette.shadow,
   };
 
   const card =
     media != null ? (
-      <View
+      <Card
         testID={testID}
-        style={[shell, { flexDirection: 'row', overflow: 'hidden' }, footnote ? null : style]}>
+        radius="radius-24"
+        clipContent
+        contentStyle={{ flexDirection: 'row' }}
+        style={[shell, footnote ? null : style]}>
         {/* Padding on an inner box: a padded flex item cannot shrink its base
             size below its padding, which made the form column 64px wider than
             the media column instead of the grid's two equal tracks. */}
@@ -565,11 +543,11 @@ function AuthCardComponent({
             {media}
           </View>
         ) : null}
-      </View>
+      </Card>
     ) : (
-      <View testID={testID} style={[shell, { padding }, footnote ? null : style]}>
+      <Card testID={testID} radius="radius-24" style={[shell, { padding }, footnote ? null : style]}>
         {body}
-      </View>
+      </Card>
     );
 
   if (!footnote) return card;

@@ -1,3 +1,4 @@
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import {
   createContext,
   useCallback,
@@ -16,6 +17,7 @@ import {
 import Animated, { Easing, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { useMenuPalette } from '../floating/menu-palette';
 import { atoms as a } from '../styles';
 import { OverlayRoot } from '../overlay';
@@ -336,6 +338,7 @@ function Bubble({
               borderWidth: 1,
               borderColor: palette.border,
               backgroundColor: palette.surface,
+              ...surfaceFillVars(palette.surface),
               boxShadow: palette.shadow,
             }}
             onLayout={(e) => {
@@ -344,7 +347,8 @@ function Bubble({
                 height: e.nativeEvent.layout.height,
               });
             }}>
-            {children}
+            <SurfacePaint radius={TOOLTIP_SIZES[size].borderRadius} />
+            <SurfaceLevelProvider level={1} fill={palette.surface}>{children}</SurfaceLevelProvider>
           </View>
           {/* After the bubble, so it paints over the border it overlaps. */}
           <TooltipCaret

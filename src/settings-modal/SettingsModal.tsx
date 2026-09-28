@@ -29,6 +29,8 @@ import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import {
   SettingsModalContext,
   settingsLayoutFor,
@@ -41,6 +43,8 @@ import type { SettingsModalProps, SettingsNavGroup, SettingsNavItem } from './ty
 import { useKeyboardReveal } from './use-keyboard-reveal';
 import { IS_WEB, useSettingsWebCss } from './web-css';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { SETTINGS_MODAL_MESSAGES } from './messages';
 
 /**
  * A settings modal.
@@ -138,6 +142,7 @@ export function SettingsModal({
 }: SettingsModalProps) {
   const panelRef = useRef<View>(null);
   const common = useCommonMessages();
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const reducedMotion = useReducedMotion();
@@ -331,7 +336,7 @@ export function SettingsModal({
   if (!mounted) return null;
 
   const pageConfig = currentPage ? pages[currentPage] : undefined;
-  const closeLabel = labels?.close ?? 'Close settings';
+  const closeLabel = labels?.close ?? messages.close;
 
   return (
     <ModalPortal>
@@ -371,7 +376,7 @@ export function SettingsModal({
                   tabIndex={IS_WEB ? -1 : undefined}
                   role="dialog"
                   aria-modal
-                  aria-label={labels?.dialog ?? 'Settings'}
+                  aria-label={labels?.dialog ?? messages.dialog}
                   testID={testID}
                   {...webDataSet({ bloomSettingsDialog: '' })}
                   style={[
@@ -393,11 +398,14 @@ export function SettingsModal({
                         },
                     {
                       backgroundColor: palette.full,
+                      ...surfaceFillVars(palette.full),
                       boxShadow: palette.shadowXs,
                     },
                     ringVars(palette),
                   ]}
                 >
+                  <SurfacePaint radius={layout === 'compact' ? 0 : 24} />
+                  <SurfaceLevelProvider level={1} fill={palette.full}>
                   {layout === 'compact' ? (
                     compactPageOpen && pageConfig ? (
                       <View style={styles.content}>
@@ -422,7 +430,7 @@ export function SettingsModal({
                       <View style={styles.content}>
                         <SettingsRail
                           header={{
-                            title: labels?.dialog ?? 'Settings',
+                            title: labels?.dialog ?? messages.dialog,
                             closeLabel,
                             onClose: requestClose,
                           }}
@@ -430,7 +438,7 @@ export function SettingsModal({
                           page={currentPage}
                           onSelect={selectPage}
                           palette={palette}
-                          label={labels?.nav ?? 'Settings sections'}
+                          label={labels?.nav ?? messages.nav}
                           layout="compact"
                           testID={testID}
                         />
@@ -443,7 +451,7 @@ export function SettingsModal({
                         page={currentPage}
                         onSelect={selectPage}
                         palette={palette}
-                        label={labels?.nav ?? 'Settings sections'}
+                        label={labels?.nav ?? messages.nav}
                         layout={layout}
                         testID={testID}
                       />
@@ -465,10 +473,11 @@ export function SettingsModal({
                       </View>
                     </>
                   )}
+                  </SurfaceLevelProvider>
                 </View>
                 <SavedToast
                   phase={savedPhase}
-                  label={labels?.saved ?? 'Saved'}
+                  label={labels?.saved ?? messages.saved}
                   palette={palette}
                   reducedMotion={reducedMotion}
                   testID={testID ? `${testID}-saved` : undefined}
@@ -520,6 +529,7 @@ function SettingsRail({
     scrollY.value = Math.max(0, event.contentOffset.y);
   }, [scrollY]);
   return (
+    <SurfaceLevelProvider level={1} fill={palette.secondary}>
     <Animated.ScrollView
       role="navigation"
       aria-label={label}
@@ -529,6 +539,7 @@ function SettingsRail({
           : [styles.rail, { width: layout === 'medium' ? RAIL_WIDTH_MEDIUM : RAIL_WIDTH }],
         {
           backgroundColor: palette.secondary,
+          ...surfaceFillVars(palette.secondary),
           borderRightColor: palette.separator,
         },
       ]}
@@ -577,6 +588,7 @@ function SettingsRail({
         ))}
       </View>
     </Animated.ScrollView>
+    </SurfaceLevelProvider>
   );
 }
 

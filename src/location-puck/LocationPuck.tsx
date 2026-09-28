@@ -14,6 +14,7 @@ import Svg, { Polygon } from 'react-native-svg';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { MapAreaCircle } from '../map-marker/MapAreaCircle';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import {
   LOCATION_PUCK_GEOMETRY,
@@ -21,6 +22,7 @@ import {
   LOCATION_PUCK_STALE_OPACITY,
 } from './constants';
 import { HeadingCone } from './HeadingCone';
+import { LOCATION_PUCK_MESSAGES } from './messages';
 import {
   chevronPoints,
   coneHalfAngle,
@@ -100,6 +102,7 @@ function LocationPuckComponent({
   style,
   testID,
 }: LocationPuckProps) {
+  const { messages } = useMessages(LOCATION_PUCK_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveLocationPuckPaint(theme), [theme]);
   const systemReduceMotion = useReducedMotion();
@@ -158,7 +161,7 @@ function LocationPuckComponent({
       role="img"
       accessibilityLabel={
         accessibilityLabel ??
-        describeLocationPuck({ state, mode, heading, headingUnknown, labels: stateLabels })
+        describeLocationPuck({ state, mode, heading, headingUnknown, labels: stateLabels, messages })
       }
       testID={testID}
       style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}

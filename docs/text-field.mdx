@@ -123,6 +123,26 @@ have to be one height.
 
 The finished component, with the vendored country list and flags, is [`PhoneInput`](./phone-input.mdx) (`@oxy.so/bloom/phone-input`).
 
+## Password reveal
+
+```tsx
+<TextFieldInput
+  label="Password"
+  value={password}
+  onValueChange={setPassword}
+  secureTextEntry
+  revealable
+  autoComplete="current-password"
+/>
+```
+
+`revealable` on a `secureTextEntry` input draws an eye button after it. Pressing it shows what was typed (the eye becomes an eye-off) and pressing again hides it; the value is untouched. Without `secureTextEntry` the prop does nothing.
+
+- **Name.** The button is named "Show password" / "Hide password" in the [locale](./locale.mdx) — from the nearest `LocaleProvider` (`BloomProvider locale`), or the input's own `locale` prop. `revealLabels={{ show, hide }}` overrides either name, e.g. for a PIN.
+- **Focus stays in the input.** On web the button cancels its `mousedown`, so the input never blurs — a caller's `onBlur` validation does not run mid-typing. On native a tap on a sibling does not blur a `TextInput`; if a parent scroll view took it anyway, the input is focused again. A keyboard user who tabbed to the button stays on the button.
+- **Placement.** It sits where a trailing `TextFieldIcon` would: its 20px glyph (18 on `sm`) 8px after the text, its round 28px (24) hover wash reaching into the shell's padding. It dims with a disabled field and reddens with an invalid one, like the icons.
+- **iOS** clears a secure field on the first keystroke after it goes back to hidden — the platform's own rule for secure text, not something the field can opt out of.
+
 ## Disabled
 
 ```tsx

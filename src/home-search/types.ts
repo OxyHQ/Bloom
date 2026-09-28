@@ -47,7 +47,7 @@ export interface HomeSearchBarProps<K extends string = string> {
   onActiveSegmentChange: (segment: K | null) => void;
   /** The search button was pressed. */
   onSearch?: () => void;
-  /** The search button's text and name. Default `"Search"`. */
+  /** The search button's text and name. `"Search"` in English; follows the locale. */
   searchLabel?: string;
   /**
    * The text typed into the FIRST segment (a location). With `onQueryChange`
@@ -70,11 +70,11 @@ export interface SearchModeTabsProps<K extends string = HomeSearchMode> {
   onValueChange: (mode: K) => void;
   /** Which modes, in order. Default `rent`, `buy`, `stays`, `swap`. */
   modes?: readonly K[];
-  /** Override labels by key. Defaults: Rent, Buy, Vacation rentals, Swap. */
+  /** Override labels by key. Defaults (in English): Rent, Buy, Vacation rentals, Swap; they follow the locale. */
   labels?: Partial<Record<K, string>>;
   /** `tabs` (default): text tabs with an underline. `segmented`: a pill `SegmentedControl`, for a phone. */
   variant?: 'tabs' | 'segmented';
-  /** Names the tablist. Default `"Search mode"`. */
+  /** Names the tablist. `"Search mode"` in English; follows the locale. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Derives `-<key>` per tab. */
@@ -87,7 +87,7 @@ export type BudgetPeriod = 'month' | 'total';
 export interface BudgetPreset {
   min: number | null;
   max: number | null;
-  /** Default: "Up to €800", "€800 – €1,200", "€1,800+" from `formatAmount`. */
+  /** Default: "Up to €800", "€800 – €1,200", "€1,800+" from `formatAmount` ("Up to" in the locale). */
   label?: string;
 }
 
@@ -105,17 +105,17 @@ export interface BudgetPickerProps {
    * currency and locale here. Default `String(n)`.
    */
   formatAmount?: (amount: number) => string;
-  /** Default `"Monthly budget"` / `"Price"`. */
+  /** `"Monthly budget"` / `"Price"` in English; follows the locale. */
   title?: string;
-  /** Default `"Rent per month, before bills"` / `"Total price"`; `null` hides it. */
+  /** `"Rent per month, before bills"` / `"Total price"` in English (follows the locale); `null` hides it. */
   description?: string | null;
-  /** Default `"Minimum"`. */
+  /** `"Minimum"` in English; follows the locale. */
   minLabel?: string;
-  /** Default `"Maximum"`. */
+  /** `"Maximum"` in English; follows the locale. */
   maxLabel?: string;
   /** Typed amounts snap to it. Default `50` per month, `5000` total. */
   step?: number;
-  /** Names the preset group. Default `"Budget presets"`. */
+  /** Names the preset group. `"Budget presets"` in English; follows the locale. */
   presetsLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Derives `-min`, `-max`, `-preset-<index>`. */
@@ -145,7 +145,7 @@ export interface MoveInPickerProps extends CalendarConstraintProps {
    * that timing with `date: null` (pressing it again returns to `date`).
    */
   onValueChange: (value: MoveInValue) => void;
-  /** Default Any, 1–6 months, 6–12 months, 1+ year. */
+  /** Default Any, 1–6 months, 6–12 months, 1+ year, in the locale. */
   contractLengths?: readonly MoveInOption[];
   /** Month shown first. */
   defaultMonth?: Date;
@@ -172,11 +172,11 @@ export interface SavedSearchCardProps {
   criteria?: readonly string[];
   /** New results since the last visit; a badge shows above `0`. */
   newCount?: number;
-  /** The badge's text and name. Default `` (n) => `${n} new` ``. */
+  /** The badge's text and name. Default `"3 new"` in English; follows the locale. */
   formatNewCount?: (count: number) => string;
   /** How often alerts go out, pre-formatted ("Daily alerts"). `undefined` shows `alertsOffLabel`. */
   alertFrequency?: string;
-  /** Default `"Alerts off"`. */
+  /** `"Alerts off"` in English; follows the locale. */
   alertsOffLabel?: string;
   /** A small icon tile beside the title. Default a search glyph. */
   icon?: SavedSearchIcon;
@@ -186,9 +186,9 @@ export interface SavedSearchCardProps {
   onEdit?: () => void;
   /** Draws a delete icon button. */
   onDelete?: () => void;
-  /** Default `"Edit"`. */
+  /** `"Edit"` in English; follows the locale. */
   editLabel?: string;
-  /** Default `"Delete"`. */
+  /** `"Delete"` in English; follows the locale. */
   deleteLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Derives `-open`, `-badge`, `-edit`, `-delete`. */
@@ -201,9 +201,9 @@ export type SavedSearchIcon = BloomIconComponent;
 export interface SaveSearchButtonProps {
   saved: boolean;
   onSavedChange: (saved: boolean) => void;
-  /** Default `"Save search"`. */
+  /** `"Save search"` in English; follows the locale. */
   label?: string;
-  /** Default `"Saved"`. */
+  /** `"Saved"` in English; follows the locale. */
   savedLabel?: string;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;

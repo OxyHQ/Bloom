@@ -3,13 +3,15 @@ import { View } from 'react-native';
 
 import { useContainerWidth } from '../hooks/use-container-width';
 import { resolveSelectionPaint, SelectionCard } from '../listing-editor/SelectionCard';
+import { useMessages } from '../locale/messages';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import { StepperRow } from '../stepper';
 import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel, TextFieldSuffix } from '../text-field';
 import { Textarea } from '../textarea';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { SHIPMENT_LOAD_KINDS, SHIPMENT_LOAD_LABELS, SHIPMENT_LOAD_SIZES, SHIPMENT_REQUEST_GEOMETRY } from './constants';
+import { builtInLoadKinds, builtInLoadSizes, SHIPMENT_LOAD_LABELS, SHIPMENT_REQUEST_GEOMETRY } from './constants';
+import { SHIPMENT_REQUEST_MESSAGES } from './messages';
 import { joinShipmentName, sanitizeWeight } from './shared';
 import type { ShipmentLoadPickerProps, ShipmentLoadSize } from './types';
 
@@ -43,8 +45,8 @@ import type { ShipmentLoadPickerProps, ShipmentLoadSize } from './types';
 function ShipmentLoadPickerComponent({
   value,
   onValueChange,
-  kinds = SHIPMENT_LOAD_KINDS,
-  sizes = SHIPMENT_LOAD_SIZES,
+  kinds: kindsProp,
+  sizes: sizesProp,
   notes = false,
   maxQuantity = 20,
   errors = {},
@@ -53,9 +55,15 @@ function ShipmentLoadPickerComponent({
   style,
   testID,
 }: ShipmentLoadPickerProps) {
+  const { messages } = useMessages(SHIPMENT_REQUEST_MESSAGES);
+  const kinds = useMemo(() => kindsProp ?? builtInLoadKinds(messages), [kindsProp, messages]);
+  const sizes = useMemo(() => sizesProp ?? builtInLoadSizes(messages), [sizesProp, messages]);
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
-  const labels = useMemo(() => ({ ...SHIPMENT_LOAD_LABELS, ...labelOverrides }), [labelOverrides]);
+  const labels = useMemo(
+    () => ({ ...SHIPMENT_LOAD_LABELS, ...messages.load, ...labelOverrides }),
+    [messages, labelOverrides],
+  );
   const { width, onLayout } = useContainerWidth();
   const wide = width === null || width >= SHIPMENT_REQUEST_GEOMETRY.narrowWidth;
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);

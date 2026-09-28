@@ -1,3 +1,4 @@
+import { Card } from '../card';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -32,8 +33,11 @@ import {
 } from './contributions-cells';
 import { ChartHeadline } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
-import { useChartCardPalette } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartCardPalette } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
+import { monthNames as localMonthNames } from '../locale/format-date';
 
 // ---------------------------------------------------------------------------
 //  Grid
@@ -104,6 +108,7 @@ export function ContributionsGrid({
   style,
   testID,
 }: ContributionsGridProps) {
+  const { messages: gridText } = useMessages(CHART_CARDS_MESSAGES);
   const tiers = useContributionTiers(color);
   const reducedMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
@@ -199,7 +204,7 @@ export function ContributionsGrid({
               : { flex: 1, flexBasis: 0, minWidth: 0, aspectRatio: 1 };
             const common = {
               role: 'img' as const,
-              accessibilityLabel: contributionLabel(cell),
+              accessibilityLabel: contributionLabel(cell, gridText),
               testID: testID ? `${testID}-cell-${index}` : undefined,
               onPointerEnter: () => enter(index),
               onPointerLeave: leave,
@@ -241,7 +246,7 @@ export function ContributionsGrid({
             <TooltipTrigger>
               <View style={{ width: cellSize, height: cellSize }} />
             </TooltipTrigger>
-            <TooltipTextBubble>{contributionLabel(anchorCell)}</TooltipTextBubble>
+            <TooltipTextBubble>{contributionLabel(anchorCell, gridText)}</TooltipTextBubble>
           </Tooltip>
         </View>
       ) : null}
@@ -298,12 +303,6 @@ export interface ContributionsCardProps {
   testID?: string;
 }
 
-const DEFAULT_PERIODS: readonly ContributionsPeriod[] = [
-  { id: 'weekly', label: 'Weekly' },
-  { id: 'monthly', label: 'Monthly' },
-  { id: 'yearly', label: 'Yearly' },
-];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 const NO_CELLS: readonly ContributionCell[] = [];
 /** Index rows of two — a `grid-cols-2` layout below `sm`. */
 function pairsOf(count: number): number[][] {
@@ -333,26 +332,40 @@ export const CONTRIBUTIONS_CARD_HEIGHT = 337;
  *             block scrolls sideways
  */
 export function ContributionsCard({
-  title = 'Contributions this year',
+  title: titleProp,
   total: totalProp,
   delta: deltaProp,
-  format = formatNumber,
+  format: formatProp,
   stats: statsProp,
   cells: cellsProp,
   columns = CONTRIBUTION_COLUMNS,
   color,
-  periods = DEFAULT_PERIODS,
+  periods: periodsProp,
   defaultPeriod,
   onPeriodChange,
-  activityLabel = 'Activity',
-  months = MONTHS,
+  activityLabel: activityLabelProp,
+  months: monthsProp,
   animateIn = false,
   activeCell,
   onActiveCellChange,
   style,
   testID,
 }: ContributionsCardProps) {
-  const palette = useChartCardPalette();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
+  const title = titleProp ?? chartText.titles.contributionsThisYear;
+  const activityLabel = activityLabelProp ?? chartText.titles.activity;
+  const periods = useMemo<readonly ContributionsPeriod[]>(
+    () =>
+      periodsProp ?? [
+        { id: 'weekly', label: chartText.weekly },
+        { id: 'monthly', label: chartText.monthly },
+        { id: 'yearly', label: chartText.yearly },
+      ],
+    [periodsProp, chartText],
+  );
+  const months = useMemo(() => monthsProp ?? localMonthNames(chartLocale, 'short'), [monthsProp, chartLocale]);
+  const palette = useChartCardSurfacePalette(style);
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
@@ -387,18 +400,22 @@ export function ContributionsCard({
   );
 
   return (
-    <View
+    <Card
+      radius="radius-16"
+      clipContent
+      contentStyle={styles.cardContent}
+      elevation="none"
       testID={testID}
       style={[
         styles.card,
-        { backgroundColor: palette.surface, height: wide ? CONTRIBUTIONS_CARD_HEIGHT : undefined },
+        { height: wide ? CONTRIBUTIONS_CARD_HEIGHT : undefined },
         style,
       ]}>
       <ChartHeadline
         label={title}
         value={total}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         fadeKey={selectedId}
         testID={testID}
         style={{ width: '100%' }}
@@ -436,7 +453,7 @@ export function ContributionsCard({
           </Text>
           {periods.length > 0 && selectedId ? (
             <SegmentedControl
-              label={`${activityLabel} period`}
+              label={chartText.periodOf(activityLabel)}
               type="radio"
               variant="plain"
               value={selectedId}
@@ -458,17 +475,17 @@ export function ContributionsCard({
           </ScrollView>
         )}
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     minWidth: 0,
+  },
+  cardContent: {
     flexDirection: 'column',
     gap: 16,
-    overflow: 'hidden',
-    borderRadius: 16,
     paddingTop: 16,
     paddingBottom: 16,
     paddingLeft: 16,

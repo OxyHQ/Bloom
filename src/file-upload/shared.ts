@@ -1,3 +1,5 @@
+import { formatFileSize as formatLocaleFileSize } from '../locale/format-number';
+
 /**
  * The size formatter, split out of `FileUpload.tsx` so a caller can have the
  * STRING without the component.
@@ -17,16 +19,6 @@
  * and a floor of 1 KB — a 200-byte attachment reading "0 KB" looks like a failed
  * upload.
  */
-export function formatFileSize(bytes: number): string {
-  const GB = 1024 * 1024 * 1024;
-  const MB = 1024 * 1024;
-  if (bytes >= GB) {
-    const gb = bytes / GB;
-    return `${gb >= 10 ? Math.round(gb) : Math.round(gb * 10) / 10} GB`;
-  }
-  if (bytes >= MB) {
-    const mb = bytes / MB;
-    return `${mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10} MB`;
-  }
-  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+export function formatFileSize(bytes: number, locale?: string): string {
+  return formatLocaleFileSize(bytes, locale);
 }

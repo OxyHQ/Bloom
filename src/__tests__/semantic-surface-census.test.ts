@@ -26,7 +26,6 @@ const exceptions = new Set([
   'listing-details/shared.ts', // Photograph hover scrim only.
   'listing-details/FloorPlan.tsx', // Light paper backing for authored floorplan line art.
   'sortable-media/SortablePhotoGrid.tsx', // Upload progress label and scrim over arbitrary media.
-  'social-button/SocialButton.tsx', // Explicit branded black/white button material.
 ]);
 
 it('does not recreate neutral UI surfaces from the legacy ramp', () => {

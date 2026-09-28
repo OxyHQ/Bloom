@@ -160,9 +160,11 @@ the row carries, so the name says all of them:
 
 > Ana Ferrer, Verified, Draft: see you at eight, 12:41, 3 unread messages, Muted, Pinned
 
-Pass `accessibilityLabel` to replace it whole (a translated row), or `labels` to
-translate just the words this family supplies (`draft`, `pinned`, `muted`,
-`verified`, `channel`, `bot`, `group`).
+The words this family supplies — and every other fixed string in it (headings,
+empty states, the search field's and stories row's names) — are localised via
+`BloomProvider locale`. Pass `accessibilityLabel` to replace the name whole, or
+`labels` to reword just those words (`draft`, `pinned`, `muted`, `verified`,
+`channel`, `bot`, `group`).
 
 With `href` the row is a `link`; with `onPress` alone it is a `button`; with
 neither it is not a control at all. `selected` is `aria-current` on web and

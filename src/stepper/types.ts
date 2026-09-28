@@ -34,9 +34,9 @@ export interface StepperProps {
    * (`hooks/use-accessible-name-warning.ts`).
    */
   accessibilityLabel?: string;
-  /** Name of the `−` button. Default `"Decrease"`. */
+  /** Name of the `−` button (`"Decrease"` in English). */
   decrementLabel?: string;
-  /** Name of the `+` button. Default `"Increase"`. */
+  /** Name of the `+` button (`"Increase"` in English). */
   incrementLabel?: string;
   /**
    * Opt-in remove at the floor: at `min` the `−` button becomes a trash button
@@ -45,7 +45,7 @@ export interface StepperProps {
    * value still stop at `min`. Without it the stepper floors at `min`.
    */
   onRemove?: () => void;
-  /** Name of the trash button drawn at `min` with `onRemove`. Default `"Remove"`. */
+  /** Name of the trash button drawn at `min` with `onRemove` (`"Remove"` in English). */
   removeLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

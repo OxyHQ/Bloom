@@ -4,6 +4,7 @@ import { RiCoinsLine } from '../icons/remix/RiCoinsLine';
 import { RiWallet3Line } from '../icons/remix/RiWallet3Line';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
+import { PAYMENT_METHOD_MESSAGES } from './messages';
 import type { PaymentMethodDensity, PaymentMethodKind, PaymentMethodState } from './types';
 
 /** The glyph each kind draws when the caller names none. */
@@ -14,11 +15,13 @@ export const PAYMENT_METHOD_KIND_ICON: Record<PaymentMethodKind, BloomIconCompon
   cash: RiCoinsLine,
 };
 
-/** What the row says under itself when a state has no message of its own. */
+/**
+ * What the row says under itself when a state has no message of its own, in
+ * English. The row speaks `PAYMENT_METHOD_MESSAGES` in the resolved locale.
+ */
 export const PAYMENT_METHOD_STATE_LABELS: Record<PaymentMethodState, string> = {
   ok: '',
-  expired: 'Expired',
-  declined: 'Declined',
+  ...PAYMENT_METHOD_MESSAGES.en.states,
 };
 
 /**

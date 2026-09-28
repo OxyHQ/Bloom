@@ -7,6 +7,8 @@ import { FollowButton, MediaMoreButton } from './MediaActionBar';
 import { Cover, Dot, HeaderTitle, InlineLink, MediaHeaderFrame, useMediaHeaderPaint } from './parts';
 import { selectTitleVariant } from './shared';
 import type { ProfileHeaderProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * A listener's profile.
@@ -20,12 +22,12 @@ import type { ProfileHeaderProps } from './types';
 function ProfileHeaderComponent({
   name,
   avatar,
-  typeLabel = 'Profile',
+  typeLabel: typeLabelProp,
   stats,
   following = false,
   onFollowChange,
   onEditPress,
-  editLabel = 'Edit profile',
+  editLabel: editLabelProp,
   onMorePress,
   artworkColor,
   actions,
@@ -33,6 +35,9 @@ function ProfileHeaderComponent({
   style,
   testID,
 }: ProfileHeaderProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.profile;
+  const editLabel = editLabelProp ?? messages.editProfile;
   const paint = useMediaHeaderPaint(artworkColor);
   const hasRow = onFollowChange || onEditPress || onMorePress || actions;
   const row = hasRow ? (

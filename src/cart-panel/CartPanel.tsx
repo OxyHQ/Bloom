@@ -15,6 +15,7 @@ import { RiStore2Line } from '../icons/remix/RiStore2Line';
 import { useImageResolver } from '../image-resolver/context';
 import { Item } from '../item';
 import { resolvePhoto } from '../listing-card/shared';
+import { useMessages } from '../locale/messages';
 import { PriceSummary } from '../price-breakdown';
 import { Meter } from '../stat-bar';
 import { useSurfaceFill } from '../styles/surface-levels';
@@ -25,6 +26,7 @@ import { CartLine } from './CartLine';
 import { CartPromoField } from './CartPromoField';
 import { CartTipPicker } from './CartTipPicker';
 import { CART_BLOCK_GAP, CART_GEOMETRY, CART_LINE_GAP, CART_METER_HEIGHT } from './constants';
+import { CART_PANEL_MESSAGES } from './messages';
 import { resolveCartPaint, type CartPaint } from './shared';
 import type { CartMinimumOrder, CartPanelProps } from './types';
 
@@ -193,16 +195,21 @@ function CartPanelComponent({
   promo,
   summary,
   onCheckout,
-  checkoutLabel = 'Go to checkout',
+  checkoutLabel: checkoutLabelProp,
   checkoutDisabled = false,
   empty,
-  emptyTitle = 'Your basket is empty',
-  emptyDescription = 'Add something from the menu and it will show up here.',
+  emptyTitle: emptyTitleProp,
+  emptyDescription: emptyDescriptionProp,
   density = 'comfortable',
-  accessibilityLabel = 'Basket',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: CartPanelProps) {
+  const { messages } = useMessages(CART_PANEL_MESSAGES);
+  const checkoutLabel = checkoutLabelProp ?? messages.checkout;
+  const emptyTitle = emptyTitleProp ?? messages.emptyTitle;
+  const emptyDescription = emptyDescriptionProp ?? messages.emptyDescription;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.basket;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveCartPaint(theme, surface), [theme, surface]);

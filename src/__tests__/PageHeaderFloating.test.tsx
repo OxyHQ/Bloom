@@ -8,7 +8,7 @@
  *
  *   "islands, not a strip"        no full-width background node exists, and the
  *                                 back control is inside a material of its own
- *   "one surface per group"       exactly one blur in the tree per island
+ *   "one surface per group"       exactly one material in the tree per island
  *   "the edge does not end in a   the gradient's box is TALLER than the header
  *    line"                        it belongs to, so the ramp finishes past the
  *                                 layout rather than at it
@@ -41,7 +41,7 @@ function setWidth(width: number) {
   jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
-const blurCount = (tree: unknown) => hostNodes(tree).filter((n) => n.type === 'BlurView').length;
+const materialCount = (tree: unknown) => hostNodes(tree).filter(n => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id))).length;
 const opacity = (node: { props: Record<string, unknown> }) => resolvedStyle(node.props.style).opacity;
 
 afterEach(() => jest.restoreAllMocks());
@@ -64,7 +64,7 @@ describe('PageHeader, floating', () => {
     // Its own capsule, not a member of the page's action group: a `group` of
     // one is a container a screen reader steps into for nothing.
     expect(island.props.role).toBeUndefined();
-    expect(blurCount(screen.toJSON())).toBe(1);
+    expect(materialCount(screen.toJSON())).toBe(1);
     const back = screen.getByTestId('h-back');
     expect(back.props.accessibilityLabel).toBe('Go back');
     // 36pt capsule + 4 on every side = the 44pt touch floor, with nothing
@@ -87,7 +87,7 @@ describe('PageHeader, floating', () => {
     });
     // One for the back capsule, one for the group. Two controls in the group,
     // and no third material under either of them.
-    expect(blurCount(screen.toJSON())).toBe(2);
+    expect(materialCount(screen.toJSON())).toBe(2);
     expect(resolvedStyle(screen.getByTestId('search').props.style).backgroundColor).toBe('transparent');
     expect(resolvedStyle(screen.getByTestId('share').props.style).backgroundColor).toBe('transparent');
   });
@@ -107,7 +107,7 @@ describe('PageHeader, floating', () => {
         </>
       ),
     });
-    expect(blurCount(screen.toJSON())).toBe(2);
+    expect(materialCount(screen.toJSON())).toBe(2);
   });
 
   it('fades the edge effect in with scroll, and takes always/none literally', () => {

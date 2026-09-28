@@ -1,0 +1,47 @@
+---
+title: Material composition
+description: Shared component bases, migrated surfaces and intentional exceptions.
+---
+
+# Material composition
+
+The default material is opaque: resolved fill, shared gradient and rim, without backdrop blur or refraction. A component keeps its layout, interaction and accessibility semantics; only its paint is shared. Explicit glass remains an opt-in experiment on Surface and Card. BottomBar is intrinsically translucent and shares the glass paint; it has no material variant. Its optional blur band remains independent.
+
+## Choose the existing base
+
+| Need | Base | Current consumers |
+| --- | --- | --- |
+| Filled action | Button | ButtonGroup items, SocialButton, FrostedIconButton, gallery controls, chat jump controls, composer actions, attachment actions, reactions and emoji actions |
+| Quiet icon action with ref/hover contracts | GlyphButton | PlayerIconButton, QueueIconButton and other existing glyph adapters |
+| Card content | Card | LinkPreviewCard and existing card-shaped families; the Social template now uses LinkPreviewCard directly |
+| Passive container | Surface | Standalone content with caller-owned spacing |
+| Existing universal interactive/layout host | SurfacePaint | Button native, Card, Sidebar, Dialog/BottomSheet, QueuePanel, standalone UserHoverCard, native Tooltip, ComposerPanel/Pill, Toast, docked MailCompose native ContentPanel and SettingsModal |
+| Existing web host with its own fill/classes | useSurfaceMaterial | FloatingPanel, Tooltip and ContentPanel; inherits the host's actual radius without measurement |
+| Anchored overlay behavior | FloatingPanel | Web Popover, DropdownMenu, ContextMenu, Menubar, Select and HoverCard |
+| Modal/sheet behavior | Dialog / BottomSheet / SheetShell | AlertDialog, Command and existing native overlay adapters |
+
+`SurfacePaint` can own a supplied fill, or omit `fill` to add only the gradient and rim over a host-owned background. This preserves explicit consumer backgrounds and existing surface-level colors without painting a second opaque layer. Native uses one SVG, one base rectangle when needed and one sheen gradient; stop opacity remains explicit. Its IDs use the shared SSR-safe SVG helper. The web host hook adds a pseudo-element, not a wrapper, observer or per-frame work.
+
+Surface and painted Card resolve depth from the actual parent and publish the resolved backing through both React context and the web CSS variable. Plain transparent containers inherit; a plain explicit background publishes that backing without increasing the level. Material does not own padding, dimensions, geometry, elevation or state. Foreground/fill pairs stay with the semantic palette. A surface-level context must continue to describe the fill its descendants actually sit on. Never replace the parent's layout node just to paint material.
+
+## Intentional exceptions
+
+- `appearance="plain"`, unstyled Toast and a caller-owned custom background do not silently acquire a surface. Trending demonstrated this: painting a plain square Card added a bright rectangle around a flush widget.
+- A UserHoverCard inside HoverCard uses the existing floating pane. A QueuePanel in sheet mode and a MailCompose inside a sheet do not paint a second panel.
+- ContentPanel's unframed/mobile state, optional-provider path and custom paint contract remain intact. Web framing follows the existing CSS breakpoints.
+- ComposerIconButton now composes Button and forwards its recording press-in/press-out, long-press and anchor ref contracts. Composer actions use Button; radio rows, tabs and overlay dismissal planes retain their own semantics.
+- MapSearchArea's auto-update control remains a named checkbox with checked state. Its role cannot be replaced by an ordinary action button.
+- Fields, selection controls, meters, charts, rows and decorative status tabs keep their dedicated behavior and visual encodings. Reusing Surface does not mean wrapping every primitive in another panel.
+
+## Verification
+
+Check both modes, nested overlays, custom styles and responsive framing in Storybook. Test opening and dismissal with real pointer/keyboard events: paint-only tests cannot see covered targets. `surface-composition.test.ts` pins the migrated composition paths; existing interaction and layout suites remain authoritative. Native SVG structure is tested separately; browser checks do not establish device coverage.
+
+The hierarchy audit also covers the actual fills published by floating panels, Tooltip, QueuePanel, UserHoverCard, ComposerPanel/Pill/Popover, Sidebar, Toast and SettingsModal. Plain/bare paths inherit instead of claiming a new pane. SettingsListGroup already derives its nested fill from the parent and now benefits from Card publishing it. Action colors and selection states remain semantic palettes; a Button is not automatically another container level. Custom CSS-only backgrounds require an explicit resolved fill when descendants need to compute from them; ContentPanel already exposes `surfaceColor` for this purpose.
+
+
+## Shared shells and docked chrome
+
+ChartCardSurface, ActionCardShell and HousingCard compose Card, as do dashboard, authentication, creator, booking and saved-search cards. Nested palettes read the actual card backing; data colours and status pairs remain semantic. Card forwards its host reference and layout callback so responsive consumers keep their existing measurements.
+
+Composer pickers, recording panels, search panels and floating media controls use Surface. Hosts with their own size animation or keyboard handling keep that host and use SurfacePaint with matching fill context. Docked screen chrome publishes its actual backing without adding a raised frame. Sheet contents inherit their sheet instead of painting a second panel; illustrations, media, chart marks, selection controls and scrims retain their own rendering.

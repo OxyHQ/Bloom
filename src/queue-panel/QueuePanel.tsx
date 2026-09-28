@@ -1,7 +1,11 @@
+import { resolveSurfaceFill } from '../surface/shared';
+import { parseRgba } from '../theme/color-utils';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { AccessibilityInfo, ScrollView, View } from 'react-native';
 
-import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { StyleSheet } from 'react-native';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiPlayListAddLine } from '../icons/remix/RiPlayListAddLine';
@@ -12,8 +16,12 @@ import { QueueIconButton } from './QueueIconButton';
 import { QueuePanelRow, useQueuePanelCss } from './QueuePanelRow';
 import { QueueReorderList } from './QueueReorderList';
 import { RecentlyPlayedList } from './RecentlyPlayedList';
-import { DEFAULT_QUEUE_PANEL_LABELS, IS_WEB, resolveQueuePanelPaint } from './shared';
+import { IS_WEB, queuePanelLabels, queuePlayName, resolveQueuePanelPaint } from './shared';
 import type { QueuePanelLabels, QueuePanelProps, QueuePanelTab } from './types';
+import { useMessages } from '../locale/messages';
+import { useCommonMessages } from '../locale/common-messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
+import { QUEUE_PANEL_MESSAGES } from './messages';
 
 /**
  * The play queue.
@@ -82,12 +90,15 @@ function QueuePanelComponent({
   style,
   testID,
 }: QueuePanelProps) {
+  const { messages } = useMessages(QUEUE_PANEL_MESSAGES);
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   useQueuePanelCss();
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
   const labels: QueuePanelLabels = useMemo(
-    () => ({ ...DEFAULT_QUEUE_PANEL_LABELS, ...labelsProp }),
-    [labelsProp],
+    () => ({ ...queuePanelLabels(messages, controls, common), ...labelsProp }),
+    [messages, controls, common, labelsProp],
   );
 
   const [innerTab, setInnerTab] = useState<QueuePanelTab>(defaultTab);
@@ -113,14 +124,18 @@ function QueuePanelComponent({
     [onPlay],
   );
 
+  const parentFill = useSurfaceFill();
+  const parentLevel = useSurfaceLevelValue();
   const isPanel = variant === 'panel';
+  const background = StyleSheet.flatten(style)?.backgroundColor ?? (isPanel ? paint.surface : undefined);
+  const publishedFill = typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
+    ? resolveSurfaceFill(background, false, parentFill) : undefined;
   const empty = !nowPlaying && queue.length === 0 && context.length === 0;
 
-  return (
+  const content = (
     // The panel is a surface: children step off IT, not off the page. A tab
     // strip inside used to paint its rail `neutral-800` — the panel's own fill
     // (`styles/surface-levels.ts`).
-    <SurfaceLevelProvider level={isPanel ? 1 : 0}>
     <View
       testID={testID}
       style={[
@@ -137,8 +152,10 @@ function QueuePanelComponent({
           : { width: '100%' },
         { flexDirection: 'column', minHeight: 0 },
         style,
+        surfaceFillVars(publishedFill),
       ]}
     >
+      {isPanel && publishedFill ? <SurfacePaint radius={StyleSheet.flatten(style)?.borderRadius ?? 8} /> : null}
       <View
         style={{
           flexDirection: 'row',
@@ -176,7 +193,7 @@ function QueuePanelComponent({
             items={recentlyPlayed}
             currentId={nowPlaying?.id}
             playing={playing}
-            labels={labels}
+            labels={{ play: labelsProp?.play, emptyRecent: labels.emptyRecent }}
             onPlay={onPlay ? (index, track) => onPlay('recent', index, track) : undefined}
             style={{ marginTop: 8 }}
             testID={testID ? `${testID}-recent` : undefined}
@@ -200,7 +217,7 @@ function QueuePanelComponent({
                   track={nowPlaying}
                   current
                   playing={playing}
-                  accessibilityLabel={`${labels.play} ${nowPlaying.title}`}
+                  accessibilityLabel={queuePlayName(labelsProp?.play, nowPlaying.title, controls)}
                   onPress={onPlay ? () => onPlay('now', 0, nowPlaying) : undefined}
                   testID={testID ? `${testID}-now` : undefined}
                 />
@@ -226,6 +243,7 @@ function QueuePanelComponent({
                   {labels.nextInQueue}
                 </SectionHeading>
                 <QueueReorderList
+                  customPlay={labelsProp?.play}
                   section="queue"
                   tracks={queue}
                   labels={labels}
@@ -245,6 +263,7 @@ function QueuePanelComponent({
                   {contextName ? labels.nextFrom(contextName) : labels.nextUp}
                 </SectionHeading>
                 <QueueReorderList
+                  customPlay={labelsProp?.play}
                   section="context"
                   tracks={context}
                   labels={labels}
@@ -278,8 +297,8 @@ function QueuePanelComponent({
         </View>
       ) : null}
     </View>
-    </SurfaceLevelProvider>
   );
+  return publishedFill ? <SurfaceLevelProvider level={isPanel ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
 }
 
 export const QueuePanel = memo(QueuePanelComponent);

@@ -4,7 +4,10 @@ import { colorRamp, mixColor, resolveButtonRamps, ACCENT_TABLE } from '../button
 import { formatFileSize } from '../file-upload/shared';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
+import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';
 import type { FileKind, MessageTone, VoicePlaybackRate } from './types';
+import { formatMultiplier } from '../locale/format-number';
+import { clamp01 } from '../styles/clamp';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -289,12 +292,19 @@ export function fileKindFor(name: string, mimeType?: string): FileKind {
   return 'other';
 }
 
-/** The type word beside the size: `"PDF"`, or `"File"` when there is no extension. */
-export function fileTypeLabel(name: string, mimeType?: string): string {
+/**
+ * The type word beside the size: `"PDF"`, or — with no extension — the kind
+ * the MIME type gave, or `"File"`, in `messages`' language (English by default).
+ */
+export function fileTypeLabel(
+  name: string,
+  mimeType?: string,
+  messages: MessageMediaMessages = MESSAGE_MEDIA_MESSAGES.en,
+): string {
   const ext = fileExtension(name);
   if (ext) return ext.toUpperCase();
   const kind = fileKindFor(name, mimeType);
-  return kind === 'other' ? 'File' : kind.toUpperCase();
+  return kind === 'other' ? messages.file : messages.fileKinds[kind];
 }
 
 /**
@@ -466,7 +476,6 @@ export const WAVEFORM_MIN_BAR = 0.18;
 export function resampleWaveform(samples: readonly number[], count: number): number[] {
   const bars = Math.max(1, Math.floor(count));
   if (samples.length === 0) return Array.from({ length: bars }, () => 0);
-  const clamp01 = (v: number) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
   if (samples.length === bars) return samples.map(clamp01);
   if (samples.length < bars) {
     return Array.from({ length: bars }, (_, i) =>
@@ -508,8 +517,8 @@ export function nextPlaybackRate(rate: VoicePlaybackRate): VoicePlaybackRate {
 }
 
 /** `"1×"`, `"1.5×"`, `"2×"` — the multiplication sign, not the letter x. */
-export function formatPlaybackRate(rate: VoicePlaybackRate): string {
-  return `${rate}×`;
+export function formatPlaybackRate(rate: VoicePlaybackRate, locale?: string): string {
+  return formatMultiplier(rate, locale);
 }
 
 // ---------------------------------------------------------------------------
@@ -552,11 +561,13 @@ export function pollPercentages(votes: readonly number[], total?: number): numbe
   return out;
 }
 
-/** "No votes" / "1 vote" / "n votes". */
-export function formatVoteCount(total: number): string {
+/** "No votes" / "1 vote" / "n votes", in `messages`' language (English by default). */
+export function formatVoteCount(
+  total: number,
+  messages: MessageMediaMessages = MESSAGE_MEDIA_MESSAGES.en,
+): string {
   const n = Number.isFinite(total) && total > 0 ? Math.floor(total) : 0;
-  if (n === 0) return 'No votes';
-  return n === 1 ? '1 vote' : `${n} votes`;
+  return messages.votes(n);
 }
 
 // ---------------------------------------------------------------------------

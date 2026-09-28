@@ -11,9 +11,11 @@ import { surfaceFillVars, useSurfaceLevel } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CarrierQuoteCard } from './CarrierQuoteCard';
-import { CARRIER_QUOTE_GEOMETRY, CARRIER_QUOTE_LABELS, CARRIER_QUOTE_SORTS } from './constants';
+import { CARRIER_QUOTE_GEOMETRY, CARRIER_QUOTE_SORTS } from './constants';
 import { markCarrierQuotes, resolveCarrierQuotePaint, sortCarrierQuotes } from './shared';
 import type { CarrierQuoteListProps, CarrierQuoteSort } from './types';
+import { useMessages } from '../locale/messages';
+import { CARRIER_QUOTE_MESSAGES } from './messages';
 
 /**
  * The offers on one job, ordered, marked and counted.
@@ -56,14 +58,18 @@ function CarrierQuoteListComponent({
   selectedId = null,
   density = 'comfortable',
   breakdown,
-  emptyTitle = 'No offers yet',
-  emptyDescription = 'Carriers are looking at your job. The first offers usually arrive within a few minutes.',
+  emptyTitle: emptyTitleProp,
+  emptyDescription: emptyDescriptionProp,
   emptyAction,
   labels: labelOverrides,
-  accessibilityLabel = 'Offers',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: CarrierQuoteListProps) {
+  const { messages: quoteText } = useMessages(CARRIER_QUOTE_MESSAGES);
+  const emptyTitle = emptyTitleProp ?? quoteText.emptyTitle;
+  const emptyDescription = emptyDescriptionProp ?? quoteText.emptyDescription;
+  const accessibilityLabel = accessibilityLabelProp ?? quoteText.list;
   const theme = useTheme();
   const ambient = useSurfaceLevel(0);
   const paint = useMemo(
@@ -72,11 +78,11 @@ function CarrierQuoteListComponent({
   );
   const labels = useMemo(
     () => ({
-      ...CARRIER_QUOTE_LABELS,
+      ...quoteText.labels,
       ...labelOverrides,
-      sortOptions: { ...CARRIER_QUOTE_LABELS.sortOptions, ...labelOverrides?.sortOptions },
+      sortOptions: { ...quoteText.labels.sortOptions, ...labelOverrides?.sortOptions },
     }),
-    [labelOverrides],
+    [labelOverrides, quoteText],
   );
   const [sort, setSort] = useControllableState<CarrierQuoteSort>({
     value: sortProp,

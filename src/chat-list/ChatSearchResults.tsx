@@ -14,14 +14,14 @@ import {
   CHAT_LIST_STYLE_ID,
   CHAT_ROW_GEOMETRY,
   CHAT_ROW_RADIUS,
-  DEFAULT_ITEM_LABELS,
-  DEFAULT_SEARCH_LABELS,
   IS_WEB,
   chatMarker,
   groupSearchResults,
   resolveChatListPaint,
 } from './shared';
 import type { ChatSearchResult, ChatSearchResultsProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * Search hits, grouped Chats / Messages / Contacts.
@@ -52,10 +52,11 @@ function ResultRow({
   testID?: string;
 }) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
   const [pressed, setPressed] = useState(false);
   const geo = CHAT_ROW_GEOMETRY[density];
-  const marker = chatMarker(result.chatKind, result.verified, DEFAULT_ITEM_LABELS);
+  const marker = chatMarker(result.chatKind, result.verified, messages.item);
   const name = [result.name, marker?.label, result.detail, result.time]
     .filter((part): part is string => typeof part === 'string' && part.length > 0)
     .join(', ');
@@ -153,16 +154,18 @@ function ChatSearchResultsComponent({
   loading = false,
   loadingCount = 6,
   density = 'comfortable',
-  accessibilityLabel = 'Search results',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: ChatSearchResultsProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.searchResults;
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
-  const text = useMemo(() => ({ ...DEFAULT_SEARCH_LABELS, ...labels }), [labels]);
+  const text = useMemo(() => ({ ...messages.search, ...labels }), [messages, labels]);
   const groups = useMemo(() => groupSearchResults(results), [results]);
   const geo = CHAT_ROW_GEOMETRY[density];
 

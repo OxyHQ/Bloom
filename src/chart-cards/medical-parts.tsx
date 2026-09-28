@@ -22,7 +22,6 @@ import { useCommonMessages } from '../locale/common-messages';
 /** `h-[330px] rounded-[20px] p-2.5 gap-4`. */
 export const MEDICAL_CARD_HEIGHT = 330;
 export const MEDICAL_CARD_STYLE: ViewStyle = {
-  borderRadius: 20,
   paddingTop: 10,
   paddingBottom: 10,
   paddingLeft: 10,

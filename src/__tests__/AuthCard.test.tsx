@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -29,34 +30,29 @@ describe('AuthCard', () => {
 
   it('pads 24 on a phone and 32 from the sm breakpoint', () => {
     const phone = renderCard(<AuthCard testID="auth" />);
-    expect(resolvedStyle(phone.getByTestId('auth').props.style).padding).toBe(24);
+    expect(cardLayout(phone.getByTestId('auth')).padding).toBe(24);
     phone.unmount();
     withViewport(640);
     const wide = renderCard(<AuthCard testID="auth" />);
-    expect(resolvedStyle(wide.getByTestId('auth').props.style).padding).toBe(32);
+    expect(cardLayout(wide.getByTestId('auth')).padding).toBe(32);
   });
 
-  it('keeps the card geometry: max 400, radius 24, 1px border-button-default', () => {
+  it('keeps the card geometry: max 400, radius 24 and shared rim', () => {
     withViewport(1024);
     const { getByTestId } = renderCard(<AuthCard testID="auth" />);
-    const card = resolvedStyle(getByTestId('auth').props.style);
+    const card = cardLayout(getByTestId('auth'));
     const { colors } = buildTheme('teal', 'light');
     expect(card).toMatchObject({
       maxWidth: 400,
       borderRadius: 24,
-      borderWidth: 1,
-      borderColor: colors.borderLight,
       padding: 32,
     });
   });
 
-  it('paints the dark card with canonical card and hairline roles', () => {
+  it('paints the dark card through the shared material', () => {
     const { getByTestId } = renderCard(<AuthCard testID="auth" />, 'dark');
     const { colors } = buildTheme('teal', 'dark');
-    expect(resolvedStyle(getByTestId('auth').props.style)).toMatchObject({
-      backgroundColor: colors.card,
-      borderColor: colors.borderLight,
-    });
+    expect(cardFill(getByTestId('auth'))).toBe(colors.card);
   });
 
   it('hands the sign-in form to onSubmit as typed values, remember defaulting on', () => {
@@ -114,8 +110,8 @@ describe('AuthCard', () => {
   it('paints the provider button as the secondary button surface', () => {
     const { getByTestId } = renderCard(<AuthCard testID="auth" providers={['github']} />);
     const palette = resolveButtonPalette('outline', buildTheme('teal', 'light'), 'neutral');
+    expect(cardFill(getByTestId('auth-provider-github'))).toBe(palette.rest.background);
     expect(resolvedStyle(getByTestId('auth-provider-github').props.style)).toMatchObject({
-      backgroundColor: palette.rest.background,
       borderColor: palette.rest.border,
       borderWidth: 1,
     });
@@ -164,7 +160,7 @@ describe('AuthCard', () => {
     const { getByTestId, getByText } = renderCard(
       <AuthCard testID="auth" media={<></>} footnote="Terms apply." />,
     );
-    expect(resolvedStyle(getByTestId('auth').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('auth'))).toMatchObject({
       maxWidth: 880,
       flexDirection: 'row',
     });

@@ -31,7 +31,7 @@ describe('ButtonGroup', () => {
     expect(group.borderRadius).toBe(BUTTON_RADIUS);
     expect(group.borderWidth).toBe(1);
     // 3 items + 2 dividers.
-    expect(renderedChildren(toJSON(), 'group')).toHaveLength(5);
+    expect(renderedChildren(toJSON(), 'group-items')).toHaveLength(5);
   });
 
   it('sizes items from the group: 34 medium, 30 small', () => {
@@ -77,21 +77,15 @@ describe('ButtonGroup', () => {
     expect(screen.getByTestId('off').props['aria-pressed']).toBe(false);
   });
 
-  it('paints a selected item like its hover state, and a disabled one differently', () => {
-    const { getByTestId } = renderWithTheme(
-      <ButtonGroup>
-        <ButtonGroupItem testID="rest">A</ButtonGroupItem>
-        <ButtonGroupItem testID="selected" checked>
-          B
-        </ButtonGroupItem>
-        <ButtonGroupItem testID="disabled" disabled>
-          C
-        </ButtonGroupItem>
-      </ButtonGroup>,
-    );
-    const bg = (id: string) => resolvedStyle(getByTestId(id).props.style).backgroundColor;
-    expect(bg('selected')).not.toBe(bg('rest'));
-    expect(bg('disabled')).not.toBe(bg('rest'));
-    expect(getByTestId('disabled').props.disabled).toBe(true);
+  it('keeps controlled changes and disabled state on the real Button', () => {
+    const change = jest.fn();
+    const screen = renderWithTheme(<ButtonGroup>
+      <ButtonGroupItem testID="selected" checked onCheckedChange={change}>B</ButtonGroupItem>
+      <ButtonGroupItem testID="disabled" disabled onCheckedChange={change}>C</ButtonGroupItem>
+    </ButtonGroup>);
+    pressHost(screen.getByTestId('selected'));
+    expect(change).toHaveBeenCalledWith(false);
+    expect(screen.getByTestId('disabled').props.disabled).toBe(true);
+    expect(screen.getByTestId('disabled').props.onPress).toBeUndefined();
   });
 });

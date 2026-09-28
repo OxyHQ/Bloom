@@ -19,6 +19,7 @@ import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-w
 import { SurfaceLevelProvider, surfaceFillVars, useRingOffsetStyle, useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { NoteCardSkeleton } from './NoteCardSkeleton';
@@ -29,7 +30,8 @@ import {
   noteTagVariant,
   resolveNoteCardPaint,
 } from './shared';
-import type { NoteCardLabels, NoteCardProps } from './types';
+import { NOTE_CARD_MESSAGES } from './messages';
+import type { NoteCardProps } from './types';
 
 /**
  * One note, previewed.
@@ -84,16 +86,6 @@ const NOTE_CARD_CSS = interactiveWebCss({
   outlineOffset: 2,
 });
 
-const DEFAULT_LABELS: Required<NoteCardLabels> = {
-  pinned: 'Pinned',
-  locked: 'Protected',
-  attachments: (count) => `${count} ${count === 1 ? 'attachment' : 'attachments'}`,
-  select: 'Select note',
-  checklistDone: 'Done',
-  checklistTodo: 'To do',
-  more: (count) => `${count} more`,
-};
-
 /** One entry of the metadata trail: a 14px glyph and its pre-formatted words. */
 function MetaEntry({
   icon: Icon,
@@ -143,6 +135,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
   style,
   testID,
 }) => {
+  const { messages } = useMessages(NOTE_CARD_MESSAGES);
   const theme = useTheme();
   const parent = useSurfaceFill();
   useInteractiveWebCss(STYLE_ID, NOTE_CARD_CSS);
@@ -151,7 +144,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
   const checkboxPaint = useMemo(() => resolveCheckboxPaint(theme), [theme]);
   const ringOffset = useRingOffsetStyle();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const labels = { ...DEFAULT_LABELS, ...labelsProp };
+  const labels = { ...messages, ...labelsProp };
   const geo = NOTE_CARD_GEOMETRY[density];
   const row = density === 'row';
 
@@ -202,7 +195,6 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
   const cardStyle: WebCssStyle = {
     backgroundColor: hovered && !selected ? paint.selectedBackground : background,
     borderColor: selected ? paint.selectedBorder : paint.border,
-    borderWidth: selected ? 2 : 1,
     // A 2px selected border must not move the content — the padding gives the
     // pixel back rather than a negative margin taking it.
     padding: selected ? geo.padding - 1 : geo.padding,
@@ -367,7 +359,7 @@ const NoteCardComponent: React.FC<NoteCardProps> = ({
     ) : null;
 
   const body = (
-    <Card variant="outlined" radius={geo.radius} style={cardStyle}>
+    <Card variant="outlined" radius={geo.radius} border={selected ? 'medium' : 'thin'} style={cardStyle}>
       <SurfaceLevelProvider level={1} fill={background}>
         {checkbox}
         <View style={{ flex: 1, minWidth: 0 }}>

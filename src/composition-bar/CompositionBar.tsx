@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { memo, useMemo } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 
@@ -129,12 +131,12 @@ const styles = StyleSheet.create({
     flexBasis: 0,
     minWidth: MIN_SEGMENT_WIDTH,
     height: BAR_HEIGHT,
-    borderCurve: 'continuous',
+    ...surfaceStyle(SURFACE_SHAPES.chart),
   },
   emptyTrack: {
     height: BAR_HEIGHT,
     borderRadius: RADIUS_FULL,
-    borderCurve: 'continuous',
+    ...surfaceStyle(SURFACE_SHAPES.chart),
   },
   readout: {
     flexDirection: 'row',

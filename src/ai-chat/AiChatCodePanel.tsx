@@ -13,6 +13,8 @@ import { Tabs, TabsTrigger } from '../tabs';
 import { Text } from '../typography';
 import { GlyphAction } from './AiChatControls';
 import { dataHook, ROW_RADIUS, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
 import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './types';
 
 /**
@@ -46,20 +48,17 @@ export function PanelHeader({
   );
 }
 
-const DEFAULT_LABELS = {
-  changes: 'Changes',
-  browser: 'Browser',
-  tabs: 'Panel view',
-  uncommitted: (count: number) => `${count} Uncomitted changes`,
-  undo: 'Undo changes',
-  browserPreview: 'Browser preview',
-};
+/** The code panel's header actions, named in `messages`' language. */
+export function codePanelActions(messages: AiChatMessages): ReadonlyArray<AiChatPanelAction> {
+  return [
+    { key: 'terminal', label: messages.openTerminal, icon: RiTerminalFill },
+    { key: 'expand', label: messages.expandPanel, icon: RiExpandDiagonalSLine },
+    { key: 'toggle', label: messages.togglePanel, icon: RiSideBarLine },
+  ];
+}
 
-export const DEFAULT_CODE_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = [
-  { key: 'terminal', label: 'Open terminal', icon: RiTerminalFill },
-  { key: 'expand', label: 'Expand panel', icon: RiExpandDiagonalSLine },
-  { key: 'toggle', label: 'Toggle panel', icon: RiSideBarLine },
-];
+/** The English actions; the panel's own default follows the locale. */
+export const DEFAULT_CODE_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = codePanelActions(AI_CHAT_MESSAGES.en);
 
 /** A panel-wide placeholder on the secondary surface (the Browser / Styles tabs). */
 export function PanelPlaceholder({ label, palette }: { label: string; palette: AiChatPalette }) {
@@ -112,7 +111,7 @@ export function AiChatCodePanel({
   defaultTab = 'changes',
   onTabChange,
   browser,
-  actions = DEFAULT_CODE_PANEL_ACTIONS,
+  actions: actionsProp,
   width = 410,
   labels,
   style,
@@ -120,7 +119,10 @@ export function AiChatCodePanel({
 }: AiChatCodePanelProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const l = useMemo(() => ({ tabs: messages.panelView, ...messages.codePanel, ...labels }), [messages, labels]);
+  const defaultActions = useMemo(() => codePanelActions(messages), [messages]);
+  const actions = actionsProp ?? defaultActions;
   const [current, setCurrent] = useControllableState<'changes' | 'browser'>({
     value: tab,
     defaultValue: defaultTab,

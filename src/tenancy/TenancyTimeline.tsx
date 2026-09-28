@@ -3,7 +3,9 @@ import { View } from 'react-native';
 
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
+import { TENANCY_MESSAGES } from './messages';
 import { IS_WEB, joinName, resolveHousingPalette } from './shared';
 import type { TenancyTimelineDensity, TenancyTimelineEventState, TenancyTimelineProps } from './types';
 
@@ -35,12 +37,6 @@ const GEOMETRY: Record<
   compact: { column: 16, dot: 8, line: 18, gap: 12, title: 'body-2-medium', meta: 'caption-1-regular' },
 };
 
-const DEFAULT_STATE_LABELS: Record<TenancyTimelineEventState, string> = {
-  complete: 'Done',
-  current: 'In progress',
-  upcoming: 'Not yet',
-};
-
 function TenancyTimelineComponent({
   events,
   density = 'comfortable',
@@ -49,10 +45,11 @@ function TenancyTimelineComponent({
   style,
   testID,
 }: TenancyTimelineProps) {
+  const { messages } = useMessages(TENANCY_MESSAGES);
   const theme = useTheme();
   const palette = useMemo(() => resolveHousingPalette(theme), [theme]);
   const g = GEOMETRY[density];
-  const labels = { ...DEFAULT_STATE_LABELS, ...stateLabels };
+  const labels: Record<TenancyTimelineEventState, string> = { ...messages.timelineState, ...stateLabels };
 
   return (
     <View

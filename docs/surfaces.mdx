@@ -70,3 +70,5 @@ way resolves with nothing, which reads as the user having cancelled.
 A built-in surface's buttons carry `shouldCloseOnPress: false` and dismiss
 through `surface.dismiss(result)` for that reason. A `'cancel'` colour on a
 `DialogAction` is purely visual; it does not make the button dismiss.
+
+The default words — Confirm, Cancel, and `alert()`/`prompt()`'s OK — are localised via `BloomProvider locale`, resolved where the surface renders; `confirmLabel`, `cancelLabel` and a button's `text` still win.

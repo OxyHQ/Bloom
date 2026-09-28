@@ -1,3 +1,4 @@
+import { Surface } from '../../src/surface';
 import React, { useMemo } from 'react';
 import { Image, ScrollView, View } from 'react-native';
 
@@ -12,7 +13,7 @@ import { FullScreenPlayer, SleepTimerMenu, type MediaPlayerTrack } from '../../s
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { ARTIST_BY_ID, FRIENDS, SHOW_BY_ID, TRACK_BY_ID, ALBUM_BY_ID } from './data';
-import { useMusicLayout, usePaneSurface } from './parts';
+import { useMusicLayout } from './parts';
 import { lyricsOf, usePlayer, usePosition, type Playable } from './PlayerContext';
 import { useMusicRouter } from './router';
 
@@ -95,11 +96,10 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
   const player = usePlayer();
   const router = useMusicRouter();
   const theme = useTheme();
-  const surface = usePaneSurface();
   const item = player.current;
 
   return (
-    <View style={{ flex: 1, minHeight: 0, backgroundColor: surface, borderRadius: 8, overflow: 'hidden' }}>
+    <Surface radius={8} style={{ flex: 1, minHeight: 0, borderRadius: 8, overflow: 'hidden' }}>
       <View
         style={{
           flexDirection: 'row',
@@ -189,7 +189,7 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
           })}
         </View>
       </ScrollView>
-    </View>
+    </Surface>
   );
 }
 

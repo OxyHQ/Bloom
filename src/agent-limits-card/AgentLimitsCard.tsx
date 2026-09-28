@@ -1,3 +1,6 @@
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
@@ -24,10 +27,12 @@ import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { Text, TYPE_SCALE } from '../typography';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { parseRgba } from '../theme/color-utils';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import type { Theme } from '../theme/types';
+import { AGENT_LIMITS_CARD_MESSAGES } from './messages';
 import { useTheme } from '../theme/use-theme';
 import type {
   AgentLimitsCardProps,
@@ -744,7 +749,9 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const palette = useMemo(() => resolvePalette(theme), [theme]);
+  const fill = useCardFill(style);
+  const palette = useMemo(() => ({ ...resolvePalette(theme), surface: fill, hover: surfaceFillOn(theme, fill) }), [theme, fill]);
+  const { messages } = useMessages(AGENT_LIMITS_CARD_MESSAGES);
   const [expanded, setExpanded] = useControllableState({
     value: expandedProp,
     defaultValue: defaultExpanded,
@@ -757,18 +764,16 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   }, []);
 
   const showPlan = limits !== undefined || plan !== undefined;
-  const planHeading = `${labels?.planUsageLimits ?? 'Plan usage limits'}${plan ? ` · ${plan}` : ''}`;
+  const planHeading = `${labels?.planUsageLimits ?? messages.planUsageLimits}${plan ? ` · ${plan}` : ''}`;
 
   return (
-    <View
+    <Card radius="radius-16" elevation="none"
       testID={testID}
       style={[
         {
           width: '100%',
           minWidth: 0,
           flexDirection: 'column',
-          borderRadius: 16,
-          backgroundColor: palette.surface,
           paddingLeft: 16,
           paddingRight: 16,
           paddingTop: 10,
@@ -784,8 +789,8 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
           format={formatTokens}
           expanded={expanded}
           onToggle={toggle}
-          label={labels?.contextWindow ?? 'Context window'}
-          freeSpaceLabel={labels?.freeSpace ?? 'Free space'}
+          label={labels?.contextWindow ?? messages.contextWindow}
+          freeSpaceLabel={labels?.freeSpace ?? messages.freeSpace}
           testID={testID}
         />
       ) : null}
@@ -815,7 +820,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
               <PlanLink
                 palette={palette}
                 onPress={onPlanPress}
-                accessibilityLabel={labels?.managePlan ?? 'Manage plan'}
+                accessibilityLabel={labels?.managePlan ?? messages.managePlan}
                 testID={part(testID, 'plan-button')}
               />
             ) : null}
@@ -829,7 +834,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
           ) : null}
         </>
       ) : null}
-    </View>
+    </Card>
   );
 };
 

@@ -7,6 +7,8 @@ import { useTheme } from '../theme/use-theme';
 import { MediaCard } from './MediaCard';
 import { joinMeta, resolveMediaCardPaint } from './shared';
 import type { ArtistCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 /**
  * An artist: a ROUND photo (the only round cover besides a profile), the name
@@ -19,11 +21,14 @@ function ArtistCardComponent({
   name,
   verified = false,
   followers,
-  typeLabel = 'Artist',
-  verifiedLabel = 'Verified',
+  typeLabel: typeLabelProp,
+  verifiedLabel: verifiedLabelProp,
   layout = 'tile',
   ...rest
 }: ArtistCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.artist;
+  const verifiedLabel = verifiedLabelProp ?? messages.verified;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const row = layout === 'row';

@@ -1,3 +1,7 @@
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars, surfaceFillOn, surfaceTextOn, hairlineOn } from '../styles/surface-levels';
 import React, {
   memo,
   useCallback,
@@ -10,6 +14,7 @@ import React, {
 } from 'react';
 import {
   Platform,
+  StyleSheet,
   Pressable,
   TextInput,
   View,
@@ -35,6 +40,8 @@ import {
   resolveCheckboxPaint,
   type CheckboxPaint,
 } from '../checkbox/shared';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -43,6 +50,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
+import { QUESTIONNAIRE_MESSAGES } from './messages';
 import type {
   QuestionnaireAnswer,
   QuestionnaireAnswers,
@@ -112,8 +120,10 @@ interface QuestionnairePalette {
 }
 
 /** Canonical role palette. Pure, so a test can walk it. */
-export function resolveQuestionnairePalette(theme: Theme): QuestionnairePalette {
+export function resolveQuestionnairePalette(theme: Theme, backing?: string): QuestionnairePalette {
   const c = theme.colors;
+  const raised = backing === undefined ? c.backgroundSecondary : surfaceFillOn(theme, backing);
+  const active = backing === undefined ? c.backgroundTertiary : surfaceFillOn(theme, raised);
   return {
     surface: c.card, text: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
     rowBorder: c.borderLight, rowBorderHover: c.border,
@@ -122,6 +132,17 @@ export function resolveQuestionnairePalette(theme: Theme): QuestionnairePalette 
     pillSelected: c.primarySubtle, pillHover: c.backgroundSecondary,
     pillLabelSelected: c.primarySubtleForeground,
     checkbox: resolveCheckboxPaint(theme),
+    ...(backing === undefined ? {} : {
+      surface: backing,
+      ...surfaceTextOn(theme, backing),
+      rowBorder: hairlineOn(theme, backing),
+      rowBorderHover: hairlineOn(theme, raised),
+      rowHover: raised,
+      rowActive: active,
+      key: raised,
+      keyRaised: active,
+      pillHover: raised,
+    }),
   };
 }
 
@@ -155,16 +176,6 @@ const BODY_REGULAR: TextStyle = TYPE_SCALE['body-regular'];
 const BODY_2_MEDIUM: TextStyle = TYPE_SCALE['body-2-medium'];
 
 const EMPTY_ANSWER: QuestionnaireAnswer = { values: [] };
-
-const DEFAULT_LABELS: Required<QuestionnaireLabels> = {
-  previous: 'Previous',
-  next: 'Next',
-  complete: 'Done',
-  other: 'Other',
-  otherPlaceholder: 'Enter your custom answer here',
-  dismiss: 'Dismiss',
-  steps: 'Steps',
-};
 
 // ---------------------------------------------------------------------------
 //  Web CSS: focus rings, colour transitions, the check draw-in. Every hook is a
@@ -619,6 +630,7 @@ function StepPills({
   testID?: string;
 }) {
   const reducedMotion = useReducedMotion();
+  const { messages } = useMessages(QUESTIONNAIRE_MESSAGES);
   const [boxes, setBoxes] = useState<Record<number, PillBox>>({});
   const x = useSharedValue(0);
   const y = useSharedValue(0);
@@ -678,7 +690,7 @@ function StepPills({
       {questions.map((entry, index) => (
         <StepPill
           key={entry.id}
-          label={entry.stepLabel ?? `Step ${index + 1}`}
+          label={entry.stepLabel ?? messages.step(index + 1)}
           selected={index === step}
           onPress={() => onSelect(index)}
           onLayout={(event) => {
@@ -793,11 +805,25 @@ function QuestionnaireComponent({
   style,
   testID,
 }: QuestionnaireProps) {
+  const common = useCommonMessages();
+  const { messages } = useMessages(QUESTIONNAIRE_MESSAGES);
   const theme = useTheme();
-  const palette = useMemo(() => resolveQuestionnairePalette(theme), [theme]);
+  const surfaceLayer = useSurfaceLayer();
+  const customSurface = StyleSheet.flatten(style);
+  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
+  const palette = useMemo(() => resolveQuestionnairePalette(theme, surfaceFill), [theme, surfaceFill]);
   const reducedMotion = useReducedMotion();
   const headingId = `bloom-questionnaire-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  const text = { ...DEFAULT_LABELS, ...labels };
+  const text: Required<QuestionnaireLabels> = {
+    previous: common.previous,
+    next: common.next,
+    complete: common.done,
+    other: messages.other,
+    otherPlaceholder: messages.otherPlaceholder,
+    dismiss: common.dismiss,
+    steps: messages.steps,
+    ...labels,
+  };
   const total = questions.length;
   const lastIndex = Math.max(total - 1, 0);
 
@@ -1089,11 +1115,11 @@ function QuestionnaireComponent({
     gap: CARD_GAP,
     overflow: 'hidden',
     borderRadius: CARD_RADIUS,
-    backgroundColor: palette.surface,
+    backgroundColor: 'transparent',
     padding: CARD_PADDING,
     boxShadow: CARD_SHADOW,
     '--bloom-questionnaire-ring': palette.ring,
-    '--bloom-questionnaire-surface': palette.surface,
+    '--bloom-questionnaire-surface': surfaceFill,
     '--bloom-questionnaire-placeholder': palette.textTertiary,
   };
 
@@ -1105,8 +1131,10 @@ function QuestionnaireComponent({
       aria-labelledby={headingId}
       accessibilityLabel={question.question}
       {...(IS_WEB ? { onKeyDown } : {})}
-      style={[cardStyle, style]}
+      style={[cardStyle, style, { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) }]}
     >
+      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
+      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
       <Animated.View
         style={[
           {
@@ -1183,6 +1211,7 @@ function QuestionnaireComponent({
           </Button>
         </View>
       </View>
+      </SurfaceLevelProvider>
     </View>
   );
 }

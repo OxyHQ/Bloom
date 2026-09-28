@@ -132,6 +132,18 @@ const ItemComponent = function Item({
     </View>
   );
 
+  const stateRole = role ?? accessibilityRole;
+  const selectedAria =
+    selected == null
+      ? null
+      : stateRole === 'option'
+        ? { 'aria-selected': selected }
+        : stateRole === 'radio' || stateRole === 'checkbox'
+          ? { 'aria-checked': selected }
+          : (stateRole == null || stateRole === 'button') && (onPress || onLongPress)
+            ? { 'aria-pressed': selected }
+            : null;
+
   if (onPress || onLongPress) {
     // `radio` and `checkbox` are roles BOTH platforms have, so they travel on
     // `accessibilityRole` as well rather than being web-only like `option`.
@@ -143,16 +155,6 @@ const ItemComponent = function Item({
     // toggle a PRESSED one, and `menuitem`/`listitem` carry neither, so those
     // emit nothing. React Native keeps reading `accessibilityState` below,
     // which is why both are set.
-    const selectedAria =
-      selected == null
-        ? null
-        : role === 'option'
-          ? { 'aria-selected': selected }
-          : role === 'radio' || role === 'checkbox'
-            ? { 'aria-checked': selected }
-            : role == null
-              ? { 'aria-pressed': selected }
-              : null;
     const handlePress = disabled || !onPress ? undefined : onPress;
     const handleLongPress = disabled || !onLongPress ? undefined : onLongPress;
     return (
@@ -192,7 +194,7 @@ const ItemComponent = function Item({
 
   return (
     <View
-      accessibilityRole={accessibilityRole ?? 'none'}
+      accessibilityRole={accessibilityRole ?? (role === 'radio' || role === 'checkbox' ? role : 'none')}
       {...(role ? { role } : {})}
       accessibilityLabel={
         accessibilityLabel ?? (typeof title === 'string' ? title : undefined)
@@ -203,6 +205,9 @@ const ItemComponent = function Item({
       // this the non-pressable row announced nothing. React Native folds
       // `aria-disabled` back into `accessibilityState`.
       aria-disabled={disabled || undefined}
+      accessibilityState={{ disabled, selected, expanded }}
+      aria-expanded={expanded}
+      {...selectedAria}
       style={disabled ? styles.disabled : undefined}>
       {content}
     </View>

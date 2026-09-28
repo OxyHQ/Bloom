@@ -2,20 +2,20 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { TypeScaleVariant } from '../typography/scale';
 
-/** The module's fixed strings, overridable for localisation. */
+/** The module's fixed strings, localised via `BloomProvider locale`; each key here wins. */
 export interface AgentProgressLabels {
-  /** Header while steps remain. Default `n => \`${n} ${n === 1 ? 'step' : 'steps'} left\``. */
+  /** Header while steps remain. "{n} steps left" in English. */
   stepsLeft?: (remaining: number) => string;
-  /** Header once every step is done. Default `'All steps completed'`. */
+  /** Header once every step is done. `'All steps completed'` in English. */
   allCompleted?: string;
-  /** Names the minimize button. Default `'Minimize steps'`. */
+  /** Names the minimize button. `'Minimize steps'` in English. */
   minimize?: string;
-  /** Names the minimized bar (it expands on press). Default `'Expand steps'`. */
+  /** Names the minimized bar (it expands on press). `'Expand steps'` in English. */
   expand?: string;
 }
 
 export interface AgentProgressProps {
-  /** Ordered task labels. Defaults to a coding workflow (`DEFAULT_AGENT_PROGRESS_STEPS`). */
+  /** Ordered task labels. Defaults to a coding workflow (`DEFAULT_AGENT_PROGRESS_STEPS`, in the locale's language). */
   steps?: readonly string[];
   /**
    * Time spent on each step, in ms. Drives the rings; when `completedCount` is

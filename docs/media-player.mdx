@@ -6,6 +6,8 @@ order: 63
 
 # Media Player
 
+MiniPlayer uses Surface while retaining its artwork tint and immersive foreground palette. NowPlayingBar is docked chrome: it publishes its background without adding a material rim or depth.
+
 The player surfaces of a music or podcast app. They are **presentational only**: there is no audio engine inside. Every state (playing, position, repeat, volume, device…) is a prop and every user action is a callback — the app's player owns the truth and re-renders these.
 
 ```tsx
@@ -22,6 +24,8 @@ import {
 ```
 
 They are built from [Media Controls](/docs/bloom/main/media-controls) (`PlayButton`, `LikeButton`, `PlaybackProgress`, `VolumeControl`, `ExplicitBadge`) and share their colours: the theme accent, the neutral ramps, light and dark. No control scales or bounces; hover and press change colour only.
+
+The English defaults below are localised: each is drawn in the app's language via `BloomProvider locale` ([Locale](/docs/locale)), and a prop you pass still wins.
 
 ## The track
 
@@ -151,7 +155,7 @@ The phone's floating bar above the tab bar. Press it to open the full player.
 
 `artworkColor` is a hex from the backend — never sampled from the image. `resolveArtworkTint(color, text, textMuted)` darkens it in 5% steps until BOTH the dark theme's text and muted text clear **4.5:1**, stopping at the first step that holds (a dark colour is used as given; `#F4E3A1` comes out as a deep olive). The walk itself is `darkenUntilContrast` from [`@oxy.so/bloom/styles`](/docs/bloom/main/styles), shared with the lyrics pane, the generated covers and the browse tiles. The bar's content then renders under the dark theme, so it reads light-on-colour in a light app too.
 
-No colour, or one that does not parse, falls back to the floating-surface recipe under the app's own theme: the card with a neutral-200 hairline (dark: neutral-800 with neutral-700).
+No colour, or one that does not parse, uses Surface's next neutral layer above its actual parent. The shared material supplies the rim; a caller background override also becomes the published backing.
 
 `contrastRatio(a, b)` (from `@oxy.so/bloom/styles`) is the WCAG ratio the check uses, exported for an app that wants the same guarantee elsewhere.
 

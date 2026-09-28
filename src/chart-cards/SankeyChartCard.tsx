@@ -19,7 +19,7 @@ import { chartHueTone, resolveTone, type ChartHue, type ChartSeriesTone } from '
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio } from './primitives/format';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import {
   hitTestSankey,
@@ -31,6 +31,8 @@ import {
 } from './sankey-layout';
 import { svgTextType, textTopForBaseline } from './svg-text';
 import { useEasedValues } from './use-eased-values';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 export interface SankeyNodeDatum {
   name: string;
@@ -142,7 +144,7 @@ const sameItem = (a: SankeyActiveItem | null, b: SankeyActiveItem | null) =>
  * Hover on web, press-and-scrub on native (letting go clears).
  */
 export function SankeyChartCard({
-  title = 'Tracked time',
+  title: titleProp,
   nodes: nodesProp,
   links: linksProp,
   headline: headlineProp,
@@ -161,8 +163,10 @@ export function SankeyChartCard({
   style,
   testID,
 }: SankeyChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.trackedTime;
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 
@@ -372,7 +376,7 @@ export function SankeyChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={active !== null}
         fadeKey={`${selectedId ?? ''}:${active ? `${active.type}:${active.index}` : 'idle'}`}
         range={range}

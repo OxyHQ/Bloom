@@ -7,8 +7,7 @@
  */
 import type { ComponentType } from 'react';
 
-import { BUTTON_SHADOW, resolveButtonPalette } from '../button/shared';
-import type { ButtonPalette } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import type { Props as IconProps } from '../icons/shared';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
@@ -23,8 +22,8 @@ import { RiShieldCheckLine } from '../icons/remix/RiShieldCheckLine';
 import { RiSlideshow3Line } from '../icons/remix/RiSlideshow3Line';
 import { RiSpeedUpFill } from '../icons/remix/RiSpeedUpFill';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
+import { COMPOSER_PANEL_MESSAGES, type ComposerPanelMessages } from './messages';
 import type {
   ComposerPanelAddMenuGroup,
   ComposerPanelAttachmentKind,
@@ -59,9 +58,6 @@ export interface ComposerPalette {
   iconTertiary: string;
   /** `composer-panel-tab-background`. */
   tab: string;
-  /** `composer-panel-add-background` / `-hover-background`. */
-  add: string;
-  addHover: string;
   /** `composer-panel-tile-border`. */
   tileBorder: string;
   /** `composer-panel-rail-background`. */
@@ -85,16 +81,10 @@ export interface ComposerPalette {
   shadowPicker: string;
   /** Provider marks: black at 30% as exported, inverted in dark. */
   logo: string;
-  /** Main task action, every state. */
-  send: ButtonPalette;
 }
 
-/** Re-emit a resolved colour at `alpha` (parse-and-re-emit, never string concatenation). */
-export function withAlpha(color: string, alpha: number): string {
-  const rgba = parseRgba(color);
-  if (!rgba) return color;
-  return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${alpha})`;
-}
+/** Re-exported from `theme/color-utils`, which owns it (it was copied here). */
+export { withAlpha } from '../theme/color-utils';
 
 /** Canonical surfaces and foregrounds follow the preset's authored role pairs. */
 export function resolveComposerPalette(theme: Theme): ComposerPalette {
@@ -115,8 +105,6 @@ export function resolveComposerPalette(theme: Theme): ComposerPalette {
     iconSecondary: c.textSecondary,
     iconTertiary: c.textTertiary,
     tab: c.backgroundTertiary,
-    add: c.backgroundTertiary,
-    addHover: c.backgroundSecondary,
     tileBorder: c.borderLight,
     rail: c.backgroundSecondary,
     ringTrack: c.borderLight,
@@ -131,7 +119,6 @@ export function resolveComposerPalette(theme: Theme): ComposerPalette {
     shadowCard: '0 1px 0.5px 0 rgba(0, 0, 0, 0.02), 0 4px 2px 0 rgba(0, 0, 0, 0.02)',
     shadowPicker: '0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 4px 8px 0 rgba(0, 0, 0, 0.02)',
     logo: dark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-    send: resolveButtonPalette('solid', theme, 'action'),
   };
 }
 
@@ -198,68 +185,61 @@ export const TILE_RING_LENGTH = 2 * (TILE - 2 - 22) * 2 + 2 * Math.PI * 11;
 //  Default data
 // ---------------------------------------------------------------------------
 
-/** The four permission modes. Auto is the default. */
-export const COMPOSER_PANEL_PERMISSIONS: readonly ComposerPanelPermissionOption[] = [
-  { id: 'auto', label: 'Auto', description: 'Agent decides by itself', icon: RiSpeedUpFill },
-  {
-    id: 'manual',
-    label: 'Manual',
-    description: 'Always ask before making a change',
-    icon: RiGitMergeLine,
-    flip: true,
-  },
-  {
-    id: 'plan',
-    label: 'Plan mode',
-    description: 'Create a plan before proceeding',
-    icon: RiRouteLine,
-    flip: true,
-  },
-  {
-    id: 'bypass',
-    label: 'Bypass all',
-    description: 'Agent handles permission decisions',
-    icon: RiShieldCheckLine,
-  },
-];
+/** The four permission modes, in `messages`' language. Auto is the default. */
+export function composerPermissions(messages: ComposerPanelMessages): readonly ComposerPanelPermissionOption[] {
+  const modes = messages.permissionModes;
+  return [
+    { id: 'auto', ...modes.auto, icon: RiSpeedUpFill },
+    { id: 'manual', ...modes.manual, icon: RiGitMergeLine, flip: true },
+    { id: 'plan', ...modes.plan, icon: RiRouteLine, flip: true },
+    { id: 'bypass', ...modes.bypass, icon: RiShieldCheckLine },
+  ];
+}
 
-/** Six effort stops between "Faster" and "Smarter"; index 1 is the design's resting stop. */
-export const MODEL_PICKER_EFFORT_LEVELS: readonly string[] = [
-  'Low',
-  'Medium',
-  'Balanced',
-  'High',
-  'Very High',
-  'Max',
-];
+/** The four permission modes in English — what a component draws is its locale's (`composerPermissions`). */
+export const COMPOSER_PANEL_PERMISSIONS: readonly ComposerPanelPermissionOption[] = composerPermissions(
+  COMPOSER_PANEL_MESSAGES.en,
+);
+
+/**
+ * Six effort stops between "Faster" and "Smarter"; index 1 is the design's
+ * resting stop. English — a component's default is its locale's `effortLevels`.
+ */
+export const MODEL_PICKER_EFFORT_LEVELS: readonly string[] = COMPOSER_PANEL_MESSAGES.en.effortLevels;
 export const DEFAULT_EFFORT = 1;
 
 /**
- * The add menu: an "Add" group of 20px icon rows and a "Plugins" group of
- * 24px illustrated rows. Raster-like plugin illustrations with filters that
- * react-native-svg cannot draw are out of scope, so the defaults use the
- * matching Remix file glyphs at the same 24px box; pass `image` for your own
- * artwork.
+ * The add menu, in `messages`' language: an "Add" group of 20px icon rows and
+ * a "Plugins" group of 24px illustrated rows. Raster-like plugin illustrations
+ * with filters that react-native-svg cannot draw are out of scope, so the
+ * defaults use the matching Remix file glyphs at the same 24px box; pass
+ * `image` for your own artwork.
  */
-export const COMPOSER_PANEL_ADD_MENU: readonly ComposerPanelAddMenuGroup[] = [
-  {
-    label: 'Add',
-    rows: [
-      { id: 'files', icon: RiAttachment2, label: 'Files and folders' },
-      { id: 'goal', icon: RiFocus3Line, label: 'Goal', description: 'Set a goal for faster results' },
-      { id: 'plan', icon: RiListCheck3, label: 'Plan mode', description: 'Manage complex tasks' },
-    ],
-  },
-  {
-    label: 'Plugins',
-    rows: [
-      { id: 'documents', icon: RiFileTextLine, iconSize: 24, label: 'Documents', description: 'Create and edit documents' },
-      { id: 'spreadsheets', icon: RiFileExcel2Line, iconSize: 24, label: 'Spreadsheets', description: 'Generate spreadsheets' },
-      { id: 'presentations', icon: RiSlideshow3Line, iconSize: 24, label: 'Presentations', description: 'Create marketing assets' },
-      { id: 'code', icon: RiCodeBlock, iconSize: 24, label: 'Code blocks', description: 'Write and edit existing code' },
-    ],
-  },
-];
+export function composerAddMenu(messages: ComposerPanelMessages): readonly ComposerPanelAddMenuGroup[] {
+  const m = messages.addMenuRows;
+  return [
+    {
+      label: m.add,
+      rows: [
+        { id: 'files', icon: RiAttachment2, label: m.files },
+        { id: 'goal', icon: RiFocus3Line, label: m.goal, description: m.goalDescription },
+        { id: 'plan', icon: RiListCheck3, label: m.plan, description: m.planDescription },
+      ],
+    },
+    {
+      label: m.plugins,
+      rows: [
+        { id: 'documents', icon: RiFileTextLine, iconSize: 24, label: m.documents, description: m.documentsDescription },
+        { id: 'spreadsheets', icon: RiFileExcel2Line, iconSize: 24, label: m.spreadsheets, description: m.spreadsheetsDescription },
+        { id: 'presentations', icon: RiSlideshow3Line, iconSize: 24, label: m.presentations, description: m.presentationsDescription },
+        { id: 'code', icon: RiCodeBlock, iconSize: 24, label: m.code, description: m.codeDescription },
+      ],
+    },
+  ];
+}
+
+/** The add menu in English — what a component draws is its locale's (`composerAddMenu`). */
+export const COMPOSER_PANEL_ADD_MENU: readonly ComposerPanelAddMenuGroup[] = composerAddMenu(COMPOSER_PANEL_MESSAGES.en);
 
 /** The glyph a non-image attachment tile draws when it carries no `icon`. */
 export const ATTACHMENT_KIND_ICONS: Record<Exclude<ComposerPanelAttachmentKind, 'image'>, ComposerIcon> = {
@@ -284,9 +264,6 @@ export const COMPOSER_WEB_CSS = `
   outline: none;
   transition: background-color ${TRANSITION_MS}ms ease, opacity ${TRANSITION_MS}ms ease, color ${TRANSITION_MS}ms ease;
 }
-[data-bloom-composer-control="send"] {
-  transition: opacity 200ms ease;
-}
 [data-bloom-composer-control]:focus-visible {
   outline: 2px solid var(--bloom-composer-ring);
   outline-offset: 0;
@@ -295,7 +272,6 @@ export const COMPOSER_WEB_CSS = `
   text-underline-offset: 3px;
 }
 [data-bloom-composer-control="offset"]:focus-visible,
-[data-bloom-composer-control="send"]:focus-visible,
 [data-bloom-composer-control="link"]:focus-visible {
   outline-offset: 2px;
 }
@@ -334,24 +310,6 @@ export const COMPOSER_WEB_CSS = `
 }
 [data-bloom-composer-pill] [data-bloom-composer-control] {
   transition: background-color 480ms ease, border-color 480ms ease, box-shadow 480ms ease, opacity 200ms ease;
-}
-[data-bloom-composer-glass-rim] {
-  pointer-events: none;
-  padding: 0.3px;
-  background: conic-gradient(
-    from 134deg,
-    rgba(0, 0, 0, 0.1) 0deg,
-    rgba(186, 186, 186, 0.38) 70deg,
-    rgba(0, 0, 0, 0.011) 140deg,
-    rgba(255, 255, 255, 0.48) 180deg,
-    rgba(0, 0, 0, 0.011) 220deg,
-    rgba(186, 186, 186, 0.38) 290deg,
-    rgba(0, 0, 0, 0.1) 360deg
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
 }
 @media (prefers-reduced-motion: reduce) {
   [data-bloom-composer-pill] [data-bloom-composer-control] { transition: none; }

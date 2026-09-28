@@ -90,7 +90,9 @@ const config: StorybookConfig = {
       },
       // Agent worktrees each carry a full `node_modules` and `lib/`; watching
       // them exhausts the inotify limit (ENOSPC) and kills the dev server.
-      server: { watch: { ignored: ['**/.worktrees/**'] } },
+      // Anchor the exclusion below this project: a blanket **/.worktrees/**
+      // also ignores every source file when Storybook itself runs in a worktree.
+      server: { watch: { ignored: [path.resolve(__dirname, '../.worktrees/**')] } },
       resolve: {
         alias: [
           {

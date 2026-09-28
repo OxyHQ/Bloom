@@ -6,6 +6,8 @@ order: 64
 
 # Queue Panel
 
+Painted containers publish their actual base fill to descendants and `--bloom-surface`. Unpainted embedded variants inherit the enclosing surface instead of resetting its level.
+
 The play queue as a side panel on web and as bottom-sheet content on native.
 
 ```tsx
@@ -90,7 +92,7 @@ The row on its own, for a list of your own: `track`, `onPress`, `current`, `play
 
 ## Labels
 
-Every string is in `labels` — pass any subset to translate. The ones that name a track are functions:
+Every string is spoken in the app's language via `BloomProvider locale` ([Locale](/docs/locale)); `labels` overrides any subset. The ones that name a track are functions:
 
 ```tsx
 <QueuePanel
@@ -105,7 +107,7 @@ Every string is in `labels` — pass any subset to translate. The ones that name
 />
 ```
 
-`DEFAULT_QUEUE_PANEL_LABELS` holds the English defaults.
+`DEFAULT_QUEUE_PANEL_LABELS` holds the English defaults; the panel itself uses the locale's.
 
 ## Accessibility
 

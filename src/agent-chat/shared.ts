@@ -8,6 +8,7 @@ import {
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { AGENT_CHAT_MESSAGES, type AgentChatMessages } from './messages';
 
 /** Shared semantic surfaces, text and action roles for every agent-chat part. */
 export interface AgentChatPalette {
@@ -112,27 +113,37 @@ export const DENSE_ROW_CLASS = 'py-1.5';
 //  Formatting
 // ---------------------------------------------------------------------------
 
-/** "just now", "3 minutes ago", "2 hours ago". */
-export function formatAgo(at: number, now = Date.now()): string {
+/**
+ * "just now", "3 minutes ago", "2 hours ago" — in the words of `ago`, the
+ * family catalog's entry for the locale (English when omitted).
+ */
+export function formatAgo(
+  at: number,
+  now = Date.now(),
+  ago: AgentChatMessages['ago'] = AGENT_CHAT_MESSAGES.en.ago,
+): string {
   const seconds = Math.max(0, Math.round((now - at) / 1000));
-  if (seconds < 45) return 'just now';
+  if (seconds < 45) return ago.justNow;
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  if (minutes < 60) return ago.minutes(minutes);
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-  const days = Math.round(hours / 24);
-  return `${days} day${days === 1 ? '' : 's'} ago`;
+  if (hours < 24) return ago.hours(hours);
+  return ago.days(Math.round(hours / 24));
 }
 
-/** Compact ages for a narrow badge: `now`, `34m`, `5h`, `18h`, `3d`. */
-export function relativeTime(at: number, now = Date.now()): string {
+/** Compact ages for a narrow badge: `now`, `34m`, `5h`, `18h`, `3d` (in `age`'s words). */
+export function relativeTime(
+  at: number,
+  now = Date.now(),
+  age: AgentChatMessages['age'] = AGENT_CHAT_MESSAGES.en.age,
+): string {
   const seconds = Math.max(0, Math.round((now - at) / 1000));
-  if (seconds < 60) return 'now';
+  if (seconds < 60) return age.now;
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) return age.minutes(minutes);
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  return `${Math.round(hours / 24)}d`;
+  if (hours < 24) return age.hours(hours);
+  return age.days(Math.round(hours / 24));
 }
 
 /** `"openai/gpt-5-nano"` → `"gpt-5-nano"`. */

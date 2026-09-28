@@ -24,6 +24,8 @@ import {
   SELECT_SEPARATOR_CLASS,
 } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
+import { useMessages } from '../locale/messages';
+import { SELECT_MESSAGES } from './messages';
 import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
 import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
@@ -234,6 +236,7 @@ SelectLabel.displayName = 'SelectLabel';
 function SelectScrollButton({ direction, className, style }: SelectScrollButtonProps) {
   const palette = useMenuPalette();
   const scroll = useContext(SelectScrollContext);
+  const { messages } = useMessages(SELECT_MESSAGES);
   const isUp = direction === 'up';
   if (!scroll) return null;
   if (isUp ? !scroll.canScrollUp : !scroll.canScrollDown) return null;
@@ -242,7 +245,7 @@ function SelectScrollButton({ direction, className, style }: SelectScrollButtonP
   return (
     <StyledPressable
       accessibilityRole="button"
-      accessibilityLabel={isUp ? 'Scroll up' : 'Scroll down'}
+      accessibilityLabel={isUp ? messages.scrollUp : messages.scrollDown}
       onPress={() => scroll.scrollBy(direction)}
       // `flex cursor-default items-center justify-center py-1`, opaque so the
       // rows scrolling under it do not show through.

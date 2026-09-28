@@ -17,12 +17,14 @@ import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { CATEGORY_BAR_MESSAGES } from './messages';
 import type { CategoryBarItem, CategoryBarProps } from './types';
 
 /**
@@ -264,11 +266,14 @@ function CategoryBarComponent({
   accessibilityLabel,
   gap = 32,
   fadeColor,
-  previousLabel = 'Previous categories',
-  nextLabel = 'Next categories',
+  previousLabel: previousLabelProp,
+  nextLabel: nextLabelProp,
   style,
   testID,
 }: CategoryBarProps) {
+  const { messages } = useMessages(CATEGORY_BAR_MESSAGES);
+  const previousLabel = previousLabelProp ?? messages.previous;
+  const nextLabel = nextLabelProp ?? messages.next;
   const theme = useTheme();
   useAccessibleNameWarning('CategoryBar', accessibilityLabel);
   useEffect(() => {

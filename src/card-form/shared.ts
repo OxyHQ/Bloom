@@ -65,7 +65,8 @@ export function groupCardDigits(digits: string, groups: readonly number[] = DEFA
  * re-groups it when the field is left.
  *
  * An edit that would push the number past `maxDigits` is refused outright:
- * returning a truncated value would move the caret too.
+ * returning a truncated value would move the caret too. Deletions still work
+ * when a scheme change made the existing value longer than the new limit.
  */
 export function applyCardNumberEdit(
   previous: string,
@@ -74,8 +75,8 @@ export function applyCardNumberEdit(
   maxDigits = 19,
 ): string {
   const nextDigits = cardDigits(next);
-  if (nextDigits.length > maxDigits) return previous;
   const previousDigits = cardDigits(previous);
+  if (nextDigits.length > maxDigits && nextDigits.length >= previousDigits.length) return previous;
   const atEnd =
     previousDigits.startsWith(nextDigits) || nextDigits.startsWith(previousDigits);
   if (atEnd) return groupCardDigits(nextDigits, groups);

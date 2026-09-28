@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
-import { MESSAGE_STATUS_LABELS } from '../chat-indicators';
+import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
 import type { MessageDeliveryStatus } from '../chat-indicators/types';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
 import { RiContactsBookLine } from '../icons/remix/RiContactsBookLine';
@@ -33,6 +33,7 @@ import type {
   HighlightedRun,
   StoryEntry,
 } from './types';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -280,23 +281,13 @@ export function hasUnread(unreadCount?: number, unreadDot?: boolean): boolean {
   return Boolean(unreadDot) || (unreadCount ?? 0) > 0;
 }
 
-/** The default English names. Apps in other languages pass their own. */
-export const DEFAULT_ITEM_LABELS: Required<ChatListItemLabels> = {
-  draft: 'Draft:',
-  pinned: 'Pinned',
-  muted: 'Muted',
-  verified: 'Verified',
-  channel: 'Channel',
-  bot: 'Bot',
-  group: 'Group',
-};
+/**
+ * The English names. Components read the localised ones from
+ * `CHAT_LIST_MESSAGES` (see `docs/locale.mdx`).
+ */
+export const DEFAULT_ITEM_LABELS: Required<ChatListItemLabels> = CHAT_LIST_MESSAGES.en.item;
 
-export const DEFAULT_SEARCH_LABELS: Required<ChatSearchResultsLabels> = {
-  chat: 'Chats',
-  message: 'Messages',
-  contact: 'Contacts',
-  empty: 'No results',
-};
+export const DEFAULT_SEARCH_LABELS: Required<ChatSearchResultsLabels> = CHAT_LIST_MESSAGES.en.search;
 
 /** The marker a row draws beside the name, and what it is called. */
 export function chatMarker(
@@ -356,6 +347,7 @@ export function composeChatRowName(
   input: ChatRowNameInput,
   labels: Required<ChatListItemLabels>,
   unreadLabel: (count: number) => string,
+  statusLabels: Record<MessageDeliveryStatus, string> = CHAT_INDICATORS_MESSAGES.en.status,
 ): string {
   const unread = hasUnread(input.unreadCount, input.unreadDot);
   return [
@@ -364,7 +356,7 @@ export function composeChatRowName(
     input.typingLabel ?? previewSummary(input.preview, labels),
     input.time,
     unread ? unreadLabel(input.unreadCount ?? 0) : null,
-    !unread && input.outgoingStatus ? MESSAGE_STATUS_LABELS[input.outgoingStatus] : null,
+    !unread && input.outgoingStatus ? statusLabels[input.outgoingStatus] : null,
     input.muted ? labels.muted : null,
     input.pinned ? labels.pinned : null,
   ]

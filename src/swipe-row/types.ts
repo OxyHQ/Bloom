@@ -70,7 +70,7 @@ export interface SwipeRowProps {
   radius?: number;
   /** How wide one action is. Default {@link SWIPE_ACTION_WIDTH}. */
   actionWidth?: number;
-  /** Names the tap target that closes an open pane. Default `'Close actions'`. */
+  /** Names the tap target that closes an open pane; `'Close actions'` in English. */
   closeLabel?: string;
   /** Fires whenever a pane settles open or closed. */
   onOpenChange?: (side: 'left' | 'right' | null) => void;

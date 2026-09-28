@@ -50,11 +50,11 @@ export interface VehicleOption<T extends string = VehicleKind> {
 
 /** Every word the picker speaks, in one prop. All of it is copy an app localises. */
 export interface VehiclePickerLabels {
-  /** Before the `priceFrom` amount. Default `"From"`. */
+  /** Before the `priceFrom` amount (`"From"` in English). */
   from?: string;
-  /** Names the `fits` chip row, per option. Default `` (label) => `What fits in a ${label}` ``. */
+  /** Names the `fits` chip row, per option (`` (label) => `What fits in a ${label}` `` in English). */
   fits?: (label: string) => string;
-  /** The reason fallback on a disabled option with none. Default `"Not available for this load"`. */
+  /** The reason fallback on a disabled option with none (`"Not available for this load"` in English). */
   unavailable?: string;
 }
 
@@ -63,7 +63,7 @@ export interface VehiclePickerProps<T extends string = VehicleKind> {
   value: T | null;
   /** Called with the chosen vehicle. Never called with the value already chosen. */
   onValueChange: (value: T) => void;
-  /** The vehicles, in the order they should be read. Default {@link VEHICLE_OPTIONS}. */
+  /** The vehicles, in the order they should be read. Default {@link VEHICLE_OPTIONS}, in the resolved locale's words. */
   options?: readonly VehicleOption<T>[];
   /**
    * A heading over the list, drawn the way a search panel's pickers draw theirs
@@ -76,7 +76,7 @@ export interface VehiclePickerProps<T extends string = VehicleKind> {
   disabled?: boolean;
   labels?: VehiclePickerLabels;
   /**
-   * Names the group. Default `"Vehicle"` — and it matters even when `title` is
+   * Names the group (`"Vehicle"` in English) — and it matters even when `title` is
    * drawn, because a heading beside a group is a sibling, not a label.
    */
   accessibilityLabel?: string;

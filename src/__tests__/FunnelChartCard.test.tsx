@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -80,7 +81,7 @@ describe('FunnelChartCard', () => {
     const { getByTestId, getByText } = renderCard(
       <FunnelChartCard testID="funnel" stages={STAGES} delta={0.052} range="Last 7 days" />,
     );
-    expect(resolvedStyle(getByTestId('funnel').props.style)).toMatchObject({ height: 329, borderRadius: 16 });
+    expect(cardLayout(getByTestId('funnel'))).toMatchObject({ height: 329, borderRadius: 16 });
     expect(getByTestId('funnel-headline').props.children).toBe('197');
     expect(getByText('Sign-up funnel')).toBeTruthy();
     expect(getByText('+5.2%')).toBeTruthy();
@@ -102,7 +103,7 @@ describe('FunnelChartCard', () => {
   it('puts a 36px backing band behind every sharp column and no edge layers', () => {
     const { getByTestId, UNSAFE_getAllByType } = renderCard(<FunnelChartCard testID="funnel" shape="sharp" stages={STAGES} />);
     layoutPlot(getByTestId);
-    const rects = UNSAFE_getAllByType('Rect' as never) as unknown as Node[];
+    const rects = getByTestId('funnel-plot').findAllByType('Rect' as never) as unknown as Node[];
     expect(rects.map((r) => [r.props.y, r.props.height, r.props.fillOpacity])).toEqual(
       Array.from({ length: 4 }, () => [62, 36, 0.14]),
     );

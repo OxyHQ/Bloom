@@ -1,3 +1,6 @@
+import { useCardFill } from '../card/use-card-fill';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
+import { Surface } from '../surface';
 import React, { memo, useContext, useMemo, useRef } from 'react';
 import { PanResponder, Pressable, View } from 'react-native';
 
@@ -17,6 +20,8 @@ import { artistNames, IS_WEB, resolveArtworkTint } from './shared';
 import type { MiniPlayerProps } from './types';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
+import { useMessages } from '../locale/messages';
+import { MEDIA_PLAYER_MESSAGES } from './messages';
 
 export const MINI_PLAYER_HEIGHT = 56;
 /** Horizontal travel that counts as a swipe (native). */
@@ -62,11 +67,13 @@ function MiniPlayerContent({
   deviceName,
   onNext,
   onPrevious,
-  openLabel = 'Open player',
+  openLabel: openLabelProp,
   testID,
   tinted,
   background,
 }: MiniPlayerProps & MiniPlayerSurface) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const openLabel = openLabelProp ?? messages.openPlayer;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
@@ -154,7 +161,6 @@ function MiniPlayerContent({
           bottom: 0,
           height: 2,
           borderRadius: 1,
-          overflow: 'hidden',
           // The rail is the text colour composited at 24% over the bar's own fill.
           backgroundColor: mixColor(background, paint.text, 0.24),
         }}
@@ -193,8 +199,10 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
     () => resolveMiniPlayerSurface(theme, ctx?.colorPreset ?? 'oxy', props.artworkColor),
     [theme, ctx?.colorPreset, props.artworkColor],
   );
+  const neutralFill = useCardFill(props.style);
+  const backing = useSurfaceBacking(surface.tinted ? surface.background : neutralFill, props.style);
   return (
-    <View
+    <Surface
       {...webDataSet({ bloomMiniPlayer: surface.tinted ? 'tinted' : 'neutral' })}
       style={[
         {
@@ -202,22 +210,19 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
           marginLeft: 8,
           marginRight: 8,
           borderRadius: 12,
-          overflow: 'hidden',
           flexDirection: 'row',
           alignItems: 'center',
           gap: 4,
-          backgroundColor: surface.background,
-          borderWidth: surface.border ? 1 : 0,
-          borderColor: surface.border ?? undefined,
+          ...(surface.tinted ? { backgroundColor: surface.background } : null),
         },
         props.style,
       ]}
       testID={props.testID}
     >
       <ImmersiveTheme enabled={surface.tinted}>
-        <MiniPlayerContent {...props} {...surface} />
+        <MiniPlayerContent {...props} {...surface} background={backing.fill} />
       </ImmersiveTheme>
-    </View>
+    </Surface>
   );
 }
 

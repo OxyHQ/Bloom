@@ -74,14 +74,14 @@ import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
 <CountryFlag iso2="JP" size={24} accessibilityLabel="Japan" />
 ```
 
-- `CountryCodeSelect` — `value` / `defaultValue` / `onValueChange(iso2, country)`, `countries` to narrow the list, `label` (default `Country code`), `disabled`.
+- `CountryCodeSelect` — `value` / `defaultValue` / `onValueChange(iso2, country)`, `countries` to narrow the list, `label` (`Country code` in English, localised via `BloomProvider locale`), `disabled`.
 - `CountryFlag` — `iso2`, `size` (width; height is ⅔ of it, default 18). Drawn with react-native-svg on both platforms. Unknown codes render nothing.
 - `COUNTRIES` — `{ iso2, name, dial }[]`, sorted by name; `findCountry(iso2)` looks one up case-insensitively.
 
 ## Accessibility
 
 - The select trigger's name is `Country code` (`countrySelectLabel` to change it); options are `role="radio"` named by the country.
-- The input is named by `label`, else `accessibilityLabel`, else `Phone number`. It sets `keyboardType="phone-pad"`, `autoComplete="tel"` and `textContentType="telephoneNumber"`.
+- The input is named by `label`, else `accessibilityLabel`, else `Phone number` (English; localised via `BloomProvider locale`). It sets `keyboardType="phone-pad"`, `autoComplete="tel"` and `textContentType="telephoneNumber"`.
 - Flags are decorative (`aria-hidden`) next to the name or dial code. A standalone `CountryFlag` should get an `accessibilityLabel`, which makes it `role="img"`.
 
 ## Data

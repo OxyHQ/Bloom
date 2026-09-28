@@ -1,5 +1,6 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
-import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
 
@@ -13,8 +14,8 @@ import type { PresenceStatus } from '../chat-indicators/types';
  * timezone the data came from.
  */
 
-/** An avatar source: a URL, an `ImageResolver` id, or an RN image source. */
-export type PersonAvatarSource = string | ImageSourcePropType | null;
+/** An avatar source: a URL, an `ImageResolver` id, or a portable Shapes image source. */
+export type PersonAvatarSource = string | ImageSource | null;
 
 /** The smallest shape every list here accepts. */
 export interface PersonSummary {
@@ -86,7 +87,7 @@ export interface ContactListProps {
   activeLetter?: string;
   /** Called with the letter the user pressed in the rail. */
   onJumpToLetter?: (letter: string) => void;
-  /** Names a rail button. Default `"Jump to A"`. */
+  /** Names a rail button. Defaults to the app's locale (`"Jump to A"` in English). */
   formatJumpLabel?: (letter: string) => string;
   onContactPress?: (id: string) => void;
   onContactSelectedChange?: (id: string, next: boolean) => void;
@@ -115,7 +116,7 @@ export interface SelectedChipsRowProps {
   onRemove?: (id: string) => void;
   /** Default `scroll`. */
   layout?: SelectedChipsLayout;
-  /** Names the × on a chip. Default `"Remove Ana Restrepo"`. */
+  /** Names the × on a chip. Defaults to the app's locale (`"Remove Ana Restrepo"` in English). */
   formatRemoveLabel?: (name: string) => string;
   /** Drawn in place of the row when nobody is picked. */
   emptyState?: ReactNode;
@@ -285,7 +286,7 @@ export interface StoryProgressBarsProps {
   color?: string;
   /** The unfilled colour. */
   trackColor?: string;
-  /** Names the whole strip. Default `"Story 2 of 5"`. */
+  /** Names the whole strip. Defaults to the app's locale (`"Story 2 of 5"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

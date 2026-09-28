@@ -168,12 +168,21 @@ export const Dimensions = {
 
 export const useWindowDimensions = () => ({ ...dimensionValues.window, scale: 1, fontScale: 1 });
 
+// Match RN: nested arrays merge in order; falsy/non-object entries disappear.
+function flattenStyle(style: unknown): Record<string, unknown> | undefined {
+  if (!style || typeof style !== 'object') return undefined;
+  if (!Array.isArray(style)) return style as Record<string, unknown>;
+  const result: Record<string, unknown> = {};
+  for (const entry of style) Object.assign(result, flattenStyle(entry));
+  return result;
+}
+
 export const StyleSheet = {
   create: <T extends Record<string, unknown>>(styles: T): T => styles,
   absoluteFill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
   // No `absoluteFillObject`: RN 0.85 removed it, and a mock that still offered
   // it kept a zero-height settings modal green (`absolute-fill-object.test.ts`).
-  flatten: (style: unknown) => style,
+  flatten: flattenStyle,
   hairlineWidth: 1,
 };
 
@@ -284,3 +293,7 @@ export const BackHandler = {
     remove: jest.fn(),
   })),
 };
+
+// Use the actual web color normalizer, including ARGB alpha, for SVG stop tests.
+export const processColor: typeof import('react-native')['processColor'] =
+  require('react-native-web/dist/cjs/exports/processColor');

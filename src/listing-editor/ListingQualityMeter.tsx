@@ -16,6 +16,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ListingQualityItem, ListingQualityMeterProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { LISTING_EDITOR_MESSAGES } from './messages';
 
 /**
  * How complete a listing is: a score ring, a checklist of what is left, and
@@ -97,18 +99,23 @@ function resolveQualityPaint(theme: Theme): QualityPaint {
 function ListingQualityMeterComponent({
   items,
   score: scoreProp,
-  title = 'Listing quality',
+  title: titleProp,
   summary,
   tips,
-  tipsTitle = 'Tips',
+  tipsTitle: tipsTitleProp,
   formatScore = (score) => `${score}`,
-  accessibilityLabel = 'Listing quality score',
+  accessibilityLabel: accessibilityLabelProp,
   doneLabel: doneLabelProp,
-  todoLabel = 'To do',
+  todoLabel: todoLabelProp,
   style,
   testID,
 }: ListingQualityMeterProps) {
   const common = useCommonMessages();
+  const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
+  const title = titleProp ?? messages.qualityTitle;
+  const tipsTitle = tipsTitleProp ?? messages.tips;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.qualityScore;
+  const todoLabel = todoLabelProp ?? messages.todo;
   const doneLabel = doneLabelProp ?? common.done;
   const theme = useTheme();
   useEffect(() => {
@@ -116,7 +123,7 @@ function ListingQualityMeterComponent({
   }, []);
   const paint = useMemo(() => resolveQualityPaint(theme), [theme]);
   const score = Math.min(100, Math.max(0, Math.round(scoreProp ?? listingQualityScore(items))));
-  const line = summary ?? (score < 50 ? 'Needs work' : score < 80 ? 'Good' : 'Excellent');
+  const line = summary ?? (score < 50 ? messages.needsWork : score < 80 ? messages.good : messages.excellent);
 
   return (
     <View testID={testID} style={[{ gap: 20 }, style]}>

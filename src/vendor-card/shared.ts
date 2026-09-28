@@ -13,22 +13,18 @@
 import { PHOTO_RADIUS } from '../listing-card/shared';
 import type { ListingFact } from '../listing-card/types';
 import { formatRatingValue } from '../rating/Rating';
-import {
-  VENDOR_AVAILABILITY_LABELS,
-  VENDOR_CUISINE_LIMIT,
-  VENDOR_FACT_ICON,
-  VENDOR_FACT_LABELS,
-  VENDOR_FACT_ORDER,
-} from './constants';
+import { VENDOR_CUISINE_LIMIT, VENDOR_FACT_ICON, VENDOR_FACT_ORDER } from './constants';
+import { VENDOR_CARD_MESSAGES, type VendorCardMessages } from './messages';
 import type { VendorAvailability, VendorCardDensity, VendorCardProps, VendorFactKey } from './types';
 
 /** The status pill's label, or `null` for a vendor that is taking orders. */
 export function availabilityLabelFor(
   availability: VendorAvailability | undefined,
   override?: string,
+  messages: VendorCardMessages = VENDOR_CARD_MESSAGES.en,
 ): string | null {
   if (!availability || availability === 'open') return null;
-  return override ?? VENDOR_AVAILABILITY_LABELS[availability];
+  return override ?? messages.availability[availability];
 }
 
 /**
@@ -42,6 +38,7 @@ export function vendorFacts(
     VendorCardProps,
     'deliveryTime' | 'deliveryFee' | 'distance' | 'minimumOrder' | 'factLabels'
   >,
+  messages: VendorCardMessages = VENDOR_CARD_MESSAGES.en,
 ): ListingFact[] {
   const values: Record<VendorFactKey, string | undefined> = {
     deliveryTime: props.deliveryTime,
@@ -53,7 +50,7 @@ export function vendorFacts(
   for (const key of VENDOR_FACT_ORDER) {
     const value = values[key];
     if (!value) continue;
-    const word = props.factLabels?.[key] ?? VENDOR_FACT_LABELS[key];
+    const word = props.factLabels?.[key] ?? messages.facts[key];
     facts.push({ icon: VENDOR_FACT_ICON[key], label: value, accessibilityLabel: `${word} ${value}` });
   }
   return facts;
@@ -74,9 +71,12 @@ export function vendorCuisines(
  * pills because it ran out of width, which is not a reason to withhold them
  * from someone who is listening rather than looking.
  */
-export function composeVendorName(props: VendorCardProps): string {
+export function composeVendorName(
+  props: VendorCardProps,
+  messages: VendorCardMessages = VENDOR_CARD_MESSAGES.en,
+): string {
   const parts: string[] = [props.name];
-  const status = availabilityLabelFor(props.availability, props.availabilityLabel);
+  const status = availabilityLabelFor(props.availability, props.availabilityLabel, messages);
   if (status) parts.push(status);
   if (status && props.opensAt) parts.push(props.opensAt);
   if (props.promo) parts.push(props.promo);
@@ -84,14 +84,12 @@ export function composeVendorName(props: VendorCardProps): string {
   if (props.rating !== undefined) {
     const rated = props.rating !== null && props.rating !== '';
     if (rated) {
-      const count =
-        props.reviewCount != null && props.reviewCount !== '' ? `, ${props.reviewCount} reviews` : '';
-      parts.push(`Rated ${formatRatingValue(props.rating as number | string)} out of 5${count}`);
+      parts.push(messages.rated(formatRatingValue(props.rating as number | string), props.reviewCount));
     } else {
-      parts.push(props.newLabel ?? 'New');
+      parts.push(props.newLabel ?? messages.new);
     }
   }
-  for (const fact of vendorFacts(props)) parts.push(fact.accessibilityLabel ?? fact.label);
+  for (const fact of vendorFacts(props, messages)) parts.push(fact.accessibilityLabel ?? fact.label);
   return parts.join(', ');
 }
 

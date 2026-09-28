@@ -10,6 +10,7 @@
 import { hairlineOn, surfaceFillOn, surfaceTextOn, type SurfaceTextPaint } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { CART_OPTION_SEPARATOR } from './constants';
+import { CART_PANEL_MESSAGES, type CartPanelMessages } from './messages';
 import type { CartLineEntry } from './types';
 
 export interface CartPaint extends SurfaceTextPaint {
@@ -55,16 +56,17 @@ export function composeCartLineName(
     | 'unavailable'
     | 'unavailableLabel'
   >,
+  messages: CartPanelMessages = CART_PANEL_MESSAGES.en,
 ): string {
   const parts: string[] = [line.name];
   const options = optionsLine(line.options);
   if (options) parts.push(options);
   if (line.note) parts.push(line.note);
   parts.push(String(line.quantity));
-  if (line.originalPrice) parts.push(`${line.price}, originally ${line.originalPrice}`);
+  if (line.originalPrice) parts.push(messages.originally(line.price, line.originalPrice));
   else parts.push(line.price);
   // The second currency travels with the price it restates.
   if (line.secondaryPrice) parts.push(line.secondaryPrice);
-  if (line.unavailable) parts.push(line.unavailableLabel ?? 'Sold out');
+  if (line.unavailable) parts.push(line.unavailableLabel ?? messages.soldOut);
   return parts.join(', ');
 }

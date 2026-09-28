@@ -20,7 +20,7 @@ interface Props extends BottomBarProps {
   Blur: ComponentType<ProgressiveBlurProps>;
 }
 export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueChange, activeProgress, onValueLongPress, action,
-  actionPlacement = 'auto', actionBehavior = 'hide', material = 'translucent', minimizeProgress, blur = true, maxWidth = 560, style, testID }: Props) {
+  actionPlacement = 'auto', actionBehavior = 'hide', minimizeProgress, blur = false, maxWidth = 560, style, testID }: Props) {
   const insets = useSafeAreaInsets();
   // Logical insets below; react-native-web needs the direction handed to it.
   const dirProps = useDirectionProps();
@@ -78,9 +78,9 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
   }, [progress, hideAction, reducedMotion, actionWidth, hasItems, above]);
   if (keyboardVisible || (!items.length && !action)) return null;
   return <View {...dirProps} testID={testID} pointerEvents="box-none" style={[{ height: bottom + footprint, justifyContent: 'flex-end' }, style]}>
-    {blur && material === 'translucent' && <Blur direction="bottom" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottom + footprint + BLUR_BLEED }} />}
+    {blur && <Blur direction="bottom" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottom + footprint + BLUR_BLEED }} />}
     <Animated.View testID={testID ? `${testID}-row` : undefined} onLayout={event => setRowWidth(event.nativeEvent.layout.width)} pointerEvents="box-none" style={[{ justifyContent: items.length ? 'center' : 'flex-end', alignSelf: 'center', width: '100%', maxWidth, paddingLeft: 12, paddingRight: 12, marginBottom: bottom, flexDirection: 'row', alignItems: 'center' }, rowStyle]}>
-      {items.length > 0 && <View testID={testID ? `${testID}-navigation` : undefined} style={{ width: navigationWidth, minWidth: 0 }}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minWidth: '100%' }}><View style={{ width: Math.max(navigationWidth, items.length * 44 + 8) }}><Navigation scrollable={navigationWidth > 0 && navigationWidth < items.length * 44 + 8} embedded blur={false} material={material} minimizeProgress={progress}
+      {items.length > 0 && <View testID={testID ? `${testID}-navigation` : undefined} style={{ width: navigationWidth, minWidth: 0 }}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minWidth: '100%' }}><View style={{ width: Math.max(navigationWidth, items.length * 44 + 8) }}><Navigation scrollable={navigationWidth > 0 && navigationWidth < items.length * 44 + 8} embedded blur={false} material="translucent" minimizeProgress={progress}
         activeProgress={activeProgress} onIndexLongPress={onValueLongPress ? index => { if (items[index]) onValueLongPress(items[index].name); } : undefined}
         activeIndex={items.findIndex(item => item.name === value)} onIndexChange={index => { if (items[index]) onValueChange(items[index].name); }}>
         {items.map((item, index) => <Item key={item.name} item={item} index={index} />)}

@@ -7,8 +7,10 @@ import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
 import { RiEyeLine } from '../icons/remix/RiEyeLine';
 import { RiQuillPenLine } from '../icons/remix/RiQuillPenLine';
 import { useContainerWidth } from '../hooks/use-container-width';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { DOCUMENT_LIST_WIDE_MIN_WIDTH, TENANCY_DOCUMENT_ICON, TENANCY_DOCUMENT_STATUS } from './constants';
+import { TENANCY_MESSAGES } from './messages';
 import { HousingCard, IconTile, useHousingPalette } from './parts';
 import type { DocumentListProps, TenancyDocument } from './types';
 
@@ -31,14 +33,22 @@ import type { DocumentListProps, TenancyDocument } from './types';
 function DocumentListComponent({
   documents,
   statusLabels,
-  signLabel = 'Sign',
-  viewLabel = (document: TenancyDocument) => `View ${document.name}`,
-  downloadLabel = (document: TenancyDocument) => `Download ${document.name}`,
-  emptyLabel = 'No documents',
+  signLabel: signLabelProp,
+  viewLabel: viewLabelProp,
+  downloadLabel: downloadLabelProp,
+  emptyLabel: emptyLabelProp,
   layout = 'auto',
   style,
   testID,
 }: DocumentListProps) {
+  const { messages } = useMessages(TENANCY_MESSAGES);
+  const signLabel = signLabelProp ?? messages.sign;
+  // A caller's own verb keeps its old "<verb> <name>" name; Bloom's own is a
+  // whole phrase per language, so no language is glued in English order.
+  const signName = (name: string) => (signLabelProp != null ? `${signLabelProp} ${name}` : messages.signDocument(name));
+  const viewLabel = viewLabelProp ?? ((document: TenancyDocument) => messages.viewDocument(document.name));
+  const downloadLabel = downloadLabelProp ?? ((document: TenancyDocument) => messages.downloadDocument(document.name));
+  const emptyLabel = emptyLabelProp ?? messages.noDocuments;
   const palette = useHousingPalette();
   const { width, onLayout } = useContainerWidth();
   const wide = layout === 'wide' || (layout === 'auto' && width != null && width >= DOCUMENT_LIST_WIDE_MIN_WIDTH);
@@ -60,7 +70,7 @@ function DocumentListComponent({
               const badge =
                 info && document.status ? (
                   <Badge
-                    content={document.statusLabel ?? statusLabels?.[document.status] ?? info.label}
+                    content={document.statusLabel ?? statusLabels?.[document.status] ?? messages.documentStatus[document.status]}
                     color={info.tone}
                     variant="subtle"
                     size="medium"
@@ -114,7 +124,7 @@ function DocumentListComponent({
                           variant="primary"
                           size="small"
                           leadingIcon={wide ? RiQuillPenLine : undefined}
-                          accessibilityLabel={`${signLabel} ${document.name}`}
+                          accessibilityLabel={signName(document.name)}
                           onPress={document.onSign}
                           testID={id(`sign-${index}`)}
                         >

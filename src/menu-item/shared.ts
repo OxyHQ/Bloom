@@ -6,7 +6,8 @@
 import { surfaceFillOn, surfaceTextOn, hairlineOn, type SurfaceTextPaint } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import { MENU_ITEM_DIET_LABELS, MENU_ITEM_SPICE_MAX } from './constants';
+import { MENU_ITEM_SPICE_MAX } from './constants';
+import { MENU_ITEM_MESSAGES, type MenuItemMessages } from './messages';
 import type { MenuItemDiet, MenuItemOption, MenuItemOptionGroup, MenuItemRowProps } from './types';
 
 export interface MenuItemPaint extends SurfaceTextPaint {
@@ -54,8 +55,12 @@ export function spiceLevel(spice: number | undefined): number {
 }
 
 /** "Spicy 2 of 3" — the flames in words, since a glyph run announces nothing. */
-export function describeSpice(level: number, label = 'Spicy'): string {
-  return `${label} ${level} of ${MENU_ITEM_SPICE_MAX}`;
+export function describeSpice(
+  level: number,
+  label?: string,
+  messages: MenuItemMessages = MENU_ITEM_MESSAGES.en,
+): string {
+  return messages.spiceOf(label ?? messages.spicy, level, MENU_ITEM_SPICE_MAX);
 }
 
 /**
@@ -77,17 +82,18 @@ export function composeMenuItemName(
     | 'unavailable'
     | 'unavailableLabel'
   >,
+  messages: MenuItemMessages = MENU_ITEM_MESSAGES.en,
 ): string {
   const parts: string[] = [props.name];
   for (const diet of uniqueDiets(props.diets)) {
-    parts.push(props.dietLabels?.[diet] ?? MENU_ITEM_DIET_LABELS[diet]);
+    parts.push(props.dietLabels?.[diet] ?? messages.diets[diet]);
   }
   const heat = spiceLevel(props.spice);
-  if (heat > 0) parts.push(describeSpice(heat, props.spiceLabel));
-  if (props.originalPrice) parts.push(`${props.price}, originally ${props.originalPrice}`);
+  if (heat > 0) parts.push(describeSpice(heat, props.spiceLabel, messages));
+  if (props.originalPrice) parts.push(messages.originally(props.price, props.originalPrice));
   else parts.push(props.price);
-  if (props.quantity && props.quantity > 0) parts.push(`${props.quantity} in basket`);
-  if (props.unavailable) parts.push(props.unavailableLabel ?? 'Sold out');
+  if (props.quantity && props.quantity > 0) parts.push(messages.inBasket(props.quantity));
+  if (props.unavailable) parts.push(props.unavailableLabel ?? messages.soldOut);
   return parts.join(', ');
 }
 
@@ -116,16 +122,20 @@ export function optionGroupRule(group: Pick<MenuItemOptionGroup, 'min' | 'max'>)
 /**
  * The rule in words — "Choose 1", "Up to 3", "Choose 2 to 4", "Optional".
  *
- * English, and overridable per group with `ruleLabel`. The one case worth
+ * In the given messages' language (English by default), and overridable per
+ * group with `ruleLabel`. The one case worth
  * naming is `max: 1, min: 0`: "Up to 1" is not a sentence anybody says, so a
  * single optional choice reads as "Optional".
  */
-export function describeOptionRule(group: Pick<MenuItemOptionGroup, 'min' | 'max' | 'ruleLabel'>): string {
+export function describeOptionRule(
+  group: Pick<MenuItemOptionGroup, 'min' | 'max' | 'ruleLabel'>,
+  messages: MenuItemMessages = MENU_ITEM_MESSAGES.en,
+): string {
   if (group.ruleLabel != null) return group.ruleLabel;
   const { min, max } = optionGroupRule(group);
-  if (min === max) return `Choose ${max}`;
-  if (min === 0) return max === 1 ? 'Optional' : `Up to ${max}`;
-  return `Choose ${min} to ${max}`;
+  if (min === max) return messages.choose(max);
+  if (min === 0) return max === 1 ? messages.optional : messages.upTo(max);
+  return messages.chooseRange(min, max);
 }
 
 /**

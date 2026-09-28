@@ -9,7 +9,7 @@ import { ChartCardSurface, CHART_CARD_HEIGHT } from './primitives/ChartCardSurfa
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import {
@@ -20,6 +20,8 @@ import {
   useMountedAfterDelay,
   type ChartIcon,
 } from './stage-parts';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * `StageBarsCard`: the funnel as a list.
@@ -92,7 +94,7 @@ const BAR_HEIGHT = 20;
 const ICON_SIZE = 14;
 
 export function StageBarsCard({
-  title = 'Pipeline',
+  title: titleProp,
   stages: stagesProp,
   mono = false,
   showIcons = true,
@@ -102,14 +104,17 @@ export function StageBarsCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   activeIndex: controlledIndex,
   onActiveIndexChange,
   accessibilityLabel,
   style,
   testID,
 }: StageBarsCardProps) {
-  const palette = useChartCardPalette();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
+  const title = titleProp ?? chartText.titles.pipeline;
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();
   const mounted = useMountedAfterDelay();
@@ -146,7 +151,7 @@ export function StageBarsCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}

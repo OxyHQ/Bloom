@@ -10,7 +10,7 @@ export type TransportControlsSize = 'compact' | 'regular' | 'large';
 /** `music`: shuffle · previous · play · next · repeat. `podcast`: speed · back N · play · forward N · trailing. */
 export type TransportControlsVariant = 'music' | 'podcast';
 
-/** Every name the transport announces — translate them. */
+/** Every name the transport announces. Localised via `BloomProvider locale`; pass any to override. */
 export interface TransportControlsLabels {
   shuffle: string;
   previous: string;
@@ -162,7 +162,7 @@ export interface MiniPlayerProps {
   /** Native only: a horizontal swipe on the bar. */
   onNext?: () => void;
   onPrevious?: () => void;
-  /** Name of the bar's open button. Default `"Open player"`. */
+  /** Name of the bar's open button (`"Open player"` in English). */
   openLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -172,11 +172,11 @@ export interface LyricsPreview {
   lines: string[];
   /** Index of the line being sung; the lines before it dim. */
   activeIndex?: number;
-  /** Default `"Lyrics"`. */
+  /** Default `"Lyrics"` in English. */
   title?: string;
   /** Opens the full lyrics. */
   onPress?: () => void;
-  /** Name of the card's button. Default `"Show lyrics"`. */
+  /** Name of the card's button (`"Show lyrics"` in English). */
   actionLabel?: string;
 }
 
@@ -236,7 +236,7 @@ export interface PlaybackSpeedMenuProps {
   rates?: readonly number[];
   /** Default `(r) => "1.25×"`. */
   formatRate?: (rate: number) => string;
-  /** The menu heading and the trigger's name. Default `"Playback speed"`. */
+  /** The menu heading and the trigger's name (`"Playback speed"` in English). */
   label?: string;
   /** Replaces the default trigger (a text button showing the rate); passed through `asChild`. */
   children?: ReactNode;
@@ -255,15 +255,15 @@ export interface SleepTimerMenuProps {
   minutes?: readonly number[];
   /** Pre-formatted time left ("12:04"); shown under the heading and in the trigger's name. */
   remaining?: string;
-  /** Default `"Sleep timer"`. */
+  /** Default `"Sleep timer"` in English. */
   label?: string;
-  /** Default `"Off"`. */
+  /** Default `"Off"` in English. */
   offLabel?: string;
-  /** Default `"End of episode"`. Pass `"End of track"` for music. */
+  /** Default `"End of episode"` in English. Pass `"End of track"` for music. */
   endLabel?: string;
-  /** Default `(m) => "15 minutes"`. */
+  /** Default (in English) `(m) => "15 minutes"`. */
   formatMinutes?: (minutes: number) => string;
-  /** Default `(r) => "Stops in 12:04"`. */
+  /** Default (in English) `(r) => "Stops in 12:04"`. */
   formatRemaining?: (remaining: string) => string;
   children?: ReactNode;
   open?: boolean;
@@ -290,15 +290,15 @@ export interface DevicePickerProps {
   current: PlaybackDevice;
   devices: PlaybackDevice[];
   onSelect: (device: PlaybackDevice) => void;
-  /** Default `"Current device"`. */
+  /** Default `"Current device"` in English. */
   title?: string;
-  /** Accent line on the current row. Default `"Listening on"`. */
+  /** Accent line on the current row (`"Listening on"` in English). */
   currentLabel?: string;
-  /** Default `"Select a device"`. */
+  /** Default `"Select a device"` in English. */
   devicesTitle?: string;
-  /** Shown when `devices` is empty. Default `"No other devices found"`. */
+  /** Shown when `devices` is empty (`"No other devices found"` in English). */
   emptyLabel?: string;
-  /** The help link text. Shown when `onHelpPress` is given. Default `"Don't see your device?"`. */
+  /** The help link text. Shown when `onHelpPress` is given (`"Don't see your device?"` in English). */
   helpLabel?: string;
   onHelpPress?: () => void;
   style?: StyleProp<ViewStyle>;
@@ -309,7 +309,7 @@ export interface ConnectBannerProps {
   deviceName: string;
   /** Default `speaker`. */
   kind?: PlaybackDeviceKind;
-  /** Default `"Listening on"`. */
+  /** Before the device: "<label> <device>". Default: "Listening on <device>" in the locale. */
   label?: string;
   /** Makes the banner a button (opens the device picker). */
   onPress?: () => void;

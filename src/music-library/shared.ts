@@ -13,6 +13,8 @@ import type {
   LibraryPanelLabels,
   LibrarySort,
 } from './types';
+import { COMMON_MESSAGES } from '../locale/common-messages';
+import { MUSIC_LIBRARY_MESSAGES, type MusicLibraryMessages } from './messages';
 import {
   AA_TEXT_CONTRAST,
   contrastRatio,
@@ -44,48 +46,22 @@ export const LIBRARY_FILTERS: readonly LibraryFilter[] = [
   'audiobooks',
 ];
 
-export const DEFAULT_KIND_LABELS: LibraryKindLabels = {
-  playlist: 'Playlist',
-  artist: 'Artist',
-  album: 'Album',
-  podcast: 'Podcast',
-  audiobook: 'Audiobook',
-  folder: 'Folder',
-};
+/** The English kind names; components read the localised ones from `MUSIC_LIBRARY_MESSAGES`. */
+export const DEFAULT_KIND_LABELS: LibraryKindLabels = MUSIC_LIBRARY_MESSAGES.en.kinds;
 
-export const DEFAULT_LIBRARY_LABELS: LibraryPanelLabels = {
-  title: 'Your Library',
-  create: 'Create playlist or folder',
-  expand: 'Show more',
-  collapse: 'Show less',
-  collapseRail: 'Collapse Your Library',
-  expandRail: 'Open Your Library',
-  filters: 'Filters',
-  clearFilters: 'Clear filters',
-  filter: {
-    playlists: 'Playlists',
-    artists: 'Artists',
-    albums: 'Albums',
-    podcasts: 'Podcasts',
-    audiobooks: 'Audiobooks',
-  },
-  downloaded: 'Downloaded',
-  search: 'Search in Your Library',
-  searchPlaceholder: 'Search in Your Library',
-  clearSearch: 'Clear search',
-  sortAndView: 'Sort and view',
-  sortBy: 'Sort by',
-  viewAs: 'View as',
-  sort: {
-    recents: 'Recents',
-    'recently-added': 'Recently added',
-    alphabetical: 'Alphabetical',
-    creator: 'Creator',
-  },
-  view: { compact: 'Compact', list: 'List', grid: 'Grid' },
-  empty: 'Nothing here yet',
-  kind: DEFAULT_KIND_LABELS,
-};
+/** `LibraryPanel`'s strings in `messages`' language, with the common expand / collapse words. */
+export function libraryPanelLabels(
+  messages: MusicLibraryMessages,
+  common: { showMore: string; showLess: string },
+): LibraryPanelLabels {
+  return { ...messages.library, expand: common.showMore, collapse: common.showLess, kind: messages.kinds };
+}
+
+/** The English labels; `LibraryPanel` reads the localised ones. */
+export const DEFAULT_LIBRARY_LABELS: LibraryPanelLabels = libraryPanelLabels(
+  MUSIC_LIBRARY_MESSAGES.en,
+  COMMON_MESSAGES.en,
+);
 
 /** "Playlist · Maya", or the entry's own `meta`. */
 export function libraryMeta(item: LibraryEntry, kindLabels: LibraryKindLabels = DEFAULT_KIND_LABELS): string {
@@ -256,23 +232,24 @@ export interface MusicLibraryPaint {
  * sit on, in light and dark, without a fixed ramp stop that happens to match
  * one page colour. Text and accents come from the neutral and accent ramps.
  */
-export function resolveMusicLibraryPaint(theme: Theme): MusicLibraryPaint {
+export function resolveMusicLibraryPaint(theme: Theme, backing?: string): MusicLibraryPaint {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
-  const { background, text } = theme.colors;
+  const { text } = theme.colors;
+  const background = backing ?? theme.colors.background;
   const step = (light: number, darkAlpha: number) => mixColor(background, text, dark ? darkAlpha : light);
   return {
     accent: accent[500],
     text,
-    textMuted: surfaceTextOn(theme, step(0.03, 0.05)).textSecondary,
-    surface: step(0.03, 0.05),
+    textMuted: surfaceTextOn(theme, backing ?? step(0.03, 0.05)).textSecondary,
+    surface: backing ?? step(0.03, 0.05),
     hover: step(0.07, 0.1),
     selected: step(0.11, 0.16),
     placeholder: step(0.11, 0.16),
     field: step(0.06, 0.09),
     fieldHover: step(0.1, 0.14),
     fieldFocusBorder: text,
-    divider: hairlineOn(theme, step(0.03, 0.05)),
+    divider: hairlineOn(theme, backing ?? step(0.03, 0.05)),
     ring: accent[500],
   };
 }

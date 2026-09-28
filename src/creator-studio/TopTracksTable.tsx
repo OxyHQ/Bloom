@@ -13,6 +13,8 @@ import { isImageUrl } from '../image-resolver/is-image-url';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveCreatorStudioPaint, type CreatorStudioPaint } from './shared';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { TopTrackTrend, TopTracksTableLabels, TopTracksTableProps } from './types';
 
 /**
@@ -31,17 +33,8 @@ import type { TopTrackTrend, TopTracksTableLabels, TopTracksTableProps } from '.
  * rank, track, streams and the trend without scrolling sideways.
  */
 
-export const TOP_TRACKS_LABELS: TopTracksTableLabels = {
-  title: 'Top tracks',
-  rank: '#',
-  track: 'Track',
-  streams: 'Streams',
-  listeners: 'Listeners',
-  saves: 'Saves',
-  trend: 'Trend',
-  trends: { up: 'Rising', down: 'Falling', flat: 'Steady', new: 'New entry' },
-  empty: 'No streams in this period yet.',
-};
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const TOP_TRACKS_LABELS: TopTracksTableLabels = CREATOR_STUDIO_MESSAGES.en.topTracks;
 
 const NARROW_BELOW = 560;
 
@@ -49,7 +42,7 @@ export function TrendGlyph({
   trend,
   label,
   paint,
-  newLabel = 'New',
+  newLabel,
   testID,
 }: {
   trend: TopTrackTrend;
@@ -58,10 +51,11 @@ export function TrendGlyph({
   newLabel?: string;
   testID?: string;
 }) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const content =
     trend === 'new' ? (
       <Text variant="caption-1-medium" style={{ color: paint.accent }}>
-        {newLabel}
+        {newLabel ?? messages.topTracks.newBadge}
       </Text>
     ) : trend === 'up' ? (
       <RiArrowUpLine width={16} height={16} fill={paint.positive} />
@@ -94,7 +88,7 @@ function Cover({ artwork, paint, size }: { artwork?: string; paint: CreatorStudi
 function TopTracksTableComponent({
   tracks,
   summary,
-  format = groupThousands,
+  format: formatProp,
   pageSize = 10,
   toolbar,
   labels: labelOverrides,
@@ -102,15 +96,17 @@ function TopTracksTableComponent({
   style,
   testID,
 }: TopTracksTableProps) {
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, locale));
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const labels = useMemo(
     () => ({
-      ...TOP_TRACKS_LABELS,
+      ...messages.topTracks,
       ...labelOverrides,
-      trends: { ...TOP_TRACKS_LABELS.trends, ...labelOverrides?.trends },
+      trends: { ...messages.topTracks.trends, ...labelOverrides?.trends },
     }),
-    [labelOverrides],
+    [messages, labelOverrides],
   );
   const [width, setWidth] = useState(0);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
@@ -141,7 +137,7 @@ function TopTracksTableComponent({
       {
         id: 'rank',
         header: labels.rank,
-        headerAccessibilityLabel: 'Rank',
+        headerAccessibilityLabel: labels.rankName,
         width: narrow ? 32 : 40,
         accessor: (r) => r.rank,
         sortDescFirst: false,

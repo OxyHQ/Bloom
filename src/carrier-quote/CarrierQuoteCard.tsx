@@ -23,7 +23,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CARRIER_QUOTE_GEOMETRY, CARRIER_QUOTE_LABELS, CARRIER_QUOTE_MARK_TONE } from './constants';
+import { CARRIER_QUOTE_GEOMETRY, CARRIER_QUOTE_MARK_TONE } from './constants';
 import {
   CARRIER_QUOTE_STYLE_ID,
   CARRIER_QUOTE_WEB_CSS,
@@ -34,6 +34,8 @@ import {
   type CarrierQuotePaint,
 } from './shared';
 import type { CarrierQuoteCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CARRIER_QUOTE_MESSAGES } from './messages';
 
 /**
  * One carrier's offer on a job.
@@ -107,6 +109,7 @@ function CarrierQuoteCardComponent({
   style,
   testID,
 }: CarrierQuoteCardProps) {
+  const { messages: quoteText } = useMessages(CARRIER_QUOTE_MESSAGES);
   const theme = useTheme();
   const comfortable = density === 'comfortable';
   const paint = useQuotePaint(comfortable);
@@ -115,11 +118,11 @@ function CarrierQuoteCardComponent({
     comfortable && carrierActionsAreLabelled(width, CARRIER_QUOTE_GEOMETRY.narrowWidth);
   const labels = useMemo(
     () => ({
-      ...CARRIER_QUOTE_LABELS,
+      ...quoteText.labels,
       ...labelOverrides,
-      marks: { ...CARRIER_QUOTE_LABELS.marks, ...labelOverrides?.marks },
+      marks: { ...quoteText.labels.marks, ...labelOverrides?.marks },
     }),
-    [labelOverrides],
+    [labelOverrides, quoteText],
   );
 
   useEffect(() => {
@@ -380,9 +383,10 @@ function CarrierQuoteCardComponent({
       <Card
         variant="outlined"
         radius="radius-20"
+        border={selected ? 'medium' : 'thin'}
         style={[
           surfaceFillVars(paint.surface),
-          selected ? { borderWidth: 2, borderColor: paint.accent } : null,
+          selected ? { borderColor: paint.accent } : null,
           disabled ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}
@@ -486,7 +490,11 @@ function CarrierQuoteCardComponent({
               defaultExpanded={defaultBreakdownExpanded}
               expandLabel={labels.showPrice}
               collapseLabel={labels.hidePrice}
-              accessibilityLabel={`${labels.priceDetails} ${carrier.name}`}
+              accessibilityLabel={
+                labelOverrides?.priceDetails !== undefined
+                  ? `${labelOverrides.priceDetails} ${carrier.name}`
+                  : quoteText.priceDetailsFor(carrier.name)
+              }
               testID={id('breakdown')}
             />
           ) : null}

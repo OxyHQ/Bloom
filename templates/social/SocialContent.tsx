@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../src/typography';
 import { FollowButton } from '../../src/media-header';
 import { ContactRow } from '../../src/chat-people';
 import { Avatar } from '../../src/avatar';
 import { Button } from '../../src/button/index.web';
 import { Card } from '../../src/card';
+import { LinkPreviewCard } from '../../src/link-preview';
 import { Sparkline } from '../../src/chart-cards';
 import { Search } from '../../src/search';
 import { Tabs, TabsTrigger } from '../../src/tabs';
@@ -13,6 +14,8 @@ import { defaultAvatarSource } from '../../src/avatar/default-avatar';
 import { useSurfaceFill } from '../../src/styles/surface-levels';
 import { useTheme } from '../../src/theme/use-theme';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
+
+const booksCover = new URL('./assets/books.svg', import.meta.url).href;
 
 function useSocialPalette() {
   const { colors: c } = useTheme();
@@ -170,7 +173,7 @@ function PostAction({name, palette}: {name:MentionIconName; palette:LabPalette})
     style={{width:24,height:24,minWidth:24,minHeight:24,paddingLeft:0,paddingRight:0}} />;
 }
 
-type PostIllustrationVariant = 'books' | 'dictionary-primary' | 'dictionary-secondary';
+type PostIllustrationVariant = 'dictionary-primary' | 'dictionary-secondary';
 
 function PostIllustration({
   palette,
@@ -179,12 +182,9 @@ function PostIllustration({
   palette: LabPalette;
   variant: PostIllustrationVariant;
 }) {
-  const books = variant === 'books';
   const accent = variant === 'dictionary-secondary' ? palette.action : palette.identity;
   const onAccent = variant === 'dictionary-secondary' ? palette.onAction : palette.onIdentity;
-  const label = books
-    ? 'Abstract rare-books illustration'
-    : 'Abstract dictionary-card illustration';
+  const label = 'Abstract dictionary-card illustration';
 
   return (
     <View
@@ -192,26 +192,11 @@ function PostIllustration({
       accessibilityLabel={label}
       accessibilityRole="image"
       style={[
-        books ? styles.linkPreviewImage : styles.galleryImage,
+        styles.galleryImage,
         styles.postIllustration,
         { backgroundColor: palette.shell },
       ]}
     >
-      {books ? (
-        <>
-          <View
-            style={[
-              styles.bookHalo,
-              { backgroundColor: palette.actionSoft },
-            ]}
-          />
-          <View style={styles.bookStack}>
-            <View style={[styles.bookVolumeWide, { backgroundColor: palette.identity }]} />
-            <View style={[styles.bookVolumeNarrow, { backgroundColor: palette.action }]} />
-            <View style={[styles.bookVolumeWide, { backgroundColor: palette.raised }]} />
-          </View>
-        </>
-      ) : (
         <View style={[styles.dictionaryCard, { backgroundColor: palette.raised }]}>
           <View style={[styles.dictionaryMonogram, { backgroundColor: accent }]}>
             <Text style={[styles.dictionaryMonogramText, { color: onAccent }]}>W</Text>
@@ -222,7 +207,6 @@ function PostIllustration({
             <View style={[styles.dictionaryLineShort, { backgroundColor: palette.textMuted }]} />
           </View>
         </View>
-      )}
     </View>
   );
 }
@@ -260,23 +244,14 @@ function MentionPost({
             <PostIllustration palette={palette} variant="dictionary-secondary" />
           </ScrollView>
         ) : (
-          <View
-            style={[
-              styles.linkPreview,
-              { borderColor: palette.shell, backgroundColor: palette.raised },
-            ]}
-          >
-            <PostIllustration palette={palette} variant="books" />
-            <View style={styles.linkPreviewCopy}>
-              <Text style={[styles.linkDomain, { color: palette.textMuted }]}>404 MEDIA</Text>
-              <Text numberOfLines={2} style={[styles.linkTitle, { color: palette.text }]}>
-                We Tracked a Shipment of Rare Books. It Ended at an Amazon AI Training Facility
-              </Text>
-              <Text numberOfLines={2} style={[styles.linkDescription, { color: palette.textMuted }]}>
-                We placed a tracking device in a shipment of rare books to see which AI company was buying it.
-              </Text>
-            </View>
-          </View>
+          <LinkPreviewCard
+            url="https://www.404media.co/"
+            siteName="404 MEDIA"
+            title="We Tracked a Shipment of Rare Books. It Ended at an Amazon AI Training Facility"
+            description="We placed a tracking device in a shipment of rare books to see which AI company was buying it."
+            image={booksCover}
+            style={{ width: 280, maxWidth: '100%' }}
+          />
         )}
 
         <View style={styles.postActions}>
@@ -334,7 +309,7 @@ export function SocialWidgets(_props: { authenticated?: boolean }) {
         <Search label="Search Mention" value={query} onValueChange={setQuery} onClearText={() => setQuery('')} />
       </View>
 
-      <Card testID="social-trending" appearance="plain" style={{ borderRadius: 0, marginBottom: 16 }}>
+      <Card testID="social-trending" appearance="plain" radius="radius-0" style={{ marginBottom: 16 }}>
       <Text style={[styles.widgetTitle, { color: palette.text }]}>Trending</Text>
       <TrendRow rank={1} title="Earth" meta="Trending · 4 people" palette={palette} />
       <TrendRow rank={2} title="Elon Musk" meta="Trending · 5 people" palette={palette} />
@@ -378,27 +353,30 @@ export function SocialFeed({authenticated,onCompose}: {authenticated:boolean;onC
         style={{height:38,minWidth:76,paddingLeft:12,paddingRight:12,paddingTop:0,paddingBottom:0}}
         textStyle={{fontSize:15,lineHeight:18,fontWeight:tab===label?'700':'500'}} />)}
     </Tabs>
-    {authenticated && <Pressable accessibilityRole="button" accessibilityLabel="Create a post" onPress={onCompose}
-      style={[styles.composer,{backgroundColor:palette.surface}]}>
+    {authenticated && <Button appearance="solid" tone="neutral" accessibilityRole="button" accessibilityLabel="Create a post" onPress={onCompose}
+      style={styles.composer}>
       <Avatar source={defaultAvatarSource} size={32} name="Nate" />
       <Text style={[styles.composerPlaceholder,{color:palette.textMuted}]}>What's up?</Text>
       <MentionIcon name="image" color={palette.textMuted} size={22}/>
-    </Pressable>}
+    </Button>}
     <MentionPost palette={palette}/>
     <MentionPost second palette={palette}/>
     {!authenticated && <View style={[styles.signInBanner,{backgroundColor:palette.identity}]}>
       <View><Text style={[styles.signInTitle,{color:palette.onIdentity}]}>Don't miss what's happening</Text><Text style={[styles.signInSubtitle,{color:palette.onIdentity}]}>People on Mention are the first to know.</Text></View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Sign in" onPress={onCompose} style={[styles.signInButton,{backgroundColor:palette.raised}]}><Text style={[styles.signInButtonText,{color:palette.text}]}>Sign In</Text></Pressable>
+      <Button appearance="solid" tone="neutral" accessibilityLabel="Sign in" onPress={onCompose} style={styles.signInButton} textStyle={styles.signInButtonText}>Sign In</Button>
     </View>}
   </View>;
 }
 
 const styles = StyleSheet.create({
   composer: {
+    height: 'auto',
     minHeight: 56,
     margin: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
@@ -443,62 +421,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
-  linkPreview: {
-    width: 280,
-    overflow: 'hidden',
-    borderRadius: 18,
-    borderWidth: 1,
-  },
-  linkPreviewImage: {
-    width: '100%',
-    height: 160,
-  },
   postIllustration: {
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  bookHalo: {
-    position: 'absolute',
-    width: 190,
-    height: 190,
-    borderRadius: 95,
-    top: -54,
-    right: -38,
-  },
-  bookStack: {
-    width: 150,
-    gap: 8,
-    transform: [{ rotate: '-7deg' }],
-  },
-  bookVolumeWide: {
-    width: 150,
-    height: 28,
-    borderRadius: 7,
-  },
-  bookVolumeNarrow: {
-    width: 124,
-    height: 24,
-    borderRadius: 7,
-    alignSelf: 'flex-end',
-  },
-  linkPreviewCopy: {
-    padding: 12,
-    gap: 3,
-  },
-  linkDomain: {
-    fontSize: 12,
-    lineHeight: 15,
-    fontWeight: '600',
-  },
-  linkTitle: {
-    fontSize: 15,
-    lineHeight: 18,
-    fontWeight: '700',
-  },
-  linkDescription: {
-    fontSize: 13,
-    lineHeight: 17,
   },
   galleryRow: {
     flexDirection: 'row',
@@ -581,8 +507,11 @@ const styles = StyleSheet.create({
     opacity: 0.86,
   },
   signInButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    height: 'auto',
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 10,
+    paddingBottom: 10,
     borderRadius: 999,
   },
   signInButtonText: {

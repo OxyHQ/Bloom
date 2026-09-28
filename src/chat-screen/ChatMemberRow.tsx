@@ -3,13 +3,10 @@ import { Pressable, View } from 'react-native';
 
 import { AvatarPresence } from '../chat-indicators/AvatarPresence';
 import { Text } from '../typography';
-import { CHAT_SCREEN_LABELS, useChatScreenPaint } from './shared';
+import { useChatScreenPaint } from './shared';
 import type { ChatMemberRowProps, ChatMemberRole } from './types';
-
-const DEFAULT_ROLE_LABELS: Partial<Record<ChatMemberRole, string>> = {
-  owner: CHAT_SCREEN_LABELS.owner,
-  admin: CHAT_SCREEN_LABELS.admin,
-};
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 /**
  * One person in a roster: avatar with presence, name, a second line, and a role
@@ -32,7 +29,12 @@ function ChatMemberRowComponent({
   testID,
 }: ChatMemberRowProps) {
   const paint = useChatScreenPaint();
-  const labels = { ...DEFAULT_ROLE_LABELS, ...roleLabels };
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
+  const labels: Partial<Record<ChatMemberRole, string>> = {
+    owner: messages.owner,
+    admin: messages.admin,
+    ...roleLabels,
+  };
   const role = member.role && member.role !== 'member' ? labels[member.role] : undefined;
   const name = [member.name, role, member.subtitle].filter(Boolean).join(', ');
 

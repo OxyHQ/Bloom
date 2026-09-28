@@ -13,6 +13,7 @@ import { hairlineOn, surfaceFillOn, surfaceTextOn } from '../styles/surface-leve
 import type { AccentTone } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import { DEAL_HEALTH } from './constants';
+import { PIPELINE_MESSAGES, type PipelineMessages } from './messages';
 import type { DealCardProps, DealHealth } from './types';
 
 export interface PipelinePaint {
@@ -54,12 +55,13 @@ export function pipelineColumnFill(theme: Theme, behind: string): string {
  */
 export function dealHealthLabel(
   props: Pick<DealCardProps, 'health' | 'healthLabel' | 'stalledFor'>,
+  messages: PipelineMessages = PIPELINE_MESSAGES.en,
 ): string | null {
   const { health, healthLabel, stalledFor } = props;
   if (health === undefined) return healthLabel ?? null;
   if (healthLabel !== undefined) return healthLabel;
-  if (health === 'stalled' && stalledFor) return `Stalled for ${stalledFor}`;
-  return DEAL_HEALTH[health].label;
+  if (health === 'stalled' && stalledFor) return messages.stalledFor(stalledFor);
+  return messages.health[health];
 }
 
 /** The tone a health draws in, or the neutral one when the card has no health. */

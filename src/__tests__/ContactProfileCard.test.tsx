@@ -29,7 +29,7 @@ import {
 } from '../contact-card';
 import { CONTACT_ROW_MIN_HEIGHT } from '../contact-card/constants';
 import { resolveContactPaint } from '../contact-card/shared';
-import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
+import { SurfaceLevelProvider, surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
@@ -223,12 +223,10 @@ describe('the channels are LABELLED actions, not glyphs', () => {
     const control = byTestId('c-channel-email');
     expect(control.tagName).toBe('BUTTON');
     const style = getComputedStyle(control);
-    // The shared Button paints its neutral surface with a gradient. The
-    // element's backgroundColor alone does not describe that painted fill.
-    // Jest resolves Button.tsx here; SVG is a shape mock, so inspect the
-    // declared opaque stops. Browser painting is checked separately.
-    const stops = [...control.querySelectorAll('stop')].map((stop) => stop.getAttribute('stop-color'));
-    expect(stops).toEqual(resolveButtonPalette('solid', theme, 'neutral').rest.gradient);
+    // The shared Button keeps paint on its material layer, not its layout host.
+    const material = control.querySelector<HTMLElement>('.bloom-surface-paint--solid');
+    const fill = control.style.getPropertyValue('--bloom-btn-bg') || material?.style.getPropertyValue('--bloom-surface-paint-fill');
+    expect(fill).toBe(resolveButtonPalette('solid', theme, 'neutral').rest.background);
     expect(Number.parseFloat(style.height)).toBeGreaterThanOrEqual(32);
   });
 
@@ -409,7 +407,10 @@ describe('one component, two densities', () => {
     expect(queryTestId('c-chips')).not.toBeNull();
     expect(queryTestId('c-owner')).not.toBeNull();
     expect(queryTestId('c-footer')).not.toBeNull();
-    expect(getComputedStyle(byTestId('c')).backgroundColor).toBe(normalise(theme.colors.card));
+    const material = byTestId('c').querySelector<HTMLElement>('.bloom-surface-paint--solid');
+    expect(material).not.toBeNull();
+    expect(material!.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(theme.colors.card);
+    expect(byTestId('c').style.getPropertyValue('--bloom-surface')).toBe(theme.colors.card);
   });
 
   it('draws a ROW at compact: no surface, no cover, no tiles, no owner, 64 tall', () => {
@@ -433,4 +434,16 @@ describe('one component, two densities', () => {
     mount(<ContactProfileCard kind="company" name="Quillon Health" people={people} density="compact" testID="c" />);
     expect(queryTestId('c-people')).toBeNull();
   });
+});
+
+
+it('shares the nested custom backing with its material, published fill and stat tiles', () => {
+  mount(<SurfaceLevelProvider level={3} fill="#0000ff"><ContactProfileCard {...NORA} style={{ backgroundColor: 'rgba(255,0,0,.5)' }} testID="nested" /></SurfaceLevelProvider>);
+  const expected = 'rgb(128, 0, 128)';
+  const card = byTestId('nested');
+  const material = card.querySelector<HTMLElement>('.bloom-surface-paint--solid');
+  expect(material?.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(expected);
+  expect(card.style.getPropertyValue('--bloom-surface')).toBe(expected);
+  const paint = resolveContactPaint(theme, expected);
+  expect(getComputedStyle(byTestId('nested-stat-0')).backgroundColor).toBe(normalise(paint.tile));
 });

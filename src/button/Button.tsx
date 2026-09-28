@@ -1,5 +1,5 @@
 import type { LinkButtonProps } from './types';
-import React, { useMemo, memo, type ComponentType } from 'react';
+import React, { forwardRef, useMemo, useRef, useEffect, memo, type ComponentType } from 'react';
 import { resolveIconSlot } from '../icons/render-icon';
 import {
   ActivityIndicator,
@@ -13,7 +13,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { styled } from 'react-native-css';
 
 import { useBloomAppearance } from '../appearance/context';
@@ -32,10 +32,45 @@ import {
   resolveButtonGeometry,
   resolveButtonPalette,
   resolveButtonUnderline,
-  type ButtonGradient,
   type ButtonResolvedSize,
 } from './shared';
 import type { ButtonProps } from './types';
+
+/** Raw text descendants need a native Text host; layout content stays unwrapped. */
+function isTextContent(node: React.ReactNode): boolean {
+  if (node == null || typeof node === 'boolean' || typeof node === 'string' || typeof node === 'number') return true;
+  if (Array.isArray(node)) return node.every(isTextContent);
+  return React.isValidElement<{ children?: React.ReactNode }>(node) && node.type === React.Fragment && isTextContent(node.props.children);
+}
+
+/** Keep contiguous labels together so the button's gap only separates layout nodes. */
+function renderTextContent(node: React.ReactNode, wrap: (text: React.ReactNode) => React.ReactNode): React.ReactNode {
+  if (isTextContent(node)) return wrap(node);
+  const result: React.ReactNode[] = [];
+  let run: React.ReactNode[] = [];
+  let runKey = '';
+  const flush = () => {
+    if (run.length) result.push(<React.Fragment key={runKey}>{wrap(run)}</React.Fragment>);
+    run = [];
+  };
+  const visit = (children: React.ReactNode, path: string) => {
+    React.Children.toArray(children).forEach((child, index) => {
+      const key = `${path}/${React.isValidElement(child) ? child.key ?? index : index}`;
+      if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.type === React.Fragment) {
+        visit(child.props.children, key);
+      } else if (typeof child === 'string' || typeof child === 'number') {
+        if (!run.length) runKey = key;
+        run.push(child);
+      } else {
+        flush();
+        result.push(<React.Fragment key={key}>{child}</React.Fragment>);
+      }
+    });
+  };
+  visit(node, 'content');
+  flush();
+  return result;
+}
 
 export type {
   ButtonProps, LinkButtonProps,
@@ -141,62 +176,31 @@ type ButtonPressableProps = Pick<
   | 'onHoverIn'
   | 'onHoverOut'
   | 'onPress'
+  | 'onLongPress'
+  | 'onLayout'
+  | 'accessibilityElementsHidden'
+  | 'importantForAccessibility'
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { style?: StyleProp<ViewStyle>; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
+> & { style?: StyleProp<ViewStyle>; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
 
 const ButtonPressable: ComponentType<ButtonPressableProps> = Pressable;
 
-const StyledPressable: ComponentType<ButtonPressableProps> = styled(ButtonPressable, {
+const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<View>> = styled(ButtonPressable, {
   className: 'style',
 });
 
-let buttonGradientIdCounter = 0;
-
-/**
- * The filled variants' top-to-bottom gradient, painted under the label.
- *
- * Every stop `shared.ts` produces for a gradient is an OPAQUE composite, which
- * is what makes `stopColor` safe here: react-native-svg drops any alpha in it.
- */
-const ButtonGradientFill = memo(function ButtonGradientFill({
-  gradient,
-  radius,
-}: {
-  gradient: ButtonGradient;
-  radius: number;
-}) {
-  const id = useMemo(() => `bloom-btn-gradient${buttonGradientIdCounter++}`, []);
-  return (
-    <View
-      pointerEvents="none"
-      style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
-    >
-      {/*
-        `width`/`height` are load-bearing beside `absoluteFill`: an `<svg>` is a
-        REPLACED element, so `width: auto` resolves to its intrinsic size and an
-        SVG without one falls back to CSS's 300 x 150 — `left: 0; right: 0` does
-        not stretch it. A button wider than 300px stopped its gradient dead at
-        300, and every narrower one scaled the vertical ramp over 150px instead
-        of its own 36, so only the top quarter of the gradient was ever visible.
-        Native is unaffected. Gate: `src/__tests__/svg-absolute-fill-size.test.ts`.
-      */}
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-        <Defs>
-          <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={gradient[0]} />
-            <Stop offset="1" stopColor={gradient[1]} />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
-      </Svg>
-    </View>
-  );
-});
-
-const ButtonComponent: React.FC<ButtonProps> = ({
+const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   onPress,
+  onLayout,
+  'aria-hidden': ariaHidden,
+  accessibilityElementsHidden,
+  importantForAccessibility,
+  colors,
+  onLongPress,
+  onPressIn,
+  onPressOut,
   children,
   disabled = false,
   pressed: togglePressed,
@@ -231,7 +235,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   className,
   'aria-expanded': ariaExpanded,
   'aria-haspopup': ariaHasPopup,
-}) => {
+}, ref) {
   const theme = useTheme();
   const recipe = resolveButtonRecipe(variantProp);
   const appearance = appearanceProp ?? recipe.appearance;
@@ -243,8 +247,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const isInteractionBlocked = disabled || loading;
   const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
   const palette = useMemo(
-    () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone),
-    [appearance, theme, tone, variantProp, appearanceProp, toneProp, linkTone],
+    () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone, colors),
+    [appearance, theme, tone, variantProp, appearanceProp, toneProp, linkTone, colors],
   );
   const underlineMode = resolveButtonUnderline(isLink ? 'link' : 'primary', underline);
 
@@ -263,13 +267,32 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
   // No press scale: a 0.98 scale-down was deliberately left out, so a press is
   // the active paint alone.
-  const handlePressIn = isInteractionBlocked ? undefined : onPressedIn;
-  const handlePressOut = isInteractionBlocked ? undefined : onPressedOut;
+  const previewActive = useRef(false);
+  const pressOutCallback = useRef(onPressOut);
+  pressOutCallback.current = onPressOut;
+  const handlePressIn = isInteractionBlocked ? undefined : () => {
+    onPressedIn();
+    if (!previewActive.current) { previewActive.current = true; onPressIn?.(); }
+  };
+  const handlePressOut = () => {
+    onPressedOut();
+    if (previewActive.current) { previewActive.current = false; pressOutCallback.current?.(); }
+  };
+  useEffect(() => {
+    if (isInteractionBlocked && previewActive.current) {
+      previewActive.current = false;
+      onPressedOut();
+      pressOutCallback.current?.();
+    }
+  }, [isInteractionBlocked, onPressedOut]);
+  useEffect(() => () => {
+    if (previewActive.current) { previewActive.current = false; pressOutCallback.current?.(); }
+  }, []);
 
   // A loading button keeps its rest paint under the spinner, like the web fork.
   const paint = disabled
     ? palette.disabled
-    : pressed && !loading
+    : (pressed || togglePressed) && !loading
       ? palette.active
       : hovered && !loading
         ? palette.hover
@@ -287,9 +310,9 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       borderWidth: palette.borderWidth,
       borderColor: paint.border,
       // The gradient is a child layer, so the box itself stays clear of it.
-      backgroundColor: paint.gradient ? 'transparent' : paint.background,
+      backgroundColor: paint.surface ? 'transparent' : paint.background,
     };
-    if (palette.shadow && !disabled) {
+    if (palette.shadow) {
       styles.boxShadow = BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'];
     }
     if (disabled && palette.disabledOpacity != null) {
@@ -346,15 +369,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       )}
       {leading}
       {iconNode}
-      {!isSquare && children != null && (
-        <Text
-          variant={textVariant ?? geometry.type}
-          numberOfLines={numberOfLines}
-          style={[computedTextStyle, textStyle]}
-        >
-          {children}
-        </Text>
-      )}
+      {children != null && (!isSquare || (!renderLeadingIcon && !LeadingIcon && !iconNode))
+        ? renderTextContent(children, text => (
+          <Text variant={textVariant ?? geometry.type} numberOfLines={numberOfLines} style={[computedTextStyle, textStyle]}>
+            {text}
+          </Text>
+        )) : null}
       {trailing}
       {!isSquare
         ? resolveIconSlot(renderTrailingIcon, iconSize, paint.foreground, () =>
@@ -372,14 +392,20 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
   return (
     <StyledPressable
+      ref={ref}
+      onLayout={onLayout}
+      aria-hidden={ariaHidden}
+      accessibilityElementsHidden={accessibilityElementsHidden}
+      importantForAccessibility={importantForAccessibility}
       className={className}
       style={[
         baseStyles,
         style,
       ]}
+      onLongPress={isInteractionBlocked ? undefined : onLongPress}
       onPress={handlePress ? event => {
         if (stopPropagation) event.stopPropagation();
-        handlePress();
+        handlePress(event);
       } : undefined}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
@@ -401,8 +427,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
       testID={testID}
     >
-      {paint.gradient ? (
-        <ButtonGradientFill gradient={paint.gradient} radius={BUTTON_RADIUS} />
+      {paint.surface ? (
+        <SurfacePaint fill={paint.background} radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS} />
       ) : null}
       {loading ? (
         <>
@@ -423,7 +449,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       )}
     </StyledPressable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   loadingHiddenContent: {

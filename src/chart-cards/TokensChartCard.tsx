@@ -1,3 +1,4 @@
+import { Card } from '../card';
 import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import {
   Easing,
@@ -23,9 +24,12 @@ import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
+import { formatGregorian } from '../locale/format-date';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `TokensChartCard`: daily token usage as a sharp line over a fading
  * area, idle stretches drawn as a grey dashed baseline, the plot bleeding to
@@ -178,13 +182,13 @@ function useReveal(skip: boolean): number {
 
 export function TokensChartCard({
   data,
-  title = 'Tokens',
+  title: titleProp,
   headline,
   format = defaultFormat,
   getPointTitle,
   delta,
-  startLabel = 'Jun 14',
-  endLabel = 'Today',
+  startLabel: startLabelProp,
+  endLabel: endLabelProp,
   plotHeight = TOKENS_PLOT_HEIGHT,
   color,
   activeColor,
@@ -194,8 +198,14 @@ export function TokensChartCard({
   style,
   testID,
 }: TokensChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.tokens;
+  const endLabel = endLabelProp ?? chartText.today;
+  // The sample range's start (June 14), written the locale's way.
+  const startLabel =
+    startLabelProp ?? formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ?? '6/14';
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
@@ -262,15 +272,15 @@ export function TokensChartCard({
     accessibilityLabel ?? `${title} line chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
   return (
-    <View
+    <Card
+      radius="radius-20"
+      elevation="none"
       testID={testID}
       style={[
         {
           width: '100%',
           minWidth: 0,
           flexDirection: 'column',
-          borderRadius: 20,
-          backgroundColor: palette.surface,
           paddingTop: 12,
           paddingBottom: 12,
         },
@@ -399,6 +409,6 @@ export function TokensChartCard({
           {endLabel}
         </Text>
       </View>
-    </View>
+    </Card>
   );
 }

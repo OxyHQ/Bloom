@@ -15,7 +15,7 @@ import {
 } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import { PLACE_OPEN_LABELS } from './constants';
+import { PLACE_CARD_MESSAGES, type PlaceCardMessages } from './messages';
 import type { PlaceCardProps, PlaceOpenState } from './types';
 
 export interface PlaceCardPaint extends SurfaceTextPaint {
@@ -43,9 +43,10 @@ export function resolvePlaceCardPaint(theme: Theme, surface: string): PlaceCardP
 export function openLabelFor(
   state: PlaceOpenState | undefined,
   override?: string,
+  messages: PlaceCardMessages = PLACE_CARD_MESSAGES.en,
 ): string | null {
   if (state === undefined) return null;
-  return override ?? PLACE_OPEN_LABELS[state];
+  return override ?? messages.openStates[state];
 }
 
 /**
@@ -56,21 +57,23 @@ export function openLabelFor(
  * Bakery €€ Open Open until twenty hundred one point four kilometres", with no
  * commas and the rating read as "star four point six paren three one eight".
  */
-export function composePlaceName(props: PlaceCardProps): string {
+export function composePlaceName(
+  props: PlaceCardProps,
+  messages: PlaceCardMessages = PLACE_CARD_MESSAGES.en,
+): string {
   const parts: string[] = [props.name];
   if (typeof props.badge === 'string' && props.badge !== '') parts.push(props.badge);
   if (props.category) parts.push(props.category);
   if (props.rating !== undefined) {
     const rated = props.rating !== null && props.rating !== '';
     if (rated) {
-      const count =
-        props.reviewCount != null && props.reviewCount !== '' ? `, ${props.reviewCount} reviews` : '';
-      parts.push(`Rated ${formatRatingValue(props.rating as number | string)} out of 5${count}`);
+      const count = props.reviewCount != null && props.reviewCount !== '' ? props.reviewCount : undefined;
+      parts.push(messages.rated(formatRatingValue(props.rating as number | string), count));
     } else {
-      parts.push(props.newLabel ?? 'New');
+      parts.push(props.newLabel ?? messages.new);
     }
   }
-  const open = openLabelFor(props.openState, props.openLabel);
+  const open = openLabelFor(props.openState, props.openLabel, messages);
   if (open) parts.push(open);
   if (props.hours) parts.push(props.hours);
   if (props.address) parts.push(props.address);

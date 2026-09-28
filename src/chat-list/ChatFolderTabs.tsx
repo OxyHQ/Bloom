@@ -14,6 +14,8 @@ import {
   resolveChatListPaint,
 } from './shared';
 import type { ChatFolderTabsProps } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * All / Unread / Groups / Channels / Bots, with each folder's unread count.
@@ -53,6 +55,7 @@ function ChatFolderTabsComponent({
   testID,
 }: ChatFolderTabsProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
@@ -91,7 +94,7 @@ function ChatFolderTabsComponent({
             const active = folder.key === selected;
             const showCount = (folder.unreadCount ?? 0) > 0;
             const name = showCount
-              ? `${folder.label}, ${folder.unreadCount} unread`
+              ? messages.folderName(folder.label, folder.unreadCount ?? 0)
               : folder.label;
             const tabStyle: WebCssStyle = {
               height: TAB_HEIGHT,

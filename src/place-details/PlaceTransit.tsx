@@ -3,12 +3,14 @@ import { Pressable, View } from 'react-native';
 
 import { TransitLineBadge } from '../directions/TransitLineBadge';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PLACE_DETAILS_GEOMETRY, PLACE_TRANSIT_MODE_ICON } from './constants';
+import { PLACE_DETAILS_MESSAGES } from './messages';
 import { describeDeparture, describeTransitStop, resolvePlaceDetailsPaint } from './shared';
 import type { PlaceTransitProps, PlaceTransitStop } from './types';
 
@@ -57,13 +59,16 @@ function PlaceTransitComponent({
   stops,
   onPressStop,
   departureLimit,
-  realtimeLabel = 'live',
-  emptyLabel = 'No departures right now',
-  accessibilityLabel = 'Nearby transit',
+  realtimeLabel,
+  emptyLabel: emptyLabelProp,
+  accessibilityLabel: accessibilityLabelProp,
   footer,
   style,
   testID,
 }: PlaceTransitProps) {
+  const { messages } = useMessages(PLACE_DETAILS_MESSAGES);
+  const emptyLabel = emptyLabelProp ?? messages.noDepartures;
+  const accessibilityLabel = accessibilityLabelProp ?? messages.nearbyTransit;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolvePlaceDetailsPaint(theme, surface), [theme, surface]);
@@ -125,7 +130,7 @@ function PlaceTransitComponent({
           <Pressable
             {...webDataSet({ bloomPlaceStop: '' })}
             role="button"
-            accessibilityLabel={describeTransitStop(stop)}
+            accessibilityLabel={describeTransitStop(stop, messages)}
             onPress={() => onPressStop(stop.id)}
             style={webVars}
             testID={stopTestID ? `${stopTestID}-press` : undefined}
@@ -133,13 +138,13 @@ function PlaceTransitComponent({
             {header}
           </Pressable>
         ) : (
-          <View accessible accessibilityLabel={describeTransitStop(stop)}>{header}</View>
+          <View accessible accessibilityLabel={describeTransitStop(stop, messages)}>{header}</View>
         )}
 
         {stop.lines && stop.lines.length > 0 ? (
           <View
             role="group"
-            accessibilityLabel="Lines"
+            accessibilityLabel={messages.lines}
             style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingLeft: 38 }}
           >
             {stop.lines.map((line, lineIndex) => (
@@ -159,7 +164,7 @@ function PlaceTransitComponent({
                 key={departure.id}
                 role="listitem"
                 accessible
-                accessibilityLabel={describeDeparture(departure, realtimeLabel)}
+                accessibilityLabel={describeDeparture(departure, realtimeLabel, messages)}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',

@@ -3,7 +3,9 @@ import { View, type LayoutChangeEvent } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { GroupCallTile } from './GroupCallTile';
+import { CALL_UI_MESSAGES } from './messages';
 import { CALL_UI_RADIUS, callGridLayout, callSpotlightIndex, resolveCallPaint } from './shared';
 import type { GroupCallGridProps } from './types';
 
@@ -43,6 +45,7 @@ function GroupCallGridComponent({
   style,
   testID,
 }: GroupCallGridProps) {
+  const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme), [theme]);
   const [measured, setMeasured] = useState(0);
@@ -53,7 +56,7 @@ function GroupCallGridComponent({
     setMeasured((current) => (current === next ? current : next));
   };
 
-  const overflowText = formatOverflow ?? ((count: number) => `+${count} more`);
+  const overflowText = formatOverflow ?? messages.overflow;
   const spotlightAt = layout === 'spotlight' ? callSpotlightIndex(participants, spotlightId) : -1;
   const spotlight = spotlightAt >= 0 ? participants[spotlightAt] : undefined;
   const strip =

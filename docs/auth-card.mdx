@@ -31,6 +31,8 @@ import { AuthCard, AuthMediaCarousel } from '@oxy.so/bloom/auth-card';
 | `signup` | Full name, Email (with hint), Password — or Password + Confirm password with `confirmPassword` | "Already have an account? Sign in" |
 | `verify` | OTP boxes (`codeLength`, grouped in halves when even); no providers | "Code not arriving? Send a new one" → `onResend` |
 
+The words above are the English defaults; every label, placeholder and link is localised via `BloomProvider locale`, and `title`/`description` still win.
+
 `verify` shows a 32px mail-check mark when no `logo` is passed, and puts `email` into the description. `onComplete` fires once the last box fills.
 
 `onSubmit` receives an `AuthCardValues` object with only the fields the mode renders (`name`, `email`, `password`, `confirmPassword`, `remember`, `code`) — a typed stand-in for `FormData`, since React Native has no form element. Enter in the last password field submits too.
@@ -87,3 +89,6 @@ Fills its (positioned) parent and advances on its own, every `interval` ms (3200
 - `translateZ` has no React Native equivalent: the carousel expresses the depth as the projection it produces (`perspective(850) translateX(t·k) scale(k)`, k = 850/1070), which is exact and runs on native.
 
 The auth palette reads `card`, `backgroundSecondary`, `borderLight`, `textSecondary`, and `textTertiary` directly from the theme. Focus uses `primary`; links use its legible subtle foreground. The submit action uses `tone="action"`; social-provider logos retain their own brand colors.
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

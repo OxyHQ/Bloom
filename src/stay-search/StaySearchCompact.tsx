@@ -12,7 +12,9 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { STAY_SEARCH_COMPACT_HEIGHT } from './constants';
+import { STAY_SEARCH_MESSAGES } from './messages';
 import { useStaySearchPalette } from './palette';
 import type { StaySearchCompactProps } from './types';
 
@@ -39,15 +41,18 @@ const CSS = `
 
 function StaySearchCompactComponent({
   onPress,
-  title = 'Where to?',
+  title: titleProp,
   summary,
   onFilterPress,
-  filterLabel = 'Filters',
+  filterLabel: filterLabelProp,
   filterIcon = RiEqualizer3Line,
   accessibilityLabel,
   style,
   testID,
 }: StaySearchCompactProps) {
+  const { messages } = useMessages(STAY_SEARCH_MESSAGES);
+  const title = titleProp ?? messages.whereTo;
+  const filterLabel = filterLabelProp ?? messages.filters;
   const theme = useTheme();
   const palette = useStaySearchPalette();
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);

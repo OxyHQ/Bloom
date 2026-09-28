@@ -1,3 +1,5 @@
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useEffect, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
@@ -6,6 +8,8 @@ import { Button } from '../button';
 import { Chip } from '../chip';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { ChevronDownSmall } from '../sidebar/parts';
 import { resolveDashboardSurfaces } from '../stat-cards/tones';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -13,8 +17,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { RECENT_HIRES_CARD_MESSAGES } from './messages';
 import type { RecentHire, RecentHiresCardProps } from './types';
-import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * The "Recent hires" card:
@@ -57,8 +61,8 @@ interface RecentHiresPalette {
   ring: string;
 }
 
-export function resolveRecentHiresPalette(theme: Theme): RecentHiresPalette {
-  const surfaces = resolveDashboardSurfaces(theme);
+export function resolveRecentHiresPalette(theme: Theme, fill = theme.colors.card): RecentHiresPalette {
+  const surfaces = resolveDashboardSurfaces(theme, fill);
   return {
     surface: surfaces.secondary,
     inner: surfaces.inner,
@@ -140,7 +144,7 @@ function HireCard({
 
 const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   hires,
-  title = 'Recent hires',
+  title: titleProp,
   count,
   teamLabel,
   onTeamPress,
@@ -156,10 +160,13 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   testID,
 }) => {
   const common = useCommonMessages();
+  const { messages } = useMessages(RECENT_HIRES_CARD_MESSAGES);
+  const title = titleProp ?? messages.title;
   const previousLabel = previousLabelProp ?? common.previous;
   const nextLabel = nextLabelProp ?? common.next;
   const theme = useTheme();
-  const palette = useMemo(() => resolveRecentHiresPalette(theme), [theme]);
+  const fill = useCardFill(style);
+  const palette = useMemo(() => resolveRecentHiresPalette(theme, fill), [theme, fill]);
 
   useEffect(() => {
     if (IS_WEB) adoptStyleSheet(STYLE_ID, RECENT_HIRES_CSS);
@@ -170,18 +177,16 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
   const teamHook: WebDataSet = IS_WEB ? { dataSet: { bloomRecentHiresTeam: '' } } : {};
 
   return (
-    <View
+    <Card radius="radius-16" elevation="none"
       testID={testID}
       style={[
         {
           height: height === 'auto' ? undefined : height,
           minWidth: 0,
-          borderRadius: 16,
           paddingTop: 8,
           paddingBottom: 8,
           paddingLeft: 8,
           paddingRight: 8,
-          backgroundColor: palette.surface,
         },
         style,
       ]}
@@ -255,7 +260,7 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
           {nextLabel}
         </Button>
       </View>
-    </View>
+    </Card>
   );
 };
 

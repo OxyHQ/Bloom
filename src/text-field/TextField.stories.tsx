@@ -134,6 +134,50 @@ export const Composition: Story = {
   ),
 };
 
+function PasswordField({
+  label,
+  size,
+  initial = '',
+  invalid,
+  disabled,
+}: {
+  label: string;
+  size?: TextFieldSize;
+  initial?: string;
+  invalid?: boolean;
+  disabled?: boolean;
+}) {
+  const [value, setValue] = useState(initial);
+  return (
+    <View style={{ width: 320, maxWidth: '100%' }}>
+      <TextFieldLabel>{label}</TextFieldLabel>
+      <TextField size={size} invalid={invalid} disabled={disabled}>
+        <TextFieldInput
+          label={label}
+          value={value}
+          onValueChange={setValue}
+          secureTextEntry
+          revealable
+          autoComplete="current-password"
+        />
+      </TextField>
+    </View>
+  );
+}
+
+/** `revealable` on a `secureTextEntry` input: the eye shows the value, the eye-off hides it again. */
+export const Password: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ gap: 16 }}>
+      <PasswordField label="Password" initial="correct horse battery" />
+      <PasswordField label="Small" size="sm" initial="correct horse battery" />
+      <PasswordField label="Invalid" initial="short" invalid />
+      <PasswordField label="Disabled" initial="correct horse battery" disabled />
+    </View>
+  ),
+};
+
 export const FloatingLabel: Story = {
   parameters: { controls: { disable: true } },
   render: () => <FloatingField label="Email" />,

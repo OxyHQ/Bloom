@@ -1,8 +1,9 @@
+import { Button } from '../button/Button.web';
 import React from 'react';
 
 import { ComposerStatusBarBase } from './ComposerStatusBarBase';
 import { ComposerPopover } from './ComposerPopover.web';
-import { ComposerPopoverContext } from './context';
+import { ComposerPopoverContext, ComposerButtonContext } from './context';
 import type { ComposerStatusBarProps } from './types';
 
 /**
@@ -11,9 +12,11 @@ import type { ComposerStatusBarProps } from './types';
  */
 export function ComposerStatusBar(props: ComposerStatusBarProps) {
   return (
+    <ComposerButtonContext.Provider value={Button}>
     <ComposerPopoverContext.Provider value={ComposerPopover}>
       <ComposerStatusBarBase {...props} />
     </ComposerPopoverContext.Provider>
+    </ComposerButtonContext.Provider>
   );
 }
 ComposerStatusBar.displayName = 'ComposerStatusBar';

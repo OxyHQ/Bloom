@@ -15,6 +15,8 @@ import {
   resolveMediaControlsPaint,
 } from './shared';
 import type { LikeButtonProps, LikeButtonSize } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from './messages';
 
 /**
  * The heart that saves a track, album or playlist to the library.
@@ -48,10 +50,12 @@ function LikeButtonComponent({
   size = 'medium',
   activeColor,
   disabled = false,
-  accessibilityLabel = 'Save to Your Library',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: LikeButtonProps) {
+  const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.saveToLibrary;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);

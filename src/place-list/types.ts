@@ -18,7 +18,7 @@ export interface PlaceListCardProps {
   name: string;
   /** How many places are in it. Drawn through `countLabel`. */
   count?: number;
-  /** Default `(n) => n === 1 ? '1 place' : \`${n} places\``. */
+  /** `(n) => n === 1 ? '1 place' : \`${n} places\`` in English; localised via `BloomProvider locale`. */
   countLabel?: (count: number) => string;
   /**
    * The cover strip: the first four places' photos, each an absolute URL or an
@@ -42,11 +42,11 @@ export interface PlaceListCardProps {
   color?: string;
   /** Default `private`. */
   visibility?: PlaceListVisibility;
-  /** Replaces the English visibility word. */
+  /** Replaces the visibility word ("Private", "Shared", "Public" in English). */
   visibilityLabel?: string;
   /** The people it is shared with, as `AvatarGroup` items. */
   collaborators?: readonly AvatarGroupItem[];
-  /** Default `(n) => \`Shared with ${n}\``. Announced, and drawn when there is room. */
+  /** `(n) => \`Shared with ${n}\`` in English. Announced, and drawn when there is room. */
   sharedWithLabel?: (count: number) => string;
   /** Opens the list. */
   onPress?: () => void;
@@ -73,15 +73,15 @@ export interface PlaceListPlace {
 
 /** Every word `PlaceList` speaks that is not in the data. */
 export interface PlaceListLabels {
-  /** Default `` (position) => `Move to position ${position - 1}` ``. */
+  /** `` (position) => `Move to position ${position - 1}` `` in English. */
   moveEarlier: (position: number) => string;
-  /** Default `` (position) => `Move to position ${position + 1}` ``. */
+  /** `` (position) => `Move to position ${position + 1}` `` in English. */
   moveLater: (position: number) => string;
-  /** Default `` (name) => `Remove ${name} from the list` ``. */
+  /** `` (name) => `Remove ${name} from the list` `` in English. */
   remove: (name: string) => string;
-  /** Announced politely after a move. Default `` (name, position, total) => `${name} moved to position ${position} of ${total}` ``. */
+  /** Announced politely after a move. `` (name, position, total) => `${name} moved to position ${position} of ${total}` `` in English. */
   moved: (name: string, position: number, total: number) => string;
-  /** Names a place's note for a screen reader. Default `"Note"`. */
+  /** Names a place's note for a screen reader. `"Note"` in English. */
   note: string;
 }
 
@@ -99,7 +99,7 @@ export interface PlaceListProps {
   labels?: Partial<PlaceListLabels>;
   /** Drawn instead of the list when there are no places. */
   empty?: ReactNode;
-  /** Names the list. Default `"Saved places"`. */
+  /** Names the list. `"Saved places"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-item-<n>`, `-item-<n>-up`, `-down`, `-remove`, `-status`. */

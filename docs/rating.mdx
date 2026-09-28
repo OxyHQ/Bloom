@@ -29,8 +29,8 @@ const [stars, setStars] = useState<number | null>(null);
 | `value`              | a number (drawn 5.0, 4.9, 4.92) or a pre-formatted string; `null`/`undefined`/`''` = no rating yet |
 | `count`              | the review count, number or string (`"1.2k"`); hidden when there is no rating           |
 | `countStyle`         | `'parenthesis'` → "(128)" (default) or `'reviews'` → "· 128 reviews"                    |
-| `reviewsLabel`       | the word after the count, default `"reviews"` — translate it                            |
-| `newLabel`           | drawn instead of the value when there is no rating yet, default `"New"`                 |
+| `reviewsLabel`       | the word after the count, English `"reviews"`, pluralised and localised via `BloomProvider locale` |
+| `newLabel`           | drawn instead of the value when there is no rating yet, English `"New"`, localised via `BloomProvider locale` |
 | `size`               | `'small'` (14px star, body-2 text) or `'medium'` (default, 16px star, body text)        |
 | `variant`            | `'compact'` (default, one star) or `'stars'` (five stars, filled fractionally, before the value) |
 | `color`              | paints the star(s), the value and the count — e.g. white over a brand-coloured hero      |
@@ -111,7 +111,7 @@ while nothing is chosen, and `onChange` fires with the star that was chosen.
 | `size`               | `'small'` (24px star), `'medium'` (default, 32) or `'large'` (40)                            |
 | `disabled`           | no press, no keyboard, the group at `DISABLED_OPACITY`                                       |
 | `accessibilityLabel` | **required** — the name of what is being rated ("Overall rating")                            |
-| `formatStarLabel`    | each star's own name, default `"1 star"` / `"4 stars"` — translate it                        |
+| `formatStarLabel`    | each star's own name, English `"1 star"` / `"4 stars"`, localised via `BloomProvider locale` |
 | `style`, `testID`    | `testID` derives `-star-<n>`                                                                  |
 
 Chosen stars fill with the ACCENT, the rest are `RiStarLine` outlines in the

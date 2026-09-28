@@ -1,16 +1,19 @@
 import React, { memo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Button } from '../button/Button';
 
 import { UnreadBadge } from '../chat-indicators/UnreadBadge';
 import { RiArrowDownLine } from '../icons/remix/RiArrowDownLine';
 import { RiAtLine } from '../icons/remix/RiAtLine';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { CHAT_SCREEN_LABELS, useChatScreenPaint } from './shared';
+import { useChatScreenPaint } from './shared';
 import type {
   ChatIconComponent,
   JumpToMentionButtonProps,
   ScrollToBottomButtonProps,
 } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 /**
  * The shared body of the two round jump buttons.
@@ -55,7 +58,6 @@ function RoundJumpButton({
     borderRadius: size / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: paint.floatingSurface,
     borderWidth: 1,
     borderColor: paint.floatingBorder,
     boxShadow: paint.floatingShadow,
@@ -63,15 +65,19 @@ function RoundJumpButton({
 
   return (
     <View testID={testID} style={[{ alignItems: 'center' }, style]}>
-      <Pressable
+      <Button
+        appearance="solid"
+        tone="neutral"
+        colors={{ background: paint.floatingSurface, foreground: paint.textSecondary }}
+        icon={Icon}
+        iconOnly
+        iconSize={22}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={circle}
         testID={testID ? `${testID}-button` : undefined}
-      >
-        <Icon width={22} height={22} fill={paint.textSecondary} />
-      </Pressable>
+      />
       {count > 0 ? (
         <View
           pointerEvents="none"
@@ -91,11 +97,12 @@ function ScrollToBottomButtonComponent({
   unreadCount = 0,
   badgeMax,
   onPress,
-  accessibilityLabel = CHAT_SCREEN_LABELS.scrollToBottom,
+  accessibilityLabel,
   size,
   style,
   testID,
 }: ScrollToBottomButtonProps) {
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
   return (
     <RoundJumpButton
       visible={visible}
@@ -103,7 +110,7 @@ function ScrollToBottomButtonComponent({
       badgeMax={badgeMax}
       icon={RiArrowDownLine}
       onPress={onPress}
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? messages.scrollToBottom}
       size={size}
       style={style}
       testID={testID}
@@ -122,11 +129,12 @@ function JumpToMentionButtonComponent({
   count = 0,
   badgeMax,
   onPress,
-  accessibilityLabel = CHAT_SCREEN_LABELS.jumpToMention,
+  accessibilityLabel,
   size,
   style,
   testID,
 }: JumpToMentionButtonProps) {
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
   return (
     <RoundJumpButton
       visible={visible}
@@ -134,7 +142,7 @@ function JumpToMentionButtonComponent({
       badgeMax={badgeMax}
       icon={RiAtLine}
       onPress={onPress}
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? messages.jumpToMention}
       size={size}
       style={style}
       testID={testID}

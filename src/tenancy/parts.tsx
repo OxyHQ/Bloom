@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, type ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { Card } from '../card';
 import { BUTTON_GEOMETRY, BUTTON_RADIUS, mixColor } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Meter } from '../stat-bar';
@@ -11,7 +12,6 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   HOUSING_CARD_PADDING,
-  HOUSING_CARD_RADIUS,
   HOUSING_STYLE_ID,
   HOUSING_WEB_CSS,
   resolveHousingPalette,
@@ -38,8 +38,8 @@ export function useHousingPalette(): HousingPalette {
 }
 
 /**
- * The card every housing block sits in: radius 20, 1px hairline, the
- * floating-panel surface and its dropdown shadow, padding 20.
+ * The Card every housing block sits in: radius 20, shared material rim,
+ * medium elevation and optional padding 20.
  */
 export function HousingCard({
   children,
@@ -52,17 +52,13 @@ export function HousingCard({
   testID?: string;
   padded?: boolean;
 }) {
-  const palette = useHousingPalette();
   return (
-    <View
+    <Card
+      radius="radius-20"
+      elevation="m"
       testID={testID}
       style={[
         {
-          borderRadius: HOUSING_CARD_RADIUS,
-          borderWidth: 1,
-          borderColor: palette.border,
-          backgroundColor: palette.surface,
-          boxShadow: palette.shadow,
           ...(padded
             ? {
                 paddingTop: HOUSING_CARD_PADDING,
@@ -76,7 +72,7 @@ export function HousingCard({
       ]}
     >
       {children}
-    </View>
+    </Card>
   );
 }
 

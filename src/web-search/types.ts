@@ -64,9 +64,9 @@ export interface WebSearchStep {
   heading?: boolean;
 }
 
-/** The fixed strings, overridable for localisation. */
+/** The fixed strings, localised via `BloomProvider locale`; each key here wins. */
 export interface WebSearchLabels {
-  /** The collapsible sources row. Default `'Sources'`. */
+  /** The collapsible sources row. `'Sources'` in English. */
   sources?: string;
 }
 
@@ -87,7 +87,7 @@ export interface WebSearchProps {
   /**
    * The indicator at the tail of the trail while the search is still running,
    * so the log always ends on the thing being worked on. Pass a label to change
-   * it, or `false` to drop it. Default `'Working'`.
+   * it, or `false` to drop it. `'Working'` in English.
    */
   working?: string | false;
   /** Fires once, after the last step lands. */

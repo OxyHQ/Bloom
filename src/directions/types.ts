@@ -50,7 +50,7 @@ export interface TransitLine {
   color?: string;
   /** Where the line is heading ("towards Pla del Bosc"). Announced, not drawn. */
   headsign?: string;
-  /** The announced name, when "L4" is not a word. Default `` `Line ${name}` ``. */
+  /** The announced name, when "L4" is not a word. `` `Line ${name}` `` in English. */
   accessibilityLabel?: string;
 }
 
@@ -76,7 +76,7 @@ export interface DirectionsRoute {
   via?: string;
   /** How the road is moving. Draws a badge beside the figure and on the row. */
   traffic?: DirectionsTraffic;
-  /** Replaces the English traffic word ("Light traffic", …). */
+  /** Replaces the traffic word ("Light traffic", … in English). */
   trafficLabel?: string;
   /** A word for what makes this route worth offering ("Fewest transfers"). */
   note?: string;
@@ -86,17 +86,17 @@ export interface DirectionsRoute {
 
 /** Every word `DirectionsSummary` speaks, in one prop. */
 export interface DirectionsSummaryLabels {
-  /** The quiet label over the figure. Default: the mode's word ("Drive", "Transit", …). */
+  /** The quiet label over the figure. Defaults to the mode's word ("Drive", "Transit", … in English). */
   figure?: string;
-  /** Above the alternates. Default `"Other routes"`. */
+  /** Above the alternates. `"Other routes"` in English. */
   alternates?: string;
-  /** The primary action. Default `"Start"`. */
+  /** The primary action. `"Start"` in English. */
   start?: string;
-  /** Names the mode switcher. Default `"Travel mode"`. */
+  /** Names the mode switcher. `"Travel mode"` in English. */
   modes?: string;
-  /** Replaces the English mode words. */
+  /** Replaces the mode words (Bloom's, in the app's locale). */
   mode?: Partial<Record<DirectionsMode, string>>;
-  /** Replaces the English traffic words. */
+  /** Replaces the traffic words (Bloom's, in the app's locale). */
   traffic?: Partial<Record<DirectionsTraffic, string>>;
 }
 
@@ -127,7 +127,7 @@ export interface DirectionsSummaryProps {
   /** Draws the primary action under the figure. */
   onStart?: () => void;
   labels?: DirectionsSummaryLabels;
-  /** Names the block. Default `"Directions"`. */
+  /** Names the block. `"Directions"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-stops`, `-modes`, `-figure`, `-start`, `-alternates`. */
@@ -178,9 +178,9 @@ export interface DirectionsStepsProps {
   onPressStep?: (stepId: string) => void;
   /** Default `comfortable`. */
   density?: AddressDensity;
-  /** The word added to the current step's name. Default `"Current step"`. */
+  /** The word added to the current step's name. `"Current step"` in English. */
   currentLabel?: string;
-  /** Names the list. Default `"Directions"`. */
+  /** Names the list. `"Directions"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-leg-<n>`, `-leg-<n>-step-<m>`. */

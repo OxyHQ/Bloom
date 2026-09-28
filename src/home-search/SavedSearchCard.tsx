@@ -1,3 +1,6 @@
+import { useCardFill } from '../card/use-card-fill';
+import { surfaceFillOn } from '../styles/surface-levels';
+import { Card } from '../card/Card';
 import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -13,6 +16,8 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { STAY_SEARCH_TILE_RADIUS } from '../stay-search/constants';
 import { useStaySearchPalette } from '../stay-search/palette';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useMessages } from '../locale/messages';
+import { HOME_SEARCH_MESSAGES } from './messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
@@ -55,9 +60,9 @@ function SavedSearchCardComponent({
   title,
   criteria,
   newCount = 0,
-  formatNewCount = (n) => `${n} new`,
+  formatNewCount: formatNewCountProp,
   alertFrequency,
-  alertsOffLabel = 'Alerts off',
+  alertsOffLabel: alertsOffLabelProp,
   icon: Icon = RiSearchLine,
   onPress,
   onEdit,
@@ -67,11 +72,17 @@ function SavedSearchCardComponent({
   style,
   testID,
 }: SavedSearchCardProps) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES);
+  const formatNewCount = formatNewCountProp ?? messages.newCount;
+  const alertsOffLabel = alertsOffLabelProp ?? messages.alertsOff;
   const common = useCommonMessages();
   const editLabel = editLabelProp ?? common.edit;
   const deleteLabel = deleteLabelProp ?? common.delete;
   const theme = useTheme();
-  const palette = useStaySearchPalette();
+  const basePalette = useStaySearchPalette();
+  const fill = useCardFill(style);
+  const inner = surfaceFillOn(theme, fill);
+  const palette = { ...basePalette, barSurface: fill, tile: inner, rowHighlight: inner };
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hover = useInteractionState();
   const hasNew = newCount > 0;
@@ -81,10 +92,6 @@ function SavedSearchCardComponent({
   }, []);
 
   const card: WebCssStyle = {
-    borderRadius: SAVED_SEARCH_CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.barSurface,
     paddingTop: 16,
     paddingBottom: 12,
     paddingLeft: 16,
@@ -140,7 +147,7 @@ function SavedSearchCardComponent({
   const name = hasNew ? `${title}, ${formatNewCount(newCount)}` : title;
 
   return (
-    <View testID={testID} style={[card, style]}>
+    <Card radius="radius-16" elevation="none" testID={testID} style={[card, style]}>
       {onPress ? (
         <Pressable
           {...webDataSet({ bloomSavedSearchOpen: '' })}
@@ -189,7 +196,7 @@ function SavedSearchCardComponent({
             variant="secondary"
             size="small"
             onPress={onEdit}
-            accessibilityLabel={`${editLabel} ${title}`}
+            accessibilityLabel={messages.actionOn(editLabel, title)}
             testID={testID ? `${testID}-edit` : undefined}
           >
             {editLabel}
@@ -202,12 +209,12 @@ function SavedSearchCardComponent({
             iconOnly
             icon={RiDeleteBinLine}
             onPress={onDelete}
-            accessibilityLabel={`${deleteLabel} ${title}`}
+            accessibilityLabel={messages.actionOn(deleteLabel, title)}
             testID={testID ? `${testID}-delete` : undefined}
           />
         ) : null}
       </View>
-    </View>
+    </Card>
   );
 }
 

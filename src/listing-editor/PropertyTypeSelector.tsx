@@ -14,7 +14,9 @@ import { RiStackLine } from '../icons/remix/RiStackLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
+import { LISTING_EDITOR_MESSAGES } from './messages';
 import {
   CheckCircle,
   resolveSelectionPaint,
@@ -42,17 +44,30 @@ import { DISABLED_OPACITY } from '../styles/tokens';
  * with `aria-checked`, each named by its label.
  */
 
-export const DEFAULT_PROPERTY_TYPES: ReadonlyArray<PropertyTypeOption<PropertyType>> = [
-  { value: 'apartment', label: 'Apartment', icon: RiBuilding2Line },
-  { value: 'house', label: 'House', icon: RiHome4Line },
-  { value: 'room', label: 'Room', icon: RiDoorOpenLine },
-  { value: 'studio', label: 'Studio', icon: RiArmchairLine },
-  { value: 'duplex', label: 'Duplex', icon: RiStackLine },
-  { value: 'penthouse', label: 'Penthouse', icon: RiBuilding4Line },
-  { value: 'coliving', label: 'Coliving', icon: RiCommunityLine },
-  { value: 'hostel', label: 'Hostel', icon: RiHotelBedLine },
-  { value: 'other', label: 'Other', icon: RiMoreLine },
+const PROPERTY_TYPE_ICONS: ReadonlyArray<readonly [PropertyType, PropertyTypeOption['icon']]> = [
+  ['apartment', RiBuilding2Line],
+  ['house', RiHome4Line],
+  ['room', RiDoorOpenLine],
+  ['studio', RiArmchairLine],
+  ['duplex', RiStackLine],
+  ['penthouse', RiBuilding4Line],
+  ['coliving', RiCommunityLine],
+  ['hostel', RiHotelBedLine],
+  ['other', RiMoreLine],
 ];
+
+/** Bloom's nine property types, labelled from the catalog for `labels` (`pickMessages(LISTING_EDITOR_MESSAGES, lang).propertyTypes`). */
+function propertyTypeOptions(labels: Record<PropertyType, string>): ReadonlyArray<PropertyTypeOption<PropertyType>> {
+  return PROPERTY_TYPE_ICONS.map(([value, icon]) => ({ value, label: labels[value], icon }));
+}
+
+/**
+ * Bloom's nine property types with their English labels. The selector's own
+ * default speaks the locale; this stays for callers that build on it.
+ */
+export const DEFAULT_PROPERTY_TYPES: ReadonlyArray<PropertyTypeOption<PropertyType>> = propertyTypeOptions(
+  LISTING_EDITOR_MESSAGES.en.propertyTypes,
+);
 
 export function propertyTypeColumns(width: number): number {
   if (width < 400) return 2;
@@ -65,12 +80,15 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
   onValueChange,
   options,
   columns: columnsProp,
-  accessibilityLabel = 'Property type',
+  accessibilityLabel: accessibilityLabelProp,
   error,
   disabled = false,
   style,
   testID,
 }: PropertyTypeSelectorProps<T>) {
+  const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.propertyType;
+  const localizedDefaults = useMemo(() => propertyTypeOptions(messages.propertyTypes), [messages]);
   const theme = useTheme();
   useSelectionCardCss();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
@@ -78,7 +96,7 @@ export function PropertyTypeSelector<T extends string = PropertyType>({
   const columns = columnsProp ?? propertyTypeColumns(width);
   const gap = 12;
   const tileWidth = width > 0 ? Math.floor((width - gap * (columns - 1)) / columns) : 0;
-  const list = (options ?? DEFAULT_PROPERTY_TYPES) as ReadonlyArray<PropertyTypeOption<T>>;
+  const list = (options ?? localizedDefaults) as ReadonlyArray<PropertyTypeOption<T>>;
 
   return (
     <View testID={testID} style={[{ gap: 8 }, style]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>

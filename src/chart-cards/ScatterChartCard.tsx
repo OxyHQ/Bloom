@@ -22,9 +22,11 @@ import { ChartHeader } from './primitives/ChartHeader';
 import { ChartLegend } from './primitives/ChartLegend';
 import { ChartStatTiles } from './primitives/ChartStatTiles';
 import { compactNumber, describeDeltaRatio, formatNumber } from './primitives/format';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { svgTextType, textTopForBaseline } from './svg-text';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 export interface ScatterPoint {
   x: number;
@@ -218,7 +220,7 @@ const samePoint = (a: ScatterActivePoint | null, b: ScatterActivePoint | null) =
  * Symbols grow in over 450ms on mount and glide on a data change.
  */
 export function ScatterChartCard({
-  title = 'Revenue per account',
+  title: titleProp,
   series: seriesProp,
   axisLabels,
   bubble: bubbleProp,
@@ -228,8 +230,8 @@ export function ScatterChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
-  formatX = compactNumber,
+  format: formatProp,
+  formatX: formatXProp,
   tiles = false,
   activePoint: controlled,
   onActivePointChange,
@@ -237,7 +239,11 @@ export function ScatterChartCard({
   style,
   testID,
 }: ScatterChartCardProps) {
-  const palette = useChartCardPalette();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
+  const formatX = formatXProp ?? ((value: number) => compactNumber(value, chartLocale));
+  const title = titleProp ?? chartText.titles.revenuePerAccount;
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 
@@ -348,7 +354,7 @@ export function ScatterChartCard({
   const xLabelTop = box ? textTopForBaseline(box.bottom + TICK_SIZE + X_TICK_MARGIN + 0.71 * 12, TICK_TYPE) : 0;
   const tickColor = { color: palette.textTertiary };
 
-  const label = accessibilityLabel ?? `${title} ${bubble ? 'bubble' : 'scatter'} chart: ${series.map((s) => s.label).join(', ')}`;
+  const label = accessibilityLabel ?? (bubble ? chartText.bubbleChart : chartText.scatterChart)(title, series.map((s) => s.label).join(', '));
 
   return (
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={style} testID={testID}>
@@ -356,7 +362,7 @@ export function ScatterChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${active ? `${active.series}:${active.index}` : 'idle'}`}
         range={range}
@@ -412,7 +418,7 @@ export function ScatterChartCard({
                         alignItems: 'flex-end',
                   }}>
                   <Text numberOfLines={1} style={[TICK_TYPE, tickColor, { maxWidth: '100%' }]}>
-                    {compactNumber(tick.value)}
+                    {compactNumber(tick.value, chartLocale)}
                   </Text>
                 </View>
               ))}

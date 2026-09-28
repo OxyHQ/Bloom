@@ -196,3 +196,14 @@ describe('Questionnaire', () => {
     }
   });
 });
+
+
+it('resolves choice chrome against the actual custom backing', () => {
+  const theme = buildTheme('teal', 'dark');
+  const backing = '#445566';
+  const paint = resolveQuestionnairePalette(theme, backing);
+  expect(paint.surface).toBe(backing);
+  expect(paint.rowHover).not.toBe(backing);
+  expect(paint.rowHover).not.toBe(theme.colors.backgroundSecondary);
+  expect(paint.rowActive).not.toBe(paint.rowHover);
+});

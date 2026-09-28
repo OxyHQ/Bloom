@@ -1,9 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { borderRadius } from '../styles/tokens';
 import { Text } from '../typography';
 import { useSettingsPalette } from './context';
+import { SETTINGS_MODAL_MESSAGES } from './messages';
 import { RadialFade, SettingsPlanArt } from './SettingsArt';
 import { SettingsCard, SettingsRow, SettingsSection } from './SettingsRows';
 import type {
@@ -30,7 +32,7 @@ import type {
 const ART_SIZE = 277;
 
 export function SettingsPlanCard({
-  badge = 'Current plan',
+  badge: badgeProp,
   title,
   description,
   action,
@@ -40,6 +42,8 @@ export function SettingsPlanCard({
   style,
   testID,
 }: SettingsPlanCardProps) {
+  const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+  const badge = badgeProp ?? messages.currentPlan;
   const palette = useSettingsPalette();
   return (
     <View testID={testID} style={[styles.card, { backgroundColor: palette.secondary }, style]}>

@@ -47,20 +47,20 @@ export interface EvictionReportCardProps {
   /** Whether the viewer said they will attend. Draws the toggle with `onAttendingChange`. */
   attending?: boolean;
   onAttendingChange?: (attending: boolean) => void;
-  /** Default `"I'll be there"`. Stays the toggle's name in both states; `aria-pressed` carries the state. */
+  /** `"I'll be there"` in English; localised via `BloomProvider locale`. Stays the toggle's name in both states; `aria-pressed` carries the state. */
   attendLabel?: string;
   onShare?: () => void;
-  /** Default `"Share"`. */
+  /** `"Share"` in English. */
   shareLabel?: string;
   onContactSupport?: () => void;
-  /** Default `"Contact support group"`. */
+  /** `"Contact support group"` in English. */
   contactSupportLabel?: string;
   /**
    * Checked by the community (neighbours, a housing group) — NOT by an
    * authority. The label says so; keep it that way when translating.
    */
   verified?: boolean;
-  /** Default `"Community verified"`. */
+  /** `"Community verified"` in English. */
   verifiedLabel?: string;
   /** The heading level of the date on web. Default `3`. */
   headingLevel?: number;
@@ -94,9 +94,9 @@ export interface EvictionEvent {
 
 export interface EvictionTimelineProps {
   events: readonly EvictionEvent[];
-  /** Default `(source) => \`Source: ${source}\``. */
+  /** `(source) => \`Source: ${source}\`` in English. */
   formatSource?: (source: string) => string;
-  /** Names the list. Default `"Case history"`. */
+  /** Names the list. `"Case history"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

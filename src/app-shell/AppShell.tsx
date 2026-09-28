@@ -21,11 +21,11 @@ export function resolveNavigationPlacement(width: number, placement: AppShellPro
 /** Platform factory keeps the shared shell free of native material peers. */
 export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: ComponentType<FabProps>, ...panelComponents: Parameters<typeof createAppShellEngine>) {
   const AppShellEngine = createAppShellEngine(...panelComponents);
-  function NavigationBottom({ navigation = [], value = '', onValueChange, primaryAction, navigationMaterial, bottomActionBehavior, testID }: AppShellProps) {
+  function NavigationBottom({ navigation = [], value = '', onValueChange, primaryAction, bottomActionBehavior, testID }: AppShellProps) {
     const { collapseProgress } = useScreen();
-    return <BottomBar actionBehavior={bottomActionBehavior} material={navigationMaterial} items={navigation.map(item => ({ name: item.value, label: item.label, icon: item.icon }))} value={value} onValueChange={onValueChange ?? (() => {})} minimizeProgress={collapseProgress} action={primaryAction ? <Fab {...primaryAction} /> : undefined} testID={testID ? `${testID}-navigation-bottom` : undefined} />;
+    return <BottomBar actionBehavior={bottomActionBehavior} items={navigation.map(item => ({ name: item.value, label: item.label, icon: item.icon }))} value={value} onValueChange={onValueChange ?? (() => {})} minimizeProgress={collapseProgress} action={primaryAction ? <Fab {...primaryAction} /> : undefined} testID={testID ? `${testID}-navigation-bottom` : undefined} />;
   }
-  function AppShell({ active = true, navigation, navigationPlacement = 'auto', value, onValueChange, sidebar, primaryAction, navigationMaterial, bottomActionBehavior, scroll = 'auto', title, breadcrumb, actions, header, children, contentMaxWidth = 1300, overlay, style, testID }: AppShellProps) {
+  function AppShell({ active = true, navigation, navigationPlacement = 'auto', value, onValueChange, sidebar, primaryAction, bottomActionBehavior, scroll = 'auto', title, breadcrumb, actions, header, children, contentMaxWidth = 1300, overlay, style, testID }: AppShellProps) {
     const { width: windowWidth } = useWindowDimensions();
     const [containerWidth, setContainerWidth] = useState<number | null>(null);
     const width = containerWidth ?? windowWidth;
@@ -53,7 +53,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
         else if (item?.href && typeof window !== 'undefined') window.location.assign(item.href);
       }
     };
-    const shellProps = { navigation: items, value: selected, onValueChange: select, primaryAction, navigationMaterial, bottomActionBehavior, testID };
+    const shellProps = { navigation: items, value: selected, onValueChange: select, primaryAction, bottomActionBehavior, testID };
     const bottom = placement === 'bottom' && (items.length > 0 || primaryAction) ? <NavigationBottom {...shellProps} /> : undefined;
     return <View onLayout={event => setContainerWidth(event.nativeEvent.layout.width)} testID={testID} style={[{ flex: 1, minHeight: 0, flexDirection: 'row', backgroundColor: colors.background }, style]}>
       {placement !== 'bottom' && (sidebar || navigation) ? (
@@ -93,7 +93,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
   /** Translate navigation convenience props into the one document/layout engine. */
   function EngineNavigationShell(props: AppShellProps) {
     const { navigation, navigationPlacement = 'auto', value, onValueChange, sidebar, primaryAction,
-      navigationMaterial, bottomActionBehavior, active = true, scroll = 'document', testID } = props;
+      bottomActionBehavior, active = true, scroll = 'document', testID } = props;
     const window = useWindowDimensions();
     const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
     const width = measuredWidth ?? window.width;
@@ -123,7 +123,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
     const engineScroll = scroll === 'auto' ? 'container' : scroll === 'external' ? 'fixed' : scroll;
     const document = resolveScrollMode(props.variant ?? 'dashboard', engineScroll) === 'document';
     const bottom = compact && hasNavigation ? <NavigationBottom navigation={items} value={value ?? sidebar?.selected}
-      onValueChange={select} primaryAction={primaryAction} navigationMaterial={navigationMaterial}
+      onValueChange={select} primaryAction={primaryAction}
       bottomActionBehavior={bottomActionBehavior} testID={testID} /> : undefined;
     const mappedSidebar = props.variant !== 'focus' && (sidebar || navigation) ? { ...(navigation ? { showSearch: false, showThemeToggle: false } : {}), ...sidebar, items: mappedItems ?? sidebar?.items,
       selected: value ?? sidebar?.selected,

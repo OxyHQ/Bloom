@@ -2,7 +2,9 @@ import React, { memo, useMemo } from 'react';
 import { Platform, View } from 'react-native';
 
 import { Badge } from '../badge';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
+import { DIRECTIONS_MESSAGES } from './messages';
 import { describeTransitLine, resolveTransitLineColors } from './shared';
 import type { TransitLineBadgeProps } from './types';
 
@@ -29,6 +31,7 @@ const IS_WEB = Platform.OS === 'web';
  * `div` carrying an `aria-label` is not announced at all.
  */
 function TransitLineBadgeComponent({ line, size = 'label-small', style, testID }: TransitLineBadgeProps) {
+  const { messages } = useMessages(DIRECTIONS_MESSAGES);
   const theme = useTheme();
   const colors = useMemo(
     () => (line.color ? resolveTransitLineColors(theme, line.color) : null),
@@ -38,7 +41,7 @@ function TransitLineBadgeComponent({ line, size = 'label-small', style, testID }
   return (
     <View
       accessible
-      accessibilityLabel={describeTransitLine(line)}
+      accessibilityLabel={describeTransitLine(line, messages)}
       {...(IS_WEB ? { role: 'img' as const } : null)}
       style={style}
       testID={testID}

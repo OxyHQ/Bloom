@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
@@ -15,6 +16,8 @@ import { TYPE_SCALE } from '../typography/scale';
 import { IS_WEB, MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID, resolveMusicLibraryPaint } from './shared';
 import type { SearchFieldProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MUSIC_LIBRARY_MESSAGES } from './messages';
 
 /**
  * The top-bar search pill.
@@ -59,21 +62,26 @@ function SearchFieldComponent({
   onBlur,
   onBrowsePress,
   browseActive = false,
-  placeholder = 'What do you want to play?',
+  placeholder: placeholderProp,
   accessibilityLabel: accessibilityLabelProp,
-  clearLabel = 'Clear search',
-  browseLabel = 'Browse',
+  clearLabel: clearLabelProp,
+  browseLabel: browseLabelProp,
   autoFocus,
   style,
   testID,
 }: SearchFieldProps) {
   const common = useCommonMessages();
+  const { messages } = useMessages(MUSIC_LIBRARY_MESSAGES);
   const accessibilityLabel = accessibilityLabelProp ?? common.search;
+  const placeholder = placeholderProp ?? messages.search.placeholder;
+  const clearLabel = clearLabelProp ?? messages.search.clear;
+  const browseLabel = browseLabelProp ?? messages.search.browse;
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
-  const paint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
+  const fill = useSurfaceFill();
+  const paint = useMemo(() => resolveMusicLibraryPaint(theme, fill), [theme, fill]);
   const inputRef = useRef<TextInput>(null);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);

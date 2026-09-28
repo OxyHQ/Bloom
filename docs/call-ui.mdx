@@ -90,7 +90,8 @@ and `CallScreen` calls it rather than branching in JSX:
 4. `active` — `duration`, or "Connected" until the first tick arrives
 5. anything else — that status's own label
 
-Every label is overridable through `labels` for translation.
+Every label is localised via `BloomProvider locale` and overridable through
+`labels`.
 
 ### The PiP moves by PRESS
 
@@ -295,3 +296,5 @@ and the grid's geometry. It cannot see whether the stage's scrim actually keeps
 the controls legible over a bright frame, whether the PiP overlaps the top bar
 on a short screen, or whether the speaking ring reads as a ring at all. Those
 are browser and device checks.
+
+GroupCallBar uses the shared Surface container for its neutral frame. Call state colors and nested actions remain semantic controls; custom frame backgrounds are handled by Surface.

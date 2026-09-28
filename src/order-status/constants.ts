@@ -1,12 +1,15 @@
+import { COMMON_MESSAGES } from '../locale/common-messages';
+import { ORDER_STATUS_MESSAGES } from './messages';
 import type { OrderStatusDensity, OrderStatusStepState } from './types';
 import type { TypeScaleVariant } from '../typography/scale';
 
-/** What a screen reader says for each state, before the step's own label. */
+/**
+ * What a screen reader says for each state, before the step's own label — in
+ * English. The timeline speaks the resolved locale's words.
+ */
 export const ORDER_STATUS_STATE_LABELS: Record<OrderStatusStepState, string> = {
-  done: 'Done',
-  current: 'In progress',
-  upcoming: 'Not yet',
-  failed: 'Failed',
+  done: COMMON_MESSAGES.en.done,
+  ...ORDER_STATUS_MESSAGES.en.states,
 };
 
 export interface OrderStatusGeometry {

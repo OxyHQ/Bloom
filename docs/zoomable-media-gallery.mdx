@@ -96,6 +96,10 @@ Set `alt` on each item. It is shown as the caption for the active page, and it
 is the only description a screen reader has — a media viewer with no alt text
 is a screen with nothing on it.
 
+## Labels
+
+The close targets, paging arrows, thumbnail strip and share button are named in the app's language via `BloomProvider locale` ([Locale](/docs/locale)); `labels` (`close`, `previous`, `next`, `goTo(index, total)`, `share`) overrides any of them.
+
 ## Peers
 
 It requires `expo-image`, which is why the family is **not** on the root
@@ -114,3 +118,5 @@ warning naming the package.
 That it renders nothing until `open()` is called, and that it opens at the
 index it was given. The gestures — pinch, pan-to-dismiss, the shared-element
 transition — belong to a device build.
+
+Paging arrows and sharing use Bloom `Button` with neutral outline appearance, translucent Surface paint and white icons. Their positions retain safe-area offsets. Thumbnails and gesture targets keep their own hit areas.

@@ -189,6 +189,8 @@ export interface ChatComposerProps extends PartProps {
  * these needs the button to carry the popup state it is handed, not drop it.
  */
 export interface ComposerIconButtonProps extends PartProps {
+  /** Keeps anchored menus positioned when the control lays out. */
+  onLayout?: import('react-native').ViewProps['onLayout'];
   icon: ChatComposerIcon;
   accessibilityLabel: string;
   onPress?: (event?: unknown) => void;
@@ -327,7 +329,7 @@ export interface AttachmentMenuProps {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Defaults to {@link ATTACHMENT_MENU_ITEMS}. */
+  /** Defaults to {@link ATTACHMENT_MENU_ITEMS}, named in the app's locale. */
   items?: ReadonlyArray<AttachmentMenuItem>;
   /** `'grid'` (default) draws icon discs in `columns`; `'list'` draws rows. */
   layout?: 'grid' | 'list';

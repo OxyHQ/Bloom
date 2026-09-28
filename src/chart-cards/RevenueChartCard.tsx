@@ -8,13 +8,16 @@ import {
   chartAccessibilityLabel,
   groupThousands,
   useActiveIndex,
-  useChartCardPalette,
 } from './ChartCard';
 import { monotoneXAreaPath, monotoneXPath, pointX, yScale } from './geometry';
 import { revenueSeriesTone } from './palette';
 import type { RevenueChartCardProps } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { useMessages } from '../locale/messages';
+import { CHART_CARDS_MESSAGES } from './messages';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { formatCurrency } from '../locale/format-number';
 /**
  * `RevenueChartCard`: a year of revenue against the year before.
  *
@@ -35,7 +38,6 @@ import { lerp, useChartProgress } from './use-chart-progress';
 
 const Y_AXIS_WIDTH = 44;
 
-const defaultFormatValue = (value: number) => `$${groupThousands(value)}`;
 /** `formatK`: `$16k`, or `$950` under a thousand. */
 const defaultFormatAxisValue = (value: number) =>
   value >= 1000 ? `$${Math.round(value / 1000)}k` : `$${value}`;
@@ -52,8 +54,9 @@ export function RevenueChartCard({
   testID,
   ...frame
 }: RevenueChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => revenueSeriesTone(theme), [theme]);
   const fill = color ?? tone.color;
   const stroke = activeColor ?? color ?? tone.activeColor;
@@ -70,14 +73,14 @@ export function RevenueChartCard({
   const previousAnim = useChartProgress(previous);
 
   const label =
-    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? 'Revenue', frame.currentLabel, frame.previousLabel);
+    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? chartText.titles.revenue, frame.currentLabel, frame.previousLabel, chartText);
 
   return (
     <ChartCardFrame
       {...frame}
       data={data}
-      defaultTitle="Revenue"
-      defaultFormatValue={defaultFormatValue}
+      defaultTitle={chartText.titles.revenue}
+      defaultFormatValue={(value: number) => formatCurrency(value, 'USD', chartLocale)}
       seriesColor={stroke}
       comparisonColor={comparisonStroke}
       activeIndex={activeIndex}

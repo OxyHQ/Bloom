@@ -187,7 +187,7 @@ describe('which surfaces are modal', () => {
     'dialog/Dialog.web.tsx',
     'bottom-sheet/BottomSheet.web.tsx',
     'settings-modal/SettingsModal.tsx',
-    'zoomable-media-gallery/ZoomableMediaGallery.tsx',
+    'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx',
   ])('%s marks every OverlayRoot modal', (rel) => {
     const found = roots(rel);
     expect(found.length).toBeGreaterThan(0);

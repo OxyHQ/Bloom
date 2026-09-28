@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { type StyleProp, type ViewStyle } from 'react-native';
 
-import { useChartCardPalette } from './use-chart-palette';
+import { type CardProps, Card } from '../../card';
 
 /** `ChartCard`: `h-[329px]`. */
 export const CHART_CARD_HEIGHT = 329;
@@ -16,6 +16,7 @@ export interface ChartCardSurfaceProps {
    * revenue / orders cards 344. `'auto'` lets the content size the card —
    * what `tiles` cards do (`h-auto`).
    */
+  radius?: CardProps['radius'];
   height?: number | 'auto';
   /** Gap between the card's children. Default 16 (the dashboard cards use 24). */
   gap?: number;
@@ -31,15 +32,17 @@ export interface ChartCardSurfaceProps {
  * lands on web too, children spaced by `gap`.
  */
 export function ChartCardSurface({
+  radius = 'radius-16',
   height = CHART_CARD_HEIGHT,
   gap = CHART_CARD_GAP,
   style,
   testID,
   children,
 }: ChartCardSurfaceProps) {
-  const palette = useChartCardPalette();
   return (
-    <View
+    <Card
+      radius={radius}
+      elevation="none"
       testID={testID}
       style={[
         {
@@ -47,8 +50,6 @@ export function ChartCardSurface({
           minWidth: 0,
           flexDirection: 'column',
           gap,
-          borderRadius: CHART_CARD_RADIUS,
-          backgroundColor: palette.surface,
           paddingTop: 16,
           paddingLeft: 16,
           paddingRight: 16,
@@ -57,6 +58,6 @@ export function ChartCardSurface({
         style,
       ]}>
       {children}
-    </View>
+    </Card>
   );
 }

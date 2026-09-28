@@ -3,20 +3,17 @@ import { Pressable, Text as RNText, View, type TextStyle } from 'react-native';
 
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
+import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CodeLines } from './CodeLines';
+import { CODE_MESSAGES } from './messages';
 import { CARD_RADIUS, CONFIRM_MS, dataHook, IS_WEB, MONO_FAMILY, useCodePalette, useCodeWebCss } from './shared';
 import type { CodeBlockProps } from './types';
+import { writeClipboardText } from '../hooks/clipboard';
 
-const DEFAULT_LABELS = { copy: 'Copy code', copied: 'Code copied' };
-
-async function writeClipboard(text: string): Promise<void> {
-  const nav =
-    typeof navigator === 'undefined'
-      ? undefined
-      : (navigator as { clipboard?: { writeText?: (value: string) => Promise<void> } });
-  if (!IS_WEB || !nav?.clipboard?.writeText) throw new Error('clipboard unavailable');
-  await nav.clipboard.writeText(text);
+function writeClipboard(text: string): Promise<void> {
+  if (!IS_WEB) return Promise.reject(new Error('clipboard unavailable'));
+  return writeClipboardText(text);
 }
 
 function mono(fontSize: number, lineHeight: number, extra: TextStyle): TextStyle {
@@ -57,7 +54,8 @@ function CodeBlockComponent({
 }: CodeBlockProps) {
   useCodeWebCss();
   const palette = useCodePalette();
-  const l = { ...DEFAULT_LABELS, ...labels };
+  const { messages } = useMessages(CODE_MESSAGES);
+  const l = { copy: labels?.copy ?? messages.copy, copied: labels?.copied ?? messages.copied };
   const [copied, setCopied] = useState(false);
   const [copyHovered, setCopyHovered] = useState(false);
 

@@ -131,11 +131,11 @@ export interface AppShellEngineProps {
   /** Controlled drawer state (below `lg`). */
   drawerOpen?: boolean;
   onDrawerOpenChange?: (open: boolean) => void;
-  /** Names the hamburger that opens the drawer. Default `"Open navigation"`. */
+  /** Names the hamburger that opens the drawer (`"Open navigation"` in English). */
   drawerOpenLabel?: string;
   /**
    * Names the controls that close the drawer — the backdrop and the page veil a
-   * `reveal` drawer leaves. Default `"Close navigation"`. The sidebar's own close
+   * `reveal` drawer leaves (`"Close navigation"` in English). The sidebar's own close
    * button is `sidebar.closeLabel`.
    */
   drawerCloseLabel?: string;
@@ -226,7 +226,7 @@ export interface AppShellEngineProps {
   infoFrom?: AppShellBreakpoint;
   /** `split`: whether the divider drags. Default `true`. */
   resizable?: boolean;
-  /** `split`: names the divider. Default `"Resize panes"`. */
+  /** `split`: names the divider (`"Resize panes"` in English). */
   resizeLabel?: string;
   /**
    * `split`: the shell gives each pane its own `ScrollView` (default). Turn it
@@ -273,7 +273,7 @@ export interface AppShellEngineProps {
 }
 
 export interface AppShellMenuButtonProps {
-  /** Defaults to `"Open navigation"`. */
+  /** `"Open navigation"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -294,7 +294,7 @@ export interface AppShellHeaderProps {
    * header falls back to the window being narrower than `lg`.
    */
   showMenu?: boolean;
-  /** Names the hamburger. Default `"Open navigation"`. */
+  /** Names the hamburger (`"Open navigation"` in English). */
   menuLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -351,7 +351,6 @@ export interface AppShellNavigationProps {
   value?: string;
   onValueChange?: (value: string) => void;
   navigationPlacement?: AppShellNavigationPlacement;
-  navigationMaterial?: 'solid' | 'translucent';
   /** Bottom action follows scroll collapse by hiding (default), or remains visible. */
   bottomActionBehavior?: 'hide' | 'visible';
   /** Web defaults to document; native to auto. Explicit auto owns a ScrollView.

@@ -26,3 +26,17 @@ export function formatGregorian(
     }
   }
 }
+
+const ENGLISH_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/**
+ * The twelve month names, January first, in the locale's words on the
+ * Gregorian calendar: `long` ("January", "enero", "январь") or `short`
+ * ("Jan", "ene", "янв."). Falls back to English when the runtime cannot format.
+ */
+export function monthNames(locale: string | undefined, width: 'long' | 'short' = 'long'): string[] {
+  return ENGLISH_MONTHS.map(
+    (english, month) =>
+      formatGregorian(new Date(2024, month, 15), locale, { month: width }) ?? (width === 'long' ? english : english.slice(0, 3)),
+  );
+}

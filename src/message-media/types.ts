@@ -1,3 +1,4 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
 
@@ -84,7 +85,7 @@ export interface ImageMessageProps extends MessageMediaToneProps {
   caption?: ReactNode;
   /** Hides the photo behind a scrim until pressed. */
   spoiler?: boolean;
-  /** Default "Tap to view". */
+  /** Localised ("Tap to view" in English). */
   spoilerLabel?: string;
   /** Called when a spoiler is revealed, before `onPress` starts working. */
   onReveal?: () => void;
@@ -98,7 +99,7 @@ export interface ImageMessageProps extends MessageMediaToneProps {
   onCancel?: () => void;
   /** Retries a failed send. */
   onRetry?: () => void;
-  /** The accessible name. Default "Photo". */
+  /** The accessible name. Localised ("Photo" in English). */
   accessibilityLabel?: string;
 }
 
@@ -120,7 +121,7 @@ export interface MediaAlbumItem {
   placeholderColor?: string;
   /** Hides this cell behind a scrim until pressed. */
   spoiler?: boolean;
-  /** Per-cell accessible name. Default "Photo n of m" / "Video n of m". */
+  /** Per-cell accessible name. Localised ("Photo n of m" / "Video n of m" in English). */
   accessibilityLabel?: string;
 }
 
@@ -143,7 +144,7 @@ export interface MediaAlbumProps extends MessageMediaToneProps {
   progress?: number;
   onCancel?: () => void;
   onRetry?: () => void;
-  /** Names the group. Default "Album, n items". */
+  /** Names the group. Localised ("Album, n items" in English). */
   accessibilityLabel?: string;
 }
 
@@ -225,17 +226,17 @@ export interface VoiceMessageProps extends MessageMediaToneProps {
   /** Controlled disclosure. Omit for uncontrolled. */
   transcriptOpen?: boolean;
   onTranscriptOpenChange?: (open: boolean) => void;
-  /** Default "Transcribe". */
+  /** Localised ("Transcribe" in English). */
   transcribeLabel?: string;
-  /** Default "Hide transcript". */
+  /** Localised ("Hide transcript" in English). */
   hideTranscriptLabel?: string;
   /** Total width. Default 260. */
   width?: number;
   state?: MessageMediaState;
   onRetry?: () => void;
-  /** Names the whole block. Default "Voice message, 0:14". */
+  /** Names the whole block. Localised ("Voice message, 0:14" in English). */
   accessibilityLabel?: string;
-  /** Names the waveform slider. Default "Seek". */
+  /** Names the waveform slider. Localised ("Seek" in English). */
   seekLabel?: string;
 }
 
@@ -286,9 +287,9 @@ export interface FileMessageProps extends MessageMediaToneProps {
   /** Default 260 for `bubble`; `compact` stretches. */
   width?: number;
   accessibilityLabel?: string;
-  /** Default "Download". */
+  /** Localised ("Download" in English). */
   downloadLabel?: string;
-  /** Default "Cancel". */
+  /** Localised ("Cancel" in English). */
   cancelLabel?: string;
 }
 
@@ -310,7 +311,7 @@ export interface LocationMessageProps extends MessageMediaToneProps {
   live?: boolean;
   /** Pre-formatted, e.g. "Live until 18:30". A component never reads the clock. */
   liveUntilLabel?: string;
-  /** Default "Stop sharing". */
+  /** Localised ("Stop sharing" in English). */
   stopSharingLabel?: string;
   onStopSharing?: () => void;
   onPress?: () => void;
@@ -330,15 +331,15 @@ export interface ContactMessageProps extends MessageMediaToneProps {
   name: string;
   /** Phone number or handle. */
   detail?: string;
-  avatar?: MessageMediaSource;
+  avatar?: string | ImageSource;
   avatarVariant?: string;
   /** Initials for the avatar fallback. Derived from `name` when absent. */
   initials?: string;
   onMessage?: () => void;
   onAdd?: () => void;
-  /** Default "Message". */
+  /** Localised ("Message" in English). */
   messageLabel?: string;
-  /** Default "Add". */
+  /** Localised ("Add" in English). */
   addLabel?: string;
   width?: number;
   radius?: number;
@@ -378,17 +379,17 @@ export interface PollMessageProps extends MessageMediaToneProps {
   /** Called with the ids the viewer picked. */
   onVote?: (ids: string[]) => void;
   onViewResults?: () => void;
-  /** Default "Vote". */
+  /** Localised ("Vote" in English). */
   voteLabel?: string;
-  /** Default "View results". */
+  /** Localised ("View results" in English). */
   viewResultsLabel?: string;
-  /** Default "Anonymous voting". */
+  /** Localised ("Anonymous voting" in English). */
   anonymousLabel?: string;
-  /** Default "Quiz". */
+  /** Localised ("Quiz" in English). */
   quizLabel?: string;
-  /** `(n) => string` for the footer. Default "No votes" / "1 vote" / "n votes". */
+  /** `(n) => string` for the footer. Localised ("No votes" / "1 vote" / "n votes" in English). */
   formatVotes?: (total: number) => string;
-  /** Default "Select one" / "Select one or more". */
+  /** Localised ("Select one" / "Select one or more" in English). */
   hintLabel?: string;
   width?: number;
   radius?: number;
@@ -403,7 +404,7 @@ export interface StickerMessageProps extends MessageMediaToneProps {
   sourceVariant?: string;
   /** Square edge. Default 128. */
   size?: number;
-  /** The accessible name — a sticker IS its meaning. Default "Sticker". */
+  /** The accessible name — a sticker IS its meaning. Localised ("Sticker" in English). */
   accessibilityLabel?: string;
   onPress?: () => void;
   state?: MessageMediaState;
@@ -475,13 +476,13 @@ export interface SharedMediaGridProps {
   gap?: number;
   /** Tiles drawn before the last becomes a "+N more". Omit for all of them. */
   maxItems?: number;
-  /** Default `+N more`. */
+  /** Localised (`+N more` in English). */
   formatOverflow?: (remaining: number) => string;
   /** Tile corner radius. Default 4 — a tight grid, not a row of cards. */
   radius?: number;
   onPressItem?: (index: number) => void;
   onPressOverflow?: () => void;
-  /** Names the grid. Default "Shared media, n items". */
+  /** Names the grid. Localised ("Shared media, n items" in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -510,7 +511,7 @@ export interface DocumentGridProps {
   onCancelItem?: (index: number) => void;
   /** Hairlines between rows. Default `true`. */
   divider?: boolean;
-  /** Names the list. Default "Shared files, n items". */
+  /** Names the list. Localised ("Shared files, n items" in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

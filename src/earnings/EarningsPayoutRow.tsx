@@ -4,11 +4,13 @@ import { View, type TextStyle } from 'react-native';
 import { Badge } from '../badge';
 import { RiBankCardLine } from '../icons/remix/RiBankCardLine';
 import { Item } from '../item';
+import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { EARNINGS_GEOMETRY, EARNINGS_LABELS, EARNINGS_PAYOUT_TONE } from './constants';
+import { EARNINGS_GEOMETRY, EARNINGS_PAYOUT_TONE } from './constants';
+import { EARNINGS_MESSAGES } from './messages';
 import { joinEarningsName, resolveEarningsPaint } from './shared';
 import type { EarningsPayoutRowProps } from './types';
 
@@ -43,16 +45,17 @@ function EarningsPayoutRowComponent({
   style,
   testID,
 }: EarningsPayoutRowProps) {
+  const { messages } = useMessages(EARNINGS_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveEarningsPaint(theme, surface), [theme, surface]);
   const labels = useMemo(
     () => ({
-      ...EARNINGS_LABELS,
+      ...messages,
       ...labelOverrides,
-      payoutState: { ...EARNINGS_LABELS.payoutState, ...labelOverrides?.payoutState },
+      payoutState: { ...messages.payoutState, ...labelOverrides?.payoutState },
     }),
-    [labelOverrides],
+    [messages, labelOverrides],
   );
 
   const state = payout.state ?? 'scheduled';

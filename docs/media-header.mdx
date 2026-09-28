@@ -54,6 +54,8 @@ import {
 
 Everything is data in props: counts, durations, dates and listener figures arrive pre-formatted as strings — the app owns locale and plurals. Images are a URL or an ImageResolver id. Every header is controlled: it draws what it is given and reports what the user did.
 
+The English defaults below are localised: each is drawn in the app's language via `BloomProvider locale` ([Locale](/docs/locale)), and a prop you pass still wins.
+
 ## The band
 
 Each header paints a gradient band from `artworkColor` — the artwork's dominant colour, as a hex or `rgb()` string from the backend. Components never sample images.
@@ -182,4 +184,4 @@ Hover states (the edit overlay, underlined links, row washes) are web affordance
 paints on. As `neutral-500` it measured 4.38:1 on the light card. See
 [Styles → Quiet text](/docs/bloom/main/styles).
 
-`FollowButton` composes Bloom `Button` with a subtle surface. `tone="support"` (the default) uses the secondary palette; `tone="action"` uses the tertiary palette shared with FAB. `iconOnly` shows follow/following icons while retaining the accessible name and pressed state. Its two labels (or icons) slide and fade over 180 ms without changing width; reduced motion switches immediately. `loading` uses the shared Button spinner and blocks interaction while keeping both labels measured. `size` accepts `small`, `medium`, or `large`; `textStyle` applies to the labels and their measurement copies. The accessible name is `label` in both states unless you pass `accessibilityLabel`; pass a state-aware one ("Following @nate") with `accessibilityHint` ("Unfollows @nate") when the surface knows who the button is for, because TalkBack reads the pressed state as "selected", which does not say following.
+`FollowButton` composes Bloom `Button` with a subtle surface. `tone="support"` (the default) uses the secondary palette; `tone="action"` uses the tertiary palette shared with FAB. `iconOnly` shows follow/following icons while retaining the accessible name and pressed state. Its two labels (or icons) slide and fade over 180 ms without changing width. Holding the control nudges the current label 2 px toward the next slide with a damped spring, without crossfading the labels. Releasing or cancelling springs back; activation alone requests the toggle and starts the label transition. Reduced motion skips the preview and switches state immediately. `loading` uses the shared Button spinner and blocks interaction while keeping both labels measured. `size` accepts `small`, `medium`, or `large`; `textStyle` applies to the labels and their measurement copies. The accessible name is `label` in both states unless you pass `accessibilityLabel`; pass a state-aware one ("Following @nate") with `accessibilityHint` ("Unfollows @nate") when the surface knows who the button is for, because TalkBack reads the pressed state as "selected", which does not say following.

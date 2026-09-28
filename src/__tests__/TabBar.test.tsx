@@ -6,6 +6,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { SurfaceLevelProvider, useSurfaceFill, surfaceFillOn } from '../styles/surface-levels';
 import { TabBar, TabBarButton } from '../tab-bar';
 import { TabBarGlyph as NativeTabBarGlyph } from '../tab-bar/glyph.native';
 import { resolveTabBarTheme } from '../tab-bar/shared';
@@ -469,8 +470,7 @@ describe('TabBar', () => {
         <NativeTabBarSurface theme={theme} style={{ borderRadius: 29 }} />,
       );
       expect(hosts(UNSAFE_root, 'GlassView')).toHaveLength(0);
-      const surface = hosts(UNSAFE_root, 'Animated.View')[0];
-      expect(flattenStyle(surface?.props.style).backgroundColor).toBe(theme.solidFallback);
+      expect(UNSAFE_root.findAll(node => node.props.fill === theme.solidFallback && node.props.radius === 999).length).toBeGreaterThan(0);
     });
 
     it('renders an SF Symbol on iOS when the item carries one', () => {
@@ -493,5 +493,23 @@ describe('TabBar', () => {
       expect(hosts(UNSAFE_root, 'SymbolView')).toHaveLength(0);
       expect(queryByTestId('home-icon')).toBeTruthy();
     });
+  });
+});
+
+
+describe('TabBar shared surface hierarchy', () => {
+  it.each(['light', 'dark'] as const)('publishes nested and overridden solid fills in %s mode', mode => {
+    let actual = '', expected = '';
+    function Probe() { actual = useSurfaceFill(); return null; }
+    function Scene({ override }: { override?: string }) {
+      const theme = useTheme();
+      expected = override ?? surfaceFillOn(theme, '#445566');
+      return <SurfaceLevelProvider level={3} fill="#445566"><TabBar material="solid" blur={false} theme={override ? { solidFallback: override } : undefined}><Probe /></TabBar></SurfaceLevelProvider>;
+    }
+    const tree = render(<BloomThemeProvider mode={mode} colorPreset="teal"><Scene /></BloomThemeProvider>);
+    expect(actual).toBe(expected);
+    expect(actual).not.toBe('#445566');
+    tree.rerender(<BloomThemeProvider mode={mode} colorPreset="teal"><Scene override="#123456" /></BloomThemeProvider>);
+    expect(actual).toBe('#123456');
   });
 });

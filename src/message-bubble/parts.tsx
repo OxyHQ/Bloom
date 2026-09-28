@@ -137,19 +137,18 @@ MessageText.displayName = 'MessageText';
 // ---------------------------------------------------------------------------
 
 export function ForwardedLine({
-  name,
-  prefix,
+  text,
   side,
 }: {
-  name: string;
-  prefix: string;
+  /** The whole line, "Forwarded from Ana", already in the reader's language. */
+  text: string;
   side: BubbleSidePaint;
 }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       <RiShareForwardLine width={12} height={12} fill={side.meta} />
       <Text variant="caption-1-regular" style={{ color: side.meta, fontStyle: 'italic' }}>
-        {`${prefix} ${name}`}
+        {text}
       </Text>
     </View>
   );
@@ -295,6 +294,7 @@ export function ReactionRow({
   onToggle,
   onAdd,
   addLabel,
+  selectedWord,
 }: {
   reactions: readonly MessageReaction[];
   paint: MessageBubblePaint;
@@ -302,6 +302,8 @@ export function ReactionRow({
   onToggle?: (emoji: string) => void;
   onAdd?: () => void;
   addLabel: string;
+  /** Appended to the reader's own reaction's name. */
+  selectedWord?: string;
 }) {
   return (
     <View
@@ -319,7 +321,7 @@ export function ReactionRow({
           <Pressable
             key={reaction.emoji}
             role="button"
-            accessibilityLabel={reaction.label ?? reactionLabel(reaction.emoji, reaction.count, mine)}
+            accessibilityLabel={reaction.label ?? reactionLabel(reaction.emoji, reaction.count, mine, selectedWord)}
             aria-pressed={mine}
             accessibilityState={{ selected: mine }}
             onPress={onToggle === undefined ? undefined : () => onToggle(reaction.emoji)}

@@ -18,6 +18,8 @@ import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { RevealFade, RevealLine, RevealSequence } from './AiChatReveal';
 import { CARD_RADIUS, dataHook, IS_WEB, useAiChatPalette, useAiChatWebCss, type AiChatPalette } from './shared';
 import type { AiChatImageGenerationProps } from './types';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES } from './messages';
 
 const FRAME_WIDTH = 200;
 const FRAME_HEIGHT = 250;
@@ -25,13 +27,6 @@ const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 const EASE_STANDARD = Easing.bezier(0.4, 0, 0.2, 1);
 
-const DEFAULT_LABELS = {
-  generated: 'Image generated',
-  generating: 'Generating image',
-  remaining: (seconds: number) => `${seconds} seconds remaining`,
-  likeToast: 'Thanks for the feedback',
-  dislikeToast: "Thanks — we'll use this to improve",
-};
 
 // ---------------------------------------------------------------------------
 //  Dot wave
@@ -387,7 +382,8 @@ export function AiChatImageGenerationBase({
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const reducedMotion = useReducedMotion();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const l = useMemo(() => ({ ...messages.imageGeneration, ...labels }), [messages, labels]);
   const [timedReady, setTimedReady] = useState(false);
   const ready = readyProp ?? timedReady;
   const [secondsLeft, setSecondsLeft] = useState(Math.ceil(duration / 1000));
@@ -504,7 +500,7 @@ export function AiChatImageGenerationBase({
       <Animated.View style={[{ width: FRAME_WIDTH, overflow: 'hidden' }, frameStyle]}>
         <View
           aria-live="polite"
-          accessibilityLabel={ready ? `Generated image: ${alt}` : l.generating}
+          accessibilityLabel={ready ? messages.generatedImage(alt) : l.generating}
           style={{
             position: 'relative',
             width: FRAME_WIDTH,

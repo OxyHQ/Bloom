@@ -1,3 +1,4 @@
+import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
 import React, {
   createContext,
@@ -61,6 +62,8 @@ import type {
   SelectValueProps,
 } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useMessages } from '../locale/messages';
+import { SELECT_MESSAGES } from './messages';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -147,6 +150,7 @@ export function SelectTrigger({
     accessibilityLabel: label,
     disabled: disabled === true || rootDisabled === true,
   });
+  const requiredDescription = useRequiredDescription(membership.required, membership.describedBy);
   const isDisabled = membership.disabled;
   const t = palette.trigger;
 
@@ -189,11 +193,13 @@ export function SelectTrigger({
           accessibilityRole: 'button',
           'aria-haspopup': SELECT_TRIGGER_POPUP,
           nativeID: membership.nativeID,
-          'aria-describedby': membership.describedBy,
+          'aria-describedby': requiredDescription.describedBy,
+          accessibilityHint: requiredDescription.hint,
           'aria-invalid': membership.invalid || undefined,
         }}>
         {asChild ? children : field}
       </TriggerSlot>
+      {requiredDescription.description}
     </SelectTriggerStateContext.Provider>
   );
 }
@@ -306,7 +312,7 @@ type SelectContentInnerProps<T> = SelectContentProps<T> &
   };
 
 function SelectContentInner<T>({
-  label = 'Select an option',
+  label: labelProp,
   items,
   renderItem,
   valueExtractor = defaultItemValueExtractor,
@@ -315,6 +321,8 @@ function SelectContentInner<T>({
   ...contextValues
 }: SelectContentInnerProps<T>) {
   const theme = useTheme();
+  const { messages } = useMessages(SELECT_MESSAGES);
+  const label = labelProp ?? messages.selectOption;
 
   const render = useCallback(
     ({ item, index }: { item: T; index: number }) => {

@@ -40,3 +40,6 @@ import { RiHeartPulseFill } from '@oxy.so/bloom/icons';
 ## Tones
 
 `tone` picks the icon-circle colour: `rose` (600), `amber` (400), `emerald` (500), `blue` (400), `purple` (400), `teal` (400). `rose` reads the theme's `negative` ramp, `amber` the `warning` ramp, `emerald` the `success` ramp, `blue` the accent ramp. `purple` and `teal` have no theme role: they keep Tailwind's offset from `blue-500`, measured from `primary`. `iconBackground` sets an explicit opaque colour instead.
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

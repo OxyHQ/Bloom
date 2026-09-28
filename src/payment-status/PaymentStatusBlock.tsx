@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Admonition } from '../admonition';
+import { useMessages } from '../locale/messages';
 import {
   SurfaceLevelProvider,
   surfaceFillVars,
@@ -13,6 +14,7 @@ import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PAYMENT_STATUS_GEOMETRY } from './constants';
+import { PAYMENT_STATUS_MESSAGES } from './messages';
 import { resolvePaymentStatus, resolvePaymentStatusPaint } from './shared';
 import type { PaymentStatusBlockProps } from './types';
 
@@ -52,7 +54,7 @@ function PaymentStatusBlockComponent({
   amount,
   detail,
   reference,
-  referenceLabel = 'Reference',
+  referenceLabel: referenceLabelProp,
   reason,
   actions,
   icon,
@@ -62,6 +64,8 @@ function PaymentStatusBlockComponent({
   style,
   testID,
 }: PaymentStatusBlockProps) {
+  const { messages } = useMessages(PAYMENT_STATUS_MESSAGES);
+  const referenceLabel = referenceLabelProp ?? messages.reference;
   const theme = useTheme();
   const level = useSurfaceLevelValue();
   const own = useSurfaceLevel(variant === 'surface' ? 1 : 0);
@@ -69,7 +73,7 @@ function PaymentStatusBlockComponent({
     () => resolvePaymentStatusPaint(theme, own.background),
     [theme, own.background],
   );
-  const presentation = resolvePaymentStatus(state, { status, labels, icon });
+  const presentation = resolvePaymentStatus(state, { status, labels, icon }, messages);
   const accent = resolveAccentColors(theme.colors, presentation.tone, 'subtle');
   const Glyph = presentation.icon;
   const g = PAYMENT_STATUS_GEOMETRY;

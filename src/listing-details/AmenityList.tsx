@@ -5,7 +5,9 @@ import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { AMENITY_LIST_TWO_COLUMN_MIN_WIDTH } from './constants';
-import { resolveListingPalette } from './shared';
+import { surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES } from './messages';
 import type { AmenityListProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
 
@@ -30,12 +32,15 @@ function AmenityListComponent({
   onShowAll,
   total,
   showAllLabel,
-  unavailableLabel = 'Unavailable',
+  unavailableLabel: unavailableLabelProp,
   style,
   testID,
 }: AmenityListProps) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
+  const unavailableLabel = unavailableLabelProp ?? messages.unavailable;
   const theme = useTheme();
-  const palette = useMemo(() => resolveListingPalette(theme), [theme]);
+  const surface = useSurfaceFill();
+  const palette = useMemo(() => surfaceTextOn(theme, surface), [theme, surface]);
   const { width, onLayout } = useContainerWidth();
 
   const count =
@@ -43,7 +48,7 @@ function AmenityListComponent({
   const shown = limit != null && limit >= 0 ? items.slice(0, limit) : items;
   const fullCount = Math.max(total ?? items.length, items.length);
   const hasMore = fullCount > shown.length;
-  const buttonLabel = showAllLabel ? showAllLabel(fullCount) : `Show all ${fullCount} amenities`;
+  const buttonLabel = showAllLabel ? showAllLabel(fullCount) : messages.showAllAmenities(fullCount);
 
   return (
     <View onLayout={onLayout} style={[{ width: '100%', gap: 24 }, style]} testID={testID}>
@@ -66,7 +71,7 @@ function AmenityListComponent({
             }}
           >
             {Icon ? (
-              <Icon width={24} height={24} fill={available ? palette.text : palette.muted} />
+              <Icon width={24} height={24} fill={available ? palette.text : palette.textTertiary} />
             ) : null}
             <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
               <Text

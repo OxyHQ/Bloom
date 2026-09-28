@@ -2,7 +2,6 @@ import React from 'react';
 import * as Reanimated from 'react-native-reanimated';
 import * as minimize from '../fab/use-fab-minimized';
 import { Text } from 'react-native';
-import { Stop } from 'react-native-svg';
 import { render } from '@testing-library/react-native';
 import { Fab } from '../fab';
 import { Fab as WebFab } from '../fab/Fab.web';
@@ -44,7 +43,12 @@ describe('Fab action primitive', () => {
     const fill = () => {
       const node = platform === 'web' ? view.UNSAFE_root.findByProps({ 'data-testid': 'tone-fab' }) : view.getByTestId('tone-fab');
       const style = resolvedStyle(node.props.style);
-      return platform === 'web' ? style['--bloom-btn-bg'] : style.backgroundColor;
+      if (platform === 'web') return style['--bloom-btn-bg'];
+      // The Button host is transparent; the shared material owns its solid fill.
+      expect(style.backgroundColor).toBe('transparent');
+      const materials = node.findAll(child => child.props.radius != null && typeof child.props.fill === 'string');
+      expect(materials).toHaveLength(1);
+      return materials[0]!.props.fill;
     };
     const theme = buildTheme('teal', 'light');
     expect(fill()).toBe(resolveButtonPalette('solid', theme, 'action').rest.background);
@@ -52,10 +56,7 @@ describe('Fab action primitive', () => {
     expect(fill()).toBe(resolveButtonPalette('solid', theme, 'support').rest.background);
     view.rerender(<BloomThemeProvider mode="light" colorPreset="teal"><BloomScope tone="support"><Action testID="tone-fab" tone="neutral" icon={Icon} accessibilityLabel="Create" /></BloomScope></BloomThemeProvider>);
     const neutral = resolveButtonPalette('solid', theme, 'neutral').rest;
-    if (platform === 'native' && neutral.gradient) {
-      const stops = view.UNSAFE_root.findAllByType(Stop).map((stop) => stop.props.stopColor);
-      expect(stops).toEqual(expect.arrayContaining([...neutral.gradient]));
-    } else expect(fill()).toBe(neutral.background);
+    expect(fill()).toBe(neutral.background);
   });
 
   it('keeps explicit legacy sizing and positioning alongside the shared tone', () => {

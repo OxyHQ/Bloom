@@ -77,19 +77,19 @@ export interface MailSwipeActions {
   right?: readonly MailAction[];
 }
 
-/** Every string this family draws that is not app data. */
+/** Every string this family draws that is not app data — in the locale (`BloomProvider locale`); `strings` overrides any. */
 export interface MailStrings {
-  /** Prefix on a draft's snippet. Default `'Draft:'`. */
+  /** Prefix on a draft's snippet (`'Draft:'` in English). */
   draft: string;
-  /** Announced for an unread row. Default `'Unread'`. */
+  /** Announced for an unread row (`'Unread'` in English). */
   unread: string;
   /** Announced for a starred row, and the star button's name when it is on. */
   starred: string;
-  /** The star button's name when the row is not starred. Default `'Star'`. */
+  /** The star button's name when the row is not starred (`'Star'` in English). */
   star: string;
-  /** Announced when the row carries an attachment. Default `'Has attachment'`. */
+  /** Announced when the row carries an attachment (`'Has attachment'` in English). */
   attachment: string;
-  /** The row's checkbox. Default `'Select'`. */
+  /** The row's checkbox (`'Select'` in English). */
   select: string;
   /** `(3) => '3 messages'` — the thread count, read aloud. */
   threadCount: (count: number) => string;
@@ -97,9 +97,9 @@ export interface MailStrings {
   moreLabels: (count: number) => string;
   /** `(3) => '3 selected'` — the selection bar's count. */
   selectedCount: (count: number) => string;
-  /** The selection bar's select-all checkbox. Default `'Select all'`. */
+  /** The selection bar's select-all checkbox (`'Select all'` in English). */
   selectAll: string;
-  /** The selection bar's clear button. Default `'Clear selection'`. */
+  /** The selection bar's clear button (`'Clear selection'` in English). */
   clearSelection: string;
   /** Empty-state heading. */
   emptyTitle: string;
@@ -267,8 +267,14 @@ export interface MailSelectionBarProps {
 export interface MailDayGroupingOptions {
   /** "Now", for the Today/Yesterday boundary. Defaults to `Date.now()`. */
   now?: number;
-  /** The two bucket names. */
+  /** The two bucket names. Default: the locale's words ("Today", "Yesterday" in English). */
   strings?: Partial<Pick<MailStrings, 'today' | 'yesterday'>>;
-  /** How an older bucket is titled. Defaults to a short local date. */
+  /**
+   * The BCP 47 locale for the bucket names and the default date format — pass
+   * the app's (`BloomProvider locale`); a pure helper cannot read the provider.
+   * Defaults to the runtime's.
+   */
+  locale?: string;
+  /** How an older bucket is titled. Defaults to a short Gregorian date in `locale`. */
   formatDate?: (date: Date) => string;
 }

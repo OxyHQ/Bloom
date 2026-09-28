@@ -1,6 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { PriceSummary } from '../price-breakdown';
 import { RouteStops } from '../route-stops';
 import { SortablePhotoGrid } from '../sortable-media';
@@ -8,6 +9,7 @@ import { FilterSection } from '../stay-filters/FilterSection';
 import { ShipmentLoadPicker } from './ShipmentLoadPicker';
 import { ShipmentOptionsList } from './ShipmentOptionsList';
 import { SHIPMENT_REQUEST_LABELS } from './constants';
+import { SHIPMENT_REQUEST_MESSAGES } from './messages';
 import type { ShipmentRequestFormProps } from './types';
 
 /**
@@ -49,13 +51,15 @@ function ShipmentRequestFormComponent({
   footer,
   labels: labelOverrides,
   disabled = false,
-  accessibilityLabel = 'Shipment request',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: ShipmentRequestFormProps) {
+  const { messages } = useMessages(SHIPMENT_REQUEST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.shipmentRequest;
   const labels = useMemo(
-    () => ({ ...SHIPMENT_REQUEST_LABELS, ...labelOverrides }),
-    [labelOverrides],
+    () => ({ ...SHIPMENT_REQUEST_LABELS, ...messages.form, ...labelOverrides }),
+    [messages, labelOverrides],
   );
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 

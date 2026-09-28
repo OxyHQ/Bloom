@@ -44,7 +44,6 @@ import { RiRestaurantLine } from '../icons/remix/RiRestaurantLine';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { RiUserLine } from '../icons/remix/RiUserLine';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type {
   AttachmentMenuItem,
@@ -55,6 +54,9 @@ import type {
   EmojiGroup,
   VoiceRecorderLabels,
 } from './types';
+import { COMMON_MESSAGES } from '../locale/common-messages';
+import { CHAT_COMPOSER_MESSAGES, type AttachmentMenuItemId, type ChatComposerMessages } from './messages';
+import { formatClock } from '../locale/format-number';
 
 // ---------------------------------------------------------------------------
 //  Palette
@@ -93,24 +95,20 @@ export interface ChatComposerPalette {
   focusRing: string;
 }
 
-/** Re-emit a resolved colour at `alpha` (parse-and-re-emit, never concatenation). */
-export function withAlpha(color: string, alpha: number): string {
-  const rgba = parseRgba(color);
-  if (!rgba) return color;
-  return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${alpha})`;
-}
+/** Re-exported from `theme/color-utils`, which owns it (it was copied here). */
+export { withAlpha } from '../theme/color-utils';
 
-export function resolveChatComposerPalette(theme: Theme): ChatComposerPalette {
+export function resolveChatComposerPalette(theme: Theme, backing?: string): ChatComposerPalette {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
-  const surface = theme.colors.card;
+  const surface = backing ?? theme.colors.card;
   const textPaint = surfaceTextOn(theme, surface);
   return {
     surface,
     page: theme.colors.background,
     hover: surfaceFillOn(theme, surface),
     hoverStrong: hairlineOn(theme, surface),
-    inset: theme.colors.backgroundSecondary,
+    inset: backing ? surfaceFillOn(theme, surface) : theme.colors.backgroundSecondary,
     border: hairlineOn(theme, surface),
     text: theme.colors.text,
     textSecondary: textPaint.textSecondary,
@@ -185,12 +183,7 @@ export const SWAP_MS = 220;
  * bad one is worse than a composer that shows zero.
  */
 export function formatRecordingTime(seconds: number): string {
-  const total = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
-  const s = total % 60;
-  const m = Math.floor(total / 60) % 60;
-  const h = Math.floor(total / 3600);
-  const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  return formatClock(seconds);
 }
 
 /** The glyph of an {@link EmojiEntry}, whichever form it arrived in. */
@@ -308,16 +301,28 @@ export function waveformBars(
 //  Default data
 // ---------------------------------------------------------------------------
 
-/** The plus menu's seven rows. Apps drop what does not apply. */
-export const ATTACHMENT_MENU_ITEMS: ReadonlyArray<AttachmentMenuItem> = [
-  { id: 'gallery', label: 'Gallery', icon: RiGalleryLine },
-  { id: 'camera', label: 'Camera', icon: RiCameraLine },
-  { id: 'file', label: 'File', icon: RiFileTextLine },
-  { id: 'location', label: 'Location', icon: RiMapPinLine },
-  { id: 'contact', label: 'Contact', icon: RiContactsBookLine },
-  { id: 'poll', label: 'Poll', icon: RiBarChartHorizontalLine },
-  { id: 'music', label: 'Music', icon: RiMusic2Line },
+const ATTACHMENT_MENU_ICONS: ReadonlyArray<readonly [AttachmentMenuItemId, ChatComposerIcon]> = [
+  ['gallery', RiGalleryLine],
+  ['camera', RiCameraLine],
+  ['file', RiFileTextLine],
+  ['location', RiMapPinLine],
+  ['contact', RiContactsBookLine],
+  ['poll', RiBarChartHorizontalLine],
+  ['music', RiMusic2Line],
 ];
+
+/** The plus menu's seven rows, named in `messages`' language. */
+export function attachmentMenuItems(
+  messages: ChatComposerMessages = CHAT_COMPOSER_MESSAGES.en,
+): ReadonlyArray<AttachmentMenuItem> {
+  return ATTACHMENT_MENU_ICONS.map(([id, icon]) => ({ id, label: messages.attachmentItems[id], icon }));
+}
+
+/**
+ * The plus menu's seven rows, in English. Apps drop what does not apply;
+ * `AttachmentMenu` without `items` draws them in the app's locale.
+ */
+export const ATTACHMENT_MENU_ITEMS: ReadonlyArray<AttachmentMenuItem> = attachmentMenuItems();
 
 /** The quick reaction bar's six defaults. */
 export const REACTION_PICKER_EMOJIS: ReadonlyArray<string> = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -351,27 +356,43 @@ export const BANNER_ICONS: Record<ComposerBannerKind, ChatComposerIcon> = {
   note: RiTimeLine,
 };
 
-export const CHAT_COMPOSER_LABELS: ChatComposerLabels = {
-  attach: 'Attach',
-  emoji: 'Emoji',
-  camera: 'Camera',
-  mic: 'Record a voice message',
-  send: 'Send',
-  input: 'Message',
-  enterHint: 'Enter to send · Shift + Enter for a new line',
-  modEnterHint: '⌘ + Enter to send · Enter for a new line',
-};
+/** `ChatComposer`'s strings in `messages`' language; `send` is the common word. */
+export function chatComposerLabels(
+  messages: ChatComposerMessages = CHAT_COMPOSER_MESSAGES.en,
+  send: string = COMMON_MESSAGES.en.send,
+): ChatComposerLabels {
+  return {
+    attach: messages.attach,
+    emoji: messages.emoji,
+    camera: messages.camera,
+    mic: messages.mic,
+    send,
+    input: messages.message,
+    enterHint: messages.enterHint,
+    modEnterHint: messages.modEnterHint,
+  };
+}
 
-export const VOICE_RECORDER_LABELS: VoiceRecorderLabels = {
-  cancel: 'Cancel recording',
-  send: 'Send voice message',
-  delete: 'Delete recording',
-  play: 'Play recording',
-  pause: 'Pause recording',
-  lock: 'Lock recording',
-  slideToCancel: 'Slide to cancel',
-  recording: 'Recording',
-};
+/** `VoiceRecorder`'s strings in `messages`' language. */
+export function voiceRecorderLabels(
+  messages: ChatComposerMessages = CHAT_COMPOSER_MESSAGES.en,
+): VoiceRecorderLabels {
+  return {
+    cancel: messages.cancelRecording,
+    send: messages.sendVoice,
+    delete: messages.deleteRecording,
+    play: messages.playRecording,
+    pause: messages.pauseRecording,
+    lock: messages.lockRecording,
+    slideToCancel: messages.slideToCancel,
+    recording: messages.recording,
+  };
+}
+
+/** The English strings, kept for callers that import them. */
+export const CHAT_COMPOSER_LABELS: ChatComposerLabels = chatComposerLabels();
+
+export const VOICE_RECORDER_LABELS: VoiceRecorderLabels = voiceRecorderLabels();
 
 // ---------------------------------------------------------------------------
 //  Web stylesheet

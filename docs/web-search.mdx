@@ -50,7 +50,7 @@ A source is `{ title, domain, href?, brand?, faviconUrl?, icon? }`. `icon` (a re
 
 Every row is a **unit**: a step is one, and a non-heading step with sources is **two** (the sources land 900ms after the step that found them). Uncontrolled, the ticker runs one extra tick past the last unit, so the final step shimmers for its own dwell before `onComplete` fires; controlled, it doesn't — you know when the agent is done.
 
-While running, the newest step shimmers and a **Working** indicator (`working`, or `false`) trails the log: level with the heading when there is one, on the glyphs' edge when there isn't — never on the guide, since it is not a result.
+While running, the newest step shimmers and a **Working** indicator (`working`, or `false`; localised via `BloomProvider locale` like the Sources label) trails the log: level with the heading when there is one, on the glyphs' edge when there isn't — never on the guide, since it is not a result.
 
 ## Sources
 

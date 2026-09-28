@@ -30,6 +30,7 @@ import {
   ReviewSummary,
 } from '../listing-details';
 import { resolveListingPalette } from '../listing-details/shared';
+import { surfaceTextOn } from '../styles/surface-levels';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -246,13 +247,13 @@ describe('AmenityList', () => {
 
   it('strikes an unavailable amenity through, mutes its icon and prefixes its name', () => {
     mount(<AmenityList items={items} columns={1} testID="am" />);
-    const palette = resolveListingPalette(theme);
+    const palette = surfaceTextOn(theme, theme.colors.background);
     const label = byTestId('am-item-2-label');
     expect(getComputedStyle(label).textDecorationLine || getComputedStyle(label).textDecoration).toContain(
       'line-through',
     );
     expect(byTestId('am-item-2').getAttribute('aria-label')).toBe('Unavailable: Air conditioning');
-    expect(byTestId('am-item-2').querySelector('svg path')?.getAttribute('fill')).toBe(palette.muted);
+    expect(byTestId('am-item-2').querySelector('svg path')?.getAttribute('fill')).toBe(palette.textTertiary);
     expect(byTestId('am-item-0').getAttribute('aria-label')).toBe('Wifi');
     expect(byTestId('am-item-0').querySelector('svg path')?.getAttribute('fill')).toBe(palette.text);
   });

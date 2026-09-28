@@ -258,13 +258,19 @@ describe('GlyphButton accessibility and disabled', () => {
   });
 
   it('busy: announced in both spellings, press refused, NOT dimmed', () => {
+    const onPress = jest.fn();
+    const onLongPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="Locating" busy onPress={() => {}} />,
+      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="Locating" busy onPress={onPress} onLongPress={onLongPress} />,
     );
     const node = getByTestId('g');
+    fireEvent.press(node);
+    fireEvent(node, 'longPress');
+    expect(onPress).not.toHaveBeenCalled();
+    expect(onLongPress).not.toHaveBeenCalled();
     expect(node.props['aria-busy']).toBe(true);
     expect(node.props.accessibilityState).toMatchObject({ busy: true, disabled: false });
-    expect(node.props.disabled).toBe(true);
+    expect(node.props.disabled).toBe(false);
     expect(node.props['aria-disabled']).toBeUndefined();
     expect(resolvedStyle(node.props.style).opacity).toBe(1);
   });

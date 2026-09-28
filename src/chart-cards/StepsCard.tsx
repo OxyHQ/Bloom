@@ -22,7 +22,6 @@ import { chartHueTone, resolveTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { groupThousands } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import {
   MEDICAL_CARD_HEIGHT,
   MEDICAL_CARD_STYLE,
@@ -32,7 +31,10 @@ import {
   useSvgEase,
 } from './medical-parts';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `StepsCard`: a week of step counts as rounded bars over a neutral track.
  *
@@ -146,12 +148,12 @@ export function stepsBars(width: number, count: number): StepsBar[] {
 
 export function StepsCard({
   data,
-  title = 'Steps',
+  title: titleProp,
   getPointTitle,
   headline,
-  totalSuffix = 'total steps',
-  pointSuffix = 'steps',
-  format = groupThousands,
+  totalSuffix: totalSuffixProp,
+  pointSuffix: pointSuffixProp,
+  format: formatProp,
   range,
   onPrevRange,
   onNextRange,
@@ -163,8 +165,13 @@ export function StepsCard({
   style,
   testID,
 }: StepsCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, chartLocale));
+  const title = titleProp ?? chartText.titles.steps;
+  const totalSuffix = totalSuffixProp ?? chartText.totalSteps;
+  const pointSuffix = pointSuffixProp ?? chartText.stepsSuffix;
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const tone = useMemo(
     () => (color ? resolveTone([], 0, color, activeColor) : chartHueTone(theme, 1)),
     [theme, color, activeColor],
@@ -233,7 +240,7 @@ export function StepsCard({
     `${title} bar chart: ${data.map((d) => `${d.label} ${format(d.value)}`).join(', ')}`;
 
   return (
-    <ChartCardSurface height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
+    <ChartCardSurface radius="radius-20" height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
       <MedicalHeader>
         <MedicalHeadline
           label={label}

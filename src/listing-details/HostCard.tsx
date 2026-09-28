@@ -8,8 +8,9 @@ import type { HostCardProps } from './types';
  * details and a "Message host" button. Geometry, colours and testIDs are
  * `ContactCard`'s (see its header).
  */
-function HostCardComponent({ messageLabel = 'Message host', ...props }: HostCardProps) {
-  return <ContactCard {...props} role="host" messageLabel={messageLabel} />;
+function HostCardComponent(props: HostCardProps) {
+  // ContactCard names a host's message button itself, in the locale.
+  return <ContactCard {...props} role="host" />;
 }
 
 export const HostCard = memo(HostCardComponent);

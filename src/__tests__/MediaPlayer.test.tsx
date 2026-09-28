@@ -390,7 +390,7 @@ describe('MiniPlayer', () => {
     );
     const surface = resolveMiniPlayerSurface(theme, 'teal', '#F4E3A1');
     expect(surface.tinted).toBe(true);
-    expect(byTestId('m').style.backgroundColor).toBe(normalise(surface.background));
+    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(surface.background);
     const dark = immersiveDarkTheme(theme, 'teal');
     const darkText = resolveMediaControlsPaint(dark).text;
     expect(contrastRatio(surface.background, darkText)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
@@ -404,7 +404,7 @@ describe('MiniPlayer', () => {
   it('falls back to the floating surface under the app theme without a colour', () => {
     mount(<MiniPlayer track={TRACK} playing onPlayPause={noop} position={0} duration={0} testID="m" />);
     const menu = resolveMenuPalette(theme);
-    expect(byTestId('m').style.backgroundColor).toBe(normalise(menu.surface));
+    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(theme.colors.card);
     expect(byTestId('m-progress-fill').style.width).toBe('0%');
   });
 

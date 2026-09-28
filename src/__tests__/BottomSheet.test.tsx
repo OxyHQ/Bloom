@@ -1,8 +1,10 @@
 import React, { createRef } from 'react';
-import { Dimensions, Text } from 'react-native';
+import { Dimensions, Text, View } from 'react-native';
 import { act, render, within } from '@testing-library/react-native';
 
+import { useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { hostNodes, resolvedStyle } from './support/rendered-style';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -22,6 +24,22 @@ function renderWithDarkTheme(ui: React.ReactElement) {
 }
 
 describe('BottomSheet', () => {
+  it('uses one shared material and keeps a custom background authoritative', () => {
+    const ref = createRef<BottomSheetRef>();
+    const screen = renderWithTheme(<BottomSheet ref={ref}><Text>Material</Text></BottomSheet>);
+    act(() => ref.current?.present());
+    const materials = () => hostNodes(screen.toJSON()).filter(n => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)));
+    expect(materials()).toHaveLength(1);
+    const panel = hostNodes(screen.toJSON()).find(n => resolvedStyle(n.props.style).maxWidth === 800);
+    expect(resolvedStyle(panel?.props.style).backgroundColor).toBe('transparent');
+    expect(resolvedStyle(panel?.props.style).overflow).toBeUndefined();
+    const background = jest.fn(() => <View testID="custom-background" />);
+    screen.rerender(<BloomThemeProvider mode="light" colorPreset="teal"><BottomSheet ref={ref} backgroundComponent={background}><Text>Material</Text></BottomSheet></BloomThemeProvider>);
+    expect(screen.getByTestId('custom-background')).toBeTruthy();
+    expect(background).toHaveBeenCalled();
+    expect(materials()).toHaveLength(0);
+  });
+
   it('does not render content when not presented', () => {
     const ref = createRef<BottomSheetRef>();
     const { queryByText } = renderWithTheme(
@@ -336,4 +354,13 @@ describe('BottomSheet', () => {
       expect(ref.current).not.toBeNull();
     });
   });
+});
+
+
+it('publishes declared custom background at the sheet level reset', () => {
+  function Probe() { return <Text testID="surface-probe">{useSurfaceFill()}|{useSurfaceLevelValue()}</Text>; }
+  const ref = createRef<BottomSheetRef>();
+  const screen = renderWithTheme(<BottomSheet ref={ref} backgroundFill="#123456" backgroundComponent={() => <View />}><Probe /></BottomSheet>);
+  act(() => ref.current?.present());
+  expect(screen.getByTestId('surface-probe').props.children.join('')).toBe('#123456|0');
 });

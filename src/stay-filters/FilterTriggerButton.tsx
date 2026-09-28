@@ -4,6 +4,8 @@ import { View } from 'react-native';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { RiEqualizerLine } from '../icons/remix/RiEqualizerLine';
+import { useMessages } from '../locale/messages';
+import { STAY_FILTERS_MESSAGES } from './messages';
 import type { FilterTriggerButtonProps } from './types';
 
 /**
@@ -17,15 +19,17 @@ import type { FilterTriggerButtonProps } from './types';
 function FilterTriggerButtonComponent({
   count = 0,
   onPress,
-  label = 'Filters',
+  label: labelProp,
   accessibilityLabel,
   size = 'medium',
   disabled,
   style,
   testID,
 }: FilterTriggerButtonProps) {
+  const { messages } = useMessages(STAY_FILTERS_MESSAGES);
+  const label = labelProp ?? messages.filters;
   const applied = count > 0;
-  const name = accessibilityLabel ?? (applied ? `${label}, ${count} applied` : label);
+  const name = accessibilityLabel ?? (applied ? messages.filtersApplied(label, count) : label);
 
   const button = (
     <Button

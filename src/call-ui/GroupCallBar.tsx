@@ -1,3 +1,4 @@
+import { Surface } from '../surface';
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -8,7 +9,9 @@ import { RiMicLine } from '../icons/remix/RiMicLine';
 import { RiMicOffFill } from '../icons/remix/RiMicOffFill';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CALL_CONTROL_LABELS, CALL_UI_RADIUS, resolveCallPaint } from './shared';
+import { useMessages } from '../locale/messages';
+import { CALL_UI_MESSAGES } from './messages';
+import { CALL_UI_RADIUS, resolveCallPaint } from './shared';
 import type { GroupCallBarProps } from './types';
 
 /**
@@ -46,11 +49,12 @@ function GroupCallBarComponent({
   style,
   testID,
 }: GroupCallBarProps) {
+  const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme), [theme]);
   const { state: hovered, onIn, onOut } = useInteractionState();
 
-  const speakingLabel = labels?.speaking ?? ((name: string) => `${name} is speaking`);
+  const speakingLabel = labels?.speaking ?? messages.speaking;
   const line =
     speakingName !== undefined && speakingName !== ''
       ? speakingLabel(speakingName)
@@ -155,7 +159,7 @@ function GroupCallBarComponent({
   };
 
   return (
-    <View
+    <Surface
       style={[
         {
           flexDirection: 'row',
@@ -164,7 +168,6 @@ function GroupCallBarComponent({
           borderRadius: CALL_UI_RADIUS.card,
           borderWidth: 1,
           borderColor: paint.border,
-          backgroundColor: paint.surfaceRaised,
           paddingTop: 10,
           paddingRight: 10,
           paddingBottom: 10,
@@ -195,8 +198,8 @@ function GroupCallBarComponent({
           role="button"
           accessibilityLabel={
             muted
-              ? (labels?.unmute ?? CALL_CONTROL_LABELS.unmute)
-              : (labels?.mute ?? CALL_CONTROL_LABELS.mute)
+              ? (labels?.unmute ?? messages.controls.unmute)
+              : (labels?.mute ?? messages.controls.mute)
           }
           aria-pressed={muted}
           accessibilityState={{ selected: muted }}
@@ -229,7 +232,7 @@ function GroupCallBarComponent({
             onPress={onLeave}
             testID={testID ? `${testID}-leave` : undefined}
           >
-            {labels?.leave ?? 'Leave'}
+            {labels?.leave ?? messages.leave}
           </Button>
         )
       ) : onJoin === undefined ? null : (
@@ -239,10 +242,10 @@ function GroupCallBarComponent({
           onPress={onJoin}
           testID={testID ? `${testID}-join` : undefined}
         >
-          {labels?.join ?? 'Join'}
+          {labels?.join ?? messages.join}
         </Button>
       )}
-    </View>
+    </Surface>
   );
 }
 

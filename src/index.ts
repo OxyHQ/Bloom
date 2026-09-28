@@ -156,6 +156,8 @@ export * from './appearance';
 export * from './screen';
 export * from './bottom-bar';
 export * from './button';
+export { Surface } from './surface';
+export type { SurfaceProps } from './surface';
 export * from './button-group';
 export * from './control-surface';
 export {
@@ -223,6 +225,7 @@ export type {
   ErrorBoundaryFallback,
   ErrorBoundaryFallbackContext,
 } from './error-boundary';
+export * as Shapes from './shapes';
 export * from './avatar';
 export { AvatarGroup } from './avatar-group';
 export type { AvatarGroupProps, AvatarGroupItem } from './avatar-group';

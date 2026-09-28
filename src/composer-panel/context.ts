@@ -1,3 +1,4 @@
+import { Button } from '../button/Button';
 import { createContext, useContext, type ComponentType } from 'react';
 
 import type { ComposerPopoverProps } from './types';
@@ -24,3 +25,7 @@ export function useComposerPopover(): ComponentType<ComposerPopoverProps> {
   }
   return Popover;
 }
+
+/** Platform bindings inject their actual Button, including its ref and layout contract. */
+export const ComposerButtonContext = createContext<typeof Button>(Button);
+export function useComposerButton() { return useContext(ComposerButtonContext); }

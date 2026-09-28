@@ -35,9 +35,9 @@ export interface MapScaleBarProps {
   scales: readonly MapScale[];
   /** Default `island`. */
   variant?: MapAttributionVariant;
-  /** The word before the readings in the announcement. Default `"Scale"`. */
+  /** The word before the readings in the announcement. `"Scale"` in English. */
   scaleLabel?: string;
-  /** Defaults to `"Scale, 500 m, 1000 ft"`. */
+  /** Defaults to `"Scale, 500 m, 1000 ft"` (in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-bar-<n>`, `<testID>-rule-<n>`. */
@@ -61,7 +61,7 @@ export interface MapAttributionProps {
   creditLabel?: string;
   /** The scale bar, drawn before the credit. Without it none is drawn. */
   scales?: readonly MapScale[];
-  /** The word before the readings in the scale's announcement. Default `"Scale"`. */
+  /** The word before the readings in the scale's announcement. `"Scale"` in English. */
   scaleLabel?: string;
   /**
    * When the tiles were last refreshed, pre-formatted by the app — "Updated 12
@@ -71,7 +71,7 @@ export interface MapAttributionProps {
   updated?: string;
   /** Default `island`. */
   variant?: MapAttributionVariant;
-  /** Names the strip. Default `"Map data"`. */
+  /** Names the strip. `"Map data"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-scale`, `-credit`, `-updated`. */

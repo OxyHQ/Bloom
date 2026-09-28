@@ -1,3 +1,7 @@
+import { StyleSheet } from 'react-native';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceLevelValue } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
@@ -13,12 +17,14 @@ import { Text } from '../typography';
 import { ChatMemberRow } from './ChatMemberRow';
 import {
   CHAT_INFO_PANE_WIDTH,
-  CHAT_SCREEN_LABELS,
   useChatScreenPaint,
   useResolvedImageSource,
   type ChatScreenPaint,
 } from './shared';
 import type { ChatInfoAction, ChatInfoPanelProps, ChatMember } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { CHAT_SCREEN_MESSAGES } from './messages';
 
 /** Above this the roster gets a search field unless the caller says otherwise. */
 const MEMBER_SEARCH_THRESHOLD = 8;
@@ -109,12 +115,14 @@ function ActionTile({ action, paint }: { action: ChatInfoAction; paint: ChatScre
  */
 function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
   const paint = useChatScreenPaint();
+  const { messages } = useMessages(CHAT_SCREEN_MESSAGES);
+  const common = useCommonMessages();
   const {
     variant = 'pane',
     width = CHAT_INFO_PANE_WIDTH,
-    title = CHAT_SCREEN_LABELS.info,
+    title = messages.info,
     onClose,
-    closeLabel = CHAT_SCREEN_LABELS.close,
+    closeLabel = common.close,
     headerActions,
     cover,
     coverSource,
@@ -135,16 +143,16 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
     onTabChange,
     defaultTab,
     members,
-    membersTitle = CHAT_SCREEN_LABELS.members,
+    membersTitle = messages.members,
     onPressMember,
     roleLabels,
     memberSearch,
     memberQuery,
     onMemberQueryChange,
-    memberSearchPlaceholder = CHAT_SCREEN_LABELS.memberSearch,
+    memberSearchPlaceholder = messages.memberSearch,
     onAddMember,
-    addMemberLabel = CHAT_SCREEN_LABELS.addMember,
-    membersEmptyLabel = CHAT_SCREEN_LABELS.noMembers,
+    addMemberLabel = messages.addMember,
+    membersEmptyLabel = messages.noMembers,
     destructiveActions,
     children,
     scrollable = true,
@@ -152,6 +160,10 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
     contentStyle,
     testID,
   } = props;
+
+  const layer = useSurfaceLayer();
+  const parentLevel = useSurfaceLevelValue();
+  const fill = resolveSurfaceFill(String(StyleSheet.flatten(style)?.backgroundColor ?? (variant === 'pane' ? layer.fill : layer.parentFill)), false, layer.parentFill);
 
   const coverImage = useResolvedImageSource(coverSource, 'large');
   const hasCover = Boolean(cover ?? coverImage);
@@ -412,8 +424,9 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
   return (
     <View
       testID={testID}
-      style={[{ minHeight: 0, backgroundColor: paint.surface }, frame, style]}
+      style={[{ minHeight: 0 }, frame, style, { backgroundColor: variant === 'pane' || StyleSheet.flatten(style)?.backgroundColor != null ? fill : 'transparent', ...surfaceFillVars(fill) }]}
     >
+      <SurfaceLevelProvider level={variant === 'pane' ? layer.level : parentLevel} fill={fill}>
       <View
         style={{
           minHeight: 52,
@@ -460,6 +473,7 @@ function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
       ) : (
         body
       )}
+      </SurfaceLevelProvider>
     </View>
   );
 }

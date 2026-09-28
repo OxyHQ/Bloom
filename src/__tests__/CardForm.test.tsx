@@ -410,3 +410,10 @@ describe('CardFormExpiry and CardFormSecurityCode stand alone', () => {
     expect((byTestId('s-input') as HTMLInputElement).value).toBe('1234');
   });
 });
+
+
+it('allows deletion until an overlong value fits a newly shorter scheme', () => {
+  expect(cardDigits(applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 9012 3456 78', undefined, 16))).toBe('123456789012345678');
+  expect(applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 9012 3456 7890', undefined, 16)).toBe('1234 5678 9012 3456 789');
+  expect(applyCardNumberEdit('1234 5678 9012 3456 789', '1234 5678 012 3456 789', undefined, 16)).toBe('1234 5678 012 3456 789');
+});

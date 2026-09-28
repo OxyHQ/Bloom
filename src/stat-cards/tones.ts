@@ -1,3 +1,4 @@
+import { surfaceFillOn } from '../styles/surface-levels';
 import {
   ACCENT_TABLE,
   DANGER_TABLE,
@@ -142,12 +143,12 @@ export interface DashboardSurfaces {
   cardShadow: string;
 }
 
-export function resolveDashboardSurfaces(theme: Theme): DashboardSurfaces {
+export function resolveDashboardSurfaces(theme: Theme, fill = theme.colors.card): DashboardSurfaces {
   const c = theme.colors;
   return {
-    secondary: c.card,
-    inner: c.backgroundSecondary,
-    primary: c.card,
+    secondary: fill,
+    inner: surfaceFillOn(theme, fill),
+    primary: fill,
     iconTile: c.backgroundTertiary,
     avatarNeutral: c.backgroundTertiary,
     buttonBorder: c.borderLight,

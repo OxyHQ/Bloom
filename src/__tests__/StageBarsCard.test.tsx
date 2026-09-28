@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -31,7 +32,7 @@ type Node = { props: Record<string, unknown>; type: unknown };
 describe('StageBarsCard', () => {
   it('is content-sized with a 329px floor', () => {
     const { getByTestId } = renderCard(<StageBarsCard testID="stage" stages={STAGES} />);
-    const card = resolvedStyle(getByTestId('stage').props.style);
+    const card = cardLayout(getByTestId('stage'));
     expect(card.height).toBeUndefined();
     expect(card).toMatchObject({ minHeight: 329, borderRadius: 16, paddingTop: 16, paddingBottom: 12 });
     expect(resolvedStyle(getByTestId('stage-rows').props.style)).toMatchObject({ flexGrow: 1, justifyContent: 'center', paddingTop: 8, paddingBottom: 8 });

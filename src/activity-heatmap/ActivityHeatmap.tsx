@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { memo, useMemo } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 
@@ -274,7 +276,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   cell: {
-    borderCurve: 'continuous',
+    ...surfaceStyle(SURFACE_SHAPES.chart),
   },
   weekdayLabel: {
     fontSize: LABEL_FONT_SIZE,

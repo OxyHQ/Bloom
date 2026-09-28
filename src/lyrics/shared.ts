@@ -5,6 +5,7 @@ import { mixColor } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
+import { LYRICS_MESSAGES } from './messages';
 import type { LyricLine, LyricsPalette, LyricsSize } from './types';
 import {
   AAA_TEXT_CONTRAST,
@@ -17,7 +18,8 @@ import {
 
 export const IS_WEB = Platform.OS === 'web';
 
-export const DEFAULT_EMPTY_TEXT = 'Lyrics aren’t available for this track';
+/** The English empty line; components read the localised one from `LYRICS_MESSAGES`. */
+export const DEFAULT_EMPTY_TEXT = LYRICS_MESSAGES.en.empty;
 
 // ---------------------------------------------------------------------------
 //  Lines

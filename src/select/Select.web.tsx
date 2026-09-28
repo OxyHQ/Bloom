@@ -1,3 +1,4 @@
+import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
 import React, {
   createContext,
@@ -64,6 +65,8 @@ import type {
   SelectValueProps,
 } from './types';
 import { useFieldMembership } from '../field/membership';
+import { useMessages } from '../locale/messages';
+import { SELECT_MESSAGES } from './messages';
 import { isSpaceKey, rovingItems, rovingMove, rovingTarget } from '../hooks/roving-focus';
 import { hostElement, useReturnFocusOnClose } from '../floating/menu-keyboard';
 
@@ -245,6 +248,7 @@ export function SelectTrigger({
     accessibilityLabel: label,
     disabled: disabled === true || ctx.disabled === true,
   });
+  const requiredDescription = useRequiredDescription(membership.required, membership.describedBy);
   const isDisabled = membership.disabled;
   useEffect(() => {
     adoptStyleSheet(TRIGGER_STYLE_ID, TRIGGER_CSS);
@@ -331,12 +335,14 @@ export function SelectTrigger({
           'aria-haspopup': SELECT_TRIGGER_POPUP,
           'aria-expanded': ctx.isOpen,
           nativeID: membership.nativeID,
-          'aria-describedby': membership.describedBy,
+          'aria-describedby': requiredDescription.describedBy,
+          accessibilityHint: requiredDescription.hint,
           'aria-invalid': membership.invalid || undefined,
         }}
       >
         {asChild ? children : field}
       </TriggerSlot>
+      {requiredDescription.description}
     </SelectTriggerStateContext.Provider>
   );
 }
@@ -423,12 +429,14 @@ export function SelectIcon({ style }: SelectIconProps) {
 export function SelectContent<T>({
   items,
   renderItem,
-  label = 'Select an option',
+  label: labelProp,
   valueExtractor = defaultItemValueExtractor,
   maxHeight = SELECT_MAX_HEIGHT,
   width,
   className,
 }: SelectContentProps<T>) {
+  const { messages } = useMessages(SELECT_MESSAGES);
+  const label = labelProp ?? messages.selectOption;
   const ctx = useSelectContext();
   const [, setStoredItem] = useContext(ValueStoreContext);
   // Resolve the item behind the value on every change — including while closed,

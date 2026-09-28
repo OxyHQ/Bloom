@@ -12,6 +12,8 @@ import { FollowButton } from './MediaActionBar';
 import { ClampedText, Cover, HeaderTitle, InlineLink, MediaHeaderFrame, useMediaHeaderPaint } from './parts';
 import { selectTitleVariant, type MediaHeaderPaint } from './shared';
 import type { LatestEpisode, PodcastShowHeaderProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The header of a podcast show.
@@ -112,8 +114,8 @@ function PodcastShowHeaderComponent({
   description,
   descriptionLines = 3,
   latestEpisode,
-  typeLabel = 'Podcast',
-  latestEpisodeLabel = 'Latest episode',
+  typeLabel: typeLabelProp,
+  latestEpisodeLabel: latestEpisodeLabelProp,
   showMoreLabel,
   showLessLabel,
   artworkColor,
@@ -122,6 +124,9 @@ function PodcastShowHeaderComponent({
   style,
   testID,
 }: PodcastShowHeaderProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.podcast;
+  const latestEpisodeLabel = latestEpisodeLabelProp ?? messages.latestEpisode;
   const paint = useMediaHeaderPaint(artworkColor);
   const hasRatingRow = rating !== undefined || (categories && categories.length > 0) || onFollowChange;
 

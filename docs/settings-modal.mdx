@@ -73,7 +73,7 @@ The modal's base size is a fixed 871×614 panel. Bloom adapts it to the window w
 | `medium` | 640–899px | Same panel inside a 16px gutter; rail 220px, insets 24px. |
 | `compact` | < 640px | Full screen (no radius or gutter, content inside the safe area). Two levels: the section list with chevrons, then the page pushed over it with the shared `PageHeader` back island. Android's back button returns to the list before it closes. The panel rises 16px instead of scaling from .85. |
 
-In `compact`, `SettingsRow` lets its control wrap under the label when both do not fit (a switch stays beside it, a `SettingsValueField` drops below and fills the row), and the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`).
+In `compact`, `SettingsRow` lets its control wrap under the label when both do not fit (a switch stays beside it, a `SettingsValueField` drops below and fills the row), and the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`). Every default string — the modal's `labels`, the Storage and Tools pages' copy, the plan chip — is localised via `BloomProvider locale`, and `SettingsDateField` formats its date in that locale.
 
 ## Shared header
 
@@ -103,6 +103,21 @@ Menus, selects, tooltips and the date popover opened inside a page stack above i
 
 **The hairline stops 12px short of the card's left edge** because the padding lives on the card, not the row — rows must be direct children of `SettingsCard` (fragments are flattened). "Last" is derived from the card's children, since React Native has no `:last-child`.
 
+### Rows outside the dialog
+
+A preference card on a screen or in a sheet imports the lightweight entry:
+
+```tsx
+import { SettingsCard, SettingsRow } from '@oxy.so/bloom/settings-modal/rows';
+```
+
+It carries `SettingsCard`, `SettingsRow`, `SettingsSection`,
+`SettingsSectionLabel` and `SettingsValueField` (and their prop types) — the
+same components — without linking `SettingsModal`, the storage/tools/plan pages
+or `SettingsDateField`'s calendar. Metro does not tree-shake barrel exports, so
+one row imported from `@oxy.so/bloom/settings-modal` put the whole dialog in the
+bundle of the screen that drew it. Gate: `lean-entries.test.ts`.
+
 ## Pages
 
 - **`SettingsGeneralPage`** — `plan` (`SettingsPlanCard`) then `sections`. The plan card's artwork is `SettingsPlanArt`: on web, a WebGL "burning flag" shader over `artworkSource` (or Bloom's generated accent/success/warning discs), eased toward the pointer; native, reduced motion and a failed WebGL context get the static discs. A radial fade melts it into the card.
@@ -125,3 +140,5 @@ All surfaces come from the theme ramps (`button/shared`): background/secondary i
 `onBeforeLeave(reason)` synchronously returns `false` to keep the current content mounted, with no exit animation. Reasons are `close` (close action, backdrop, Escape, Android back from navigation, or `control.close()`), `navigation` (compact back to sections, including Android back), and `page` (selecting a different page). It runs once per intention with the latest callback; selecting the same page does not invoke it. An imperative close callback runs only if the close was accepted.
 
 Use the imperative control for guarded flows. External changes to controlled `open` or `page`, and parent unmounts, remain the caller's authority and are not vetoed. Preserve the application's router leave guard as well when navigation can unmount the modal. The guard should read the application's completion state; the modal never stores recovery phrases or other sensitive content.
+
+The modal uses the shared Surface gradient and rim over its existing full backing. It publishes that backing to nested controls through the surface context and web CSS variable; the navigation rail publishes its own secondary backing. Neither replaces the modal’s layout, scrolling or overlay behavior.

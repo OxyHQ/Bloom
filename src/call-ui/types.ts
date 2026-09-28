@@ -1,5 +1,6 @@
+import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
-import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -16,8 +17,8 @@ import type { BloomIconComponent } from '../icons/icon-component';
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
 export type CallGlyph = BloomIconComponent;
 
-/** An avatar source: a URL, an `ImageResolver` id, or an RN image source. */
-export type CallAvatarSource = string | ImageSourcePropType | null;
+/** An avatar source: a URL, an `ImageResolver` id, or a portable Shapes image source. */
+export type CallAvatarSource = string | ImageSource | null;
 
 // ---------------------------------------------------------------------------
 //  Status
@@ -44,7 +45,7 @@ export type CallStatus =
   | 'onHold'
   | 'ended';
 
-/** The English default for each status line. Apps in other languages pass their own. */
+/** Each status line, in the locale (`BloomProvider locale`). `labels` overrides any. */
 export interface CallStatusLabels {
   calling: string;
   ringing: string;
@@ -366,9 +367,9 @@ export interface GroupCallGridProps {
   /** Fixed grid width. Without it the grid measures itself. */
   width?: number;
   onParticipantPress?: (id: string) => void;
-  /** Names the overflow tile. Default `"+3 more"`. */
+  /** Names the overflow tile (`"+3 more"` in English). */
   formatOverflow?: (count: number) => string;
-  /** Names a muted tile for assistive tech. Default `"<name>, muted"`. */
+  /** Names a muted tile for assistive tech (`"<name>, muted"` in English). */
   formatMuted?: (name: string) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

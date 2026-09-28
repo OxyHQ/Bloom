@@ -273,7 +273,7 @@ export const ThemeOverride: Story = {
 };
 
 export const Playground: Story = {
-  args: { activeIndex: 0, material: 'translucent', haptics: false, blur: true, maxWidth: 420 },
+  args: { activeIndex: 0, material: 'solid', haptics: false, blur: false, maxWidth: 420 },
   parameters: { controls: { disable: false, include: ['activeIndex', 'material', 'haptics', 'blur', 'maxWidth'] } },
   argTypes: { activeIndex: { control: { type: 'number', min: -1, max: 3 } }, material: { control: 'select', options: ['solid', 'translucent'] }, haptics: { control: 'boolean' }, blur: { control: 'boolean' }, maxWidth: { control: { type: 'range', min: 240, max: 640 } } },
   render: function Playground(args) {

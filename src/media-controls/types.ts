@@ -31,9 +31,9 @@ export interface PlayButtonProps {
   disabled?: boolean;
   /** What plays, appended to the name: `"Night Drive"` → "Play Night Drive". */
   subject?: string;
-  /** Name while paused. Default `"Play"`. */
+  /** Name while paused (`"Play"` in English). */
   playLabel?: string;
-  /** Name while playing. Default `"Pause"`. */
+  /** Name while playing (`"Pause"` in English). */
   pauseLabel?: string;
   /** Replaces the composed name entirely. */
   accessibilityLabel?: string;
@@ -54,7 +54,7 @@ export interface LikeButtonProps {
   activeColor?: string;
   disabled?: boolean;
   /**
-   * The toggle's name. Default `"Save to Your Library"`. It stays the same in
+   * The toggle's name (`"Save to Your Library"` in English). It stays the same in
    * both states — `aria-pressed` carries the state; a name that also flipped
    * would be announced as "Remove from Your Library, pressed".
    */
@@ -71,7 +71,7 @@ export interface ExplicitBadgeProps {
   size?: ExplicitBadgeSize;
   /** The drawn letter. Default `"E"`. */
   letter?: string;
-  /** The accessible name. Default `"Explicit"`. */
+  /** The accessible name (`"Explicit"` in English). */
   label?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -86,7 +86,7 @@ export interface NowPlayingIndicatorProps {
   bars?: 3 | 4;
   /** Bar colour. Default: the theme accent. */
   color?: string;
-  /** The accessible name. Default `"Now playing"`. */
+  /** The accessible name (`"Now playing"` in English). */
   label?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -115,7 +115,7 @@ export interface PlaybackProgressProps {
   /** Seconds one arrow key moves. Default `5`. */
   keyboardStep?: number;
   disabled?: boolean;
-  /** The slider's name. Default `"Seek"`. */
+  /** The slider's name (`"Seek"` in English). */
   accessibilityLabel?: string;
   /** The announced value. Default: "1:23 of 3:45". */
   formatValueText?: (seconds: number, duration: number) => string;
@@ -140,11 +140,11 @@ export interface VolumeControlProps {
   /** Default `always`. */
   sliderVisibility?: VolumeSliderVisibility;
   disabled?: boolean;
-  /** Button name while sounding. Default `"Mute"`. */
+  /** Button name while sounding (`"Mute"` in English). */
   muteLabel?: string;
-  /** Button name while muted. Default `"Unmute"`. */
+  /** Button name while muted (`"Unmute"` in English). */
   unmuteLabel?: string;
-  /** The slider's name. Default `"Volume"`. */
+  /** The slider's name (`"Volume"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

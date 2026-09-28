@@ -126,7 +126,6 @@ describe('ProOfferCard', () => {
       insetInlineStart: 12,
       bottom: 12,
       borderRadius: 16,
-      borderWidth: 1,
       padding: 16,
       gap: 12,
     });
@@ -139,11 +138,17 @@ describe('ProOfferCard', () => {
 
 it('keeps Pro Offer copy readable across its painted dark gradient', () => {
   const screen = render(<BloomThemeProvider mode="dark" colorPreset="olive"><ProOfferCard testID="tonal-offer" onDismiss={() => {}} title="Upgrade" description="More room for your work" ctaLabel="Get Pro" placement="inline" enterDelay={0} /></BloomThemeProvider>);
-  const base = resolvedStyle(screen.getByTestId('tonal-offer').props.style).backgroundColor as string;
-  const stops = screen.UNSAFE_getAllByType(Stop).slice(0, 2);
-  expect(stops).toHaveLength(2);
-  for (const stop of stops) {
-    const painted = mixColors(base, stop.props.stopColor, stop.props.stopOpacity);
+  const material = screen.getByTestId('tonal-offer').findAll(node => node.props.radius === 16 && typeof node.props.fill === 'string')[0];
+  expect(material).toBeDefined();
+  const base = material!.props.fill as string;
+  const sheen = material!.findAllByType(Stop);
+  const stops = screen.UNSAFE_getAllByType(Stop).filter(stop => /^bloom-pro-offer-\d+-fill$/.test(String(stop.parent?.props.id)));
+  expect(stops).toHaveLength(3);
+  expect(sheen).toHaveLength(3);
+  // Include both shared sheen and decorative artwork, not the transparent host.
+  for (const light of sheen) for (const stop of stops) {
+    const underArt = mixColors(base, light.props.stopColor, light.props.stopOpacity);
+    const painted = mixColors(underArt, stop.props.stopColor, stop.props.stopOpacity);
     for (const label of ['Upgrade', 'More room for your work']) {
       const ink = resolvedStyle(screen.getByText(label).props.style).color as string;
       expect(contrastRatio(ink, painted)).toBeGreaterThanOrEqual(4.5);

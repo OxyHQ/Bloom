@@ -62,7 +62,7 @@ export interface PaymentStatusBlockProps {
    * figures so it can be read out a character at a time.
    */
   reference?: string;
-  /** The word before it. Default `"Reference"`. */
+  /** The word before it (`"Reference"` in English). */
   referenceLabel?: string;
   /**
    * WHY it failed, in the processor's own words, drawn in an `Admonition`.

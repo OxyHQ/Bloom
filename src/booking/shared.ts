@@ -21,6 +21,7 @@ import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
+import { BOOKING_MESSAGES, type BookingMessages } from './messages';
 
 export interface BookingPalette {
   surface: string;
@@ -74,9 +75,14 @@ export function discountAmount(amount: string): string {
   return /^[-−]/.test(amount) ? amount.replace(/^-/, MINUS_SIGN) : `${MINUS_SIGN}${amount}`;
 }
 
-/** "$180 per night, originally $210". */
-export function priceAccessibilityName(price: string, unit?: string, originalPrice?: string): string {
-  return `${price}${unit ? ` per ${unit}` : ''}${originalPrice ? `, originally ${originalPrice}` : ''}`;
+/** "$180 per night, originally $210", in `messages`' language (English by default). */
+export function priceAccessibilityName(
+  price: string,
+  unit?: string,
+  originalPrice?: string,
+  messages: Pick<BookingMessages, 'priceName'> = BOOKING_MESSAGES.en,
+): string {
+  return messages.priceName(price, unit, originalPrice);
 }
 
 

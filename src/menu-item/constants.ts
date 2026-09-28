@@ -1,3 +1,4 @@
+import { MENU_ITEM_MESSAGES } from './messages';
 import type { MenuItemDensity, MenuItemDiet } from './types';
 
 /** Every diet, in the order a dish lists them. */
@@ -10,15 +11,11 @@ export const MENU_ITEM_DIETS: readonly MenuItemDiet[] = [
   'kosher',
 ];
 
-/** The English words. Apps in other languages pass `dietLabels`. */
-export const MENU_ITEM_DIET_LABELS: Readonly<Record<MenuItemDiet, string>> = {
-  vegetarian: 'Vegetarian',
-  vegan: 'Vegan',
-  'gluten-free': 'Gluten-free',
-  'dairy-free': 'Dairy-free',
-  halal: 'Halal',
-  kosher: 'Kosher',
-};
+/**
+ * The English words. The row speaks `MENU_ITEM_MESSAGES` in the resolved
+ * locale; `dietLabels` still wins.
+ */
+export const MENU_ITEM_DIET_LABELS: Readonly<Record<MenuItemDiet, string>> = MENU_ITEM_MESSAGES.en.diets;
 
 /**
  * The two diets that are about what the dish is MADE OF get a glyph; the other

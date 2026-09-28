@@ -11,12 +11,14 @@ import {
 
 import { AgentThinking } from '../agent-thinking';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { AgentChatActionsBase } from './AgentChatActionsBase';
 import { AgentChatComposerBase } from './AgentChatComposerBase';
 import { AgentChatHistoryBase } from './AgentChatHistoryBase';
 import { AgentChatMessage } from './AgentChatMessage';
+import { AGENT_CHAT_MESSAGES } from './messages';
 import {
   CARD_RADIUS,
   COLUMN_MAX_WIDTH,
@@ -66,20 +68,6 @@ import type { AgentChatMessageData, AgentChatProps } from './types';
  * phone drawer (use `headerLeading` for the nav toggle), the pro-offer card,
  * and the "Add an API key" setup notice (pass it as `emptyState`).
  */
-
-const DEFAULT_SUGGESTIONS = [
-  'Explain what this starter does',
-  'Write a product update in three sentences',
-  'Give me five names for a scheduling app',
-];
-
-const DEFAULT_LABELS = {
-  newChat: 'New chat',
-  emptyTitle: 'What can I help with?',
-  emptyDescription: 'This chat runs against your own API key. History stays in this browser.',
-  thinking: 'Thinking',
-  error: 'Something went wrong. Check the server logs, then try again.',
-};
 
 function SuggestionPill({
   text,
@@ -160,9 +148,12 @@ function EmptyState({
   );
 }
 
-function transcriptOf(messages: ReadonlyArray<AgentChatMessageData>): string {
+function transcriptOf(
+  messages: ReadonlyArray<AgentChatMessageData>,
+  speakers: { you: string; assistant: string },
+): string {
   return messages
-    .map((message) => `${message.role === 'user' ? 'You' : 'Assistant'}: ${message.text}`)
+    .map((message) => `${message.role === 'user' ? speakers.you : speakers.assistant}: ${message.text}`)
     .filter((line) => !line.endsWith(': '))
     .join('\n\n');
 }
@@ -179,7 +170,7 @@ export function AgentChatBase({
   onAttach,
   model,
   provider,
-  suggestions = DEFAULT_SUGGESTIONS,
+  suggestions: suggestionsProp,
   emptyState,
   headerLeading,
   onShare,
@@ -204,7 +195,9 @@ export function AgentChatBase({
 }: AgentChatProps) {
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages: catalog } = useMessages(AGENT_CHAT_MESSAGES);
+  const l = useMemo(() => ({ ...catalog.chat, ...labels }), [catalog, labels]);
+  const suggestions = suggestionsProp ?? catalog.chat.suggestions;
   const { width: windowWidth } = useWindowDimensions();
   const [input, setInput] = useControllableState<string>({
     value,
@@ -217,7 +210,7 @@ export function AgentChatBase({
   const last = messages[messages.length - 1];
   const streamedText = last && last.role !== 'user' ? last.text : '';
   const showThinking = busy && streamedText.length === 0;
-  const transcript = useMemo(() => transcriptOf(messages), [messages]);
+  const transcript = useMemo(() => transcriptOf(messages, catalog.chat), [messages, catalog]);
 
   const headerTitle =
     title ?? threads?.find((thread) => thread.id === activeThreadId)?.title ?? l.newChat;

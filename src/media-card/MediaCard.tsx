@@ -25,6 +25,8 @@ import {
 } from './shared';
 import type { MediaCardLayout, MediaCardProps, MediaCardSize } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
 /**
  * The anatomy every music card shares.
@@ -189,6 +191,7 @@ function MediaCardComponent(props: MediaCardProps) {
     style,
     testID,
   } = props;
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
   useMediaCardCss();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
@@ -228,7 +231,7 @@ function MediaCardComponent(props: MediaCardProps) {
       typeof subtitle === 'string' ? subtitle : undefined,
       ...(meta ?? []),
       accessibilityDetail,
-      current && playing ? 'Now playing' : undefined,
+      current && playing ? controls.nowPlaying : undefined,
     ]);
 
   const visibility = resolvePlayVisibility({

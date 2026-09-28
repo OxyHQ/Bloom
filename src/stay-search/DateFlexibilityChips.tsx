@@ -1,8 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Chip } from '../chip';
-import { DEFAULT_DATE_FLEXIBILITY_OPTIONS } from './constants';
+import { useMessages } from '../locale/messages';
+import { dateFlexibilityOptions } from './constants';
+import { STAY_SEARCH_MESSAGES } from './messages';
 import type { DateFlexibilityChipsProps } from './types';
 
 /**
@@ -17,11 +19,14 @@ import type { DateFlexibilityChipsProps } from './types';
 function DateFlexibilityChipsComponent({
   value,
   onChange,
-  options = DEFAULT_DATE_FLEXIBILITY_OPTIONS,
-  accessibilityLabel = 'Date flexibility',
+  options: optionsProp,
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: DateFlexibilityChipsProps) {
+  const { messages } = useMessages(STAY_SEARCH_MESSAGES);
+  const options = useMemo(() => optionsProp ?? dateFlexibilityOptions(messages), [optionsProp, messages]);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.dateFlexibility;
   return (
     <View
       role="group"

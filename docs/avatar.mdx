@@ -6,7 +6,7 @@ order: 12
 
 # Avatar
 
-Display a user's avatar. Accepts a URL, an `ImageSourcePropType`, or no image at all — falls back to a tinted initials disc with the first letter of `name` (tint deterministic per name). Optional verified badge. Clips to a circle, a squircle, one of the named shapes, or an outline you supply.
+Display a user's avatar. Accepts a URL, a `Shapes.ImageSource`, or no image at all — falls back to a tinted initials shape with the first letter of `name` (tint deterministic per name). Optional verified badge. Clips to a circle, a squircle, one of the named shapes, or an outline you supply.
 
 ## Basic
 
@@ -23,7 +23,7 @@ import { Avatar } from '@oxy.so/bloom';
 <Avatar initials="M" color="blue" size="md" />
 ```
 
-The fallback is an initials disc. `initials`
+The fallback uses the selected silhouette behind its initials. `initials`
 sets the text explicitly; otherwise it is the first letter of `name`. `color`
 picks the tint; without it a `name` lands deterministically on one of the four,
 so the same user always gets the same tint, and explicit `initials` default to
@@ -79,7 +79,7 @@ Custom badge:
 <Avatar uri={user.avatarUrl} shape="squircle" size={56} />
 ```
 
-`'squircle'` matches the iOS app-icon shape — a softened super-ellipse.
+`'squircle'` is Bloom's sampled superellipse (exponent 4.5). It is shared with `Shapes.Image`, `Shapes.Fill` and `Shapes.Border`; it does not claim an exact match to Apple's continuous corners.
 
 Beyond it there is a registry of named outlines, for apps that let people pick
 how their avatar is cut:
@@ -90,19 +90,23 @@ how their avatar is cut:
 <Avatar uri={user.avatarUrl} shape="6-sided-cookie" size={56} />
 ```
 
-`AVATAR_SHAPE_LABELS` gives every name with a display label, in a sensible
+`Shapes.LABELS` gives every name with a display label, in a sensible
 order, so a picker does not have to hardcode the list:
 
 ```tsx
-import { AVATAR_SHAPE_LABELS } from '@oxy.so/bloom/avatar';
+import * as Shapes from '@oxy.so/bloom/shapes';
 
-AVATAR_SHAPE_LABELS.map(({ name, label }) => (
+Shapes.LABELS.map(({ name, label }) => (
   <Pressable key={name} onPress={() => setShape(name)}>
     <Avatar uri={user.avatarUrl} shape={name} size={44} />
     <Text>{label}</Text>
   </Pressable>
 ));
 ```
+
+`Shapes.LABELS` is English; `Shapes.labels(locale)` gives the same
+rows in the app's language (pass the `BloomProvider locale`). The live badge's
+word is localised via `BloomProvider locale` too; `liveLabel` overrides it.
 
 For anything not in the registry, pass your own outline. `viewBox` is the side
 length of the square space the path is drawn in, so a path written over a
@@ -116,11 +120,21 @@ length of the square space the path is drawn in, so a path written over a
 />
 ```
 
+Local assets, `{ uri }` objects and URLs all use the selected outline. Arrays and request options such as `headers`, `method`, `body` or `cache` are unsupported on every shape; use a directly accessible URL, signed URL, data URI or local asset. Optional descriptor metadata is `width`, `height` and `scale`. If the image and optional `fallbackSource` fail, the background behind the initials keeps that outline. An arbitrary `placeholderIcon` is centered above the fill; it is not masked, so size custom content to fit inside the silhouette.
+
 Every shape except `'circle'` clips through `react-native-svg`; a circle is
-drawn with `borderRadius` and never touches the SVG renderer. A `ring` follows
+drawn with `borderRadius`; a gradient ring still uses SVG. A `ring` follows
 whichever outline the avatar uses. A shape name that does not resolve falls
 back to a circle rather than rendering an empty clip — which matters when a
 persisted user preference outlives the build that offered it.
+
+## Inner border
+
+```tsx
+<Avatar shape="squircle" source={{ uri: user.avatarUrl }} ring={{ colors: ['#E1306C', '#FCAF45'], width: 3 }} />
+```
+
+`ring` draws inside the silhouette with uniform requested thickness and leaves the layout size unchanged. Its fields are `colors`, optional `width`, and optional `gradientDirection` (`diagonal`, `horizontal`, `vertical`). There is no outside gap option. `live` uses the same border and adds its badge.
 
 ## Pressable
 
@@ -128,7 +142,7 @@ persisted user preference outlives the build that offered it.
 <Avatar uri={user.avatarUrl} size={40} onPress={() => navigate('Profile', { id: user.id })} />
 ```
 
-Wraps the avatar in `TouchableOpacity` when `onPress` is set.
+Wraps the avatar in `Pressable` when `onPress` is set.
 
 ## Custom placeholder
 
@@ -146,23 +160,22 @@ When no `source`, `uri`, or `name` resolves, you can fully control the placehold
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `source?` | `string \| ImageSourcePropType \| null` | — | Flexible image source. Takes precedence over `uri`. |
+| `source?` | `string \| Shapes.ImageSource \| null` | — | Flexible image source. Takes precedence over `uri`. |
 | `uri?` | `string` | — | Direct URI string. |
 | `variant?` | `string` | `'thumb'` | Rendition forwarded to the `ImageResolver` when `source` is a bare file ID. Defaults to `'thumb'` so avatars never request the full-size original; pass an explicit larger variant when you need a bigger image. Ignored for full URL / `{uri}` sources. |
-| `fallbackSource?` | `ImageSourcePropType` | — | Shown when `source`/`uri` errors. |
+| `fallbackSource?` | `Shapes.ImageSource` | — | Shown when `source`/`uri` errors. |
 | `size?` | `number \| 'xs' \| 'sm' \| 'md' \| 'lg'` | `40` | Diameter in dp, or a named rung (20/24/32/36). |
 | `color?` | `'neutral' \| 'blue' \| 'lime' \| 'pink'` | from `name` | Initials disc tint. |
 | `initials?` | `string` | first letter of `name` | Explicit fallback text. |
 | `alt?` | `string` | — | Accessible description of the photo. |
 | `verified?` | `boolean` | `false` | Show a verified badge bottom-right. |
 | `verifiedIcon?` | `React.ReactNode` | check icon | Custom badge node. |
-| `shape?` | `'circle' \| 'squircle' \| AvatarShapeName \| AvatarShapePath` | `'circle'` | A built-in name or your own `{ d, viewBox }` outline. Anything but `'circle'` needs `react-native-svg`. |
+| `shape?` | `Shapes.Shape` | `'circle'` | A built-in name or your own `{ d, viewBox }` outline. Anything but `'circle'` needs `react-native-svg`. |
 | `style?` | `StyleProp<ViewStyle>` | — | Container style. |
-| `imageStyle?` | `StyleProp<ImageStyle>` | — | Image style (circle only). |
 | `placeholderColor?` | `string` | derived | Override placeholder background. |
 | `placeholderIcon?` | `React.ReactNode` | initial | Override placeholder icon/letter. |
 | `name?` | `string` | — | Used to derive the initial + a stable tint. |
-| `onPress?` | `() => void` | — | Wraps in `TouchableOpacity`. |
+| `onPress?` | `() => void` | — | Wraps in `Pressable`. |
 | `testID?` | `string` | — | |
 
 ## Recipes

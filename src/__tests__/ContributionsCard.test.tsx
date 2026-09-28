@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -79,7 +80,7 @@ describe('ContributionsCard', () => {
 
   it("keeps the card: 337 tall, padding 16, radius 16, clipped", () => {
     const { getByTestId } = renderCard(<ContributionsCard testID="c" total={958} delta={0.148} stats={STATS} cells={CELLS} />);
-    expect(resolvedStyle(getByTestId('c').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('c'))).toMatchObject({
       height: 337,
       borderRadius: 16,
       overflow: 'hidden',
@@ -93,7 +94,7 @@ describe('ContributionsCard', () => {
   it('goes auto-height with 13px cells in a horizontal scroller below sm', () => {
     (ReactNative.useWindowDimensions as jest.Mock).mockReturnValue({ width: 390, height: 844, scale: 3, fontScale: 1 });
     const { getByTestId } = renderCard(<ContributionsCard testID="c" total={958} stats={STATS} cells={CELLS} />);
-    expect(resolvedStyle(getByTestId('c').props.style).height).toBeUndefined();
+    expect(cardLayout(getByTestId('c')).height).toBeUndefined();
     expect(resolvedStyle(getByTestId('c-grid-cell-0').props.style)).toMatchObject({ width: 13, height: 13 });
   });
 
@@ -135,7 +136,7 @@ describe('ContributionsCard', () => {
     const lt = buildTheme('teal', 'light');
     const lr = resolveButtonRamps(lt).accent;
     expect([0, 1, 2, 3, 4, 5].map((i) => resolvedStyle(light.getByTestId(`g-cell-${i}`).props.style).backgroundColor)).toEqual([
-      resolveChartCardPalette(lt).track, lr[200], lr[400], lr[500], lr[600], lr[700],
+      resolveChartCardPalette(lt, lt.colors.background).track, lr[200], lr[400], lr[500], lr[600], lr[700],
     ]);
     expect(resolvedStyle(light.getByTestId('g-cell-0').props.style)).toMatchObject({ borderRadius: 3, aspectRatio: 1 });
     light.unmount();

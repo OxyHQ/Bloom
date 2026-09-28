@@ -4,10 +4,12 @@ import { StyleSheet, View } from 'react-native';
 import { EarningsChartCard } from '../chart-cards';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { EARNINGS_GEOMETRY, EARNINGS_LABELS } from './constants';
+import { EARNINGS_GEOMETRY } from './constants';
+import { EARNINGS_MESSAGES } from './messages';
 import { EarningsBreakdown } from './EarningsBreakdown';
 import { EarningsPayoutRow } from './EarningsPayoutRow';
 import {
@@ -89,20 +91,22 @@ function EarningsSummaryComponent({
   breakdown,
   stats,
   labels: labelOverrides,
-  accessibilityLabel = 'Earnings',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: EarningsSummaryProps) {
+  const { messages } = useMessages(EARNINGS_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.earnings;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveEarningsPaint(theme, surface), [theme, surface]);
   const labels = useMemo(
     () => ({
-      ...EARNINGS_LABELS,
+      ...messages,
       ...labelOverrides,
-      payoutState: { ...EARNINGS_LABELS.payoutState, ...labelOverrides?.payoutState },
+      payoutState: { ...messages.payoutState, ...labelOverrides?.payoutState },
     }),
-    [labelOverrides],
+    [messages, labelOverrides],
   );
 
   const [periodId, setPeriodId] = useControllableState<string>({
@@ -114,13 +118,20 @@ function EarningsSummaryComponent({
 
   // The chart's active bar is OWNED here: the headline has to be able to say
   // which amount it is showing, and only this component knows the strings.
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [selection, setSelection] = useState<{ period: string | undefined; index: number | null } | null>(null);
+  const currentPeriod = current?.id;
+  // A controlled prop change must clear selection before the new headline paints.
+  if (selection && selection.period !== currentPeriod) setSelection(null);
+  const activeIndex = selection?.period === currentPeriod ? selection?.index ?? null : null;
+  const setActiveIndex = useCallback((index: number | null) => {
+    setSelection({ period: currentPeriod, index });
+  }, [currentPeriod]);
   const changePeriod = useCallback(
     (id: string) => {
       setActiveIndex(null);
       setPeriodId(id);
     },
-    [setPeriodId],
+    [setPeriodId, setActiveIndex],
   );
 
   const { width, onLayout } = useContainerWidth();

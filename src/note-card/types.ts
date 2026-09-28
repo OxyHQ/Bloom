@@ -44,21 +44,21 @@ export interface NoteCardMeta {
   locked?: boolean;
 }
 
-/** The English words `NoteCard` composes, for an app that is not in English. */
+/** The words `NoteCard` composes, in the locale (`BloomProvider locale`). Any set here wins. */
 export interface NoteCardLabels {
-  /** Names the pin marker. Default `"Pinned"`. */
+  /** Names the pin marker (`"Pinned"` in English). */
   pinned?: string;
-  /** Names the lock marker. Default `"Protected"`. */
+  /** Names the lock marker (`"Protected"` in English). */
   locked?: string;
-  /** Names the attachment count, given the count. Default ``(n) => `${n} attachments` ``. */
+  /** Names the attachment count, given the count (``(n) => `${n} attachments` `` in English). */
   attachments?: (count: number) => string;
-  /** Names the selection checkbox. Default `"Select note"`. */
+  /** Names the selection checkbox (`"Select note"` in English). */
   select?: string;
-  /** The checked state of a previewed checklist item. Default `"Done"`. */
+  /** The checked state of a previewed checklist item (`"Done"` in English). */
   checklistDone?: string;
-  /** The unchecked state. Default `"To do"`. */
+  /** The unchecked state (`"To do"` in English). */
   checklistTodo?: string;
-  /** The "+N" overflow under a truncated checklist, given the remainder. Default ``(n) => `${n} more` ``. */
+  /** The "+N" overflow under a truncated checklist, given the remainder (``(n) => `${n} more` `` in English). */
   more?: (count: number) => string;
 }
 
@@ -117,10 +117,10 @@ export interface NoteCardProps {
   loading?: boolean;
   /**
    * Replaces the composed accessible name ("Harbour notes, Pinned, 3 items, 2
-   * min ago"), which is English.
+   * min ago"), composed in the locale.
    */
   accessibilityLabel?: string;
-  /** Replaces the English words above. */
+  /** Replaces the localised words above. */
   labels?: NoteCardLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;

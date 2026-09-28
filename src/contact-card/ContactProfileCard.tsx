@@ -6,11 +6,13 @@ import { AvatarGroup } from '../avatar-group';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { Card } from '../card';
+import { useCardFill } from '../card/use-card-fill';
 import { Chip, ChipRow } from '../chip';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
+import { useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { resolveAccentColors } from '../theme/accent-colors';
@@ -28,6 +30,7 @@ import {
   CONTACT_TILE_PADDING,
   CONTACT_TILE_RADIUS,
 } from './constants';
+import { CONTACT_CARD_MESSAGES } from './messages';
 import {
   CONTACT_STYLE_ID,
   CONTACT_WEB_CSS,
@@ -75,9 +78,9 @@ import type { ContactProfileCardProps } from './types';
  * `appearance="solid" tone="neutral" size="small"` with the kind's glyph and its ACTION word
  * — so it carries the surface, the border, the hover, the disabled treatment
  * and the focus ring every other Bloom action has. It drops to `iconOnly` only
- * where the card is too narrow to carry the words, and it is NAMED
- * `"${verb} ${label ?? name}"` either way, so losing the label never loses the
- * name.
+ * where the card is too narrow to carry the words, and it is NAMED by the
+ * catalog's per-channel phrase about `label ?? name` ("Call Ana" in English)
+ * either way, so losing the label never loses the name.
  *
  * **The card is not one big button.** `onPress` is bound to the IDENTITY
  * BLOCK, and the channels and `actions` sit outside it — a control inside a
@@ -88,10 +91,11 @@ import type { ContactProfileCardProps } from './types';
 const TABULAR: TextStyle = { fontVariant: ['tabular-nums'] };
 
 /** The fill the content lands on, and everything derived from it. */
-function useContactPaint(onCard: boolean): ContactPaint {
+function useContactPaint(onCard: boolean, style: ContactProfileCardProps['style']): ContactPaint {
   const theme = useTheme();
   const ambient = useSurfaceFill();
-  const surface = onCard ? theme.colors.card : ambient;
+  const cardFill = useCardFill(style);
+  const surface = onCard ? cardFill : ambient;
   return useMemo(() => resolveContactPaint(theme, surface), [theme, surface]);
 }
 
@@ -123,8 +127,9 @@ function ContactProfileCardComponent({
   testID,
 }: ContactProfileCardProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CONTACT_CARD_MESSAGES);
   const comfortable = density === 'comfortable';
-  const paint = useContactPaint(comfortable);
+  const paint = useContactPaint(comfortable, style);
   const { width, onLayout } = useContainerWidth();
   // A card that is too narrow for four tiles is too narrow for three labelled
   // buttons beside a 72 mark, so ONE measurement decides both.
@@ -246,6 +251,7 @@ function ContactProfileCardComponent({
     <View style={{ flexDirection: 'row', gap: 8, flexShrink: 0 }} testID={id('channels')}>
       {channels.map((channel, index) => {
         const spec = CONTACT_CHANNEL[channel.kind];
+        const copy = messages.channels[channel.kind];
         return (
           <Button
             key={channel.kind + String(index)}
@@ -260,10 +266,10 @@ function ContactProfileCardComponent({
             // number while the card needs the first.
             hitSlop={CONTACT_CHANNEL_HIT}
             // The NAME never depends on whether the label fits.
-            accessibilityLabel={`${spec.verb} ${channel.label ?? name}`}
+            accessibilityLabel={copy.name(channel.label ?? name)}
             testID={channel.testID ?? id(`channel-${channel.kind}`)}
           >
-            {labelled ? spec.action : undefined}
+            {labelled ? copy.action : undefined}
           </Button>
         );
       })}
@@ -326,13 +332,13 @@ function ContactProfileCardComponent({
   const coverWash = contactCoverWash(theme, coverTone);
 
   return (
-    <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
-        variant="outlined"
+        clipContent
+        elevation="none"
         radius="radius-20"
-        // `Card` already clips to its own corners and draws no padding, so the
+        // The inner clip follows the card corners and draws no padding, so the
         // cover band can run to the edge and the content block owns the inset.
-        style={[surfaceFillVars(paint.surface), style]}
+        style={style}
         testID={testID}
       >
         <View
@@ -468,7 +474,7 @@ function ContactProfileCardComponent({
             <ChipRow
               gap={8}
               fadeColor={paint.surface}
-              accessibilityLabel={`Labels for ${name}`}
+              accessibilityLabel={messages.labelsFor(name)}
               testID={id('chips')}
             >
               {chips}
@@ -528,7 +534,7 @@ function ContactProfileCardComponent({
                     style={{ flexShrink: 1, color: paint.textSecondary }}
                     testID={id('owner')}
                   >
-                    {`${owner.label ?? 'Owner'} · ${owner.name}`}
+                    {`${owner.label ?? messages.owner} · ${owner.name}`}
                   </Text>
                 </View>
               ) : null}
@@ -536,7 +542,6 @@ function ContactProfileCardComponent({
           ) : null}
         </View>
       </Card>
-    </SurfaceLevelProvider>
   );
 }
 

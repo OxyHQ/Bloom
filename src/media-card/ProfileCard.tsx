@@ -5,6 +5,8 @@ import { RiUser3Fill } from '../icons/remix/RiUser3Fill';
 import { MediaCard } from './MediaCard';
 import { joinMeta } from './shared';
 import type { ProfileCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 /**
  * A listener's profile (a follower, a friend): a round avatar, the name,
@@ -16,13 +18,16 @@ import type { ProfileCardProps } from './types';
 function ProfileCardComponent({
   name,
   followsYou = false,
-  typeLabel = 'Profile',
-  followsYouLabel = 'Follows you',
+  typeLabel: typeLabelProp,
+  followsYouLabel: followsYouLabelProp,
   followers,
   action,
   layout = 'tile',
   ...rest
 }: ProfileCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const typeLabel = typeLabelProp ?? messages.profile;
+  const followsYouLabel = followsYouLabelProp ?? messages.followsYou;
   const row = layout === 'row';
   const line = joinMeta([typeLabel, followsYou ? followsYouLabel : undefined]);
   return (

@@ -8,13 +8,15 @@ import {
   chartAccessibilityLabel,
   groupThousands,
   useActiveIndex,
-  useChartCardPalette,
 } from './ChartCard';
 import { bandSize, barPositions, topRoundedBarPath, yScale } from './geometry';
 import { ordersSeriesTone } from './palette';
 import type { OrdersChartCardProps } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { useMessages } from '../locale/messages';
+import { CHART_CARDS_MESSAGES } from './messages';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * `OrdersChartCard`: a year of orders as paired bars, last year beside
  * this year in every month.
@@ -53,8 +55,9 @@ export function OrdersChartCard({
   testID,
   ...frame
 }: OrdersChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => ordersSeriesTone(theme), [theme]);
   // This year's bars are filled with the `-active` step itself.
   const fill = activeColor ?? color ?? tone.activeColor;
@@ -67,14 +70,14 @@ export function OrdersChartCard({
   const previousAnim = useChartProgress(previous);
 
   const label =
-    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? 'Orders', frame.currentLabel, frame.previousLabel);
+    accessibilityLabel ?? chartAccessibilityLabel(frame.title ?? chartText.titles.orders, frame.currentLabel, frame.previousLabel, chartText);
 
   return (
     <ChartCardFrame
       {...frame}
       data={data}
-      defaultTitle="Orders"
-      defaultFormatValue={groupThousands}
+      defaultTitle={chartText.titles.orders}
+      defaultFormatValue={(value: number) => groupThousands(value, chartLocale)}
       seriesColor={fill}
       comparisonColor={comparisonFill}
       activeIndex={activeIndex}

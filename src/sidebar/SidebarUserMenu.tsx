@@ -25,6 +25,8 @@ import {
   useSidebarCollapseProgress,
 } from './parts';
 import type { SidebarAccount, SidebarAccountUser, SidebarUserMenuProps } from './types';
+import { useMessages } from '../locale/messages';
+import { SIDEBAR_MESSAGES } from './messages';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -102,13 +104,14 @@ export function SidebarAccountMenuContent({
   onSelect: () => void;
 }) {
   const palette = useSidebarPalette();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
   const hasActions = account.onAddUser != null || account.onManage != null;
   return (
     <View>
       {account.users?.length ? (
         <View style={{ width: '100%', gap: 6, paddingTop: 5 }}>
           <Text variant="body-medium" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textSecondary }}>
-            {account.usersLabel ?? 'Users with access'}
+            {account.usersLabel ?? messages.usersWithAccess}
           </Text>
           <View style={{ width: '100%', gap: 4 }}>
             {account.users.map((user) => (
@@ -126,7 +129,7 @@ export function SidebarAccountMenuContent({
                   account.onAddUser?.();
                   onSelect();
                 }} appearance="subtle" tone="neutral">
-                {account.addUserLabel ?? 'Add user'}
+                {account.addUserLabel ?? messages.addUser}
               </Button>
             </View>
           ) : null}
@@ -136,7 +139,7 @@ export function SidebarAccountMenuContent({
                   account.onManage?.();
                   onSelect();
                 }} appearance="subtle" tone="neutral">
-                {account.manageLabel ?? 'Manage'}
+                {account.manageLabel ?? messages.manage}
               </Button>
             </View>
           ) : null}
@@ -155,6 +158,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
   testID,
 }) => {
   const palette = useSidebarPalette();
+  const { messages } = useMessages(SIDEBAR_MESSAGES);
   useSidebarWebCss();
   const [open, setOpen] = useState(false);
   const { width } = useWindowDimensions();
@@ -220,7 +224,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
         </AnimatedPressable>
       </PopoverTrigger>
       <PopoverContent
-        label={account.menuLabel ?? 'Account menu'}
+        label={account.menuLabel ?? messages.accountMenu}
         // Beside the rail's trailing edge; floating sides are physical.
         side={mirrorSide(narrow ? 'bottom' : 'right', rtl)}
         align={mirrorAlign('start', narrow ? 'bottom' : 'right', rtl)}

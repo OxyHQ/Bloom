@@ -94,7 +94,7 @@ export interface PaymentMethodRowProps {
   leading?: ReactNode;
   /** Marks this as the one that will be charged. Draws a `Badge`. */
   isDefault?: boolean;
-  /** The default badge's word. Default `"Default"`. */
+  /** The default badge's word (`"Default"` in English). */
   defaultLabel?: string;
   /** Default `ok`. */
   state?: PaymentMethodState;
@@ -163,7 +163,7 @@ export interface PaymentMethodListProps {
   disabled?: boolean;
   /** Draws the "add a method" row under the list. Without it no row is drawn. */
   onAdd?: () => void;
-  /** Default `"Add a payment method"`. */
+  /** `"Add a payment method"` in English. */
   addLabel?: string;
   /** The glyph on the add row. Default a plus. */
   addIcon?: BloomIconComponent;
@@ -173,7 +173,7 @@ export interface PaymentMethodListProps {
   loadingRows?: number;
   /** Replaces the whole empty block. The add row is still drawn under it. */
   empty?: ReactNode;
-  /** Default `"No saved payment methods"`. */
+  /** `"No saved payment methods"` in English. */
   emptyTitle?: string;
   emptyDescription?: string;
   /** The glyph above the empty text. Default a card. */

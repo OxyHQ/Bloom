@@ -18,7 +18,6 @@ import { Text } from '../typography';
 import { chartHueTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { groupThousands } from './primitives/format';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import {
   MEDICAL_CARD_HEIGHT,
   MEDICAL_CARD_STYLE,
@@ -29,7 +28,13 @@ import {
   useMedicalPalette,
   type MedicalPalette,
 } from './medical-parts';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
+import { DATE_PICKER_MESSAGES } from '../date-picker/messages';
+import { monthNames as localMonthNames } from '../locale/format-date';
+import { pickMessages } from '../locale/messages';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * A whole year as one continuous vertical calendar of activity rings.
  *
@@ -90,21 +95,6 @@ export interface MostActiveDaysCardProps {
   testID?: string;
 }
 
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-] as const;
-
 /** Air above a month's title when a chevron scrolls it to the top. */
 export const REST_OFFSET = 9;
 /** A month counts as current once its title is within this of the viewport top. */
@@ -124,8 +114,6 @@ const EMPTY_CELL: ViewStyle = {
   paddingLeft: 10,
   paddingRight: 10,
 };
-
-const defaultDayLabel = (d: ActivityDay, name: string) => `Activity for ${name} ${d.day}`;
 
 const daysIn = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
 
@@ -254,19 +242,31 @@ export function MostActiveDaysCard({
   rings,
   ringColors: ringColorsProp,
   initialMonth = 0,
-  title = 'Most active days',
+  title: titleProp,
   headline,
-  suffix = 'total steps',
-  format = groupThousands,
-  monthNames = MONTH_NAMES,
+  suffix: suffixProp,
+  format: formatProp,
+  monthNames: monthNamesProp,
   selectedDay = null,
   onSelectDay,
-  getDayLabel = defaultDayLabel,
+  getDayLabel: getDayLabelProp,
   style,
   testID,
 }: MostActiveDaysCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, chartLocale));
+  const title = titleProp ?? chartText.titles.mostActiveDays;
+  const suffix = suffixProp ?? chartText.totalSteps;
+  const pickerText = pickMessages(DATE_PICKER_MESSAGES, chartLocale);
+  // The locale's month names; a caller's own list keeps its three-letter titles.
+  const monthNames = useMemo(() => monthNamesProp ?? localMonthNames(chartLocale, 'long'), [monthNamesProp, chartLocale]);
+  const monthTitles = useMemo(
+    () => (monthNamesProp ? monthNamesProp.map((name) => name.slice(0, 3)) : localMonthNames(chartLocale, 'short')),
+    [monthNamesProp, chartLocale],
+  );
+  const getDayLabel = getDayLabelProp ?? ((d: ActivityDay, name: string) => chartText.activityFor(name, d.day));
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const medical = useMedicalPalette();
   const ringColors = useMemo(
     () => ringColorsProp ?? [chartHueTone(theme, 3).activeColor, chartHueTone(theme, 2).color, chartHueTone(theme, 4).color],
@@ -302,7 +302,7 @@ export function MostActiveDaysCard({
   };
 
   return (
-    <ChartCardSurface height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
+    <ChartCardSurface radius="radius-20" height={MEDICAL_CARD_HEIGHT} style={[MEDICAL_CARD_STYLE, style]} testID={testID}>
       <MedicalHeader>
         <MedicalHeadline label={title} value={headline} format={format} suffix={suffix} testID={testID} />
         <WeekRangePill
@@ -310,8 +310,8 @@ export function MostActiveDaysCard({
           label={monthNames[currentMonth] ?? ''}
           onPrev={() => scrollToMonth(currentMonth - 1)}
           onNext={() => scrollToMonth(currentMonth + 1)}
-          prevLabel="Previous month"
-          nextLabel="Next month"
+          prevLabel={pickerText.previousMonth}
+          nextLabel={pickerText.nextMonth}
           testID={testID ? `${testID}-month` : undefined}
         />
       </MedicalHeader>
@@ -343,7 +343,7 @@ export function MostActiveDaysCard({
             return (
               <View key={monthName} onLayout={onMonthLayout(month)} style={{ flexDirection: 'column', gap: 10 }}>
                 <Text variant="title-3-medium" style={{ paddingLeft: 4, color: palette.text }}>
-                  {monthName.slice(0, 3)}
+                  {monthTitles[month]}
                 </Text>
                 <View>
                   {weeks.map((week) => (

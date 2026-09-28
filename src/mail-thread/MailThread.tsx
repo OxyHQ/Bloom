@@ -12,6 +12,7 @@ import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { MailMessage } from './MailMessage';
 import {
   MAIL_BODY_INSET,
@@ -22,6 +23,7 @@ import {
   defaultExpandedIds,
   mailThreadStrings,
 } from './shared';
+import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailThreadProps } from './types';
 
 /**
@@ -60,13 +62,14 @@ export function MailThread({
   style,
   testID,
 }: MailThreadProps) {
+  const { messages: localeStrings } = useMessages(MAIL_THREAD_MESSAGES);
   const theme = useTheme();
   const surface = useSurfaceFill();
   useEffect(() => {
     adoptStyleSheet(MAIL_THREAD_STYLE_ID, MAIL_THREAD_CSS);
   }, []);
   const paint = useMemo(() => resolveMailPaint(theme, surface), [theme, surface]);
-  const text = useMemo(() => mailThreadStrings(strings), [strings]);
+  const text = useMemo(() => mailThreadStrings(strings, localeStrings), [strings, localeStrings]);
   const rowStrings = useMemo(
     () => mailStrings({ starred: text.starred, star: text.star }),
     [text.star, text.starred],

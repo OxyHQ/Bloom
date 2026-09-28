@@ -10,11 +10,13 @@ import { ChartLegend } from './primitives/ChartLegend';
 import { ChartStatTiles } from './primitives/ChartStatTiles';
 import { compactNumber, describeDeltaRatio, formatNumber, percentTick } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange } from './primitives/use-chart-range';
 import { resolveTone } from './palette';
 import type { AreaChartCardProps, AreaPoint, AreaSeries } from './types';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * `AreaChartCard`: a multi-series area chart — composition over time — in
@@ -63,7 +65,7 @@ function defaultAccessibilityLabel(title: string, variant: string, series: reado
 export function AreaChartCard({
   variant = 'stacked',
   shape = 'curved',
-  title = 'Visitors',
+  title: titleProp,
   data: dataProp,
   series: seriesProp,
   headline: headlineProp,
@@ -72,7 +74,7 @@ export function AreaChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   formatAxisValue,
   tiles = false,
   activeIndex: controlledIndex,
@@ -81,7 +83,10 @@ export function AreaChartCard({
   style,
   testID,
 }: AreaChartCardProps) {
-  const palette = useChartCardPalette();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
+  const title = titleProp ?? chartText.titles.visitors;
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 
@@ -149,7 +154,7 @@ export function AreaChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}
@@ -165,7 +170,7 @@ export function AreaChartCard({
           yAxisWidth={Y_AXIS_WIDTH}
           yDomain={yDomain}
           yTicks={yTicks}
-          formatYTick={formatAxisValue ?? (isPercent ? percentTick : compactNumber)}
+          formatYTick={formatAxisValue ?? ((value: number) => (isPercent ? percentTick(value, chartLocale) : compactNumber(value, chartLocale)))}
           grid
           outside="clear"
           onActiveIndexChange={setActiveIndex}

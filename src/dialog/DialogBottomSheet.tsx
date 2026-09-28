@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, {
   useCallback,
   useEffect,
@@ -32,7 +34,6 @@ import { DialogMorphContent, useDialogMorph } from './DialogMorph';
 import {
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_MAX_HEIGHT_RATIO,
-  PANEL_RADIUS,
 } from './placement';
 import type { DialogControlProps, DialogProps } from './types';
 
@@ -196,9 +197,8 @@ export function DialogBottomSheet({
     const maxHeightPercent: `${number}%` = `${Math.round(maxHeightRatio * 100)}%`;
     return [
       {
-        backgroundColor: theme.colors.background,
-        borderTopLeftRadius: PANEL_RADIUS + 4,
-        borderTopRightRadius: PANEL_RADIUS + 4,
+        backgroundColor: 'transparent',
+        ...surfaceStyle(SURFACE_SHAPES.sheet),
         maxHeight: maxHeightPercent,
       },
       panelStyle,

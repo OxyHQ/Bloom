@@ -101,6 +101,8 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
     <Card
       appearance="outline"
       radius="radius-20"
+      clipContent
+      contentStyle={coverFill ? { flex: 1 } : undefined}
       className={className}
       style={style}
       onPress={handlePress}

@@ -8,12 +8,13 @@ import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { RiLockLine } from '../icons/remix/RiLockLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
 import { CallControlButton, CallControls } from './CallControls';
 import { CallMinimisedPill } from './CallMinimisedPill';
 import { CallScrim, CallStageBackdrop, PictureInPicture } from './parts';
+import { CALL_UI_MESSAGES } from './messages';
 import {
   CALL_PIP_CYCLE,
-  CALL_SCREEN_LABELS,
   CALL_UI_RADIUS,
   callIsLive,
   resolveCallPaint,
@@ -82,9 +83,10 @@ function CallScreenComponent({
   style,
   testID,
 }: CallScreenProps) {
+  const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
-  const l = useMemo(() => ({ ...CALL_SCREEN_LABELS, ...labels }), [labels]);
+  const l = useMemo(() => ({ ...messages.status, ...messages.screen, ...labels }), [messages, labels]);
 
   const line = resolveCallStatusLine({ status, duration, statusText, labels: l });
   const live = callIsLive(status);

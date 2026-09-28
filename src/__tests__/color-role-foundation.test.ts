@@ -1,6 +1,7 @@
 /** @jest-environment node */
 import { resolveBloomColors } from '../appearance/colors';
 import { resolveButtonPalette } from '../button/shared';
+import { relativeLuminance } from '../styles/color-contrast';
 import { buildTheme } from '../theme/build-theme';
 import { buildThemeFromSeed } from '../theme/build-theme-from-seed';
 import { APP_COLOR_NAMES } from '../theme/color-presets';
@@ -17,8 +18,17 @@ it('uses exact semantic paired fills for new button roles across every preset an
       expect(button.rest.background).toBe(tokens[`--${role}`]);
       expect(button.rest.foreground).toBe(tokens[`--${role}-foreground`]);
       expect(button.rest.gradient).toBeNull();
-      expect(button.hover).toEqual(button.rest);
-      expect(button.active).toEqual(button.rest);
+      for (const state of [button.rest, button.hover, button.active]) {
+        expect(state.foreground).toBe(tokens[`--${role}-foreground`]);
+        expect(state.surface).toBe(true);
+        expect(state.gradient).toBeNull();
+        expect(state.border).toBe('rgba(0, 0, 0, 0)');
+      }
+      // Hover lightens and press darkens the paired fill; compare painted color,
+      // not CSS spelling, to catch accidentally frozen interaction states.
+      expect(relativeLuminance(button.hover.background)).toBeGreaterThan(relativeLuminance(button.active.background)!);
+      expect(button.disabled.surface).toBe(true);
+      expect(button.disabled.foreground).toBe(theme.colors.textTertiary);
       expect(button.ring).toBe(tokens[`--${role}`]);
       const subtle = resolveBloomColors(theme.colors, tone, 'subtle');
       expect(subtle.background).toBe(tokens[`--${role}-subtle`]);
@@ -39,8 +49,8 @@ it('seed themes expose the same support/action pairs to shared consumers', () =>
   }
 });
 
-it('keeps the existing accent gradient and default role unchanged', () => {
+it('keeps accent as the default paired role with shared Surface optics', () => {
   const theme = buildTheme('oxy', 'light');
-  expect(resolveButtonPalette('solid', theme).rest.gradient).not.toBeNull();
+  expect(resolveButtonPalette('solid', theme).rest).toMatchObject({ background: theme.colors.primary, foreground: theme.colors.primaryForeground, gradient: null, surface: true });
   expect(resolveBloomColors(theme.colors, 'accent', 'solid').background).toBe(theme.colors.primary);
 });

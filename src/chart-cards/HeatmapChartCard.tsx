@@ -17,9 +17,11 @@ import { resolveTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 export interface HeatmapRow {
   label: string;
@@ -118,7 +120,7 @@ export function heatmapCellColor(value: number, max: number, accent: string, tra
  * Hover on web (leaving the grid clears); press and scrub on native.
  */
 export function HeatmapChartCard({
-  title = 'Active users',
+  title: titleProp,
   rows: rowsProp,
   columns: columnsProp,
   color,
@@ -130,7 +132,7 @@ export function HeatmapChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   columnLabelEvery,
   legendLabels = LEGEND_LABELS,
   activeCell: controlled,
@@ -138,7 +140,10 @@ export function HeatmapChartCard({
   style,
   testID,
 }: HeatmapChartCardProps) {
-  const palette = useChartCardPalette();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
+  const title = titleProp ?? chartText.titles.activeUsers;
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
 
@@ -216,7 +221,7 @@ export function HeatmapChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${active ? `${active.row}:${active.col}` : 'idle'}`}
         range={range}

@@ -20,11 +20,13 @@ import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useSvgEase } from './medical-parts';
 import { StageStatTiles } from './stage-parts';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * A horizontal flow funnel, hand-drawn in SVG.
@@ -204,7 +206,7 @@ export function funnelPill(value: number, top: number, colW: number): { label: s
 export function FunnelChartCard({
   shape = 'curved',
   mono = false,
-  title = 'Sign-up funnel',
+  title: titleProp,
   stages: stagesProp,
   headline: headlineProp,
   delta: deltaProp,
@@ -212,14 +214,17 @@ export function FunnelChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   activeIndex: controlledIndex,
   onActiveIndexChange,
   accessibilityLabel,
   style,
   testID,
 }: FunnelChartCardProps) {
-  const palette = useChartCardPalette();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
+  const title = titleProp ?? chartText.titles.signUpFunnel;
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
@@ -310,7 +315,7 @@ export function FunnelChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}

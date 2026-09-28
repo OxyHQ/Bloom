@@ -13,8 +13,10 @@ import { webDataSet } from '../styles/web-data';
 import { formatDuration, PlayButton } from '../media-controls';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { MediaFailure, useHovered, useMessageMediaCss } from './parts';
 import {
   formatPlaybackRate,
@@ -51,6 +53,8 @@ interface WaveformProps {
   paint: MessageMediaPaint;
   onSeek?: (seconds: number) => void;
   accessibilityLabel: string;
+  /** The slider's spoken value: "0:03 of 0:14". */
+  valueText: string;
   testID?: string;
 }
 
@@ -83,6 +87,7 @@ const Waveform = memo(function Waveform({
   paint,
   onSeek,
   accessibilityLabel,
+  valueText,
   testID,
 }: WaveformProps) {
   useMessageMediaCss();
@@ -190,7 +195,7 @@ const Waveform = memo(function Waveform({
       aria-valuemin={0}
       aria-valuemax={Math.max(0, duration)}
       aria-valuenow={Math.min(Math.max(0, position), Math.max(0, duration))}
-      aria-valuetext={`${formatDuration(position)} of ${formatDuration(duration)}`}
+      aria-valuetext={valueText}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={onAccessibilityAction}
       onLayout={onLayout}
@@ -232,11 +237,17 @@ const Waveform = memo(function Waveform({
 
 function SpeedPill({
   rate,
+  locale,
+  label,
   onPress,
   paint,
   testID,
 }: {
   rate: VoicePlaybackRate;
+  /** Formats the rate on the pill. */
+  locale: string | undefined;
+  /** The pill's name, "Playback speed, 1.5×". */
+  label: string;
   onPress: () => void;
   paint: MessageMediaPaint;
   testID?: string;
@@ -256,13 +267,13 @@ function SpeedPill({
       {...webDataSet({ bloomMessageMediaPressable: '' })}
       {...handlers}
       role="button"
-      accessibilityLabel={`Playback speed, ${formatPlaybackRate(rate)}`}
+      accessibilityLabel={label}
       onPress={onPress}
       style={style}
       testID={testID}
     >
       <Text variant="caption-2-medium" style={{ color: paint.text }}>
-        {formatPlaybackRate(rate)}
+        {formatPlaybackRate(rate, locale)}
       </Text>
     </Pressable>
   );
@@ -303,13 +314,13 @@ function VoiceMessageComponent({
   transcript,
   transcriptOpen,
   onTranscriptOpenChange,
-  transcribeLabel = 'Transcribe',
-  hideTranscriptLabel = 'Hide transcript',
+  transcribeLabel: transcribeLabelProp,
+  hideTranscriptLabel: hideTranscriptLabelProp,
   width = MESSAGE_MEDIA_WIDTH,
   state = 'idle',
   onRetry,
   accessibilityLabel,
-  seekLabel = 'Seek',
+  seekLabel: seekLabelProp,
   tone = 'incoming',
   onColor,
   bubbleColor,
@@ -317,6 +328,10 @@ function VoiceMessageComponent({
   testID,
 }: VoiceMessageProps) {
   const theme = useTheme();
+  const { locale, messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const transcribeLabel = transcribeLabelProp ?? messages.transcribe;
+  const hideTranscriptLabel = hideTranscriptLabelProp ?? messages.hideTranscript;
+  const seekLabel = seekLabelProp ?? messages.seek;
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
@@ -334,7 +349,7 @@ function VoiceMessageComponent({
 
   const started = position > 0;
   const clock = formatDuration(started ? position : duration);
-  const name = accessibilityLabel ?? `Voice message, ${formatDuration(duration)}`;
+  const name = accessibilityLabel ?? messages.voiceMessage(formatDuration(duration));
 
   const [toggleHovered, toggleHandlers] = useHovered();
   const toggleStyle: WebCssStyle = {
@@ -359,7 +374,7 @@ function VoiceMessageComponent({
           playing={playing}
           size="small"
           variant={tone === 'outgoing' ? 'inverse' : 'accent'}
-          subject="voice message"
+          accessibilityLabel={playing ? messages.pauseVoiceMessage : messages.playVoiceMessage}
           onPress={onPlayPress}
           testID={testID ? `${testID}-play` : undefined}
         />
@@ -371,6 +386,7 @@ function VoiceMessageComponent({
           paint={paint}
           onSeek={onSeek}
           accessibilityLabel={seekLabel}
+          valueText={messages.seekPosition(formatDuration(position), formatDuration(duration))}
           testID={testID ? `${testID}-waveform` : undefined}
         />
       </View>
@@ -394,7 +410,7 @@ function VoiceMessageComponent({
         {unplayed ? (
           <View
             role="img"
-            accessibilityLabel="Unplayed"
+            accessibilityLabel={messages.unplayed}
             style={{
               width: 6,
               height: 6,
@@ -407,7 +423,9 @@ function VoiceMessageComponent({
         <View style={{ flexGrow: 1 }} />
         {rate !== undefined && onRateChange ? (
           <SpeedPill
+            locale={locale}
             rate={rate}
+            label={messages.playbackSpeed(formatPlaybackRate(rate, locale))}
             paint={paint}
             onPress={() => onRateChange(nextPlaybackRate(rate))}
             testID={testID ? `${testID}-rate` : undefined}

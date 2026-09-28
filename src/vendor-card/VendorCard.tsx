@@ -5,6 +5,8 @@ import { Badge } from '../badge';
 import { Chip } from '../chip';
 import { RiPriceTag3Line } from '../icons/remix/RiPriceTag3Line';
 import { useImageResolver } from '../image-resolver/context';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { FavoriteButton } from '../listing-card';
 import { ListingFacts, ListingStatusPill } from '../listing-card/parts';
 import {
@@ -33,6 +35,7 @@ import {
   VENDOR_PHOTO_ASPECT_RATIO,
   VENDOR_TEXT_GAP,
 } from './constants';
+import { VENDOR_CARD_MESSAGES } from './messages';
 import {
   availabilityLabelFor,
   composeVendorName,
@@ -42,7 +45,6 @@ import {
   vendorFacts,
 } from './shared';
 import type { VendorCardDensity, VendorCardProps } from './types';
-import { useCommonMessages } from '../locale/common-messages';
 
 /**
  * A restaurant or a shop in a list.
@@ -317,6 +319,7 @@ function VendorCardComponent(props: VendorCardProps) {
   } = props;
 
   const theme = useTheme();
+  const { messages } = useMessages(VENDOR_CARD_MESSAGES);
   // The card adopts BOTH sheets: its own link ring, and `listing-card`'s, which
   // is where the heart's `:focus-visible` rule lives. `adoptStyleSheet` replaces
   // by id, so a page of vendor cards adopts each exactly once.
@@ -327,11 +330,11 @@ function VendorCardComponent(props: VendorCardProps) {
   const compact = density === 'compact';
   if (loading) return <VendorCardSkeleton density={density} style={style} testID={testID} />;
 
-  const status = availabilityLabelFor(availability, availabilityLabel);
-  const facts = vendorFacts(props);
+  const status = availabilityLabelFor(availability, availabilityLabel, messages);
+  const facts = vendorFacts(props, messages);
   const shownCuisines = vendorCuisines(cuisines, density);
   const markSize: OfferingBadgeSize = compact ? 'small' : 'medium';
-  const label = accessibilityLabel ?? composeVendorName(props);
+  const label = accessibilityLabel ?? composeVendorName(props, messages);
 
   const handlePress = (event: GestureResponderEvent) => {
     if (onPress) {
@@ -397,7 +400,7 @@ function VendorCardComponent(props: VendorCardProps) {
             size={compact ? 'small' : 'medium'}
             value={rating}
             count={reviewCount}
-            newLabel={newLabel}
+            newLabel={newLabel ?? messages.new}
             style={{ flexShrink: 0 }}
             testID={testID ? `${testID}-rating` : undefined}
           />

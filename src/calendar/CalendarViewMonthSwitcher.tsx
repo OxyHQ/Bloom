@@ -27,6 +27,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { CALENDAR_MESSAGES } from './messages';
 import { resolveCalendarViewPalette, type CalendarViewPalette } from './palette';
 import { BREAKPOINT, IS_WEB, dayKey, formatShortMonth, type WebDataSet } from './shared';
 import type { CalendarViewMonthSwitcherProps } from './types';
@@ -177,6 +179,7 @@ type WebKeyProps = {
 function SwitcherGrid({
   month,
   locale,
+  label,
   palette,
   onSelect,
   onPreviousMonth,
@@ -184,6 +187,7 @@ function SwitcherGrid({
 }: {
   month: Date;
   locale?: string;
+  label: string;
   palette: CalendarViewPalette;
   onSelect: (date: Date) => void;
   onPreviousMonth: () => void;
@@ -224,7 +228,7 @@ function SwitcherGrid({
   return (
     <View
       role="grid"
-      accessibilityLabel="Jump to date"
+      accessibilityLabel={label}
       {...keyProps}
       style={{ width: GRID_WIDTH, gap: CELL_GAP }}
     >
@@ -271,10 +275,11 @@ export function CalendarViewMonthSwitcher({
   onNextMonth,
   onSelectDate,
   width = DEFAULT_WIDTH,
-  locale,
+  locale: localeProp,
   style,
   testID,
 }: CalendarViewMonthSwitcherProps) {
+  const { locale, messages } = useMessages(CALENDAR_MESSAGES, localeProp);
   const theme = useTheme();
   const palette = useMemo(() => resolveCalendarViewPalette(theme), [theme]);
   const { width: viewport } = useWindowDimensions();
@@ -367,11 +372,11 @@ export function CalendarViewMonthSwitcher({
             paddingRight: 8,
           }}
         >
-          <NavButton direction="left" label="Previous month" onPress={onPreviousMonth} palette={palette} />
+          <NavButton direction="left" label={messages.previousMonth} onPress={onPreviousMonth} palette={palette} />
           <Pressable
             {...titleHook}
             role="button"
-            accessibilityLabel={`${formatMonthTitle(month, locale)}, choose a date`}
+            accessibilityLabel={messages.chooseDate(formatMonthTitle(month, locale))}
             aria-expanded={open}
             disabled={!isSm}
             onPress={() => setOpen((current) => !current)}
@@ -382,7 +387,7 @@ export function CalendarViewMonthSwitcher({
               {title}
             </Text>
           </Pressable>
-          <NavButton direction="right" label="Next month" onPress={onNextMonth} palette={palette} />
+          <NavButton direction="right" label={messages.nextMonth} onPress={onNextMonth} palette={palette} />
         </View>
         {mounted ? (
           <Animated.View style={[{ overflow: 'hidden' }, bodyStyle]}>
@@ -401,6 +406,7 @@ export function CalendarViewMonthSwitcher({
               <SwitcherGrid
                 month={startOfMonth(month)}
                 locale={locale}
+                label={messages.jumpToDate}
                 palette={palette}
                 onSelect={select}
                 onPreviousMonth={onPreviousMonth}

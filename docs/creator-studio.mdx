@@ -26,6 +26,8 @@ import {
 
 Data is props. Numbers that are only displayed (`value`, `delta`, prices, dates) arrive pre-formatted — the app owns currency and locale. Charts take raw numbers and format them with `format` / `formatAxisValue`.
 
+Bloom's own strings — the labels, status names, credit roles, periods and accessible names quoted in English below — are localised via `BloomProvider locale` (see [Locale](/docs/bloom/main/locale)); each `labels` / `*Label` prop still wins. `artworkDimensionsError(width, height, minSize, locale)` takes the locale as its fourth argument.
+
 ## Dashboard
 
 ### AudienceOverview
@@ -151,3 +153,6 @@ Everything renders on native with the same props. Web-only: hover states (colour
 from `neutral-400`/`neutral-500` — the same copy of the ramp stops that put
 chart-card captions at 2.42:1. See
 [Styles → Quiet text](/docs/bloom/main/styles).
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

@@ -6,6 +6,10 @@ order: 5
 
 # Toast
 
+Styled toasts publish their resolved base fill to content and CSS descendants. Unstyled toasts and custom background renderers inherit their parent context because Bloom cannot determine that custom paint.
+
+Styled toasts use the shared Surface material. Unstyled toasts and custom background components retain their own paint.
+
 Passive notifications. Bloom ships its own engine — **one** implementation that runs
 on native and on web (through react-native-web), so there is nothing extra to
 install and the API is identical everywhere.

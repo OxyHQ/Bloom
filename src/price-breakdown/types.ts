@@ -76,7 +76,7 @@ export interface PriceTotal {
 export type PriceStateLabels = Partial<Record<Exclude<PriceLineState, 'final'>, string>>;
 
 export interface PriceSummaryLineProps extends Omit<PriceLine, 'id'> {
-  /** Defaults: `estimated` → "Estimated", `pending` → "Pending". */
+  /** Defaults (English): `estimated` → "Estimated", `pending` → "Pending". */
   stateLabels?: PriceStateLabels;
   /** Drawn where the amount would be on a line that has none. Default `"—"`. */
   pendingPlaceholder?: string;
@@ -100,15 +100,15 @@ export interface PriceSummaryProps {
   /** Uncontrolled initial disclosure. Default `false`. */
   defaultExpanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
-  /** Default `"Show price details"`. */
+  /** `"Show price details"` in English. */
   expandLabel?: string;
-  /** Default `"Hide price details"`. */
+  /** `"Hide price details"` in English. */
   collapseLabel?: string;
-  /** Defaults: `estimated` → "Estimated", `pending` → "Pending". */
+  /** Defaults (English): `estimated` → "Estimated", `pending` → "Pending". */
   stateLabels?: PriceStateLabels;
   /** Drawn where the amount would be on a line that has none. Default `"—"`. */
   pendingPlaceholder?: string;
-  /** Names the list of charges. Default `"Price breakdown"`. */
+  /** Names the list of charges (`"Price breakdown"` in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

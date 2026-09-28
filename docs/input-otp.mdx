@@ -68,12 +68,12 @@ A box accepts up to `length × 2` characters in one change, so a code pasted wit
 | `isDisabled?` / `disabled?` | `boolean` | Disable every box. |
 | `groupEvery?` | `number` | Gap between groups. |
 | `autoFocus?` | `boolean` | Focus the first box on mount. |
-| `accessibilityLabel?` | `string` | The group's name. Default `"One-time code"`. |
+| `accessibilityLabel?` | `string` | The group's name. Default `"One-time code"` in English, localised via `BloomProvider locale`. |
 | `style?` / `testID?` | | The row; box `testID`s are `${testID}-${index}`. |
 
 ## Accessibility
 
-- The row is a `group` named by `accessibilityLabel`; each box is named `Digit 1 of 6` (`Character 1 of 10` when alphanumeric) and so on.
+- The row is a `group` named by `accessibilityLabel`; each box is named `Digit 1 of 6` (`Character 1 of 10` when alphanumeric) and so on — these names are localised via `BloomProvider locale`.
 - `aria-invalid` sits on each box, not the group — `group` does not support it.
 - Say why the code is invalid in text next to the field; the red border is not an announcement.
 

@@ -14,6 +14,7 @@ import { webDataSet } from '../styles/web-data';
 import { RiMapPin2Fill } from '../icons/remix/RiMapPin2Fill';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MediaPressable, useHovered, useMessageMediaCss } from './parts';
@@ -24,6 +25,7 @@ import {
   resolveMessageMediaPaint,
   type MessageMediaPaint,
 } from './shared';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { LocationMessageProps } from './types';
 
 /** The placeholder grid's cell size, when the app renders no map. */
@@ -146,7 +148,7 @@ function LocationMessageComponent({
   renderMap,
   live = false,
   liveUntilLabel,
-  stopSharingLabel = 'Stop sharing',
+  stopSharingLabel: stopSharingLabelProp,
   onStopSharing,
   onPress,
   width = MESSAGE_MEDIA_WIDTH,
@@ -160,6 +162,8 @@ function LocationMessageComponent({
   testID,
 }: LocationMessageProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const stopSharingLabel = stopSharingLabelProp ?? messages.stopSharing;
   useMessageMediaCss();
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
@@ -168,7 +172,7 @@ function LocationMessageComponent({
   const [stopHovered, stopHandlers] = useHovered();
 
   const name =
-    accessibilityLabel ?? fileMetaLine([live ? 'Live location' : 'Location', title, address]);
+    accessibilityLabel ?? fileMetaLine([live ? messages.liveLocation : messages.location, title, address]);
 
   const frame: WebCssStyle = {
     width,

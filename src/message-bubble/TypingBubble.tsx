@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { TypingDots } from '../chat-indicators';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import {
   BUBBLE_PADDING_X,
@@ -10,6 +11,7 @@ import {
   resolveMessageBubblePaint,
   sidePaint,
 } from './shared';
+import { MESSAGE_BUBBLE_MESSAGES } from './messages';
 import type { TypingBubbleProps } from './types';
 
 /**
@@ -27,11 +29,13 @@ function TypingBubbleComponent({
   avatarSource,
   showAvatar,
   avatarSize = 28,
-  label = 'Typing…',
+  label: labelProp,
   style,
   testID,
 }: TypingBubbleProps) {
   const theme = useTheme();
+  const { messages } = useMessages(MESSAGE_BUBBLE_MESSAGES);
+  const label = labelProp ?? messages.typing;
   const paint = useMemo(() => resolveMessageBubblePaint(theme), [theme]);
   const side = sidePaint(paint, direction);
   const outgoing = direction === 'outgoing';

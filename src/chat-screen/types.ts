@@ -1,3 +1,4 @@
+import type { ImageSource } from '../shapes';
 import type { ComponentType, ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
@@ -27,7 +28,7 @@ export interface ChatHeaderProps {
   /** The glyph after the title. Omit for a plain title. */
   marker?: ChatHeaderMarker;
   /**
-   * Names the marker for assistive tech. Defaults to "Verified" / "Bot" /
+   * Names the marker for assistive tech. Defaults (localised) to "Verified" / "Bot" /
    * "Channel" — pass a translated one. An empty string hides the glyph, for a
    * header whose own text already says it.
    */
@@ -52,7 +53,7 @@ export interface ChatHeaderProps {
    * make.
    */
   connecting?: boolean;
-  /** The text of the connecting line. Default `"Connecting…"`. */
+  /** The text of the connecting line. `"Connecting…"` in English (localised). */
   connectingLabel?: string;
 
   /**
@@ -62,7 +63,7 @@ export interface ChatHeaderProps {
    */
   avatar?: ReactNode;
   /** A URL, an `ImageResolver` id, or an RN image source. */
-  avatarSource?: string | ImageSourcePropType | null;
+  avatarSource?: string | ImageSource | null;
   /** Initials fallback and the avatar's tint seed. Defaults to `title`. */
   avatarName?: string;
   /** Draws a presence dot on the avatar. */
@@ -80,7 +81,7 @@ export interface ChatHeaderProps {
    * persistent list pane to go back TO on screen).
    */
   showBack?: boolean;
-  /** Names the back button. Default `"Back"`. */
+  /** Names the back button. `"Back"` in English (localised). */
   backLabel?: string;
 
   /** Opens the info panel. Wraps the avatar + title block in a button. */
@@ -228,7 +229,7 @@ export interface ScrollToBottomButtonProps {
   badgeMax?: number;
   onPress?: () => void;
   /**
-   * Names the button. Default `"Scroll to latest messages"`; the unread count
+   * Names the button. `"Scroll to latest messages"` in English (localised); the unread count
    * is announced by the badge, which carries its own name.
    */
   accessibilityLabel?: string;
@@ -242,7 +243,7 @@ export interface JumpToMentionButtonProps
   extends Omit<ScrollToBottomButtonProps, 'unreadCount' | 'accessibilityLabel'> {
   /** How many mentions are waiting. `0` draws no badge. */
   count?: number;
-  /** Default `"Jump to mention"`. */
+  /** `"Jump to mention"` in English (localised). */
   accessibilityLabel?: string;
 }
 
@@ -279,7 +280,7 @@ export interface ChatDateHeaderProps {
 // ---------------------------------------------------------------------------
 
 export interface ChatEmptyStateProps {
-  /** Default `"No messages yet"`. */
+  /** `"No messages yet"` in English (localised). */
   title?: string;
   /** The line under it. Optional. */
   description?: string;
@@ -339,7 +340,7 @@ export interface ChatMember {
   id: string;
   name: string;
   /** A URL, an `ImageResolver` id or an RN image source. */
-  source?: string | ImageSourcePropType | null;
+  source?: string | ImageSource | null;
   status?: PresenceStatus;
   role?: ChatMemberRole;
   /** The second line — a handle, "last seen recently", a phone number. */
@@ -349,7 +350,7 @@ export interface ChatMember {
 export interface ChatMemberRowProps {
   member: ChatMember;
   onPress?: (member: ChatMember) => void;
-  /** The badge text per role. Default `{ owner: 'Owner', admin: 'Admin' }`. */
+  /** The badge text per role. `{ owner: 'Owner', admin: 'Admin' }` in English (localised). */
   roleLabels?: Partial<Record<ChatMemberRole, string>>;
   /** Avatar diameter. Default `40`. */
   avatarSize?: number;
@@ -363,7 +364,7 @@ export interface ChatInfoPanelProps {
   /** Pane width. Default `380`. Ignored by `screen`. */
   width?: number;
 
-  /** The panel's own title bar text. Default `"Info"`. */
+  /** The panel's own title bar text. `"Info"` in English (localised). */
   title?: string;
   /** Closes the panel. Omit to hide the close button. */
   onClose?: () => void;
@@ -382,7 +383,7 @@ export interface ChatInfoPanelProps {
 
   /** Replaces the built-in avatar. */
   avatar?: ReactNode;
-  avatarSource?: string | ImageSourcePropType | null;
+  avatarSource?: string | ImageSource | null;
   presence?: PresenceStatus;
   /** Avatar diameter. Default `96` (`72` over a cover). */
   avatarSize?: number;
@@ -485,7 +486,7 @@ export interface ChatSplitLayoutProps {
   infoWidth?: number;
   /** Draws the resize grip. Default `true`. */
   resizable?: boolean;
-  /** Names the grip. Default `"Resize the conversation list"`. */
+  /** Names the grip. `"Resize the conversation list"` in English (localised). */
   resizeLabel?: string;
 
   /** Below this width the layout shows one pane. Default `900`. */

@@ -10,7 +10,6 @@ import { ChartCardSurface } from '../chart-cards/primitives/ChartCardSurface';
 import { TABULAR } from '../chart-cards/primitives/ChartHeader';
 import { describeDeltaRatio, groupThousands } from '../chart-cards/primitives/format';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
-import { useChartCardPalette } from '../chart-cards/primitives/use-chart-palette';
 import { roundedBarPath, singleBarSlot } from '../chart-cards/rounded-bar-geometry';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { Chip } from '../chip';
@@ -18,8 +17,12 @@ import { Divider } from '../divider';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { PayoutSummaryCardLabels, PayoutSummaryCardProps } from './types';
 
+import { useChartCardSurfacePalette } from '../chart-cards/primitives/use-chart-palette';
+import { formatCurrency } from '../locale/format-number';
 /**
  * `PayoutSummaryCard`: what the artist has earned and when it arrives.
  *
@@ -37,18 +40,12 @@ import type { PayoutSummaryCardLabels, PayoutSummaryCardProps } from './types';
  *   link      "View statements" link button with a chevron
  */
 
-export const PAYOUT_SUMMARY_LABELS: PayoutSummaryCardLabels = {
-  estimated: 'Estimated earnings this month',
-  lastPayout: 'Last payout',
-  nextPayout: 'Next payout',
-  statements: 'View statements',
-  chart: 'Monthly earnings',
-};
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const PAYOUT_SUMMARY_LABELS: PayoutSummaryCardLabels = CREATOR_STUDIO_MESSAGES.en.payout;
 
 const PLOT_HEIGHT = 112;
 const BAR_RADIUS = 6;
 
-const defaultFormat = (value: number) => `$${groupThousands(Math.round(value))}`;
 
 function PayoutSummaryCardComponent({
   estimated,
@@ -56,16 +53,18 @@ function PayoutSummaryCardComponent({
   lastPayout,
   nextPayoutDate,
   months,
-  format = defaultFormat,
+  format: formatProp,
   onViewStatements,
   statementsHref,
   labels: labelOverrides,
   style,
   testID,
 }: PayoutSummaryCardProps) {
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatCurrency(Math.round(value), 'USD', locale));
   const theme = useTheme();
-  const palette = useChartCardPalette();
-  const labels = { ...PAYOUT_SUMMARY_LABELS, ...labelOverrides };
+  const palette = useChartCardSurfacePalette(style);
+  const labels = { ...messages.payout, ...labelOverrides };
   const tone = useMemo(() => chartHueTone(theme, 6), [theme]);
   const [activeIndex, setActiveIndex] = useActiveIndex(months.length, undefined, undefined);
 
@@ -73,7 +72,7 @@ function PayoutSummaryCardComponent({
   const categories = useMemo(() => months.map((m) => m.label), [months]);
   const max = Math.max(1, ...values);
   const anim = useChartProgress(values);
-  const chip = delta !== undefined ? describeDeltaRatio(delta) : undefined;
+  const chip = delta !== undefined ? describeDeltaRatio(delta, locale) : undefined;
   const chipPaint = chip
     ? chip.tone === 'positive'
       ? palette.positive

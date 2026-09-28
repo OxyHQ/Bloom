@@ -1,6 +1,6 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -34,6 +34,8 @@ import type {
   ShuffleButtonProps,
 } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MEDIA_HEADER_MESSAGES } from './messages';
 
 /**
  * The row of controls under a media header.
@@ -125,9 +127,11 @@ function ShuffleButtonComponent({
   shuffle,
   onShuffleChange,
   size = 28,
-  accessibilityLabel = 'Shuffle',
+  accessibilityLabel: accessibilityLabelProp,
   ...rest
 }: ShuffleButtonProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.shuffle;
   return (
     <MediaIconButton
       icon={RiShuffleLine}
@@ -182,11 +186,14 @@ function DownloadButtonComponent({
   onPress,
   size = 28,
   disabled = false,
-  accessibilityLabel = 'Download',
-  progressLabel = 'Download progress',
+  accessibilityLabel: accessibilityLabelProp,
+  progressLabel: progressLabelProp,
   style,
   testID,
 }: DownloadButtonProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.download;
+  const progressLabel = progressLabelProp ?? messages.downloadProgress;
   const paint = useMediaHeaderPaint();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const box = Math.max(40, size + 12);
@@ -280,8 +287,8 @@ DownloadButton.displayName = 'DownloadButton';
 function FollowButtonComponent({
   following,
   onFollowChange,
-  label = 'Follow',
-  followingLabel = 'Following',
+  label: labelProp,
+  followingLabel: followingLabelProp,
   accessibilityLabel,
   accessibilityHint,
   color,
@@ -294,18 +301,31 @@ function FollowButtonComponent({
   style,
   testID,
 }: FollowButtonProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const label = labelProp ?? messages.follow;
+  const followingLabel = followingLabelProp ?? messages.following;
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(Number(following));
+  const pressOffset = useSharedValue(0);
+  const restoreLabel = useCallback(() => {
+    pressOffset.value = reducedMotion ? 0 : withSpring(0, { stiffness: 320, damping: 22, mass: 0.5 });
+  }, [pressOffset, reducedMotion]);
   useEffect(() => {
     progress.value = reducedMotion ? Number(following) : withTiming(Number(following), { duration: 180 });
-  }, [following, progress, reducedMotion]);
-  const idleLabelStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value, transform: [{ translateY: -8 * progress.value }] }), [progress]);
-  const followedLabelStyle = useAnimatedStyle(() => ({ opacity: progress.value, transform: [{ translateY: 8 * (1 - progress.value) }] }), [progress]);
+    restoreLabel();
+  }, [following, progress, reducedMotion, restoreLabel, disabled, loading]);
+  const previewLabel = useCallback(() => {
+    if (disabled || loading || reducedMotion) return;
+    // Anticipate the slide while keeping the current label fully legible.
+    pressOffset.value = withSpring(following ? 2 : -2, { stiffness: 500, damping: 28, mass: 0.5 });
+  }, [disabled, following, loading, pressOffset, reducedMotion]);
+  const idleLabelStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value, transform: [{ translateY: -8 * progress.value + pressOffset.value }] }), [progress, pressOffset]);
+  const followedLabelStyle = useAnimatedStyle(() => ({ opacity: progress.value, transform: [{ translateY: 8 * (1 - progress.value) + pressOffset.value }] }), [progress, pressOffset]);
   const labelColor = color ?? resolveButtonPalette('subtle', theme, tone).rest.foreground;
   const visual = (
     <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
-      style={{ height: 20, overflow: 'hidden', ...(iconOnly ? { width: 20 } : {}), justifyContent: 'center' }}>
+      style={{ height: 24, overflow: 'hidden', ...(iconOnly ? { width: 20 } : {}), justifyContent: 'center' }}>
       {!iconOnly && <View style={{ height: 0, overflow: 'hidden' }}>
         <Text variant="body-semibold" style={textStyle}>{label}</Text>
         <Text variant="body-semibold" style={textStyle}>{followingLabel}</Text>
@@ -326,6 +346,7 @@ function FollowButtonComponent({
     <Button appearance="subtle" tone={tone} size={size} iconOnly={iconOnly}
       pressed={following} stopPropagation accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint} disabled={disabled} loading={loading}
+      onPressIn={previewLabel} onPressOut={restoreLabel}
       onPress={() => onFollowChange(!following)} trailing={visual}
       style={style} testID={testID} />
   );
@@ -353,14 +374,17 @@ function MediaActionBarComponent({
   onMorePress,
   more,
   onSearchPress,
-  searchLabel = 'Search in playlist',
-  compactViewLabel = 'Compact view',
+  searchLabel: searchLabelProp,
+  compactViewLabel: compactViewLabelProp,
   view = 'list',
   onViewChange,
   trailing,
   style,
   testID,
 }: MediaActionBarProps) {
+  const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
+  const searchLabel = searchLabelProp ?? messages.searchInPlaylist;
+  const compactViewLabel = compactViewLabelProp ?? messages.compactView;
   const hasRight = onSearchPress || onViewChange || trailing;
   return (
     <View

@@ -3,6 +3,7 @@ import { RiBikeLine } from '../icons/remix/RiBikeLine';
 import { RiShoppingBag3Line } from '../icons/remix/RiShoppingBag3Line';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { RiWalkLine } from '../icons/remix/RiWalkLine';
+import { VENDOR_CARD_MESSAGES } from './messages';
 import type { VendorAvailability, VendorCardDensity, VendorFactKey } from './types';
 
 /**
@@ -32,19 +33,15 @@ export const VENDOR_FACT_ICON: Record<VendorFactKey, BloomIconComponent> = {
   minimumOrder: RiShoppingBag3Line,
 };
 
-/** The word said before each reading in the card's accessible name. */
-export const VENDOR_FACT_LABELS: Record<VendorFactKey, string> = {
-  deliveryTime: 'Delivery time',
-  deliveryFee: 'Delivery',
-  distance: 'Distance',
-  minimumOrder: 'Minimum order',
-};
+/**
+ * The word said before each reading in the card's accessible name, in English.
+ * The card itself speaks `VENDOR_CARD_MESSAGES` in the resolved locale.
+ */
+export const VENDOR_FACT_LABELS: Record<VendorFactKey, string> = VENDOR_CARD_MESSAGES.en.facts;
 
-/** The English status pill labels. `open` draws none. */
-export const VENDOR_AVAILABILITY_LABELS: Record<Exclude<VendorAvailability, 'open'>, string> = {
-  paused: 'Paused',
-  closed: 'Closed',
-};
+/** The English status pill labels. `open` draws none. The card speaks the resolved locale's. */
+export const VENDOR_AVAILABILITY_LABELS: Record<Exclude<VendorAvailability, 'open'>, string> =
+  VENDOR_CARD_MESSAGES.en.availability;
 
 /** The cuisine pills' rung: 24 tall, caption weight — the densest pill Bloom has. */
 export const VENDOR_CUISINE_CHIP_HEIGHT = 24;

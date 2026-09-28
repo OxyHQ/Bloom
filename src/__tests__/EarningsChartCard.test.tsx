@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -54,7 +55,7 @@ describe('EarningsChartCard', () => {
     const { getByTestId, getByText, getByLabelText } = renderCard(
       <EarningsChartCard testID="earn" ranges={RANGES} yTicks={Y_TICKS} yMax={12000} />,
     );
-    expect(resolvedStyle(getByTestId('earn').props.style)).toMatchObject({ height: 329, gap: 24, borderRadius: 16 });
+    expect(cardLayout(getByTestId('earn'))).toMatchObject({ height: 329, gap: 24, borderRadius: 16 });
     expect(getByText('Earned so far')).toBeTruthy();
     expect(getByTestId('earn-headline').props.children).toBe('$7,462');
     expect(getByText('+14.8%')).toBeTruthy();
@@ -70,7 +71,7 @@ describe('EarningsChartCard', () => {
     );
     layoutPlot(getByTestId, 'earn-plot');
     for (const label of ['$0', '$3K', '$5K', '$10K']) expect(getByText(label)).toBeTruthy();
-    const rects = UNSAFE_getAllByType('Rect' as never) as unknown as Node[];
+    const rects = getByTestId('earn-plot').findAllByType('Rect' as never) as unknown as Node[];
     const track = rects[0]!.props;
     expect([track.x, track.y, track.width, track.height, track.rx, track.fill]).toEqual([
       expect.closeTo(50.06, 2),
@@ -149,8 +150,8 @@ describe('EarningsChartCard', () => {
     const palette = resolveChartCardPalette(buildTheme('teal', 'dark'));
     const { getByTestId, UNSAFE_getAllByType } = renderCard(<EarningsChartCard testID="earn" data={WEEKLY} />, 'dark');
     layoutPlot(getByTestId, 'earn-plot');
-    const rects = UNSAFE_getAllByType('Rect' as never) as unknown as Node[];
+    const rects = getByTestId('earn-plot').findAllByType('Rect' as never) as unknown as Node[];
     expect(rects[0]!.props.fill).toBe(palette.track);
-    expect(resolvedStyle(getByTestId('earn').props.style).backgroundColor).toBe(palette.surface);
+    expect(cardFill(getByTestId('earn'))).toBe(palette.surface);
   });
 });

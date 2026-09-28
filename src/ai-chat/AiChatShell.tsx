@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
@@ -7,7 +9,6 @@ import {
   useWindowDimensions,
   type GestureResponderEvent,
   type LayoutChangeEvent,
-  type PointerEvent,
   type ViewProps,
 } from 'react-native';
 import Animated, {
@@ -37,7 +38,12 @@ import {
   useAiChatPalette,
   useAiChatWebCss,
 } from './shared';
-import type { AiChatMobileHeaderProps, AiChatResizeHandleProps, AiChatShellProps } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES } from './messages';
+import type { AiChatMobileHeaderProps, AiChatShellProps } from './types';
+import { AiChatResizeHandle } from './AiChatResizeHandle';
+import { clamp01 } from '../styles/clamp';
 
 const REVEAL_EASE = Easing.bezier(0.42, 0, 0.58, 1);
 const REVEAL_MS = 325;
@@ -83,153 +89,7 @@ const NAV_SWIPE_FLICK = 0.3;
 /** A settle never runs shorter than this, so the last few px are still seen. */
 const NAV_SETTLE_MIN_MS = 120;
 
-const clamp01 = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
 
-const DEFAULT_LABELS = {
-  openNavigation: 'Open navigation',
-  closeNavigation: 'Close navigation',
-  openPanel: (panel: string) => `Open ${panel.toLowerCase()}`,
-  closePanel: (panel: string) => `Close ${panel.toLowerCase()}`,
-  resize: 'Resize panels',
-};
-
-// ---------------------------------------------------------------------------
-//  Resize handle
-// ---------------------------------------------------------------------------
-
-/**
- * The resize grip (`DragHandle`): a 20px strip straddling the chat's right edge
- * (10px past it). Hovering it reveals a 15×25 grip — radius 4, 1px
- * border-button-default, background-primary, shadow-xs, three 1×13
- * icon-quaternary lines 2 apart — that follows the pointer along the edge
- * (kept 13px inside it) and stays up while dragging (150ms fade). Holding and
- * dragging reports the horizontal distance from where the drag started.
- */
-export function AiChatResizeHandle({
-  onResizeStart,
-  onResize,
-  onResizeEnd,
-  label = DEFAULT_LABELS.resize,
-  onNudge,
-  style,
-  testID,
-}: AiChatResizeHandleProps) {
-  useAiChatWebCss();
-  const palette = useAiChatPalette();
-  const [gripY, setGripY] = useState<number | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const height = useRef(0);
-  const startX = useRef(0);
-  const callbacks = useRef({ onResizeStart, onResize, onResizeEnd });
-  callbacks.current = { onResizeStart, onResize, onResizeEnd };
-
-  const track = (localY: number) => {
-    const h = height.current;
-    if (h > 0) setGripY(Math.min(h - 13, Math.max(13, localY)));
-  };
-
-  // Native: a pan responder (web uses pointer capture below).
-  const responder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: (event) => {
-          track(event.nativeEvent.locationY);
-          setDragging(true);
-          callbacks.current.onResizeStart?.();
-        },
-        onPanResponderMove: (_event, gesture) => callbacks.current.onResize(gesture.dx),
-        onPanResponderRelease: () => {
-          setDragging(false);
-          callbacks.current.onResizeEnd?.();
-        },
-        onPanResponderTerminate: () => {
-          setDragging(false);
-          callbacks.current.onResizeEnd?.();
-        },
-      }),
-    [],
-  );
-
-  type DomTarget = {
-    getBoundingClientRect: () => { top: number };
-    setPointerCapture: (id: number) => void;
-    hasPointerCapture: (id: number) => boolean;
-  };
-  const web = IS_WEB
-    ? {
-        onPointerDown: (event: PointerEvent) => {
-          event.preventDefault();
-          startX.current = event.nativeEvent.clientX;
-          setDragging(true);
-          callbacks.current.onResizeStart?.();
-          (event.currentTarget as unknown as DomTarget).setPointerCapture(event.nativeEvent.pointerId);
-        },
-        onPointerMove: (event: PointerEvent) => {
-          const target = event.currentTarget as unknown as DomTarget;
-          track(event.nativeEvent.clientY - target.getBoundingClientRect().top);
-          if (target.hasPointerCapture(event.nativeEvent.pointerId)) {
-            callbacks.current.onResize(event.nativeEvent.clientX - startX.current);
-          }
-        },
-        onPointerUp: () => {
-          setDragging(false);
-          callbacks.current.onResizeEnd?.();
-        },
-        onPointerCancel: () => {
-          setDragging(false);
-          callbacks.current.onResizeEnd?.();
-        },
-        onKeyDown: (event: { nativeEvent: { key: string } }) => {
-          if (event.nativeEvent.key === 'ArrowLeft') onNudge?.(-16);
-          if (event.nativeEvent.key === 'ArrowRight') onNudge?.(16);
-        },
-        tabIndex: onNudge ? (0 as const) : undefined,
-      }
-    : responder.panHandlers;
-
-  const grip: WebCssStyle = {
-    position: 'absolute',
-    ...(gripY === null ? { top: '50%' } : { top: gripY }),
-    width: 15,
-    height: 25,
-    marginTop: -12.5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.primary,
-    boxShadow: palette.shadowXs,
-    ...(IS_WEB ? null : { opacity: dragging ? 1 : 0 }),
-  };
-
-  return (
-    <View
-      {...dataHook('bloomAiChatGrip')}
-      {...web}
-      role="separator"
-      aria-orientation="vertical"
-      accessibilityLabel={label}
-      testID={testID}
-      onLayout={(event: LayoutChangeEvent) => {
-        height.current = event.nativeEvent.layout.height;
-      }}
-      style={[
-        { position: 'absolute', top: 0, bottom: 0, right: -10, zIndex: 10, width: 20, alignItems: 'center' },
-        style,
-      ]}>
-      <View {...dataHook('bloomAiChatGripPill', dragging ? 'dragging' : '')} pointerEvents="none" style={grip}>
-        {[0, 1, 2].map((line) => (
-          <View key={line} style={{ width: 1, height: 13, backgroundColor: palette.iconQuaternary }} />
-        ))}
-      </View>
-    </View>
-  );
-}
 
 // ---------------------------------------------------------------------------
 //  Mobile header
@@ -323,7 +183,7 @@ export function AiChatShell({
   mobileSidebar,
   children,
   panel,
-  panelLabel = 'Code',
+  panelLabel: panelLabelProp,
   panelIcon = RiCodeSLine,
   defaultPanelWidth = 410,
   minPanelWidth = 320,
@@ -343,7 +203,13 @@ export function AiChatShell({
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const reducedMotion = useReducedMotion();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const panelLabel = panelLabelProp ?? messages.code;
+  const common = useCommonMessages();
+  const l = useMemo(
+    () => ({ ...messages.shell, resize: common.resizePanels, ...labels }),
+    [messages, common, labels],
+  );
   const { width: windowWidth } = useWindowDimensions();
   // Native has no document: `document` is `container` there.
   const documentScroll = IS_WEB && scroll === 'document';
@@ -594,17 +460,19 @@ export function AiChatShell({
     backgroundColor: surface ? palette.full : 'transparent',
   };
 
+  const backing = useSurfaceBacking(surface ? palette.full : undefined, style, !background);
   const veil = palette.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)';
 
   return (
     <AiChatShellContext.Provider value={shellState}>
+      <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
       <AiChatDocumentGutterContext.Provider value={documentScroll && surface ? palette.full : null}>
       <View
         {...dataHook('bloomAiChatDragging', dragging ? 'on' : '')}
         {...(navSwipeArmed ? navSwipe.panHandlers : null)}
         testID={testID}
         onLayout={(event: LayoutChangeEvent) => setShellWidth(event.nativeEvent.layout.width)}
-        style={[rootStyle, style]}>
+        style={[rootStyle, style, backing.vars]}>
         {background ? (
           <View pointerEvents="none" style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0 }}>
             {background}
@@ -641,6 +509,7 @@ export function AiChatShell({
           </View>
         ) : null}
 
+        <SurfaceLevelProvider level={backing.level} fill={surface ? palette.full : backing.fill}>
         <Animated.View
           style={[
             {
@@ -654,6 +523,7 @@ export function AiChatShell({
               backgroundColor: surface ? palette.full : 'transparent',
             },
             navInFlow ? null : workspaceStyle,
+            surfaceFillVars(surface ? palette.full : undefined),
           ]}>
           {!navInFlow ? (
             <Animated.View
@@ -701,6 +571,7 @@ export function AiChatShell({
             ) : null}
           </View>
         </Animated.View>
+        </SurfaceLevelProvider>
 
         {!wide && panel ? (
           <View
@@ -716,6 +587,7 @@ export function AiChatShell({
                 style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
               />
             </Animated.View>
+            <SurfaceLevelProvider level={backing.level} fill={palette.full}>
             <Animated.View
               ref={panelRef}
               role="dialog"
@@ -735,6 +607,7 @@ export function AiChatShell({
                   boxShadow: palette.shadowSidebar,
                 },
                 drawerStyle,
+                surfaceFillVars(palette.full),
               ]}>
               <View
                 style={{
@@ -753,10 +626,12 @@ export function AiChatShell({
               </View>
               <View style={{ minHeight: 0, flex: 1 }}>{panel('100%')}</View>
             </Animated.View>
+            </SurfaceLevelProvider>
           </View>
         ) : null}
       </View>
       </AiChatDocumentGutterContext.Provider>
+      </SurfaceLevelProvider>
     </AiChatShellContext.Provider>
   );
 }

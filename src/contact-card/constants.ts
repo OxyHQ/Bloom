@@ -19,6 +19,11 @@ import type { ContactChannelKind } from './types';
  * unnamed glyph by forgetting a prop. The verb ends where the subject begins,
  * so `${verb} ${label}` reads as a sentence for every kind, including the two
  * that need a preposition.
+ *
+ * The words here are the ENGLISH reference, kept exported for callers that read
+ * them. The card itself speaks through `CONTACT_CARD_MESSAGES` (`messages.ts`),
+ * where each language has a whole phrase per channel rather than a verb glued
+ * to a name.
  */
 export const CONTACT_CHANNEL: Record<
   ContactChannelKind,

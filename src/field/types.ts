@@ -14,6 +14,8 @@ export interface FieldProps {
   error?: string | null;
   /** Mark the field's label with a required asterisk. */
   required?: boolean;
+  /** Accessible name of the required marker; defaults to the current locale. */
+  requiredLabel?: string;
   /**
    * Disables the label/description styling AND, for a control that reads the
    * field context, the control itself.

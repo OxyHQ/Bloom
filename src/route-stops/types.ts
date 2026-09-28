@@ -37,19 +37,19 @@ export interface RouteStop {
  * copy an app localises, and none of it is layout.
  */
 export interface RouteStopsLabels {
-  /** The first stop's position. Default `"Origin"`. */
+  /** The first stop's position. `"Origin"` in English. */
   origin?: string;
-  /** The last stop's position, when there is more than one. Default `"Destination"`. */
+  /** The last stop's position, when there is more than one. `"Destination"` in English. */
   destination?: string;
-  /** Every stop between them. Default `` (position) => `Stop ${position}` ``. */
+  /** Every stop between them. `` (position) => `Stop ${position}` `` in English. */
   stop?: (position: number) => string;
-  /** The swap control. Default `"Swap origin and destination"`. */
+  /** The swap control. `"Swap origin and destination"` in English. */
   swap?: string;
-  /** The add control's label — it is a labelled button, so this is VISIBLE text. Default `"Add a stop"`. */
+  /** The add control's label — it is a labelled button, so this is VISIBLE text. `"Add a stop"` in English. */
   addStop?: string;
-  /** The remove control, per stop. Default ``(stop) => `Remove ${stop.title}` ``. */
+  /** The remove control, per stop. ``(stop) => `Remove ${stop.title}` `` in English. */
   remove?: (stop: RouteStop) => string;
-  /** Defaults: `reached` → "Reached", `current` → "Current stop", `pending` → "Not reached". */
+  /** In English: `reached` → "Reached", `current` → "Current stop", `pending` → "Not reached". */
   state?: Partial<Record<RouteStopState, string>>;
 }
 
@@ -75,7 +75,7 @@ export interface RouteStopsProps {
   labels?: RouteStopsLabels;
   /** The glyph on the add button. Default a plus. */
   addIcon?: BloomIconComponent;
-  /** Names the list. Default `"Route stops"`. */
+  /** Names the list. `"Route stops"` in English. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

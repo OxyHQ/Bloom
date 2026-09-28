@@ -1,3 +1,5 @@
+import { useCardFill } from '../card/use-card-fill';
+import { Surface } from '../surface';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
@@ -30,9 +32,12 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { LibraryItem } from './LibraryItem';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { MUSIC_LIBRARY_MESSAGES } from './messages';
 import {
-  DEFAULT_LIBRARY_LABELS,
   IS_WEB,
+  libraryPanelLabels,
   LIBRARY_FILTERS,
   MUSIC_LIBRARY_CSS,
   MUSIC_LIBRARY_STYLE_ID,
@@ -93,8 +98,7 @@ const searchInputStyle: TextStyle = {
   backgroundColor: 'transparent',
 };
 
-function mergeLabels(labels: LibraryPanelProps['labels']): LibraryPanelLabels {
-  const d = DEFAULT_LIBRARY_LABELS;
+function mergeLabels(d: LibraryPanelLabels, labels: LibraryPanelProps['labels']): LibraryPanelLabels {
   if (!labels) return d;
   return {
     ...d,
@@ -135,12 +139,18 @@ function LibraryPanelComponent({
   style,
   testID,
 }: LibraryPanelProps) {
+  const { messages } = useMessages(MUSIC_LIBRARY_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(MUSIC_LIBRARY_STYLE_ID, MUSIC_LIBRARY_CSS);
   }, []);
-  const paint = useMemo(() => resolveMusicLibraryPaint(theme), [theme]);
-  const labels = useMemo(() => mergeLabels(labelsProp), [labelsProp]);
+  const fill = useCardFill(style);
+  const paint = useMemo(() => resolveMusicLibraryPaint(theme, fill), [theme, fill]);
+  const labels = useMemo(
+    () => mergeLabels(libraryPanelLabels(messages, common), labelsProp),
+    [messages, common, labelsProp],
+  );
 
   const [filter, setFilter] = useControllable<LibraryFilter | null>(filterProp, null, onFilterChange);
   const [downloadedOnly, setDownloadedOnly] = useControllable(downloadedProp, false, onDownloadedOnlyChange);
@@ -161,9 +171,7 @@ function LibraryPanelComponent({
   const ViewGlyph = VIEW_GLYPH[view];
 
   const surfaceStyle: WebCssStyle = {
-    backgroundColor: paint.surface,
     borderRadius: 8,
-    overflow: 'hidden',
     minHeight: 0,
   };
 
@@ -212,7 +220,7 @@ function LibraryPanelComponent({
 
   if (collapsed) {
     return (
-      <View
+      <Surface
         role="region"
         accessibilityLabel={labels.title}
         style={[surfaceStyle, { width: RAIL_WIDTH }, style]}
@@ -260,7 +268,7 @@ function LibraryPanelComponent({
             </View>
           ))}
         </ScrollView>
-      </View>
+      </Surface>
     );
   }
 
@@ -282,7 +290,7 @@ function LibraryPanelComponent({
   );
 
   return (
-    <View role="region" accessibilityLabel={labels.title} style={[surfaceStyle, style]} testID={testID}>
+    <Surface role="region" accessibilityLabel={labels.title} style={[surfaceStyle, style]} testID={testID}>
       {/* Header */}
       <View
         style={{
@@ -569,7 +577,7 @@ function LibraryPanelComponent({
           </View>
         )}
       </ScrollView>
-    </View>
+    </Surface>
   );
 }
 

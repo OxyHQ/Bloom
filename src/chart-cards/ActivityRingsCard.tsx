@@ -10,8 +10,10 @@ import { PolarSurface, svgTransition } from './PolarSurface';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { TABULAR } from './primitives/ChartHeader';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /** One goal ring and its stat tile. */
 export interface ActivityRing {
@@ -109,7 +111,7 @@ function useTween(target: readonly number[], ms: number): readonly number[] {
  */
 export function ActivityRingsCard({
   rings,
-  title = 'Activity',
+  title: titleProp,
   height = ACTIVITY_CARD_HEIGHT,
   activeIndex: controlledIndex,
   onActiveIndexChange,
@@ -117,8 +119,10 @@ export function ActivityRingsCard({
   style,
   testID,
 }: ActivityRingsCardProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.activity;
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const shown = useMemo(() => rings.slice(0, RING_RADII.length), [rings]);
   const tones = useMemo(
@@ -169,13 +173,13 @@ export function ActivityRingsCard({
   };
 
   const a11y =
-    accessibilityLabel ?? `${title}: ${shown.map((r) => `${r.label} ${r.value}, ${Math.round(clampPct(r.goalPct))}% of goal`).join('; ')}`;
+    accessibilityLabel ?? `${title}: ${shown.map((r) => chartText.ringItem(r.label, String(r.value), Math.round(clampPct(r.goalPct)))).join('; ')}`;
 
   return (
-    <ChartCardSurface
+    <ChartCardSurface radius="radius-20"
       height={height}
       testID={testID}
-      style={[{ borderRadius: 20, paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
+      style={[{ paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 10 }, style]}>
       <View style={{ width: '100%', flexDirection: 'column', gap: 11 }}>
         <Text
           variant="body-medium"

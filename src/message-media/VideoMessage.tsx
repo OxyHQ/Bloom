@@ -6,6 +6,8 @@ import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { formatDuration, PlayButton } from '../media-controls';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { formatFileSize } from '../file-upload/shared';
@@ -18,6 +20,7 @@ import {
   resolveMessageMediaPaint,
   VIDEO_NOTE_SIZE,
 } from './shared';
+import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import type { VideoMessageProps } from './types';
 
 /** Stroke of the round note's progress ring. */
@@ -126,14 +129,16 @@ function VideoMessageComponent({
   testID,
 }: VideoMessageProps) {
   const theme = useTheme();
+  const common = useCommonMessages();
+  const { locale, messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
   );
 
   const clock = durationLabel ?? (typeof duration === 'number' ? formatDuration(duration) : undefined);
-  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes) : undefined);
-  const name = accessibilityLabel ?? fileMetaLine(['Video', clock]);
+  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
+  const name = accessibilityLabel ?? fileMetaLine([messages.video, clock]);
   const sending = state === 'sending';
 
   if (variant === 'videoNote') {
@@ -230,7 +235,7 @@ function VideoMessageComponent({
               fill="rgba(0, 0, 0, 0.35)"
               glyph={onCancel ? 'cancel' : 'none'}
               onPress={onCancel}
-              accessibilityLabel={onCancel ? 'Cancel' : 'Sending video'}
+              accessibilityLabel={onCancel ? common.cancel : messages.sendingVideo}
               ring={paint.ring}
               testID={testID ? `${testID}-progress` : undefined}
             />

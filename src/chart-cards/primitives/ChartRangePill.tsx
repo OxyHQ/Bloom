@@ -16,6 +16,8 @@ import { Text } from '../../typography';
 import type { ChartRangeOption } from './use-chart-range';
 import { useChartCardPalette } from './use-chart-palette';
 import { useWebTransition } from './use-web-transition';
+import { CHART_CARDS_MESSAGES } from '../messages';
+import { useMessages } from '../../locale/messages';
 
 const ICON = 16;
 /** `w-[188px]` on the period menu. */
@@ -97,10 +99,12 @@ export function ChartRangeSelect({
   ranges,
   value,
   onChange,
-  label = 'Change period',
+  label: labelProp,
   style,
   testID,
 }: ChartRangeSelectProps) {
+  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const label = labelProp ?? chartText.changePeriod;
   const palette = useChartCardPalette();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -130,7 +134,7 @@ export function ChartRangeSelect({
         </Pressable>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        label="Period"
+        label={chartText.period}
         side="bottom"
         align="end"
         minWidth={RANGE_MENU_WIDTH}

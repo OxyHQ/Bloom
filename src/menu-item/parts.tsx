@@ -8,11 +8,12 @@ import { RiLeafLine } from '../icons/remix/RiLeafLine';
 import { RiPlantLine } from '../icons/remix/RiPlantLine';
 import { useImageResolver } from '../image-resolver/context';
 import { resolvePhoto } from '../listing-card/shared';
+import { useMessages } from '../locale/messages';
 import {
-  MENU_ITEM_DIET_LABELS,
   MENU_ITEM_SPICE_MAX,
   MENU_ITEM_WASH_OPACITY,
 } from './constants';
+import { MENU_ITEM_MESSAGES } from './messages';
 import { describeSpice, spiceLevel, uniqueDiets } from './shared';
 
 import type { MenuItemDiet, MenuItemRowProps } from './types';
@@ -60,6 +61,7 @@ export interface MenuItemDietsProps {
  * diet twice.
  */
 export function MenuItemDiets({ diets, labels, surface, glyphColor, glyph, leading, style, testID }: MenuItemDietsProps) {
+  const { messages } = useMessages(MENU_ITEM_MESSAGES);
   const unique = uniqueDiets(diets);
   if (unique.length === 0 && leading == null) return null;
   return (
@@ -82,7 +84,7 @@ export function MenuItemDiets({ diets, labels, surface, glyphColor, glyph, leadi
             startIcon={Glyph ? <Glyph width={glyph} height={glyph} fill={glyphColor} /> : undefined}
             testID={testID ? `${testID}-diet-${diet}` : undefined}
           >
-            {labels?.[diet] ?? MENU_ITEM_DIET_LABELS[diet]}
+            {labels?.[diet] ?? messages.diets[diet]}
           </Chip>
         );
       })}
@@ -113,6 +115,7 @@ export interface MenuItemSpiceProps {
  * component correct on its own, anywhere else.
  */
 export function MenuItemSpice({ level, label, color, glyph, style, testID }: MenuItemSpiceProps) {
+  const { messages } = useMessages(MENU_ITEM_MESSAGES);
   const shown = spiceLevel(level);
   if (shown === 0) return null;
   return (
@@ -122,7 +125,7 @@ export function MenuItemSpice({ level, label, color, glyph, style, testID }: Men
       // `aria-label` and no role is not announced there, while on native
       // `accessible` + the label is already one node with one name.
       {...(IS_WEB ? { role: 'img' as const } : null)}
-      accessibilityLabel={describeSpice(shown, label)}
+      accessibilityLabel={describeSpice(shown, label, messages)}
       style={[{ flexDirection: 'row', alignItems: 'center', gap: 1 }, style]}
       testID={testID ? `${testID}-spice` : undefined}
     >

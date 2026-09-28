@@ -20,7 +20,8 @@ export {
   AiChatMessageLine,
   AiChatStrong,
 } from './AiChatMessages';
-export { AiChatMobileHeader, AiChatResizeHandle, AiChatShell } from './AiChatShell';
+export { AiChatResizeHandle } from './AiChatResizeHandle';
+export { AiChatMobileHeader, AiChatShell } from './AiChatShell';
 export { useAiChatChromeInsets, useAiChatShell } from './context';
 export type { AiChatChromeInsets, AiChatShellState } from './context';
 export type {

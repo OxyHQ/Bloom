@@ -11,6 +11,9 @@ import { ListenProgress } from './parts';
 import { joinMeta, resolveMediaCardPaint } from './shared';
 import type { EpisodeCardProps, MediaCardSize } from './types';
 import { clamp01 } from '../styles/clamp';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
+import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
 /** An episode row's cover side. */
 export const EPISODE_ROW_ARTWORK: Record<MediaCardSize, number> = { large: 112, medium: 96, small: 72 };
@@ -44,9 +47,9 @@ function EpisodeCardComponent({
   progress,
   remaining,
   played = false,
-  playedLabel = 'Played',
+  playedLabel: playedLabelProp,
   actions,
-  typeLabel = 'Episode',
+  typeLabel: typeLabelProp,
   layout = 'tile',
   size = 'medium',
   onPlay,
@@ -55,6 +58,10 @@ function EpisodeCardComponent({
   testID,
   ...rest
 }: EpisodeCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const playedLabel = playedLabelProp ?? messages.played;
+  const typeLabel = typeLabelProp ?? messages.episode;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const row = layout === 'row';
@@ -73,7 +80,7 @@ function EpisodeCardComponent({
       </View>
     ) : state === 'progress' ? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
-        <ListenProgress value={progress ?? 0} paint={paint} width={48} label={`${title} progress`} testID={testID ? `${testID}-progress` : undefined} />
+        <ListenProgress value={progress ?? 0} paint={paint} width={48} label={messages.progressOf(title)} testID={testID ? `${testID}-progress` : undefined} />
         {remaining ? (
           <Text variant="caption-1-medium" numberOfLines={1} style={{ color: paint.textSecondary }}>
             {remaining}
@@ -122,7 +129,7 @@ function EpisodeCardComponent({
         rest.accessibilityLabel ??
         [
           title,
-          explicit ? 'Explicit' : null,
+          explicit ? controls.explicit : null,
           typeLabel,
           show,
           when || null,

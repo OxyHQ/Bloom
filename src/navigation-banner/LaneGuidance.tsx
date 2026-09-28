@@ -4,8 +4,10 @@ import { View } from 'react-native';
 import { DIRECTIONS_MANEUVER_ICON } from '../directions/maneuvers';
 import { borderRadius } from '../styles/tokens';
 import { resolveAccentColors } from '../theme/accent-colors';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { NAVIGATION_BANNER_GEOMETRY } from './constants';
+import { NAVIGATION_BANNER_MESSAGES } from './messages';
 import { describeLanes, resolveNavigationPaint } from './shared';
 import type { LaneGuidanceProps, NavigationLane } from './types';
 
@@ -52,6 +54,7 @@ function LaneGuidanceComponent({
   style,
   testID,
 }: LaneGuidanceProps) {
+  const { messages } = useMessages(NAVIGATION_BANNER_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveNavigationPaint(theme), [theme]);
   const accent = resolveAccentColors(theme.colors, 'primary', 'subtle');
@@ -61,7 +64,7 @@ function LaneGuidanceComponent({
   return (
     <View
       role="img"
-      accessibilityLabel={accessibilityLabel ?? describeLanes(lanes, labels)}
+      accessibilityLabel={accessibilityLabel ?? describeLanes(lanes, labels, messages)}
       testID={testID}
       style={[{ flexDirection: 'row', alignItems: 'center', gap: 4 }, style]}
     >

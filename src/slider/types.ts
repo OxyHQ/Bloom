@@ -64,6 +64,6 @@ export interface RangeSliderProps
   onSlidingComplete?: (value: [number, number]) => void;
   /** Formats the value in each thumb's bubble; `index` is 0 (lower) or 1 (upper). */
   formatValue?: (value: number, index: number) => string;
-  /** Accessible names for the lower and upper thumbs. Default `['Minimum', 'Maximum']`. */
+  /** Accessible names for the lower and upper thumbs (`['Minimum', 'Maximum']` in English). */
   thumbLabels?: [string, string];
 }

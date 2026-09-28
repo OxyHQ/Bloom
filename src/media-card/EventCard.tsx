@@ -8,6 +8,8 @@ import { Text } from '../typography';
 import { MediaCard } from './MediaCard';
 import { joinMeta, resolveMediaCardPaint, type MediaCardPaint } from './shared';
 import type { EventCardProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CARD_MESSAGES } from './messages';
 
 /** Month over day: the calendar leaf of an event. */
 export function DateBlock({
@@ -67,12 +69,15 @@ function EventCardComponent({
   time,
   action,
   soldOut = false,
-  soldOutLabel = 'Sold out',
-  typeLabel = 'Event',
+  soldOutLabel: soldOutLabelProp,
+  typeLabel: typeLabelProp,
   layout = 'tile',
   testID,
   ...rest
 }: EventCardProps) {
+  const { messages } = useMessages(MEDIA_CARD_MESSAGES);
+  const soldOutLabel = soldOutLabelProp ?? messages.soldOut;
+  const typeLabel = typeLabelProp ?? messages.event;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const row = layout === 'row';

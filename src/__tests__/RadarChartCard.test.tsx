@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -202,7 +203,7 @@ describe('RadarChartCard', () => {
     top.unmount();
 
     const tiles = renderCard(<RadarChartCard testID="radar" data={DATA} series={DESKTOP} tiles activeIndex={1} />);
-    expect(resolvedStyle(tiles.getByTestId('radar').props.style).height).toBeUndefined();
+    expect(cardLayout(tiles.getByTestId('radar')).height).toBeUndefined();
     expect(resolvedStyle(tiles.getByTestId('radar-tiles-tile-0').props.style).opacity).toBe(0.4);
     expect(resolvedStyle(tiles.getByTestId('radar-tiles-tile-1').props.style).opacity).toBe(1);
   });

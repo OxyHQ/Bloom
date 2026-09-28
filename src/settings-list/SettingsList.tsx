@@ -176,6 +176,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
         variant's own colour.
       */}
       <Card
+        clipContent
         variant={variant ?? 'plain'}
         radius="radius-16"
         style={{ backgroundColor }}

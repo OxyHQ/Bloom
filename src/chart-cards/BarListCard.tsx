@@ -22,7 +22,7 @@ import { resolveTone, type ChartSeriesTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { TABULAR } from './primitives/ChartHeader';
 import { groupThousands } from './primitives/format';
-import { useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartCardPalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useChartFocusRing, useMedicalPalette } from './medical-parts';
 import {
@@ -32,6 +32,8 @@ import {
   useMountedAfterDelay,
   type ChartIcon,
 } from './stage-parts';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
 /**
  * `BarListCard`: the analytics breakdown list (traffic by country, device,
@@ -124,9 +126,9 @@ export function BarListCard({
   tabs,
   items,
   title,
-  metricLabel = 'Visitors',
+  metricLabel: metricLabelProp,
   metric = 'share',
-  format = groupThousands,
+  format: formatProp,
   color,
   mono = false,
   limit = 5,
@@ -135,13 +137,16 @@ export function BarListCard({
   style,
   testID,
 }: BarListCardProps) {
-  const palette = useChartCardPalette();
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, chartLocale));
+  const metricLabel = metricLabelProp ?? chartText.titles.visitors;
+  const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
   const monoTone = useMonoTone();
   const mounted = useMountedAfterDelay();
   // Palette index 1 is chart-6, blue.
   const tone = mono ? monoTone : resolveTone(palettes, 1, color);
-  const lists: readonly BarListTab[] = tabs ?? [{ id: 'list', label: title ?? 'Breakdown', items: items ?? [] }];
+  const lists: readonly BarListTab[] = tabs ?? [{ id: 'list', label: title ?? chartText.titles.breakdown, items: items ?? [] }];
   const [selectedId, setSelectedId] = useState<string>(defaultTab ?? lists[0]?.id ?? 'list');
   const single = lists.length === 1 && !tabs;
   const current = lists.find((l) => l.id === selectedId) ?? lists[0];

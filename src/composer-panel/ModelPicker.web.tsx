@@ -1,7 +1,8 @@
+import { Button } from '../button/Button.web';
 import React from 'react';
 
 import { ComposerPopover } from './ComposerPopover.web';
-import { ComposerPopoverContext } from './context';
+import { ComposerPopoverContext, ComposerButtonContext } from './context';
 import { ModelPickerBase } from './ModelPickerBase';
 import type { ModelPickerProps } from './types';
 
@@ -11,9 +12,11 @@ import type { ModelPickerProps } from './types';
  */
 export function ModelPicker(props: ModelPickerProps) {
   return (
+    <ComposerButtonContext.Provider value={Button}>
     <ComposerPopoverContext.Provider value={ComposerPopover}>
       <ModelPickerBase {...props} />
     </ComposerPopoverContext.Provider>
+    </ComposerButtonContext.Provider>
   );
 }
 ModelPicker.displayName = 'ModelPicker';

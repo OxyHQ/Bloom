@@ -1,0 +1,2290 @@
+// Bloom's zh strings for every family. Loaded on demand by
+// `loadBloomLanguage` (src/locale/translations.ts), the ONLY importer of this
+// module, so a bundler gives each language one chunk of its own.
+import type { Translations } from './types';
+import { priceName as booking_priceName } from '../../booking/message-helpers';
+import { compactDuration as calendar_compactDuration } from '../../calendar/message-helpers';
+import { corner as callUi_corner } from '../../call-ui/message-helpers';
+import { plural } from '../plural';
+import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
+import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
+import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import { countForms as rating_countForms } from '../../rating/message-helpers';
+import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
+import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+
+const CALL_UI_MESSAGES__CORNERS = { 'top-left': '左上角', 'top-right': '右上角', 'bottom-left': '左下角', 'bottom-right': '右下角' };
+
+const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
+  close: '关闭',
+  dismiss: '忽略',
+  back: '返回',
+  goBack: '返回上一页',
+  loading: '正在加载',
+  more: '更多',
+  moreOptions: '更多选项',
+  moreActions: '更多操作',
+  progress: '进度',
+  stepOf: (step, total) => `第 ${step} 步，共 ${total} 步`,
+  labelFor: (label, subject) => `${subject}的${label}`,
+  tapToClose: '轻触以关闭',
+  cancel: '取消',
+  done: '完成',
+  save: '保存',
+  delete: '删除',
+  edit: '编辑',
+  remove: '移除',
+  retry: '重试',
+  search: '搜索',
+  showMore: '显示更多',
+  showLess: '收起',
+  next: '下一个',
+  previous: '上一个',
+  open: '打开',
+  menu: '菜单',
+  copy: '复制',
+  copied: '已复制',
+  send: '发送',
+  clear: '清除',
+  seeAll: '查看全部',
+  resizePanels: '调整面板大小',
+};
+
+const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: '确认', ok: '确定' };
+
+const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
+  channels: {
+    email: { action: '邮件', name: (s) => `给 ${s} 发送邮件` },
+    phone: { action: '通话', name: (s) => `呼叫 ${s}` },
+    chat: { action: '消息', name: (s) => `给 ${s} 发消息` },
+    meeting: { action: '会议', name: (s) => `与 ${s} 安排会议` },
+    video: { action: '视频', name: (s) => `与 ${s} 开始视频通话` },
+    website: { action: '网站', name: (s) => `打开 ${s} 的网站` },
+  },
+  labelsFor: (name) => `${name} 的标签`,
+  owner: '负责人',
+};
+
+const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
+  item: { draft: '草稿：', pinned: '已置顶', muted: '已静音', verified: '已认证', channel: '频道', bot: '机器人', group: '群组' },
+  search: { chat: '聊天', message: '消息', contact: '联系人', empty: '无结果' },
+  list: '聊天',
+  emptyTitle: '暂无对话',
+  emptyDescription: '开始聊天后，对话会显示在这里。',
+  searchResults: '搜索结果',
+  searchChats: '搜索聊天',
+  clearSearch: '清除搜索',
+  newChat: '新聊天',
+  archived: '已归档',
+  archivedName: (label, n) => `${label}，${n} 个聊天`,
+  folderName: (label, n) => `${label}，${n} 条未读`,
+  stories: '快拍',
+  ownStory: '你的快拍',
+  addStory: '添加到你的快拍',
+  storyOf: (name) => `${name}的快拍`,
+};
+
+const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
+  pinned: '已置顶',
+  locked: '受保护',
+  attachments: (n) => plural('zh', n, { other: '{n} 个附件' }),
+  select: '选择笔记',
+  checklistDone: '已完成',
+  checklistTodo: '待办',
+  more: (n) => `还有 ${n} 项`,
+};
+
+const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
+  view: '视图',
+  dismissDialog: '关闭对话框',
+  dismissNamed: (label) => `关闭${label}`,
+};
+
+const ALERT_DIALOG_MESSAGES: Translations['ALERT_DIALOG_MESSAGES'] = {
+  confirm: '确认',
+};
+
+const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
+  sidebar: '侧边栏',
+  collapse: '收起侧边栏',
+  expand: '展开侧边栏',
+  close: '关闭侧边栏',
+  quickSearch: '快速搜索',
+  searchPlaceholder: '搜索导航…',
+  searchPlaceholderCompact: '搜索...',
+  filter: '筛选导航',
+  clearSearch: '清除导航搜索',
+  noResults: '无结果',
+  mode: '模式',
+  upgrade: '升级',
+  usersWithAccess: '有访问权限的用户',
+  addUser: '添加用户',
+  manage: '管理',
+  accountMenu: '账户菜单',
+  teamMenu: (team) => `${team}菜单`,
+};
+
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+
+const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
+  labels: { number: '卡号', expiry: '有效期', securityCode: '安全码', name: '持卡人姓名', postcode: '邮政编码', country: '国家/地区' },
+  selectCountry: '选择国家/地区',
+};
+
+const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
+  attach: '添加附件',
+  emoji: '表情',
+  camera: '相机',
+  mic: '录制语音消息',
+  message: '消息',
+  enterHint: 'Enter 发送 · Shift + Enter 换行',
+  modEnterHint: '⌘ + Enter 发送 · Enter 换行',
+  cancelRecording: '取消录音',
+  sendVoice: '发送语音消息',
+  deleteRecording: '删除录音',
+  playRecording: '播放录音',
+  pauseRecording: '暂停录音',
+  lockRecording: '锁定录音',
+  slideToCancel: '滑动取消',
+  recording: '正在录音',
+  searchEmoji: '搜索表情',
+  noEmoji: '未找到表情',
+  frequentlyUsed: '常用',
+  skinTone: '肤色',
+  emojiPicker: '表情选择器',
+  moreReactions: '更多回应',
+  quickReactions: '快速回应',
+  messageActions: '消息操作',
+  attachments: '附件',
+  removeAttachment: (name) => `移除 ${name}`,
+  suggestions: { mention: '用户', command: '命令', emoji: '表情' },
+  attachmentItems: { gallery: '相册', camera: '相机', file: '文件', location: '位置', contact: '联系人', poll: '投票', music: '音乐' },
+};
+
+const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
+  to: '收件人',
+  cc: '抄送',
+  bcc: '密送',
+  subject: '主题',
+  showCopies: '抄送 密送',
+  hideCopies: '隐藏抄送和密送',
+  removeRecipient: (name) => `移除${name}`,
+  suggestions: '联系人',
+  send: COMMON_MESSAGES.send,
+  sending: '正在发送',
+  attach: '添加附件',
+  discard: '舍弃草稿',
+  minimize: '最小化',
+  expand: '展开',
+  close: COMMON_MESSAGES.close,
+  title: '新邮件',
+};
+
+const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
+  lyrics: '歌词',
+  queue: '播放队列',
+  devices: '连接到设备',
+  fullscreen: '全屏',
+  openPlayer: '打开播放器',
+  currentDevice: '当前设备',
+  listeningOn: '正在收听的设备',
+  listeningOnDevice: (d) => `正在${d}上收听`,
+  selectDevice: '选择设备',
+  noDevices: '未找到其他设备',
+  deviceHelp: '看不到你的设备？',
+  playbackSpeed: '播放速度',
+  sleepTimer: '睡眠定时',
+  sleepOff: '关闭',
+  endOfEpisode: '本集结束时',
+  oneHour: '1 小时',
+  minutes: (n) => plural('zh', n, { other: '{n} 分钟' }),
+  stopsIn: (r) => `${r}后停止`,
+  shuffle: '随机播放',
+  repeat: '重复播放',
+  repeatOne: '单曲循环',
+  skipBack: (n) => plural('zh', n, { other: '后退 {n} 秒' }),
+  skipForward: (n) => plural('zh', n, { other: '前进 {n} 秒' }),
+  closePlayer: '关闭播放器',
+  share: '分享',
+  showLyrics: '显示歌词',
+};
+
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: '这里还没有内容', addresses: '地址' };
+
+const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
+  releaseTypes: { single: '单曲', ep: 'EP', album: '专辑' },
+  releaseStatuses: {
+    draft: '草稿',
+    'in-review': '审核中',
+    scheduled: '已排期',
+    live: '已上线',
+    rejected: '已拒绝',
+    takedown: '已下架',
+  },
+  creditRoles: {
+    songwriter: '词曲作者',
+    producer: '制作人',
+    composer: '作曲',
+    performer: '表演者',
+    lyricist: '作词',
+    'mixing-engineer': '混音师',
+    'mastering-engineer': '母带工程师',
+  },
+  periods: { '7d': '7 天', '28d': '28 天', '12m': '12 个月', all: '全部时间' },
+  artworkNotSquare: (w, h) => `封面必须是正方形——此图片为 ${w}×${h} 像素。`,
+  artworkTooSmall: (w, h, min) => `封面太小（${w}×${h} 像素）。请上传至少 ${min}×${min} 像素的图片。`,
+  audience: { title: '听众', period: '时段' },
+  breakdown: {
+    locations: '热门地区',
+    cities: '城市',
+    countries: '国家/地区',
+    age: '年龄',
+    gender: '性别',
+    sources: '收听来源',
+    metric: '听众',
+  },
+  streams: {
+    metrics: '图表指标',
+    summary: (metric, releases) => (releases ? `${metric}趋势；发行：${releases}` : `${metric}趋势`),
+  },
+  topTracks: {
+    title: '热门曲目',
+    rank: '#',
+    rankName: '排名',
+    track: '曲目',
+    streams: '播放次数',
+    listeners: '听众',
+    saves: '收藏数',
+    trend: '趋势',
+    trends: { up: '上升', down: '下降', flat: '持平', new: '新上榜' },
+    newBadge: '新',
+    empty: '此时段内暂无播放。',
+  },
+  tracks: (n) => plural('zh', n, { other: '{n} 首曲目' }),
+  timeline: {
+    states: { complete: '已完成', current: '进行中', upcoming: '未开始', error: '需要处理' },
+    label: '发行进度',
+  },
+  upload: {
+    queued: '排队中',
+    processing: '正在转码…',
+    ready: '就绪',
+    failed: '上传失败',
+    remove: (name) => `移除 ${name}`,
+    progress: (name) => `正在上传 ${name}`,
+  },
+  artwork: {
+    title: '封面',
+    requirements: '3000×3000 像素，JPG 或 PNG',
+    replace: '替换',
+    remove: '移除封面',
+    preview: '发行封面',
+    upload: '上传封面',
+  },
+  credits: {
+    title: '署名',
+    role: '角色',
+    name: '姓名',
+    add: '添加署名',
+    remove: (index, name) => (name ? `移除署名 ${index + 1}（${name}）` : `移除署名 ${index + 1}`),
+    empty: '为这首曲目的词曲作者、制作人和表演者署名。',
+    field: (field, n) => `${field}，署名 ${n}`,
+  },
+  artists: {
+    add: '添加',
+    addTo: (label) => `添加到${label}`,
+    remove: (name) => `移除 ${name}`,
+  },
+  isrc: { hint: '格式：CC-XXX-YY-NNNNN', invalid: '这不是有效的 ISRC' },
+  metadata: {
+    title: '曲目名称',
+    version: '版本',
+    versionPlaceholder: '混音版、现场版、原声版…',
+    explicit: '露骨歌词',
+    explicitDescription: '如果曲目含有粗俗语言或露骨主题，请开启此项。',
+    genre: '流派',
+    genrePlaceholder: '选择流派',
+    primaryArtists: '主要艺人',
+    featuredArtists: '合作艺人',
+    artistPlaceholder: '添加艺人名称',
+    language: '歌词语言',
+    languagePlaceholder: '选择语言',
+    lyrics: '歌词',
+    lyricsPlaceholder: '粘贴歌词，每句唱词一行',
+  },
+  payout: {
+    estimated: '本月预估收入',
+    lastPayout: '上次付款',
+    nextPayout: '下次付款',
+    statements: '查看对账单',
+    chart: '每月收入',
+  },
+  pitch: {
+    title: '推荐给编辑',
+    description: '在发行前向编辑团队介绍你的下一个作品。',
+    release: '发行',
+    releasePlaceholder: '选择即将发行的作品',
+    moods: '情绪',
+    genres: '流派',
+    pitch: '你的推荐语',
+    pitchPlaceholder: '这个作品有何特别之处？面向哪些听众，背后有什么故事？',
+    submit: '发送推荐',
+    tagLimit: (max) => `最多选择 ${max} 个`,
+    statuses: { submitted: '推荐已发送', accepted: '已入选审核', declined: '本次未入选' },
+    statusDescriptions: {
+      submitted: '编辑会阅读每一份推荐。你将在发行日期前收到回复。',
+      accepted: '你的作品正在被考虑加入编辑歌单。',
+      declined: '此作品未被选中。下一个作品排期后即可再次推荐。',
+    },
+    edit: '编辑推荐',
+  },
+};
+
+const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
+  energy: '能效',
+  pending: '待定',
+  energyRatingClass: (r) => `能效等级 ${r}`,
+  energyRatingStatus: (s) => `能效等级：${s}`,
+  energyRating: '能效等级',
+  certificateInProgress: '证书办理中',
+  consumption: '能耗',
+  emissions: '排放',
+  moreEfficient: '更高效',
+  lessEfficient: '效率较低',
+  walkTime: (t) => `步行${t}`,
+  scoreOutOf: (d, m) => `${d}分（满分${m}分）`,
+  pricePerSquareMetre: '每平方米价格',
+  rentHistory: '租金历史',
+  rentHistoryEmpty: '这套房屋暂无历史记录',
+  confidence: { low: '低置信度', medium: '中置信度', high: '高置信度' },
+  aboveEstimate: (p) => `高于估价${p}`,
+  belowEstimate: (p) => `低于估价${p}`,
+  fairPrice: '价格合理',
+  estimatedPrice: '估价',
+  asking: '要价',
+  noVerdict: '数据不足，无法评估',
+  whyThisEstimate: '估价依据',
+  comparables: (n) => plural('zh', n, { other: '基于{n}套可比房源' }),
+  currentPrice: '当前价格',
+  now: '现在',
+  noPriceHistory: '暂无价格历史',
+  priceHistoryPeriod: '价格历史时段',
+  priceHistory: '价格历史',
+  priceHistoryTrend: (head, a, aw, b, bw) => `${head}：从${aw}的${a}到${bw}的${b}。`,
+};
+
+const MAP_MARKER_MESSAGES: Translations['MAP_MARKER_MESSAGES'] = {
+  searchAsMapMoves: '移动地图时搜索',
+  searchThisArea: '搜索此区域',
+  stays: (n) => mapMarker_countOf('zh', n, { other: '{n} 个住宿' }),
+};
+
+const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
+  month: '月',
+  rentalStatus: { available: '可租', reserved: '已预订', rented: '已出租' },
+  rentalStatusMessage: {
+    reserved: '另一位申请人正在签订合同，新的看房已暂停。',
+    rented: '此房源已出租，不再接受申请。',
+  },
+  saleStatus: { available: '在售', reserved: '已预订', sold: '已售出' },
+  saleStatusMessage: {
+    reserved: '已有报价被接受，经纪人暂不安排看房。',
+    sold: '此房源已售出。',
+  },
+  requestViewing: '预约看房',
+  apply: '提交申请',
+  contactAgent: '联系经纪人',
+  requestVisit: '预约看房',
+  makeOffer: '出价',
+  yourHome: '你的房子',
+  theirHome: '对方的房子',
+  dates: '日期',
+  guests: '房客',
+  addDates: '添加日期',
+  addGuests: '添加房客',
+  proposeSwap: '提议换房',
+  exchangeModes: { swap: '互换', host: '房客积分', both: '均可' },
+  scheduleViewing: '预约看房',
+  noTimesLeft: '当天已没有可选时间',
+  noteForLandlord: '给房东的留言',
+  day: '日期',
+  time: '时间',
+  submitViewing: '申请看房',
+  inPerson: '实地',
+  videoCall: '视频通话',
+  viewingType: '看房方式',
+  yourApplication: '你的申请',
+  applicationProgress: '申请进度',
+  progressReady: (done, total) => `已就绪 ${done}/${total}`,
+  applicationStatus: { missing: '缺少', uploaded: '审核中', verified: '已验证', rejected: '已拒绝' },
+  applicationAction: { upload: '上传', view: '查看', replace: '替换' },
+  itemAction: (action, title) => `${action}${title}`,
+  mortgage: {
+    title: '房贷计算器',
+    price: '房价',
+    downPayment: '首付',
+    downPaymentPercent: '首付比例',
+    percent: '比例',
+    term: '贷款期限',
+    years: '年',
+    rate: '利率',
+    monthlyPayment: '月供',
+    principal: '本金',
+    interest: '利息',
+    loanAmount: '贷款金额',
+    totalInterest: '总利息',
+    totalCost: '总成本',
+  },
+  termYears: (n) => `${n}年`,
+  mortgageDisclaimer: '仅为估算，并非贷款要约。未包含手续费、税费和保险，并假设整个期限内利率固定。',
+};
+
+const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
+  stepsLeft: (n) => plural('zh', n, { other: '还剩 {n} 个步骤' }),
+  allCompleted: '所有步骤已完成',
+  minimize: '收起步骤',
+  expand: '展开步骤',
+  defaultSteps: ['读取项目文件', '更新并安装浅色模式令牌', '实现深色模式令牌', '添加可复用的已注册主题切换', '运行注册表、lint 和生产构建'],
+};
+
+const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
+  newEvent: '新建日程',
+  openNavigation: '打开导航',
+  month: '月',
+  moreEvents: (n) => plural('zh', n, { other: '还有 {n} 项' }),
+  eventDetails: '日程详情',
+  join: '加入',
+  editTimeZone: '编辑时区',
+  participants: '参与者',
+  editParticipants: '编辑参与者',
+  reminders: '提醒',
+  editReminders: '编辑提醒',
+  duration: calendar_compactDuration('小时', '分钟', ''),
+  jumpToDate: '跳转到日期',
+  previousMonth: '上个月',
+  nextMonth: '下个月',
+  chooseDate: (month) => `${month}，选择日期`,
+  inbox: '收件箱',
+  inboxMenu: '收件箱菜单',
+  addAccount: '添加新账号',
+};
+
+const LISTING_DETAILS_MESSAGES: Translations['LISTING_DETAILS_MESSAGES'] = {
+  ratedOutOf5: (r) => `评分${r}分（满分5分）`,
+  overallRating: '总体评分',
+  unavailable: '不可用',
+  showAllAmenities: (n) => plural('zh', n, { other: '显示全部{n}项设施' }),
+  showAllFeatures: (n) => plural('zh', n, { other: '显示全部{n}项特征' }),
+  propertyFeatures: '房源特征',
+  showAllPhotos: '显示所有照片',
+  listingPhotos: '房源照片',
+  photoOf: (p, t) => `第${p}张照片，共${t}张`,
+  photoWithAlt: (a, p, t) => `${a}，第${p}张照片，共${t}张`,
+  floorPlanOf: (a, p, t) => `${a}，第${p}张户型图，共${t}张`,
+  landlord: '房东',
+  agent: '经纪人',
+  agency: '中介机构',
+  activeListings: (n) => plural('zh', n, { other: '{n}个在架房源' }),
+  verified: '已认证',
+  showPhone: '显示电话',
+  call: '拨打电话',
+  messageHost: '联系房东',
+  message: '发消息',
+};
+
+const PRICE_BREAKDOWN_MESSAGES: Translations['PRICE_BREAKDOWN_MESSAGES'] = {
+  states: { estimated: '预估', pending: '待定' },
+  showDetails: '显示价格明细',
+  hideDetails: '隐藏价格明细',
+  breakdown: '价格明细',
+  about: (label) => `关于${label}`,
+};
+
+const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
+  cancel: '取消',
+  apply: '应用',
+  previousMonth: '上个月',
+  nextMonth: '下个月',
+  datePlaceholder: '选择日期',
+  dateLabel: '日期',
+  rangePlaceholder: '选择日期范围',
+  rangeLabel: '日期范围',
+  startDate: '开始日期',
+  endDate: '结束日期',
+  daysSelected: (n) => plural('zh', n, { other: '已选择 {n} 天' }),
+  presets: {
+    today: '今天',
+    yesterday: '昨天',
+    lastWeek: '上周',
+    thisMonth: '本月',
+    lastMonth: '上个月',
+    thisYear: '今年',
+    lastYear: '去年',
+    allTime: '全部时间',
+  },
+  meetingTrigger: '安排会议',
+  meetingLabel: '安排会议',
+  send: '发送邀请',
+  selectTime: '选择时间',
+  duration: (n) => plural('zh', n, { other: '{n} 分钟' }),
+};
+
+const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
+  kinds: {
+    envelope: { label: '信封', description: '文件、钥匙等扁平物品。' },
+    parcel: { label: '包裹', description: '一个人能拿的箱子或袋子。' },
+    furniture: { label: '家具', description: '沙发、桌子、床垫——两端各需两人。' },
+    pallet: { label: '托盘', description: '已包装码放，用尾板装卸。' },
+    food: { label: '餐食', description: '餐厅配送，保持温度。' },
+  },
+  sizes: {
+    small: '不超过鞋盒——35 × 25 × 20 cm。',
+    medium: '不超过登机箱——55 × 40 × 25 cm。',
+    large: '不超过洗衣机——85 × 60 × 60 cm。',
+    extraLarge: '更大——请在备注中说明。',
+  },
+  access: { ground: '一楼', stairs: '楼梯', lift: '电梯' },
+  load: {
+    kind: '要运送什么？',
+    size: '尺寸',
+    weight: '重量',
+    quantity: '数量',
+    quantityValue: (n) => `${n} 件`,
+    notes: '还有什么需要告诉承运人的吗？',
+    notesPlaceholder: '易碎、电梯密码、放在哪里……',
+  },
+  options: { extras: '附加服务', access: '两端的出入条件', window: '何时取件？' },
+  form: {
+    route: '路线',
+    routeDescription: '先取件，最后送达。',
+    load: '货物',
+    photos: '照片',
+    photosDescription: '一张货物照片最能帮你拿到更准的报价。',
+    options: '选项',
+    optionsDescription: '每一项都会影响价格。',
+    price: '价格',
+  },
+  shipmentRequest: '运输需求',
+};
+
+const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: '必填' };
+
+const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
+  title: '核对订单',
+  orderSummary: '订单摘要',
+  deliverTo: '送至',
+  notChosen: '尚未选择',
+  opensPicker: '打开选择器',
+  placeOrder: '提交订单',
+  placingOrder: '正在提交订单',
+};
+
+const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
+  from: '起价',
+  fits: (label) => `${label}能装下什么`,
+  unavailable: '不适用于此货物',
+  vehicle: '车型',
+  vehicles: {
+    bike: { label: '货运自行车', capacity: '最多 25 kg · 60 × 40 × 40 cm', fits: ['文件', '一份外卖', '一个小箱子'] },
+    car: { label: '轿车', capacity: '最多 150 kg · 100 × 80 × 60 cm', fits: ['两个行李箱', '四个纸箱', '一辆自行车'] },
+    van: { label: '面包车', capacity: '最多 800 kg · 240 × 150 × 140 cm', fits: ['一张沙发', '单间搬家', '半个托盘'] },
+    boxTruck: { label: '厢式货车', capacity: '最多 3,500 kg · 420 × 200 × 210 cm', fits: ['两个托盘', '两居室搬家', '尾板升降'] },
+    refrigerated: { label: '冷藏车', capacity: '最多 700 kg · 保持 2–8 °C', fits: ['生鲜食品', '冷藏餐饮', '鲜花'] },
+  },
+};
+
+const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
+  message: '消息',
+  add: '添加附件',
+  addMenu: '添加到聊天',
+  permissions: '权限',
+  permissionMode: '权限模式',
+  learnMore: '了解详情',
+  voice: '语音输入',
+  send: '发送消息',
+  stop: '停止生成',
+  permissionTrigger: (mode) => `权限：${mode}`,
+  removeFile: (name) => `移除 ${name}`,
+  retryFile: (name) => `重试 ${name}`,
+  panelPlaceholder: '你好，今天需要什么帮助？',
+  pillPlaceholder: '有问题尽管问我',
+  pillCompactPlaceholder: '问我',
+  modelSettings: '模型设置',
+  models: '模型',
+  modelGroup: '模型',
+  effort: '推理强度',
+  effortAuto: '自动',
+  faster: '更快',
+  smarter: '更智能',
+  quickSearch: '快速搜索',
+  searchModels: '搜索模型',
+  closeSearch: '关闭搜索',
+  noMatches: '没有匹配的模型',
+  providers: '提供商',
+  matchingModels: '匹配的模型',
+  providerModels: (provider) => `${provider} 模型`,
+  localFolders: '本地文件夹',
+  context: (percent) => `上下文 ${percent}%`,
+  effortLevels: ['低', '中', '均衡', '高', '很高', '最高'],
+  permissionModes: {
+    auto: { label: '自动', description: '由智能体自行决定' },
+    manual: { label: '手动', description: '每次更改前都先询问' },
+    plan: { label: '计划模式', description: '先制定计划再继续' },
+    bypass: { label: '全部跳过', description: '由智能体处理权限决策' },
+  },
+  addMenuRows: {
+    add: '添加',
+    plugins: '插件',
+    files: '文件和文件夹',
+    goal: '目标',
+    goalDescription: '设定目标，更快获得结果',
+    plan: '计划模式',
+    planDescription: '管理复杂任务',
+    documents: '文档',
+    documentsDescription: '创建和编辑文档',
+    spreadsheets: '电子表格',
+    spreadsheetsDescription: '生成电子表格',
+    presentations: '演示文稿',
+    presentationsDescription: '创建营销素材',
+    code: '代码块',
+    codeDescription: '编写和编辑现有代码',
+  },
+};
+
+const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
+  forwardedFrom: (name) => `转发自 ${name}`,
+  deleted: '此消息已被删除',
+  retry: '重新发送',
+  addReaction: '添加回应',
+  replyTo: '跳转到引用的消息',
+  selected: '已选择',
+  pending: '正在发送',
+  failed: '未发送',
+  reactionSelected: '已选择',
+  unread: '未读消息',
+  typing: '正在输入…',
+};
+
+const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
+  states: { authorising: '授权中', paid: '已支付', failed: '支付失败', refunded: '已退款', pending: '支付处理中' },
+  reference: '参考号',
+};
+
+const AVATAR_MESSAGES: Translations['AVATAR_MESSAGES'] = { live: '直播' };
+
+const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
+  openStates: {
+    open: '营业中',
+    'closing-soon': '即将打烊',
+    closed: '已打烊',
+    'opening-soon': '即将营业',
+  },
+  new: '新',
+  actions: '操作',
+  actionsFor: (name) => `${name}的操作`,
+  rated: (value, reviews) =>
+    placeCard_withReviews(
+      `评分 ${value} 分（满分 5 分）`,
+      reviews === undefined ? undefined : placeCard_countOf('zh', reviews, { other: '{n} 条评价' }),
+    ),
+};
+
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `使用 ${b} 继续`, signIn: (b) => `使用 ${b} 登录`, signUp: (b) => `使用 ${b} 注册` } };
+
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: '其他', otherPlaceholder: '在此输入你的答案', steps: '步骤', step: (n) => `第 ${n} 步` };
+
+const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
+  group: '地图控件',
+  locate: '显示我的位置',
+  following: '停止跟随我的位置',
+  zoomIn: '放大',
+  zoomOut: '缩小',
+  zoom: '缩放',
+  tilt: '倾斜地图',
+  tiltOff: '将地图恢复为平面',
+  compass: (degrees) => `朝向 ${degrees} 度。重置为正北`,
+  layerTrigger: '地图图层',
+  layers: '地图',
+  overlays: '叠加层',
+};
+
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: '已过期', declined: '已拒绝' }, default: '默认', add: '添加付款方式', emptyTitle: '没有已保存的付款方式', paymentMethods: '付款方式' };
+
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `还有 ${n} 人`, profile: '个人资料' };
+
+const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
+  menuBar: '菜单栏',
+};
+
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '思考中' };
+
+const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
+  feedback: { like: '回答不错', dislike: '回答不好', copy: '复制回答', copied: '已复制！' },
+  imageGeneration: {
+    generated: '图片已生成',
+    generating: '正在生成图片',
+    remaining: (n) => plural('zh', n, { other: '还剩 {n} 秒' }),
+    likeToast: '感谢你的反馈',
+    dislikeToast: '谢谢，我们会据此改进',
+  },
+  generatedImage: (alt) => `生成的图片：${alt}`,
+  codePanel: {
+    changes: '更改',
+    browser: '浏览器',
+    uncommitted: (n) => plural('zh', n, { other: '{n} 项未提交的更改' }),
+    undo: '撤销更改',
+    browserPreview: '浏览器预览',
+  },
+  galleryPanel: {
+    gallery: '图库',
+    styles: '风格',
+    stylePresets: '预设风格',
+    enlarge: (prompt) => `放大${prompt}`,
+    minimize: (prompt) => `缩小${prompt}`,
+    download: (prompt) => `下载${prompt}`,
+  },
+  panelView: '面板视图',
+  openTerminal: '打开终端',
+  newGeneration: '重新生成',
+  expandPanel: '展开面板',
+  togglePanel: '显示或隐藏面板',
+  container: { breadcrumb: '聊天位置', share: '分享聊天' },
+  shell: {
+    openNavigation: '打开导航',
+    closeNavigation: '关闭导航',
+    openPanel: (panel) => `打开${panel}`,
+    closePanel: (panel) => `关闭${panel}`,
+  },
+  code: '代码',
+};
+
+const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
+  placeholder: '输入命令或搜索…',
+  empty: '未找到结果。',
+  palette: '命令面板',
+  clearSearch: '清除搜索',
+};
+
+const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
+  kinds: {
+    playlist: '歌单',
+    artist: '艺人',
+    album: '专辑',
+    podcast: '播客',
+    audiobook: '有声书',
+    folder: '文件夹',
+  },
+  library: {
+    title: '我的音乐库',
+    create: '创建歌单或文件夹',
+    collapseRail: '收起我的音乐库',
+    expandRail: '打开我的音乐库',
+    filters: '筛选',
+    clearFilters: '清除筛选',
+    filter: {
+      playlists: '歌单',
+      artists: '艺人',
+      albums: '专辑',
+      podcasts: '播客',
+      audiobooks: '有声书',
+    },
+    downloaded: '已下载',
+    search: '在我的音乐库中搜索',
+    searchPlaceholder: '在我的音乐库中搜索',
+    clearSearch: '清除搜索',
+    sortAndView: '排序和视图',
+    sortBy: '排序方式',
+    viewAs: '视图',
+    sort: {
+      recents: '最近播放',
+      'recently-added': '最近添加',
+      alphabetical: '按字母顺序',
+      creator: '创建者',
+    },
+    view: { compact: '紧凑', list: '列表', grid: '网格' },
+    empty: '这里还没有内容',
+  },
+  item: { pinned: '已置顶', downloaded: '已下载', nowPlaying: '正在播放' },
+  search: { placeholder: '想听什么？', clear: '清除搜索', browse: '浏览' },
+  resultTypes: '结果类型',
+  topResultKinds: {
+    song: '歌曲',
+    artist: '艺人',
+    album: '专辑',
+    playlist: '歌单',
+    podcast: '播客',
+    episode: '单集',
+    audiobook: '有声书',
+    profile: '个人资料',
+  },
+  recent: {
+    title: '最近搜索',
+    clearAll: '清除最近搜索',
+    remove: (title) => `移除 ${title}`,
+  },
+};
+
+const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
+  statuses: { reserved: '已预订', sold: '已售出', rented: '已出租', unavailable: '不可用' },
+  originally: (p) => `原价 ${p}`,
+  approximateLocation: '大致位置',
+  rated: (r) => `评分${r}分（满分5分）`,
+  ratedWithReviews: (r, c) =>
+    plural('zh', c, { other: `评分${r}分（满分5分），${c}条评价` }),
+  newListing: '新房源',
+  previousPhoto: '上一张照片',
+  nextPhoto: '下一张照片',
+  saveToWishlist: '保存到心愿单',
+  removeFromWishlist: '从心愿单中移除',
+};
+
+const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
+  states: { 'off-route': '已偏离路线', rerouting: '正在重新规划路线' },
+  thenLine: (street, maneuver) => `然后${navigationBanner_words(maneuver, street)}`,
+  laneGuidance: '车道指引',
+  laneCount: (n) => plural('zh', n, { other: '{n} 条车道' }),
+  laneNumber: (n) => `左起第 ${n} 条车道`,
+  and: (a, b) => `${a}和${b}`,
+  useLanes: (lanes) => `请走${lanes}`,
+  speedLimit: (limit) => `限速 ${limit}`,
+  overLimit: '已超速',
+  arrival: '到达',
+  left: '剩余时间',
+  distance: '距离',
+  end: '结束',
+};
+
+const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
+  states: { locating: '正在查找你的位置', located: '你的位置', stale: '你最后已知的位置' },
+  facing: (state, degrees) => `${state}，朝向 ${degrees} 度`,
+};
+
+const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
+  previousSlide: '上一张幻灯片',
+  nextSlide: '下一张幻灯片',
+  goToSlide: (n) => `转到第 ${n} 张幻灯片`,
+  slideOf: (at, of) => `第 ${at} 张，共 ${of} 张`,
+  carouselRole: '轮播',
+  slideRole: '幻灯片',
+};
+
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: '进行中', upcoming: '未开始', failed: '失败' }, status: '状态' };
+
+const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
+  newRating: '新',
+  reviews: (c) => rating_countForms('zh', c, { other: '{n} 条评价' }),
+  rated: (v) => `评分 ${v}（满分 5 分）`,
+  ratedWithReviews: (v, r) => `评分 ${v}（满分 5 分），${r}`,
+  star: (n) => plural('zh', n, { other: '{n} 星' }),
+};
+
+const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
+  offering: {
+    rent: { title: '出租', description: '长期租赁，按月计价。' },
+    sale: { title: '出售', description: '整套出售房屋。' },
+    stay: { title: '度假短租', description: '短期入住，按晚计价。' },
+    swap: { title: '换房', description: '与其他成员互换住所。' },
+    monthlyRent: '月租',
+    deposit: '押金',
+    depositOption: (months) => (months === 0 ? '无' : plural('zh', months, { other: '{n} 个月' })),
+    availableFrom: '可入住日期',
+    minimumStay: '最短租期',
+    months: (months) => plural('zh', months, { other: '{n} 个月' }),
+    askingPrice: '挂牌价',
+    pricePerArea: '每平方米价格',
+    pricePerAreaEmpty: '请添加价格',
+    nightlyRate: '每晚价格',
+    cleaningFee: '清洁费',
+    minimumNights: '最少入住晚数',
+    nights: (nights) => plural('zh', nights, { other: '{n} 晚' }),
+    swapMode: '你想如何交换？',
+    swapModes: { swap: '互换住所', host: '仅接待', both: '均可' },
+    group: '房屋的提供方式',
+  },
+  propertyTypes: {
+    apartment: '公寓',
+    house: '独栋住宅',
+    room: '单间',
+    studio: '开间',
+    duplex: '复式',
+    penthouse: '顶层公寓',
+    coliving: '共居',
+    hostel: '青年旅舍',
+    other: '其他',
+  },
+  propertyType: '房源类型',
+  addressPrecision: {
+    exact: {
+      title: '精确地址',
+      description: '标记显示在建筑上。适合本来就容易找到的房源。',
+    },
+    street: {
+      title: '仅显示街道',
+      description: '显示街道，不显示门牌号。精确地址在预订或签约后共享。',
+    },
+    approximate: {
+      title: '大致区域',
+      description: '显示约 500 米的范围圈。隐私性最高的选项。',
+    },
+  },
+  addressPrecisionLabel: '地址精度',
+  addressPrecisionFootnote: '发布的地图将遵循此选择。你的精确地址只会与你确认的人共享。',
+  qualityTitle: '房源质量',
+  qualityScore: '房源质量评分',
+  tips: '提示',
+  todo: '待完成',
+  needsWork: '有待改进',
+  good: '良好',
+  excellent: '优秀',
+  previewTitle: '预览',
+  previewDescription: '房客将这样看到你的房源。',
+  card: '卡片',
+  page: '页面',
+  previewAs: '预览方式',
+  reviews: (n, shown) => plural('zh', n, { other: '{s} 条评价' }).replace('{s}', shown),
+};
+
+const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
+  artistPick: '艺人精选',
+  saveEpisode: '保存单集',
+  share: '分享',
+  podcastEpisode: '播客单集',
+  listeningProgress: '收听进度',
+  shuffle: '随机播放',
+  download: '下载',
+  downloadProgress: '下载进度',
+  follow: '关注',
+  following: '已关注',
+  searchInPlaylist: '在歌单中搜索',
+  compactView: '紧凑视图',
+  editDetails: '编辑详情',
+  about: '简介',
+  discography: '作品',
+  showAll: '显示全部',
+  albums: '专辑',
+  singlesAndEps: '单曲和 EP',
+  compilations: '合辑',
+  audiobook: '有声书',
+  popular: '热门',
+  seeMore: '查看更多',
+  podcast: '播客',
+  latestEpisode: '最新单集',
+  verifiedArtist: '认证艺人',
+  profile: '个人资料',
+  editProfile: '编辑个人资料',
+};
+
+const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
+  diets: { vegetarian: '素食', vegan: '纯素', 'gluten-free': '无麸质', 'dairy-free': '无乳制品', halal: '清真', kosher: '犹太洁食' },
+  spicy: '辣度',
+  spiceOf: (label, level, max) => `${label} ${level}/${max}`,
+  originally: (price, original) => `${price}，原价 ${original}`,
+  inBasket: (n) => `购物车中 ${n} 份`,
+  soldOut: '已售罄',
+  addItem: (name) => `添加${name}`,
+  choose: (n) => `选择 ${n} 项`,
+  chooseRange: (min, max) => `选择 ${min} 至 ${max} 项`,
+  upTo: (n) => `最多 ${n} 项`,
+  optional: '可选',
+  quantity: '数量',
+  addToBasket: '加入购物车',
+  options: '选项',
+};
+
+const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
+  pagination: '分页',
+  goToPage: (page) => `转到第 ${page} 页`,
+};
+
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: '线索评分', factors: '评分构成', bands: { cold: '冷', warm: '温', hot: '热' } };
+
+const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
+  modes: { drive: '驾车', transit: '公共交通', walk: '步行', cycle: '骑行' },
+  traffic: { light: '畅通', moderate: '缓行', heavy: '拥堵' },
+  maneuvers: {
+    depart: '出发',
+    straight: '直行',
+    'slight-left': '稍向左转',
+    left: '左转',
+    'sharp-left': '向左急转',
+    'slight-right': '稍向右转',
+    right: '右转',
+    'sharp-right': '向右急转',
+    uturn: '掉头',
+    roundabout: '在环岛处',
+    merge: '并入',
+    arrive: '到达',
+    board: '上车',
+    alight: '下车',
+    transfer: '换乘',
+    walk: '步行',
+  },
+  directions: '路线',
+  otherRoutes: '其他路线',
+  travelMode: '出行方式',
+  start: '开始',
+  currentStep: '当前步骤',
+  line: (name) => `线路 ${name}`,
+};
+
+const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
+  basket: '购物车',
+  checkout: '去结算',
+  emptyTitle: '购物车是空的',
+  emptyDescription: '从菜单中添加商品后会显示在这里。',
+  soldOut: '已售罄',
+  removeItem: (name) => `移除${name}`,
+  originally: (price, original) => `${price}，原价 ${original}`,
+  promoCode: '优惠码',
+  apply: '使用',
+  tip: '小费',
+};
+
+const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
+  albumTypes: { album: '专辑', single: '单曲', ep: 'EP', compilation: '合辑' },
+  artist: '艺人',
+  verified: '已认证',
+  audiobook: '有声书',
+  narratedBy: (n) => `朗读：${n}`,
+  progressOf: (t) => `${t}的进度`,
+  episode: '单集',
+  played: '已播放',
+  event: '活动',
+  soldOut: '售罄',
+  listeningNow: '正在收听',
+  trackBy: (t, a) => `${a}的${t}`,
+  mix: '混合歌单',
+  playlist: '歌单',
+  collaborative: '协作歌单',
+  ownedBy: (o) => `创建者：${o}`,
+  podcast: '播客',
+  profile: '个人资料',
+  followsYou: '关注了你',
+  song: '歌曲',
+  share: '分享',
+  listened: '已收听',
+};
+
+const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
+  labels: {
+    take: '接单',
+    pass: '跳过',
+    distance: '距离',
+    duration: '时长',
+    window: '时段',
+    pickup: '取货',
+    dropoff: '送货',
+    state: { taken: '已被接', expired: '已过期' },
+    showPay: '显示报酬',
+    hidePay: '隐藏报酬',
+    payDetails: '报酬：',
+    sort: '排序订单',
+    filtersToggle: '筛选',
+    filtersActive: (n) => `已应用 ${n} 项`,
+    sortOptions: {
+      pay: '报酬最高',
+      distance: '距离最近',
+      soonest: '最早开始',
+      expiring: '即将截止',
+    },
+    filters: { distance: '距离', pay: '报酬', when: '时间', vehicle: '车辆' },
+    clearFilters: '清除筛选',
+    refresh: '刷新列表',
+    count: (n) => `${n} 个订单`,
+    loading: '正在加载订单',
+  },
+  emptyTitle: '暂时没有订单',
+  emptyDescription: '没有符合条件的订单。放宽筛选条件，或一分钟后再刷新。',
+  list: '订单',
+  payDetailsFor: (load) => `${load}的报酬`,
+  route: (pickup, dropoff) => `${pickup}和${dropoff}`,
+  bands: {
+    anyDistance: '任意距离',
+    underKm: (km) => `${km} 公里以内`,
+    anyTime: '任意时间',
+    withinHour: '一小时内',
+    nextHours: (hours) => `接下来 ${hours} 小时`,
+    today: '今天',
+  },
+};
+
+const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
+  submenu: '子菜单',
+};
+
+const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
+  chat: {
+    newChat: '新对话',
+    emptyTitle: '有什么可以帮你的？',
+    emptyDescription: '此对话使用你自己的 API 密钥。历史记录保存在此浏览器中。',
+    thinking: '思考中',
+    error: '出了点问题。请检查服务器日志，然后重试。',
+    suggestions: ['解释一下这个入门项目是做什么的', '用三句话写一条产品更新', '给一个日程安排应用起五个名字'],
+    you: '你',
+    assistant: '助手',
+  },
+  actions: {
+    share: '分享对话',
+    shared: '已复制对话记录',
+    more: '此对话的更多操作',
+    exportChats: '导出对话',
+    markUnread: '标记为未读',
+    deleteChat: '删除对话',
+  },
+  message: { copy: '复制消息', readAloud: '朗读', stopReading: '停止朗读' },
+  history: {
+    region: '对话历史',
+    recent: '最近',
+    empty: '你发起的对话会显示在这里。',
+    rename: '重命名',
+    renameField: '重命名对话',
+    markUnread: '标记为未读',
+    unread: '未读',
+    exportCount: (n) => (n === 0 ? '没有可导出的对话' : plural('zh', n, { other: '导出 {n} 个对话' })),
+    accountMenu: (name) => `${name}的账户菜单`,
+    usageLeft: '剩余用量',
+    upgrade: '升级到 Max',
+    logOut: '退出登录',
+  },
+  composer: {
+    field: '消息',
+    placeholder: '有问题尽管问',
+    attach: '添加附件',
+    send: '发送消息',
+    stop: '停止生成',
+    notConfigured: '未配置',
+    messageCount: (n) => plural('zh', n, { other: '{n} 条消息' }),
+    answeringWith: (model) => `正在使用 ${model} 回答`,
+  },
+  ago: {
+    justNow: '刚刚',
+    minutes: (n) => plural('zh', n, { other: '{n} 分钟前' }),
+    hours: (n) => plural('zh', n, { other: '{n} 小时前' }),
+    days: (n) => plural('zh', n, { other: '{n} 天前' }),
+  },
+  age: { now: '刚刚', minutes: (n) => `${n}分钟`, hours: (n) => `${n}小时`, days: (n) => `${n}天` },
+};
+
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: '来源', working: '处理中' };
+
+const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
+  to: '收件人',
+  cc: '抄送',
+  bcc: '密送',
+  reply: '回复',
+  replyAll: '全部回复',
+  forward: '转发',
+  more: COMMON_MESSAGES.more,
+  moreAddresses: (n) => `另外 ${n} 人`,
+  earlierMessages: (n) => plural('zh', n, { other: '{n} 封较早的邮件' }),
+  showTrimmed: '显示被截断的内容',
+  hideTrimmed: '隐藏被截断的内容',
+  unread: '未读',
+  starred: '已加星标',
+  star: '加星标',
+  attachments: '附件',
+  attachmentCount: (n) => plural('zh', n, { other: '{n} 个附件' }),
+  expand: '展开邮件',
+  collapse: '收起邮件',
+};
+
+const NOTIFICATION_CENTER_MESSAGES: Translations['NOTIFICATION_CENTER_MESSAGES'] = {
+  title: '通知',
+  emptyMessage: '你已看完所有通知。',
+  emptyDescription: '新动态到达后会显示在这里。',
+  noUnread: '没有未读通知',
+  unread: (n) => plural('zh', n, { other: '{n} 条未读' }),
+  markAllRead: '全部标为已读',
+  category: '通知类别',
+  tabs: { all: '全部', mentions: '提及', system: '系统' },
+  unreadDot: '未读',
+};
+
+const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
+  titles: {
+    activity: '活动',
+    agents: '智能体',
+    visitors: '访客',
+    breakdown: '明细',
+    sessions: '会话',
+    contributionsThisYear: '今年的贡献',
+    earnedSoFar: '目前收入',
+    signUpFunnel: '注册漏斗',
+    activeUsers: '活跃用户',
+    revenue: '收入',
+    mostActiveDays: '最活跃的日子',
+    orders: '订单',
+    trackedTime: '记录时长',
+    revenuePerAccount: '每个账户的收入',
+    sleepScore: '睡眠评分',
+    pipeline: '销售管道',
+    steps: '步数',
+    tokens: '令牌',
+  },
+  weekly: '每周',
+  monthly: '每月',
+  yearly: '每年',
+  stepsSuffix: '步',
+  today: '今天',
+  thisYear: '今年',
+  lastYear: '去年',
+  sinceLastYear: '较去年',
+  aYearEarlier: '一年前',
+  earningsPeriod: '收入周期',
+  changePeriod: '更改周期',
+  period: '周期',
+  total: '总计',
+  average: '平均',
+  thisMonth: '本月',
+  ofGoal: '目标完成度',
+  totalSteps: '总步数',
+  gaugeChart: (title, reading) => `${title}仪表：${reading}`,
+  halfGaugeChart: (title, items) => `${title}半圆仪表：${items}`,
+  radialChart: (title, items) => `${title}径向图：${items}`,
+  percentOfGoal: (pct) => `目标的 ${pct}%`,
+  periodOf: (label) => `${label}周期`,
+  chartVs: (title, current, previous) => `${title}图表：${current}与${previous}对比`,
+  lineChart: (title) => `${title}折线图`,
+  barChart: (title, items) => `${title}柱状图：${items}`,
+  comboChart: (title, bar, line) => `${title}图表：${bar}柱形与${line}折线对比`,
+  scatterChart: (title, series) => `${title}散点图：${series}`,
+  bubbleChart: (title, series) => `${title}气泡图：${series}`,
+  ringItem: (label, value, pct) => `${label} ${value}，目标的 ${pct}%`,
+  scoreOf: (score, max) => `${score}/${max}`,
+  activityFor: (name, day) => `${name}${day}日的活动`,
+  contributions: (n, date) => { const on = date ? `${date} ` : ''; return n === 0 ? `${on}无贡献` : `${on}${n} 次贡献`; },
+};
+
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: '复制代码', copied: '代码已复制' };
+
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: '本页内容', progress: (at, of) => `第 ${at} 个标题，共 ${of} 个` };
+
+const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: '减少', increase: '增加' };
+
+const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
+  status: {
+    calling: '正在呼叫…',
+    ringing: '正在响铃',
+    connecting: '正在连接…',
+    active: '已接通',
+    reconnecting: '正在重新连接…',
+    onHold: '保持中',
+    ended: '通话已结束',
+  },
+  controls: {
+    mute: '静音',
+    unmute: '取消静音',
+    speakerOn: '打开扬声器',
+    speakerOff: '关闭扬声器',
+    videoOn: '打开摄像头',
+    videoOff: '关闭摄像头',
+    flipCamera: '翻转摄像头',
+    screenShareOn: '共享屏幕',
+    screenShareOff: '停止共享屏幕',
+    addParticipant: '添加参与者',
+    endCall: '结束通话',
+  },
+  screen: {
+    minimise: '最小化通话',
+    chat: '打开聊天',
+    participants: '参与者',
+    movePip: (c) => `移动自己的画面（当前：${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)}）`,
+  },
+  pipCorners: CALL_UI_MESSAGES__CORNERS,
+  history: {
+    incoming: '来电',
+    outgoing: '去电',
+    missed: '未接',
+    declined: '已拒接',
+    callBack: (name) => `回拨给${name}`,
+  },
+  incoming: {
+    accept: '接听',
+    decline: '拒绝',
+    message: '消息',
+    remind: '提醒我',
+    slideToAnswer: '滑动接听',
+    voice: '语音来电',
+    video: '视频来电',
+  },
+  returnToCall: '返回通话',
+  returnToCallWith: (name) => `返回与${name}的通话`,
+  join: '加入',
+  leave: '离开',
+  speaking: (name) => `${name} 正在讲话`,
+  overflow: (n) => `还有 ${n} 人`,
+  muted: (name) => `${name}，已静音`,
+};
+
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: '近期入职' };
+
+const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
+  draft: '草稿：',
+  unread: '未读',
+  starred: '已加星标',
+  star: '加星标',
+  attachment: '有附件',
+  select: '选择',
+  threadCount: (n) => plural('zh', n, { other: '{n} 封邮件' }),
+  moreLabels: (n) => plural('zh', n, { other: '另外 {n} 个标签' }),
+  selectedCount: (n) => `已选择 ${n} 项`,
+  selectAll: '全选',
+  clearSelection: '清除选择',
+  emptyTitle: '这里什么都没有',
+  emptyDescription: '新邮件会出现在此文件夹中。',
+  today: '今天',
+  yesterday: '昨天',
+  list: '邮件',
+};
+
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: '重要提醒', thisWeek: '本周' };
+
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `关于${label}`, fromLastMonth: '较上月' };
+
+const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
+  shapes: shapes_shapeNames(
+    {
+      square: '正方形',
+      slanted: '倾斜',
+      arch: '拱形',
+      semicircle: '半圆',
+      oval: '椭圆',
+      pill: '胶囊',
+      triangle: '三角形',
+      arrow: '箭头',
+      fan: '扇形',
+      diamond: '菱形',
+      clamshell: '贝壳',
+      pentagon: '五边形',
+      gem: '宝石',
+      'very-sunny': '烈日',
+      sunny: '晴日',
+      burst: '爆发',
+      'soft-burst': '柔和爆发',
+      boom: '爆炸',
+      'soft-boom': '柔和爆炸',
+      flower: '花朵',
+      puffy: '蓬松',
+      'puffy-diamond': '蓬松菱形',
+      'ghost-ish': '幽灵形',
+      'pixel-circle': '像素圆',
+      'pixel-triangle': '像素三角形',
+      bun: '圆面包',
+      heart: '爱心',
+    },
+    (n) => `${n} 边饼干`,
+    (n) => `${n} 叶草`,
+  ),
+};
+
+const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
+  leasePaymentStatus: { upcoming: '即将到期', due: '即将逾期', overdue: '已逾期', paid: '已支付' },
+  rentPaymentStatus: { paid: '已支付', pending: '待支付', overdue: '已逾期', partial: '部分支付' },
+  maintenanceCategory: {
+    plumbing: '水管',
+    electrical: '电路',
+    appliances: '家电',
+    heating: '供暖',
+    other: '其他',
+  },
+  maintenancePriority: { low: '低优先级', medium: '中优先级', high: '高优先级', urgent: '紧急' },
+  maintenanceStage: { reported: '已报修', acknowledged: '已受理', scheduled: '已安排', resolved: '已解决' },
+  documentStatus: { signed: '已签署', pending: '待签署', expired: '已过期' },
+  timelineState: { complete: '已完成', current: '进行中', upcoming: '未开始' },
+  leasePeriod: '租期',
+  monthlyRent: '月租',
+  deposit: '押金',
+  nextPayment: '下次付款',
+  paidThisYear: '今年已付',
+  outstanding: '待付金额',
+  noPayments: '暂无付款记录',
+  columns: { month: '月份', dueDate: '到期日', method: '付款方式', amount: '金额', status: '状态' },
+  downloadReceipt: (month) => `下载${month}的收据`,
+  dueOn: (date) => `${date}到期`,
+  comments: (n) => plural('zh', n, { other: '{n} 条评论' }),
+  photo: (position, total) => `第 ${position} 张照片，共 ${total} 张`,
+  photoWithAlt: (alt, position, total) => `${alt}，第 ${position} 张照片，共 ${total} 张`,
+  sign: '签署',
+  signDocument: (name) => `签署${name}`,
+  viewDocument: (name) => `查看${name}`,
+  downloadDocument: (name) => `下载${name}`,
+  noDocuments: '暂无文件',
+};
+
+const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
+  selectAll: '选择本页所有行',
+  selectRow: (id) => `选择第 ${id} 行`,
+  densityLabel: '表格密度',
+  density: { md: '标准', sm: '紧凑' },
+};
+
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: '出了点问题', message: '发生了意外错误', retry: '重试' };
+
+const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
+  contributions: '今年的贡献',
+  activity: '活动',
+  periodGroup: (label) => `${label}周期`,
+  periods: { weekly: '每周', monthly: '每月', yearly: '每年' },
+};
+
+const BREADCRUMB_MESSAGES: Translations['BREADCRUMB_MESSAGES'] = {
+  breadcrumb: '面包屑导航',
+};
+
+const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
+  photo: '照片',
+  video: '视频',
+  photoOf: (i, total) => `第 ${i} 张照片，共 ${total} 项`,
+  videoOf: (i, total) => `第 ${i} 个视频，共 ${total} 项`,
+  tapToView: '轻触查看',
+  sendingPhoto: '正在发送照片',
+  sendingVideo: '正在发送视频',
+  sendingAlbum: '正在发送相册',
+  sendingSticker: '正在发送贴纸',
+  sendingGif: '正在发送 GIF',
+  album: (n) => `相册，${n} 项`,
+  sharedMedia: (n) => `共享的媒体，${n} 项`,
+  sharedFiles: (n) => `共享的文件，${n} 项`,
+  moreItems: (n) => `还有 ${n} 项`,
+  notSent: '未发送',
+  voiceMessage: (d) => `语音消息，${d}`,
+  playVoiceMessage: '播放语音消息',
+  pauseVoiceMessage: '暂停语音消息',
+  transcribe: '转文字',
+  hideTranscript: '隐藏文字',
+  seek: '播放位置',
+  seekPosition: (p, d) => `${p} / ${d}`,
+  playbackSpeed: (r) => `播放速度 ${r}`,
+  unplayed: '未播放',
+  download: '下载',
+  downloaded: '已下载',
+  file: '文件',
+  fileKinds: {
+    pdf: 'PDF',
+    doc: '文档',
+    sheet: '表格',
+    slides: '演示文稿',
+    zip: 'ZIP',
+    audio: '音频',
+    video: '视频',
+    image: '图片',
+    code: '代码',
+  },
+  contact: '联系人',
+  message: '发消息',
+  add: '添加',
+  location: '位置',
+  liveLocation: '实时位置',
+  stopSharing: '停止共享',
+  vote: '投票',
+  viewResults: '查看结果',
+  anonymousVoting: '匿名投票',
+  quiz: '测验',
+  selectOne: '单选',
+  selectOneOrMore: '可多选',
+  correctAnswer: '正确答案',
+  yourAnswer: '你的答案',
+  votes: (n) => (n === 0 ? '暂无投票' : `${n} 票`),
+  sticker: '贴纸',
+};
+
+const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
+  health: { 'on-track': '进展顺利', 'at-risk': '有风险', stalled: '停滞' },
+  stalledFor: (duration) => `已停滞 ${duration}`,
+  move: (title) => `移动“${title}”`,
+  stages: '销售管道阶段',
+  stageWithCount: (name, n) => `${name}，${n} 个商机`,
+  empty: '此阶段没有商机',
+  loadMore: '加载更多',
+};
+
+const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
+  where: '目的地',
+  checkIn: '入住',
+  checkOut: '退房',
+  when: '日期',
+  who: '人数',
+  destinationPlaceholder: '搜索目的地',
+  datesPlaceholder: '添加日期',
+  guestsPlaceholder: '添加房客',
+  guests: { adults: '成人', children: '儿童', infants: '婴幼儿', pets: '宠物' },
+  guestDescriptions: {
+    adults: '13 岁及以上',
+    children: '2–12 岁',
+    infants: '2 岁以下',
+    pets: '携带服务型动物？',
+  },
+  dateFlexibility: '日期灵活度',
+  exactDates: '确切日期',
+  plusMinusDays: (n) => plural('zh', n, { other: '± {n} 天' }),
+  destinations: '热门目的地',
+  whereTo: '去哪儿？',
+  filters: '筛选',
+};
+
+const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
+  modes: {
+    signin: {
+      title: '欢迎回来',
+      description: '登录以继续上次的进度。',
+      cta: '登录',
+      switchLead: '第一次来？',
+      switchAction: '创建账号',
+    },
+    signup: {
+      title: '创建你的账号',
+      description: '几分钟即可开始。',
+      cta: '创建账号',
+      switchLead: '已有账号？',
+      switchAction: '登录',
+    },
+    verify: {
+      title: '请查收邮件',
+      description: '输入我们发送的验证码以完成登录。',
+      cta: '验证并继续',
+      switchLead: '没有收到验证码？',
+      switchAction: '重新发送',
+    },
+  },
+  codeSentTo: (email) => `输入我们发送到 ${email} 的验证码以完成登录。`,
+  verificationCode: '验证码',
+  fullName: '姓名',
+  namePlaceholder: '王小明',
+  email: '电子邮件',
+  emailPlaceholder: 'you@company.com',
+  emailHint: '我们仅用它与你联系，绝不会分享给他人。',
+  password: '密码',
+  passwordPlaceholder: '输入密码',
+  newPasswordPlaceholder: '至少 8 个字符',
+  confirmPassword: '确认密码',
+  confirmPasswordPlaceholder: '再次输入密码',
+  rememberMe: '记住我',
+  forgotPassword: '忘记密码？',
+  terms: '创建账号即表示你同意我们的服务条款和隐私政策。',
+  orContinueWith: '或使用以下方式继续',
+};
+
+const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
+  title: '标题',
+  album: '专辑',
+  dateAdded: '添加日期',
+  plays: '播放次数',
+  duration: '时长',
+  moveUp: '上移',
+  moveDown: '下移',
+  reorder: '调整顺序',
+  downloaded: '已下载',
+  unavailable: '不可用',
+  tracks: '曲目',
+  episodes: '单集',
+  selected: (n) => plural('zh', n, { other: '已选择 {n} 项' }),
+  clearSelection: '清除选择',
+  played: '已播放',
+  listened: '已收听',
+  saveEpisode: '保存单集',
+  downloadEpisode: '下载单集',
+  minutes: (m) => `${m} 分钟`,
+  hours: (h) => `${h} 小时`,
+  hoursMinutes: (h, m) => `${h} 小时 ${m} 分钟`,
+  remaining: (l) => `剩余 ${l}`,
+};
+
+const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
+  lyrics: '歌词',
+  showLyrics: '显示歌词',
+  backToCurrent: '回到当前歌词',
+  empty: '此曲目暂无歌词',
+};
+
+const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
+  kinds: { call: '通话', email: '邮件', meeting: '会议', note: '备注', 'stage-change': '阶段变更', task: '任务已完成' },
+  empty: '暂无记录',
+  loggedBy: (name) => `记录人：${name}`,
+  filterActivity: '筛选动态',
+};
+
+const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
+  depositReturned: '押金已退还',
+  depositNotReturned: '押金未退还',
+  recommend: '会推荐',
+  notRecommend: '不会推荐',
+  helpful: '有帮助',
+  report: '举报',
+  promptTitle: '你在这里住过吗？',
+  promptDescription: (building) => `帮助${building}的未来租户。评价均为匿名。`,
+  writeReview: '写评价',
+  reviewCount: (n) => plural('zh', n, { other: '{n} 条评价' }),
+  depositRate: (percent) => `${percent}% 的租约退还了押金`,
+  recommendRate: (percent) => `${percent}% 的人推荐住在这里`,
+};
+
+const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
+  tiers: { standard: '标准配送', express: '极速配送' },
+  soldOut: '已约满',
+  asap: '尽快送达',
+  field: '配送时间',
+  day: '日期',
+  emptyTitle: '没有可选时段了',
+  emptyDescription: '请换一天，或选择下一位骑手。',
+};
+
+const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
+  visibility: { private: '私密', shared: '已共享', public: '公开' },
+  places: (n) => plural('zh', n, { other: '{n} 个地点' }),
+  sharedWith: (n) => plural('zh', n, { other: '已与 {n} 人共享' }),
+  labels: {
+    moveEarlier: (position) => `移到第 ${position - 1} 位`,
+    moveLater: (position) => `移到第 ${position + 1} 位`,
+    remove: (name) => `从列表中移除${name}`,
+    moved: (name, position, total) => `已将${name}移到第 ${position} 位（共 ${total} 位）`,
+    note: '备注',
+  },
+  savedPlaces: '已保存的地点',
+};
+
+const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
+  modes: { rent: '租房', buy: '买房', stays: '度假租赁', swap: '换房' },
+  searchMode: '搜索模式',
+  location: '位置',
+  locationPlaceholder: '搜索城市或区域',
+  moveIn: '入住',
+  datePlaceholder: '添加日期',
+  budget: '预算',
+  budgetPlaceholder: '添加预算',
+  price: '价格',
+  pricePlaceholder: '不限价格',
+  propertyType: '房产类型',
+  propertyTypePlaceholder: '不限类型',
+  dates: '日期',
+  homeSize: '房屋面积',
+  homeSizePlaceholder: '不限面积',
+  minimum: '最低',
+  maximum: '最高',
+  budgetPresets: '预算范围',
+  monthlyBudget: '月预算',
+  monthlyBudgetDescription: '每月租金，不含杂费',
+  totalPriceDescription: '总价',
+  upTo: (amount) => `${amount} 以内`,
+  any: '不限',
+  moveInLabels: {
+    date: '入住日期',
+    flexible: '时间灵活',
+    asap: '尽快',
+    contractLength: '租期',
+  },
+  contractLengths: { any: '不限', short: '1–6 个月', medium: '6–12 个月', long: '1 年以上' },
+  saveSearch: '保存搜索',
+  saved: '已保存',
+  newCount: (n) => plural('zh', n, { other: '{n} 条新结果' }),
+  alertsOff: '提醒已关闭',
+  actionOn: (action, subject) => `${action}“${subject}”`,
+};
+
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: '出租', sale: '出售', short_term_rent: '度假短租', exchange: '置换' } };
+
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: '比例尺', mapData: '地图数据' };
+
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: '最小值', maximum: '最大值', value: (n) => `值 ${n}` };
+
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: '选择一个选项', scrollUp: '向上滚动', scrollDown: '向下滚动' };
+
+const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
+  close: '关闭媒体查看器',
+  previous: '上一项',
+  next: '下一项',
+  goTo: (i, n) => `转到第 ${i} 项，共 ${n} 项`,
+  share: '分享媒体',
+};
+
+const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: '关闭通知' };
+
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: '电话号码', countryCode: '国家/地区代码' };
+
+const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
+  facts: { deliveryTime: '配送时间', deliveryFee: '配送费', distance: '距离', minimumOrder: '起送价' },
+  availability: { paused: '暂停营业', closed: '已打烊' },
+  new: '新店',
+  rated: (value, reviews) =>
+    `评分 ${value}（满分 5 分）${vendorCard_has(reviews) ? `，${vendorCard_counted('zh', reviews, { other: '{n} 条评价' })}` : ''}`,
+};
+
+const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
+  presence: { online: '在线', idle: '离开', offline: '离线', busy: '忙碌' },
+  status: { sending: '正在发送…', sent: '已发送', delivered: '已送达', read: '已读', failed: '未发送' },
+  unread: '未读',
+  unreadCount: (n) => `${n} 条未读消息`,
+};
+
+const MEDIA_CONTROLS_MESSAGES: Translations['MEDIA_CONTROLS_MESSAGES'] = {
+  play: '播放',
+  pause: '暂停',
+  playSubject: (s) => `播放${s}`,
+  pauseSubject: (s) => `暂停${s}`,
+  saveToLibrary: '保存到你的音乐库',
+  saveSubjectToLibrary: (s) => `将${s}保存到你的音乐库`,
+  explicit: '含露骨内容',
+  seek: '播放进度',
+  seekValue: (a, b) => `${a} / ${b}`,
+  mute: '静音',
+  unmute: '取消静音',
+  volume: '音量',
+  nowPlaying: '正在播放',
+};
+
+const INPUT_OTP_MESSAGES: Translations['INPUT_OTP_MESSAGES'] = {
+  oneTimeCode: '一次性验证码',
+  digitOf: (i, n) => `第 ${i} 位数字，共 ${n} 位`,
+  characterOf: (i, n) => `第 ${i} 个字符，共 ${n} 个`,
+};
+
+const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
+  infoActions: { call: '拨打电话', open: '打开网站', directions: '路线' },
+  busy: {
+    busier: '比平时更忙',
+    typical: '与平时一样忙',
+    quieter: '比平时清静',
+  },
+  transitModes: {
+    bus: '公交车站',
+    metro: '地铁站',
+    train: '火车站',
+    tram: '有轨电车站',
+    ferry: '渡轮码头',
+  },
+  notAvailable: '不可用',
+  amenities: '设施',
+  today: '今天',
+  closed: '休息',
+  openingHours: '营业时间',
+  day: '日期',
+  noDataForDay: '这一天没有数据',
+  chartNoData: (day) => `${day}，无数据`,
+  chartClosed: (day) => `${day}，全天休息`,
+  chartPeak: (day, hour) => `${day}，${hour} 最忙`,
+  chartNow: (hour) => `现在 ${hour}`,
+  live: '实时',
+  noDepartures: '目前没有班次',
+  nearbyTransit: '附近的公共交通',
+  lines: '线路',
+  line: (name) => `线路 ${name}`,
+  towards: (headsign) => `开往${headsign}`,
+};
+
+const APP_SHELL_MESSAGES: Translations['APP_SHELL_MESSAGES'] = {
+  openNavigation: '打开导航',
+  closeNavigation: '关闭导航',
+  resizePanes: '调整窗格大小',
+  notifications: '通知',
+  proOffer: 'Pro 优惠',
+};
+
+const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
+  routeStops: '路线站点',
+  origin: '起点',
+  destination: '终点',
+  stop: (position) => `第 ${position} 站`,
+  swap: '交换起点和终点',
+  addStop: '添加途经点',
+  removeStop: (title) => `移除${title}`,
+  state: { reached: '已到达', current: '当前站点', pending: '未到达' },
+};
+
+const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: '清除搜索内容' };
+
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `移除“${t}”`, full: (n) => `最多 ${n} 个`, suggestions: '建议' };
+
+const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
+  propertyTypes: {
+    apartment: '公寓',
+    house: '独栋住宅',
+    room: '单间',
+    studio: '开间',
+    duplex: '复式 / 顶层公寓',
+    coliving: '共居',
+    hostel: '青年旅舍',
+    other: '土地 / 其他',
+  },
+  features: {
+    elevator: '电梯',
+    parking: '停车位',
+    terrace: '露台',
+    garden: '花园',
+    pool: '泳池',
+    furnished: '带家具',
+    pets: '可养宠物',
+    airConditioning: '空调',
+    heating: '暖气',
+    accessible: '无障碍',
+    storage: '储藏室',
+  },
+  floors: { ground: '底层', middle: '中间楼层', top: '顶层', elevator: '有电梯' },
+  minimum: '最低',
+  maximum: '最高',
+  priceRange: '价格区间',
+  area: '面积',
+  featuresGroup: '设施',
+  floor: '楼层',
+  propertyType: '房产类型',
+  energyRating: '能效等级',
+  anyRating: '不限等级',
+  ratingOnly: (r) => `仅 ${r}`,
+  ratingAndBetter: (r) => `${r} 及以上`,
+  filters: '筛选',
+  filtersApplied: (label, n) => `${label}，已应用 ${n} 项`,
+  clearAll: '全部清除',
+  any: '不限',
+  availableNow: '可立即入住',
+  availableNowDescription: '今天即可入住',
+  availableFrom: '可入住日期',
+  anyDate: '不限日期',
+};
+
+const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
+  dialog: '设置',
+  nav: '设置分区',
+  close: '关闭设置',
+  saved: '已保存',
+  currentPlan: '当前方案',
+  actions: '操作',
+  storage: {
+    storedIn: '存储于',
+    fileCount: (n, shown) => plural('zh', n, { other: `${shown} 个文件` }),
+    filterByType: '按文件类型筛选',
+    fileType: '文件类型',
+    orderBy: '排序方式',
+    modified: '修改时间',
+    oldestFirst: '最早的在前',
+    searchFiles: '搜索文件',
+    selectAllOnPage: '选择本页所有文件',
+    fileName: '文件名',
+    uploadedOn: '上传日期',
+    fileSize: '文件大小',
+    sortBy: { name: '按文件名排序', uploadedAt: '按上传日期排序', size: '按文件大小排序' },
+    selectFile: (name) => `选择 ${name}`,
+    deleteFile: '删除文件',
+    deleteNamed: (name) => `删除 ${name}`,
+    noMatches: '没有符合筛选条件的文件。',
+    documents: '文档',
+    spreadsheets: '电子表格',
+    videos: '视频',
+    downloadFile: '下载文件',
+    rename: '重命名',
+    copyLink: '复制链接',
+  },
+  tools: {
+    showOutput: '显示输出',
+    refreshTools: '刷新工具',
+    removeServer: '移除服务器',
+    logout: '退出登录',
+    logOutOf: (server) => `退出 ${server}`,
+    showTools: (server) => `显示 ${server} 的工具`,
+    hideTools: (server) => `隐藏 ${server} 的工具`,
+    error: '错误',
+    showOutputLink: '显示输出',
+    showOutputOf: (server) => `显示 ${server} 的输出`,
+    newServer: '新建 MCP 服务器',
+    newServerDescription: '添加自定义 MCP 服务器',
+    projectScope: '项目范围',
+    authentication: '身份验证',
+    waitForAuth: '等待 MCP 身份验证',
+    waitForAuthDescription: '收到提示时无限期等待身份验证。关闭后，身份验证提示将在 30 秒后跳过。',
+    waitForAuthSwitch: '等待 MCP 身份验证',
+    scopeServers: (scope) => `${scope} MCP 服务器`,
+    scopeServersDescription: (scope) => `${scope} 中可用的服务器。`,
+    teamServers: '团队 MCP 服务器',
+    teamServersDescription: '在控制台中配置',
+    manage: '管理',
+    noTeamServers: '没有团队 MCP 服务器',
+    noTeamServersBody: '在控制台中配置 MCP 服务器，即可在桌面端和云端使用。',
+    configureTeam: '配置团队 MCP 服务器',
+    pluginServers: '插件 MCP 服务器',
+  },
+};
+
+const EVICTION_MESSAGES: Translations['EVICTION_MESSAGES'] = {
+  status: {
+    scheduled: '已排期',
+    postponed: '已推迟',
+    suspended: '已暂停',
+    executed: '已执行',
+    cancelled: '已取消',
+  },
+  attend: '我会到场',
+  share: '分享',
+  contactSupport: '联系支援团体',
+  verified: '社区已核实',
+  caseHistory: '案件记录',
+  source: (source) => `来源：${source}`,
+};
+
+const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
+  checkIn: '入住',
+  checkOut: '退房',
+  guests: '房客',
+  addDate: '添加日期',
+  reserve: '预订',
+  checkAvailability: '查看空房',
+  notChargedYet: '目前还不会向你收费',
+  total: '总计',
+  tripStatus: { confirmed: '已确认', pending: '待处理', cancelled: '已取消', completed: '已完成' },
+  priceName: booking_priceName((p, u) => `每${u} ${p}`, (s, o) => `${s}，原价 ${o}`),
+};
+
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: '上下文窗口', freeSpace: '可用空间', planUsageLimits: '套餐用量限制', managePlan: '管理套餐' };
+
+const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
+  closeActions: '关闭操作',
+};
+
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: '添加头像' };
+
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: '主题', darkMode: '深色模式', lightMode: '浅色模式', useDarkMode: '使用深色模式', useLightMode: '使用浅色模式' };
+
+const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
+  earned: '已赚取',
+  period: '收入周期',
+  breakdown: '收入来源',
+  payout: '下次打款',
+  payoutState: { scheduled: '已安排', processing: '打款中', paid: '已支付', held: '已暂扣', failed: '失败' },
+  chart: (label) => `${label}收入（按周期）`,
+  empty: '还没有收入',
+  earnings: '收入',
+};
+
+const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
+  labels: {
+    signature: '签名',
+    signaturePad: '签名区',
+    signatureHint: '用手指签名',
+    signed: '已签名',
+    clear: '清除签名',
+    typeName: '或输入姓名',
+    typeNamePlaceholder: '全名',
+    photo: '照片',
+    photoHint: '放置的位置，或收件人手中的包裹。',
+    code: '收货码',
+    codeHint: '请收件人读出其应用中的收货码。',
+    recipient: '签收人',
+    recipientPlaceholder: '姓名',
+    note: '备注',
+    notePlaceholder: '任何值得记录的信息',
+    submit: '确认送达',
+    required: '必填',
+    missing: '确认前需要填写此项。',
+    missingSummary: (n) => `还有 ${n} 项未完成`,
+  },
+  proofOfDelivery: '送达凭证',
+};
+
+const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
+  promptWeb: '拖放文件以上传，或',
+  promptNative: '点按以',
+  selectWeb: '选择文件',
+  selectNative: '选择文件',
+  uploading: (size) => `正在上传 ${size}...`,
+  uploaded: '上传成功！',
+  unsupported: (extensions) => `仅支持 ${extensions} 文件`,
+  tooLarge: (max) => `文件超过 ${max}`,
+  max: (size) => `（最大 ${size}）`,
+  uploadFile: '上传文件',
+};
+
+const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
+  popover: '弹出框',
+};
+
+const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
+  queueTab: '播放队列',
+  recentTab: '最近播放',
+  close: '关闭队列',
+  nextInQueue: '队列中的下一首',
+  nextFrom: (c) => `接下来播放：${c}`,
+  nextUp: '接下来播放',
+  clearQueue: '清空队列',
+  reorder: (t) => `调整${t}的顺序`,
+  reorderHint: '拖动，或使用方向键',
+  moveUp: '上移',
+  moveDown: '下移',
+  remove: '从队列中移除',
+  moved: (t, p, n) => `${t}已移至第 ${p} 位，共 ${n} 位`,
+  emptyQueue: '队列为空',
+  emptyQueueHint: '添加歌曲和单集，接下来就能收听。',
+  emptyRecent: '还没有播放记录',
+};
+
+const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
+  hoverCard: '预览卡片',
+};
+
+const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
+  header: {
+    saved: '已保存',
+    saving: '正在保存…',
+    offline: '离线 — 更改已暂存',
+    error: '未保存',
+    words: (n) => plural('zh', n, { other: '{n} 个词' }),
+    title: '标题',
+  },
+  untitled: '无标题',
+  note: '笔记',
+  toolbar: { more: '更多格式', moreMenu: '更多格式' },
+};
+
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: '筛选', showAll: '显示全部' };
+
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: '上一组类别', next: '下一组类别' };
+
+const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
+  labels: {
+    accept: '接受',
+    message: '发消息',
+    decline: '拒绝',
+    pickup: '取货',
+    eta: '送达',
+    vehicle: '车辆',
+    jobs: (jobs) => `${jobs} 单`,
+    verified: '已认证承运人',
+    marks: { cheapest: '最便宜', fastest: '最快' },
+    showPrice: '显示价格明细',
+    hidePrice: '隐藏价格明细',
+    priceDetails: '价格明细：',
+    sort: '排序报价',
+    sortOptions: { price: '价格最低', eta: '最快送达', rating: '评分最高' },
+    count: (n) => `${n} 个报价`,
+    loading: '正在加载报价',
+  },
+  emptyTitle: '暂无报价',
+  emptyDescription: '承运人正在查看你的订单，第一批报价通常会在几分钟内到达。',
+  list: '报价',
+  priceDetailsFor: (name) => `${name}的价格明细`,
+};
+
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: '显示密码', hidePassword: '隐藏密码', required: '必填' };
+
+const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
+  call: '语音通话',
+  videoCall: '视频通话',
+  searchInConversation: '在对话中搜索',
+  connecting: '正在连接…',
+  verified: '已认证',
+  bot: '机器人',
+  channel: '频道',
+  clearSelection: '清除选择',
+  forward: '转发',
+  pin: '置顶',
+  selectedCount: (n) => `已选择 ${n} 项`,
+  pinnedList: '显示置顶消息',
+  pinnedClose: '隐藏置顶栏',
+  pinnedUnpin: '取消置顶此消息',
+  pinnedMessage: '置顶消息',
+  pinnedMessageNumber: (n) => `置顶消息 #${n}`,
+  scrollToBottom: '跳至最新消息',
+  jumpToMention: '跳至提及',
+  emptyTitle: '暂无消息',
+  info: '详细信息',
+  members: '成员',
+  addMember: '添加成员',
+  memberSearch: '搜索成员',
+  noMembers: '未找到成员',
+  owner: '群主',
+  admin: '管理员',
+  resizeList: '调整对话列表大小',
+};
+
+const CONTEXT_MENU_MESSAGES: Translations['CONTEXT_MENU_MESSAGES'] = {
+  contextMenu: '上下文菜单',
+};
+
+const SORTABLE_MEDIA_MESSAGES: Translations['SORTABLE_MEDIA_MESSAGES'] = {
+  photo: (p, t) => `第 ${p} 张照片，共 ${t} 张`,
+  cover: '封面',
+  moveEarlier: (p) => `将照片 ${p} 前移`,
+  moveLater: (p) => `将照片 ${p} 后移`,
+  remove: (p) => `移除照片 ${p}`,
+  retry: (p) => `重新上传照片 ${p}`,
+  uploading: (p) => `正在上传照片 ${p}`,
+  failed: '上传失败',
+  add: '添加照片',
+  moved: (p, t) => `已移至第 ${p} 位，共 ${t} 位`,
+  photos: '照片',
+};
+
+const CONNECTION_DOTS_MESSAGES: Translations['CONNECTION_DOTS_MESSAGES'] = {
+  connecting: '正在连接',
+};
+
+const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
+  newGroup: {
+    photo: '选择群组头像',
+    name: '群组名称',
+    namePlaceholder: '为群组命名',
+    description: '描述',
+    descriptionPlaceholder: '这个群组是做什么的？',
+    members: (n) => `${n} 位成员`,
+    addMembers: '添加成员',
+    remove: (name) => `移除 ${name}`,
+  },
+  member: {
+    owner: '群主',
+    admin: '管理员',
+    promote: '设为管理员',
+    restrict: '限制',
+    remove: '移出群组',
+    actions: (name) => `${name}的操作`,
+  },
+  story: {
+    close: '关闭快拍',
+    previous: '上一个快拍',
+    next: '下一个快拍',
+    mute: '将快拍静音',
+    unmute: '取消快拍静音',
+    more: '快拍选项',
+    replyPlaceholder: '回复…',
+    send: '发送回复',
+    progress: (index, count) => `第 ${index + 1} 个快拍，共 ${count} 个`,
+    react: (emoji) => `用 ${emoji} 回应`,
+  },
+  searchMembers: '搜索成员',
+  share: '分享',
+  postOptions: '帖子选项',
+  pinned: '已置顶',
+  views: (c) => `${c} 次浏览`,
+  forwards: (c) => `${c} 次转发`,
+  jumpTo: (letter) => `跳转到 ${letter}`,
+  add: '添加',
+  added: '已添加',
+  actionOn: (action, name) => `${action} ${name}`,
+};
+
+const translations: Translations = {
+  COMMON_MESSAGES,
+  SURFACES_MESSAGES,
+  CONTACT_CARD_MESSAGES,
+  CHAT_LIST_MESSAGES,
+  NOTE_CARD_MESSAGES,
+  DIALOG_MESSAGES,
+  ALERT_DIALOG_MESSAGES,
+  SIDEBAR_MESSAGES,
+  FILE_SIZE_UNITS,
+  CARD_FORM_MESSAGES,
+  CHAT_COMPOSER_MESSAGES,
+  MAIL_COMPOSE_MESSAGES,
+  MEDIA_PLAYER_MESSAGES,
+  ADDRESS_MESSAGES,
+  CREATOR_STUDIO_MESSAGES,
+  PROPERTY_INSIGHTS_MESSAGES,
+  MAP_MARKER_MESSAGES,
+  LISTING_ACTIONS_MESSAGES,
+  AGENT_PROGRESS_MESSAGES,
+  CALENDAR_MESSAGES,
+  LISTING_DETAILS_MESSAGES,
+  PRICE_BREAKDOWN_MESSAGES,
+  DATE_PICKER_MESSAGES,
+  SHIPMENT_REQUEST_MESSAGES,
+  LABEL_MESSAGES,
+  CHECKOUT_SUMMARY_MESSAGES,
+  VEHICLE_PICKER_MESSAGES,
+  COMPOSER_PANEL_MESSAGES,
+  MESSAGE_BUBBLE_MESSAGES,
+  PAYMENT_STATUS_MESSAGES,
+  AVATAR_MESSAGES,
+  PLACE_CARD_MESSAGES,
+  SOCIAL_BUTTON_MESSAGES,
+  QUESTIONNAIRE_MESSAGES,
+  MAP_CONTROLS_MESSAGES,
+  PAYMENT_METHOD_MESSAGES,
+  AVATAR_GROUP_MESSAGES,
+  MENUBAR_MESSAGES,
+  AGENT_THINKING_MESSAGES,
+  AI_CHAT_MESSAGES,
+  COMMAND_MESSAGES,
+  MUSIC_LIBRARY_MESSAGES,
+  LISTING_CARD_MESSAGES,
+  NAVIGATION_BANNER_MESSAGES,
+  LOCATION_PUCK_MESSAGES,
+  CAROUSEL_MESSAGES,
+  ORDER_STATUS_MESSAGES,
+  RATING_MESSAGES,
+  LISTING_EDITOR_MESSAGES,
+  MEDIA_HEADER_MESSAGES,
+  MENU_ITEM_MESSAGES,
+  PAGINATION_MESSAGES,
+  LEAD_SCORE_MESSAGES,
+  DIRECTIONS_MESSAGES,
+  CART_PANEL_MESSAGES,
+  MEDIA_CARD_MESSAGES,
+  JOB_BOARD_MESSAGES,
+  FLOATING_MESSAGES,
+  AGENT_CHAT_MESSAGES,
+  WEB_SEARCH_MESSAGES,
+  MAIL_THREAD_MESSAGES,
+  NOTIFICATION_CENTER_MESSAGES,
+  CHART_CARDS_MESSAGES,
+  CODE_MESSAGES,
+  OUTLINE_NAV_MESSAGES,
+  STEPPER_MESSAGES,
+  CALL_UI_MESSAGES,
+  RECENT_HIRES_CARD_MESSAGES,
+  MAIL_LIST_MESSAGES,
+  IMPORTANT_ALERTS_CARD_MESSAGES,
+  STAT_CARDS_MESSAGES,
+  SHAPE_MESSAGES,
+  TENANCY_MESSAGES,
+  DATA_TABLE_MESSAGES,
+  ERROR_BOUNDARY_MESSAGES,
+  AI_PROFILE_CARD_MESSAGES,
+  BREADCRUMB_MESSAGES,
+  MESSAGE_MEDIA_MESSAGES,
+  PIPELINE_MESSAGES,
+  STAY_SEARCH_MESSAGES,
+  AUTH_CARD_MESSAGES,
+  TRACK_LIST_MESSAGES,
+  LYRICS_MESSAGES,
+  ACTIVITY_FEED_MESSAGES,
+  PLACE_REVIEWS_MESSAGES,
+  DELIVERY_SLOT_MESSAGES,
+  PLACE_LIST_MESSAGES,
+  HOME_SEARCH_MESSAGES,
+  OFFERING_BADGE_MESSAGES,
+  MAP_ATTRIBUTION_MESSAGES,
+  SLIDER_MESSAGES,
+  SELECT_MESSAGES,
+  ZOOMABLE_MEDIA_GALLERY_MESSAGES,
+  NOTIFICATION_MESSAGES,
+  PHONE_INPUT_MESSAGES,
+  VENDOR_CARD_MESSAGES,
+  CHAT_INDICATORS_MESSAGES,
+  MEDIA_CONTROLS_MESSAGES,
+  INPUT_OTP_MESSAGES,
+  PLACE_DETAILS_MESSAGES,
+  APP_SHELL_MESSAGES,
+  ROUTE_STOPS_MESSAGES,
+  SEARCH_MESSAGES,
+  TAG_FIELD_MESSAGES,
+  STAY_FILTERS_MESSAGES,
+  SETTINGS_MODAL_MESSAGES,
+  EVICTION_MESSAGES,
+  BOOKING_MESSAGES,
+  AGENT_LIMITS_CARD_MESSAGES,
+  SWIPE_ROW_MESSAGES,
+  PATIENT_INFO_CARD_MESSAGES,
+  THEME_TOGGLE_MESSAGES,
+  EARNINGS_MESSAGES,
+  PROOF_OF_DELIVERY_MESSAGES,
+  FILE_UPLOAD_MESSAGES,
+  POPOVER_MESSAGES,
+  QUEUE_PANEL_MESSAGES,
+  HOVER_CARD_MESSAGES,
+  NOTE_EDITOR_MESSAGES,
+  MEDIA_SHELF_MESSAGES,
+  CATEGORY_BAR_MESSAGES,
+  CARRIER_QUOTE_MESSAGES,
+  TEXT_FIELD_MESSAGES,
+  CHAT_SCREEN_MESSAGES,
+  CONTEXT_MENU_MESSAGES,
+  SORTABLE_MEDIA_MESSAGES,
+  CONNECTION_DOTS_MESSAGES,
+  CHAT_PEOPLE_MESSAGES,
+};
+
+export default translations;

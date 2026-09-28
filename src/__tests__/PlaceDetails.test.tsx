@@ -73,6 +73,8 @@ async function flushLayout(): Promise<void> {
 }
 
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
+import { LocaleProvider } from '../locale';
+import { SurfaceLevelProvider, surfaceTextOn } from '../styles/surface-levels';
 import { PLACE_OPEN_TONE } from '../place-card';
 import { PlaceAmenities } from '../place-details/PlaceAmenities';
 import { PlaceHours } from '../place-details/PlaceHours';
@@ -505,4 +507,55 @@ describe('PlaceTransit: a departure is one utterance, and live is a word', () =>
     expect(queryTestId('t-stop-0-departure-0')).not.toBeNull();
     expect(queryTestId('t-stop-0-departure-1')).toBeNull();
   });
+});
+
+it('offers the same expansion action for truncated chips and delegated lists', () => {
+  const onShowAll = jest.fn();
+  for (const layout of ['list', 'chips'] as const) {
+    mount(<PlaceAmenities items={AMENITIES} layout={layout} limit={1} total={7} onShowAll={onShowAll} showAllLabel={n => `Ver ${n}`} testID="expand" />);
+    expect(byTestId('expand-show-all').textContent).toBe('Ver 7');
+    click(byTestId('expand-show-all'));
+  }
+  expect(onShowAll).toHaveBeenCalledTimes(2);
+  mount(<LocaleProvider locale="es"><PlaceAmenities items={AMENITIES} layout="chips" limit={1} total={7} onShowAll={onShowAll} testID="expand" /></LocaleProvider>);
+  expect(byTestId('expand-show-all').textContent).toBe('Mostrar los 7 servicios');
+  mount(<PlaceAmenities items={AMENITIES} layout="chips" onShowAll={onShowAll} testID="expand" />);
+  expect(queryTestId('expand-show-all')).toBeNull();
+});
+
+it('keeps day selection consistent with the fallback chart after data replacement', () => {
+  const onDayChange = jest.fn();
+  mount(<PlacePopularTimes days={DAYS} onDayChange={onDayChange} testID="p" />);
+  const replacement = [DAYS[0]!, { ...DAYS[0]!, id: 'wed', label: 'W', accessibilityLabel: 'Wednesday' }];
+  mount(<PlacePopularTimes days={replacement} onDayChange={onDayChange} testID="p" />);
+  expect(labelled('Monday').getAttribute('aria-checked')).toBe('true');
+  expect(byTestId('p-chart').getAttribute('aria-label')).toBe('Monday, busiest at 9');
+  expect(onDayChange).not.toHaveBeenCalled();
+  mount(<PlacePopularTimes days={replacement} day="missing" testID="p" />);
+  expect(labelled('Monday').getAttribute('aria-checked')).toBe('true');
+});
+
+it.each([0, 1, 11, 23])('prioritizes current-hour label %s without overlapping regular labels', async currentHourIndex => {
+  const hours = Array.from({ length: 24 }, (_, i) => ({ label: String(i), value: 40 }));
+  mount(<PlacePopularTimes days={[{ id: 'today', label: 'Today', hours, currentHourIndex }]} testID="p" />);
+  await flushLayout();
+  const selected = byTestId(`p-hour-${currentHourIndex}`);
+  const left = Number.parseFloat(getComputedStyle(selected).left);
+  for (let i = 0; i < 24; i++) {
+    const node = queryTestId(`p-hour-${i}`);
+    if (node && i !== currentHourIndex) {
+      expect(Math.abs(Number.parseFloat(getComputedStyle(node).left) - left)).toBeGreaterThanOrEqual(40);
+    }
+  }
+});
+
+it.each(['light', 'dark'] as const)('amenity list text follows an inverse ambient surface in %s mode', mode => {
+  const fill = mode === 'light' ? '#101010' : '#FAFAFA';
+  mount(<SurfaceLevelProvider level={2} fill={fill}><PlaceAmenities items={AMENITIES} testID="ambient" /></SurfaceLevelProvider>, mode);
+  const expected = surfaceTextOn(theme(), fill);
+  const swatch = document.createElement('div');
+  swatch.style.color = expected.text;
+  expect(getComputedStyle(byTestId('ambient-item-0-label')).color).toBe(swatch.style.color);
+  swatch.style.color = expected.textSecondary;
+  expect(getComputedStyle(byTestId('ambient-item-1-label')).color).toBe(swatch.style.color);
 });

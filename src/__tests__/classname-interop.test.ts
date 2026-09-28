@@ -63,7 +63,6 @@ const CAST_EXEMPTIONS = [
   // The same, for the checkbox's focus ring.
   'checkbox/Checkbox.tsx',
   // The same, for the button group items' inset focus ring.
-  'button-group/ButtonGroup.tsx',
   // The same `dataSet` focus-ring hook; breadcrumb and pagination also pass the
   // web-only `href` / `aria-current`, divider the web-only `aria-orientation`.
   'breadcrumb/Breadcrumb.tsx',
@@ -79,7 +78,6 @@ const CAST_EXEMPTIONS = [
   // Web-only `data-*` hooks for the adopted sheets, as `Chip` and `Checkbox`.
   'select/Select.web.tsx',
   // The `dataSet` sheet hook plus the web-only `href`, like `Breadcrumb`.
-  'social-button/SocialButton.tsx',
   'button/CloseButton.tsx',
   'button/GlyphButton.tsx',
   // The web-only `href` that makes a heading row a real anchor, like `Breadcrumb`.

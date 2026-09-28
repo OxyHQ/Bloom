@@ -24,9 +24,9 @@ export interface KeyFact {
 export type RentalStatus = 'available' | 'reserved' | 'rented';
 
 export interface RentalActionCardProps extends BookingPriceProps {
-  /** Default `"month"`, drawn "/ month". */
+  /** `"month"` in English, drawn "/ month". */
   priceUnit?: string;
-  /** Default `"/"`. */
+  /** `"/"` in English. */
   priceUnitPrefix?: string;
   /** Under the price: "Bills included", "Bills not included". */
   billsNote?: string;
@@ -34,14 +34,14 @@ export interface RentalActionCardProps extends BookingPriceProps {
   facts?: readonly KeyFact[];
   /** Default `'available'`. */
   status?: RentalStatus;
-  /** The status badge's text. Default "Reserved" / "Rented". */
+  /** The status badge's text. Default "Reserved" / "Rented" (in English). */
   statusLabel?: string;
   /** The line replacing the note while not available. Default per status (`RENTAL_STATUS`). */
   statusMessage?: string;
-  /** Default `"Request a viewing"`. */
+  /** `"Request a viewing"` in English. */
   requestViewingLabel?: string;
   onRequestViewing?: () => void;
-  /** Default `"Apply"`. */
+  /** `"Apply"` in English. */
   applyLabel?: string;
   /** Omit to draw no Apply button. */
   onApply?: () => void;
@@ -72,18 +72,18 @@ export interface SaleActionCardProps extends BookingPriceProps {
   facts?: readonly KeyFact[];
   /** Default `'available'`. */
   status?: SaleStatus;
-  /** Default "Reserved" / "Sold". */
+  /** Default "Reserved" / "Sold" (in English). */
   statusLabel?: string;
   /** Default per status (`SALE_STATUS`). */
   statusMessage?: string;
-  /** Default `"Contact agent"`. */
+  /** `"Contact agent"` in English. */
   contactLabel?: string;
   onContact?: () => void;
-  /** Default `"Request a visit"`. */
+  /** `"Request a visit"` in English. */
   requestVisitLabel?: string;
   /** Omit to draw no secondary button. */
   onRequestVisit?: () => void;
-  /** Default `"Make an offer"`. */
+  /** `"Make an offer"` in English. */
   makeOfferLabel?: string;
   /** Draws the "Make an offer" link. */
   onMakeOffer?: () => void;
@@ -119,9 +119,9 @@ export interface ExchangeHome {
 export interface ExchangeProposalCardProps {
   yourHome: ExchangeHome;
   theirHome: ExchangeHome;
-  /** Default `"Your home"`. */
+  /** `"Your home"` in English. */
   yourHomeLabel?: string;
-  /** Default `"Their home"`. */
+  /** `"Their home"` in English. */
   theirHomeLabel?: string;
   /** Pre-formatted range ("Jul 4 – 18"); omit while unselected. */
   dates?: string;
@@ -129,22 +129,22 @@ export interface ExchangeProposalCardProps {
   /** Pre-formatted guests ("4 guests"). */
   guests?: string;
   onPressGuests?: () => void;
-  /** Default `"Dates"`. */
+  /** `"Dates"` in English. */
   datesLabel?: string;
-  /** Default `"Guests"`. */
+  /** `"Guests"` in English. */
   guestsLabel?: string;
-  /** Default `"Add dates"`. */
+  /** `"Add dates"` in English. */
   datesPlaceholder?: string;
-  /** Default `"Add guests"`. */
+  /** `"Add guests"` in English. */
   guestsPlaceholder?: string;
   /** The selected swap mode. Omit to draw no mode chips. */
   mode?: ExchangeMode;
   onModeChange?: (mode: ExchangeMode) => void;
   /** The modes offered, in order. Default all three. */
   modes?: readonly ExchangeMode[];
-  /** Override chip texts. Default "Reciprocal swap", "Guest points", "Either". */
+  /** Override chip texts. Default "Reciprocal swap", "Guest points", "Either" (in English). */
   modeLabels?: Partial<Record<ExchangeMode, string>>;
-  /** Default `"Propose a swap"`. */
+  /** `"Propose a swap"` in English. */
   proposeLabel?: string;
   onPropose?: () => void;
   proposeDisabled?: boolean;
@@ -185,7 +185,7 @@ export interface ViewingSlot {
 export type ViewingMode = 'in-person' | 'video';
 
 export interface ViewingSchedulerProps {
-  /** Default `"Schedule a viewing"`; `null` draws no title. */
+  /** `"Schedule a viewing"` in English; `null` draws no title. */
   title?: string | null;
   days: readonly ViewingDay[];
   day?: string | null;
@@ -194,23 +194,23 @@ export interface ViewingSchedulerProps {
   slots: readonly ViewingSlot[];
   slot?: string | null;
   onSlotChange?: (value: string) => void;
-  /** Shown instead of the grid when `slots` is empty. Default "No times left on this day". */
+  /** Shown instead of the grid when `slots` is empty. "No times left on this day" in English. */
   emptySlotsLabel?: string;
   /** Omit to draw no in-person / video toggle. */
   mode?: ViewingMode;
   onModeChange?: (mode: ViewingMode) => void;
-  /** Default "In person" / "Video call". */
+  /** Default "In person" / "Video call" (in English). */
   modeLabels?: Partial<Record<ViewingMode, string>>;
   /** Omit `onNoteChange` to draw no note field. */
   note?: string;
   onNoteChange?: (note: string) => void;
-  /** Default `"Note for the landlord"`. */
+  /** `"Note for the landlord"` in English. */
   noteLabel?: string;
   notePlaceholder?: string;
-  /** Default `"Day"`, `"Time"`. Names the groups. */
+  /** `"Day"`, `"Time"` in English. Names the groups. */
   dayLabel?: string;
   timeLabel?: string;
-  /** Default `"Request viewing"`. */
+  /** `"Request viewing"` in English. */
   submitLabel?: string;
   onSubmit?: () => void;
   /** Default: disabled until a day and a slot are chosen. */
@@ -291,7 +291,7 @@ export interface MortgageCalculatorProps {
   /** Formats every amount. Default: rounded, grouped digits, no currency. */
   formatCurrency?: (value: number) => string;
   labels?: Partial<MortgageCalculatorLabels>;
-  /** Under the result. Default "An estimate, not an offer…"; `null` hides it. */
+  /** Under the result. Default "An estimate, not an offer…" (in English); `null` hides it. */
   disclaimer?: ReactNode;
   /** `auto` puts the result beside the inputs from 640 wide. */
   layout?: 'auto' | 'stacked' | 'split';
@@ -316,18 +316,18 @@ export interface ApplicationItem {
   status: ApplicationItemStatus;
   /** Why it was rejected; shown in place of the description. */
   reason?: string;
-  /** Default per status: Upload, View, View, Replace. `null` draws no button. */
+  /** Default per status: Upload, View, View, Replace (in English). `null` draws no button. */
   actionLabel?: string | null;
   /** Default `onItemAction`. */
   onAction?: () => void;
 }
 
 export interface ApplicationChecklistProps {
-  /** Default `"Your application"`; `null` draws none. */
+  /** `"Your application"` in English; `null` draws none. */
   title?: string | null;
   items: readonly ApplicationItem[];
   onItemAction?: (item: ApplicationItem) => void;
-  /** Default "{done} of {total} ready". */
+  /** Default "{done} of {total} ready" (in English). */
   formatProgress?: (done: number, total: number) => string;
   /** Override the status badge texts. */
   statusLabels?: Partial<Record<ApplicationItemStatus, string>>;

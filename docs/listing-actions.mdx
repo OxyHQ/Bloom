@@ -6,6 +6,8 @@ order: 114
 
 # Listing actions
 
+The docked ActionBar publishes its background to children without adding a raised material or changing safe-area geometry.
+
 The card beside a listing is where someone acts on it. A stay books
 (`BookingCard`, in [Booking](/docs/bloom/main/booking)); the rest live here, and
 all of them draw the **same card chrome** as `BookingCard`:
@@ -19,6 +21,8 @@ all of them draw the **same card chrome** as `BookingCard`:
 | `MortgageCalculator`   | price, down payment, term and rate in; monthly payment, a principal / interest donut out    |
 | `ApplicationChecklist` | the documents a rental application needs, each with its status and action                 |
 | `ActionBar`            | the phone bar pinned under any listing; `BookingBar` is its stay preset                    |
+
+Every default text below (labels, buttons, statuses, the disclaimer) is shown in English; it is localised via `BloomProvider locale`, and a caller's `*Label` / `labels` prop still wins.
 
 ```tsx
 import {

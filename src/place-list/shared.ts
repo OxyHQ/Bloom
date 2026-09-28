@@ -13,7 +13,7 @@ import {
 } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import { PLACE_LIST_VISIBILITY_LABELS } from './constants';
+import { PLACE_LIST_MESSAGES, type PlaceListMessages } from './messages';
 import type { PlaceListCardProps, PlaceListLabels, PlaceListPlace } from './types';
 
 export interface PlaceListPaint extends SurfaceTextPaint {
@@ -34,14 +34,17 @@ export function resolvePlaceListPaint(theme: Theme, surface: string): PlaceListP
   };
 }
 
-/** `"12 places"`, and `"1 place"` for the one that would otherwise read wrong. */
+/**
+ * `"12 places"`, and `"1 place"` for the one that would otherwise read wrong —
+ * in English. The card counts in the app's locale (`PLACE_LIST_MESSAGES`).
+ */
 export function placeListCountLabel(count: number): string {
-  return count === 1 ? '1 place' : `${count} places`;
+  return PLACE_LIST_MESSAGES.en.places(count);
 }
 
-/** `"Shared with 3"`. */
+/** `"Shared with 3"`, in English; the card says it in the app's locale. */
 export function placeListSharedWithLabel(count: number): string {
-  return `Shared with ${count}`;
+  return PLACE_LIST_MESSAGES.en.sharedWith(count);
 }
 
 /**
@@ -53,23 +56,23 @@ export function placeListSharedWithLabel(count: number): string {
  * name it is announced as "Want to go 12 places Shared with 3 Shared" in one
  * run with no commas.
  */
-export function composePlaceListName(props: PlaceListCardProps): string {
+export function composePlaceListName(
+  props: PlaceListCardProps,
+  messages: PlaceListMessages = PLACE_LIST_MESSAGES.en,
+): string {
   const parts: string[] = [props.name];
-  if (props.count != null) parts.push((props.countLabel ?? placeListCountLabel)(props.count));
+  if (props.count != null) parts.push((props.countLabel ?? messages.places)(props.count));
   const people = props.collaborators?.length ?? 0;
-  if (people > 0) parts.push((props.sharedWithLabel ?? placeListSharedWithLabel)(people));
-  parts.push(props.visibilityLabel ?? PLACE_LIST_VISIBILITY_LABELS[props.visibility ?? 'private']);
+  if (people > 0) parts.push((props.sharedWithLabel ?? messages.sharedWith)(people));
+  parts.push(props.visibilityLabel ?? messages.visibility[props.visibility ?? 'private']);
   return parts.join(', ');
 }
 
-/** Every word `PlaceList` speaks, before the caller overrides any of them. */
-export const DEFAULT_PLACE_LIST_LABELS: PlaceListLabels = {
-  moveEarlier: (position) => `Move to position ${position - 1}`,
-  moveLater: (position) => `Move to position ${position + 1}`,
-  remove: (name) => `Remove ${name} from the list`,
-  moved: (name, position, total) => `${name} moved to position ${position} of ${total}`,
-  note: 'Note',
-};
+/**
+ * Every word `PlaceList` speaks, in English, before the caller overrides any
+ * of them. The list itself speaks `PLACE_LIST_MESSAGES` in the app's locale.
+ */
+export const DEFAULT_PLACE_LIST_LABELS: PlaceListLabels = PLACE_LIST_MESSAGES.en.labels;
 
 /** A place's name, for the controls that talk about it. */
 export function placeNameOf(entry: PlaceListPlace): string {

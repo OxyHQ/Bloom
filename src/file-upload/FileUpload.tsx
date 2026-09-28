@@ -18,12 +18,14 @@ import { RiFileImageLine } from '../icons/remix/RiFileImageLine';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { RiUploadCloud2Line } from '../icons/remix/RiUploadCloud2Line';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useMessages } from '../locale/messages';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { FILE_UPLOAD_MESSAGES } from './messages';
 import type { FileUploadFile, FileUploadLabels, FileUploadProps } from './types';
 
 /**
@@ -447,6 +449,7 @@ const FileUploadComponent = function FileUpload({
   style,
   testID,
 }: FileUploadProps) {
+  const { locale, messages } = useMessages(FILE_UPLOAD_MESSAGES);
   const theme = useTheme();
   // The drop zone draws a prompt but names itself with a prop, so a `Field`
   // around it is the other place the name can come from — and the field's
@@ -460,12 +463,12 @@ const FileUploadComponent = function FileUpload({
   const paint = useMemo(() => resolveFileUploadPaint(theme), [theme]);
 
   const labels: FileUploadLabels = {
-    prompt: IS_WEB ? 'Drag and drop to upload or' : 'Tap to',
-    select: IS_WEB ? 'select' : 'select a file',
-    uploading: (size) => `Uploading ${size}...`,
-    uploaded: 'Uploaded successfully!',
-    unsupported: (extensions) => `Only ${extensions} files are supported`,
-    tooLarge: (max) => `That file is larger than ${max}`,
+    prompt: IS_WEB ? messages.promptWeb : messages.promptNative,
+    select: IS_WEB ? messages.selectWeb : messages.selectNative,
+    uploading: messages.uploading,
+    uploaded: messages.uploaded,
+    unsupported: messages.unsupported,
+    tooLarge: messages.tooLarge,
     ...labelOverrides,
   };
 
@@ -540,7 +543,7 @@ const FileUploadComponent = function FileUpload({
       return;
     }
     if (next.size > maxBytes) {
-      reject(labels.tooLarge(formatFileSize(maxBytes)), next);
+      reject(labels.tooLarge(formatFileSize(maxBytes, locale)), next);
       return;
     }
 
@@ -649,7 +652,7 @@ const FileUploadComponent = function FileUpload({
       {...webDataSet({ bloomFileUpload: busy ? 'busy' : 'idle' })}
       accessibilityRole="button"
       nativeID={field.nativeID}
-      accessibilityLabel={field.accessibilityLabel ?? 'Upload a file'}
+      accessibilityLabel={field.accessibilityLabel ?? messages.uploadFile}
       aria-describedby={field.describedBy}
       aria-invalid={field.invalid || undefined}
       aria-busy={busy}
@@ -838,7 +841,7 @@ const FileUploadComponent = function FileUpload({
           </StaggerLine>
           <StaggerLine state={idleReveal} kind="line" order={3} reducedMotion={reducedMotion}>
             <Text variant="body-2-regular" style={{ color: paint.hint, textAlign: 'center' }}>
-              {allowedLabel} (max {formatFileSize(maxBytes)})
+              {allowedLabel} {messages.max(formatFileSize(maxBytes, locale))}
             </Text>
           </StaggerLine>
         </View>
@@ -889,7 +892,7 @@ const FileUploadComponent = function FileUpload({
             style={{ position: 'absolute', left: 0, right: 0 }}
           >
             <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
-              {labels.uploading(file ? formatFileSize(file.size) : '')}
+              {labels.uploading(file ? formatFileSize(file.size, locale) : '')}
             </Text>
           </StaggerLine>
           <StaggerLine

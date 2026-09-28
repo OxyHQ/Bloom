@@ -183,8 +183,7 @@ the right parent without being told:
 <SurfaceLevelProvider level={1} fill={colors.card}>{children}</SurfaceLevelProvider>
 ```
 
-`ContentPanel`, `FloatingPanel` (so every menu, popover, select and tooltip),
-`QueuePanel`, and every sheet and dialog surface do this. `useSurfaceLevel()`
+`Surface`, painted `Card`, `ContentPanel`, `FloatingPanel` (menus, popovers and selects), `Tooltip`, `QueuePanel`, and the sheet and dialog surfaces publish their backing. `useSurfaceLevel()`
 reads the current rung's paint, `useSurfaceLevel(1)` the one above it,
 `useSurfaceFill()` just the fill. Nothing published means level 0 — the page —
 which is what every unwrapped consumer already assumed.
@@ -212,12 +211,7 @@ the rung ALONE — no `fill`. It paints nothing itself, so it has no fill to
 report; what it can say truthfully is "you are not on the surface your trigger
 was on". A surface inside it that knows its own colour then says so and wins:
 `Dialog` and the sheet shell publish `fill={colors.background}`, `FloatingPanel`
-publishes the menu rung. Two surfaces still paint something Bloom does not
-publish — `SettingsModal` (`resolveSettingsPalette(theme).full`) and `Tooltip`
-(the menu palette) — so content inside those reads the page rung rather than
-their real fill. That is an approximation, not a claim: they have published
-nothing since before the ladder existed, and the fix is for each to publish its
-own `fill`.
+publishes the menu rung. `SettingsModal` publishes its full backing and its rail publishes its own secondary backing; `Tooltip` publishes its menu fill. Explicit opaque inline overrides must be published too. A background supplied only by a CSS utility cannot always be resolved by the React context: prefer an explicit fill/surface prop when nested controls need to derive their colors from it.
 
 ### `fill` — the rung is a derivation, the fill is a fact
 
@@ -239,9 +233,7 @@ it did.
 
 ### `useSurfaceFill()` or `colors.card`?
 
-**`colors.card` is a palette token: the colour a CARD paints.** It is the right
-answer when you are drawing a card — an object that is genuinely separate from
-what is behind it.
+**`colors.card` is a palette token: the initial card backing on the page.** A nested Card or Surface derives its backing from the actual parent instead of repeating this token.
 
 **`useSurfaceFill()` is a question about position: the colour of the surface
 underneath you.** It is the right answer for chrome that has to be OPAQUE in its

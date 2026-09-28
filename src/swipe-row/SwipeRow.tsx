@@ -21,6 +21,8 @@ import {
 } from './constants';
 import { resolveSwipeRowPaint, swipeActionPaint } from './shared';
 import type { SwipeRowAction, SwipeRowProps } from './types';
+import { useMessages } from '../locale/messages';
+import { SWIPE_ROW_MESSAGES } from './messages';
 
 /**
  * ONE drag affordance for every list row in this library.
@@ -67,11 +69,13 @@ export function SwipeRow({
   background,
   radius = SWIPE_ROW_RADIUS,
   actionWidth = SWIPE_ACTION_WIDTH,
-  closeLabel = 'Close actions',
+  closeLabel: closeLabelProp,
   onOpenChange,
   children,
   testID,
 }: SwipeRowProps) {
+  const { messages } = useMessages(SWIPE_ROW_MESSAGES);
+  const closeLabel = closeLabelProp ?? messages.closeActions;
   const theme = useTheme();
   const translateX = useSharedValue(0);
   const reducedMotion = useReducedMotion();

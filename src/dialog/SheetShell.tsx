@@ -1,3 +1,5 @@
+import { surfaceStyle } from '../shapes/surface-style';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 /**
  * Internal bottom-sheet shell shared by `Menu`, `Select` and `ContextMenu`.
  *
@@ -103,8 +105,8 @@ export function SheetShell({
   const sheetStyle = useMemo(
     () => ({
       maxWidth: 500,
-      backgroundColor: theme.colors.background,
-      borderRadius: 20,
+      backgroundColor: 'transparent',
+      ...surfaceStyle(SURFACE_SHAPES.panel),
     }),
     [theme.colors.background],
   );
@@ -140,7 +142,7 @@ export function SheetShell({
           accessibilityLabel={label}
           className={contentClassName}
           testID={contentTestID}
-          style={[styles.body, { backgroundColor: theme.colors.background }, contentStyle]}
+          style={[styles.body, { backgroundColor: 'transparent' }, contentStyle]}
         >
           {children}
         </StyledView>

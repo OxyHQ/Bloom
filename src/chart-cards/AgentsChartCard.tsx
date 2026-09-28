@@ -1,3 +1,4 @@
+import { Card } from '../card';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -22,9 +23,12 @@ import { WeekRangePill } from './medical-parts';
 import { TABULAR } from './primitives/ChartHeader';
 import { FadeOnChange } from './primitives/FadeOnChange';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useCountUp } from './use-count-up';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
+import { formatGregorian } from '../locale/format-date';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 /**
  * A month of daily agent runs as plain rounded bars, with a month switcher
  * pill and a count-up headline that follows the hovered day.
@@ -130,7 +134,7 @@ export function agentsColumnAt(x: number, width: number, count: number, gap = AG
 
 export function AgentsChartCard({
   data,
-  title = 'Agents',
+  title: titleProp,
   headline,
   format = defaultFormat,
   getPointTitle,
@@ -139,8 +143,8 @@ export function AgentsChartCard({
   onNextRange,
   prevRangeLabel,
   nextRangeLabel,
-  startLabel = 'Jun 14',
-  endLabel = 'Today',
+  startLabel: startLabelProp,
+  endLabel: endLabelProp,
   trackHeight = AGENTS_TRACK_HEIGHT,
   maxBarHeight = AGENTS_MAX_BAR,
   max,
@@ -152,8 +156,14 @@ export function AgentsChartCard({
   style,
   testID,
 }: AgentsChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const title = titleProp ?? chartText.titles.agents;
+  const endLabel = endLabelProp ?? chartText.today;
+  // The sample range's start (June 14), written the locale's way.
+  const startLabel =
+    startLabelProp ?? formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ?? '6/14';
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
   const [width, setWidth] = useState(0);
@@ -229,10 +239,12 @@ export function AgentsChartCard({
       : null;
 
   const summary =
-    accessibilityLabel ?? `${title} bar chart: ${data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', ')}`;
+    accessibilityLabel ?? chartText.barChart(title, data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', '));
 
   return (
-    <View
+    <Card
+      radius="radius-20"
+      elevation="none"
       testID={testID}
       style={[
         {
@@ -241,8 +253,6 @@ export function AgentsChartCard({
           minWidth: 0,
           flexDirection: 'column',
           gap: 10,
-          borderRadius: 20,
-          backgroundColor: palette.surface,
           paddingTop: 12,
           paddingBottom: 12,
           paddingLeft: 10,
@@ -340,6 +350,6 @@ export function AgentsChartCard({
           {endLabel}
         </Text>
       </View>
-    </View>
+    </Card>
   );
 }

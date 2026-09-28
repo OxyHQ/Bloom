@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { render, within } from '@testing-library/react-native';
 
@@ -45,7 +46,7 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 describe('AgentLimitsCard', () => {
   it('keeps the card geometry: radius 16, padding 10/16/16 in longhands', () => {
     const { getByTestId } = renderCard(<AgentLimitsCard testID="card" context={CONTEXT} />);
-    const card = resolvedStyle(getByTestId('card').props.style);
+    const card = cardLayout(getByTestId('card'));
     expect(card).toMatchObject({
       borderRadius: 16,
       paddingTop: 10,
@@ -214,14 +215,14 @@ describe('AgentLimitsCard', () => {
   it('maps the surface onto the neutral ramp per mode', () => {
     const light = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'light');
     const lightTheme = buildTheme('teal', 'light');
-    expect(resolvedStyle(light.getByTestId('card').props.style).backgroundColor).toBe(
+    expect(cardFill(light.getByTestId('card'))).toBe(
       lightTheme.colors.card,
     );
     light.unmount();
 
     const dark = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'dark');
     const darkTheme = buildTheme('teal', 'dark');
-    expect(resolvedStyle(dark.getByTestId('card').props.style).backgroundColor).toBe(
+    expect(cardFill(dark.getByTestId('card'))).toBe(
       darkTheme.colors.card,
     );
   });

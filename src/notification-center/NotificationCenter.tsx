@@ -6,6 +6,7 @@ import { Button } from '../button';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
@@ -29,6 +30,7 @@ import type {
   NotificationCenterStatus,
   NotificationCenterTab,
 } from './types';
+import { NOTIFICATION_CENTER_MESSAGES } from './messages';
 
 /**
  * The notification center.
@@ -62,11 +64,7 @@ import type {
  * items read in this instance and then tells the host.
  */
 
-const TABS: { id: NotificationCenterTab; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'mentions', label: 'Mentions' },
-  { id: 'system', label: 'System' },
-];
+const TABS: readonly NotificationCenterTab[] = ['all', 'mentions', 'system'];
 
 const STATUS_ICON: Record<NotificationCenterStatus, NotificationCenterIcon> = {
   neutral: RiNotification3Fill,
@@ -194,12 +192,16 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
   onTabChange,
   onAction,
   onMarkAllRead,
-  title = 'Notifications',
-  emptyMessage = 'You’re all caught up.',
-  emptyDescription = 'New activity will appear here when it arrives.',
+  title: titleProp,
+  emptyMessage: emptyMessageProp,
+  emptyDescription: emptyDescriptionProp,
   style,
   testID,
 }) => {
+  const { messages } = useMessages(NOTIFICATION_CENTER_MESSAGES);
+  const title = titleProp ?? messages.title;
+  const emptyMessage = emptyMessageProp ?? messages.emptyMessage;
+  const emptyDescription = emptyDescriptionProp ?? messages.emptyDescription;
   const theme = useTheme();
   const palette = useMemo(() => resolveNotificationCenterPalette(theme), [theme]);
   const [activeTab, setTab] = useControllableState<NotificationCenterTab>({
@@ -262,25 +264,25 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
               {title}
             </Text>
             <Text variant="body-regular" style={{ color: palette.textSecondary }}>
-              {unreadCount === 0 ? 'No unread notifications' : `${unreadCount} unread`}
+              {unreadCount === 0 ? messages.noUnread : messages.unread(unreadCount)}
             </Text>
           </View>
           <Button size="sm" onPress={markAllRead} disabled={unreadCount === 0} appearance="subtle" tone="accent">
-            Mark all read
+            {messages.markAllRead}
           </Button>
         </View>
 
         <SegmentedControl
-          label="Notification category"
+          label={messages.category}
           type="tabs"
           value={activeTab}
           onValueChange={setTab}
           style={{ alignSelf: 'stretch', width: '100%' }}
         >
-          {TABS.map(({ id, label }) => (
+          {TABS.map((id) => (
             <SegmentedControlItem key={id} value={id} testID={testID ? `${testID}-tab-${id}` : undefined}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <SegmentedControlItemText>{label}</SegmentedControlItemText>
+                <SegmentedControlItemText>{messages.tabs[id]}</SegmentedControlItemText>
                 <CountPill count={counts[id]} palette={palette} />
               </View>
             </SegmentedControlItem>
@@ -363,7 +365,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
                             </Text>
                             {unread ? (
                               <View
-                                accessibilityLabel="Unread"
+                                accessibilityLabel={messages.unreadDot}
                                 testID={`notification-${item.id}-unread`}
                                 style={{
                                   width: 8,

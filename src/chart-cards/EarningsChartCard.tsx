@@ -11,12 +11,15 @@ import { describeDeltaRatio } from './primitives/format';
 import { MultiAxisPlot } from './primitives/MultiAxisPlot';
 import { PeriodChartHeader } from './primitives/PeriodChartHeader';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { roundedBarPath, singleBarSlot } from './rounded-bar-geometry';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
 /**
  * `EarningsChartCard` ("Earned so far"): rounded bars standing in full-height
  * tracks, a Weekly / Monthly / Yearly switcher and a count-up headline that
@@ -101,19 +104,19 @@ const HOVER_STROKE = 2;
 export const formatEarningsK = (value: number) => (value === 0 ? '$0' : `$${value / 1000}K`);
 
 export function EarningsChartCard({
-  title = 'Earned so far',
+  title: titleProp,
   data: dataProp,
   headline: headlineProp,
   delta: deltaProp,
   ranges,
   defaultRange,
   onRangeChange,
-  rangesLabel = 'Earnings period',
+  rangesLabel: rangesLabelProp,
   yTicks,
   yMax,
   getPointTitle,
-  format = formatDollars,
-  formatAxisValue = formatEarningsK,
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
   color,
   activeColor,
   activeIndex: controlledIndex,
@@ -122,8 +125,13 @@ export function EarningsChartCard({
   style,
   testID,
 }: EarningsChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatCurrency(value, 'USD', chartLocale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => (value === 0 ? formatCurrency(0, 'USD', chartLocale) : formatCompactCurrency(value, 'USD', chartLocale)));
+  const title = titleProp ?? chartText.titles.earnedSoFar;
+  const rangesLabel = rangesLabelProp ?? chartText.earningsPeriod;
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
   const data = selected?.data ?? dataProp ?? [];
   const headline = selected?.headline ?? headlineProp;
@@ -154,7 +162,7 @@ export function EarningsChartCard({
 
   const hovering = activeIndex !== null;
   const point = hovering ? data[activeIndex] : undefined;
-  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label)) : title;
+  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label, chartLocale)) : title;
   const total = headline ?? values.reduce((sum, v) => sum + v, 0);
 
   return (
@@ -163,7 +171,7 @@ export function EarningsChartCard({
         label={label}
         value={point ? point.value : total}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         ranges={ranges}

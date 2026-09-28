@@ -31,3 +31,6 @@ import { RiAsterisk, RiDropLine } from '@oxy.so/bloom/icons';
 - **Rows:** they fill the remaining height, 10px apart; radius 10, padding 8/10. Each row has a 16px icon and a 14/20 regular label, both in the secondary colour, and a 14/20 medium value on the right.
 
 Rows are the card colour (white) in light mode, and `neutral-800` at 60% over the `neutral-900` card in dark mode.
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

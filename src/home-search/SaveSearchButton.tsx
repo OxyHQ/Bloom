@@ -3,6 +3,8 @@ import React, { memo } from 'react';
 import { RiNotification3Fill } from '../icons/remix/RiNotification3Fill';
 import { RiNotification3Line } from '../icons/remix/RiNotification3Line';
 import { FilterChip } from '../stay-filters/FilterChip';
+import { useMessages } from '../locale/messages';
+import { HOME_SEARCH_MESSAGES } from './messages';
 import type { SaveSearchButtonProps } from './types';
 
 /**
@@ -20,12 +22,15 @@ import type { SaveSearchButtonProps } from './types';
 function SaveSearchButtonComponent({
   saved,
   onSavedChange,
-  label = 'Save search',
-  savedLabel = 'Saved',
+  label: labelProp,
+  savedLabel: savedLabelProp,
   disabled = false,
   style,
   testID,
 }: SaveSearchButtonProps) {
+  const { messages } = useMessages(HOME_SEARCH_MESSAGES);
+  const label = labelProp ?? messages.saveSearch;
+  const savedLabel = savedLabelProp ?? messages.saved;
   return (
     <FilterChip
       mode="toggle"

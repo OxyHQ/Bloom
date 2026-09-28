@@ -84,6 +84,7 @@ export type TabBarProps = ViewProps & {
   embedded?: boolean;
   /** Prefer horizontal scrolling over scrub gestures when targets overflow. */
   scrollable?: boolean;
+  /** Translucent platform material by default; solid uses the shared opaque Surface. */
   material?: 'solid' | 'translucent';
   /** One motion signal shared with screen chrome. */
   minimizeProgress?: SharedValue<number>;

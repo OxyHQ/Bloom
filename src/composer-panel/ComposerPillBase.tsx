@@ -1,6 +1,13 @@
+import { useComposerButton } from './context';
+import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
+import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import { resolveSurfaceFill } from '../surface/shared';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { parseRgba } from '../theme/color-utils';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Pressable,
+  StyleSheet,
   TextInput,
   View,
   useWindowDimensions,
@@ -18,6 +25,8 @@ import Animated, {
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useTextareaAutosize } from '../hooks/use-textarea-autosize';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import { RadioIndicator } from '../radio-indicator';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -27,15 +36,15 @@ import { MicButton, SendButton, StopButton } from './ComposerControls';
 import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
 import {
-  COMPOSER_PANEL_ADD_MENU,
+  composerAddMenu,
   CONTROL_SIZE,
   DEFAULT_EFFORT,
   EFFORT_WIDTH,
-  MODEL_PICKER_EFFORT_LEVELS,
   resolveComposerPalette,
   type ComposerPalette,
 } from './shared';
-import type { ComposerPillLabels, ComposerPillProps, ModelPickerModel } from './types';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
+import type { ComposerPanelLabels, ComposerPillLabels, ComposerPillProps, ModelPickerModel } from './types';
 import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -48,56 +57,24 @@ const PILL_HEIGHT = 52;
 /** One line of `body-regular`, which is what the field was fixed at. */
 const LINE_HEIGHT = 20;
 
-const DEFAULT_LABELS: Required<ComposerPillLabels> = {
-  message: 'Message',
-  add: 'Add attachment',
-  addMenu: 'Add to chat',
-  modelSettings: 'Model settings',
-  models: 'Models',
-  modelGroup: 'Model',
-  effort: 'Effort',
-  effortAuto: 'Auto',
-  faster: 'Faster',
-  smarter: 'Smarter',
-  voice: 'Voice input',
-  send: 'Send message',
-  stop: 'Stop generating',
-};
-
-/**
- * A frosted chip behind a control while the composer is on glass: a 6px
- * saturated backdrop blur, a white tint (12% light, 6% dark), a 155° white sheen
- * at half strength and a 0.3px conic rim lit from the top left. Native has no
- * backdrop filter, so it keeps the tint alone. Fades with the glass (480ms).
- */
+/** Shared glass paint behind an explicitly glass control; fades with its existing transition. */
 function GlassChip({ shown, radius, dark }: { shown: boolean; radius: number; dark: boolean }) {
   const reducedMotion = useReducedMotion();
   const opacity = useSharedValue(shown ? 1 : 0);
+  const [mounted, setMounted] = useState(shown);
   useEffect(() => {
-    const target = shown ? 1 : 0;
-    opacity.value = reducedMotion ? target : withTiming(target, { duration: GLASS_MS, easing: EASE });
+    if (shown) setMounted(true);
+    opacity.value = reducedMotion ? (shown ? 1 : 0) : withTiming(shown ? 1 : 0, { duration: GLASS_MS, easing: EASE });
+    if (!shown) {
+      const timer = setTimeout(() => setMounted(false), reducedMotion ? 0 : GLASS_MS);
+      return () => clearTimeout(timer);
+    }
   }, [shown, reducedMotion, opacity]);
   const fade = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
-  const fill = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius } as const;
-  const frost: WebCssStyle = {
-    ...fill,
-    backdropFilter: 'blur(6px) saturate(160%)',
-    WebkitBackdropFilter: 'blur(6px) saturate(160%)',
-  };
-  const sheen: WebCssStyle = {
-    ...fill,
-    opacity: 0.5,
-    backgroundImage:
-      'linear-gradient(155deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0) 68%, rgba(255, 255, 255, 0.32) 100%)',
-  };
-  return (
-    <Animated.View pointerEvents="none" style={[fill, fade]}>
-      {IS_WEB ? <View style={frost} /> : null}
-      <View style={[fill, { backgroundColor: `rgba(255, 255, 255, ${dark ? 0.06 : 0.12})` }]} />
-      {IS_WEB ? <View style={sheen} /> : null}
-      {IS_WEB ? <View {...dataHook('bloomComposerGlassRim')} style={fill} /> : null}
-    </Animated.View>
-  );
+  if (!mounted) return null;
+  return <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, fade]}>
+    <SurfacePaint fill={`rgba(255, 255, 255, ${dark ? 0.06 : 0.12})`} radius={radius} glass />
+  </Animated.View>;
 }
 
 /** A chevron that turns to `degrees` over 200ms `ease`. */
@@ -242,10 +219,10 @@ function ModelMenu({
   onTriggerLayout?: (width: number) => void;
   testID?: string;
 }) {
+  const Button = useComposerButton();
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
   // An id with no entry (a model the lineup no longer carries) shows as itself
   // rather than as an empty trigger.
   const modelName = models.find((entry) => entry.id === modelId)?.name ?? modelId;
@@ -260,7 +237,6 @@ function ModelMenu({
     justifyContent: 'center',
     gap: 2,
     borderRadius: 12,
-    backgroundColor: hovered ? triggerPalette.hover : triggerPalette.surface,
     paddingTop: 6,
     paddingBottom: 6,
     paddingRight: 4,
@@ -270,25 +246,22 @@ function ModelMenu({
   };
   return (
     <>
-      <Pressable
+      <Button appearance="plain" tone="neutral"
         ref={triggerRef}
         testID={testID}
-        {...dataHook('bloomComposerControl')}
         accessibilityRole="button"
         accessibilityLabel={modelName}
         aria-expanded={open}
         aria-haspopup="dialog"
-        accessibilityState={{ expanded: open }}
         onPress={() => setOpen(!open)}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
+
         onLayout={(event) => onTriggerLayout?.(event.nativeEvent.layout.width)}
-        style={triggerStyle}>
+        style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}>
         <Text variant="body-medium" numberOfLines={1} style={{ paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}>
           {modelName}
         </Text>
         <TurningChevron degrees={open ? 180 : 0} color={palette.iconSecondary} />
-      </Pressable>
+      </Button>
 
       <Popover
         open={open}
@@ -401,9 +374,9 @@ export function ComposerPillBase({
   onStop,
   busy = false,
   disabled = false,
-  placeholder = 'Ask me anything',
-  compactPlaceholder = 'Ask me',
-  addMenu = COMPOSER_PANEL_ADD_MENU,
+  placeholder: placeholderProp,
+  compactPlaceholder: compactPlaceholderProp,
+  addMenu: addMenuProp,
   onAddMenuSelect,
   models,
   model,
@@ -412,7 +385,7 @@ export function ComposerPillBase({
   effort,
   defaultEffort = DEFAULT_EFFORT,
   onEffortChange,
-  effortLevels = MODEL_PICKER_EFFORT_LEVELS,
+  effortLevels: effortLevelsProp,
   listening,
   defaultListening = false,
   onListeningChange,
@@ -429,7 +402,48 @@ export function ComposerPillBase({
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
+  const common = useCommonMessages();
+  const labels = useMemo<Required<ComposerPillLabels>>(
+    () => ({
+      message: messages.message,
+      add: messages.add,
+      addMenu: messages.addMenu,
+      modelSettings: messages.modelSettings,
+      models: messages.models,
+      modelGroup: messages.modelGroup,
+      effort: messages.effort,
+      effortAuto: messages.effortAuto,
+      faster: messages.faster,
+      smarter: messages.smarter,
+      voice: messages.voice,
+      send: messages.send,
+      stop: messages.stop,
+      ...labelOverrides,
+    }),
+    [messages, labelOverrides],
+  );
+  // `AddMenu` reads the panel's label set; only `add` and `addMenu` reach it.
+  const addMenuLabels = useMemo<Required<ComposerPanelLabels>>(
+    () => ({
+      message: labels.message,
+      add: labels.add,
+      addMenu: labels.addMenu,
+      permissions: messages.permissions,
+      permissionMode: messages.permissionMode,
+      learnMore: messages.learnMore,
+      voice: labels.voice,
+      send: labels.send,
+      stop: labels.stop,
+      remove: common.remove,
+      retry: common.retry,
+    }),
+    [labels, messages, common],
+  );
+  const placeholder = placeholderProp ?? messages.pillPlaceholder;
+  const compactPlaceholder = compactPlaceholderProp ?? messages.pillCompactPlaceholder;
+  const addMenu = useMemo(() => addMenuProp ?? composerAddMenu(messages), [addMenuProp, messages]);
+  const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
   const compact = useWindowDimensions().width < COMPACT_WIDTH;
 
   const [text, setText] = useControllableState<string>({ value, defaultValue, onChange: onValueChange });
@@ -471,15 +485,6 @@ export function ComposerPillBase({
     [inputRef],
   );
 
-  // The add control shares the canonical inset and hover surfaces.
-  const addPalette: ComposerPalette = useMemo(() => {
-    if (glass) return { ...palette, add: 'transparent', addHover: 'transparent' };
-    return {
-      ...palette,
-      add: theme.colors.backgroundSecondary,
-      addHover: theme.colors.backgroundTertiary,
-    };
-  }, [palette, glass, theme]);
   const controlPalette: ComposerPalette = useMemo(
     () =>
       glass
@@ -575,6 +580,14 @@ export function ComposerPillBase({
     onMeasure: setContentHeight,
   });
 
+  const parentFill = useSurfaceFill();
+  const parentLevel = useSurfaceLevelValue();
+  const customSurface = StyleSheet.flatten(style);
+  const surfaceFill = customSurface?.backgroundColor ?? palette.surface;
+  const paintsSurface = surface && typeof surfaceFill === 'string' && surfaceFill !== 'transparent' && parseRgba(surfaceFill)?.a !== 0;
+  const ownFill = paintsSurface ? surfaceFill : customSurface?.backgroundColor;
+  const publishedFill = typeof ownFill === 'string' && ownFill !== 'transparent' && parseRgba(ownFill)?.a !== 0
+    ? resolveSurfaceFill(ownFill, false, paintsSurface ? theme.colors.card : parentFill) : undefined;
   const pillStyle: WebCssStyle = {
     width: '100%',
     height: pillHeight,
@@ -585,7 +598,7 @@ export function ComposerPillBase({
     gap: 10,
     borderRadius: multiLine ? 26 : 9999,
     padding: 8,
-    backgroundColor: surface ? palette.surface : 'transparent',
+    backgroundColor: 'transparent',
     boxShadow: surface ? palette.shadowXs : undefined,
     '--bloom-composer-ring': palette.focusRing,
   };
@@ -604,16 +617,17 @@ export function ComposerPillBase({
       : null),
   };
 
-  return (
-    <View {...dataHook('bloomComposerPill')} testID={testID} style={[pillStyle, style]}>
+  const content = (
+    <View {...dataHook('bloomComposerPill')} testID={testID} style={[pillStyle, style, paintsSurface ? { backgroundColor: 'transparent' } : undefined, surfaceFillVars(publishedFill)]}>
+      {paintsSurface ? <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? (multiLine ? 26 : 9999)} /> : null}
       {addMenu.length > 0 ? (
         <View style={{ position: 'relative', flexShrink: 0 }}>
           <GlassChip shown={glass} radius={CONTROL_SIZE / 2} dark={theme.isDark} />
           <AddMenu
-            palette={addPalette}
+            palette={palette}
             groups={addMenu}
             onSelect={onAddMenuSelect}
-            labels={{ ...DEFAULT_PANEL_LABELS, add: labels.add, addMenu: labels.addMenu }}
+            labels={addMenuLabels}
             testID={testID ? `${testID}-add` : undefined}
           />
         </View>
@@ -696,30 +710,18 @@ export function ComposerPillBase({
          * whether it has one. Without it the send button simply sits there
          * disabled, as it always did. */}
         {busy && onStop ? (
-          <StopButton onPress={onStop} label={labels.stop} palette={palette} />
+          <StopButton onPress={onStop} label={labels.stop} />
         ) : emptyAction !== undefined && text.trim() === '' ? (
           emptyAction
         ) : (
-          <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
+          <SendButton disabled={disabled} onPress={submit} label={labels.send} />
         )}
       </View>
     </View>
   );
-}
+  return publishedFill ? <SurfaceLevelProvider level={surface ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
 
-const DEFAULT_PANEL_LABELS = {
-  message: 'Message',
-  add: 'Add attachment',
-  addMenu: 'Add to chat',
-  permissions: 'Permissions',
-  permissionMode: 'Permission mode',
-  learnMore: 'Learn more',
-  voice: 'Voice input',
-  send: 'Send message',
-  stop: 'Stop generating',
-  remove: 'Remove',
-  retry: 'Retry',
-};
+}
 
 /**
  * A bare string entry is its own id: the shorthand stays exact, and an `{ id,

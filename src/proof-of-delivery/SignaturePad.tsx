@@ -6,12 +6,14 @@ import { Button } from '../button';
 import { Field } from '../field';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
+import { useMessages } from '../locale/messages';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { TextFieldInput } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { PROOF_GEOMETRY, PROOF_LABELS } from './constants';
+import { PROOF_GEOMETRY } from './constants';
+import { PROOF_OF_DELIVERY_MESSAGES } from './messages';
 import {
   EMPTY_SIGNATURE,
   hasSignatureInk,
@@ -88,7 +90,8 @@ function SignaturePadComponent({
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveProofPaint(theme, surface), [theme, surface]);
-  const labels = useMemo(() => ({ ...PROOF_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(PROOF_OF_DELIVERY_MESSAGES);
+  const labels = useMemo(() => ({ ...messages.labels, ...labelOverrides }), [messages, labelOverrides]);
 
   const [value, setValue] = useControllableState({
     value: valueProp,

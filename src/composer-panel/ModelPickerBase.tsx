@@ -1,3 +1,5 @@
+import { useComposerButton } from './context';
+import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
@@ -19,17 +21,18 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
+import { useMessages } from '../locale/messages';
 import { RadioIndicator } from '../radio-indicator';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { InlineAside } from './InlineAside';
 import {
   DEFAULT_EFFORT,
   EFFORT_WIDTH,
-  MODEL_PICKER_EFFORT_LEVELS,
   PICKER_HEIGHT,
   PICKER_WIDTH,
   resolveComposerPalette,
@@ -50,19 +53,6 @@ const MARK_GAP = 6;
 const ROW_HEIGHT = 36;
 /** The model chip's widest: past this a name truncates even with room to spare. */
 const MODEL_TRIGGER_MAX_WIDTH = 240;
-
-const DEFAULT_LABELS: Required<ModelPickerLabels> = {
-  models: 'Models',
-  quickSearch: 'Quick Search',
-  searchPlaceholder: 'Search models',
-  closeSearch: 'Close search',
-  noMatches: 'No models match',
-  providers: 'Providers',
-  effort: 'Effort',
-  effortAuto: 'Auto',
-  faster: 'Faster',
-  smarter: 'Smarter',
-};
 
 interface Match {
   provider: ModelPickerProvider;
@@ -239,10 +229,10 @@ function EffortMenu({
   labels: Required<ModelPickerLabels>;
   palette: ComposerPalette;
 }) {
+  const Button = useComposerButton();
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const level = value === null ? labels.effortAuto : (levels[value] ?? labels.effortAuto);
 
   const chipStyle: WebCssStyle = {
@@ -254,7 +244,6 @@ function EffortMenu({
     paddingBottom: 4,
     paddingRight: 4,
     paddingLeft: 8,
-    backgroundColor: hovered ? palette.tertiaryHover : palette.tertiary,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
@@ -272,22 +261,20 @@ function EffortMenu({
 
   return (
     <>
-      <Pressable
+      <Button appearance="plain" tone="neutral"
         ref={triggerRef}
-        {...dataHook('bloomComposerControl')}
         accessibilityRole="button"
         accessibilityLabel={`${labels.effort}: ${level}`}
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
-        style={chipStyle}>
+
+        style={[COMPOSER_BUTTON_LAYOUT, chipStyle]}>
         <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
           {level}
         </Text>
         <TurningChevron degrees={open ? 0 : -90} color={palette.iconSecondary} />
-      </Pressable>
+      </Button>
       <Popover
         open={open}
         onOpenChange={setOpen}
@@ -443,21 +430,38 @@ export function ModelPickerBase({
   effort,
   defaultEffort = DEFAULT_EFFORT,
   onEffortChange,
-  effortLevels = MODEL_PICKER_EFFORT_LEVELS,
+  effortLevels: effortLevelsProp,
   labels: labelOverrides,
   style,
   testID,
 }: ModelPickerProps) {
+  const Button = useComposerButton();
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
+  const labels = useMemo<Required<ModelPickerLabels>>(
+    () => ({
+      models: messages.models,
+      quickSearch: messages.quickSearch,
+      searchPlaceholder: messages.searchModels,
+      closeSearch: messages.closeSearch,
+      noMatches: messages.noMatches,
+      providers: messages.providers,
+      effort: messages.effort,
+      effortAuto: messages.effortAuto,
+      faster: messages.faster,
+      smarter: messages.smarter,
+      ...labelOverrides,
+    }),
+    [messages, labelOverrides],
+  );
+  const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
   const Popover = useComposerPopover();
   const reducedMotion = useReducedMotion();
 
   const triggerRef = useRef<View>(null);
   const [open, setOpenState] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const [modelId, setModelId] = useControllableState<string>({
     value,
     defaultValue: defaultValue ?? providers[0]?.models[0]?.id ?? '',
@@ -566,7 +570,6 @@ export function ModelPickerBase({
     paddingBottom: 6,
     paddingRight: 4,
     paddingLeft: 8,
-    backgroundColor: hovered ? palette.hover : palette.surface,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
@@ -587,23 +590,21 @@ export function ModelPickerBase({
 
   return (
     <>
-      <Pressable
+      <Button appearance="plain" tone="neutral"
         ref={triggerRef}
         testID={testID}
-        {...dataHook('bloomComposerControl')}
         accessibilityRole="button"
         accessibilityLabel={selected ? `${labels.models}: ${selected.model.name}` : labels.models}
         aria-expanded={open}
         aria-haspopup="dialog"
         onPress={() => setOpen(!open)}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
-        style={[triggerStyle, style]}>
+
+        style={[COMPOSER_BUTTON_LAYOUT, [triggerStyle, style]]}>
         <Text variant="body-medium" numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, minWidth: 0, paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}>
           {selected?.model.name ?? ''}
         </Text>
         <TurningChevron degrees={open ? 180 : 0} color={palette.iconSecondary} />
-      </Pressable>
+      </Button>
 
       <Popover
         open={open}
@@ -695,14 +696,13 @@ export function ModelPickerBase({
                     backgroundColor: 'transparent',
                   }}
                 />
-                <Pressable
-                  {...dataHook('bloomComposerControl')}
+                <Button appearance="plain" tone="neutral"
                   accessibilityRole="button"
                   accessibilityLabel={labels.closeSearch}
                   onPress={() => setQuery(null)}
-                  style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', borderRadius: 4, cursor: 'pointer' }}>
+                  style={[COMPOSER_BUTTON_LAYOUT, { flexShrink: 0, flexDirection: 'row', alignItems: 'center', borderRadius: 4, cursor: 'pointer' }]}>
                   <RiSearchLine width={16} height={16} fill={palette.iconSecondary} />
-                </Pressable>
+                </Button>
               </>
             ) : (
               <>
@@ -720,7 +720,7 @@ export function ModelPickerBase({
               ref={listRef}
               {...dataHook('bloomComposerScroll')}
               accessibilityRole="radiogroup"
-              accessibilityLabel={searching ? 'Matching models' : `${activeProvider?.name ?? ''} models`}
+              accessibilityLabel={searching ? messages.matchingModels : messages.providerModels(activeProvider?.name ?? '')}
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={16}
               onScroll={(event) => setScrolled(event.nativeEvent.contentOffset.y > 0)}
@@ -811,32 +811,27 @@ function RailMark({
 
 /** "Quick Search" + glyph at 50% opacity, full on hover or keyboard focus. */
 function QuickSearch({ label, palette, onPress }: { label: string; palette: ComposerPalette; onPress: () => void }) {
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
+  const Button = useComposerButton();
+
   const quickStyle: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
     borderRadius: 4,
-    opacity: hovered || focused ? 1 : 0.5,
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
   return (
-    <Pressable
-      {...dataHook('bloomComposerControl')}
+    <Button appearance="plain" tone="neutral"
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={quickStyle}>
+
+      style={[COMPOSER_BUTTON_LAYOUT, quickStyle]}>
       <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
         {label}
       </Text>
       <RiSearchLine width={16} height={16} fill={palette.iconSecondary} />
-    </Pressable>
+    </Button>
   );
 }

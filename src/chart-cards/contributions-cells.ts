@@ -1,4 +1,6 @@
 import type { ActivityHeatmapDay } from '../activity-heatmap';
+import { formatGregorian } from '../locale/format-date';
+import { CHART_CARDS_MESSAGES, type ChartCardsMessages } from './messages';
 
 /** One square of the contributions grid. */
 export interface ContributionCell {
@@ -19,7 +21,6 @@ export const CONTRIBUTION_TIER_THRESHOLDS = [1, 5, 10, 16, 25] as const;
 export const CONTRIBUTION_COLUMNS = 37;
 export const CONTRIBUTION_ROWS = 7;
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
 export function contributionTier(cell: ContributionCell, thresholds: readonly number[] = CONTRIBUTION_TIER_THRESHOLDS): ContributionTier {
   if (cell.tier !== undefined) return cell.tier;
@@ -31,11 +32,12 @@ export function contributionTier(cell: ContributionCell, thresholds: readonly nu
   return Math.min(5, tier) as ContributionTier;
 }
 
-/** Tooltip copy: "12 contributions on Apr 26" / "No contributions on Apr 26". */
-export function contributionLabel(cell: ContributionCell): string {
-  const on = cell.date ? ` on ${cell.date}` : '';
-  if (cell.count === 0) return `No contributions${on}`;
-  return `${cell.count} contribution${cell.count === 1 ? '' : 's'}${on}`;
+/**
+ * Tooltip copy: "12 contributions on Apr 26" / "No contributions on Apr 26",
+ * in the language of `text` (English unless the grid passes its locale's).
+ */
+export function contributionLabel(cell: ContributionCell, text: ChartCardsMessages = CHART_CARDS_MESSAGES.en): string {
+  return text.contributions(cell.count, cell.date);
 }
 
 /**
@@ -69,12 +71,17 @@ export function contributionCellsFromDays(
   days: readonly ActivityHeatmapDay[],
   year: number,
   columns: number = CONTRIBUTION_COLUMNS,
+  locale?: string,
 ): ContributionCell[] {
   const slots = columns * CONTRIBUTION_ROWS;
   const cells: ContributionCell[] = Array.from({ length: slots }, (_, i) => {
     const dayOfYear = Math.round((i / (slots - 1)) * 364);
     const d = new Date(Date.UTC(year, 0, 1 + dayOfYear));
-    return { count: 0, date: `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}` };
+    // The cell's day the locale's way ("Apr 26", "26 abr"); `d` is a UTC date.
+    return {
+      count: 0,
+      date: formatGregorian(d, locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }) ?? d.toISOString().slice(0, 10),
+    };
   });
   const start = Date.UTC(year, 0, 1);
   for (const day of days) {

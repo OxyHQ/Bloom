@@ -19,17 +19,17 @@ export interface FileUploadFile {
 
 /** Visible copy, overridable for localisation. */
 export interface FileUploadLabels {
-  /** Idle prompt before the accent word. Default "Drag and drop to upload or" (web), "Tap to" (native). */
+  /** Idle prompt before the accent word. "Drag and drop to upload or" (web), "Tap to" (native) in English. */
   prompt: string;
-  /** The accent-coloured action word. Default "select" (web), "select a file" (native). */
+  /** The accent-coloured action word. "select" (web), "select a file" (native) in English. */
   select: string;
-  /** Default `` size => `Uploading ${size}...` ``. */
+  /** `` size => `Uploading ${size}...` `` in English. */
   uploading: (formattedSize: string) => string;
-  /** Default "Uploaded successfully!". */
+  /** "Uploaded successfully!" in English. */
   uploaded: string;
-  /** Default `` exts => `Only ${exts} files are supported` ``. */
+  /** `` exts => `Only ${exts} files are supported` `` in English. */
   unsupported: (extensions: string) => string;
-  /** Default `` max => `That file is larger than ${max}` ``. */
+  /** `` max => `That file is larger than ${max}` `` in English. */
   tooLarge: (formattedMax: string) => string;
 }
 
@@ -76,7 +76,7 @@ export interface FileUploadProps {
   renderFileIcon?: (file: FileUploadFile) => ReactNode;
   labels?: Partial<FileUploadLabels>;
   disabled?: boolean;
-  /** Accessible name of the drop zone. Default "Upload a file". */
+  /** Accessible name of the drop zone ("Upload a file" in English). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;

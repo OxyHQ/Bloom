@@ -2,6 +2,10 @@ jest.mock('react-native-svg', () => ({
   __esModule: true,
   default: 'Svg',
   Path: 'Path',
+  Defs: 'Defs',
+  LinearGradient: 'LinearGradient',
+  Stop: 'Stop',
+  Rect: 'Rect',
 }));
 
 import React from 'react';
@@ -114,7 +118,7 @@ describe('SettingsListGroup', () => {
       colors = useTheme().colors;
       return null;
     }
-    const { toJSON } = renderWithTheme(
+    const { toJSON, UNSAFE_root } = renderWithTheme(
       <>
         <Probe />
         <SettingsListGroup variant={variant}>
@@ -132,6 +136,10 @@ describe('SettingsListGroup', () => {
       walk(children);
     };
     walk(toJSON());
+    // Shared material paints below the transparent layout host.
+    for (const material of UNSAFE_root.findAll(node => node.props.radius != null && typeof node.props.fill === 'string')) {
+      backgrounds.push(material.props.fill);
+    }
     return { backgrounds, colors };
   }
 

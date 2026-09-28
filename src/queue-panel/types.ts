@@ -24,7 +24,7 @@ export type QueuePanelTab = 'queue' | 'recent';
 /** `panel` — a rounded, bordered surface of `width` (web). `sheet` — flat, full width, for a bottom sheet (native). */
 export type QueuePanelVariant = 'panel' | 'sheet';
 
-/** Every string the panel draws or announces. Pass any subset to translate. */
+/** Every string the panel draws or announces, localised via `BloomProvider locale`. Pass any subset to override. */
 export interface QueuePanelLabels {
   queueTab: string;
   recentTab: string;

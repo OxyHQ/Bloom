@@ -11,10 +11,14 @@ import { describeDeltaRatio, groupThousands } from './primitives/format';
 import { PeriodChartHeader } from './primitives/PeriodChartHeader';
 import { PulsingDot } from './primitives/PulsingDot';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { CHART_CARDS_MESSAGES } from './messages';
+import { useMessages } from '../locale/messages';
 
+import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { monthNames } from '../locale/format-date';
+import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
 /**
  * One series as a line over a soft gradient, a Weekly / Monthly / Yearly
  * switcher, a count-up headline that follows the hovered point, and a
@@ -95,24 +99,16 @@ const TICK_COUNT = 4;
 /** `gap-6` — this card's header-to-chart gap. */
 const CARD_GAP = 24;
 
-const MONTH_NAMES: Record<string, string> = {
-  Jan: 'January',
-  Feb: 'February',
-  Mar: 'March',
-  Apr: 'April',
-  May: 'May',
-  Jun: 'June',
-  Jul: 'July',
-  Aug: 'August',
-  Sep: 'September',
-  Oct: 'October',
-  Nov: 'November',
-  Dec: 'December',
-};
+const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** Maps `"Jul"` → `"July"`, anything else unchanged. */
-export function monthTitle(label: string): string {
-  return MONTH_NAMES[label] ?? label;
+/**
+ * A label that is an English month abbreviation (`"Jul"`, how chart data names
+ * its points) becomes that month's full name in `locale` (`"July"`, `"julio"`);
+ * any other label is the app's own and stays unchanged.
+ */
+export function monthTitle(label: string, locale?: string): string {
+  const month = MONTH_ABBREVIATIONS.indexOf(label);
+  return month === -1 ? label : (monthNames(locale, 'long')[month] ?? label);
 }
 
 /** `$18,240` — `` `$${display.toLocaleString()}` ``. */
@@ -131,7 +127,7 @@ export function closedAreaPath(points: readonly Point[], baseY: number, shape: '
 
 export function LineChartCard({
   shape = 'curved',
-  title = 'Revenue',
+  title: titleProp,
   data: dataProp,
   headline: headlineProp,
   delta: deltaProp,
@@ -140,8 +136,8 @@ export function LineChartCard({
   onRangeChange,
   rangesLabel,
   getPointTitle,
-  format = formatDollars,
-  formatAxisValue = formatDollarsK,
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
   color,
   activeColor,
   activeIndex: controlledIndex,
@@ -150,8 +146,12 @@ export function LineChartCard({
   style,
   testID,
 }: LineChartCardProps) {
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatCurrency(value, 'USD', chartLocale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => (value === 0 ? formatCurrency(0, 'USD', chartLocale) : formatCompactCurrency(value, 'USD', chartLocale, 0)));
+  const title = titleProp ?? chartText.titles.revenue;
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const { selected, selectedId, select } = useChartRange(ranges, defaultRange, onRangeChange);
   const data = selected?.data ?? dataProp ?? [];
   const headline = selected?.headline ?? headlineProp;
@@ -182,7 +182,7 @@ export function LineChartCard({
   const hovering = activeIndex !== null;
   const total = headline ?? values.reduce((sum, v) => sum + v, 0);
   const point = hovering ? data[activeIndex] : undefined;
-  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label)) : title;
+  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label, chartLocale)) : title;
 
   const rawId = useId();
   const id = `bloom-line-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -193,7 +193,7 @@ export function LineChartCard({
         label={label}
         value={point ? point.value : total}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         ranges={ranges}
@@ -212,7 +212,7 @@ export function LineChartCard({
           outside="keep"
           onActiveIndexChange={setActiveIndex}
           palette={palette}
-          accessibilityLabel={accessibilityLabel ?? `${title} line chart`}
+          accessibilityLabel={accessibilityLabel ?? chartText.lineChart(title)}
           testID={testID ? `${testID}-plot` : undefined}>
           {({ size, box, x, y }) => {
             const points: Point[] = values.map((v, i) => ({

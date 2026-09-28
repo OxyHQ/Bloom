@@ -1,11 +1,9 @@
 import type { AddressDensity } from '../address';
+import { ROUTE_STOPS_MESSAGES } from './messages';
 import type { RouteStopState } from './types';
 
-export const ROUTE_STOP_STATE_LABELS: Record<RouteStopState, string> = {
-  reached: 'Reached',
-  current: 'Current stop',
-  pending: 'Not reached',
-};
+/** The English state words; `RouteStops` speaks `ROUTE_STOPS_MESSAGES` in the app's locale. */
+export const ROUTE_STOP_STATE_LABELS: Record<RouteStopState, string> = ROUTE_STOPS_MESSAGES.en.state;
 
 export interface RouteStopsGeometry {
   /** The marker column's width. */

@@ -10,6 +10,8 @@ import {
   TEXT_FIELD_STACK_GAP,
   useTextFieldPalette,
 } from '../text-field/shared';
+import { useMessages } from '../locale/messages';
+import { LABEL_MESSAGES } from './messages';
 import type { LabelProps } from './types';
 
 /**
@@ -35,6 +37,7 @@ const LabelComponent = function Label({
   nativeID,
   htmlFor,
   required = false,
+  requiredLabel,
   disabled = false,
   size: sizeProp,
   style,
@@ -43,6 +46,7 @@ const LabelComponent = function Label({
   const {size: inheritedSize} = useBloomAppearance({size: normalizeBloomSize(sizeProp)}, {size: 'sm', tone: 'neutral'});
   const size: NonNullable<LabelProps['size']> = inheritedSize === 'lg' ? 'md' : inheritedSize;
   const palette = useTextFieldPalette();
+  const { messages } = useMessages(LABEL_MESSAGES);
 
   // `null` is DISTINCT from omitted: omitted falls back to the control's id,
   // `null` says the label names a group and points at nothing.
@@ -66,7 +70,7 @@ const LabelComponent = function Label({
       {required ? (
         <Text
           variant={SIZE_VARIANT[size]}
-          accessibilityLabel="required"
+          accessibilityLabel={requiredLabel ?? messages.required}
           // `gap-0.5`: an inline margin on web; a nested native
           // `Text` ignores margins, so a thin space stands in for it there.
           style={[{ color: palette.error }, IS_WEB ? { marginLeft: TEXT_FIELD_LEADING_GAP } : null]}>

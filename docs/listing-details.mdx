@@ -55,9 +55,9 @@ import {
 Everything is data in props. Counts, prices, dates and ratings arrive pre-formatted
 as strings, except where a part must compute: `ReviewSummary` and `Rating` format a
 numeric rating (4.92, 5.0), `ReviewCard` rounds `rating` to whole stars, and
-`AmenityList` fills the count into its "Show all" label. The default English strings
-(`"Show all photos"`, `"Show more"`, `"Unavailable"`, `"Rated 4 out of 5"`, …) are all
-props — translate them.
+`AmenityList` fills the count into its "Show all" label. The default strings
+(`"Show all photos"`, `"Show more"`, `"Unavailable"`, `"Rated 4 out of 5"`, …) are
+localised via `BloomProvider locale`; each is also a prop, which wins.
 
 ## Each part picks its layout from its OWN width
 
@@ -254,3 +254,6 @@ above and below, the title as a level-2 heading (title-3-semibold, or headline w
 - Links in the meta row are `role="link"` on web, buttons on native.
 - Every state is spelled for both platforms: `aria-pressed` + `selected` on a toggled
   action, `aria-expanded` + `expanded` on "Show more", `aria-value*` on every bar.
+
+
+Card-shaped panels compose Bloom `Card` for their neutral backing, gradient and rim. The shared card publishes its actual fill to descendants, including caller background overrides; content geometry and semantic status colours remain owned by this family.

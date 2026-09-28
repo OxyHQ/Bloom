@@ -37,7 +37,7 @@ export interface HoverCardTriggerProps {
 
 export interface HoverCardContentProps extends FloatingPositionProps {
   children?: React.ReactNode;
-  /** Accessible name of the card. Defaults to `'Hover card'`. */
+  /** Accessible name of the card; `'Hover card'` in English. */
   label?: string;
   /**
    * Draw Bloom's floating surface around the content (radius 16, 1px border,

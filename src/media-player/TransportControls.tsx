@@ -22,18 +22,36 @@ import { PlaybackSpeedMenu } from './PlaybackSpeedMenu';
 import { PlayerIconButton, type PlayerGlyph } from './PlayerIconButton';
 import { nextRepeatMode, TRANSPORT_GEOMETRY } from './shared';
 import type { TransportControlsLabels, TransportControlsProps } from './types';
+import { useMessages } from '../locale/messages';
+import { COMMON_MESSAGES, useCommonMessages, type CommonMessages } from '../locale/common-messages';
+import { MEDIA_CONTROLS_MESSAGES, type MediaControlsMessages } from '../media-controls/messages';
+import { MEDIA_PLAYER_MESSAGES, type MediaPlayerMessages } from './messages';
 
-export const DEFAULT_TRANSPORT_LABELS: TransportControlsLabels = {
-  shuffle: 'Shuffle',
-  previous: 'Previous',
-  next: 'Next',
-  play: 'Play',
-  pause: 'Pause',
-  repeat: 'Repeat',
-  repeatOne: 'Repeat one',
-  skipBack: (s) => `Back ${s} seconds`,
-  skipForward: (s) => `Forward ${s} seconds`,
-};
+/** The transport's names from the three catalogs it speaks through. */
+function transportLabels(
+  player: MediaPlayerMessages,
+  controls: MediaControlsMessages,
+  common: CommonMessages,
+): TransportControlsLabels {
+  return {
+    shuffle: player.shuffle,
+    previous: common.previous,
+    next: common.next,
+    play: controls.play,
+    pause: controls.pause,
+    repeat: player.repeat,
+    repeatOne: player.repeatOne,
+    skipBack: player.skipBack,
+    skipForward: player.skipForward,
+  };
+}
+
+/** The English names; the component speaks the locale's (`BloomProvider locale`). */
+export const DEFAULT_TRANSPORT_LABELS: TransportControlsLabels = transportLabels(
+  MEDIA_PLAYER_MESSAGES.en,
+  MEDIA_CONTROLS_MESSAGES.en,
+  COMMON_MESSAGES.en,
+);
 
 const REPLAY_GLYPHS: Record<number, PlayerGlyph> = {
   5: RiReplay5Line,
@@ -102,8 +120,14 @@ function TransportControlsComponent({
   style,
   testID,
 }: TransportControlsProps) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const { messages: controls } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
-  const labels = useMemo(() => ({ ...DEFAULT_TRANSPORT_LABELS, ...labelOverrides }), [labelOverrides]);
+  const labels = useMemo(
+    () => ({ ...transportLabels(messages, controls, common), ...labelOverrides }),
+    [messages, controls, common, labelOverrides],
+  );
   const g = TRANSPORT_GEOMETRY[size];
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const slot = { width: g.box, height: g.box, alignItems: 'center', justifyContent: 'center' } as const;
@@ -117,8 +141,8 @@ function TransportControlsComponent({
       loading={loading}
       disabled={disabled}
       subject={subject}
-      playLabel={labels.play}
-      pauseLabel={labels.pause}
+      playLabel={labelOverrides?.play}
+      pauseLabel={labelOverrides?.pause}
       testID={id('play')}
     />
   );

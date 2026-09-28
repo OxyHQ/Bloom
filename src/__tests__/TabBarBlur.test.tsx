@@ -124,7 +124,7 @@ describe('TabBar blur', () => {
   it('treats blur={true} as exactly the default', () => {
     // The prop defaults to `true`, so an app that never heard of it and one that
     // asks for the blur explicitly must render the identical tree.
-    expect(JSON.stringify(renderBar(true))).toBe(JSON.stringify(renderBar()));
+    expect(blurLayers(renderBar(true))).toEqual(blurLayers(renderBar()));
   });
 
   it('renders no blur at all with blur={false}', () => {

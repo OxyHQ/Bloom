@@ -2,6 +2,7 @@ import React, { memo, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
 import { Avatar } from '../avatar';
 import { Button, CloseButton } from '../button';
 import { Text } from '../typography';
@@ -17,6 +18,7 @@ import {
   resolveNotificationPaint,
   type NotificationPaint,
 } from './shared';
+import { NOTIFICATION_MESSAGES } from './messages';
 import { EASE_OUT, useCardMotion } from './use-card-motion';
 import type {
   NotificationAvatar,
@@ -169,7 +171,7 @@ function NotificationComponent({
   avatar,
   actions,
   dismissible = true,
-  closeLabel = 'Dismiss notification',
+  closeLabel: closeLabelProp,
   onDismiss,
   autoDismissDuration,
   introDelay,
@@ -177,6 +179,8 @@ function NotificationComponent({
   style,
   testID,
 }: NotificationProps) {
+  const { messages } = useMessages(NOTIFICATION_MESSAGES);
+  const closeLabel = closeLabelProp ?? messages.dismiss;
   const theme = useTheme();
   const paint = useMemo(() => resolveNotificationPaint(theme), [theme]);
   const motion = useCardMotion({

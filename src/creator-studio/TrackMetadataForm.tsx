@@ -18,6 +18,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CreditsEditor } from './CreditsEditor';
 import { ArtistChipsInput, IsrcField } from './MetadataFields';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { resolveCreatorStudioPaint } from './shared';
 import type { CreatorOption, TrackMetadata, TrackMetadataFormLabels, TrackMetadataFormProps } from './types';
 
@@ -39,22 +41,8 @@ import type { CreatorOption, TrackMetadata, TrackMetadataFormLabels, TrackMetada
  * next value; `errors` paints a field invalid and shows its message.
  */
 
-export const TRACK_METADATA_LABELS: TrackMetadataFormLabels = {
-  title: 'Track title',
-  version: 'Version',
-  versionPlaceholder: 'Remix, Live, Acoustic…',
-  explicit: 'Explicit lyrics',
-  explicitDescription: 'Mark the track if it contains strong language or explicit themes.',
-  genre: 'Genre',
-  genrePlaceholder: 'Choose a genre',
-  primaryArtists: 'Primary artists',
-  featuredArtists: 'Featured artists',
-  artistPlaceholder: 'Add an artist name',
-  language: 'Lyrics language',
-  languagePlaceholder: 'Choose a language',
-  lyrics: 'Lyrics',
-  lyricsPlaceholder: 'Paste the lyrics, one line per sung line',
-};
+/** The English labels; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
+export const TRACK_METADATA_LABELS: TrackMetadataFormLabels = CREATOR_STUDIO_MESSAGES.en.metadata;
 
 const TWO_UP_FROM = 560;
 
@@ -114,9 +102,10 @@ function TrackMetadataFormComponent({
   style,
   testID,
 }: TrackMetadataFormProps) {
+  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const labels = { ...TRACK_METADATA_LABELS, ...labelOverrides };
+  const labels = { ...messages.metadata, ...labelOverrides };
   const [width, setWidth] = useState(0);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const next = Math.round(event.nativeEvent.layout.width);

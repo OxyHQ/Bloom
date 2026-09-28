@@ -80,10 +80,11 @@ const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0, pets:
 | `breakdown`                                   | `PriceBreakdown` props, drawn 24 below                                                    |
 | `footer`                                      | anything centred at the bottom                                                            |
 
+The default labels, button texts, note, trip statuses and spoken price are English here; they are localised via `BloomProvider locale`, and each `*Label` prop still wins.
+
 **What it looks like.** The chrome every listing action card shares (the rental,
 sale and swap cards in [Listing actions](/docs/bloom/main/listing-actions) draw
-the same shell). Up to 372 wide (`width: 100%`), radius 16, a 1px hairline
-(neutral-200, dark neutral-700), `shadow-m`, padding 24 on the card surface. The
+the same shell). Up to 372 wide (`width: 100%`), radius 16, the shared material rim, `shadow-m`, padding 24 on the card surface. The
 box is radius 12 with a 1px neutral-300 (dark neutral-600) border and dividers;
 each cell is a `caption-2-bold` uppercase label over a `body-regular` value. A
 cell washes neutral-100 under a pointer or a press — colour only, nothing scales.
@@ -216,3 +217,7 @@ Keeping it at the bottom of the screen is the screen's job:
   (`:focus-visible`, from an adopted stylesheet); the cells draw it inset.
 - `GuestPicker` steppers are named by their kind (Adults, Children…); see
   [Stepper](/docs/bloom/main/stepper).
+
+## Shared card shell
+
+`ActionCardShell` composes Bloom `Card`, shared by BookingCard and the listing action cards. Card owns the solid material and relative surface layer; the shell retains its 372px maximum width, 24px padding, radius 16 and medium elevation. Measurement is forwarded through Card's `onLayout` to the existing host. Explicit style backgrounds are published to descendants as their actual backing.

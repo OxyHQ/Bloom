@@ -81,3 +81,5 @@ export type { TypeRole, TypeRoleName } from './scales';
 
 export { SHADOW_BOX, bloomShadowStyle } from './shadows';
 export type { ShadowRole } from './shadows';
+
+export { SURFACE_SHAPES } from './shapes';

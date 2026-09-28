@@ -1,3 +1,4 @@
+import { cardLayout, cardFill } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -118,7 +119,7 @@ describe('chart series tones', () => {
 describe('AreaChartCard', () => {
   it('keeps the card: 329 tall, radius 16, padding 16/16/12 in longhands, gap 16', () => {
     const { getByTestId } = renderCard(<AreaChartCard testID="area" data={DATA} series={SERIES} />);
-    expect(resolvedStyle(getByTestId('area').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('area'))).toMatchObject({
       height: 329,
       borderRadius: 16,
       gap: 16,
@@ -242,7 +243,7 @@ describe('AreaChartCard', () => {
     const { getByTestId, queryByTestId } = renderCard(
       <AreaChartCard testID="area" data={DATA} series={SERIES} tiles />,
     );
-    expect(resolvedStyle(getByTestId('area').props.style).height).toBeUndefined();
+    expect(cardLayout(getByTestId('area')).height).toBeUndefined();
     expect(queryByTestId('area-legend')).toBeNull();
     const tile = resolvedStyle(getByTestId('area-tiles-tile-0').props.style);
     expect(tile).toMatchObject({ borderRadius: 10, paddingTop: 8, paddingBottom: 8, paddingLeft: 10, paddingRight: 10 });
@@ -252,7 +253,7 @@ describe('AreaChartCard', () => {
     const { getByTestId } = renderCard(<AreaChartCard testID="area" data={DATA} series={SERIES} tiles />, 'dark');
     const theme = buildTheme('teal', 'dark');
     const palette = resolveChartCardPalette(theme);
-    expect(resolvedStyle(getByTestId('area').props.style).backgroundColor).toBe(theme.colors.card);
+    expect(cardFill(getByTestId('area'))).toBe(theme.colors.card);
     expect(resolvedStyle(getByTestId('area-tiles-tile-0').props.style).backgroundColor).toBe(palette.inner);
   });
 });

@@ -20,13 +20,13 @@ export type AiChatIconComponent = ComponentType<IconProps>;
 // ---------------------------------------------------------------------------
 
 export interface AiChatFeedbackLabels {
-  /** Default `'Good response'`. */
+  /** `'Good response'` in English. */
   like?: string;
-  /** Default `'Bad response'`. */
+  /** `'Bad response'` in English. */
   dislike?: string;
-  /** Default `'Copy response'`. */
+  /** `'Copy response'` in English. */
   copy?: string;
-  /** Default `'Copied!'` — the tooltip after a copy. */
+  /** `'Copied!'` in English — the tooltip after a copy. */
   copied?: string;
 }
 
@@ -153,15 +153,15 @@ export interface AiChatLinkChipProps {
 // ---------------------------------------------------------------------------
 
 export interface AiChatImageGenerationLabels {
-  /** Default `'Image generated'`. */
+  /** `'Image generated'` in English. */
   generated?: string;
-  /** Default `'Generating image'`. */
+  /** `'Generating image'` in English. */
   generating?: string;
-  /** Default `(seconds) => \`${seconds} seconds remaining\``. */
+  /** `(seconds) => \`${seconds} seconds remaining\`` in English. */
   remaining?: (seconds: number) => string;
-  /** Default `"Thanks for the feedback"`. */
+  /** `"Thanks for the feedback"` in English. */
   likeToast?: string;
-  /** Default `"Thanks — we'll use this to improve"`. */
+  /** `"Thanks — we'll use this to improve"` in English. */
   dislikeToast?: string;
 }
 
@@ -216,17 +216,17 @@ export interface AiChatChangedFile {
 }
 
 export interface AiChatCodePanelLabels {
-  /** Default `'Changes'`. */
+  /** `'Changes'` in English. */
   changes?: string;
-  /** Default `'Browser'`. */
+  /** `'Browser'` in English. */
   browser?: string;
-  /** Default `'Panel view'`. */
+  /** `'Panel view'` in English. */
   tabs?: string;
-  /** Default `(count) => \`${count} Uncomitted changes\`` (intentionally misspelled). */
+  /** `(count) => \`${count} Uncomitted changes\`` in English (intentionally misspelled). */
   uncommitted?: (count: number) => string;
-  /** Default `'Undo changes'`. */
+  /** `'Undo changes'` in English. */
   undo?: string;
-  /** Default `'Browser preview'`. */
+  /** `'Browser preview'` in English. */
   browserPreview?: string;
 }
 
@@ -271,21 +271,21 @@ export interface AiChatGeneration {
 }
 
 export interface AiChatGalleryPanelLabels {
-  /** Default `'Gallery'`. */
+  /** `'Gallery'` in English. */
   gallery?: string;
-  /** Default `'Styles'`. */
+  /** `'Styles'` in English. */
   styles?: string;
-  /** Default `'Panel view'`. */
+  /** `'Panel view'` in English. */
   tabs?: string;
-  /** Default `'Style presets'`. */
+  /** `'Style presets'` in English. */
   stylePresets?: string;
-  /** Default `(prompt) => \`Enlarge ${prompt}\``. */
+  /** `(prompt) => \`Enlarge ${prompt}\`` in English. */
   enlarge?: (prompt: string) => string;
-  /** Default `(prompt) => \`Minimize ${prompt}\``. */
+  /** `(prompt) => \`Minimize ${prompt}\`` in English. */
   minimize?: (prompt: string) => string;
-  /** Default `(prompt) => \`Download ${prompt}\``. */
+  /** `(prompt) => \`Download ${prompt}\`` in English. */
   download?: (prompt: string) => string;
-  /** Default `(prompt) => \`More actions for ${prompt}\``. */
+  /** `(prompt) => \`More actions for ${prompt}\`` in English. */
   more?: (prompt: string) => string;
 }
 
@@ -323,11 +323,11 @@ export interface AiChatGalleryPanelProps {
 // ---------------------------------------------------------------------------
 
 export interface AiChatContainerLabels {
-  /** Default `'Chat location'`. */
+  /** `'Chat location'` in English. */
   breadcrumb?: string;
-  /** Default `'Share chat'`. */
+  /** `'Share chat'` in English. */
   share?: string;
-  /** Default `'More options'`. */
+  /** `'More options'` in English. */
   more?: string;
 }
 
@@ -451,15 +451,15 @@ export interface AiChatThreadProps {
 }
 
 export interface AiChatShellLabels {
-  /** Default `'Open navigation'`. */
+  /** `'Open navigation'` in English. */
   openNavigation?: string;
-  /** Default `'Close navigation'`. */
+  /** `'Close navigation'` in English. */
   closeNavigation?: string;
-  /** Default `(panel) => \`Open ${panel.toLowerCase()}\``. */
+  /** `(panel) => \`Open ${panel.toLowerCase()}\`` in English. */
   openPanel?: (panel: string) => string;
-  /** Default `(panel) => \`Close ${panel.toLowerCase()}\``. */
+  /** `(panel) => \`Close ${panel.toLowerCase()}\`` in English. */
   closePanel?: (panel: string) => string;
-  /** Default `'Resize panels'`. */
+  /** `'Resize panels'` in English. */
   resize?: string;
 }
 
@@ -481,7 +481,7 @@ export interface AiChatShellProps {
   children: ReactNode;
   /** The right panel. Receives its current width (`'100%'` in the phone drawer). */
   panel?: (width: number | '100%') => ReactNode;
-  /** The panel's name in the drawer header and its buttons ("Code", "Gallery"). */
+  /** The panel's name in the drawer header and its buttons ("Gallery"). `'Code'` in English. */
   panelLabel?: string;
   /** Glyph of the header button that opens the panel drawer. Default `RiCodeSLine`. */
   panelIcon?: BloomIconComponent;
@@ -562,7 +562,7 @@ export interface AiChatResizeHandleProps {
   /** Horizontal distance from where the drag started, px. */
   onResize: (dx: number) => void;
   onResizeEnd?: () => void;
-  /** Names the separator. Default `'Resize panels'`. */
+  /** Names the separator. `'Resize panels'` in English. */
   label?: string;
   /** Keyboard nudge (web: ←/→ move by 16). */
   onNudge?: (dx: number) => void;

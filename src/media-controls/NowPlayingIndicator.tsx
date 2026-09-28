@@ -14,6 +14,8 @@ import Animated, {
 import { useTheme } from '../theme/use-theme';
 import { resolveMediaControlsPaint } from './shared';
 import type { NowPlayingIndicatorProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_CONTROLS_MESSAGES } from './messages';
 
 /**
  * The equalizer bars beside the row that is playing.
@@ -94,10 +96,12 @@ function NowPlayingIndicatorComponent({
   size = 16,
   bars = 4,
   color,
-  label = 'Now playing',
+  label: labelProp,
   style,
   testID,
 }: NowPlayingIndicatorProps) {
+  const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
+  const label = labelProp ?? messages.nowPlaying;
   const theme = useTheme();
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
   const reducedMotion = useReducedMotion();

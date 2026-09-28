@@ -4,6 +4,8 @@ import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
+import { useMessages } from '../locale/messages';
+import { BOOKING_MESSAGES } from './messages';
 import { priceAccessibilityName, resolveBookingPalette } from './shared';
 import type { BookingPriceProps } from './types';
 
@@ -35,9 +37,10 @@ export function BookingPrice({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
+  const { messages } = useMessages(BOOKING_MESSAGES);
   const theme = useTheme();
   const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
-  const name = priceAccessibilityLabel ?? priceAccessibilityName(price, priceUnit, originalPrice);
+  const name = priceAccessibilityLabel ?? priceAccessibilityName(price, priceUnit, originalPrice, messages);
 
   return (
     <View

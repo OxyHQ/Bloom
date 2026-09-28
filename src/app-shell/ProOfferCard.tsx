@@ -1,3 +1,7 @@
+import { SurfacePaint } from '../surface/SurfacePaint';
+import { useSurfaceLayer } from '../surface/use-surface-layer';
+import { resolveSurfaceFill } from '../surface/shared';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, {
@@ -21,6 +25,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ProOfferCardProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { APP_SHELL_MESSAGES } from './messages';
 
 /**
  * `ProOfferCard`: the upgrade prompt anchored
@@ -127,7 +133,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   logo,
   backdrop,
   backdropHeight = 120,
-  accessibilityLabel = 'Pro offer',
+  accessibilityLabel: accessibilityLabelProp,
   dismissLabel: dismissLabelProp,
   placement = 'fixed',
   enterDelay = 1200,
@@ -135,6 +141,8 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   testID,
 }) => {
   const common = useCommonMessages();
+  const { messages } = useMessages(APP_SHELL_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.proOffer;
   const dismissLabel = dismissLabelProp ?? common.dismiss;
   const theme = useTheme();
   // Fixed to the viewport, usually outside any shell: it hands react-native-web
@@ -146,7 +154,6 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   const palette = useMemo(() => {
     return {
       surface: theme.colors.backgroundSecondary,
-      border: theme.colors.borderLight,
       shadow: theme.isDark ? WAITLIST_SHADOW.dark : WAITLIST_SHADOW.light,
       from: theme.colors.card,
       via: theme.colors.backgroundTertiary,
@@ -155,6 +162,9 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
     };
   }, [theme]);
 
+  const surfaceLayer = useSurfaceLayer();
+  const customSurface = StyleSheet.flatten(style);
+  const surfaceFill = resolveSurfaceFill(String(customSurface?.backgroundColor ?? surfaceLayer.fill), false, surfaceLayer.parentFill);
   const enter = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     enter.value = reducedMotion ? 1 : withDelay(enterDelay, withTiming(1, { duration: 300, easing: EASE_OUT }));
@@ -205,16 +215,17 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
           gap: 12,
           overflow: 'hidden',
           borderRadius: 16,
-          borderWidth: 1,
-          borderColor: palette.border,
-          backgroundColor: palette.surface,
+          backgroundColor: 'transparent',
           padding: 16,
           boxShadow: palette.shadow,
         },
         enterStyle,
         style,
+        { backgroundColor: 'transparent', ...surfaceFillVars(surfaceFill) },
       ]}
     >
+      <SurfacePaint fill={surfaceFill} radius={customSurface?.borderRadius ?? 16} />
+      <SurfaceLevelProvider level={surfaceLayer.level} fill={surfaceFill}>
       <View aria-hidden pointerEvents="none" style={backdropStyle}>
         {backdrop ?? <DefaultBackdrop from={palette.from} via={palette.via} />}
       </View>
@@ -249,6 +260,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
         style={{ position: 'absolute', top: 12, insetInlineEnd: 12, zIndex: Z_INDEX.raised }}
         testID={testID ? `${testID}-dismiss` : undefined}
       />
+      </SurfaceLevelProvider>
     </Animated.View>
   );
 };

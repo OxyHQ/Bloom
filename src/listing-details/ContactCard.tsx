@@ -1,11 +1,11 @@
+import { Card } from '../card/Card';
+import { useCardFill } from '../card/use-card-fill';
 import React, { isValidElement, memo, useMemo } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
-import { MENU_SHADOW } from '../floating/menu-palette';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiHome4Line } from '../icons/remix/RiHome4Line';
 import { RiPhoneLine } from '../icons/remix/RiPhoneLine';
@@ -25,6 +25,8 @@ import {
   resolveImageUri,
   resolveListingPalette,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { LISTING_DETAILS_MESSAGES, type ListingDetailsMessages } from './messages';
 import type { ContactCardProps, ContactRole, ListingIcon } from './types';
 
 /**
@@ -57,18 +59,11 @@ import type { ContactCardProps, ContactRole, ListingIcon } from './types';
  *              is set, plain selectable text otherwise
  */
 
-const DEFAULT_ROLE_LABELS: Record<ContactRole, string | undefined> = {
-  host: undefined,
-  landlord: 'Landlord',
-  agent: 'Agent',
-  agency: 'Agency',
-};
+function defaultRoleLabel(role: ContactRole, messages: ListingDetailsMessages): string | undefined {
+  return role === 'host' ? undefined : messages[role];
+}
 
 const LOGO_SIZE = 40;
-
-function defaultActiveListingsLabel(count: number): string {
-  return count === 1 ? '1 active listing' : `${count} active listings`;
-}
 
 function ContactCardComponent({
   role = 'host',
@@ -76,7 +71,7 @@ function ContactCardComponent({
   name,
   avatar,
   verified = false,
-  verifiedLabel = 'Verified',
+  verifiedLabel: verifiedLabelProp,
   label: labelProp,
   labelIcon: LabelIcon,
   stats,
@@ -86,14 +81,14 @@ function ContactCardComponent({
   logo,
   responseTime,
   activeListings,
-  activeListingsLabel = defaultActiveListingsLabel,
+  activeListingsLabel: activeListingsLabelProp,
   onPressListings,
   phone,
   phoneRevealed: phoneRevealedProp,
   onPhoneRevealedChange,
-  showPhoneLabel = 'Show phone',
+  showPhoneLabel: showPhoneLabelProp,
   onCall,
-  callLabel = 'Call',
+  callLabel: callLabelProp,
   onMessage,
   messageLabel,
   onPressProfile,
@@ -101,18 +96,23 @@ function ContactCardComponent({
   style,
   testID,
 }: ContactCardProps) {
+  const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
+  const verifiedLabel = verifiedLabelProp ?? messages.verified;
+  const activeListingsLabel = activeListingsLabelProp ?? messages.activeListings;
+  const showPhoneLabel = showPhoneLabelProp ?? messages.showPhone;
+  const callLabel = callLabelProp ?? messages.call;
   const theme = useTheme();
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
-  const palette = useMemo(() => resolveListingPalette(theme), [theme]);
+  const fill = useCardFill();
+  const palette = useMemo(() => ({ ...resolveListingPalette(theme), card: fill }), [theme, fill]);
   const resolver = useImageResolver();
-  const { state: hovered, onIn, onOut } = useInteractionState();
   const [phoneRevealed, setPhoneRevealed] = useControllableState({
     value: phoneRevealedProp,
     defaultValue: false,
     onChange: onPhoneRevealedChange,
   });
 
-  const label = labelProp ?? roleLabel ?? DEFAULT_ROLE_LABELS[role];
+  const label = labelProp ?? roleLabel ?? defaultRoleLabel(role, messages);
   const isAgency = role === 'agency';
   const logoSource = typeof logo === 'string' ? logo : undefined;
   const avatarSource = avatar ?? (isAgency ? logoSource : undefined);
@@ -210,12 +210,6 @@ function ContactCardComponent({
     paddingBottom: 24,
     paddingLeft: 20,
     paddingRight: 24,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: palette.cardBorder,
-    backgroundColor: onPressProfile && hovered ? palette.hover : palette.card,
-    boxShadow: theme.isDark ? MENU_SHADOW.dark : MENU_SHADOW.light,
-    '--bloom-listing-ring': palette.ring,
   };
 
   const statsName = (stats ?? []).map((s) => `${s.value} ${s.label}`).join(', ');
@@ -223,25 +217,11 @@ function ContactCardComponent({
     .filter(Boolean)
     .join(', ');
 
-  const card = onPressProfile ? (
-    <Pressable
-      {...webDataSet({ bloomListingPress: '' })}
-      accessibilityRole="button"
-      accessibilityLabel={cardName}
-      onPress={onPressProfile}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
-      style={cardStyle}
-      testID={testID ? `${testID}-card` : undefined}
-    >
+  const card = (
+    <Card radius="radius-20" onPress={onPressProfile} accessibilityLabel={cardName} style={cardStyle} testID={testID ? `${testID}-card` : undefined}>
       {identity}
       {statsColumn}
-    </Pressable>
-  ) : (
-    <View style={cardStyle} testID={testID ? `${testID}-card` : undefined}>
-      {identity}
-      {statsColumn}
-    </View>
+    </Card>
   );
 
   // The agency row: a role="agency" card already draws the logo as its avatar.
@@ -311,7 +291,7 @@ function ContactCardComponent({
             onPress={onMessage}
             testID={testID ? `${testID}-message` : undefined}
           >
-            {messageLabel ?? (role === 'host' ? 'Message host' : 'Message')}
+            {messageLabel ?? (role === 'host' ? messages.messageHost : messages.message)}
           </Button>
         ) : null}
         {onCall ? (

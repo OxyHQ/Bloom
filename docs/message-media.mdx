@@ -28,6 +28,9 @@ Thirteen blocks that go INSIDE a bubble, and none of them draw one. The shell �
 grouping, the tail, the meta row, reactions — is `message-bubble`'s job; these
 fill its `media` slot, or stand on their own in a panel.
 
+Every default name and label below ("Photo", "Tap to view", "1 vote", …) is
+localised via `BloomProvider locale`; a `*Label` / `format*` prop still wins.
+
 ## The two things every block has
 
 **`tone`.** `'incoming'` (default) is the neutral bubble, `'outgoing'` the accent
@@ -326,7 +329,8 @@ target and `<id>-row` for the box around both.
 Components aside, the family publishes the maths so an app can lay out against
 it: `albumLayout`, `albumRows`, `pollPercentages`, `formatVoteCount`,
 `resampleWaveform`, `seekPositionAt`, `nextPlaybackRate`, `fileKindFor`,
-`fileTypeLabel`, `resolveMessageMediaPaint`, `resolveBubbleColor`.
+`fileTypeLabel`, `resolveMessageMediaPaint`, `resolveBubbleColor`. The two
+formatters speak English unless handed the family's messages for a locale.
 
 ## Images
 

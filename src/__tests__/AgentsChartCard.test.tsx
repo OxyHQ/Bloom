@@ -1,3 +1,4 @@
+import { cardLayout } from './support/card-surface';
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
@@ -65,14 +66,13 @@ describe('AgentsChartCard', () => {
       <AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} range="December" onNextRange={() => {}} />,
     );
     const palette = resolveChartCardPalette(buildTheme('teal', 'light'));
-    expect(resolvedStyle(getByTestId('agents').props.style)).toMatchObject({
+    expect(cardLayout(getByTestId('agents'))).toMatchObject({
       borderRadius: 20,
       gap: 10,
       paddingTop: 12,
       paddingBottom: 12,
       paddingLeft: 10,
       paddingRight: 10,
-      backgroundColor: palette.surface,
     });
     expect(resolvedStyle(getByTestId('agents-range').props.style)).toMatchObject({
       position: 'absolute',

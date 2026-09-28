@@ -7,7 +7,8 @@ import { resolveMapMarkerPaint } from '../map-marker/shared';
 import { surfaceTextOn } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import { LOCATION_PUCK_GEOMETRY, LOCATION_PUCK_STATE_LABELS } from './constants';
+import { LOCATION_PUCK_GEOMETRY } from './constants';
+import { LOCATION_PUCK_MESSAGES, type LocationPuckMessages } from './messages';
 import type { LocationPuckMode, LocationPuckState } from './types';
 
 export interface LocationPuckPaint {
@@ -176,10 +177,13 @@ export function describeLocationPuck(options: {
   heading?: number;
   headingUnknown?: boolean;
   labels?: Partial<Record<LocationPuckState, string>>;
+  /** The language's words; English when omitted. */
+  messages?: LocationPuckMessages;
 }): string {
-  const word = options.labels?.[options.state] ?? LOCATION_PUCK_STATE_LABELS[options.state];
+  const messages = options.messages ?? LOCATION_PUCK_MESSAGES.en;
+  const word = options.labels?.[options.state] ?? messages.states[options.state];
   const drawsHeading =
     !options.headingUnknown && options.heading !== undefined && Number.isFinite(options.heading);
   if (!drawsHeading) return word;
-  return `${word}, facing ${Math.round(normalizeHeading(options.heading))} degrees`;
+  return messages.facing(word, Math.round(normalizeHeading(options.heading)));
 }

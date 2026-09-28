@@ -16,6 +16,8 @@ import {
   resolveChatListPaint,
 } from './shared';
 import type { ChatListProps, ChatListSection } from './types';
+import { useMessages } from '../locale/messages';
+import { CHAT_LIST_MESSAGES } from './messages';
 
 /**
  * The conversations screen's list: sections, an archive row, the rows, and the
@@ -56,11 +58,13 @@ function ChatListComponent({
   footer,
   empty,
   labels,
-  accessibilityLabel = 'Chats',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: ChatListProps) {
   const theme = useTheme();
+  const { messages } = useMessages(CHAT_LIST_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.list;
   useEffect(() => {
     adoptStyleSheet(CHAT_LIST_STYLE_ID, CHAT_LIST_CSS);
   }, []);
@@ -97,13 +101,13 @@ function ChatListComponent({
       >
         <EmptyIcon width={32} height={32} fill={paint.heading} />
         <Text variant="headline-semibold" style={{ color: paint.text, textAlign: 'center' }}>
-          {labels?.emptyTitle ?? 'No conversations yet'}
+          {labels?.emptyTitle ?? messages.emptyTitle}
         </Text>
         <Text
           variant="body-regular"
           style={{ color: paint.textMuted, textAlign: 'center', maxWidth: 260 }}
         >
-          {labels?.emptyDescription ?? 'Start a chat and it will show up here.'}
+          {labels?.emptyDescription ?? messages.emptyDescription}
         </Text>
       </View>
     ))

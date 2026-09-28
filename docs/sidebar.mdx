@@ -6,6 +6,8 @@ order: 82
 
 # Sidebar
 
+Plain sidebars inherit the enclosing surface. Painted variants publish their resolved fill, and a custom background override supplies that paint rather than sitting underneath it.
+
 The floating dashboard sidebar with its team and account menus. Every row, person and link is a prop; the component owns only interaction state (collapse, search, the two menus).
 
 ```tsx
@@ -194,6 +196,8 @@ On web every control takes the same keyboard focus ring: one stylesheet rule on 
 
 The pill button (or ⌘L / Ctrl+L on web; `searchShortcut={false}` to unbind) opens a field that filters every row by label; "No results" shows when nothing matches. Escape, the clear button, or a press outside the field (web) closes it and clears the query. Activating search on a collapsed rail expands it.
 
+The sidebar's default names and words ("Sidebar", "Quick Search", "No results", "Upgrade", the account menu's rows…) are localised via `BloomProvider locale`; every `*Label` prop still wins.
+
 ## Menus
 
 Both menus are `Popover`s: beside the rail (team bottom-aligned, account top-aligned) and below the trigger under `sm`. On native, `Popover` presents as a bottom sheet. `Popover`'s own motion runs here.
@@ -274,3 +278,7 @@ as a group in the space **above** the persistent footer, in both panel and rail.
 The destination region can still shrink and scroll on short screens. Keep an
 account control in `footer`; avoid centering the whole sidebar with `style`,
 which also moves its footer. The default `start` preserves existing placement.
+
+## Shared material
+
+Card and docked sidebar surfaces paint the shared opaque Surface material with its gradient and rim beneath their contents; plain surfaces and the navigation rail retain their existing fill. The current logo, modes, scoped sizes, tree, custom content, RTL layout, safe edges and scroll behavior are unchanged. Storybook: **Blocks / Sidebar / Glass Panel**.

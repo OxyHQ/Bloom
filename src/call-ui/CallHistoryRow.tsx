@@ -9,7 +9,9 @@ import { RiPhoneLine } from '../icons/remix/RiPhoneLine';
 import { RiVideoOnLine } from '../icons/remix/RiVideoOnLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CALL_HISTORY_LABELS, isNegativeDirection, resolveCallPaint } from './shared';
+import { useMessages } from '../locale/messages';
+import { CALL_UI_MESSAGES } from './messages';
+import { isNegativeDirection, resolveCallPaint } from './shared';
 import type { CallDirection, CallGlyph, CallHistoryRowProps } from './types';
 
 /**
@@ -52,10 +54,11 @@ function CallHistoryRowComponent({
   textStyle,
   testID,
 }: CallHistoryRowProps) {
+  const { messages } = useMessages(CALL_UI_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme), [theme]);
   const { state: hovered, onIn, onOut } = useInteractionState();
-  const l = { ...CALL_HISTORY_LABELS, ...labels };
+  const l = { ...messages.history, ...labels };
   const negative = isNegativeDirection(direction);
   const DirectionGlyph = DIRECTION_GLYPH[direction];
   const CallBackGlyph = mode === 'video' ? RiVideoOnLine : RiPhoneLine;

@@ -1,3 +1,5 @@
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { useSurfaceBacking } from '../surface/use-surface-backing';
 import { hairlineOn } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
@@ -18,6 +20,8 @@ import { Artwork, TrackText } from './TrackText';
 import { TransportControls } from './TransportControls';
 import type { NowPlayingBarLabels, NowPlayingBarProps } from './types';
 import { webDataSet } from '../styles/web-data';
+import { useMessages } from '../locale/messages';
+import { MEDIA_PLAYER_MESSAGES } from './messages';
 
 export const NOW_PLAYING_BAR_HEIGHT = 80;
 /** At and above: every control. Below: no fullscreen button, a shorter volume slider. */
@@ -33,12 +37,6 @@ export function nowPlayingBarLayout(width: number): NowPlayingBarLayout {
   return 'narrow';
 }
 
-const DEFAULT_LABELS: NowPlayingBarLabels = {
-  lyrics: 'Lyrics',
-  queue: 'Queue',
-  devices: 'Connect to a device',
-  fullscreen: 'Full screen',
-};
 
 /**
  * The desktop player bar, full width at the bottom of the window.
@@ -87,11 +85,18 @@ function NowPlayingBarComponent({
   style,
   testID,
 }: NowPlayingBarProps) {
+  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const theme = useTheme();
   const window = useWindowDimensions();
   const [width, setWidth] = useState<number>(window.width);
   const layout = nowPlayingBarLayout(width);
-  const labels = { ...DEFAULT_LABELS, ...labelOverrides };
+  const labels: NowPlayingBarLabels = {
+    lyrics: messages.lyrics,
+    queue: messages.queue,
+    devices: messages.devices,
+    fullscreen: messages.fullscreen,
+    ...labelOverrides,
+  };
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const casting = !!deviceName;
@@ -108,9 +113,11 @@ function NowPlayingBarComponent({
       testID={id('devices')}
     />
   );
+  const backing = useSurfaceBacking(theme.colors.background, style);
   const showDevice = (!!devicePicker || !!onDevicePress) && (!narrow || casting);
 
   return (
+    <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
     <View
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
       style={[
@@ -127,6 +134,7 @@ function NowPlayingBarComponent({
           borderTopColor: hairlineOn(theme, theme.colors.background),
         },
         style,
+        backing.vars,
       ]}
       testID={testID}
       {...webDataSet({ bloomPlayerLayout: layout })}
@@ -257,6 +265,7 @@ function NowPlayingBarComponent({
         ) : null}
       </View>
     </View>
+    </SurfaceLevelProvider>
   );
 }
 

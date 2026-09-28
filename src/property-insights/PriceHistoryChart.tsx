@@ -8,7 +8,6 @@ import { CartesianPlot } from '../chart-cards/primitives/CartesianPlot';
 import { ChartCardSurface } from '../chart-cards/primitives/ChartCardSurface';
 import { PeriodChartHeader } from '../chart-cards/primitives/PeriodChartHeader';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
-import { useChartCardPalette } from '../chart-cards/primitives/use-chart-palette';
 import { useChartRange } from '../chart-cards/primitives/use-chart-range';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { RiLineChartLine } from '../icons/remix/RiLineChartLine';
@@ -17,8 +16,12 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PRICE_HISTORY_PLOT_HEIGHT } from './constants';
 import { formatEuros, formatEurosCompact } from './shared';
+import { useMessages } from '../locale/messages';
+import { PROPERTY_INSIGHTS_MESSAGES } from './messages';
+import type { PropertyInsightsMessages } from './messages';
 import type { PriceEventKind, PriceHistoryChartProps, PriceHistoryEvent, PriceHistoryPoint } from './types';
 
+import { useChartCardSurfacePalette } from '../chart-cards/primitives/use-chart-palette';
 /**
  * A home's asking price (or rent) over time, with what happened to it.
  *
@@ -99,13 +102,14 @@ export function describePriceHistory(
   data: readonly PriceHistoryPoint[],
   events: readonly PriceHistoryEvent[],
   format: (value: number) => string,
+  messages: PropertyInsightsMessages = PROPERTY_INSIGHTS_MESSAGES.en,
 ): string {
   const first = data[0];
   const last = data[data.length - 1];
   const head = periodLabel ? `${title}, ${periodLabel}` : title;
   if (!first || !last) return head;
   const parts = [
-    `${head}: from ${format(first.value)} in ${first.title ?? first.label} to ${format(last.value)} in ${last.title ?? last.label}.`,
+    messages.priceHistoryTrend(head, format(first.value), first.title ?? first.label, format(last.value), last.title ?? last.label),
     ...events.map((e) => `${e.label}, ${e.date ?? data[e.index]?.title ?? data[e.index]?.label ?? ''}.`),
   ];
   return parts.join(' ');
@@ -118,21 +122,28 @@ export function PriceHistoryChart({
   defaultPeriod,
   onPeriodChange,
   shape = 'step',
-  title = 'Current price',
+  title: titleProp,
   currentPrice,
-  format = formatEuros,
-  formatAxisValue = formatEurosCompact,
-  currentLabel = 'Now',
-  emptyLabel = 'No price history yet',
-  periodsLabel = 'Price history period',
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
+  currentLabel: currentLabelProp,
+  emptyLabel: emptyLabelProp,
+  periodsLabel: periodsLabelProp,
   accessibilityLabel,
   activeIndex: controlledIndex,
   onActiveIndexChange,
   style,
   testID,
 }: PriceHistoryChartProps) {
+  const { locale, messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatEuros(value, locale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => formatEurosCompact(value, locale));
+  const title = titleProp ?? messages.currentPrice;
+  const currentLabel = currentLabelProp ?? messages.now;
+  const emptyLabel = emptyLabelProp ?? messages.noPriceHistory;
+  const periodsLabel = periodsLabelProp ?? messages.priceHistoryPeriod;
   const theme = useTheme();
-  const palette = useChartCardPalette();
+  const palette = useChartCardSurfacePalette(style);
   const { selected, selectedId, select } = useChartRange(periods, defaultPeriod, onPeriodChange);
   const data = selected?.data ?? dataProp ?? [];
   const events = (selected ? selected.events : eventsProp) ?? [];
@@ -162,8 +173,8 @@ export function PriceHistoryChart({
   const summary =
     accessibilityLabel ??
     (empty
-      ? `Price history: ${emptyLabel}`
-      : describePriceHistory('Price history', selected?.label, data, events, format));
+      ? `${messages.priceHistory}: ${emptyLabel}`
+      : describePriceHistory(messages.priceHistory, selected?.label, data, events, format, messages));
 
   return (
     <ChartCardSurface height="auto" style={style} testID={testID}>

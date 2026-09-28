@@ -4,7 +4,9 @@ import { View } from 'react-native';
 import { ActionCardHeader, ActionCardNote, ActionCardShell } from '../booking/ActionCard';
 import { Badge } from '../badge';
 import { Button } from '../button';
+import { useMessages } from '../locale/messages';
 import { RENTAL_STATUS } from './constants';
+import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { FactList, StatusMessage } from './parts';
 import type { RentalActionCardProps } from './types';
 
@@ -28,7 +30,7 @@ import type { RentalActionCardProps } from './types';
 function RentalActionCardComponent({
   price,
   originalPrice,
-  priceUnit = 'month',
+  priceUnit: priceUnitProp,
   priceUnitPrefix = '/',
   priceAccessibilityLabel,
   billsNote,
@@ -36,9 +38,9 @@ function RentalActionCardComponent({
   status = 'available',
   statusLabel,
   statusMessage,
-  requestViewingLabel = 'Request a viewing',
+  requestViewingLabel: requestViewingLabelProp,
   onRequestViewing,
-  applyLabel = 'Apply',
+  applyLabel: applyLabelProp,
   onApply,
   loading = false,
   note,
@@ -46,9 +48,13 @@ function RentalActionCardComponent({
   style,
   testID,
 }: RentalActionCardProps) {
+  const { messages } = useMessages(LISTING_ACTIONS_MESSAGES);
+  const priceUnit = priceUnitProp === undefined ? messages.month : priceUnitProp;
+  const requestViewingLabel = requestViewingLabelProp ?? messages.requestViewing;
+  const applyLabel = applyLabelProp ?? messages.apply;
   const info = RENTAL_STATUS[status];
   const available = status === 'available';
-  const message = statusMessage ?? info.message;
+  const message = statusMessage ?? (status === 'available' ? info.message : messages.rentalStatusMessage[status]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   return (
@@ -67,7 +73,7 @@ function RentalActionCardComponent({
               variant="subtle"
               color={info.tone}
               size="large"
-              content={statusLabel ?? info.label}
+              content={statusLabel ?? messages.rentalStatus[status]}
               testID={id('status')}
             />
           )

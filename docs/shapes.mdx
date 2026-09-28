@@ -1,0 +1,109 @@
+---
+title: Shapes
+description: Shared silhouettes and platform-adaptive surface corners.
+---
+
+# Shapes
+
+`import * as Shapes from '@oxy.so/bloom/shapes'` or
+`import { Shapes } from '@oxy.so/bloom'`.
+
+## Two contracts
+
+Silhouettes describe a complete outline in a square coordinate space. `Image`,
+`Fill` and `Border` share the same path. They serve avatars, image tiles and
+ornaments. `Fill` draws a background; it does not mask React Native children.
+
+Surface policies describe corner radii independently of width and height.
+`surfaceStyle` styles the component's existing layout node, without a wrapper,
+measurement, observer, effect, global registry or animation loop.
+
+```tsx
+import * as Shapes from '@oxy.so/bloom/shapes';
+import { View } from 'react-native';
+
+const shape = { radius: 24, curve: 'smooth' } as const;
+<View style={[Shapes.surfaceStyle(shape), { backgroundColor: colors.card }]} />;
+<Shapes.Image shape="squircle" source={{ uri: photo }} size={64} alt={name} />;
+<Shapes.Fill shape="heart" size={48} color={colors.primary} />;
+<Shapes.Border shape="squircle" size={64} width={2} colors={colors.border} />;
+```
+
+A surface does not accept arbitrary silhouettes. Stretching an avatar outline
+over a sidebar distorts its corners; an SVG clip cannot mask sibling RN views.
+
+## Image sources
+
+`Shapes.ImageSource` accepts a positive bundled asset ID or `{ uri, width?, height?, scale? }`.
+The URI must be directly loadable: a public or signed URL, a data URI, or a local URI.
+Optional dimensions and scale must be positive finite numbers. Source arrays and
+request options (`headers`, `method`, `body`, `cache`) are rejected on every shape,
+including circles. SVG loaders do not support these options consistently across
+platforms; a native error detector successfully fetching an authenticated image
+would otherwise conceal a blank SVG. Bloom does not add a custom image loader.
+
+## Platform policy
+
+| Curve | Web | iOS | Android |
+| --- | --- | --- | --- |
+| `round` | `border-radius` | circular borders | circular borders |
+| `smooth` | `corner-shape: squircle` | continuous borders | circular borders |
+
+Browsers without `corner-shape` retain the supplied circular radius. The CSS
+property is emitted in the first render, including SSR, with no capability
+branch that changes hydration markup. Smooth is a platform-adaptive intention,
+not an identical mathematical curve across platforms. Exact image silhouettes
+remain SVG on every platform. Pills and circles deliberately use `round`.
+
+`surfaceStyle({ curve: 'smooth' })` changes only the curve and preserves a
+separately owned or animated radius. A numeric radius must be finite and
+non-negative; invalid values throw. The renderer constrains overlapping radii.
+
+## Logical corners
+
+```tsx
+Shapes.surfaceStyle({
+  radius: { topStart: 24, topEnd: 8 },
+  curve: 'smooth',
+}, isRtl ? 'rtl' : 'ltr');
+```
+
+Missing corners are square. Direction defaults to LTR; pass the current locale's
+direction for asymmetric corners. The resolver emits physical corner radii:
+RNW resolves its own logical style keys against a node's `dir` prop, so relying
+on document direction alone silently places the wrong corner.
+
+## Painting and clipping
+
+The surface resolver does not add background, border, shadow or overflow.
+Those responsibilities remain with the component. Keep a shadow outside the
+content clip. Card opts into an inner clip with `clipContent`, with child
+layout in `contentStyle` and parent layout on the outer `style`/`className`.
+
+`Border` is always inside its silhouette. It doubles the SVG stroke and clips
+it with the same outline, producing the requested width at both cardinal and
+diagonal points. Circle gradients use an inset centerline. There is no ring
+gap API: scaling a general path cannot guarantee a constant-distance offset.
+
+The normalized squircle is a sampled superellipse with exponent 4.5. CSS's
+`squircle` is a different curve. Never combine one geometry for the image and
+the other for its ring.
+
+## Tokens and materials
+
+`SURFACE_SHAPES` in `@oxy.so/bloom/design-tokens` contains component policies.
+Geometry does not import the theme or token recipes. Card, sidebar, menu,
+dialog and sheet consumers use these policies; capsules remain round.
+
+SurfacePaint accepts the same shape policy and direction as its caller (or a radius for circular corners).
+Its clipped layers and rim follow that policy. GlassIsland composes the same
+shape with an unclipped outer shadow. Apple's native glass tab surface keeps
+its own system-owned geometry.
+
+## Validation
+
+The shape suites cover geometry inputs, image failures, shared outlines,
+accessibility and platform styles. `scripts/verify-shapes.mjs` exercises the
+real web components in Storybook, including painted ring thickness, RTL,
+clipping and SVG identity. Native platform appearance still requires device
+verification; a web screenshot cannot validate iOS continuous curves.

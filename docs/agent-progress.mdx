@@ -26,6 +26,8 @@ import { AgentProgress } from '@oxy.so/bloom/agent-progress';
 
 Minimized state is uncontrolled (`defaultMinimized`) or controlled (`minimized` + `onMinimizedChange`).
 
+The header ("3 steps left", "All steps completed"), the buttons' names and the demo `steps` are localised via `BloomProvider locale`; `labels` and `steps` still win.
+
 ## Anatomy and geometry
 
 | Part | Geometry |
@@ -97,3 +99,5 @@ The card is an `aria-live="polite"` region, so the header count is announced as 
 | `labels?` | `{ stepsLeft?(n), allCompleted?, minimize?, expand? }` | English | Fixed strings. |
 | `style?` | `StyleProp<ViewStyle>` | — | Card style. |
 | `testID?` | `string` | `'agent-progress'` | Also derives `-expanded`, `-minimized`, `-minimize`, `-ring`, `-step-<i>`. |
+
+The animated card uses SurfacePaint on its existing measured host. It publishes the resolved contextual fill to descendants, respects explicit style backgrounds and keeps progress, collapse and presence animations unchanged.

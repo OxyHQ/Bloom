@@ -28,6 +28,10 @@ who is in a group, what a channel broadcast looks like, and the story viewer.
 means; a component that reads the clock is wrong for every user who is not in
 the timezone the data came from.
 
+Bloom's own strings — "Add members", "Remove Ana Restrepo", "Story 2 of 5",
+role badges, the story controls — are localised via `BloomProvider locale`;
+each `labels` / `*Label` prop still wins.
+
 ## `ContactRow`
 
 ```tsx
@@ -48,6 +52,14 @@ with `onSelectedChange`, an action button with `onAction`, nothing otherwise.
 | `actionDone`            | swaps the button for a quiet "Added" mark                 |
 | `size`                  | `'medium'` 44px avatar (default), `'small'` 36 for a picker |
 | `horizontalInset`       | Avatar/text inset, default `10`. Use `0` when the surrounding widget already provides its inset. |
+
+A single row outside a list — a suggestion card, a search result — imports
+the lightweight entry, which links `ContactRow` without the lists, the group
+form or the story viewer (Metro does not tree-shake barrel exports):
+
+```tsx
+import { ContactRow } from '@oxy.so/bloom/chat-people/contact-row';
+```
 
 ### Selection is ONE target
 

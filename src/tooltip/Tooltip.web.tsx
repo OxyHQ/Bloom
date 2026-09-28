@@ -1,6 +1,8 @@
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
+import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { useMenuPalette } from '../floating/menu-palette';
 import type { FloatingAnchor } from '../floating/types';
 import { OverlayRoot } from '../overlay';
@@ -140,6 +142,7 @@ export function TooltipContent({
   label: string;
   size?: TooltipSize;
 }) {
+  const materialStyle = useSurfaceMaterial('[data-bloom-tooltip]', 'bloom-tooltip-surface-css');
   const palette = useMenuPalette();
   const { position, visible, triggerRef } = useContext(TooltipContext);
 
@@ -180,6 +183,8 @@ export function TooltipContent({
 
   const box = TOOLTIP_SIZES[size];
   const bubbleStyle: WebCssStyle = {
+    ...materialStyle,
+    ...surfaceFillVars(palette.surface),
     maxWidth: BUBBLE_MAX_WIDTH,
     paddingHorizontal: box.paddingHorizontal,
     paddingVertical: box.paddingVertical,
@@ -230,7 +235,7 @@ export function TooltipContent({
               dataSet: { bloomTooltip: '', state: visible ? 'open' : 'closed' },
             } as Record<string, unknown>)}
             style={[bubbleStyle, { transformOrigin: `${caretLeft + ARROW_HALF_SIZE}px ${position === 'top' ? '100%' : '0%'}` } as WebCssStyle]}>
-            {children}
+            <SurfaceLevelProvider level={1} fill={palette.surface}>{children}</SurfaceLevelProvider>
             {/* Outside the padding box, overlapping the border by its 1px. */}
             <TooltipCaret
               position={position}

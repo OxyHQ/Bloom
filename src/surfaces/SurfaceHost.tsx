@@ -8,6 +8,7 @@ import { BackHandler, Platform } from 'react-native';
 
 import { useDialogControl } from '../dialog/context';
 import { hasOpenFloatingSurface } from '../floating/escape-stack';
+import { useBloomLocale } from '../locale/context';
 import type { DialogProps } from '../dialog/types';
 import {
   finalizeClose,
@@ -77,6 +78,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
   function SurfaceLayer({ entry }: { entry: SurfaceEntry }) {
     const control = useDialogControl();
     const { id, status } = entry;
+    const locale = useBloomLocale();
 
     const controls = useMemo<SurfaceControls>(
       () => ({
@@ -113,9 +115,9 @@ export function createSurfaceHost(Dialog: DialogComponent) {
     const dialogProps = useMemo(
       () => ({
         ...dialogPropsFor(entry.presentation),
-        actions: entry.presentation.actions?.(controls),
+        actions: entry.presentation.actions?.(controls, locale),
       }),
-      [entry.presentation, controls],
+      [entry.presentation, controls, locale],
     );
 
     return (

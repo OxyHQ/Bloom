@@ -13,16 +13,21 @@ import { useTheme } from '../theme/use-theme';
 import { PlayerIconButton } from './PlayerIconButton';
 import { formatPlaybackRate, PLAYBACK_RATES, TRANSPORT_GEOMETRY } from './shared';
 import type { PlaybackSpeedMenuProps } from './types';
+import { useMessages } from '../locale/messages';
+import { MEDIA_PLAYER_MESSAGES } from './messages';
 
 /** The heading and radio rows, shared by the menu and anything that hosts them in its own menu. */
 export function PlaybackSpeedRows({
   rate,
   onRateChange,
   rates = PLAYBACK_RATES,
-  formatRate = formatPlaybackRate,
-  label = 'Playback speed',
+  formatRate: formatRateProp,
+  label: labelProp,
   testID,
 }: Pick<PlaybackSpeedMenuProps, 'rate' | 'onRateChange' | 'rates' | 'formatRate' | 'label' | 'testID'>) {
+  const { locale, messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const formatRate = formatRateProp ?? ((rate: number) => formatPlaybackRate(rate, locale));
+  const label = labelProp ?? messages.playbackSpeed;
   const theme = useTheme();
   return (
     <>
@@ -53,8 +58,8 @@ function PlaybackSpeedMenuComponent({
   rate,
   onRateChange,
   rates,
-  formatRate = formatPlaybackRate,
-  label = 'Playback speed',
+  formatRate: formatRateProp,
+  label: labelProp,
   children,
   open,
   onOpenChange,
@@ -62,6 +67,9 @@ function PlaybackSpeedMenuComponent({
   disabled,
   testID,
 }: PlaybackSpeedMenuProps) {
+  const { locale, messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const formatRate = formatRateProp ?? ((rate: number) => formatPlaybackRate(rate, locale));
+  const label = labelProp ?? messages.playbackSpeed;
   const g = TRANSPORT_GEOMETRY[size];
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>

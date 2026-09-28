@@ -151,7 +151,9 @@ canvas that grew the page would pan the page instead of the canvas.
 `ScrollView` (`paneScroll={false}` when the pane's content already scrolls — a
 `FlatList`, a virtualizer). The divider between the first two is `ai-chat`'s
 `AiChatResizeHandle`, reused rather than rewritten: pointer-capture dragging on
-web, a `PanResponder` on native, arrow keys, and the same grip. It is named
+web, a `PanResponder` on native, arrow keys, and the same grip. The grip is its
+own module (`ai-chat/AiChatResizeHandle`), so a `split` shell does not link the
+AI chat shell or its message catalog. It is named
 `resizeLabel` (`"Resize panes"`) with `role="separator"`. `listWidth` (360) is
 the resting width and a drag is clamped to `listMinWidth`/`listMaxWidth`
 (280/520); `onListWidthChange` reports where it settled.
@@ -512,7 +514,8 @@ browser with `dir="rtl"` and on a device with `forceRTL` — not by the suite.
 ## Labels
 
 Every word the shell and the sidebar speak is a prop defaulting to the English
-it replaced, so an app can translate them:
+it replaced, so an app can translate them. The shell's defaults below are localised
+via `BloomProvider locale`; a prop still wins:
 
 | Prop | Default | Names |
 | --- | --- | --- |
@@ -565,7 +568,7 @@ explicit `navigation` model wins when both are supplied. The old `drawer`,
 and use a separate dialog/sheet when a secondary navigation drawer is needed.
 
 Placement follows the measured shell width (window width is only the pre-layout
-fallback). `navigationMaterial` chooses `solid` or `translucent` on the bottom bar.
+fallback). The bottom bar is intrinsically translucent; it has no material variant.
 Use `scroll="external"` when the child owns scrolling. For example:
 
 ```tsx
@@ -643,3 +646,5 @@ For fullscreen video or a child scroller that accounts for the occupied bottom e
 set `reserveBottomBarSpace={false}`. The visible bar still publishes its measured height
 through the shared edge registry; document/container content receives no duplicate bar padding.
 `scroll="fixed"` always leaves scrolling and clearance to the child navigator or list.
+
+ProOfferCard retains its animated complementary host and decorative artwork, with shared SurfacePaint beneath it and contextual backing published for descendant controls. Explicit background overrides remain supported.

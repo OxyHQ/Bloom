@@ -11,10 +11,12 @@ import { compactNumber, describeDeltaRatio, formatNumber } from '../chart-cards/
 import { PeriodChartHeader } from '../chart-cards/primitives/PeriodChartHeader';
 import { PulsingDot } from '../chart-cards/primitives/PulsingDot';
 import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
-import { useChartCardPalette, useChartTones } from '../chart-cards/primitives/use-chart-palette';
+import { useChartCardSurfacePalette, useChartTones } from '../chart-cards/primitives/use-chart-palette';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
 import { RiAlbumLine } from '../icons/remix/RiAlbumLine';
 import { Text } from '../typography';
+import { useMessages } from '../locale/messages';
+import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { StreamsChartProps, StreamsEvent } from './types';
 
 /**
@@ -43,9 +45,9 @@ const TICK_COUNT = 4;
 const CARD_GAP = 24;
 const DEFAULT_HEIGHT = 360;
 
+/** The marked releases as one list ("Low Tide (12 Mar), …"), `''` for none. */
 function describeEvents(events: readonly StreamsEvent[], labels: readonly string[]): string {
-  if (events.length === 0) return '';
-  return `; releases: ${events.map((e) => `${e.label} (${labels[e.index] ?? ''})`).join(', ')}`;
+  return events.map((e) => `${e.label} (${labels[e.index] ?? ''})`).join(', ');
 }
 
 export function StreamsChart({
@@ -54,15 +56,19 @@ export function StreamsChart({
   defaultMetric,
   onMetricChange,
   events = [],
-  metricsLabel = 'Chart metric',
-  format = formatNumber,
-  formatAxisValue = compactNumber,
+  metricsLabel: metricsLabelProp,
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
   height = DEFAULT_HEIGHT,
   accessibilityLabel,
   style,
   testID,
 }: StreamsChartProps) {
-  const palette = useChartCardPalette();
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, locale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => compactNumber(value, locale));
+  const metricsLabel = metricsLabelProp ?? messages.streams.metrics;
+  const palette = useChartCardSurfacePalette(style);
   const tones = useChartTones();
 
   const [ownMetric, setOwnMetric] = useState(defaultMetric ?? metrics[0]?.id);
@@ -111,7 +117,7 @@ export function StreamsChart({
         label={point ? point.label : title}
         value={point ? point.value : total}
         format={format}
-        delta={current?.delta !== undefined ? describeDeltaRatio(current.delta) : undefined}
+        delta={current?.delta !== undefined ? describeDeltaRatio(current.delta, locale) : undefined}
         hovering={hovering}
         fadeKey={`${metricId ?? ''}:${activeIndex}`}
         caption={hoveredEvent ? hoveredEvent.label : undefined}
@@ -133,7 +139,7 @@ export function StreamsChart({
           onActiveIndexChange={setActiveIndex}
           palette={palette}
           accessibilityLabel={
-            accessibilityLabel ?? `${title} over time${describeEvents(visibleEvents, categories)}`
+            accessibilityLabel ?? messages.streams.summary(title, describeEvents(visibleEvents, categories))
           }
           testID={testID ? `${testID}-plot` : undefined}
         >

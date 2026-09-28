@@ -4,9 +4,11 @@ import { View } from 'react-native';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { resolveMapMarkerPaint } from '../map-marker/shared';
 import { resolveAccentColors } from '../theme/accent-colors';
+import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { NAVIGATION_BANNER_GEOMETRY } from './constants';
+import { NAVIGATION_BANNER_MESSAGES } from './messages';
 import { describeSpeedLimit, resolveNavigationPaint } from './shared';
 import type { SpeedLimitPillProps } from './types';
 
@@ -42,6 +44,7 @@ function SpeedLimitPillComponent({
   style,
   testID,
 }: SpeedLimitPillProps) {
+  const { messages } = useMessages(NAVIGATION_BANNER_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveNavigationPaint(theme), [theme]);
   const map = useMemo(() => resolveMapMarkerPaint(theme), [theme]);
@@ -52,7 +55,7 @@ function SpeedLimitPillComponent({
     <View
       role="img"
       accessibilityLabel={
-        accessibilityLabel ?? describeSpeedLimit({ limit, unit, exceeded, exceededLabel })
+        accessibilityLabel ?? describeSpeedLimit({ limit, unit, exceeded, exceededLabel, messages })
       }
       testID={testID}
       style={[{ alignItems: 'center', gap: 2 }, style]}

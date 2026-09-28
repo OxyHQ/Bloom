@@ -18,6 +18,9 @@ import {
 } from './shared';
 import type { EpisodeRowProps } from './types';
 import { webDataSet } from '../styles/web-data';
+import { useMessages } from '../locale/messages';
+import { useCommonMessages } from '../locale/common-messages';
+import { TRACK_LIST_MESSAGES } from './messages';
 
 /** Below this the cover shrinks to 64 and the description is dropped. */
 const EPISODE_NARROW_WIDTH = 560;
@@ -58,6 +61,8 @@ function EpisodeRowComponent({
   style,
   testID,
 }: EpisodeRowProps) {
+  const { messages } = useMessages(TRACK_LIST_MESSAGES);
+  const common = useCommonMessages();
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
   const window = useWindowDimensions();
@@ -65,9 +70,9 @@ function EpisodeRowComponent({
   const [hovered, setHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const formatLength = labels?.formatLength ?? formatEpisodeLength;
-  const formatRemaining = labels?.formatRemaining ?? formatEpisodeRemaining;
-  const playedLabel = labels?.played ?? 'Played';
+  const formatLength = labels?.formatLength ?? ((seconds: number) => formatEpisodeLength(seconds, messages));
+  const formatRemaining = labels?.formatRemaining ?? ((seconds: number) => formatEpisodeRemaining(seconds, messages));
+  const playedLabel = labels?.played ?? messages.played;
   const progress = episode.progress ?? 0;
   const inProgress = !episode.played && progress > 0 && progress < episode.duration;
   const remaining = formatRemaining(episode.duration - progress);
@@ -140,7 +145,7 @@ function EpisodeRowComponent({
             width={narrow ? 56 : 80}
             fill={paint.accent}
             track={paint.rail}
-            accessibilityLabel={labels?.progress ?? 'Listened'}
+            accessibilityLabel={labels?.progress ?? messages.listened}
             valueText={remaining}
           />
           <Text
@@ -157,7 +162,7 @@ function EpisodeRowComponent({
       {onSavedChange ? (
         <TrackIconButton
           icon={episode.saved ? RiCheckboxCircleFill : RiAddCircleLine}
-          accessibilityLabel={labels?.save ?? 'Save episode'}
+          accessibilityLabel={labels?.save ?? messages.saveEpisode}
           pressed={episode.saved === true}
           activeColor={paint.accent}
           onPress={() => onSavedChange(episode, !episode.saved)}
@@ -167,7 +172,7 @@ function EpisodeRowComponent({
       {onDownloadedChange ? (
         <TrackIconButton
           icon={episode.downloaded ? RiArrowDownCircleFill : RiArrowDownCircleLine}
-          accessibilityLabel={labels?.download ?? 'Download episode'}
+          accessibilityLabel={labels?.download ?? messages.downloadEpisode}
           pressed={episode.downloaded === true}
           activeColor={paint.accent}
           onPress={() => onDownloadedChange(episode, !episode.downloaded)}
@@ -177,7 +182,7 @@ function EpisodeRowComponent({
       {items.length > 0 ? (
         <TrackMenu
           items={items}
-          label={`${labels?.moreOptions ?? 'More options'} for ${episode.title}`}
+          label={common.labelFor(labels?.moreOptions ?? common.moreOptions, episode.title)}
           open={menuOpen}
           onOpenChange={setMenuOpen}
           testID={testID ? `${testID}-more` : undefined}
