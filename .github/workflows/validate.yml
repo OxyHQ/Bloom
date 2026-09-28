@@ -34,7 +34,9 @@ jobs:
       - run: bun run build
       - run: bun run typescript
       - name: Generated sources are committed
-        run: git diff --exit-code
+        run: |
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
 
   tests:
     name: Tests (${{ matrix.shard }}/9)
