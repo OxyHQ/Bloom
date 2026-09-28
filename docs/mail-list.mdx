@@ -225,3 +225,7 @@ The open row is `aria-current` on web and `accessibilityState.selected` on
 native — `aria-selected` belongs to a tab or an option, and a message row is
 neither. While `loading` the region is `aria-busy` and the placeholders are
 hidden, so "loading" is announced once rather than eight times.
+
+## Pointer targets
+
+The row link is an absolute sibling below the foreground content. Layout wrappers use `pointerEvents="box-none"`, and inert text/marks use `pointerEvents="none"`; controls retain their own targets. A synthetic `element.click()` bypasses those layers, so run `scripts/verify-mail-row-pointer.mjs` against the Pointer Targets story to validate actual browser hit testing.
