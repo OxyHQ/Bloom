@@ -59,6 +59,8 @@ import {
   NewChatButton,
   StoriesRow,
 } from '../chat-list';
+import { messagesIn } from './support/messages-in';
+import type { BloomLanguage } from '../locale/languages';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -349,7 +351,7 @@ describe('chat-people', () => {
 
   describe('chat-people plurals', () => {
     it('follows each language’s categories', () => {
-      const count = (lang: keyof typeof CHAT_PEOPLE_MESSAGES, n: number) => CHAT_PEOPLE_MESSAGES[lang].newGroup.members(n);
+      const count = (lang: BloomLanguage, n: number) => messagesIn(CHAT_PEOPLE_MESSAGES, lang).newGroup.members(n);
       expect(count('es', 3)).toBe('3 miembros');
       expect(count('fr', 0)).toBe('0 membre');
       expect(count('ru', 1)).toBe('1 участник');
@@ -357,7 +359,7 @@ describe('chat-people', () => {
       expect(count('ru', 5)).toBe('5 участников');
       expect(count('ar', 2)).toBe('عضوان');
       expect(count('ar', 11)).toBe('11 عضوًا');
-      expect(CHAT_PEOPLE_MESSAGES.ru.views('12.4K')).toBe('12.4K просмотров');
+      expect(messagesIn(CHAT_PEOPLE_MESSAGES, 'ru').views('12.4K')).toBe('12.4K просмотров');
     });
 
     it('renders the Russian few form in the group form', () => {
@@ -454,7 +456,7 @@ describe('chat-composer', () => {
       expect(ATTACHMENT_MENU_ITEMS.map((item) => item.label)).toEqual([
         'Gallery', 'Camera', 'File', 'Location', 'Contact', 'Poll', 'Music',
       ]);
-      expect(attachmentMenuItems(CHAT_COMPOSER_MESSAGES.es).map((item) => item.label)).toEqual([
+      expect(attachmentMenuItems(messagesIn(CHAT_COMPOSER_MESSAGES, 'es')).map((item) => item.label)).toEqual([
         'Galería', 'Cámara', 'Archivo', 'Ubicación', 'Contacto', 'Encuesta', 'Música',
       ]);
     });

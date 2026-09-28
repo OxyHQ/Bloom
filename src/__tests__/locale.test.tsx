@@ -9,6 +9,7 @@ import { BLOOM_LANGUAGES, LocaleProvider, resolveBloomLanguage, useBloomLocale }
 import { formatGregorian } from '../locale/format-date';
 import { pickMessages } from '../locale/messages';
 import { countValue, plural, pluralCategory } from '../locale/plural';
+import { messagesIn } from './support/messages-in';
 
 describe('resolveBloomLanguage', () => {
   it('reads the primary subtag of any BCP 47 spelling', () => {
@@ -76,7 +77,7 @@ describe('message catalogs', () => {
   it('ships the date-picker family in every Bloom language, each translated', () => {
     const english = DATE_PICKER_MESSAGES.en;
     for (const language of BLOOM_LANGUAGES) {
-      const messages = DATE_PICKER_MESSAGES[language];
+      const messages = messagesIn(DATE_PICKER_MESSAGES, language);
       expect(Object.keys(messages).sort()).toEqual(Object.keys(english).sort());
       expect(Object.keys(messages.presets).sort()).toEqual(Object.keys(english.presets).sort());
       if (language !== 'en') {

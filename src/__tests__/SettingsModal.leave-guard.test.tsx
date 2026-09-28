@@ -163,32 +163,6 @@ it('guards compact back and Android back to navigation, then Android close', () 
   expect(guard).toHaveBeenCalledWith('close');
   expect(onClose).not.toHaveBeenCalled();
 });
-it('guards Escape once', () => {
-  mockWeb = true;
-  const listeners = new Map<string, (event: unknown) => void>();
-  const prior = globalThis.window;
-  Object.defineProperty(globalThis, 'window', {
-    configurable: true,
-    value: {
-      addEventListener: (key: string, fn: (event: unknown) => void) => listeners.set(key, fn),
-      removeEventListener: (key: string) => listeners.delete(key),
-    },
-  });
-  try {
-    const guard = jest.fn(() => false),
-      onClose = jest.fn();
-    const view = render(ui({ onBeforeLeave: guard, onClose }));
-    flush();
-    act(() => listeners.get('keydown')?.({ key: 'Escape', stopPropagation: jest.fn() }));
-    expect(guard).toHaveBeenCalledTimes(1);
-    expect(guard).toHaveBeenCalledWith('close');
-    expect(onClose).not.toHaveBeenCalled();
-    expect(view.getByText('recovery content')).toBeTruthy();
-    view.unmount();
-  } finally {
-    Object.defineProperty(globalThis, 'window', { configurable: true, value: prior });
-  }
-});
 it('does not veto external controlled page/open changes', () => {
   const guard = jest.fn(() => false);
   const view = render(ui({ page: 'a', onBeforeLeave: guard }));

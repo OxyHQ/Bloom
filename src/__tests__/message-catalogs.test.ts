@@ -1,7 +1,10 @@
 /**
  * Every message catalog in Bloom, found rather than listed: each
  * `src/<family>/messages.ts` and `src/locale/common-messages.ts`, and in them
- * each export shaped like a `MessageCatalog` (one entry per Bloom language).
+ * each export shaped like a
+ * `MessageCatalog` (an `id` and the English strings). The other languages live
+ * in `src/locale/translations/<language>.ts`, registered for every suite by
+ * `__mocks__/setup.ts`.
  *
  * The `MessageCatalog` type already refuses a missing language or key. What a
  * type cannot see, this does:
@@ -10,13 +13,17 @@
  *     arguments, it returns a non-empty string);
  *   - a language that is really English pasted in — the type-check passes on
  *     it. At most a quarter of a language's strings may equal English (brand
- *     names, "Menu", "OK" are legitimately shared), never all of them.
+ *     names, "Menu", "OK" are legitimately shared), never all of them;
+ *   - a family module that carries a language besides English, which would put
+ *     that language back into every app that renders the family.
  */
 
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { BLOOM_LANGUAGES } from '../locale';
+import { pickMessages, type MessageCatalog } from '../locale/messages';
+import type { Translations } from '../locale/translations/types';
 
 const SRC = join(__dirname, '..');
 
@@ -66,13 +73,17 @@ function leaves(value: unknown, path = ''): Map<string, Leaf> {
   return out;
 }
 
-const catalogs: { name: string; catalog: Record<string, unknown> }[] = [];
+const isCatalog = (value: unknown): value is MessageCatalog<unknown> =>
+  Boolean(value) && typeof value === 'object' && typeof (value as { id?: unknown }).id === 'string' && 'en' in (value as object);
+
+const catalogs: { name: string; exportName: string; source: MessageCatalog<unknown>; catalog: Record<string, unknown> }[] = [];
 for (const file of catalogFiles()) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const module = require(file) as Record<string, unknown>;
   for (const [name, value] of Object.entries(module)) {
-    if (value && typeof value === 'object' && BLOOM_LANGUAGES.every((language) => language in (value as object))) {
-      catalogs.push({ name: `${relative(SRC, file)}#${name}`, catalog: value as Record<string, unknown> });
+    if (isCatalog(value)) {
+      const catalog = Object.fromEntries(BLOOM_LANGUAGES.map((language) => [language, pickMessages(value, language)]));
+      catalogs.push({ name: `${relative(SRC, file)}#${name}`, exportName: name, source: value, catalog });
     }
   }
 }
@@ -103,8 +114,22 @@ describe('message catalogs', () => {
     }
   });
 
-  describe.each(catalogs.map((c) => [c.name, c.catalog] as const))('%s', (_name, catalog) => {
+  describe.each(catalogs.map((c) => [c.name, c.catalog, c] as const))('%s', (_name, catalog, found) => {
     const english = leaves(catalog.en);
+
+    it('carries English only, under its own name as id', () => {
+      expect(Object.keys(found.source).sort()).toEqual(['en', 'id']);
+      expect(found.source.id).toBe(found.exportName);
+    });
+
+    it('is translated in every language module', () => {
+      for (const language of BLOOM_LANGUAGES) {
+        if (language === 'en') continue;
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const module = require(`../locale/translations/${language}`) as { default: Translations };
+        expect({ language, present: found.source.id in module.default }).toEqual({ language, present: true });
+      }
+    });
 
     it('has the same shape in every language, and every entry renders a string', () => {
       for (const language of BLOOM_LANGUAGES) {

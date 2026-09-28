@@ -22,6 +22,7 @@ import { Stepper } from '../stepper';
 import { TagField } from '../tag-field';
 import { TextFieldLabel } from '../text-field';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
 jest.mock('../settings-modal/modal-portal', () => ({
@@ -55,7 +56,7 @@ describe('auth-card and the form fields', () => {
     });
 
     it('places the address where the language puts it (Japanese leads with it)', () => {
-      expect(AUTH_CARD_MESSAGES.ja.codeSentTo('a@b.jp').startsWith('a@b.jp')).toBe(true);
+      expect(messagesIn(AUTH_CARD_MESSAGES, 'ja').codeSentTo('a@b.jp').startsWith('a@b.jp')).toBe(true);
     });
 
     it('lets the title prop win over the catalog', () => {
@@ -168,7 +169,7 @@ describe('auth-card and the form fields', () => {
     });
 
     it('keeps a preformatted count exactly as given', () => {
-      expect(RATING_MESSAGES.es.reviews('1,2 mil')).toBe('1,2 mil reseñas');
+      expect(messagesIn(RATING_MESSAGES, 'es').reviews('1,2 mil')).toBe('1,2 mil reseñas');
     });
 
     it('pluralises the star names per language', () => {
@@ -176,7 +177,7 @@ describe('auth-card and the form fields', () => {
       expect(getByLabelText('1 звезда')).toBeTruthy();
       expect(getByLabelText('2 звезды')).toBeTruthy();
       expect(getByLabelText('5 звёзд')).toBeTruthy();
-      expect(RATING_MESSAGES.ar.reviews(2)).toBe('مراجعتان');
+      expect(messagesIn(RATING_MESSAGES, 'ar').reviews(2)).toBe('مراجعتان');
     });
   });
 });

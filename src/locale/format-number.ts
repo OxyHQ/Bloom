@@ -1,4 +1,4 @@
-import type { MessageCatalog } from './messages';
+import { defineMessages, type MessageCatalog } from './messages';
 import { pickMessages } from './messages';
 
 /**
@@ -126,7 +126,7 @@ export function formatCompactCurrency(amount: number, currency: string, locale?:
   return format ? format.format(amount) : `${currency} ${formatCompactNumber(amount)}`;
 }
 
-interface SizeUnits {
+export interface SizeUnits {
   byte: string;
   kilobyte: string;
   megabyte: string;
@@ -134,23 +134,7 @@ interface SizeUnits {
 }
 
 /** Byte-size unit symbols: French writes `Ko`/`Mo`/`Go`, Russian `КБ`/`МБ`/`ГБ`. */
-const FILE_SIZE_UNITS: MessageCatalog<SizeUnits> = {
-  en: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  es: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  ca: { byte: 'B', kilobyte: 'kB', megabyte: 'MB', gigabyte: 'GB' },
-  de: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  fr: { byte: 'o', kilobyte: 'Ko', megabyte: 'Mo', gigabyte: 'Go' },
-  it: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  pt: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  ru: { byte: 'Б', kilobyte: 'КБ', megabyte: 'МБ', gigabyte: 'ГБ' },
-  tr: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  ja: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  zh: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  ar: { byte: 'بايت', kilobyte: 'ك.ب', megabyte: 'م.ب', gigabyte: 'غ.ب' },
-  hi: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  bn: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-  id: { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' },
-};
+export const FILE_SIZE_UNITS: MessageCatalog<SizeUnits> = defineMessages<SizeUnits>('FILE_SIZE_UNITS', { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' });
 
 /**
  * `2400000` → `2.4 MB` (en), `2,4 MB` (es), `2,4 Mo` (fr). One decimal under

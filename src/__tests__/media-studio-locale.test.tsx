@@ -29,6 +29,7 @@ import { LocaleProvider } from '../locale';
 import { LyricsPreviewCard, LyricsView } from '../lyrics';
 import { LibraryItem, LibraryPanel, RecentSearches, SearchField, TopResultCard, type LibraryEntry } from '../music-library';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -88,7 +89,7 @@ describe('creator-studio in the app locale', () => {
 
   it('ReleaseCard: a labels entry still wins over the catalog', () => {
     const screen = mount(
-      <ReleaseCard release={RELEASE} labels={{ tracks: (n) => `${n} pistas`, statuses: { ...CREATOR_STUDIO_MESSAGES.es.releaseStatuses, 'in-review': 'Revisando' } }} />,
+      <ReleaseCard release={RELEASE} labels={{ tracks: (n) => `${n} pistas`, statuses: { ...messagesIn(CREATOR_STUDIO_MESSAGES, 'es').releaseStatuses, 'in-review': 'Revisando' } }} />,
     );
     expect(screen.getByText('Sencillo · 14 mar 2026 · 1 pistas')).toBeTruthy();
     expect(screen.getByText('Revisando')).toBeTruthy();

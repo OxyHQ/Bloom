@@ -44,6 +44,7 @@ import { PLACE_LIST_MESSAGES } from '../place-list/messages';
 import { PlaceReviewCard, PlaceReviewSummary, WriteReviewPrompt } from '../place-reviews';
 import { RouteStops } from '../route-stops';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { messagesIn } from './support/messages-in';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -158,7 +159,7 @@ describe('map-marker', () => {
     expect(hasName('3 варианта жилья')).toBe(true);
     // A pre-formatted count takes the language's "many" form rather than a guess.
     expect(MAP_MARKER_MESSAGES.en.stays('99+')).toBe('99+ stays');
-    expect(MAP_MARKER_MESSAGES.ar.stays(2)).toBe('مكانا إقامة');
+    expect(messagesIn(MAP_MARKER_MESSAGES, 'ar').stays(2)).toBe('مكانا إقامة');
   });
 });
 
@@ -276,8 +277,8 @@ describe('navigation-banner', () => {
     expect(hasName('Indicación de carriles, 3 carriles, usa el carril 2 y carril 3')).toBe(true);
     mount(<LaneGuidance lanes={lanes} />, 'ru');
     expect(names().some((name) => name.startsWith('Подсказка по полосам, 3 полосы'))).toBe(true);
-    expect(NAVIGATION_BANNER_MESSAGES.ru.laneCount(5)).toBe('5 полос');
-    expect(NAVIGATION_BANNER_MESSAGES.ar.laneCount(2)).toBe('حارتان');
+    expect(messagesIn(NAVIGATION_BANNER_MESSAGES, 'ru').laneCount(5)).toBe('5 полос');
+    expect(messagesIn(NAVIGATION_BANNER_MESSAGES, 'ar').laneCount(2)).toBe('حارتان');
   });
 
   it('names the speed sign and the arrival strip in the locale; labels win', () => {
@@ -335,9 +336,9 @@ describe('place-card', () => {
   it('pluralises the review count per language', () => {
     expect(PLACE_CARD_MESSAGES.en.rated('4.6', 1)).toBe('Rated 4.6 out of 5, 1 review');
     expect(PLACE_CARD_MESSAGES.en.rated('4.6', 318)).toBe('Rated 4.6 out of 5, 318 reviews');
-    expect(PLACE_CARD_MESSAGES.ru.rated('4,6', 22)).toBe('Оценка 4,6 из 5, 22 отзыва');
-    expect(PLACE_CARD_MESSAGES.ru.rated('4,6', 25)).toBe('Оценка 4,6 из 5, 25 отзывов');
-    expect(PLACE_CARD_MESSAGES.fr.rated('4,6', 0)).toBe('Noté 4,6 sur 5, 0 avis');
+    expect(messagesIn(PLACE_CARD_MESSAGES, 'ru').rated('4,6', 22)).toBe('Оценка 4,6 из 5, 22 отзыва');
+    expect(messagesIn(PLACE_CARD_MESSAGES, 'ru').rated('4,6', 25)).toBe('Оценка 4,6 из 5, 25 отзывов');
+    expect(messagesIn(PLACE_CARD_MESSAGES, 'fr').rated('4,6', 0)).toBe('Noté 4,6 sur 5, 0 avis');
   });
 
   it('says New for an unrated place and names the action row, in the locale; props win', () => {
@@ -354,9 +355,9 @@ describe('place-list', () => {
   it('counts, shares and names visibility in the locale', () => {
     mount(<PlaceListCard name="Por visitar" count={12} visibility="shared" onPress={noop} />);
     expect(hasName('Por visitar, 12 lugares, Compartida')).toBe(true);
-    expect(PLACE_LIST_MESSAGES.es.places(1)).toBe('1 lugar');
-    expect(PLACE_LIST_MESSAGES.ru.places(21)).toBe('21 место');
-    expect(PLACE_LIST_MESSAGES.ru.places(12)).toBe('12 мест');
+    expect(messagesIn(PLACE_LIST_MESSAGES, 'es').places(1)).toBe('1 lugar');
+    expect(messagesIn(PLACE_LIST_MESSAGES, 'ru').places(21)).toBe('21 место');
+    expect(messagesIn(PLACE_LIST_MESSAGES, 'ru').places(12)).toBe('12 мест');
   });
 
   it('names the list and its controls in the locale; labels win', () => {
@@ -493,7 +494,7 @@ describe('place-details', () => {
       currentHourIndex: 1,
       trend: 'busier' as const,
     };
-    expect(describeBusyChart(day, PLACE_DETAILS_MESSAGES.es)).toBe(
+    expect(describeBusyChart(day, messagesIn(PLACE_DETAILS_MESSAGES, 'es'))).toBe(
       'Martes, más concurrido a las 9, ahora 11, Más concurrido de lo habitual',
     );
   });

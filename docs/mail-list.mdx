@@ -1,6 +1,6 @@
 ---
 title: Mail List
-description: The inbox — one row at two densities, day sections, the markers a message carries, and the bulk-selection bar the list mounts itself.
+description: The inbox — one row at three densities, day sections, the markers a message carries, and the bulk-selection bar the list mounts itself.
 order: 64
 ---
 
@@ -26,34 +26,30 @@ import { MailList, groupMailByDay } from '@oxy.so/bloom';
 />;
 ```
 
-## Two densities, one component
+## Three densities, one component
 
-| | `comfortable` | `compact` |
-| --- | --- | --- |
-| height | 72 (a floor) | 40, exact |
-| padding | 16 / 12 vertical | 12 / 0 |
-| avatar | 48 | 24 |
-| lines | sender + time, then subject + snippet | one |
+| | `compact` | `comfortable` | `cozy` |
+| --- | --- | --- | --- |
+| height | 40, exact | 64 (a floor) | 80 (a floor) |
+| padding (horizontal / vertical) | 12 / 0 | 14 / 12 | 16 / 16 |
+| avatar | 24 | 40 | 48 |
+| lines | one | sender, then subject + snippet | sender, then subject + snippet |
 
-`comfortable` is the phone inbox; `compact` is a desktop list, where the sender
-takes a 180px column that shrinks (never grows) down to 88 so a narrow pane
-gives the subject the space rather than clipping it.
+`comfortable` remains the default. `cozy` gives the same two-line layout more
+space without changing content, actions, theme colours or accessibility names.
+`compact` uses a sender column with a 180px basis, an 88px floor and a 34% width
+ceiling, leaving room for the subject in a narrow pane.
 
-The phone rung is the same 72 tall with the same 48 avatar as a `chat-list` row,
-deliberately. A mail row and a conversation row are the same kind of object, and
-an inbox standing 16px taller per row than the messages screen reads as a
-different library. Two lines is what pays for it: the sender and the time share
-the first, the subject and the snippet the second, and everything that used to
-need a third line is either a mark or is said only in the row's name.
+The shared geometry table drives rows, skeletons and the selection bar; use the
+same `density` on all three when composing a virtualized list yourself.
 
-There is no second row component for the desktop. Everything a compact row
-draws, a comfortable row draws too, and the whole difference is one geometry
-table in `shared.ts` — a density that forked into two files is a density that
-drifts, and the two then disagree about what a starred draft looks like.
+Set `showAvatar={false}` on `MailRow` or `MailList` to hide sender avatars.
+Selection checkboxes remain available; each `MailSummary` can override the list
+setting. The text uses the freed space instead of leaving an empty avatar slot.
 
 ## The subject and the snippet are one `Text`
 
-At BOTH densities the subject and the snippet are a single string with a nested
+At all densities the subject and the snippet are a single string with a nested
 span, not two flex children. Two neighbouring flex children each want to be as
 wide as their content, and with a long one the result is either a row that
 pushes the list sideways or a subject clipped to nothing while the snippet keeps
@@ -225,3 +221,7 @@ The open row is `aria-current` on web and `accessibilityState.selected` on
 native — `aria-selected` belongs to a tab or an option, and a message row is
 neither. While `loading` the region is `aria-busy` and the placeholders are
 hidden, so "loading" is announced once rather than eight times.
+
+## Pointer targets
+
+The row link is an absolute sibling below the foreground content. Layout wrappers use `pointerEvents="box-none"`, and inert text/marks use `pointerEvents="none"`; controls retain their own targets. A synthetic `element.click()` bypasses those layers, so run `scripts/verify-mail-row-pointer.mjs` against the Pointer Targets story to validate actual browser hit testing.

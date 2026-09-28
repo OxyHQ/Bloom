@@ -54,6 +54,7 @@ function MailListComponent({
   sections,
   mails,
   density = 'comfortable',
+  showAvatar = true,
   selectedId,
   checkedIds,
   onCheckedIdsChange,
@@ -166,6 +167,7 @@ function MailListComponent({
               actionsPlacement={mail.actionsPlacement ?? actionsPlacement}
               swipeEnabled={mail.swipeEnabled ?? swipeEnabled}
               density={density}
+              showAvatar={mail.showAvatar ?? showAvatar}
               strings={mail.strings ?? strings}
               selected={selectedId === id}
               checked={checked.has(id)}

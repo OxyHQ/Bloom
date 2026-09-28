@@ -41,26 +41,11 @@ import type { MailAction, MailRowProps } from './types';
 /**
  * One message thread in the inbox.
  *
- *   comfortable  72 tall · 16 padding · 48 avatar · sender and time on the
- *                first line, subject and snippet on the second, the star on
- *                the right where it is a control
- *   compact      40 tall · 12 padding · 24 avatar · sender, then subject and
- *                snippet on ONE baseline, then the states and the time
+ * Compact uses one baseline; comfortable and cozy stack sender above subject
+ * and snippet. All three share a geometry table, content, paint and actions.
  *
- * ONE component, two rungs of a geometry table. There is no second row
- * component for the desktop: everything a compact row draws, a comfortable row
- * draws too, and a density that forked into two files is a density that drifts.
- *
- * TWO LINES, NOT THREE, AND NOTHING DRAWN AT REST THAT IS NOT INFORMATION.
- * The phone row is the same 72/48 as a conversation row, so an inbox and a
- * messages screen read as one library. What paid for the third line: the
- * subject and the snippet share line two, the labels collapse to a chip and
- * dots, and the star is drawn only where it is a control.
- *
- * THE SUBJECT AND THE SNIPPET ARE ONE `Text`, at both densities. Two
- * neighbouring flex children each want to be as wide as their content, and the
- * result of a long one is a row that pushes sideways or a subject clipped to
- * nothing. One string with a nested span truncates where the line ends.
+ * The subject and snippet share ONE Text at every density, so a long snippet
+ * cannot claim its own flex width and push the subject out of the row.
  *
  * UNREAD IS THE WHOLE ROW, NOT A DOT. The sender and the subject go semibold
  * and every rung of text moves up to the primary colour; a read row sits on the
@@ -97,6 +82,7 @@ function MailRowComponent({
   checked = false,
   onCheckedChange,
   density = 'comfortable',
+  showAvatar = true,
   onPress,
   onLongPress,
   href,
@@ -210,6 +196,7 @@ function MailRowComponent({
 
   const paperclip = hasAttachment ? (
     <View
+      pointerEvents="none"
       aria-hidden
       importantForAccessibility="no-hide-descendants"
       style={{ flexShrink: 0 }}
@@ -222,6 +209,7 @@ function MailRowComponent({
   const threadBadge =
     (threadCount ?? 0) > 1 ? (
       <View
+        pointerEvents="none"
         aria-hidden
         importantForAccessibility="no-hide-descendants"
         style={{ flexShrink: 0 }}
@@ -233,20 +221,22 @@ function MailRowComponent({
 
   const timeText =
     time === undefined ? null : (
-      <Text
-        variant={geo.timeVariant}
-        numberOfLines={1}
-        style={{ color: timeColor, flexShrink: 0 }}
-        testID={testID ? `${testID}-time` : undefined}
-      >
-        {time}
-      </Text>
+      <View pointerEvents="none" style={{ flexShrink: 0 }}>
+        <Text
+          variant={geo.timeVariant}
+          numberOfLines={1}
+          style={{ color: timeColor, flexShrink: 0 }}
+          testID={testID ? `${testID}-time` : undefined}
+        >
+          {time}
+        </Text>
+      </View>
     );
 
   // --- the leading slot: a checkbox when the list can multi-select ----------
   const leading =
     onCheckedChange !== undefined ? (
-      <View style={{ width: geo.avatar, alignItems: 'center', flexShrink: 0 }}>
+      <View pointerEvents="box-none" style={{ width: geo.avatar, alignItems: 'center', flexShrink: 0 }}>
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
@@ -255,7 +245,7 @@ function MailRowComponent({
           testID={testID ? `${testID}-checkbox` : undefined}
         />
       </View>
-    ) : (
+    ) : showAvatar ? (
       <View
         pointerEvents="none"
         aria-hidden
@@ -269,7 +259,7 @@ function MailRowComponent({
           testID={testID ? `${testID}-avatar` : undefined}
         />
       </View>
-    );
+    ) : null;
 
   // --- the text column -----------------------------------------------------
   const column = compact ? (
@@ -283,7 +273,7 @@ function MailRowComponent({
         flexDirection: 'row',
         alignItems: 'center',
         gap: geo.gap,
-        marginLeft: geo.gap,
+        marginLeft: leading === null ? 0 : geo.gap,
       }}
     >
       <Text
@@ -318,7 +308,7 @@ function MailRowComponent({
       pointerEvents="none"
       aria-hidden
       importantForAccessibility="no-hide-descendants"
-      style={{ flex: 1, minWidth: 0, marginLeft: geo.gap, gap: geo.lineGap }}
+      style={{ flex: 1, minWidth: 0, marginLeft: leading === null ? 0 : geo.gap, gap: geo.lineGap }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 }}>
         <Text
@@ -374,7 +364,7 @@ function MailRowComponent({
   // and every star press would open the thread. Everything else in here is
   // hidden from assistive technology; the row's composed name already says it.
   const states = paperclip || threadBadge || onStarredChange !== undefined ? (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+    <View pointerEvents="box-none" style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {paperclip}
       {threadBadge}
       {onStarredChange === undefined ? (starred ? star : null) : star}
@@ -447,6 +437,7 @@ function MailRowComponent({
         testID={testID ? `${testID}-link` : undefined}
       />
       <View
+        pointerEvents="box-none"
         style={{
           flexDirection: 'row',
           alignItems: 'center',

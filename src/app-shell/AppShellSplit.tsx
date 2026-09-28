@@ -19,28 +19,13 @@ import { ScrollView, View } from 'react-native';
 
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
 import { Z_INDEX } from '../styles/z-index';
+import { space } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
+import { useMessages } from '../locale/messages';
+import { APP_SHELL_MESSAGES } from './messages';
 
-export interface AppShellSplitPanesProps {
-  list?: React.ReactNode;
-  detail?: React.ReactNode;
-  info?: React.ReactNode;
-  /** Which panes have room right now. */
-  showList: boolean;
-  showDetail: boolean;
-  showInfo: boolean;
-  /** The list pane's resting width; a drag moves it within min/max. */
-  listWidth: number;
-  listMinWidth: number;
-  listMaxWidth: number;
-  onListWidthChange?: (width: number) => void;
-  infoWidth: number;
-  resizable: boolean;
-  /** The shell wraps each pane in its own `ScrollView` unless the page owns one. */
-  paneScroll: boolean;
-  resizeLabel: string;
-  testID?: string;
-}
+import type { AppShellSplitPanesProps } from './types';
+import { APP_SHELL_DEFAULTS as D } from './constants';
 
 /** One pane: a bounded column that scrolls its own overflow. */
 function Pane({
@@ -68,23 +53,26 @@ function Pane({
 }
 
 const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
+  variant = 'joined',
   list,
   detail,
   info,
-  showList,
-  showDetail,
-  showInfo,
-  listWidth,
-  listMinWidth,
-  listMaxWidth,
+  showList = list != null,
+  showDetail = true,
+  showInfo = info != null,
+  listWidth = D.listWidth,
+  listMinWidth = D.listMinWidth,
+  listMaxWidth = D.listMaxWidth,
   onListWidthChange,
-  infoWidth,
-  resizable,
-  paneScroll,
-  resizeLabel,
+  infoWidth = D.infoWidth,
+  resizable = true,
+  paneScroll = true,
+  resizeLabel: resizeLabelProp,
   testID,
 }) => {
   const theme = useTheme();
+  const { messages } = useMessages(APP_SHELL_MESSAGES);
+  const resizeLabel = resizeLabelProp ?? messages.resizePanes;
   const [width, setWidth] = useState(listWidth);
   const widthAtDragStart = useRef(listWidth);
 
@@ -116,11 +104,13 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
    * hit test at the divider's centre returned the pane, and the drag never
    * started. Raising the DIVIDER lifts the whole context over both panes.
    */
+  const separated = variant === 'separated';
   const divider = {
-    width: 1,
+    width: separated ? space.md : 1,
+    flexShrink: 0,
     alignSelf: 'stretch' as const,
     zIndex: Z_INDEX.floating,
-    backgroundColor: theme.colors.border,
+    backgroundColor: separated ? 'transparent' : theme.colors.border,
   };
   // Only the panes that are actually drawn count: alone, a pane fills the row.
   const solo = [showList, showDetail, showInfo].filter(Boolean).length === 1;
@@ -137,15 +127,21 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
         </Pane>
       ) : null}
       {showList && !solo ? (
-        <View style={divider}>
+        <View style={divider} testID={testID ? `${testID}-list-gap` : undefined}>
           {resizable ? (
-            <AiChatResizeHandle
-              label={resizeLabel}
-              onResizeStart={onResizeStart}
-              onResize={onResize}
-              onNudge={onNudge}
-              testID={testID ? `${testID}-divider` : undefined}
-            />
+            <View
+              pointerEvents="box-none"
+              testID={testID ? `${testID}-resize-anchor` : undefined}
+              style={separated ? { position: 'absolute', top: 0, bottom: 0, left: '50%', right: '50%', width: 0 } : { flex: 1 }}
+            >
+              <AiChatResizeHandle
+                label={resizeLabel}
+                onResizeStart={onResizeStart}
+                onResize={onResize}
+                onNudge={onNudge}
+                testID={testID ? `${testID}-divider` : undefined}
+              />
+            </View>
           ) : null}
         </View>
       ) : null}
@@ -158,7 +154,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
           {detail}
         </Pane>
       ) : null}
-      {showInfo && !solo ? <View style={divider} /> : null}
+      {showInfo && showDetail && !solo ? <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} /> : null}
       {showInfo ? (
         <Pane
           testID={testID ? `${testID}-pane-info` : undefined}

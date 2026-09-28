@@ -25,7 +25,7 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import { MailList, MailRow, MailSelectionBar } from '../mail-list';
+import { MailList, MailRow, MailSelectionBar, MailListSkeleton } from '../mail-list';
 import {
   DEFAULT_MAIL_STRINGS,
   MAIL_ROW_GEOMETRY,
@@ -302,7 +302,7 @@ describe('MailRow', () => {
     expect(getComputedStyle(byTestId('r')).height).toBe('');
   });
 
-  it.each(['compact', 'comfortable'] as const)(
+  it.each(['compact', 'comfortable', 'cozy'] as const)(
     'keeps the subject and the snippet inside ONE text node at %s, so neither pushes the row',
     (density) => {
       mount(
@@ -321,6 +321,32 @@ describe('MailRow', () => {
       expect(subject.textContent).toContain('and a snippet just as long');
     },
   );
+
+  it.each(['compact', 'comfortable', 'cozy'] as const)(
+    'hides avatars without hiding selection controls at %s', (density) => {
+      mount(<MailRow {...ROW} density={density} showAvatar={false} testID="r" />);
+      expect(maybe('r-avatar')).toBeNull();
+      mount(<MailRow {...ROW} density={density} showAvatar={false} onCheckedChange={() => undefined} testID="r" />);
+      expect(maybe('r-avatar')).toBeNull();
+      expect(byTestId('r-checkbox')).toBeTruthy();
+    },
+  );
+
+  it('keeps cozy spacious and uses the same density for loading and selection', () => {
+    mount(<>
+      <MailRow {...ROW} density="cozy" labels={LABELS} testID="r" />
+      <MailListSkeleton density="cozy" testID="loading" />
+      <MailSelectionBar density="cozy" count={1} total={2} actions={ACTIONS} testID="bar" />
+    </>);
+    expect(getComputedStyle(byTestId('r')).minHeight).toBe('80px');
+    expect(getComputedStyle(byTestId('r')).height).toBe('');
+    expect(getComputedStyle(byTestId('r-link').nextElementSibling!).paddingTop).toBe('16px');
+    expect(getComputedStyle(byTestId('r-avatar')).height).toBe('48px');
+    expect(getComputedStyle(byTestId('loading-row-0')).minHeight).toBe('80px');
+    expect(getComputedStyle(byTestId('bar')).height).toBe('56px');
+    expect(byTestId('r-link').getAttribute('aria-label')).toContain('Work');
+    expect(byTestId('r-subject').parentElement).not.toBe(byTestId('r-sender').parentElement);
+  });
 
   it('draws the phone row two lines tall at 64/40, with the time and the states in their own column', () => {
     mount(<MailRow {...ROW} labels={LABELS} testID="r" />);

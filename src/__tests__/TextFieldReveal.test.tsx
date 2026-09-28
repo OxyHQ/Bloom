@@ -5,6 +5,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { LocaleProvider } from '../locale';
 import { TextField, TextFieldInput } from '../text-field';
 import { TEXT_FIELD_MESSAGES } from '../text-field/messages';
+import { messagesIn } from './support/messages-in';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -77,7 +78,7 @@ describe('TextFieldInput revealable', () => {
         <Password />
       </LocaleProvider>,
     );
-    expect(es.getByLabelText(TEXT_FIELD_MESSAGES.es.showPassword)).toBeTruthy();
+    expect(es.getByLabelText(messagesIn(TEXT_FIELD_MESSAGES, 'es').showPassword)).toBeTruthy();
     fireEvent.press(es.getByLabelText('Mostrar contraseña'));
     expect(es.getByLabelText('Ocultar contraseña')).toBeTruthy();
     es.unmount();

@@ -56,7 +56,7 @@ const PROPERTY_TYPE_ICONS: ReadonlyArray<readonly [PropertyType, PropertyTypeOpt
   ['other', RiMoreLine],
 ];
 
-/** Bloom's nine property types, labelled from the catalog for `labels` (`LISTING_EDITOR_MESSAGES[lang].propertyTypes`). */
+/** Bloom's nine property types, labelled from the catalog for `labels` (`pickMessages(LISTING_EDITOR_MESSAGES, lang).propertyTypes`). */
 function propertyTypeOptions(labels: Record<PropertyType, string>): ReadonlyArray<PropertyTypeOption<PropertyType>> {
   return PROPERTY_TYPE_ICONS.map(([value, icon]) => ({ value, label: labels[value], icon }));
 }
