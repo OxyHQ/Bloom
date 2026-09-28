@@ -95,7 +95,7 @@ function FileMessageComponent({
   testID,
 }: FileMessageProps) {
   const common = useCommonMessages();
-  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const { locale, messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const cancelLabel = cancelLabelProp ?? common.cancel;
   const downloadLabel = downloadLabelProp ?? messages.download;
   const theme = useTheme();
@@ -111,7 +111,7 @@ function FileMessageComponent({
   );
   const [hovered, handlers] = useHovered();
 
-  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes) : undefined);
+  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
   const type = typeLabel ?? fileTypeLabel(name, mimeType, messages);
   const meta = fileMetaLine([size, type, metaLabel]);
 

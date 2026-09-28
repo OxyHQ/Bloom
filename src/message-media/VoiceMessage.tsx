@@ -237,12 +237,15 @@ const Waveform = memo(function Waveform({
 
 function SpeedPill({
   rate,
+  locale,
   label,
   onPress,
   paint,
   testID,
 }: {
   rate: VoicePlaybackRate;
+  /** Formats the rate on the pill. */
+  locale: string | undefined;
   /** The pill's name, "Playback speed, 1.5×". */
   label: string;
   onPress: () => void;
@@ -270,7 +273,7 @@ function SpeedPill({
       testID={testID}
     >
       <Text variant="caption-2-medium" style={{ color: paint.text }}>
-        {formatPlaybackRate(rate)}
+        {formatPlaybackRate(rate, locale)}
       </Text>
     </Pressable>
   );
@@ -325,7 +328,7 @@ function VoiceMessageComponent({
   testID,
 }: VoiceMessageProps) {
   const theme = useTheme();
-  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const { locale, messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const transcribeLabel = transcribeLabelProp ?? messages.transcribe;
   const hideTranscriptLabel = hideTranscriptLabelProp ?? messages.hideTranscript;
   const seekLabel = seekLabelProp ?? messages.seek;
@@ -420,8 +423,9 @@ function VoiceMessageComponent({
         <View style={{ flexGrow: 1 }} />
         {rate !== undefined && onRateChange ? (
           <SpeedPill
+            locale={locale}
             rate={rate}
-            label={messages.playbackSpeed(formatPlaybackRate(rate))}
+            label={messages.playbackSpeed(formatPlaybackRate(rate, locale))}
             paint={paint}
             onPress={() => onRateChange(nextPlaybackRate(rate))}
             testID={testID ? `${testID}-rate` : undefined}

@@ -95,7 +95,7 @@ function OfferingEditorComponent({
   style,
   testID,
 }: OfferingEditorProps) {
-  const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
+  const { locale, messages } = useMessages(LISTING_EDITOR_MESSAGES);
   const theme = useTheme();
   const paint = useMemo(() => resolveSelectionPaint(theme), [theme]);
   const labels = useMemo(() => ({ ...messages.offering, ...labelsProp }), [messages, labelsProp]);
@@ -118,7 +118,7 @@ function OfferingEditorComponent({
       ? labels.pricePerAreaEmpty
       : formatPricePerArea
         ? formatPricePerArea(perArea)
-        : `${currencySymbol}${groupThousands(perArea)} / ${areaUnit}`;
+        : `${currencySymbol}${groupThousands(perArea, locale)} / ${areaUnit}`;
 
   const fields: Record<OfferingKind, () => React.ReactNode> = {
     rent: () => (

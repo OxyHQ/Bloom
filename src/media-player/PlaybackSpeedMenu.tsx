@@ -21,11 +21,12 @@ export function PlaybackSpeedRows({
   rate,
   onRateChange,
   rates = PLAYBACK_RATES,
-  formatRate = formatPlaybackRate,
+  formatRate: formatRateProp,
   label: labelProp,
   testID,
 }: Pick<PlaybackSpeedMenuProps, 'rate' | 'onRateChange' | 'rates' | 'formatRate' | 'label' | 'testID'>) {
-  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const { locale, messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const formatRate = formatRateProp ?? ((rate: number) => formatPlaybackRate(rate, locale));
   const label = labelProp ?? messages.playbackSpeed;
   const theme = useTheme();
   return (
@@ -57,7 +58,7 @@ function PlaybackSpeedMenuComponent({
   rate,
   onRateChange,
   rates,
-  formatRate = formatPlaybackRate,
+  formatRate: formatRateProp,
   label: labelProp,
   children,
   open,
@@ -66,7 +67,8 @@ function PlaybackSpeedMenuComponent({
   disabled,
   testID,
 }: PlaybackSpeedMenuProps) {
-  const { messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const { locale, messages } = useMessages(MEDIA_PLAYER_MESSAGES);
+  const formatRate = formatRateProp ?? ((rate: number) => formatPlaybackRate(rate, locale));
   const label = labelProp ?? messages.playbackSpeed;
   const g = TRANSPORT_GEOMETRY[size];
   return (

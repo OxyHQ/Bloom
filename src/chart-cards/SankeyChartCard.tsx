@@ -163,7 +163,7 @@ export function SankeyChartCard({
   style,
   testID,
 }: SankeyChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const title = titleProp ?? chartText.titles.trackedTime;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
@@ -376,7 +376,7 @@ export function SankeyChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={active !== null}
         fadeKey={`${selectedId ?? ''}:${active ? `${active.type}:${active.index}` : 'idle'}`}
         range={range}

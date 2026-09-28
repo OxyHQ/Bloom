@@ -1,3 +1,6 @@
+import { describeDeltaRatio, formatNumber as chartNumber, groupThousands } from '../chart-cards/primitives/format';
+import { formatFileSize as fileUploadSize } from '../file-upload/shared';
+import { formatPlaybackRate } from '../media-player/shared';
 import {
   formatClock,
   formatCompactCurrency,
@@ -5,6 +8,7 @@ import {
   formatCurrency,
   formatFileSize,
   formatInteger,
+  formatMultiplier,
   formatNumber,
   formatPercent,
   formatSignedPercent,
@@ -91,5 +95,22 @@ describe('formatClock', () => {
     expect(formatClock(3723)).toBe('1:02:03');
     expect(formatClock(-4)).toBe('0:00');
     expect(formatClock(Number.NaN)).toBe('0:00');
+  });
+});
+
+describe('the families\' own helpers now take the locale', () => {
+  it('chart-cards groups and signs the locale\'s way, and keeps English with none', () => {
+    expect(groupThousands(1234567.8, 'de')).toBe('1.234.568');
+    expect(groupThousands(1234567.8)).toBe('1,234,568');
+    expect(chartNumber(-0.0001)).toBe('0');
+    expect(plain(describeDeltaRatio(0.052, 'es').label)).toBe('+5,2 %');
+    expect(describeDeltaRatio(-0.05).label).toBe('-5%');
+    expect(describeDeltaRatio(0.00004)).toEqual({ label: '0.0%', tone: 'neutral' });
+  });
+
+  it('writes a playback speed and a file size in the locale', () => {
+    expect(formatMultiplier(1.5, 'es')).toBe('1,5×');
+    expect(formatPlaybackRate(1.25)).toBe('1.25×');
+    expect(fileUploadSize(2.4 * 1024 ** 2, 'ru')).toBe('2,4 МБ');
   });
 });

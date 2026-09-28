@@ -1,38 +1,44 @@
 import type { ChartDeltaTone } from '../geometry';
 
+import {
+  formatCompactNumber,
+  formatInteger,
+  formatNumber as formatLocaleNumber,
+  formatPercent,
+  formatSignedPercent,
+} from '../../locale/format-number';
+
 /**
- * Number formatting shared by the chart cards. Pure and `Intl`-free, so it
- * formats identically on Hermes, JSC and every browser.
+ * Number formatting shared by the chart cards, in the reader's locale
+ * (`locale` is what the card resolved; `undefined` is the runtime's). They go
+ * through `locale/format-number.ts`, which uses the engine's
+ * `Intl.NumberFormat` — Hermes has it — and falls back to English grouping.
  */
 
-/** `1234567.8` → `"1,234,568"` — en-US grouping (`toLocaleString("en-US")`-equivalent) for whole numbers. */
-export function groupThousands(value: number): string {
-  const rounded = Math.round(value);
-  const digits = String(Math.abs(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return rounded < 0 ? `-${digits}` : digits;
+/** `1234567.8` → `"1,234,568"` (en), `"1.234.568"` (de) — a whole number with grouping. */
+export function groupThousands(value: number, locale?: string): string {
+  return formatInteger(value, locale);
 }
 
 /**
- * En-US grouping that keeps up to three fraction
- * digits (`48.8` → `"48.8"`, `12500` → `"12,500"`).
+ * Grouping that keeps up to three fraction digits (`48.8` → `"48.8"`,
+ * `12500` → `"12,500"`, `"12.500"` in German). A value that rounds to zero
+ * reads `0`, never `-0`.
  */
-export function formatNumber(value: number): string {
+export function formatNumber(value: number, locale?: string): string {
   if (!Number.isFinite(value)) return String(value);
-  const fixed = (Math.round(Math.abs(value) * 1000) / 1000).toString();
-  const [int = '0', frac] = fixed.split('.');
-  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  const sign = value < 0 && Number(fixed) !== 0 ? '-' : '';
-  return frac ? `${sign}${grouped}.${frac}` : `${sign}${grouped}`;
+  const rounded = Math.round(value * 1000) / 1000;
+  return formatLocaleNumber(rounded === 0 ? 0 : rounded, locale);
 }
 
-/** Compact axis-tick format: `4.5K`, `13K`, or the rounded number under a thousand. */
-export function compactNumber(value: number): string {
-  return value >= 1000 ? `${Math.round(value / 100) / 10}K`.replace('.0K', 'K') : String(Math.round(value));
+/** Compact axis-tick format: `4.5K`, `13K` (en), `4,5 mil` (es); the rounded number under a thousand. */
+export function compactNumber(value: number, locale?: string): string {
+  return formatCompactNumber(value, locale);
 }
 
-/** `0.25` → `"25%"` — the 100% chart's axis. */
-export function percentTick(value: number): string {
-  return `${Math.round(value * 100)}%`;
+/** `0.25` → `"25%"` (en), `"25 %"` (fr), `"%25"` (tr) — the 100% chart's axis. */
+export function percentTick(value: number, locale?: string): string {
+  return formatPercent(value, locale);
 }
 
 export interface ChartDelta {
@@ -47,10 +53,16 @@ export interface ChartDelta {
  * (The dashboard revenue / orders cards compare two totals instead — that is
  * `describeDelta(current, previous)` in `geometry.ts`.)
  */
-export function describeDeltaRatio(delta: number): ChartDelta {
-  const pct = Math.round(Math.abs(delta) * 1000) / 10;
-  if (pct === 0) return { label: '0.0%', tone: 'neutral' };
-  return { label: `${delta > 0 ? '+' : '-'}${pct}%`, tone: delta > 0 ? 'positive' : 'negative' };
+export function describeDeltaRatio(delta: number, locale?: string): ChartDelta {
+  // Rounded to the tenth of a percent it is shown at, so the sign and the tone
+  // agree with the number on screen.
+  const rounded = Math.round(delta * 1000) / 1000;
+  // Zero keeps its tenth ("0.0%"); anything else shows a tenth only when it has one ("+5.2%", "-5%").
+  if (rounded === 0) return { label: formatPercent(0, locale, 1), tone: 'neutral' };
+  return {
+    label: formatSignedPercent(rounded, locale, { minimum: 0, maximum: 1 }),
+    tone: rounded > 0 ? 'positive' : 'negative',
+  };
 }
 
 /** Decimal places a value carries, capped at 2 — what the count-up must preserve. */

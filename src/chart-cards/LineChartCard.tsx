@@ -18,6 +18,7 @@ import { useMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 import { monthNames } from '../locale/format-date';
+import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
 /**
  * One series as a line over a soft gradient, a Weekly / Monthly / Yearly
  * switcher, a count-up headline that follows the hovered point, and a
@@ -135,8 +136,8 @@ export function LineChartCard({
   onRangeChange,
   rangesLabel,
   getPointTitle,
-  format = formatDollars,
-  formatAxisValue = formatDollarsK,
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
   color,
   activeColor,
   activeIndex: controlledIndex,
@@ -146,6 +147,8 @@ export function LineChartCard({
   testID,
 }: LineChartCardProps) {
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatCurrency(value, 'USD', chartLocale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => (value === 0 ? formatCurrency(0, 'USD', chartLocale) : formatCompactCurrency(value, 'USD', chartLocale, 0)));
   const title = titleProp ?? chartText.titles.revenue;
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
@@ -190,7 +193,7 @@ export function LineChartCard({
         label={label}
         value={point ? point.value : total}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         ranges={ranges}

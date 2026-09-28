@@ -74,7 +74,7 @@ export function AreaChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   formatAxisValue,
   tiles = false,
   activeIndex: controlledIndex,
@@ -83,7 +83,8 @@ export function AreaChartCard({
   style,
   testID,
 }: AreaChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const title = titleProp ?? chartText.titles.visitors;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -153,7 +154,7 @@ export function AreaChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}
@@ -169,7 +170,7 @@ export function AreaChartCard({
           yAxisWidth={Y_AXIS_WIDTH}
           yDomain={yDomain}
           yTicks={yTicks}
-          formatYTick={formatAxisValue ?? (isPercent ? percentTick : compactNumber)}
+          formatYTick={formatAxisValue ?? ((value: number) => (isPercent ? percentTick(value, chartLocale) : compactNumber(value, chartLocale)))}
           grid
           outside="clear"
           onActiveIndexChange={setActiveIndex}

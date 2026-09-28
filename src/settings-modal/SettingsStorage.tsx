@@ -583,7 +583,7 @@ export function SettingsStoragePage({
                       </View>
                       <View style={[styles.cell, styles.sizeCol]}>
                         <Chip size="lg" style={{ backgroundColor: palette.secondary }} textStyle={{ color: palette.text }}>
-                          {file.sizeLabel ?? formatFileSize(file.size)}
+                          {file.sizeLabel ?? formatFileSize(file.size, locale)}
                         </Chip>
                       </View>
                     </>

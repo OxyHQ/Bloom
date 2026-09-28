@@ -55,7 +55,7 @@ export function OrdersChartCard({
   testID,
   ...frame
 }: OrdersChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => ordersSeriesTone(theme), [theme]);
@@ -77,7 +77,7 @@ export function OrdersChartCard({
       {...frame}
       data={data}
       defaultTitle={chartText.titles.orders}
-      defaultFormatValue={groupThousands}
+      defaultFormatValue={(value: number) => groupThousands(value, chartLocale)}
       seriesColor={fill}
       comparisonColor={comparisonFill}
       activeIndex={activeIndex}

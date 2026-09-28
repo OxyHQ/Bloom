@@ -22,6 +22,7 @@ import { CREATOR_STUDIO_MESSAGES } from './messages';
 import type { PayoutSummaryCardLabels, PayoutSummaryCardProps } from './types';
 
 import { useChartCardSurfacePalette } from '../chart-cards/primitives/use-chart-palette';
+import { formatCurrency } from '../locale/format-number';
 /**
  * `PayoutSummaryCard`: what the artist has earned and when it arrives.
  *
@@ -45,7 +46,6 @@ export const PAYOUT_SUMMARY_LABELS: PayoutSummaryCardLabels = CREATOR_STUDIO_MES
 const PLOT_HEIGHT = 112;
 const BAR_RADIUS = 6;
 
-const defaultFormat = (value: number) => `$${groupThousands(Math.round(value))}`;
 
 function PayoutSummaryCardComponent({
   estimated,
@@ -53,14 +53,15 @@ function PayoutSummaryCardComponent({
   lastPayout,
   nextPayoutDate,
   months,
-  format = defaultFormat,
+  format: formatProp,
   onViewStatements,
   statementsHref,
   labels: labelOverrides,
   style,
   testID,
 }: PayoutSummaryCardProps) {
-  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatCurrency(Math.round(value), 'USD', locale));
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const labels = { ...messages.payout, ...labelOverrides };
@@ -71,7 +72,7 @@ function PayoutSummaryCardComponent({
   const categories = useMemo(() => months.map((m) => m.label), [months]);
   const max = Math.max(1, ...values);
   const anim = useChartProgress(values);
-  const chip = delta !== undefined ? describeDeltaRatio(delta) : undefined;
+  const chip = delta !== undefined ? describeDeltaRatio(delta, locale) : undefined;
   const chipPaint = chip
     ? chip.tone === 'positive'
       ? palette.positive

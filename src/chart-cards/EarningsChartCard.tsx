@@ -19,6 +19,7 @@ import { CHART_CARDS_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
 /**
  * `EarningsChartCard` ("Earned so far"): rounded bars standing in full-height
  * tracks, a Weekly / Monthly / Yearly switcher and a count-up headline that
@@ -114,8 +115,8 @@ export function EarningsChartCard({
   yTicks,
   yMax,
   getPointTitle,
-  format = formatDollars,
-  formatAxisValue = formatEarningsK,
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
   color,
   activeColor,
   activeIndex: controlledIndex,
@@ -125,6 +126,8 @@ export function EarningsChartCard({
   testID,
 }: EarningsChartCardProps) {
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatCurrency(value, 'USD', chartLocale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => (value === 0 ? formatCurrency(0, 'USD', chartLocale) : formatCompactCurrency(value, 'USD', chartLocale)));
   const title = titleProp ?? chartText.titles.earnedSoFar;
   const rangesLabel = rangesLabelProp ?? chartText.earningsPeriod;
   const theme = useTheme();
@@ -168,7 +171,7 @@ export function EarningsChartCard({
         label={label}
         value={point ? point.value : total}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         ranges={ranges}

@@ -104,14 +104,15 @@ export function StageBarsCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   activeIndex: controlledIndex,
   onActiveIndexChange,
   accessibilityLabel,
   style,
   testID,
 }: StageBarsCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const title = titleProp ?? chartText.titles.pipeline;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -150,7 +151,7 @@ export function StageBarsCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}

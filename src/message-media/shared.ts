@@ -6,6 +6,7 @@ import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
 import { MESSAGE_MEDIA_MESSAGES, type MessageMediaMessages } from './messages';
 import type { FileKind, MessageTone, VoicePlaybackRate } from './types';
+import { formatMultiplier } from '../locale/format-number';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -516,8 +517,8 @@ export function nextPlaybackRate(rate: VoicePlaybackRate): VoicePlaybackRate {
 }
 
 /** `"1×"`, `"1.5×"`, `"2×"` — the multiplication sign, not the letter x. */
-export function formatPlaybackRate(rate: VoicePlaybackRate): string {
-  return `${rate}×`;
+export function formatPlaybackRate(rate: VoicePlaybackRate, locale?: string): string {
+  return formatMultiplier(rate, locale);
 }
 
 // ---------------------------------------------------------------------------

@@ -449,7 +449,7 @@ const FileUploadComponent = function FileUpload({
   style,
   testID,
 }: FileUploadProps) {
-  const { messages } = useMessages(FILE_UPLOAD_MESSAGES);
+  const { locale, messages } = useMessages(FILE_UPLOAD_MESSAGES);
   const theme = useTheme();
   // The drop zone draws a prompt but names itself with a prop, so a `Field`
   // around it is the other place the name can come from — and the field's
@@ -543,7 +543,7 @@ const FileUploadComponent = function FileUpload({
       return;
     }
     if (next.size > maxBytes) {
-      reject(labels.tooLarge(formatFileSize(maxBytes)), next);
+      reject(labels.tooLarge(formatFileSize(maxBytes, locale)), next);
       return;
     }
 
@@ -841,7 +841,7 @@ const FileUploadComponent = function FileUpload({
           </StaggerLine>
           <StaggerLine state={idleReveal} kind="line" order={3} reducedMotion={reducedMotion}>
             <Text variant="body-2-regular" style={{ color: paint.hint, textAlign: 'center' }}>
-              {allowedLabel} {messages.max(formatFileSize(maxBytes))}
+              {allowedLabel} {messages.max(formatFileSize(maxBytes, locale))}
             </Text>
           </StaggerLine>
         </View>
@@ -892,7 +892,7 @@ const FileUploadComponent = function FileUpload({
             style={{ position: 'absolute', left: 0, right: 0 }}
           >
             <Text variant="body-2-regular" style={{ color: paint.status, textAlign: 'center' }}>
-              {labels.uploading(file ? formatFileSize(file.size) : '')}
+              {labels.uploading(file ? formatFileSize(file.size, locale) : '')}
             </Text>
           </StaggerLine>
           <StaggerLine

@@ -245,7 +245,7 @@ export function MostActiveDaysCard({
   title: titleProp,
   headline,
   suffix: suffixProp,
-  format = groupThousands,
+  format: formatProp,
   monthNames: monthNamesProp,
   selectedDay = null,
   onSelectDay,
@@ -254,6 +254,7 @@ export function MostActiveDaysCard({
   testID,
 }: MostActiveDaysCardProps) {
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, chartLocale));
   const title = titleProp ?? chartText.titles.mostActiveDays;
   const suffix = suffixProp ?? chartText.totalSteps;
   const pickerText = pickMessages(DATE_PICKER_MESSAGES, chartLocale);

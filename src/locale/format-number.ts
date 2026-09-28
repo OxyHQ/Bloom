@@ -77,15 +77,21 @@ export function formatPercent(ratio: number, locale?: string, fractionDigits = 0
  * A signed change as a percentage, sign always shown: `0.052` → `+5.2%`.
  * Zero has no sign.
  */
-export function formatSignedPercent(ratio: number, locale?: string, fractionDigits = 1): string {
+export function formatSignedPercent(
+  ratio: number,
+  locale?: string,
+  fractionDigits: number | { minimum: number; maximum: number } = 1,
+): string {
+  const [minimum, maximum] =
+    typeof fractionDigits === 'number' ? [fractionDigits, fractionDigits] : [fractionDigits.minimum, fractionDigits.maximum];
   const format = numberFormat(locale, {
     style: 'percent',
     signDisplay: 'exceptZero',
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
+    minimumFractionDigits: minimum,
+    maximumFractionDigits: maximum,
   });
   if (format) return format.format(ratio);
-  const fixed = (Math.abs(ratio) * 100).toFixed(fractionDigits);
+  const fixed = String(Math.round(Math.abs(ratio) * 100 * 10 ** maximum) / 10 ** maximum);
   return `${ratio > 0 ? '+' : ratio < 0 ? '-' : ''}${fixed}%`;
 }
 
@@ -110,10 +116,13 @@ export function formatCurrency(
   return format ? format.format(amount) : `${currency} ${plainNumber(amount, maximum)}`;
 }
 
-/** Money in the compact form an axis wants: `€385K`, `385 mil €`. */
-export function formatCompactCurrency(amount: number, currency: string, locale?: string): string {
+/**
+ * Money in the compact form an axis wants: `€385K`, `385 mil €`. Up to one
+ * decimal by default (`$2.5K`); `0` rounds to whole units of the scale (`$6K`).
+ */
+export function formatCompactCurrency(amount: number, currency: string, locale?: string, maximumFractionDigits = 1): string {
   if (Math.abs(amount) < 1000) return formatCurrency(amount, currency, locale);
-  const format = numberFormat(locale, { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 });
+  const format = numberFormat(locale, { style: 'currency', currency, notation: 'compact', maximumFractionDigits });
   return format ? format.format(amount) : `${currency} ${formatCompactNumber(amount)}`;
 }
 
@@ -168,4 +177,9 @@ export function formatClock(totalSeconds: number): string {
   const minutes = Math.floor((safe % 3600) / 60);
   const seconds = String(safe % 60).padStart(2, '0');
   return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${seconds}` : `${minutes}:${seconds}`;
+}
+
+/** A multiplier such as a playback speed: `1.5` → `1.5×` (en), `1,5×` (es); up to two decimals. */
+export function formatMultiplier(value: number, locale?: string): string {
+  return `${formatNumber(value, locale, { maximumFractionDigits: 2 })}×`;
 }

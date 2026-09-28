@@ -27,6 +27,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { AI_PROFILE_CARD_MESSAGES } from './messages';
 import type { AiProfileCardPeriod, AiProfileCardProps } from './types';
+import { formatCurrency } from '../locale/format-number';
 
 /**
  * An AI profile card: a cover photo, an overlapping avatar, name and handle,
@@ -58,7 +59,6 @@ import type { AiProfileCardPeriod, AiProfileCardProps } from './types';
 
 const COVER_HEIGHT = 165;
 const AVATAR_SIZE = 80;
-const formatDollars = (value: number) => `$${groupThousands(value)}`;
 
 /** `object-fit: cover` with an `object-position`: the image sized to cover the box, offset by the fractions. */
 function CoverImage({
@@ -150,7 +150,7 @@ function AiProfileCardComponent({
   actions,
   contributionsLabel: contributionsLabelProp,
   contributions,
-  format = formatDollars,
+  format: formatProp,
   countUpDuration = 1600,
   delta,
   stats,
@@ -168,7 +168,8 @@ function AiProfileCardComponent({
   style,
   testID,
 }: AiProfileCardProps) {
-  const { messages } = useMessages(AI_PROFILE_CARD_MESSAGES);
+  const { locale, messages } = useMessages(AI_PROFILE_CARD_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatCurrency(value, 'USD', locale));
   const contributionsLabel = contributionsLabelProp ?? messages.contributions;
   const activityLabel = activityLabelProp ?? messages.activity;
   const defaultPeriods = useMemo<readonly AiProfileCardPeriod[]>(

@@ -153,7 +153,7 @@ export function StepsCard({
   headline,
   totalSuffix: totalSuffixProp,
   pointSuffix: pointSuffixProp,
-  format = groupThousands,
+  format: formatProp,
   range,
   onPrevRange,
   onNextRange,
@@ -165,7 +165,8 @@ export function StepsCard({
   style,
   testID,
 }: StepsCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, chartLocale));
   const title = titleProp ?? chartText.titles.steps;
   const totalSuffix = totalSuffixProp ?? chartText.totalSteps;
   const pointSuffix = pointSuffixProp ?? chartText.stepsSuffix;

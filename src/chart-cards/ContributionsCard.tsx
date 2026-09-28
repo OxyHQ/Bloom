@@ -335,7 +335,7 @@ export function ContributionsCard({
   title: titleProp,
   total: totalProp,
   delta: deltaProp,
-  format = formatNumber,
+  format: formatProp,
   stats: statsProp,
   cells: cellsProp,
   columns = CONTRIBUTION_COLUMNS,
@@ -352,6 +352,7 @@ export function ContributionsCard({
   testID,
 }: ContributionsCardProps) {
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const title = titleProp ?? chartText.titles.contributionsThisYear;
   const activityLabel = activityLabelProp ?? chartText.titles.activity;
   const periods = useMemo<readonly ContributionsPeriod[]>(
@@ -414,7 +415,7 @@ export function ContributionsCard({
         label={title}
         value={total}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         fadeKey={selectedId}
         testID={testID}
         style={{ width: '100%' }}

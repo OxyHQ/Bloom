@@ -57,6 +57,7 @@ import type {
 } from './types';
 import { COMMON_MESSAGES } from '../locale/common-messages';
 import { CHAT_COMPOSER_MESSAGES, type AttachmentMenuItemId, type ChatComposerMessages } from './messages';
+import { formatClock } from '../locale/format-number';
 
 // ---------------------------------------------------------------------------
 //  Palette
@@ -187,12 +188,7 @@ export const SWAP_MS = 220;
  * bad one is worse than a composer that shows zero.
  */
 export function formatRecordingTime(seconds: number): string {
-  const total = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
-  const s = total % 60;
-  const m = Math.floor(total / 60) % 60;
-  const h = Math.floor(total / 3600);
-  const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  return formatClock(seconds);
 }
 
 /** The glyph of an {@link EmojiEntry}, whichever form it arrived in. */
