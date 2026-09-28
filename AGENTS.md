@@ -57,7 +57,7 @@ Five opt-in container contexts; model in the docs. Traps:
 
 **Jest can crash Node vm/contextify**, arbitrarily killing workers with SIGSEGV/SIGTRAP/SIGABRT, sometimes `# Fatal error in , line 0`. Reproduces on main: glass-colors most often, four color suites at maxWorkers2, six on another tree. Check suspects against main before blaming changes.
 
-History: 2026-08-26 main passed3/4, branch with~20 more files0/6. More files/worker worsened it; fewer workers WORSE. Not memory (83GB free) or cache (`--no-cache` still crashes). By2026-09-07 Node24.20.0 `theme/__tests__/glass-colors.test.ts`/`theme/__tests__/color-preset-registry.test.ts` failed alone AND `--runInBand` with `Context::GetNumberOfEmbedderDataFields Not a native context`; `theme/__tests__/theme-colors-parity.test.ts` joined by2026-09-17 on unmodified origin/main. All three also passed inside full unsharded runs. Node24.14.1 also crashes; Node22 cannot load jest.config.ts without ts-node, so is NO control. Historical partial result191/193 must name its two missing suites, not claim completion.
+History: 2026-08-26 main passed3/4, branch with~20 more files0/6. More files/worker worsened it; fewer workers WORSE. Not memory (83GB free) or cache (`--no-cache` still crashes). By2026-09-07 Node24.20.0 `theme/__tests__/glass-colors.test.ts`/`theme/__tests__/color-preset-registry.test.ts` failed alone AND `--runInBand` with `Context::GetNumberOfEmbedderDataFields Not a native context`; `theme/__tests__/theme-colors-parity.test.ts` joined by2026-09-17 on unmodified origin/main. All three also passed inside full unsharded runs. Node24.14.1 also crashes; Node22.17 IS a control (`bun build jest.config.ts --format cjs` → `--config` JSON): it passed 2026-09-28's ten crashers. A partial pass (191/193) names its missing suites, never claims completion.
 
 ```bash
 for i in 1 2 3; do bunx jest --watchman=false --shard=$i/3; done
@@ -65,7 +65,7 @@ for i in 1 2 3; do bunx jest --watchman=false --shard=$i/3; done
 
 Three shards65/64/64 completed where one193-suite run failed. **Count SUITES:** union of shard `--listTests` must equal whole (193), not just sum. Test totals changed3502→3514 unchanged; never fingerprint runs with them. Unverified hypothesis: directory-derived gates see lib after build.
 
-Integration workaround measured on Node24: `node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=3`; focused rendering/color suites pass without VM crashes. `NODE_OPTIONS` forbids that flag; pass it directly. Still verify full suite coverage.
+Node24 mitigation: `node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=3` (focused suites pass). `NODE_OPTIONS` forbids that flag; pass it directly. Still verify coverage.
 
 ## Jest does not resolve `.native.*`
 

@@ -60,7 +60,26 @@ export type TextFieldInputProps = Omit<
    * identically. Respects reduced-motion (snaps instead of animating).
    */
   floatingLabel?: boolean;
+  /**
+   * With `secureTextEntry`, draw an eye / eye-off button after the input that
+   * shows and hides what was typed. It is named "Show password" / "Hide
+   * password" in the locale (`docs/locale.mdx`); `revealLabels` overrides
+   * either. Pressing it leaves focus in the input. Ignored without
+   * `secureTextEntry`.
+   */
+  revealable?: boolean;
+  /** Override the reveal button's names, one key at a time. */
+  revealLabels?: TextFieldRevealLabels;
+  /** Locale for the reveal button's names; defaults to the nearest `LocaleProvider`. */
+  locale?: string;
 };
+
+export interface TextFieldRevealLabels {
+  /** The name while the value is hidden. */
+  show?: string;
+  /** The name while the value is shown. */
+  hide?: string;
+}
 
 export type TextFieldLabelProps = React.PropsWithChildren<
   {
