@@ -1,29 +1,12 @@
 import { RADIUS } from '../design-tokens/scales';
+import { PROOF_OF_DELIVERY_MESSAGES } from './messages';
 import type { ProofKind, ProofOfDeliveryLabels } from './types';
 
-/** Every default word the family draws. */
-export const PROOF_LABELS: Required<ProofOfDeliveryLabels> = {
-  signature: 'Signature',
-  signaturePad: 'Signature',
-  signatureHint: 'Sign with your finger',
-  signed: 'Signed',
-  clear: 'Clear the signature',
-  typeName: 'Or type your name',
-  typeNamePlaceholder: 'Full name',
-  photo: 'Photo',
-  photoHint: 'Where you left it, or the parcel with the recipient.',
-  code: 'Delivery code',
-  codeHint: 'Ask the recipient to read out the code in their app.',
-  recipient: 'Who received it',
-  recipientPlaceholder: 'Name',
-  note: 'Note',
-  notePlaceholder: 'Anything worth recording',
-  submit: 'Confirm the delivery',
-  required: 'Required',
-  missing: 'This is needed before you can confirm.',
-  missingSummary: (count: number) =>
-    count === 1 ? 'One thing is still missing' : `${count} things are still missing`,
-};
+/**
+ * Every default word the family draws, in English. The components speak
+ * `PROOF_OF_DELIVERY_MESSAGES` in the resolved locale.
+ */
+export const PROOF_LABELS: Required<ProofOfDeliveryLabels> = PROOF_OF_DELIVERY_MESSAGES.en.labels;
 
 /**
  * The order the door is worked through, and it is not arbitrary.

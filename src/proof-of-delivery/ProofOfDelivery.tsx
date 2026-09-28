@@ -6,6 +6,7 @@ import { Button } from '../button';
 import { Field } from '../field';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { InputOtp } from '../input-otp';
+import { useMessages } from '../locale/messages';
 import { SortablePhotoGrid } from '../sortable-media';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { TextFieldInput } from '../text-field';
@@ -13,7 +14,8 @@ import { Textarea } from '../textarea';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { SortablePhoto } from '../sortable-media';
-import { PROOF_GEOMETRY, PROOF_LABELS, PROOF_ORDER } from './constants';
+import { PROOF_GEOMETRY, PROOF_ORDER } from './constants';
+import { PROOF_OF_DELIVERY_MESSAGES } from './messages';
 import { SignaturePad } from './SignaturePad';
 import {
   completeProofValue,
@@ -87,14 +89,16 @@ function ProofOfDeliveryComponent({
   description,
   actions,
   labels: labelOverrides,
-  accessibilityLabel = 'Proof of delivery',
+  accessibilityLabel: accessibilityLabelProp,
   style,
   testID,
 }: ProofOfDeliveryProps) {
+  const { messages } = useMessages(PROOF_OF_DELIVERY_MESSAGES);
+  const accessibilityLabel = accessibilityLabelProp ?? messages.proofOfDelivery;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveProofPaint(theme, surface), [theme, surface]);
-  const labels = useMemo(() => ({ ...PROOF_LABELS, ...labelOverrides }), [labelOverrides]);
+  const labels = useMemo(() => ({ ...messages.labels, ...labelOverrides }), [messages, labelOverrides]);
 
   const [partial, setPartial] = useControllableState<Partial<ProofOfDeliveryValue>>({
     value: valueProp,
