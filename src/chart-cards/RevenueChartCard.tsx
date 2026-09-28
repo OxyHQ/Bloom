@@ -17,6 +17,7 @@ import { useMessages } from '../locale/messages';
 import { CHART_CARDS_MESSAGES } from './messages';
 
 import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
+import { formatCurrency } from '../locale/format-number';
 /**
  * `RevenueChartCard`: a year of revenue against the year before.
  *
@@ -37,7 +38,6 @@ import { useChartCardSurfacePalette } from './primitives/use-chart-palette';
 
 const Y_AXIS_WIDTH = 44;
 
-const defaultFormatValue = (value: number) => `$${groupThousands(value)}`;
 /** `formatK`: `$16k`, or `$950` under a thousand. */
 const defaultFormatAxisValue = (value: number) =>
   value >= 1000 ? `$${Math.round(value / 1000)}k` : `$${value}`;
@@ -54,7 +54,7 @@ export function RevenueChartCard({
   testID,
   ...frame
 }: RevenueChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(frame.style);
   const tone = useMemo(() => revenueSeriesTone(theme), [theme]);
@@ -80,7 +80,7 @@ export function RevenueChartCard({
       {...frame}
       data={data}
       defaultTitle={chartText.titles.revenue}
-      defaultFormatValue={defaultFormatValue}
+      defaultFormatValue={(value: number) => formatCurrency(value, 'USD', chartLocale)}
       seriesColor={stroke}
       comparisonColor={comparisonStroke}
       activeIndex={activeIndex}

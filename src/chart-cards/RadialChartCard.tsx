@@ -161,7 +161,7 @@ export function RadialChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   centerCaption,
   tiles = false,
   activeIndex: controlledIndex,
@@ -170,7 +170,8 @@ export function RadialChartCard({
   style,
   testID,
 }: RadialChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const title = titleProp ?? chartText.titles.visitors;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -391,7 +392,7 @@ export function RadialChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}

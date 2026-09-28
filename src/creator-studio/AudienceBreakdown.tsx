@@ -35,12 +35,13 @@ function AudienceBreakdownComponent({
   genders,
   sources,
   range,
-  format = groupThousands,
+  format: formatProp,
   labels: labelOverrides,
   style,
   testID,
 }: AudienceBreakdownProps) {
-  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, locale));
   const labels = { ...messages.breakdown, ...labelOverrides };
   const [width, setWidth] = useState(0);
   const onLayout = useCallback((event: LayoutChangeEvent) => {

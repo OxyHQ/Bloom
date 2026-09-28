@@ -124,8 +124,8 @@ export function PriceHistoryChart({
   shape = 'step',
   title: titleProp,
   currentPrice,
-  format = formatEuros,
-  formatAxisValue = formatEurosCompact,
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
   currentLabel: currentLabelProp,
   emptyLabel: emptyLabelProp,
   periodsLabel: periodsLabelProp,
@@ -135,7 +135,9 @@ export function PriceHistoryChart({
   style,
   testID,
 }: PriceHistoryChartProps) {
-  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const { locale, messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatEuros(value, locale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => formatEurosCompact(value, locale));
   const title = titleProp ?? messages.currentPrice;
   const currentLabel = currentLabelProp ?? messages.now;
   const emptyLabel = emptyLabelProp ?? messages.noPriceHistory;

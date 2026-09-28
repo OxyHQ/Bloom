@@ -143,7 +143,7 @@ export function ComboChartCard({
   style,
   testID,
 }: ComboChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const title = titleProp ?? chartText.titles.sessions;
   const palette = useChartCardSurfacePalette(style);
   const tones = useChartTones();
@@ -154,7 +154,7 @@ export function ComboChartCard({
 
   const barTone = resolveTone(tones, 0, bar.color, bar.activeColor);
   const lineTone = resolveTone(tones, 1, line.color, line.activeColor);
-  const barFormat = bar.format ?? formatNumber;
+  const barFormat = bar.format ?? ((value: number) => formatNumber(value, chartLocale));
   const lineFormat = line.format ?? formatPercent;
 
   const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
@@ -206,7 +206,7 @@ export function ComboChartCard({
         label={label}
         value={headlineValue}
         format={fromLine ? lineFormat : barFormat}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}
@@ -220,7 +220,7 @@ export function ComboChartCard({
         <MultiAxisPlot
           categories={categories}
           xScale="band"
-          axis={{ width: LEFT_AXIS_WIDTH, domain: barAxis.domain, ticks: barAxis.ticks, format: compactNumber }}
+          axis={{ width: LEFT_AXIS_WIDTH, domain: barAxis.domain, ticks: barAxis.ticks, format: (value: number) => compactNumber(value, chartLocale) }}
           rightAxis={{ width: RIGHT_AXIS_WIDTH, domain: lineAxis.domain, ticks: lineAxis.ticks, format: lineFormat }}
           margin={MARGIN}
           outside="clear"

@@ -132,7 +132,7 @@ export function HeatmapChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   columnLabelEvery,
   legendLabels = LEGEND_LABELS,
   activeCell: controlled,
@@ -140,7 +140,8 @@ export function HeatmapChartCard({
   style,
   testID,
 }: HeatmapChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const title = titleProp ?? chartText.titles.activeUsers;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -220,7 +221,7 @@ export function HeatmapChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${active ? `${active.row}:${active.col}` : 'idle'}`}
         range={range}

@@ -28,6 +28,7 @@ import {
 } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatMessageProps } from './types';
+import { writeClipboardText } from '../hooks/clipboard';
 
 /**
  * `AgentMessage`: one turn of the transcript.
@@ -84,12 +85,7 @@ const Line = memo(function Line({
 });
 
 function defaultCopy(text: string): Promise<void> {
-  const clipboard =
-    typeof navigator !== 'undefined'
-      ? (navigator as { clipboard?: { writeText?: (value: string) => Promise<void> } }).clipboard
-      : undefined;
-  if (!clipboard?.writeText) return Promise.reject(new Error('clipboard unavailable'));
-  return clipboard.writeText(text);
+  return writeClipboardText(text);
 }
 
 interface SpeechLike {

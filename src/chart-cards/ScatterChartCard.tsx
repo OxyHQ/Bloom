@@ -230,8 +230,8 @@ export function ScatterChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
-  formatX = compactNumber,
+  format: formatProp,
+  formatX: formatXProp,
   tiles = false,
   activePoint: controlled,
   onActivePointChange,
@@ -239,7 +239,9 @@ export function ScatterChartCard({
   style,
   testID,
 }: ScatterChartCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
+  const formatX = formatXProp ?? ((value: number) => compactNumber(value, chartLocale));
   const title = titleProp ?? chartText.titles.revenuePerAccount;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -360,7 +362,7 @@ export function ScatterChartCard({
         label={headerLabel}
         value={headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${active ? `${active.series}:${active.index}` : 'idle'}`}
         range={range}
@@ -416,7 +418,7 @@ export function ScatterChartCard({
                         alignItems: 'flex-end',
                   }}>
                   <Text numberOfLines={1} style={[TICK_TYPE, tickColor, { maxWidth: '100%' }]}>
-                    {compactNumber(tick.value)}
+                    {compactNumber(tick.value, chartLocale)}
                   </Text>
                 </View>
               ))}

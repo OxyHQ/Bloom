@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
+import { formatClock } from '../locale/format-number';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -12,12 +13,7 @@ export const IS_WEB = Platform.OS === 'web';
  * infinite input draw `0:00`.
  */
 export function formatDuration(seconds: number): string {
-  const total = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  const ss = String(s).padStart(2, '0');
-  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+  return formatClock(seconds);
 }
 
 /** Every colour the family paints, from the theme only. */

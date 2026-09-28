@@ -128,7 +128,7 @@ export function BarListCard({
   title,
   metricLabel: metricLabelProp,
   metric = 'share',
-  format = groupThousands,
+  format: formatProp,
   color,
   mono = false,
   limit = 5,
@@ -137,7 +137,8 @@ export function BarListCard({
   style,
   testID,
 }: BarListCardProps) {
-  const { messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, chartLocale));
   const metricLabel = metricLabelProp ?? chartText.titles.visitors;
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();

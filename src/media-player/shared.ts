@@ -10,6 +10,7 @@ import {
   darkenUntilContrast,
   relativeLuminance,
 } from '../styles/color-contrast';
+import { formatMultiplier } from '../locale/format-number';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -28,8 +29,8 @@ export const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3] as cons
 export const SLEEP_TIMER_MINUTES = [5, 10, 15, 30, 45, 60] as const;
 
 /** `1` → `"1×"`, `1.25` → `"1.25×"`, `0.5` → `"0.5×"`. */
-export function formatPlaybackRate(rate: number): string {
-  return `${Number(rate.toFixed(2))}×`;
+export function formatPlaybackRate(rate: number, locale?: string): string {
+  return formatMultiplier(rate, locale);
 }
 
 /** Menu values are strings; a rate or a timer value round-trips through one. */

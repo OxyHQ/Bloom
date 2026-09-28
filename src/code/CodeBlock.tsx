@@ -9,14 +9,11 @@ import { CodeLines } from './CodeLines';
 import { CODE_MESSAGES } from './messages';
 import { CARD_RADIUS, CONFIRM_MS, dataHook, IS_WEB, MONO_FAMILY, useCodePalette, useCodeWebCss } from './shared';
 import type { CodeBlockProps } from './types';
+import { writeClipboardText } from '../hooks/clipboard';
 
-async function writeClipboard(text: string): Promise<void> {
-  const nav =
-    typeof navigator === 'undefined'
-      ? undefined
-      : (navigator as { clipboard?: { writeText?: (value: string) => Promise<void> } });
-  if (!IS_WEB || !nav?.clipboard?.writeText) throw new Error('clipboard unavailable');
-  await nav.clipboard.writeText(text);
+function writeClipboard(text: string): Promise<void> {
+  if (!IS_WEB) return Promise.reject(new Error('clipboard unavailable'));
+  return writeClipboardText(text);
 }
 
 function mono(fontSize: number, lineHeight: number, extra: TextStyle): TextStyle {

@@ -147,7 +147,7 @@ function TrackUploadRowComponent({
   style,
   testID,
 }: TrackUploadRowProps) {
-  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
   const common = useCommonMessages();
   const theme = useTheme();
   useInteractiveWebCss(CREATOR_STUDIO_STYLE_ID, CREATOR_STUDIO_CSS);
@@ -155,7 +155,7 @@ function TrackUploadRowComponent({
   const labels: TrackUploadRowLabels = { ...messages.upload, retry: common.retry, ...labelOverrides };
   const bar = uploadBarKind(status);
   const percent = clampProgress(progress);
-  const sizeLabel = typeof size === 'number' ? formatFileSize(size) : size;
+  const sizeLabel = typeof size === 'number' ? formatFileSize(size, locale) : size;
 
   const tile =
     status === 'ready' ? (

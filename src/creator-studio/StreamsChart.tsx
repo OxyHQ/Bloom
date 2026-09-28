@@ -57,14 +57,16 @@ export function StreamsChart({
   onMetricChange,
   events = [],
   metricsLabel: metricsLabelProp,
-  format = formatNumber,
-  formatAxisValue = compactNumber,
+  format: formatProp,
+  formatAxisValue: formatAxisValueProp,
   height = DEFAULT_HEIGHT,
   accessibilityLabel,
   style,
   testID,
 }: StreamsChartProps) {
-  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatNumber(value, locale));
+  const formatAxisValue = formatAxisValueProp ?? ((value: number) => compactNumber(value, locale));
   const metricsLabel = metricsLabelProp ?? messages.streams.metrics;
   const palette = useChartCardSurfacePalette(style);
   const tones = useChartTones();
@@ -115,7 +117,7 @@ export function StreamsChart({
         label={point ? point.label : title}
         value={point ? point.value : total}
         format={format}
-        delta={current?.delta !== undefined ? describeDeltaRatio(current.delta) : undefined}
+        delta={current?.delta !== undefined ? describeDeltaRatio(current.delta, locale) : undefined}
         hovering={hovering}
         fadeKey={`${metricId ?? ''}:${activeIndex}`}
         caption={hoveredEvent ? hoveredEvent.label : undefined}

@@ -88,7 +88,7 @@ function Cover({ artwork, paint, size }: { artwork?: string; paint: CreatorStudi
 function TopTracksTableComponent({
   tracks,
   summary,
-  format = groupThousands,
+  format: formatProp,
   pageSize = 10,
   toolbar,
   labels: labelOverrides,
@@ -96,7 +96,8 @@ function TopTracksTableComponent({
   style,
   testID,
 }: TopTracksTableProps) {
-  const { messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const { locale, messages } = useMessages(CREATOR_STUDIO_MESSAGES);
+  const format = formatProp ?? ((value: number) => groupThousands(value, locale));
   const theme = useTheme();
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const labels = useMemo(

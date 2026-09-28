@@ -130,14 +130,14 @@ function VideoMessageComponent({
 }: VideoMessageProps) {
   const theme = useTheme();
   const common = useCommonMessages();
-  const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
+  const { locale, messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
   const paint = useMemo(
     () => resolveMessageMediaPaint(theme, tone, onColor, bubbleColor),
     [theme, tone, onColor, bubbleColor],
   );
 
   const clock = durationLabel ?? (typeof duration === 'number' ? formatDuration(duration) : undefined);
-  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes) : undefined);
+  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
   const name = accessibilityLabel ?? fileMetaLine([messages.video, clock]);
   const sending = state === 'sending';
 

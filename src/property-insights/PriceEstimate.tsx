@@ -116,7 +116,7 @@ function PriceEstimateComponent({
   asking,
   confidence,
   confidenceNote,
-  format = formatEuros,
+  format: formatProp,
   title: titleProp,
   askingLabel: askingLabelProp,
   formatVerdict: formatVerdictProp,
@@ -135,7 +135,8 @@ function PriceEstimateComponent({
   style,
   testID,
 }: PriceEstimateProps) {
-  const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const { locale, messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
+  const format = formatProp ?? ((value: number) => formatEuros(value, locale));
   const title = titleProp ?? messages.estimatedPrice;
   const askingLabel = askingLabelProp ?? messages.asking;
   const formatVerdict = formatVerdictProp ?? ((v: PriceVerdict) => defaultFormatVerdict(v, messages));

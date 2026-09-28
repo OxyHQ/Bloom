@@ -18,6 +18,7 @@ import {
 } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatActionsProps } from './types';
+import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
 
 /**
  * `AgentChatActions`: the controls in the top right of the
@@ -33,16 +34,13 @@ import type { AgentChatActionsProps } from './types';
 
 async function defaultShare(transcript: string): Promise<void | 'copied'> {
   if (!IS_WEB || typeof navigator === 'undefined') return;
-  const nav = navigator as {
-    share?: (data: { text: string }) => Promise<void>;
-    clipboard?: { writeText?: (value: string) => Promise<void> };
-  };
+  const nav = navigator as { share?: (data: { text: string }) => Promise<void> };
   if (nav.share) {
     await nav.share({ text: transcript });
     return;
   }
-  if (!nav.clipboard?.writeText) return;
-  await nav.clipboard.writeText(transcript);
+  if (!clipboardAvailable()) return;
+  await writeClipboardText(transcript);
   return 'copied';
 }
 

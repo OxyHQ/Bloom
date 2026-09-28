@@ -31,6 +31,7 @@ import { useChartCardSurfacePalette, useChartTones } from './primitives/use-char
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { lerp, useChartProgress } from './use-chart-progress';
+import { useBloomLocale } from '../locale/context';
 
 /** One axis of a radar: its category `label` plus one numeric field per series. */
 export type RadarPoint = { label: string } & Record<string, number | string>;
@@ -205,7 +206,7 @@ export function RadarChartCard({
   ranges,
   defaultRange,
   onRangeChange,
-  format = formatNumber,
+  format: formatProp,
   alertBelow,
   scoreCaption,
   tiles = false,
@@ -218,6 +219,8 @@ export function RadarChartCard({
   style,
   testID,
 }: RadarChartCardProps) {
+  const chartLocale = useBloomLocale();
+  const format = formatProp ?? ((value: number) => formatNumber(value, chartLocale));
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const palettes = useChartTones();
@@ -478,7 +481,7 @@ export function RadarChartCard({
         label={headerLabel}
         value={isScore ? undefined : headlineValue}
         format={format}
-        delta={delta !== undefined ? describeDeltaRatio(delta) : undefined}
+        delta={delta !== undefined ? describeDeltaRatio(delta, chartLocale) : undefined}
         hovering={hovering}
         fadeKey={`${selectedId ?? ''}:${activeIndex}`}
         range={range}
