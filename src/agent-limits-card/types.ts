@@ -38,15 +38,15 @@ export interface AgentLimitsUsageLimit {
   resets: string;
 }
 
-/** The card's fixed strings, overridable for localisation. */
+/** The card's fixed strings, localised via `BloomProvider locale`; each key here wins. */
 export interface AgentLimitsCardLabels {
-  /** Default `'Context window'`. */
+  /** `'Context window'` in English. */
   contextWindow?: string;
-  /** Default `'Free space'`. */
+  /** `'Free space'` in English. */
   freeSpace?: string;
-  /** Default `'Plan usage limits'`. `plan` is appended as `· <plan>`. */
+  /** `'Plan usage limits'` in English. `plan` is appended as `· <plan>`. */
   planUsageLimits?: string;
-  /** Names the plan arrow button. Default `'Manage plan'`. */
+  /** Names the plan arrow button. `'Manage plan'` in English. */
   managePlan?: string;
 }
 

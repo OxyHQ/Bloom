@@ -33,29 +33,28 @@ import {
   useAiChatWebCss,
   type AiChatPalette,
 } from './shared';
-import type { AiChatGalleryPanelProps, AiChatGeneration, AiChatPanelAction, AiChatPanelTab } from './types';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
+import type { AiChatGalleryPanelLabels, AiChatGalleryPanelProps, AiChatGeneration, AiChatPanelAction, AiChatPanelTab } from './types';
 
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_QUINT_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const GAP = 8;
 
-const DEFAULT_LABELS = {
-  gallery: 'Gallery',
-  styles: 'Styles',
-  tabs: 'Panel view',
-  stylePresets: 'Style presets',
-  enlarge: (prompt: string) => `Enlarge ${prompt}`,
-  minimize: (prompt: string) => `Minimize ${prompt}`,
-  download: (prompt: string) => `Download ${prompt}`,
-  more: (prompt: string) => `More actions for ${prompt}`,
-};
-type Labels = typeof DEFAULT_LABELS;
+type Labels = Required<AiChatGalleryPanelLabels>;
 
-export const DEFAULT_GALLERY_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = [
-  { key: 'new', label: 'New generation', icon: RiImageAddLine },
-  { key: 'expand', label: 'Expand panel', icon: RiExpandDiagonalSLine },
-  { key: 'toggle', label: 'Toggle panel', icon: RiSideBarLine },
-];
+/** The gallery panel's header actions, named in `messages`' language. */
+function galleryPanelActions(messages: AiChatMessages): ReadonlyArray<AiChatPanelAction> {
+  return [
+    { key: 'new', label: messages.newGeneration, icon: RiImageAddLine },
+    { key: 'expand', label: messages.expandPanel, icon: RiExpandDiagonalSLine },
+    { key: 'toggle', label: messages.togglePanel, icon: RiSideBarLine },
+  ];
+}
+
+/** The English actions; the panel's own default follows the locale. */
+export const DEFAULT_GALLERY_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = galleryPanelActions(AI_CHAT_MESSAGES.en);
 
 /**
  * An optical correction: `RiGalleryLine` is a dense filled rectangle, so
@@ -347,7 +346,7 @@ export function AiChatGalleryPanelBase({
   defaultTab = 'gallery',
   onTabChange,
   stylePresets,
-  actions = DEFAULT_GALLERY_PANEL_ACTIONS,
+  actions: actionsProp,
   width = 410,
   labels,
   style,
@@ -356,7 +355,19 @@ export function AiChatGalleryPanelBase({
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const reducedMotion = useReducedMotion();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const common = useCommonMessages();
+  const l = useMemo<Labels>(
+    () => ({
+      tabs: messages.panelView,
+      more: (prompt: string) => common.labelFor(common.moreActions, prompt),
+      ...messages.galleryPanel,
+      ...labels,
+    } as Labels),
+    [messages, common, labels],
+  );
+  const defaultActions = useMemo(() => galleryPanelActions(messages), [messages]);
+  const actions = actionsProp ?? defaultActions;
   const [current, setCurrent] = useControllableState<'gallery' | 'styles'>({
     value: tab,
     defaultValue: defaultTab,

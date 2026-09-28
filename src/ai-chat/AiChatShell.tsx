@@ -37,6 +37,8 @@ import {
   useAiChatPalette,
   useAiChatWebCss,
 } from './shared';
+import { useMessages } from '../locale/messages';
+import { AI_CHAT_MESSAGES } from './messages';
 import type { AiChatMobileHeaderProps, AiChatResizeHandleProps, AiChatShellProps } from './types';
 
 const REVEAL_EASE = Easing.bezier(0.42, 0, 0.58, 1);
@@ -85,13 +87,6 @@ const NAV_SETTLE_MIN_MS = 120;
 
 const clamp01 = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
 
-const DEFAULT_LABELS = {
-  openNavigation: 'Open navigation',
-  closeNavigation: 'Close navigation',
-  openPanel: (panel: string) => `Open ${panel.toLowerCase()}`,
-  closePanel: (panel: string) => `Close ${panel.toLowerCase()}`,
-  resize: 'Resize panels',
-};
 
 // ---------------------------------------------------------------------------
 //  Resize handle
@@ -109,13 +104,15 @@ export function AiChatResizeHandle({
   onResizeStart,
   onResize,
   onResizeEnd,
-  label = DEFAULT_LABELS.resize,
+  label: labelProp,
   onNudge,
   style,
   testID,
 }: AiChatResizeHandleProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const label = labelProp ?? messages.shell.resize;
   const [gripY, setGripY] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
   const height = useRef(0);
@@ -323,7 +320,7 @@ export function AiChatShell({
   mobileSidebar,
   children,
   panel,
-  panelLabel = 'Code',
+  panelLabel: panelLabelProp,
   panelIcon = RiCodeSLine,
   defaultPanelWidth = 410,
   minPanelWidth = 320,
@@ -343,7 +340,9 @@ export function AiChatShell({
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const reducedMotion = useReducedMotion();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AI_CHAT_MESSAGES);
+  const panelLabel = panelLabelProp ?? messages.code;
+  const l = useMemo(() => ({ ...messages.shell, ...labels }), [messages, labels]);
   const { width: windowWidth } = useWindowDimensions();
   // Native has no document: `document` is `container` there.
   const documentScroll = IS_WEB && scroll === 'document';

@@ -161,8 +161,10 @@ interface TileProps {
   palette: ComposerPalette;
   onRemove?: () => void;
   onRetry?: () => void;
-  removeLabel: string;
-  retryLabel: string;
+  /** The dismiss's name for a file. */
+  removeLabel: (name: string) => string;
+  /** A failed tile's retry's name for a file. */
+  retryLabel: (name: string) => string;
 }
 
 /**
@@ -280,7 +282,7 @@ export const AttachmentTile = memo(function AttachmentTile({
             }}>
             {error}
           </Text>
-          {onRetry ? <TileRetry label={`${retryLabel} ${attachment.name}`} onPress={onRetry} palette={palette} /> : null}
+          {onRetry ? <TileRetry label={retryLabel(attachment.name)} onPress={onRetry} palette={palette} /> : null}
         </View>
       ) : null}
 
@@ -321,7 +323,7 @@ export const AttachmentTile = memo(function AttachmentTile({
 
       {onRemove ? (
         <TileDismiss
-          label={`${removeLabel} ${attachment.name}`}
+          label={removeLabel(attachment.name)}
           onPress={onRemove}
           overImage={!!image}
           visible={!inFlight}
@@ -377,8 +379,10 @@ interface StripProps {
   palette: ComposerPalette;
   onRemove?: (id: string) => void;
   onRetry?: (id: string) => void;
-  removeLabel: string;
-  retryLabel: string;
+  /** The dismiss's name for a file. */
+  removeLabel: (name: string) => string;
+  /** A failed tile's retry's name for a file. */
+  retryLabel: (name: string) => string;
 }
 
 /**

@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiUploadLine } from '../icons/remix/RiUploadLine';
+import { useMessages } from '../locale/messages';
 import { IconAction } from './AgentChatControls';
 import { useAgentChatPlatform } from './context';
 import {
@@ -15,6 +16,7 @@ import {
   useAgentChatPalette,
   useAgentChatWebCss,
 } from './shared';
+import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatActionsProps } from './types';
 
 /**
@@ -28,15 +30,6 @@ import type { AgentChatActionsProps } from './types';
  *   menu     `bottom end`, 190 wide, p 8; rows px 8 / py 6 (32 tall),
  *            body-medium; "Delete chat" in text-error-primary
  */
-
-const DEFAULT_LABELS = {
-  share: 'Share chat',
-  shared: 'Transcript copied',
-  more: 'More actions for this chat',
-  exportChats: 'Export chats',
-  markUnread: 'Mark as unread',
-  deleteChat: 'Delete chat',
-};
 
 async function defaultShare(transcript: string): Promise<void | 'copied'> {
   if (!IS_WEB || typeof navigator === 'undefined') return;
@@ -68,7 +61,8 @@ export function AgentChatActionsBase({
   const palette = useAgentChatPalette();
   const { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } =
     useAgentChatPlatform();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AGENT_CHAT_MESSAGES);
+  const l = useMemo(() => ({ ...messages.actions, ...labels }), [messages, labels]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [shared, setShared] = useState(false);
 

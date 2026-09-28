@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, TextInput, View, useWindowDimensions, type TextStyle } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
 import { RiInfinityLine } from '../icons/remix/RiInfinityLine';
@@ -21,6 +22,7 @@ import {
   useAgentChatWebCss,
   type AgentChatPalette,
 } from './shared';
+import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatComposerProps } from './types';
 
 /**
@@ -46,18 +48,6 @@ import type { AgentChatComposerProps } from './types';
  * Enter submits (web: Shift+Enter is swallowed, the field is single-line, a
  * plain `<input>`).
  */
-
-const DEFAULT_LABELS = {
-  field: 'Message',
-  placeholder: 'Ask me anything',
-  attach: 'Add attachment',
-  send: 'Send message',
-  stop: 'Stop generating',
-  notConfigured: 'Not configured',
-  newChat: 'New chat',
-  messageCount: (count: number) => `${count} messages`,
-  answeringWith: (model: string) => `Answering with ${model}`,
-};
 
 /** `max-w-[13ch]`: `ch` has no RN unit; 13ch of Inter at 13px measures 131px in Chrome. */
 const MODEL_MAX_WIDTH = 131;
@@ -169,7 +159,11 @@ export function AgentChatComposerBase({
   useAgentChatWebCss();
   const palette = useAgentChatPalette();
   const { ComposerLoader } = useAgentChatPlatform();
-  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AGENT_CHAT_MESSAGES);
+  const l = useMemo(
+    () => ({ ...messages.composer, newChat: messages.chat.newChat, ...labels }),
+    [messages, labels],
+  );
   const [text, setText] = useControllableState<string>({
     value,
     defaultValue,

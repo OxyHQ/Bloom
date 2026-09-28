@@ -24,10 +24,12 @@ import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { Text, TYPE_SCALE } from '../typography';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { parseRgba } from '../theme/color-utils';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import type { Theme } from '../theme/types';
+import { AGENT_LIMITS_CARD_MESSAGES } from './messages';
 import { useTheme } from '../theme/use-theme';
 import type {
   AgentLimitsCardProps,
@@ -745,6 +747,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
 }) => {
   const theme = useTheme();
   const palette = useMemo(() => resolvePalette(theme), [theme]);
+  const { messages } = useMessages(AGENT_LIMITS_CARD_MESSAGES);
   const [expanded, setExpanded] = useControllableState({
     value: expandedProp,
     defaultValue: defaultExpanded,
@@ -757,7 +760,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
   }, []);
 
   const showPlan = limits !== undefined || plan !== undefined;
-  const planHeading = `${labels?.planUsageLimits ?? 'Plan usage limits'}${plan ? ` · ${plan}` : ''}`;
+  const planHeading = `${labels?.planUsageLimits ?? messages.planUsageLimits}${plan ? ` · ${plan}` : ''}`;
 
   return (
     <View
@@ -784,8 +787,8 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
           format={formatTokens}
           expanded={expanded}
           onToggle={toggle}
-          label={labels?.contextWindow ?? 'Context window'}
-          freeSpaceLabel={labels?.freeSpace ?? 'Free space'}
+          label={labels?.contextWindow ?? messages.contextWindow}
+          freeSpaceLabel={labels?.freeSpace ?? messages.freeSpace}
           testID={testID}
         />
       ) : null}
@@ -815,7 +818,7 @@ const AgentLimitsCardComponent: React.FC<AgentLimitsCardProps> = ({
               <PlanLink
                 palette={palette}
                 onPress={onPlanPress}
-                accessibilityLabel={labels?.managePlan ?? 'Manage plan'}
+                accessibilityLabel={labels?.managePlan ?? messages.managePlan}
                 testID={part(testID, 'plan-button')}
               />
             ) : null}

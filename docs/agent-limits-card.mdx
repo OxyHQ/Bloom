@@ -39,7 +39,7 @@ The card fills its container's width; give the container the width you want (320
 
 ## Sections
 
-Pass `context` alone for just the context window, or `limits` (and/or `plan`) alone for just the plan section. The separator only appears when both are present. The arrow beside the plan heading appears only when `onPlanPress` is set; it is a 24px `rounded-md` link (Remix `RiArrowRightLine`, tertiary, turning secondary over the hover fill), named "Manage plan" unless `labels.managePlan` says otherwise.
+Pass `context` alone for just the context window, or `limits` (and/or `plan`) alone for just the plan section. The separator only appears when both are present. The arrow beside the plan heading appears only when `onPlanPress` is set; it is a 24px `rounded-md` link (Remix `RiArrowRightLine`, tertiary, turning secondary over the hover fill), named "Manage plan" unless `labels.managePlan` says otherwise. The card's fixed strings are localised via `BloomProvider locale`; each `labels` key still wins.
 
 ## Expanding
 

@@ -171,12 +171,6 @@ function scan(): { findings: Finding[]; exemptions: number } {
 const PENDING: Record<string, number> = {
   'activity-feed': 2,
   'address': 2,
-  'agent-chat': 38,
-  'agent-limits-card': 4,
-  'agent-progress': 3,
-  'agent-thinking': 1,
-  'ai-chat': 32,
-  'ai-profile-card': 3,
   'alert-dialog': 1,
   'app-shell': 7,
   'auth-card': 32,
@@ -200,7 +194,6 @@ const PENDING: Record<string, number> = {
   'checkout-summary': 3,
   'code': 2,
   'command': 4,
-  'composer-panel': 52,
   'connection-dots': 1,
   'contact-card': 2,
   'context-menu': 2,
@@ -291,7 +284,6 @@ const PENDING: Record<string, number> = {
   'track-list': 20,
   'vehicle-picker': 4,
   'vendor-card': 7,
-  'web-search': 1,
   'zoomable-media-gallery': 5,
 };
 

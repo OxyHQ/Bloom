@@ -127,27 +127,27 @@ export interface ModelPickerProvider {
   models: ReadonlyArray<ModelPickerModel>;
 }
 
-/** The picker's fixed strings, overridable for localisation. */
+/** The picker's fixed strings. Bloom speaks them in the locale (`BloomProvider locale`); a key here wins. */
 export interface ModelPickerLabels {
-  /** Default `'Models'`. */
+  /** `'Models'` in English. */
   models?: string;
-  /** Default `'Quick Search'`. */
+  /** `'Quick Search'` in English. */
   quickSearch?: string;
-  /** Default `'Search models'`. */
+  /** `'Search models'` in English. */
   searchPlaceholder?: string;
-  /** Default `'Close search'`. */
+  /** `'Close search'` in English. */
   closeSearch?: string;
-  /** Default `'No models match'`. */
+  /** `'No models match'` in English. */
   noMatches?: string;
-  /** Default `'Providers'`. */
+  /** `'Providers'` in English. */
   providers?: string;
-  /** Default `'Effort'`. */
+  /** `'Effort'` in English. */
   effort?: string;
-  /** Default `'Auto'` — the effort chip with no stop chosen. */
+  /** `'Auto'` in English — the effort chip with no stop chosen. */
   effortAuto?: string;
-  /** Default `'Faster'`. */
+  /** `'Faster'` in English. */
   faster?: string;
-  /** Default `'Smarter'`. */
+  /** `'Smarter'` in English. */
   smarter?: string;
 }
 
@@ -180,29 +180,29 @@ export interface ModelPickerProps {
 //  Panel
 // ---------------------------------------------------------------------------
 
-/** The panel's fixed strings, overridable for localisation. */
+/** The panel's fixed strings. Bloom speaks them in the locale (`BloomProvider locale`); a key here wins. */
 export interface ComposerPanelLabels {
-  /** Default `'Message'` — the prompt's accessible name. */
+  /** `'Message'` in English — the prompt's accessible name. */
   message?: string;
-  /** Default `'Add attachment'`. */
+  /** `'Add attachment'` in English. */
   add?: string;
-  /** Default `'Add to chat'`. */
+  /** `'Add to chat'` in English. */
   addMenu?: string;
-  /** Default `'Permissions'`. */
+  /** `'Permissions'` in English. */
   permissions?: string;
-  /** Default `'Permission mode'`. */
+  /** `'Permission mode'` in English. */
   permissionMode?: string;
-  /** Default `'Learn more'`. */
+  /** `'Learn more'` in English. */
   learnMore?: string;
-  /** Default `'Voice input'`. */
+  /** `'Voice input'` in English. */
   voice?: string;
-  /** Default `'Send message'`. */
+  /** `'Send message'` in English. */
   send?: string;
-  /** Default `'Stop generating'` — send's stop state while `busy`. */
+  /** `'Stop generating'` in English — send's stop state while `busy`. */
   stop?: string;
-  /** Default `'Remove'` — prefixed to the file name on a tile's dismiss. */
+  /** `'Remove'` in English — prefixed to the file name on a tile's dismiss. */
   remove?: string;
-  /** Default `'Retry'` — prefixed to the file name on a failed tile's retry. */
+  /** `'Retry'` in English — prefixed to the file name on a failed tile's retry. */
   retry?: string;
 }
 
@@ -224,10 +224,10 @@ export interface ComposerPanelProps {
   busy?: boolean;
   /** Greys out send while a turn is in flight. Never reaches the stop control. */
   disabled?: boolean;
-  /** Default `'Hi, what do you need today?'`. */
+  /** `'Hi, what do you need today?'` in English. */
   placeholder?: string;
 
-  /** The permission modes. Defaults to four (`COMPOSER_PANEL_PERMISSIONS`). */
+  /** The permission modes. Defaults to four (`COMPOSER_PANEL_PERMISSIONS`, in the locale's language). */
   permissions?: ReadonlyArray<ComposerPanelPermissionOption>;
   /** Controlled permission id. */
   permission?: string;
@@ -237,7 +237,7 @@ export interface ComposerPanelProps {
   /** Shows "Learn more" in the permission panel's header and handles its press. */
   onLearnMore?: () => void;
 
-  /** The add menu's groups. Defaults to "Add" and "Plugins" rows; `[]` hides the button. */
+  /** The add menu's groups. Defaults to "Add" and "Plugins" rows (in the locale's language); `[]` hides the button. */
   addMenu?: ReadonlyArray<ComposerPanelAddMenuGroup>;
   /** A row of the add menu was chosen. The menu closes itself. */
   onAddMenuSelect?: (rowId: string) => void;
@@ -340,33 +340,33 @@ export interface ComposerPopoverProps {
 //  Pill composer
 // ---------------------------------------------------------------------------
 
-/** The pill composer's fixed strings, overridable for localisation. */
+/** The pill composer's fixed strings. Bloom speaks them in the locale (`BloomProvider locale`); a key here wins. */
 export interface ComposerPillLabels {
-  /** Default `'Message'` — the field's accessible name. */
+  /** `'Message'` in English — the field's accessible name. */
   message?: string;
-  /** Default `'Add attachment'`. */
+  /** `'Add attachment'` in English. */
   add?: string;
-  /** Default `'Add to chat'`. */
+  /** `'Add to chat'` in English. */
   addMenu?: string;
-  /** Default `'Model settings'` — the model panel's name. */
+  /** `'Model settings'` in English — the model panel's name. */
   modelSettings?: string;
-  /** Default `'Models'`. */
+  /** `'Models'` in English. */
   models?: string;
-  /** Default `'Model'` — the radio group's name. */
+  /** `'Model'` in English — the radio group's name. */
   modelGroup?: string;
-  /** Default `'Effort'`. */
+  /** `'Effort'` in English. */
   effort?: string;
-  /** Default `'Auto'` — the effort value with no stop chosen. */
+  /** `'Auto'` in English — the effort value with no stop chosen. */
   effortAuto?: string;
-  /** Default `'Faster'`. */
+  /** `'Faster'` in English. */
   faster?: string;
-  /** Default `'Smarter'`. */
+  /** `'Smarter'` in English. */
   smarter?: string;
-  /** Default `'Voice input'`. */
+  /** `'Voice input'` in English. */
   voice?: string;
-  /** Default `'Send message'`. */
+  /** `'Send message'` in English. */
   send?: string;
-  /** Default `'Stop generating'` — send's stop state while `busy`. */
+  /** `'Stop generating'` in English — send's stop state while `busy`. */
   stop?: string;
 }
 
@@ -388,9 +388,9 @@ export interface ComposerPillProps {
   busy?: boolean;
   /** Greys out send (40%) while a turn is in flight. Never reaches the stop control. */
   disabled?: boolean;
-  /** Default `'Ask me anything'`. */
+  /** `'Ask me anything'` in English. */
   placeholder?: string;
-  /** The shorter placeholder below 640 wide, where the full one clips. Default `'Ask me'`. */
+  /** The shorter placeholder below 640 wide, where the full one clips. `'Ask me'` in English. */
   compactPlaceholder?: string;
 
   /** The add menu's groups. Default the Composer Panel's "Add" and "Plugins" rows; `[]` hides the button. */
@@ -420,7 +420,7 @@ export interface ComposerPillProps {
   defaultEffort?: number | null;
   /** A stop the reader chose. The menu has no way back to `null`, so it never reports one. */
   onEffortChange?: (effort: number) => void;
-  /** Default `MODEL_PICKER_EFFORT_LEVELS`; `[]` drops the effort half of the menu. */
+  /** Default the six stops of `MODEL_PICKER_EFFORT_LEVELS`, in the locale's language; `[]` drops the effort half of the menu. */
   effortLevels?: ReadonlyArray<string>;
 
   /** Controlled voice-input state (the mic swaps to equalizer bars). */
@@ -490,9 +490,9 @@ export interface ComposerStatusBarFolder {
 }
 
 export interface ComposerStatusBarLabels {
-  /** Default `'Local Folders'`. */
+  /** `'Local Folders'` in English. */
   folders?: string;
-  /** Default `(percent) => \`Context ${percent}%\``. */
+  /** `(percent) => \`Context ${percent}%\`` in English. */
   context?: (percent: number) => string;
 }
 

@@ -12,6 +12,8 @@ import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiVolumeMuteLine } from '../icons/remix/RiVolumeMuteLine';
 import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
+import { useCommonMessages } from '../locale/common-messages';
+import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { IconAction } from './AgentChatControls';
@@ -24,6 +26,7 @@ import {
   useAgentChatPalette,
   useAgentChatWebCss,
 } from './shared';
+import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatMessageProps } from './types';
 
 /**
@@ -235,13 +238,6 @@ function MessageActions({
   );
 }
 
-const DEFAULT_LABELS = {
-  copy: 'Copy message',
-  copied: 'Copied',
-  readAloud: 'Read aloud',
-  stopReading: 'Stop reading aloud',
-};
-
 export function AgentChatMessage({
   role,
   text,
@@ -250,7 +246,7 @@ export function AgentChatMessage({
   onCopy,
   onReadAloud,
   readingAloud,
-  formatTime = formatAgo,
+  formatTime: formatTimeProp,
   labels,
   style,
   testID,
@@ -259,7 +255,16 @@ export function AgentChatMessage({
   const palette = useAgentChatPalette();
   const reducedMotion = useReducedMotion();
   const lines = useMemo(() => text.split('\n').filter((line) => line.trim() !== ''), [text]);
-  const merged = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
+  const { messages } = useMessages(AGENT_CHAT_MESSAGES);
+  const common = useCommonMessages();
+  const merged = useMemo(
+    () => ({ ...messages.message, copied: common.copied, ...labels }),
+    [messages, common, labels],
+  );
+  const formatTime = useMemo(
+    () => formatTimeProp ?? ((value: number) => formatAgo(value, Date.now(), messages.ago)),
+    [formatTimeProp, messages],
+  );
 
   if (!text) return null;
 

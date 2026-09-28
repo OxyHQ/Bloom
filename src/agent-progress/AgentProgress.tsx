@@ -19,6 +19,7 @@ import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import { BUTTON_SHADOW } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { parseRgba } from '../theme/color-utils';
@@ -27,6 +28,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { AgentProgressLoadingText } from './AgentProgressLoadingText';
+import { AGENT_PROGRESS_MESSAGES } from './messages';
 import type { AgentProgressProps } from './types';
 
 /**
@@ -60,13 +62,8 @@ import type { AgentProgressProps } from './types';
  * filter — and every animation snaps under reduced motion.
  */
 
-export const DEFAULT_AGENT_PROGRESS_STEPS = [
-  'Read project files',
-  'Update and install light mode tokens',
-  'Implement dark mode tokens',
-  'Add reusable registered theme toggle',
-  'Run registry, lint and production build',
-] as const;
+/** The demo workflow in English; the component shows it in the locale's language. */
+export const DEFAULT_AGENT_PROGRESS_STEPS: readonly string[] = AGENT_PROGRESS_MESSAGES.en.defaultSteps;
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -814,12 +811,8 @@ const rowStyles = StyleSheet.create({
 //  AgentProgress
 // ---------------------------------------------------------------------------
 
-function defaultStepsLeft(remaining: number): string {
-  return `${remaining} ${remaining === 1 ? 'step' : 'steps'} left`;
-}
-
 function AgentProgressComponent({
-  steps = DEFAULT_AGENT_PROGRESS_STEPS,
+  steps: stepsProp,
   stepDuration = DEFAULT_STEP_DURATION_MS,
   completionDelay = DEFAULT_COMPLETION_DELAY_MS,
   onFinished,
@@ -832,6 +825,8 @@ function AgentProgressComponent({
   style,
   testID = 'agent-progress',
 }: AgentProgressProps) {
+  const { messages } = useMessages(AGENT_PROGRESS_MESSAGES);
+  const steps = stepsProp ?? messages.defaultSteps;
   const theme = useTheme();
   const palette = resolvePalette(theme);
   const reducedMotion = useReducedMotion();
@@ -968,8 +963,8 @@ function AgentProgressComponent({
   }, [processingStarted, complete, completedCount, stepCount, paused, reducedMotion, safeStepDuration, ring]);
 
   const statusLabel = complete
-    ? (labels?.allCompleted ?? 'All steps completed')
-    : (labels?.stepsLeft ?? defaultStepsLeft)(remainingCount);
+    ? (labels?.allCompleted ?? messages.allCompleted)
+    : (labels?.stepsLeft ?? messages.stepsLeft)(remainingCount);
 
   const minimize = () => setMinimized(true);
   const expand = () => {
@@ -1014,7 +1009,7 @@ function AgentProgressComponent({
         <Pressable
           testID={`${testID}-minimized`}
           accessibilityRole="button"
-          accessibilityLabel={labels?.expand ?? 'Expand steps'}
+          accessibilityLabel={labels?.expand ?? messages.expand}
           onPress={expand}
           onHoverIn={() => setHovered(true)}
           onHoverOut={() => setHovered(false)}
@@ -1060,7 +1055,7 @@ function AgentProgressComponent({
             <StatusLabel label={statusLabel} color={palette.textSecondary} grow />
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={labels?.minimize ?? 'Minimize steps'}
+              accessibilityLabel={labels?.minimize ?? messages.minimize}
               onPress={minimize}
               onHoverIn={() => setMinimizeHovered(true)}
               onHoverOut={() => setMinimizeHovered(false)}

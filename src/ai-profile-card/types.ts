@@ -39,7 +39,7 @@ export interface AiProfileCardProps {
    */
   actions?: ReactNode;
 
-  /** Label over the headline. Default `"Contributions this year"`. */
+  /** Label over the headline. `"Contributions this year"` in English. */
   contributionsLabel?: string;
   /** The headline number; counts up from 0 on mount (1.6s). */
   contributions: number;
@@ -52,9 +52,9 @@ export interface AiProfileCardProps {
   /** The tiles: one row from 640px, two columns below. */
   stats?: readonly AiProfileCardStat[];
 
-  /** Label over the heatmap. Default `"Activity"`. */
+  /** Label over the heatmap. `"Activity"` in English. */
   activityLabel?: string;
-  /** Segments of the plain switcher. Default Weekly / Monthly / Yearly. Empty hides it. */
+  /** Segments of the plain switcher. Default Weekly / Monthly / Yearly, in the locale's language. Empty hides it. */
   periods?: readonly AiProfileCardPeriod[];
   /** Controlled selected period id. */
   period?: string;
