@@ -125,6 +125,10 @@ describe('agent-progress speaks the locale', () => {
     const ru = renderIn(<AgentProgress />, 'ru');
     expect(ru.getByText('Осталось 5 шагов')).toBeTruthy();
     ru.unmount();
+    // An empty list falls back to the demo steps in the locale, not English.
+    const empty = renderIn(<AgentProgress steps={[]} />);
+    expect(empty.getAllByText('Leer los archivos del proyecto', HIDDEN).length).toBeGreaterThan(0);
+    empty.unmount();
     const custom = renderIn(<AgentProgress steps={['A', 'B']} labels={{ stepsLeft: (n) => `${n} to go` }} />);
     expect(custom.getByText('2 to go')).toBeTruthy();
   });

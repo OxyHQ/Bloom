@@ -835,7 +835,7 @@ function AgentProgressComponent({
     if (IS_WEB) adoptStyleSheet(STYLE_ID, WEB_CSS);
   }, []);
 
-  const progressSteps: readonly string[] = steps.length > 0 ? steps : DEFAULT_AGENT_PROGRESS_STEPS;
+  const progressSteps: readonly string[] = steps.length > 0 ? steps : messages.defaultSteps;
   const stepCount = progressSteps.length;
   const safeStepDuration = Math.max(0, stepDuration);
   const expandedHeight = agentProgressExpandedHeight(stepCount);
