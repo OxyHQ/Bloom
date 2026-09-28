@@ -40,7 +40,7 @@ function mount(onClose = jest.fn(), guard?: () => boolean) {
     const [open, setOpen] = React.useState(true);
     return <SettingsModal open={open} initialView="page" onBeforeLeave={guard}
       onClose={() => { onClose(); setOpen(false); }}
-      groups={[{ items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }] }]}
+      groups={[{ label: 'Settings', items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }] }]}
       pages={{ general: { title: 'General', content: <TextInput accessibilityLabel="Setting" testID="field" /> } }} />;
   }
   act(() => root.render(<BloomThemeProvider mode="light"><Controlled /></BloomThemeProvider>));
