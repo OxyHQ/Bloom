@@ -2,12 +2,14 @@ import React, { memo, useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { Chip } from '../chip';
+import { useMessages } from '../locale/messages';
 import { SettingsListGroup, SettingsListItem } from '../settings-list';
 import { Switch } from '../switch';
 import { TextFieldLabel } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { SHIPMENT_OPTIONS_LABELS, SHIPMENT_REQUEST_GEOMETRY } from './constants';
+import { SHIPMENT_REQUEST_GEOMETRY } from './constants';
+import { SHIPMENT_REQUEST_MESSAGES } from './messages';
 import { joinShipmentName, toggleShipmentExtra } from './shared';
 import type { ShipmentOptionsListProps } from './types';
 
@@ -51,7 +53,8 @@ function ShipmentOptionsListComponent({
   testID,
 }: ShipmentOptionsListProps) {
   const theme = useTheme();
-  const labels = useMemo(() => ({ ...SHIPMENT_OPTIONS_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(SHIPMENT_REQUEST_MESSAGES);
+  const labels = useMemo(() => ({ ...messages.options, ...labelOverrides }), [messages, labelOverrides]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const chosen = new Set(selectedExtras);
 
