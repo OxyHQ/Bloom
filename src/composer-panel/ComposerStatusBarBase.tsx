@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { RiArrowDropDownLine } from '../icons/remix/RiArrowDropDownLine';
 import { RiFolder2Line } from '../icons/remix/RiFolder2Line';
 import { RiGitMergeLine } from '../icons/remix/RiGitMergeLine';
@@ -18,16 +19,12 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ContextRing } from './ComposerPanelStatusTab';
 import { useComposerPopover } from './context';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
 import { EFFORT_WIDTH, resolveComposerPalette, type ComposerPalette } from './shared';
 import type { ComposerStatusBarFolder, ComposerStatusBarProps } from './types';
 import { dataHook, useComposerWebCss } from './web-hooks';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
-
-const DEFAULT_LABELS = {
-  folders: 'Local Folders',
-  context: (percent: number) => `Context ${percent}%`,
-};
 
 function Caret({ open, color }: { open: boolean; color: string }) {
   const reducedMotion = useReducedMotion();
@@ -174,7 +171,11 @@ export function ComposerStatusBarBase({
   useComposerWebCss();
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
-  const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelOverrides }), [labelOverrides]);
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
+  const labels = useMemo(
+    () => ({ folders: messages.localFolders, context: messages.context, ...labelOverrides }),
+    [messages, labelOverrides],
+  );
   const Popover = useComposerPopover();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);

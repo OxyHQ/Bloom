@@ -20,10 +20,12 @@ import { groupThousands } from '../chart-cards/primitives/format';
 import { useCountUp } from '../chart-cards/use-count-up';
 import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useMessages } from '../locale/messages';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { AI_PROFILE_CARD_MESSAGES } from './messages';
 import type { AiProfileCardPeriod, AiProfileCardProps } from './types';
 
 /**
@@ -56,12 +58,6 @@ import type { AiProfileCardPeriod, AiProfileCardProps } from './types';
 
 const COVER_HEIGHT = 165;
 const AVATAR_SIZE = 80;
-const DEFAULT_PERIODS: readonly AiProfileCardPeriod[] = [
-  { id: 'weekly', label: 'Weekly' },
-  { id: 'monthly', label: 'Monthly' },
-  { id: 'yearly', label: 'Yearly' },
-];
-
 const formatDollars = (value: number) => `$${groupThousands(value)}`;
 
 /** `object-fit: cover` with an `object-position`: the image sized to cover the box, offset by the fractions. */
@@ -152,14 +148,14 @@ function AiProfileCardComponent({
   avatarSource,
   initials,
   actions,
-  contributionsLabel = 'Contributions this year',
+  contributionsLabel: contributionsLabelProp,
   contributions,
   format = formatDollars,
   countUpDuration = 1600,
   delta,
   stats,
-  activityLabel = 'Activity',
-  periods = DEFAULT_PERIODS,
+  activityLabel: activityLabelProp,
+  periods: periodsProp,
   period,
   defaultPeriod,
   onPeriodChange,
@@ -172,6 +168,18 @@ function AiProfileCardComponent({
   style,
   testID,
 }: AiProfileCardProps) {
+  const { messages } = useMessages(AI_PROFILE_CARD_MESSAGES);
+  const contributionsLabel = contributionsLabelProp ?? messages.contributions;
+  const activityLabel = activityLabelProp ?? messages.activity;
+  const defaultPeriods = useMemo<readonly AiProfileCardPeriod[]>(
+    () => [
+      { id: 'weekly', label: messages.periods.weekly },
+      { id: 'monthly', label: messages.periods.monthly },
+      { id: 'yearly', label: messages.periods.yearly },
+    ],
+    [messages],
+  );
+  const periods = periodsProp ?? defaultPeriods;
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
   const wide = viewport >= BREAKPOINTS.sm;
@@ -389,7 +397,7 @@ function AiProfileCardComponent({
             </Text>
             {periods.length > 0 ? (
               <SegmentedControl
-                label={`${activityLabel} period`}
+                label={messages.periodGroup(activityLabel)}
                 type="radio"
                 variant="plain"
                 value={selectedPeriod}

@@ -4,9 +4,11 @@ import Svg, { Circle } from 'react-native-svg';
 
 import { RiFolder2Line } from '../icons/remix/RiFolder2Line';
 import { RiGitMergeLine } from '../icons/remix/RiGitMergeLine';
+import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 import { resolveComposerPalette, TAB_HEIGHT, TAB_INSET, TAB_RADIUS, type ComposerPalette } from './shared';
+import { COMPOSER_PANEL_MESSAGES } from './messages';
 import type { ComposerPanelStatusTabProps } from './types';
 
 /** 16px circular context meter: r 6, 2.5 stroke, starting at 12 o'clock. */
@@ -51,6 +53,7 @@ function StatusItem({ icon, label, palette }: { icon: React.ReactNode; label: st
 function ComposerPanelStatusTabComponent({ branch, project, context, style, testID }: ComposerPanelStatusTabProps) {
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
+  const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
   return (
     <View
       testID={testID}
@@ -95,7 +98,7 @@ function ComposerPanelStatusTabComponent({ branch, project, context, style, test
       </View>
       {context != null ? (
         <View
-          accessibilityLabel={`Context ${context}%`}
+          accessibilityLabel={messages.context(context)}
           style={{
             flexShrink: 0,
             flexDirection: 'row',

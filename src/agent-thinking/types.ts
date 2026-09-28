@@ -18,7 +18,7 @@ export type AgentThinkingTone = 'subtle' | 'default' | 'primary' | 'accent';
 export interface AgentThinkingProps {
   /** Default `'wave'`. */
   variant?: AgentThinkingVariant;
-  /** Status label, e.g. "Thinking" or "Searching the docs". Default `'Thinking'`. */
+  /** Status label, e.g. "Thinking" or "Searching the docs". `'Thinking'` in English. */
   label?: string;
   /** Tone of the indicator + label. Defaults per variant (`stars` is `subtle`, the rest `default`). */
   tone?: AgentThinkingTone;

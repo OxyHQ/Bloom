@@ -37,13 +37,13 @@ export interface AgentChatThread {
 // ---------------------------------------------------------------------------
 
 export interface AgentChatMessageLabels {
-  /** Default `'Copy message'`. */
+  /** `'Copy message'` in English. */
   copy?: string;
-  /** Default `'Copied'`. */
+  /** `'Copied'` in English. */
   copied?: string;
-  /** Default `'Read aloud'`. */
+  /** `'Read aloud'` in English. */
   readAloud?: string;
-  /** Default `'Stop reading aloud'`. */
+  /** `'Stop reading aloud'` in English. */
   stopReading?: string;
 }
 
@@ -68,7 +68,7 @@ export interface AgentChatMessageProps {
   onReadAloud?: (text: string, start: boolean) => void;
   /** Controlled "reading aloud" state, for a consumer-owned speech engine. */
   readingAloud?: boolean;
-  /** "just now", "3 minutes ago"… Default: `formatAgo`. */
+  /** "just now", "3 minutes ago"… Default: `formatAgo` in the locale's words. */
   formatTime?: (at: number) => string;
   labels?: AgentChatMessageLabels;
   style?: StyleProp<ViewStyle>;
@@ -80,17 +80,17 @@ export interface AgentChatMessageProps {
 // ---------------------------------------------------------------------------
 
 export interface AgentChatActionsLabels {
-  /** Default `'Share chat'`. */
+  /** `'Share chat'` in English. */
   share?: string;
-  /** Default `'Transcript copied'`. */
+  /** `'Transcript copied'` in English. */
   shared?: string;
-  /** Default `'More actions for this chat'`. */
+  /** `'More actions for this chat'` in English. */
   more?: string;
-  /** Default `'Export chats'`. */
+  /** `'Export chats'` in English. */
   exportChats?: string;
-  /** Default `'Mark as unread'`. */
+  /** `'Mark as unread'` in English. */
   markUnread?: string;
-  /** Default `'Delete chat'`. */
+  /** `'Delete chat'` in English. */
   deleteChat?: string;
 }
 
@@ -141,35 +141,35 @@ export interface AgentChatAccount {
 }
 
 export interface AgentChatHistoryLabels {
-  /** Default `'Chat history'`. */
+  /** `'Chat history'` in English. */
   region?: string;
-  /** Default `'New chat'`. */
+  /** `'New chat'` in English. */
   newChat?: string;
-  /** Default `'Recent'`. */
+  /** `'Recent'` in English. */
   recent?: string;
-  /** Default `'Chats you start show up here.'`. */
+  /** `'Chats you start show up here.'` in English. */
   empty?: string;
-  /** Default `'Rename'`. */
+  /** `'Rename'` in English. */
   rename?: string;
-  /** Default `'Rename chat'` (the rename field's name). */
+  /** `'Rename chat'` in English (the rename field's name). */
   renameField?: string;
-  /** Default `'Mark as unread'`. */
+  /** `'Mark as unread'` in English. */
   markUnread?: string;
-  /** Default `'Delete'`. */
+  /** `'Delete'` in English. */
   delete?: string;
-  /** Default `'Unread'`. */
+  /** `'Unread'` in English. */
   unread?: string;
-  /** Default `(title) => \`More actions for ${title}\``. */
+  /** "More actions for {title}" in English. */
   moreFor?: (title: string) => string;
-  /** Default `(count) => count === 0 ? 'No chats to export' : \`Export ${count} chats\``. */
+  /** "No chats to export" / "Export {count} chats" in English. */
   exportCount?: (count: number) => string;
-  /** Default `(name) => \`${name} account menu\``. */
+  /** "{name} account menu" in English. */
   accountMenu?: (name: string) => string;
-  /** Default `'Usage left'`. */
+  /** `'Usage left'` in English. */
   usageLeft?: string;
-  /** Default `'Upgrade to Max'`. */
+  /** `'Upgrade to Max'` in English. */
   upgrade?: string;
-  /** Default `'Log out'`. */
+  /** `'Log out'` in English. */
   logOut?: string;
 }
 
@@ -195,7 +195,7 @@ export interface AgentChatHistoryProps {
   accountItems?: ReadonlyArray<AgentChatAccountMenuItem>;
   /** Shows the divider and "Log out". */
   onLogOut?: () => void;
-  /** Compact age badge. Default: `relativeTime` (`now`, `34m`, `5h`, `3d`). */
+  /** Compact age badge. Default: `relativeTime` in the locale's words (`now`, `34m`, `5h`, `3d`). */
   formatAge?: (at: number) => string;
   labels?: AgentChatHistoryLabels;
   style?: StyleProp<ViewStyle>;
@@ -207,23 +207,23 @@ export interface AgentChatHistoryProps {
 // ---------------------------------------------------------------------------
 
 export interface AgentChatComposerLabels {
-  /** Default `'Message'` (the field's accessible name). */
+  /** `'Message'` in English (the field's accessible name). */
   field?: string;
-  /** Default `'Ask me anything'`. */
+  /** `'Ask me anything'` in English. */
   placeholder?: string;
-  /** Default `'Add attachment'`. */
+  /** `'Add attachment'` in English. */
   attach?: string;
-  /** Default `'Send message'`. */
+  /** `'Send message'` in English. */
   send?: string;
-  /** Default `'Stop generating'`. */
+  /** `'Stop generating'` in English. */
   stop?: string;
-  /** Default `'Not configured'` (status row, no provider). */
+  /** `'Not configured'` in English (status row, no provider). */
   notConfigured?: string;
-  /** Default `'New chat'` (status row, no messages). */
+  /** `'New chat'` in English (status row, no messages). */
   newChat?: string;
-  /** Default `(count) => \`${count} messages\``. */
+  /** "{count} messages" in English. */
   messageCount?: (count: number) => string;
-  /** Default `(model) => \`Answering with ${model}\``. */
+  /** "Answering with {model}" in English. */
   answeringWith?: (model: string) => string;
 }
 
@@ -254,15 +254,15 @@ export interface AgentChatComposerProps {
 // ---------------------------------------------------------------------------
 
 export interface AgentChatLabels {
-  /** Header title fallback. Default `'New chat'`. */
+  /** Header title fallback. `'New chat'` in English. */
   newChat?: string;
-  /** Empty-state heading. Default `'What can I help with?'`. */
+  /** Empty-state heading. `'What can I help with?'` in English. */
   emptyTitle?: string;
-  /** Empty-state line. Default "This chat runs against your own API key…". */
+  /** Empty-state line. In English "This chat runs against your own API key…". */
   emptyDescription?: string;
-  /** Status label beside the thinking dots. Default `'Thinking'`. */
+  /** Status label beside the thinking dots. `'Thinking'` in English. */
   thinking?: string;
-  /** Default `'Something went wrong. Check the server logs, then try again.'`. */
+  /** `'Something went wrong. Check the server logs, then try again.'` in English. */
   error?: string;
 }
 
@@ -285,7 +285,7 @@ export interface AgentChatProps {
   model?: string | null;
   provider?: string | null;
 
-  /** Suggestion pills in the empty state. Default three. `[]` hides them. */
+  /** Suggestion pills in the empty state. Default three (localised). `[]` hides them. */
   suggestions?: ReadonlyArray<string>;
   /** Replaces the whole empty state (e.g. an "Add an API key" notice). */
   emptyState?: ReactNode;

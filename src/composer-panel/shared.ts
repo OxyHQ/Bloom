@@ -25,6 +25,7 @@ import { RiSpeedUpFill } from '../icons/remix/RiSpeedUpFill';
 import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
+import { COMPOSER_PANEL_MESSAGES, type ComposerPanelMessages } from './messages';
 import type {
   ComposerPanelAddMenuGroup,
   ComposerPanelAttachmentKind,
@@ -198,68 +199,61 @@ export const TILE_RING_LENGTH = 2 * (TILE - 2 - 22) * 2 + 2 * Math.PI * 11;
 //  Default data
 // ---------------------------------------------------------------------------
 
-/** The four permission modes. Auto is the default. */
-export const COMPOSER_PANEL_PERMISSIONS: readonly ComposerPanelPermissionOption[] = [
-  { id: 'auto', label: 'Auto', description: 'Agent decides by itself', icon: RiSpeedUpFill },
-  {
-    id: 'manual',
-    label: 'Manual',
-    description: 'Always ask before making a change',
-    icon: RiGitMergeLine,
-    flip: true,
-  },
-  {
-    id: 'plan',
-    label: 'Plan mode',
-    description: 'Create a plan before proceeding',
-    icon: RiRouteLine,
-    flip: true,
-  },
-  {
-    id: 'bypass',
-    label: 'Bypass all',
-    description: 'Agent handles permission decisions',
-    icon: RiShieldCheckLine,
-  },
-];
+/** The four permission modes, in `messages`' language. Auto is the default. */
+export function composerPermissions(messages: ComposerPanelMessages): readonly ComposerPanelPermissionOption[] {
+  const modes = messages.permissionModes;
+  return [
+    { id: 'auto', ...modes.auto, icon: RiSpeedUpFill },
+    { id: 'manual', ...modes.manual, icon: RiGitMergeLine, flip: true },
+    { id: 'plan', ...modes.plan, icon: RiRouteLine, flip: true },
+    { id: 'bypass', ...modes.bypass, icon: RiShieldCheckLine },
+  ];
+}
 
-/** Six effort stops between "Faster" and "Smarter"; index 1 is the design's resting stop. */
-export const MODEL_PICKER_EFFORT_LEVELS: readonly string[] = [
-  'Low',
-  'Medium',
-  'Balanced',
-  'High',
-  'Very High',
-  'Max',
-];
+/** The four permission modes in English — what a component draws is its locale's (`composerPermissions`). */
+export const COMPOSER_PANEL_PERMISSIONS: readonly ComposerPanelPermissionOption[] = composerPermissions(
+  COMPOSER_PANEL_MESSAGES.en,
+);
+
+/**
+ * Six effort stops between "Faster" and "Smarter"; index 1 is the design's
+ * resting stop. English — a component's default is its locale's `effortLevels`.
+ */
+export const MODEL_PICKER_EFFORT_LEVELS: readonly string[] = COMPOSER_PANEL_MESSAGES.en.effortLevels;
 export const DEFAULT_EFFORT = 1;
 
 /**
- * The add menu: an "Add" group of 20px icon rows and a "Plugins" group of
- * 24px illustrated rows. Raster-like plugin illustrations with filters that
- * react-native-svg cannot draw are out of scope, so the defaults use the
- * matching Remix file glyphs at the same 24px box; pass `image` for your own
- * artwork.
+ * The add menu, in `messages`' language: an "Add" group of 20px icon rows and
+ * a "Plugins" group of 24px illustrated rows. Raster-like plugin illustrations
+ * with filters that react-native-svg cannot draw are out of scope, so the
+ * defaults use the matching Remix file glyphs at the same 24px box; pass
+ * `image` for your own artwork.
  */
-export const COMPOSER_PANEL_ADD_MENU: readonly ComposerPanelAddMenuGroup[] = [
-  {
-    label: 'Add',
-    rows: [
-      { id: 'files', icon: RiAttachment2, label: 'Files and folders' },
-      { id: 'goal', icon: RiFocus3Line, label: 'Goal', description: 'Set a goal for faster results' },
-      { id: 'plan', icon: RiListCheck3, label: 'Plan mode', description: 'Manage complex tasks' },
-    ],
-  },
-  {
-    label: 'Plugins',
-    rows: [
-      { id: 'documents', icon: RiFileTextLine, iconSize: 24, label: 'Documents', description: 'Create and edit documents' },
-      { id: 'spreadsheets', icon: RiFileExcel2Line, iconSize: 24, label: 'Spreadsheets', description: 'Generate spreadsheets' },
-      { id: 'presentations', icon: RiSlideshow3Line, iconSize: 24, label: 'Presentations', description: 'Create marketing assets' },
-      { id: 'code', icon: RiCodeBlock, iconSize: 24, label: 'Code blocks', description: 'Write and edit existing code' },
-    ],
-  },
-];
+export function composerAddMenu(messages: ComposerPanelMessages): readonly ComposerPanelAddMenuGroup[] {
+  const m = messages.addMenuRows;
+  return [
+    {
+      label: m.add,
+      rows: [
+        { id: 'files', icon: RiAttachment2, label: m.files },
+        { id: 'goal', icon: RiFocus3Line, label: m.goal, description: m.goalDescription },
+        { id: 'plan', icon: RiListCheck3, label: m.plan, description: m.planDescription },
+      ],
+    },
+    {
+      label: m.plugins,
+      rows: [
+        { id: 'documents', icon: RiFileTextLine, iconSize: 24, label: m.documents, description: m.documentsDescription },
+        { id: 'spreadsheets', icon: RiFileExcel2Line, iconSize: 24, label: m.spreadsheets, description: m.spreadsheetsDescription },
+        { id: 'presentations', icon: RiSlideshow3Line, iconSize: 24, label: m.presentations, description: m.presentationsDescription },
+        { id: 'code', icon: RiCodeBlock, iconSize: 24, label: m.code, description: m.codeDescription },
+      ],
+    },
+  ];
+}
+
+/** The add menu in English — what a component draws is its locale's (`composerAddMenu`). */
+export const COMPOSER_PANEL_ADD_MENU: readonly ComposerPanelAddMenuGroup[] = composerAddMenu(COMPOSER_PANEL_MESSAGES.en);
 
 /** The glyph a non-image attachment tile draws when it carries no `icon`. */
 export const ATTACHMENT_KIND_ICONS: Record<Exclude<ComposerPanelAttachmentKind, 'image'>, ComposerIcon> = {

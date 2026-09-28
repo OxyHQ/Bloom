@@ -37,13 +37,13 @@ import { AiProfileCard } from '@oxy.so/bloom/ai-profile-card';
 | `coverSource` / `coverPosition` | — / `{ x: 0.5, y: 0.45 }` | photo over the top 165px, cropped like `object-position` |
 | `avatarSource` / `initials` | — / first letter of `name` | the 80px disc |
 | `actions` | — | buttons hung 34px above the name row's right edge |
-| `contributionsLabel` | `"Contributions this year"` | |
+| `contributionsLabel` | `"Contributions this year"` | localised via `BloomProvider locale` |
 | `contributions` / `format` | — / `$7,462` | the headline, counting up from 0 on mount |
 | `countUpDuration` | 1600 | `0` shows the number at once |
 | `delta` | — | status-purple chip text |
 | `stats` | — | tiles: one row from 640px, two columns below |
-| `activityLabel` | `"Activity"` | |
-| `periods` / `period` / `defaultPeriod` / `onPeriodChange` | Weekly / Monthly / Yearly | the plain switcher; `[]` hides it |
+| `activityLabel` | `"Activity"` | localised via `BloomProvider locale` |
+| `periods` / `period` / `defaultPeriod` / `onPeriodChange` | Weekly / Monthly / Yearly (localised) | the plain switcher; `[]` hides it |
 | `cells` / `columns` / `color` | — / 38 / violet-500 | the heatmap |
 | `animateIn` | `true` | pop the cells in on mount |
 | `activeCell` / `onActiveCellChange` | tracked | |
