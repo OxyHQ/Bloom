@@ -18,7 +18,7 @@ const TRANSPARENT = 'transparent';
  *
  * IT DRAWS NO SURFACE AT ALL — no background, no radius, no padding — because a
  * sticker with a bubble behind it is a picture of a sticker. The shell renders it
- * with `variant="bare"`, which is `message-bubble`'s no-chrome mode; a bubble
+ * with `mediaFit="bare"`, which is `message-bubble`'s no-chrome mode; a bubble
  * around one would also put a scrim behind the transparent parts and turn a
  * cut-out into a square.
  *

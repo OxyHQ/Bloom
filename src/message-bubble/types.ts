@@ -17,16 +17,22 @@ export type MessagePosition = 'single' | 'first' | 'middle' | 'last';
  * How the `media` slot is fitted inside the bubble.
  *
  *   bleed   the bubble's padding is CANCELLED and the block runs to the radius
- *           — a photo, a video, an album, a sticker: something with its own
- *           edge, which an inset would frame twice
+ *           — a photo, a video, an album: something with its own edge, which
+ *           an inset would frame twice
  *   inset   the block keeps the bubble's padding — a poll, a place, a contact
  *           card: typography with no padding of its own, which bled means a
  *           question clipped against the top edge and an avatar on the left one
+ *   bare    NO bubble at all — no fill, border, padding or tail — for a
+ *           media-only message whose block is its own shape: a sticker. A
+ *           sticker drawn inside a bubble is a picture of a sticker, and the
+ *           fill turns its cut-out into a square. With text beside the media
+ *           this falls back to `bleed`, because the text needs a surface.
  *
- * It also decides where the meta row lands by default: over a bled block on a
- * translucent pill, under an inset one where it cannot cover a line of text.
+ * It also decides where the meta row lands by default: over a bled or bare
+ * block on a translucent pill, under an inset one where it cannot cover a line
+ * of text.
  */
-export type MessageMediaFit = 'bleed' | 'inset';
+export type MessageMediaFit = 'bleed' | 'inset' | 'bare';
 
 /** A text span the bubble hands back to the caller to render. */
 export type MessageEntityType = 'link' | 'mention' | 'hashtag';
@@ -102,7 +108,8 @@ export interface MessageBubbleProps {
   /**
    * How `media` is fitted. Default `'bleed'` — today's photo. Pass `'inset'`
    * for a block that draws no padding of its own (`PollMessage`,
-   * `LocationMessage`, `ContactMessage`). See {@link MessageMediaFit}.
+   * `LocationMessage`, `ContactMessage`), and `'bare'` for a sticker, which
+   * draws no bubble at all. See {@link MessageMediaFit}.
    */
   mediaFit?: MessageMediaFit;
   /**
