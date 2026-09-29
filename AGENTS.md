@@ -44,20 +44,18 @@ Wiring: Expo/Metro apps import `@oxy.so/app-preset/css/base.css` at the top of `
 - Compound parts are flat-prefixed (Tabs/TabsTrigger), no static aliases Tabs.Trigger/Menu.Item/Select.Trigger/InputGroup.Addon. Open collections with colliding Text/Box/Row names use namespaces/subpaths: Icons, Typography, Skeleton, Grid, Code, Fonts, ColorEngine, ImageAspectRatio.
 - Root-export families unless they add a PACKAGE: Metro cannot tree-shake unmet peers. Exceptions tab-bar/zoomable-image-gallery (peers documented); phone-input (~145KB flags, weight not peer). Provider is universal/root-exported with explicit router adapter. `root-barrel-graph.test.ts` counts STATIC imports: theme/adaptive-colors.ts optional-requires expo-router without linking it, keeping the gate falsifiable.
 
-## Composition contracts (`docs/composition.mdx`, `docs/adoption-matrix.mdx`)
-
-Contracts: docs/composition.mdx, docs/unified-api.mdx.
+## Composition contracts (`docs/composition.mdx`, `docs/unified-api.mdx`, `docs/adoption-matrix.mdx`)
 
 - **Join Field via `useFieldMembership()`.** Name defers to field (`??`); disabled/invalid combine (`||`); caller ID wins; aria-describedby lists JOIN. `labelPlacement`: above-control labels (TextField/Textarea) yield to Field, beside-control captions keep their own to match visible names. Forward state to composite halves: PhoneInput's picker stayed operable in disabled Field when only input subscribed. Gates: `FieldMembership.test.tsx` (15 families; mutating one `||` to `??` fails18), `FieldAssociation.test.tsx`.
 - **BloomScope is the sole size/tone context.** Explicit prop → nearest scope → family default; sizes xs/sm/md/lg. InputGroup aligns member geometry; domain content density stays separate. Field disabled/invalid are constraints (OR), never overridable defaults.
-- **Modals/sheets need their OWN `layout/ScreenScope`.** Otherwise chrome claims the underlying page edge (padding appears/disappears) and follows an untouched scroller. DialogBody/BottomSheetBase mount it for all three dialog placements and sheets. `ScreenScope.test.tsx` tests both directions.
-- **Adoption matrix is GENERATED:** `bun run generate:adoption-matrix`, shared derivation `src/__tests__/support/adoption-matrix.ts`; manual edits are overwritten. Applicability follows what a family RENDERS; non-adopters require reasoned classifications pinned by EQUALITY (new UNCLASSIFIED and stale entries fail). Never resolve transitively: nearly all families eventually reach text-field, once falsely passing17 raw-TextInput families.
+- **Modals/sheets need their OWN `layout/ScreenScope`.** Else chrome claims the page edge beneath (padding flickers) and follows an untouched scroller. DialogBody/BottomSheetBase mount it for all dialog placements and sheets. `ScreenScope.test.tsx` tests both directions.
+- **Adoption matrix is GENERATED** (`bun run generate:adoption-matrix`, derivation `src/__tests__/support/adoption-matrix.ts`); hand edits are overwritten. Applicability follows what a family RENDERS; non-adopters need reasoned classifications pinned by EQUALITY (new UNCLASSIFIED and stale entries fail). Never resolve transitively: nearly all families eventually reach text-field, once falsely passing17 raw-TextInput families.
 
 ## Complete test passes
 
 **Jest crashes Node vm/contextify** with SIGSEGV/SIGTRAP/SIGABRT, sometimes `# Fatal error in , line 0`. Also on main: compare first. Victims: usually glass-colors, four color suites at maxWorkers2, six on another tree.
 
-2026-08-26: main passed3/4, branch with~20 extra files0/6; more files/worker worsened it, fewer workers WORSE. Not memory (83GB free) or cache (`--no-cache` crashes). By2026-09-07 Node24.20 `glass-colors.test.ts`/`color-preset-registry.test.ts` failed alone AND `--runInBand` with `Context::GetNumberOfEmbedderDataFields Not a native context`; `theme-colors-parity.test.ts` joined on unmodified main2026-09-17. All three also passed full unsharded runs. Node24.14.1 crashes too. 2026-09-28 Node22.17 passed ten crashers with Bun-serialized `jest.config.ts` JSON (`rootDir`, `--config`, no ts-node), but workers crashed PageHeader in a full run.
+2026-08-26: main 3/4 green, branch (+~20 files) 0/6; more files/worker worse, fewer workers WORSE. Not memory (83GB free) nor cache (`--no-cache` crashes). 2026-09-07 Node24.20: `glass-colors`/`color-preset-registry` died alone AND `--runInBand` (`Context::GetNumberOfEmbedderDataFields Not a native context`); `theme-colors-parity` joined 2026-09-17 on clean main; all three passed full unsharded runs. Node24.14.1 crashes too. 2026-09-28 Node22.17 passed ten crashers via Bun-serialized `jest.config.ts` JSON (`--config`, no ts-node) but crashed PageHeader in a full run. 2026-09-29: a 64-preset walk + React render in ONE suite died under `--no-opt`; split, both pass.
 
 Shards65/64/64 passed where one193-suite run failed: `bunx jest --watchman=false --shard=N/3` for N=1,2,3. **Verify SUITE union against whole `--listTests`, not just sum.** Test totals changed3502→3514 unchanged; not fingerprints (unverified: gates see lib after build). A partial191/193 names missing suites, never claims completion.
 
@@ -80,7 +78,7 @@ Two consequences, both silent:
 
 ## Screen composition
 
-`Screen` owns scrollY; routes inherit AppShell navigation motion (`navigationScope="isolated"` for modals). AppShell measures bottom/rail/sidebar placement. `Fab` is static: position with `Screen.primaryAction` or `BottomBar.action`. **Do not revive registry→React boolean→independent FAB animation**: it lagged 1–3 frames through `runOnJS` and two renders. Pass `Screen.collapseProgress` to `BottomBar.minimizeProgress`; native frame work stays on shared values. `docs/layout.mdx` retains the measured registry history. Retained screens set `active={focused}`; virtualized lists use `AppShell scroll="external"` + `VirtualList screen={{active, restoration}}`, never an outer ScrollView.
+`Screen` owns scrollY; routes inherit AppShell navigation motion (`navigationScope="isolated"` for modals). AppShell measures bottom/rail/sidebar placement. `Fab` is static: position with `Screen.primaryAction` or `BottomBar.action`. **Do not revive registry→React boolean→independent FAB animation**: it lagged 1–3 frames through `runOnJS` and two renders. Pass `Screen.collapseProgress` to `BottomBar.minimizeProgress`; native frame work stays on shared values. Registry history: `docs/layout.mdx`. Retained screens set `active={focused}`; virtualized lists use `AppShell scroll="external"` + `VirtualList screen={{active, restoration}}`, never an outer ScrollView.
 
 ## Scroll restoration
 
@@ -105,8 +103,7 @@ Router-agnostic `scroll/` core plus adapter imports no router; model: `docs/scro
 **RNW drops accessibilityState and accessibilityValue.** Set flat aria-busy/checked/disabled/expanded/selected and aria-value* (RN folds them back). Toggle buttons need BOTH native state and aria-pressed (RN has no pressed concept). Pressable/View aria-disabled inversion: `docs/switch.mdx`, `docs/slider.mdx`.
 
 - **Name is separate:** accessibilityLabel already works on both platforms; don't rename it. Textless Switch/Slider/progressbar/dot-grid-meter cannot inherit sibling captions. Missing Switch label once announced “switch, off” fleet-wide despite aria-checked. Empty labels count as missing; fix: `hooks/use-accessible-name-warning.ts`, same docs.
-- Assert rendered ATTRIBUTES, not props. `aria-state-web.test.tsx` is mutation-verified but explicitly imports subjects: new components do not join automatically (Slider fixed, three progressbars remained broken).
-- Add subjects to runtime gate AND `aria-state-source-census.test.ts` (state ARIA + interactive names). Spreads prove nothing (Slider spreads pan handlers); spread exemptions are explicit, contents-derived exemptions an equality.
+- Assert rendered ATTRIBUTES, not props. `aria-state-web.test.tsx` (mutation-verified) imports subjects by name, so new components don't join (Slider fixed, three progressbars stayed broken): add them there AND to `aria-state-source-census.test.ts` (state ARIA + interactive names). Spreads prove nothing (Slider spreads pan handlers); spread exemptions are explicit, contents-derived exemptions an equality.
 
 ## Overlay surfaces
 
@@ -126,19 +123,19 @@ BloomThemeProvider sets preset/mode, dark class and full-color CSS vars via appl
 - buildSeedScopeVars withScopeAliases/ROLE vocabulary hazard is import-graph gated (same docs).
 - ColorEngine is a NAMESPACE, published by `theme/color-engine/index.ts`; ports are internal. useTheme/BloomThemeProvider/tokens stay flat for fleet consumers; raw argbFromHex/quantizeImage maths have no external consumers.
 - `design-tokens/tokens.json` is GENERATED, never hand-edited.
-- **Surfaces use `styles/surface-levels.ts`, not ramp stops.** surfaceFillOn/hairlineOn/surfaceTextOn take the ACTUAL parent fill; painting containers publish SurfaceLevelProvider (FloatingPanel/QueuePanel). n[800] put dark TextField exactly on menu (1.000:1) and tab rail on queue (ΔE0): valid markup, invisible chrome. Gates: `surface-levels.test.ts`, `surface-level-adoption.test.ts`.
+- **Surfaces use `styles/surface-levels.ts`, not ramp stops.** surfaceFillOn/hairlineOn/surfaceTextOn take the ACTUAL parent fill; painting containers publish SurfaceLevelProvider, exporting them as vars. Ambient colours are CLASSES (`bg-ambient`, `border-ambient-hairline`, `text-on-ambient-*`; `@theme inline`, else `:root` substitution paints the page in every panel); hooks: SVG/charts/animation/composites. n[800] put dark TextField exactly on menu (1.000:1) and tab rail on queue (ΔE0): valid markup, invisible chrome. Gates: `surface-levels`, `surface-level-adoption`, `surface-vars` tests; `verify-ambient-classes.mjs`.
 - Quiet labels use quietText(surface,text,floor), or quietTextOver([...]) for multiple fills. n[400] cleared page AA but measured2.42:1 on chart card. textTertiary IS textSecondary/--muted-foreground: one role, one color, since fixed third grey cannot cover all surfaces.
 - SURFACE_RAMP in `theme/color-policy.ts` owns surface tones, not M3 containers. ΔE00/JND/spacing/roles: design-token docs. “Separates all18” describes a PAIR, not ladder: name neighbours and measure EVERY pair; fixing one can land exactly on another. Review WORSENED list, not just target.
-- Use stat-bar Meter/MeterRing for determinate geometry, accent fill, semantic track and flat aria-value*. Seventeen copies differed: three used colors.text; rails200/700,200/800,300/700,100/800. Subsegments are decorative, never duplicate progressbars. Charts encode WHICH datum: use chart-cards/palette.ts chartHueTone/resolveMonoTone; old dark neutralSeries800 vanished on rail, now semantic. Gates: `Meter.test.tsx`, Meter subjects in `aria-state-web.test.tsx`.
+- Meter/MeterRing (stat-bar) own determinate geometry, accent fill, semantic track, flat aria-value*. Seventeen copies differed: three used colors.text; rails200/700,200/800,300/700,100/800. Subsegments are decorative, never duplicate progressbars. Charts encode WHICH datum: use chart-cards/palette.ts chartHueTone/resolveMonoTone; old dark neutralSeries800 vanished on rail, now semantic. Gates: `Meter.test.tsx`, Meter subjects in `aria-state-web.test.tsx`.
 - **Read token pairs; never derive colors.** Appended alpha failure: `docs/badge.mdx`. Controls use resolveAccentColors(colors,tone,fill), `theme/accent-colors.ts`; classes use opacity utilities (bg-primary/10). Gate: `theme/__tests__/accent-colors.test.ts`. Glass material is the exception: withAlpha parses/re-emits the resolved fill, never concatenates; the foreground still follows its semantic pair.
 
 ## Glass (`surface/`)
 
-`Surface` owns the shared material; Button, Card, Sidebar and GlassIsland consume its paint while retaining their current semantic APIs. `glass/` retains grouping/blur-target contracts; the old GlassSurface and glass-colors recipe were removed.
+`Surface` owns the shared material; Button, Card, Sidebar, GlassIsland consume its paint, keeping their semantic APIs. `glass/` keeps grouping/blur-target contracts; GlassSurface and glass-colors were removed.
 
 - Surface has ONE material: 90%-opaque body + sheen/rim, with subtle web refraction; no solid/glass selector. Button, Card, Sidebar and overlays share it. Preserve semantic foreground pairs and explicit caller alpha. Publish the fill composited against the actual parent as descendant backing. BottomBar's blur band remains independent.
-- For glass verification, capture the full viewport before cropping: Chromium screenshot `clip` can trim backdrop input. `scripts/verify-surface-refraction.mjs` changes only the exterior colours and removes displacement as its negative control. Expanded capture on compact nested buttons previously leaked rectangular corners; an ancestor clip-path hid the artefact but also blocked refraction. Do not call clipping fixed without reading painted pixels.
-- Web paints blur3px + one shared displacement definition under the tint. Native uses SVG tint/sheen, without backdrop blur/refraction. Sharing a filter definition does not remove per-surface compositor cost; verify dense/large/nested panes.
+- Glass verification: capture the full viewport, then crop (Chromium `clip` trims backdrop input). `verify-surface-refraction.mjs` varies only exterior colours; removing displacement is its negative control. Expanded capture leaked rectangular corners on compact nested buttons; an ancestor clip-path hid that but blocked refraction. Clipping is fixed only per painted pixels.
+- Web: blur3px + one shared displacement filter under the tint; native: SVG tint/sheen, no backdrop blur/refraction. A shared filter still costs compositing per surface; verify dense/large/nested panes.
 - Preserve the measured native hazards: expo-blur intensity couples blur+tint; a BlurView descending from its own BlurTargetView can SIGSEGV on Android. Never wrap the app in a blur target to imitate this web effect.
 - SVG stopColor drops embedded alpha: use separate stopOpacity. Shared rgba tokens once painted an opaque white→black Android wipe while token-equality tests passed.
 - Material self-clips. Keep outer shadows unclipped on native; iOS clipsToBounds removes the shadow. Card clips native content separately while keeping caller layout resolved; web retains its single content layout node.
@@ -156,6 +153,7 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 ## Peers
 
 - **Peers source of truth:** peerDependencies + peerDependenciesMeta. Never duplicate ranges here; stale ranges falsely authorize missing peers.
+- **nativewind + react-native-css: REQUIRED peers, never deps.** A second react-native-css copy is a second `VariableContext` apps never read. NW5 RCs pin it exactly: bump together.
 - **`@gorhom/bottom-sheet` is no peer/dependency:** the sheet is Bloom's own (name only in comments). **A statically-imported peer is never `optional`:** optionality concerns what RESOLVES; omitting one fails the Metro build rather than degrading.
 - **Optional peers require `require('<literal>')` as a DIRECT try-block statement.** Metro stops at the first enclosing block: nesting an `if` inside try loses optionality. Put typeof-require guards outside. Parameter specifiers previously broke haptics, squircle clip, spinner and native color scoping. Reference `connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
 - **Apple-only peers are reachable ONLY via `@oxy.so/bloom/tab-bar`**; non-importers skip them (bun prints no mismatch warning). Toast engine is vendored: no `sonner`/`sonner-native`/`nanoid`. Web bundles DO import reanimated + gesture-handler.
@@ -168,7 +166,7 @@ Font-loading hazards (base64 `.woff2` inlining, `apply-font-faces.ts` empty stub
 - Use Bloom styled(), not bare className (only works under NW5; wrapping drops it). Module wrappers: `styles/styled-primitives.ts`. Record<string,string> cast hid two dropped props; gate `classname-interop.test.ts`.
 - **One ring gap, one disabled opacity.** useRingOffsetStyle provides var(--bloom-ring-offset); literal #FFFFFF made2px dark halos across10 components. Token pairs recolor disabled controls (Button); fading uses tokens.DISABLED_OPACITY0.5, not unexplained0.4/0.6. Raw-DOM/dataSet sheets use interactiveWebCss; RNW needs reset:'none' (button inline-flex reset changes View layout). Handwritten sheets drifted all three. Gate: `interactive-recipe.test.ts`.
 - **RTL: CSS-spelled logical insets, root `useDirectionProps()`, signs via `useIsRtl`.** RNW resolves logical keys against a `dir` PROP, not `<html dir>` (none = LTR physical). RN `paddingStart` in a reanimated mapper is DROPPED on web. Transforms/floating `side` never mirror. Gate `app-shell-rtl-census.test.ts`; `docs/app-shell.mdx`.
-- Caller className replaces defaults and strips chrome: defaults belong in resolved-token inline style. Jest sees structure, not CSS/native resolution; press animation needs device build.
+- Caller className replaces defaults, stripping chrome: defaults go in resolved-token inline style. Jest sees structure, not CSS/native resolution; press animation needs a device build.
 
 ## ImageResolver
 
@@ -187,7 +185,7 @@ These silently verify the PUBLISHED package instead:
 ## Local conventions
 
 - `apply-dark-class.ts` sets the dark class AND web CSS vars (native no-op)
-- **Shared-checkout agent commits are blocked** by `scripts/git-hooks/pre-commit` (`git config core.hooksPath "$PWD/scripts/git-hooks"`), preventing `git add -A` capturing user work. Use `.worktrees/<name>`; lead integration sets `BLOOM_SHARED_COMMIT=1`. Detection: CLAUDECODE and git-dir/common-dir **absolute paths**. Subdirectories otherwise yield one relative/one absolute and falsely look like worktrees.
-- **node_modules is per-worktree:** a devDependency installed elsewhere left the shared checkout failing with `Cannot find module`. Run bun install in each worktree (unlike bun cache hardlinks).
+- **Shared-checkout agent commits are blocked** (`scripts/git-hooks/pre-commit`, via `core.hooksPath`) so `git add -A` can't sweep user work. Use `.worktrees/<name>`; lead integration sets `BLOOM_SHARED_COMMIT=1`. Detection: CLAUDECODE + git-dir/common-dir as **absolute paths** (from a subdirectory one prints relative, faking a worktree).
+- **node_modules is per-worktree:** a devDependency added elsewhere left the shared checkout failing `Cannot find module`. `bun install` in each worktree.
 - **tsc misses short icon names in comments/MDX;** only `icon-references.test.ts` scans src/docs/README/AGENTS.
-- **Never name the external design source, its author, or its file paths and constant names.** Say what a thing IS, keeping every measured number. `tsc` sees no comment, story fixture or MDX line, so `design-source-references.test.ts` is the only check; its term list is there, not here — this file is inside its scan.
+- **Never name the external design source, its author, or its file paths and constant names.** Say what a thing IS, keeping every measured number. Only `design-source-references.test.ts` checks (tsc sees no comment/story/MDX); its term list lives there — this file is scanned.

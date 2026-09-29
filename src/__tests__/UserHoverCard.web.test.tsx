@@ -192,12 +192,18 @@ describe('AvatarGroup hover bridge', () => {
 
   /**
    * The bridge: the `View` filling the floating panel (the nearest
-   * fixed-position ancestor of the card's content) — its first child.
+   * fixed-position ancestor of the card's content) — its first child that
+   * generates a BOX. The panel's `SurfaceLevelProvider` publishes its variables
+   * on a `display: contents` element, which a browser never hit-tests: pointer
+   * events land on the bridge inside it, so that is where a test dispatches them.
    */
   function bridgeOf(node: HTMLElement): HTMLElement {
     let n: HTMLElement | null = node;
     while (n && getComputedStyle(n).position !== 'fixed') n = n.parentElement;
-    const bridge = n?.firstElementChild;
+    let bridge = n?.firstElementChild;
+    while (bridge instanceof HTMLElement && bridge.style.display === 'contents') {
+      bridge = bridge.firstElementChild;
+    }
     if (!(bridge instanceof HTMLElement)) throw new Error('no bridge inside the panel');
     return bridge;
   }

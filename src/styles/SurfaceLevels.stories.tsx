@@ -9,7 +9,17 @@ import { Tabs, TabsTrigger } from '../tabs';
 import { TextField, TextFieldInput } from '../text-field';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { SURFACE_LEVELS, SurfaceLevelProvider, resolveSurfaceLevel, type SurfaceLevel } from './surface-levels';
+import { ContentPanel } from '../content-panel';
+import { BloomColorScope } from '../theme/color-scope';
+import { StyledView } from './styled-primitives';
+import {
+  hairlineOn,
+  SURFACE_LEVELS,
+  SurfaceLevelProvider,
+  resolveSurfaceLevel,
+  useSurfaceFill,
+  type SurfaceLevel,
+} from './surface-levels';
 
 /**
  * The surface ladder, drawn.
@@ -107,6 +117,55 @@ export const FieldInsideAPopover: StoryObj = {
             </View>
           </PopoverContent>
         </Popover>
+      </View>
+    );
+  },
+};
+
+/**
+ * The ambient CLASSES against the hook, side by side, in every kind of
+ * container. Each probe draws two swatches: the left one is painted ONLY by
+ * `bg-ambient border-ambient-hairline` (no JS colour at all), the right one by
+ * `useSurfaceFill()` + `hairlineOn()`. They must be indistinguishable —
+ * `scripts/verify-ambient-classes.mjs` reads both in a real browser.
+ */
+function AmbientProbe({ id }: { id: string }) {
+  const theme = useTheme();
+  const fill = useSurfaceFill();
+  return (
+    <View style={{ flexDirection: 'row', gap: 8, padding: 8 }}>
+      <StyledView
+        testID={`${id}-class`}
+        className="bg-ambient border-ambient-hairline"
+        style={{ width: 48, height: 32, borderWidth: 2 }}
+      />
+      <View
+        testID={`${id}-hook`}
+        style={{ width: 48, height: 32, borderWidth: 2, backgroundColor: fill, borderColor: hairlineOn(theme, fill) }}
+      />
+    </View>
+  );
+}
+
+export const AmbientClasses: StoryObj = {
+  render: function AmbientClassesStory() {
+    return (
+      <View style={{ padding: 16, gap: 16 }}>
+        <AmbientProbe id="page" />
+        <SurfaceLevelProvider level={1} fill="rgb(40 90 60)">
+          <View style={{ backgroundColor: 'rgb(40 90 60)', padding: 8 }}>
+            <AmbientProbe id="explicit" />
+            <SurfaceLevelProvider level={2}>
+              <AmbientProbe id="nested-rung" />
+            </SurfaceLevelProvider>
+          </View>
+        </SurfaceLevelProvider>
+        <ContentPanel>
+          <AmbientProbe id="content-panel" />
+        </ContentPanel>
+        <BloomColorScope colorPreset="orange">
+          <AmbientProbe id="color-scope" />
+        </BloomColorScope>
       </View>
     );
   },

@@ -80,97 +80,58 @@
  * relative primitives always wanted and could not have while the parent was
  * inferred. A provider with no `fill` behaves exactly as it did.
  *
- * ## The same answer on web, for CSS that cannot call a hook
+ * ## The same answer as CSS variables, on both platforms
  *
- * {@link SURFACE_FILL_VAR} (`--bloom-surface`) carries the published fill down
- * the DOM, so a stylesheet, a `::after` seam or an arbitrary Tailwind value can
- * follow the surface without the consumer threading a colour through props.
- * It is set by the same containers, on the element they paint, with
- * {@link surfaceFillVars} — never at `:root`, which would resolve once for the
- * whole document and defeat both this and `BloomColorScope` (a subtree scoped
- * to another preset paints its own `--background`; a root-computed alias keeps
- * the app-wide one — `theme/color-scope/seed-scope.ts` has the mechanism).
+ * `SurfaceLevelProvider` also publishes the whole paint of its surface as CSS
+ * custom properties (`surface-paint.ts` `surfaceVars`: `--bloom-surface`,
+ * `--bloom-surface-raised`, `--bloom-hairline`, `--bloom-text-*`), through
+ * react-native-css's `VariableContextProvider` — its VariableContext on native,
+ * a `display: contents` element on web. `BloomThemeProvider` publishes the
+ * page's bundle at the root. So a descendant styles itself with CLASSES
+ * (`bg-ambient`, `bg-ambient-raised`, `border-ambient-hairline`,
+ * `text-on-ambient-secondary`, … — the `@theme inline` block in
+ * `design-tokens/theme-css.ts`) and needs no hook and no palette of its own.
  *
- * It is WEB-ONLY, and deliberately: propagating a custom property to a native
- * subtree means react-native-css's `VariableContextProvider`, i.e. the
- * `nativewind` OPTIONAL peer, and a panel's own surface must not depend on
- * whether a consumer installed it. Native's answer is the hook, which is also
- * the only form that is correct on both platforms — so cross-platform code
- * reads `useSurfaceFill()` and a web-only fork may read the variable.
+ * That is the default for anything that ends up as a style colour. The hooks
+ * stay for the values CSS cannot carry: an SVG `stopColor`, a chart palette, a
+ * Reanimated interpolation, or a colour composited over something that is not
+ * the ambient surface (a tint, a glass pane).
+ *
+ * The bundle is never declared as a `var()` reference at `:root`, which would
+ * resolve once for the whole document and defeat `BloomColorScope` (a subtree
+ * scoped to another preset paints its own `--background`; a root-computed alias
+ * keeps the app-wide one — `theme/color-scope/seed-scope.ts` has the
+ * mechanism). The root declares LITERAL values; every container re-declares its
+ * own.
+ *
+ * `surfaceFillVars` (below) predates the bundle: it writes `--bloom-surface`
+ * alone onto a web element, for the few painted elements that publish no
+ * provider.
  */
 import { createContext, createElement, useContext, useMemo, type ReactNode } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
+import { VariableContextProvider } from 'react-native-css';
 
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
-import { mixColors, quietText } from './color-contrast';
 import { RING_OFFSET_VAR } from './interactive-web-css';
+import { hairlineOn, SURFACE_VAR, surfaceFillOn, surfaceTextOn, surfaceVars, type SurfaceTextPaint } from './surface-paint';
 import type { WebCssStyle } from './web-view-style';
 
-/** WCAG AA for body-size text. */
-export const AA_TEXT = 4.5;
-/** WCAG AAA-ish: the rung a SECONDARY label sits at, clearly quieter than the primary one. */
-export const AA_TEXT_STRONG = 7;
-/** WCAG AA for large text, icons and graphical objects (gridlines, tracks, rules). */
-export const AA_GRAPHICAL = 3;
-
-/**
- * How far one surface step moves its parent toward `theme.colors.text`.
- *
- * Tuned so that the step off the PAGE reproduces what Bloom already painted
- * there: light `#f3f3f7` → `#e6e6ea` (today's `n[200]`, 1.12:1) and dark
- * `#0c0e11` → `#21232a` (today's `n[800]`, 1.86:1). Dark takes the larger alpha
- * because a near-black page has the whole range above it while a light page has
- * only the sliver below white.
- */
-const FILL_STEP = { light: 0.07, dark: 0.1 } as const;
-
-/** The same move, further: a hairline has to read AS a line, not as another fill. */
-const HAIRLINE_STEP = { light: 0.14, dark: 0.2 } as const;
-
-/**
- * The next surface up from `parent` — a text field's fill, a progress track, a
- * stat tile, a hovered row. Always a visible step off whatever it is given.
- */
-export function surfaceFillOn(theme: Theme, parent: string): string {
-  return mixColors(parent, theme.colors.text, FILL_STEP[theme.isDark ? 'dark' : 'light']);
-}
-
-/** The hairline that reads on `parent` — a divider, a card edge, a tab rail. */
-export function hairlineOn(theme: Theme, parent: string): string {
-  return mixColors(parent, theme.colors.text, HAIRLINE_STEP[theme.isDark ? 'dark' : 'light']);
-}
-
-/** The text rungs legible on one fill. Every member is floored against that fill. */
-export interface SurfaceTextPaint {
-  /** The primary label — the theme's own text colour. */
-  text: string;
-  /** A secondary label: clearly quieter, still {@link AA_TEXT_STRONG}. */
-  textSecondary: string;
-  /** The quietest TEXT rung — captions, axis ticks, placeholders, counters. {@link AA_TEXT}. */
-  textTertiary: string;
-  /** Not text: gridlines, rules, a disabled glyph, a chart's own furniture. {@link AA_GRAPHICAL}. */
-  textGraphical: string;
-}
-
-/**
- * The three text rungs plus the graphical one, resolved against `parent`.
- *
- * A ramp stop cannot do this job: `n[400]` clears AA on the page and measures
- * 2.42:1 on a chart card, because the card is not the page. Reading the rungs
- * off the fill they land on is the whole difference.
- */
-export function surfaceTextOn(theme: Theme, parent: string): SurfaceTextPaint {
-  const text = theme.colors.text;
-  return {
-    text,
-    textSecondary: quietText(parent, text, AA_TEXT_STRONG),
-    textTertiary: quietText(parent, text, AA_TEXT),
-    textGraphical: quietText(parent, text, AA_GRAPHICAL),
-  };
-}
-
+export {
+  AA_GRAPHICAL,
+  AA_TEXT,
+  AA_TEXT_STRONG,
+  hairlineOn,
+  SURFACE_VAR,
+  surfaceFillOn,
+  surfaceTextOn,
+  surfaceVars,
+  type SurfaceTextPaint,
+  type SurfaceTheme,
+  type SurfaceVars,
+} from './surface-paint';
 /** The four rungs a screen stacks. See the module comment for what each one is. */
 export type SurfaceLevel = 0 | 1 | 2 | 3;
 
@@ -222,14 +183,14 @@ export function resolveSurfaceLevel(theme: Theme, level: SurfaceLevel): SurfaceL
  * than like a palette token — it is not one. `--surface` is already a token, and
  * this deliberately does not shadow it.
  */
-export const SURFACE_FILL_VAR = '--bloom-surface';
+export const SURFACE_FILL_VAR = SURFACE_VAR.fill;
 
 /**
- * How to REFERENCE the published fill from CSS or an arbitrary Tailwind value:
+ * How to REFERENCE the published fill from a hand-written stylesheet. In a
+ * `className`, use the named utility `bg-ambient` instead (both platforms):
  *
  * ```
  * background-color: var(--bloom-surface, var(--background));
- * className="bg-[var(--bloom-surface,var(--background))]"   // web-only
  * ```
  *
  * The fallback is what makes it safe: the variable exists only where a container
@@ -242,10 +203,9 @@ export const SURFACE_FILL_CSS = `var(${SURFACE_FILL_VAR}, var(--background))`;
 
 /**
  * The style a surface OWNER puts on the element it paints, so web CSS below it
- * can read {@link SURFACE_FILL_CSS}. `undefined` on native, where the variable
- * has no propagation mechanism that does not go through an optional peer (see
- * the module comment) — the hook is native's answer, and the owner passes this
- * unconditionally either way.
+ * can read {@link SURFACE_FILL_CSS}. `undefined` on native, where the same
+ * variable reaches the subtree through `SurfaceLevelProvider`'s
+ * `VariableContextProvider` — the owner passes this unconditionally either way.
  *
  * It belongs on the SAME element that carries the fill, so the two can never
  * disagree, and a container that publishes the context publishes this with it.
@@ -305,8 +265,21 @@ export interface SurfaceLevelProviderProps {
  * ENCLOSING surface's colour — which is the wrong colour, silently.
  */
 export function SurfaceLevelProvider({ level, fill, children }: SurfaceLevelProviderProps) {
+  const theme = useContext(BloomThemeContext)?.theme;
   const value = useMemo<AmbientSurface>(() => ({ level, fill: fill ?? null }), [level, fill]);
-  return createElement(SurfaceLevelContext.Provider, { value }, children);
+  // The same answer `useSurfaceFill()` gives, published as CSS variables so a
+  // descendant's `bg-ambient` / `border-ambient` / `text-ambient-*` class reads
+  // it without a hook. One mechanism on both platforms: react-native-css's
+  // `VariableContextProvider` (native: its VariableContext; web: a
+  // `display: contents` element carrying the properties, so layout is untouched).
+  // Outside a `BloomThemeProvider` there is no theme to derive from, and the
+  // context alone is published — exactly what it did before the variables.
+  const vars = useMemo(
+    () => (theme ? surfaceVars(theme, fill ?? levelBackground(theme, level)) : null),
+    [theme, level, fill],
+  );
+  const provided = createElement(SurfaceLevelContext.Provider, { value }, children);
+  return vars ? createElement(VariableContextProvider, { value: vars }, provided) : provided;
 }
 
 /** The ambient rung, as a number. `0` when nothing published one. */

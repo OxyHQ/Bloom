@@ -34,6 +34,7 @@ import {
   type TypeRoleName,
 } from './scales';
 import { SHADOW_BOX } from './shadows';
+import { SURFACE_VAR } from '../styles/surface-var-names';
 
 /**
  * A px line-height as the unitless ratio of its font-size, spelled the way
@@ -135,7 +136,35 @@ export function bloomThemeCss(): string {
   return lines.join('\n');
 }
 
-/** The full `@theme { … }` block, ready to inject into a v4 stylesheet. */
+/**
+ * The AMBIENT-surface colours: what the nearest publishing container painted,
+ * and what reads on it (`styles/surface-paint.ts` `surfaceVars`).
+ *
+ *   bg-ambient                   the surface you are on (sticky header, tab bar)
+ *   bg-ambient-raised            one legible step up (a field, a tile, a track)
+ *   border-ambient-hairline      the line that separates on it
+ *   text-on-ambient-secondary    AA_TEXT_STRONG on it
+ *   text-on-ambient-tertiary     AA_TEXT on it
+ *   text-on-ambient-graphical    AA_GRAPHICAL on it (rules, disabled glyphs)
+ *
+ * These go in an `@theme inline` block, not the plain one. A plain `@theme`
+ * alias is declared at `:root` and substitutes THERE, so `--color-ambient` would
+ * be the page's surface everywhere; `inline` makes the utility read
+ * `var(--bloom-surface)` itself, at the element — which is the whole point of a
+ * value that changes per container.
+ */
+export function bloomAmbientThemeCss(): string {
+  return [
+    `  --color-ambient: var(${SURFACE_VAR.fill});`,
+    `  --color-ambient-raised: var(${SURFACE_VAR.raised});`,
+    `  --color-ambient-hairline: var(${SURFACE_VAR.hairline});`,
+    `  --color-on-ambient-secondary: var(${SURFACE_VAR.textSecondary});`,
+    `  --color-on-ambient-tertiary: var(${SURFACE_VAR.textTertiary});`,
+    `  --color-on-ambient-graphical: var(${SURFACE_VAR.textGraphical});`,
+  ].join('\n');
+}
+
+/** The full `@theme { … }` blocks, ready to inject into a v4 stylesheet. */
 export function bloomThemeBlock(): string {
-  return `@theme {\n${bloomThemeCss()}\n}`;
+  return `@theme {\n${bloomThemeCss()}\n}\n\n@theme inline {\n${bloomAmbientThemeCss()}\n}`;
 }

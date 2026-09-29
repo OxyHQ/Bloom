@@ -162,3 +162,12 @@
   --shadow-s: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.10);
   --shadow-m: 0 4px 12px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12);
 }
+
+@theme inline {
+  --color-ambient: var(--bloom-surface);
+  --color-ambient-raised: var(--bloom-surface-raised);
+  --color-ambient-hairline: var(--bloom-hairline);
+  --color-on-ambient-secondary: var(--bloom-text-secondary);
+  --color-on-ambient-tertiary: var(--bloom-text-tertiary);
+  --color-on-ambient-graphical: var(--bloom-text-graphical);
+}

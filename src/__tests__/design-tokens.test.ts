@@ -214,6 +214,17 @@ describe('design-tokens v4 @theme css', () => {
   it('wraps the body in a @theme block', () => {
     expect(bloomThemeBlock()).toMatch(/^@theme \{[\s\S]*\}$/);
   });
+
+  it('declares the ambient colours INLINE, so they resolve at the using element', () => {
+    // A plain `@theme` alias substitutes at `:root`: `bg-ambient` would paint the
+    // page inside every panel. Only an `@theme inline` block keeps the
+    // `var(--bloom-*)` reference in the utility itself.
+    const block = bloomThemeBlock();
+    const inline = block.slice(block.indexOf('@theme inline {'));
+    expect(inline).toContain('--color-ambient: var(--bloom-surface);');
+    expect(inline).toContain('--color-ambient-hairline: var(--bloom-hairline);');
+    expect(bloomThemeCss()).not.toContain('--bloom-surface');
+  });
 });
 
 describe('design-tokens shipped theme.css', () => {

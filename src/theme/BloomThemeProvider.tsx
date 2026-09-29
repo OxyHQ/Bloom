@@ -32,6 +32,7 @@ import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { type AppColorName } from './color-presets';
 import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
+import { surfaceVars } from '../styles/surface-paint';
 import { applyVarsToRootVariables } from './native-root-vars';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { BASE_WEB_CSS, BASE_WEB_CSS_ID } from '../styles/base-web-css';
@@ -397,18 +398,24 @@ export function BloomThemeProvider({
   // (whole-app dynamic theming — `secondaryColor`/`tertiaryColor` pin this seed's
   // accents) when `seed` is set, else the named preset. Both go through the same
   // colour engine, so there is one code path — no seed/preset duplication.
-  const themeVars = useMemo(
-    () =>
-      effectiveSeed
-        ? buildSeedScopeVars({
-            seed: effectiveSeed,
-            mode: resolved,
-            secondarySeed: effectiveSecondary,
-            tertiarySeed: effectiveTertiary,
-          })
-        : buildScopeVars(colorPreset, resolved, explicitAccents),
-    [effectiveSeed, effectiveSecondary, effectiveTertiary, colorPreset, resolved, explicitAccents],
-  );
+  const themeVars = useMemo(() => {
+    const vars = effectiveSeed
+      ? buildSeedScopeVars({
+          seed: effectiveSeed,
+          mode: resolved,
+          secondarySeed: effectiveSecondary,
+          tertiarySeed: effectiveTertiary,
+        })
+      : buildScopeVars(colorPreset, resolved, explicitAccents);
+    // The PAGE's surface bundle (`bg-ambient`, `border-ambient`, …) for every
+    // className outside a publishing container. Literal values, not `var()`
+    // references, so declaring them at the root cannot pin a scoped subtree to
+    // the root's palette (`theme/color-scope/seed-scope.ts` has the mechanism).
+    const page = vars['--background'];
+    const text = vars['--foreground'];
+    if (page === undefined || text === undefined) return vars;
+    return { ...vars, ...surfaceVars({ isDark: resolved === 'dark', colors: { text } }, page) };
+  }, [effectiveSeed, effectiveSecondary, effectiveTertiary, colorPreset, resolved, explicitAccents]);
   const themeColors = useMemo(
     () =>
       effectiveSeed

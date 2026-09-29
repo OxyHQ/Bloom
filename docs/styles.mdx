@@ -231,58 +231,65 @@ REAL parent, which is what the relative primitives always wanted and could not
 have while the parent was inferred. A provider with no `fill` behaves exactly as
 it did.
 
-### `useSurfaceFill()` or `colors.card`?
+### Ambient classes first, the hook for what CSS cannot carry
 
 **`colors.card` is a palette token: the initial card backing on the page.** A nested Card or Surface derives its backing from the actual parent instead of repeating this token.
 
-**`useSurfaceFill()` is a question about position: the colour of the surface
+**The ambient surface is a question about position: the colour of the surface
 underneath you.** It is the right answer for chrome that has to be OPAQUE in its
 container's own colour and otherwise not be seen — a sticky header over a
 scrolling feed, a tab bar, a search field's backing, a reply bar pinned to the
-bottom of a column. Those are the ones that were written as `bg-card` at every
-call site, and they were only ever right for as long as the container's surface
-stayed `card`; the hook is right afterwards too, and it is right inside a sheet,
-a menu or a scoped subtree where `card` never was.
+bottom of a column. Those were once written as `bg-card` at every call site, and
+were only right while the container's surface stayed `card`.
 
-### `--bloom-surface` (web), for CSS that cannot call a hook
+Every `SurfaceLevelProvider` publishes its surface's paint as CSS variables, on
+**both platforms** (react-native-css's `VariableContextProvider`), and
+`BloomThemeProvider` publishes the page's at the root. So the answer is a class:
 
-The same containers write the published fill onto the element they paint:
-
-```tsx
-<View style={[surfaceFillVars(colors.card), …]}>   {/* no-op on native */}
-```
-
-so web CSS below it can follow the surface:
-
-```css
-background-color: var(--bloom-surface, var(--background));
-```
+| Class | Paints | JS equivalent |
+| --- | --- | --- |
+| `bg-ambient` | the surface you are on | `useSurfaceFill()` |
+| `bg-ambient-raised` | one legible step up — a field, a tile, a track | `surfaceFillOn(theme, surface)` |
+| `border-ambient-hairline` | the line that separates on it | `hairlineOn(theme, surface)` |
+| `text-on-ambient-secondary` | secondary text, 7:1 on it | `surfaceTextOn(…).textSecondary` |
+| `text-on-ambient-tertiary` | quietest text, 4.5:1 on it | `surfaceTextOn(…).textTertiary` |
+| `text-on-ambient-graphical` | rules, disabled glyphs, 3:1 on it | `surfaceTextOn(…).textGraphical` |
 
 ```tsx
-className="bg-[var(--bloom-surface,var(--background))]"   /* web only */
+<View className="bg-ambient border-b border-ambient-hairline">   {/* sticky header */}
+  <Text className="text-on-ambient-secondary">Updated 2m ago</Text>
+</View>
 ```
 
-`SURFACE_FILL_VAR` and `SURFACE_FILL_CSS` are the exported spellings. Three
-things about it are deliberate:
+The values are the JS primitives' own answers (`surfaceVars`, pinned equal by
+`surface-vars.test.ts`), so the class and the hook cannot disagree. **Reach for
+the hook only when the colour is not a style colour** — an SVG `stopColor`, a
+chart palette, a Reanimated interpolation — or when it is computed over
+something that is NOT the ambient surface (a tint composited over it, a glass
+pane).
 
-- **The fallback is part of the reference.** The variable exists only where a
-  container published one, so outside every surface it resolves to the page.
-- **It is never declared at `:root`.** A custom property whose value is a
-  `var()` substitutes where it is DECLARED, so a root-level
+Three things about the variables are deliberate:
+
+- **The utilities live in an `@theme inline` block.** A plain `@theme` alias is
+  declared at `:root` and substitutes there, so `bg-ambient` would paint the
+  page inside every panel. `inline` keeps `var(--bloom-surface)` in the utility,
+  resolved at the element.
+- **The root declares LITERALS, never a `var()` reference.** A custom property
+  whose value is a `var()` substitutes where it is DECLARED, so a root-level
   `--bloom-surface: var(--background)` would answer for the whole document and
   a `BloomColorScope` subtree — which paints its own `--background` — would keep
-  reading the app-wide one. Both halves of the reference above substitute at the
-  USING element, so a scope gets its own.
-- **It is web-only, and the hook is not.** Propagating a custom property to a
-  native subtree means react-native-css's `VariableContextProvider`, i.e. the
-  `nativewind` OPTIONAL peer, and a panel's surface must not depend on whether a
-  consumer installed it. Cross-platform code reads `useSurfaceFill()`; a
-  `.web.tsx` fork or a consumer stylesheet may read the variable. A
-  `var(--bloom-surface)` class in shared code would be right on web and
-  quietly wrong on native.
+  reading the app-wide one.
+- **On web the provider is a `display: contents` element.** It carries the
+  properties without a box, so the container's layout is untouched.
+
+For a hand-written stylesheet (a `::after` seam, a `.web.tsx` fork's sheet),
+`SURFACE_FILL_CSS` is the reference: `var(--bloom-surface, var(--background))`.
+`surfaceFillVars(fill)` still writes `--bloom-surface` onto a web element that
+paints a surface without publishing a provider.
 
 It is the opposite number of `--bloom-ring-offset` below: a CONTAINER publishes
-this one, a CONTROL consumes that one, and they are the same colour.
+this one, a CONTROL consumes that one, and they are the same colour — the
+provider publishes both.
 
 ### Quiet text is not a ramp stop
 

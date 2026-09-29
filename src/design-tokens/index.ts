@@ -25,7 +25,7 @@ export type {
   TailwindPresetThemeExtend,
 } from './tailwind-preset';
 
-export { bloomThemeCss, bloomThemeBlock } from './theme-css';
+export { bloomAmbientThemeCss, bloomThemeCss, bloomThemeBlock } from './theme-css';
 
 /* The same tokens as a data structure rather than a stylesheet, for a consumer
  * that is not a browser (`@oxy.so/bloom/design-tokens/tokens.json` is the

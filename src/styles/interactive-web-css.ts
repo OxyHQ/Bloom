@@ -45,6 +45,7 @@
 import { useEffect } from 'react';
 
 import { adoptStyleSheet } from './adopt-style-sheet';
+import { SURFACE_VAR } from './surface-var-names';
 import { DISABLED_OPACITY } from './tokens';
 
 /**
@@ -62,7 +63,7 @@ import { DISABLED_OPACITY } from './tokens';
  * (`useRingOffsetStyle()` in `styles/surface-levels.ts`). The fallback below is
  * only for a control that sets nothing.
  */
-export const RING_OFFSET_VAR = '--bloom-ring-offset';
+export const RING_OFFSET_VAR = SURFACE_VAR.ringOffset;
 
 /** What the gap falls back to when nothing sets {@link RING_OFFSET_VAR}. */
 export const RING_OFFSET_FALLBACK = '#FFFFFF';
