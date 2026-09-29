@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { useMessages } from '../locale/messages';
+import { Sticker } from '../sticker/Sticker';
 import { useTheme } from '../theme/use-theme';
 import { MESSAGE_MEDIA_MESSAGES } from './messages';
 import { MediaFailure, MediaImage, MediaOverlay, MediaPressable, MediaProgressRing } from './parts';
@@ -12,7 +13,8 @@ import type { StickerMessageProps } from './types';
 const TRANSPARENT = 'transparent';
 
 /**
- * A sticker: a transparent image and nothing else.
+ * A sticker: a transparent image and nothing else — or, given `animation`, a
+ * Lottie animation drawn by `Sticker` over that same image.
  *
  * IT DRAWS NO SURFACE AT ALL — no background, no radius, no padding — because a
  * sticker with a bubble behind it is a picture of a sticker. The shell renders it
@@ -30,6 +32,7 @@ const TRANSPARENT = 'transparent';
  */
 function StickerMessageComponent({
   source,
+  animation,
   sourceVariant,
   size = 128,
   accessibilityLabel: accessibilityLabelProp,
@@ -61,13 +64,23 @@ function StickerMessageComponent({
         ariaBusy={sending}
         testID={testID ? `${testID}-frame` : undefined}
       >
-        <MediaImage
-          source={source}
-          sourceVariant={sourceVariant}
-          placeholder={TRANSPARENT}
-          resizeMode="contain"
-          testID={testID ? `${testID}-image` : undefined}
-        />
+        {animation ? (
+          <Sticker
+            animation={animation}
+            fallback={source}
+            size={size}
+            decorative
+            testID={testID ? `${testID}-sticker` : undefined}
+          />
+        ) : (
+          <MediaImage
+            source={source}
+            sourceVariant={sourceVariant}
+            placeholder={TRANSPARENT}
+            resizeMode="contain"
+            testID={testID ? `${testID}-image` : undefined}
+          />
+        )}
         {sending ? (
           <MediaOverlay>
             <MediaProgressRing

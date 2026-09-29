@@ -216,6 +216,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./input-group', 'input-group/index.ts'],
   ['./slider', 'slider/index.ts'],
   ['./stepper', 'stepper/index.ts'],
+  // Animated Lottie stickers. Web-forked: each platform loads its own optional
+  // Lottie player (`lottie-react-native` / `@lottiefiles/dotlottie-react`).
+  ['./sticker', 'sticker/index.ts'],
   ['./rating', 'rating/index.ts'],
   ['./media-controls', 'media-controls/index.ts'],
   ['./chat-indicators', 'chat-indicators/index.ts'],
@@ -344,6 +347,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './media-flight',
   './surfaces',
   './surface',
+  './sticker',
   './button-group',
   './social-button',
   './zoomable-media-gallery',

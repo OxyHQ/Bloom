@@ -400,7 +400,10 @@ export interface PollMessageProps extends MessageMediaToneProps {
 // ---------------------------------------------------------------------------
 
 export interface StickerMessageProps extends MessageMediaToneProps {
+  /** The still image. With `animation`, it is what shows until (or unless) the animation plays. */
   source: MessageMediaSource;
+  /** URL of the sticker's Lottie animation. Omit it for a still sticker. */
+  animation?: string;
   sourceVariant?: string;
   /** Square edge. Default 128. */
   size?: number;
