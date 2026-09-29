@@ -89,7 +89,8 @@ import type { MessageBubbleProps } from './types';
  *
  * THE SLOT HAS TWO FITS, and the bubble cannot tell them apart by looking.
  * `mediaFit="bleed"` (the default) cancels the bubble's padding so a photo runs
- * to the radius. `mediaFit="inset"` keeps it, for a block that carries no
+ * to the radius. `mediaFit="bare"` draws no bubble at all around media alone —
+ * a sticker. `mediaFit="inset"` keeps the padding, for a block that carries no
  * padding of its own — `PollMessage`, `LocationMessage`, `ContactMessage` are
  * all typography, and bled they clip a question against the top edge, cut an
  * address off at the bottom and put an avatar on the left one. The fit also
@@ -233,10 +234,13 @@ function MessageBubbleComponent({
 
   const radii = bubbleRadii(direction, position);
   const fill = failed ? mixColor(side.fill, paint.failed, theme.isDark ? 0.3 : 0.22) : side.fill;
-  const showTail = tail && hasTail(position);
   const mediaOnly = media !== undefined && text === undefined && children === undefined && !deleted;
-  const bleed = mediaFit === 'bleed';
-  const overlayMeta = metaOverlay ?? (mediaOnly && bleed);
+  // `bare` only holds for media alone: with text beside it the text needs a
+  // surface, so the block is fitted as `bleed` instead.
+  const bare = mediaFit === 'bare' && mediaOnly;
+  const bleed = mediaFit === 'bleed' || (mediaFit === 'bare' && !mediaOnly);
+  const showTail = tail && hasTail(position) && !bare;
+  const overlayMeta = metaOverlay ?? (mediaOnly && (bleed || bare));
   const hasMeta =
     !deleted &&
     (time !== undefined ||
@@ -274,16 +278,18 @@ function MessageBubbleComponent({
         {
           borderRadius: 0,
           ...radii,
-          backgroundColor: fill,
-          borderWidth: side.border === undefined ? 0 : 1,
+          backgroundColor: bare ? 'transparent' : fill,
+          borderWidth: bare || side.border === undefined ? 0 : 1,
           borderColor: side.border,
-          paddingTop: BUBBLE_PADDING_Y,
-          paddingBottom: BUBBLE_PADDING_Y,
-          paddingLeft: BUBBLE_PADDING_X,
-          paddingRight: BUBBLE_PADDING_X,
+          paddingTop: bare ? 0 : BUBBLE_PADDING_Y,
+          paddingBottom: bare ? 0 : BUBBLE_PADDING_Y,
+          paddingLeft: bare ? 0 : BUBBLE_PADDING_X,
+          paddingRight: bare ? 0 : BUBBLE_PADDING_X,
           gap: 2,
           opacity: pending && !failed ? 0.65 : 1,
-          overflow: 'hidden',
+          // A bare block keeps its own shape: clipping it to the bubble's radii
+          // would round a sticker's corners off.
+          overflow: bare ? 'visible' : 'hidden',
         },
         bubbleStyle,
       ]}
