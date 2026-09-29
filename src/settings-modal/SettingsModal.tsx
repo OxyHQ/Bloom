@@ -152,6 +152,11 @@ export function SettingsModal({
   const isControlled = controlledOpen !== undefined;
 
   const [mounted, setMounted] = useState(controlledOpen === true);
+  // Whether the modal is WANTED open. It leads `visible`, which only turns true
+  // a painted frame after mount: a close requested inside that window (Escape
+  // pressed the moment the panel appears) must cancel the pending enter, not be
+  // overwritten by it.
+  const [wanted, setWanted] = useState(controlledOpen === true);
   const [visible, setVisible] = useState(false);
   // Bumped by every open, so reopening during an exit replays the enter.
   const [openCount, setOpenCount] = useState(0);
@@ -186,38 +191,43 @@ export function SettingsModal({
     setInternalPage(defaultPageRef.current);
     setCompactPageOpen(initialViewRef.current === 'page');
     setMounted(true);
+    setWanted(true);
     setOpenCount((count) => count + 1);
   }, []);
 
   const hide = useCallback(() => {
+    setWanted(false);
     setVisible(false);
   }, []);
 
-  // Enter: once mounted, the hidden frame commits, then the transition runs.
+  // Enter: once mounted, the hidden frame commits, then the transition runs —
+  // unless a close arrived first, which cancels the pending frame.
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !wanted) return;
     return afterPaint(() => setVisible(true));
-  }, [mounted, openCount]);
+  }, [mounted, wanted, openCount]);
 
-  // Exit: unmount only after the reverse transition. `visible` goes false
-  // before `mounted` does, so this runs for every close.
+  // Exit: `wanted` and `visible` go false before `mounted` does, so this runs
+  // for every close. A modal that was shown unmounts after the reverse
+  // transition; one closed before it ever became visible has nothing to
+  // animate and unmounts at once.
   const wasVisible = useRef(false);
   useEffect(() => {
     if (visible) {
       wasVisible.current = true;
       return;
     }
-    if (!mounted || !wasVisible.current) return;
+    if (!mounted || wanted) return;
     const timer = setTimeout(
       () => {
         wasVisible.current = false;
         setMounted(false);
         if (!isControlledRef.current) onCloseRef.current?.();
       },
-      reducedMotion ? 0 : UNMOUNT_MS,
+      reducedMotion || !wasVisible.current ? 0 : UNMOUNT_MS,
     );
     return () => clearTimeout(timer);
-  }, [visible, mounted, reducedMotion]);
+  }, [visible, mounted, wanted, reducedMotion]);
 
   // Controlled mode mirrors `open` into the same two-phase lifecycle.
   useEffect(() => {
@@ -348,7 +358,7 @@ export function SettingsModal({
           {IS_WEB ? (
             <ModalKeyboard
               panelRef={panelRef}
-              closing={!visible && wasVisible.current}
+              closing={!wanted}
               dismissible
               dismiss={requestClose}
             />

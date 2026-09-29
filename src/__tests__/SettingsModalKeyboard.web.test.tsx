@@ -98,3 +98,21 @@ it('leaves the first Escape to an anchored select layer and closes settings on t
     expect(document.activeElement).toBe(opener);
   } finally { release(); option.remove(); }
 });
+
+it('closes on Escape pressed before the enter frame, instead of the enter reopening it', () => {
+  const onClose = jest.fn();
+  function Controlled() {
+    const [open, setOpen] = React.useState(true);
+    return <SettingsModal open={open}
+      onClose={() => { onClose(); setOpen(false); }}
+      groups={[{ label: 'Settings', items: [{ key: 'general', page: 'general', label: 'General', icon: RiSettings6Line }] }]}
+      pages={{ general: { title: 'General', content: null } }} />;
+  }
+  // Mounted and in the DOM, but the enter frame has not run yet.
+  act(() => root.render(<BloomThemeProvider mode="light"><Controlled /></BloomThemeProvider>));
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+  flush(); flush(); flush();
+  expect(onClose).toHaveBeenCalledTimes(1);
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+});
