@@ -198,6 +198,7 @@ export * from './calendar';
 export * from './stat-cards';
 export * from './recent-hires-card';
 export * from './ai-profile-card';
+export * from './cover-header';
 export * from './important-alerts-card';
 export * from './patient-info-card';
 export * from './sidebar';

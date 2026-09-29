@@ -713,6 +713,20 @@
         "default": "./lib/commonjs/page-header/index.js"
       }
     },
+    "./cover-header": {
+      "react-native": {
+        "types": "./lib/typescript/module/cover-header/index.d.ts",
+        "default": "./src/cover-header/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/cover-header/index.d.ts",
+        "default": "./lib/module/cover-header/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/cover-header/index.d.ts",
+        "default": "./lib/commonjs/cover-header/index.js"
+      }
+    },
     "./notification-center": {
       "react-native": {
         "types": "./lib/typescript/module/notification-center/index.d.ts",
@@ -3661,6 +3675,9 @@
       ],
       "page-header": [
         "./lib/typescript/module/page-header/index.d.ts"
+      ],
+      "cover-header": [
+        "./lib/typescript/module/cover-header/index.d.ts"
       ],
       "notification-center": [
         "./lib/typescript/module/notification-center/index.d.ts"

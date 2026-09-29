@@ -162,7 +162,7 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `teleport`, `surfaces`, `settings-modal` |
 | Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
 | Forms | `text-field`, `textarea`, `phone-input`, `input-otp`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `date-picker`, `file-upload`, `auth-card`, `stepper`, `rating`, `wizard` |
-| Layout and lists | `grid`, `list`, `scroll`, `settings-list`, `card`, `accordion`, `aspect-ratio`, `divider`, `item`, `carousel` |
+| Layout and lists | `grid`, `list`, `scroll`, `settings-list`, `card`, `cover-header`, `accordion`, `aspect-ratio`, `divider`, `item`, `carousel` |
 | Data and charts | `table`, `data-table`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
 | Music and media | `media-card`, `media-controls`, `media-header`, `media-player`, `media-shelf`, `track-list`, `queue-panel`, `lyrics`, `music-library`, `creator-studio`, `sortable-media` |
 | Housing | `home-search`, `listing-actions`, `listing-editor`, `offering-badge`, `place-reviews`, `property-insights`, `tenancy`, `eviction` |
