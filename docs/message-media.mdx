@@ -258,8 +258,13 @@ answer AND the viewer's wrong pick — hiding the right answer teaches nobody.
 
 ```tsx
 <StickerMessage source={sticker} accessibilityLabel="Sticker: grinning sun" />
+<StickerMessage source={still} animation={lottieUrl} accessibilityLabel="Sticker: waving" />
 <GifMessage source={gif} aspectRatio={1.6} />
 ```
+
+Given `animation`, the sticker plays its Lottie file through
+[`Sticker`](./sticker.mdx), over `source` as the still — which is also what shows
+under reduced motion or when no Lottie player is installed.
 
 **A sticker draws NO surface** — no background, no radius, no padding. Render it
 with `message-bubble`'s `variant="bare"`: a bubble behind a sticker is a picture
