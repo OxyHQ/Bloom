@@ -262,7 +262,19 @@ Every `SurfaceLevelProvider` publishes its surface's paint as CSS variables, on
 ```
 
 The values are the JS primitives' own answers (`surfaceVars`, pinned equal by
-`surface-vars.test.ts`), so the class and the hook cannot disagree. **Reach for
+`surface-vars.test.ts`), so the class and the hook cannot disagree.
+
+**On Bloom's `Text`, a `className` replaces the variant's defaults — all of
+them.** `Text` drops its variant typography (size, line height, weight) and its
+default colour as soon as it receives a `className`, so a utility can win over
+them (`typography/defaults.ts`). `<Text variant="body-medium"
+className="text-on-ambient-secondary">` therefore renders at the base size, not
+at `body-medium`. For Bloom `Text` with a variant, keep reading the colour from
+`surfaceTextOn(theme, useSurfaceFill())`; the `text-on-ambient-*` classes are
+for text styled entirely by classes (typically app code). The fill and hairline
+classes on a `View` have no such interaction. That is also why Bloom's own
+families were not moved onto the classes: nearly every ambient colour they read
+lands on a variant `Text`, an SVG `fill` or a `TextInput` prop. **Reach for
 the hook only when the colour is not a style colour** — an SVG `stopColor`, a
 chart palette, a Reanimated interpolation — or when it is computed over
 something that is NOT the ambient surface (a tint composited over it, a glass
