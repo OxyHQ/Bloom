@@ -108,7 +108,6 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
 const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: '@react-native-community/netinfo', file: 'connection-status/netinfo.ts' },
   { peer: 'expo-haptics', file: 'hooks/haptics-module.ts' },
-  { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },
   { peer: 'expo-router', file: 'theme/adaptive-colors.ts' },
   { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/BottomSheet.tsx' },
   { peer: 'expo-video', file: 'media-flight/expo-video-module.ts' },

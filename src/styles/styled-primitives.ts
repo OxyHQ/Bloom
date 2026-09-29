@@ -22,7 +22,7 @@
  * versions stay unanimated so an element type is not created twice for the same
  * primitive. `button/Button.tsx` is the reference.
  */
-import type { ComponentType, Ref } from 'react';
+import type { ComponentType, FunctionComponent, Ref } from 'react';
 import {
   Image,
   Pressable,
@@ -92,10 +92,9 @@ export interface WebAriaProps {
 }
 
 /**
- * `ref` is on the PUBLISHED type and deliberately not on the one handed to
- * `styled()`: adding it to the argument widens that dot-path union past the
- * checker's limit again, and the mapping only ever names `className`. The same
- * goes for {@link WebAriaProps}.
+ * {@link WebAriaProps} is on the PUBLISHED type and deliberately not on the one
+ * handed to `styled()`: the mapping only ever names `className`, and every extra
+ * member widens that dot-path union toward the checker's limit.
  */
 export type StyledPressableProps = StyledPressableBase &
   WebAriaProps & {
@@ -103,11 +102,16 @@ export type StyledPressableProps = StyledPressableBase &
   };
 
 /**
- * `styled()` is declared as returning `any`, so these annotations are the whole
- * type contract — including `ref`, which under React 19 is an ordinary prop that
- * `useCssElement` spreads onto the wrapped primitive. Leaving it out made a
- * measured node (a flyout's scroll box, a select option) a compile error while
- * the runtime forwarded it fine.
+ * These annotations are the published type contract — including `ref`, which
+ * under React 19 is an ordinary prop that `useCssElement` spreads onto the
+ * wrapped primitive. Leaving it out made a measured node (a flyout's scroll box,
+ * a select option) a compile error while the runtime forwarded it fine.
+ *
+ * Since react-native-css 3.1 `styled()` returns `ComponentPropsWithRef<C>` of
+ * its argument, so the argument's `ref` has to agree with the published one.
+ * `Pressable`'s base is therefore handed over as a FUNCTION component carrying
+ * `ref?: Ref<View>`: as a `ComponentType` the union's class member contributes
+ * a `Ref<Component<…>>` that no `Ref<View>` accepts.
  */
 export const StyledView: ComponentType<ViewProps & { ref?: Ref<View> }> = styled(View, {
   className: 'style',
@@ -122,6 +126,6 @@ export const StyledImage: ComponentType<ImageProps & { ref?: Ref<Image> }> = sty
 });
 
 export const StyledPressable: ComponentType<StyledPressableProps> = styled(
-  Pressable as ComponentType<StyledPressableBase>,
+  Pressable as FunctionComponent<StyledPressableBase & { ref?: Ref<View> }>,
   { className: 'style' },
 );

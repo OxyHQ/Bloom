@@ -137,8 +137,7 @@ export function BloomColorScope({
 /**
  * Escape hatch for advanced cases where the wrapping element is owned by the
  * caller. Returns a stable native style object carrying the preset's CSS vars
- * via NativeWind's `vars()`. Returns `undefined` on web or when `nativewind`
- * is not installed.
+ * via react-native-css's `vars()`. Returns `undefined` on web.
  *
  * NOTE: subject to the react-native-css@3 limitation — the returned style only
  * propagates vars to descendants when applied to an interop className component

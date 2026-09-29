@@ -21,11 +21,10 @@ function renderWithTheme(ui: React.ReactElement) {
  * `BloomThemeProvider`, whose children are the subject.
  *
  * It is FOUND rather than assumed to be the root. How many nodes sit above it
- * depends on whether `nativewind` resolves: when it does, the provider wraps
- * the tree in the consumer's `VariableContextProvider` as well, and every Oxy
- * app installs that peer. Reading `toJSON().children` directly measured the
- * depth of the provider stack, not what `SubtleHover` rendered, so it flipped
- * the moment the optional peer appeared in the tree.
+ * depends on the platform: on native the provider also wraps the tree in
+ * react-native-css's `VariableContextProvider`. Reading `toJSON().children`
+ * directly measured the depth of the provider stack, not what `SubtleHover`
+ * rendered, so it flipped whenever that stack changed.
  *
  * Throwing when no wrapper matches is the vacuity floor: without it, a helper
  * that found nothing would report the same `null` children as a subject that
