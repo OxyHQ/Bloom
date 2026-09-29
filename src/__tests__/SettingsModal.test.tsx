@@ -21,6 +21,8 @@ import { resolveSettingsPalette } from '../settings-modal/palette';
 import { pressHost } from './support/press-host';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { resolvedStyle } from './support/rendered-style';
+import { useDialogControl } from '../dialog/context';
+import type { DialogControlProps } from '../dialog/types';
 
 // The web portal is a react-dom portal (no DOM here); render in place.
 jest.mock('../settings-modal/modal-portal', () => ({
@@ -196,6 +198,30 @@ describe('SettingsModal shell', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     flush();
     expect(queryByTestId('settings')).toBeNull();
+  });
+
+  it('honours a close requested before the enter frame, and still reopens afterwards', () => {
+    const onClose = jest.fn();
+    let control!: DialogControlProps;
+    function Imperative() {
+      control = useDialogControl();
+      return <SettingsModal control={control} onClose={onClose} groups={GROUPS} pages={PAGES} testID="settings" />;
+    }
+    const { queryByTestId } = renderWithTheme(<Imperative />);
+    // Open and close within the same frame: the enter must not win.
+    act(() => control.open());
+    expect(queryByTestId('settings')).not.toBeNull();
+    act(() => control.close());
+    flush();
+    expect(queryByTestId('settings')).toBeNull();
+    expect(onClose).toHaveBeenCalledTimes(1);
+    act(() => control.open());
+    flush();
+    expect(queryByTestId('settings')).not.toBeNull();
+    act(() => control.close());
+    flush();
+    expect(queryByTestId('settings')).toBeNull();
+    expect(onClose).toHaveBeenCalledTimes(2);
   });
 
   it('shows the saved toast when a page reports a save, then hides it', () => {
