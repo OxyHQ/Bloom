@@ -158,6 +158,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: '附件',
   removeAttachment: (name) => `移除 ${name}`,
   suggestions: { mention: '用户', command: '命令', emoji: '表情' },
+  suggestionVerified: '已认证',
+  searchingSuggestions: '正在搜索…',
+  noSuggestions: { mention: '未找到用户', command: '未找到命令', emoji: '未找到表情' },
   attachmentItems: { gallery: '相册', camera: '相机', file: '文件', location: '位置', contact: '联系人', poll: '投票', music: '音乐' },
 };
 

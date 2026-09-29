@@ -158,6 +158,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: 'সংযুক্তি',
   removeAttachment: (name) => `${name} সরান`,
   suggestions: { mention: 'লোকজন', command: 'কমান্ড', emoji: 'ইমোজি' },
+  suggestionVerified: 'যাচাইকৃত',
+  searchingSuggestions: 'খোঁজা হচ্ছে…',
+  noSuggestions: { mention: 'কাউকে পাওয়া যায়নি', command: 'কোনো কমান্ড পাওয়া যায়নি', emoji: 'কোনো ইমোজি পাওয়া যায়নি' },
   attachmentItems: { gallery: 'গ্যালারি', camera: 'ক্যামেরা', file: 'ফাইল', location: 'অবস্থান', contact: 'পরিচিতি', poll: 'পোল', music: 'সংগীত' },
 };
 

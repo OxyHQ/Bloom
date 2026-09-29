@@ -1,6 +1,7 @@
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useCardFill } from '../card/use-card-fill';
 import type { Surface as SurfaceComponent } from '../surface';
+import type { Loading as LoadingComponent } from '../loading';
 /**
  * The anchored list above the composer: `@mention`, `/command` and `:shortcode`
  * are ONE part with a `kind`, because the row geometry, the keyboard model and
@@ -14,6 +15,7 @@ import React from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
 import { RiHashtag } from '../icons/remix/RiHashtag';
+import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
 import { useImageResolver } from '../image-resolver/context';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
@@ -30,8 +32,9 @@ import type { ChatComposerSuggestion, SuggestionKind, SuggestionListProps } from
 import { dataHook, IS_WEB } from './web-hooks';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createSuggestionList({ Surface }: {
+export function createSuggestionList({ Surface, Loading }: {
   Surface: typeof SurfaceComponent;
+  Loading: typeof LoadingComponent;
 }) {
 
   function isUrl(value: string): boolean {
@@ -111,11 +114,15 @@ export function createSuggestionList({ Surface }: {
     style,
     testID,
     accessibilityLabel,
+    loading = false,
+    showEmpty = false,
+    emptyLabel,
   }: SuggestionListProps) {
     const theme = useTheme();
     const palette = resolveChatComposerPalette(theme, useCardFill(style));
     const { messages } = useMessages(CHAT_COMPOSER_MESSAGES);
-    if (suggestions.length === 0) return null;
+    const empty = !loading && suggestions.length === 0;
+    if (empty && !showEmpty) return null;
 
     // React Native's `Role` union has no `listbox`; react-native-web passes the
     // DOM `role` straight through, so it travels as a web-only prop.
@@ -144,6 +151,34 @@ export function createSuggestionList({ Surface }: {
             {header}
           </Text>
         ) : null}
+        {loading ? (
+          <View style={{ minHeight: SUGGESTION_ROW_HEIGHT, justifyContent: 'center', paddingLeft: 8, paddingRight: 8 }}>
+            <Loading
+              variant="inline"
+              size="sm"
+              color={palette.textSecondary}
+              text={messages.searchingSuggestions}
+              textStyle={{ color: palette.textSecondary }}
+              accessibilityLabel={messages.searchingSuggestions}
+              testID={testID ? `${testID}-loading` : undefined}
+            />
+          </View>
+        ) : empty ? (
+          <Text
+            variant="body-2-regular"
+            accessibilityRole="text"
+            style={{
+              color: palette.textSecondary,
+              minHeight: SUGGESTION_ROW_HEIGHT,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingTop: 10,
+              paddingBottom: 10,
+            }}
+            testID={testID ? `${testID}-empty` : undefined}>
+            {emptyLabel ?? messages.noSuggestions[kind]}
+          </Text>
+        ) : (
         <ScrollView
           {...dataHook('bloomChatComposerScroll')}
           {...listRole}
@@ -167,9 +202,12 @@ export function createSuggestionList({ Surface }: {
               cursor: suggestion.disabled ? 'auto' : 'pointer',
               '--bloom-chat-composer-ring': palette.focusRing,
             };
-            const name = suggestion.handle
-              ? `${suggestion.label} ${suggestion.handle}`
-              : suggestion.label;
+            const verified = kind === 'mention' && suggestion.verified === true;
+            const name = [
+              suggestion.label,
+              verified ? messages.suggestionVerified : undefined,
+              suggestion.handle,
+            ].filter(Boolean).join(verified ? ', ' : ' ');
             return (
               <Pressable
                 key={suggestion.id}
@@ -186,9 +224,16 @@ export function createSuggestionList({ Surface }: {
                 <Leading kind={kind} suggestion={suggestion} />
                 <View style={{ flexShrink: 1, flexGrow: 1 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-                    <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
-                      {suggestion.label}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
+                      <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text, flexShrink: 1 }}>
+                        {suggestion.label}
+                      </Text>
+                      {verified ? (
+                        <View testID={testID ? `${testID}-verified-${suggestion.id}` : undefined}>
+                          <RiVerifiedBadgeFill width={14} height={14} fill={palette.accent} />
+                        </View>
+                      ) : null}
+                    </View>
                     {suggestion.handle ? (
                       <Text
                         variant="body-2-regular"
@@ -211,6 +256,7 @@ export function createSuggestionList({ Surface }: {
             );
           })}
         </ScrollView>
+        )}
       </Surface>
     );
   }

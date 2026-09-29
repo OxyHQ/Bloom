@@ -176,6 +176,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: 'المرفقات',
   removeAttachment: (name) => `إزالة ${name}`,
   suggestions: { mention: 'الأشخاص', command: 'الأوامر', emoji: 'رموز تعبيرية' },
+  suggestionVerified: 'موثّق',
+  searchingSuggestions: 'جارٍ البحث…',
+  noSuggestions: { mention: 'لم يتم العثور على أشخاص', command: 'لم يتم العثور على أوامر', emoji: 'لم يتم العثور على رموز تعبيرية' },
   attachmentItems: { gallery: 'المعرض', camera: 'الكاميرا', file: 'ملف', location: 'الموقع', contact: 'جهة اتصال', poll: 'استطلاع', music: 'موسيقى' },
 };
 

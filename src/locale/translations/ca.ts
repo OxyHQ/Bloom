@@ -165,6 +165,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: 'Fitxers adjunts',
   removeAttachment: (name) => `Treu ${name}`,
   suggestions: { mention: 'Persones', command: 'Ordres', emoji: 'Emoji' },
+  suggestionVerified: 'Verificat',
+  searchingSuggestions: 'Cercant…',
+  noSuggestions: { mention: "No s'ha trobat ningú", command: "No s'han trobat ordres", emoji: "No s'han trobat emojis" },
   attachmentItems: { gallery: 'Galeria', camera: 'Càmera', file: 'Fitxer', location: 'Ubicació', contact: 'Contacte', poll: 'Enquesta', music: 'Música' },
 };
 

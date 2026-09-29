@@ -160,6 +160,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: 'Anhänge',
   removeAttachment: (name) => `${name} entfernen`,
   suggestions: { mention: 'Personen', command: 'Befehle', emoji: 'Emoji' },
+  suggestionVerified: 'Verifiziert',
+  searchingSuggestions: 'Suche läuft…',
+  noSuggestions: { mention: 'Keine Personen gefunden', command: 'Keine Befehle gefunden', emoji: 'Keine Emojis gefunden' },
   attachmentItems: { gallery: 'Galerie', camera: 'Kamera', file: 'Datei', location: 'Standort', contact: 'Kontakt', poll: 'Umfrage', music: 'Musik' },
 };
 
