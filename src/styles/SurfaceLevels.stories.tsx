@@ -162,6 +162,19 @@ export const AmbientClasses: StoryObj = {
         </SurfaceLevelProvider>
         <ContentPanel>
           <AmbientProbe id="content-panel" />
+          <BloomColorScope colorPreset="green">
+            <AmbientProbe id="scope-in-panel" />
+          </BloomColorScope>
+          {/* Portaled from INSIDE the panel: the popover must report its own
+              surface, not inherit the panel's through React context. */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button>Open ambient popover</Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <AmbientProbe id="popover" />
+            </PopoverContent>
+          </Popover>
         </ContentPanel>
         <BloomColorScope colorPreset="orange">
           <AmbientProbe id="color-scope" />

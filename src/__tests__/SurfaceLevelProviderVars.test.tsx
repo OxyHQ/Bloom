@@ -9,6 +9,7 @@ import {
   SurfaceLevelProvider,
 } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope';
 import { buildTheme } from '../theme/build-theme';
 
 /**
@@ -50,6 +51,27 @@ describe('SurfaceLevelProvider publishes the bundle', () => {
     expect(outer?.[SURFACE_VAR.hairline]).toBe(hairlineOn(theme, 'rgb(10 20 30)'));
     // …and a rung-only provider publishes the rung's own fill, not its parent's.
     expect(inner?.[SURFACE_VAR.fill]).toBe(resolveSurfaceLevel(theme, 2).background);
+  });
+
+  it('re-derives the bundle under a BloomColorScope, as the hook does', () => {
+    // `useSurfaceFill()` under a scope on the page answers with the SCOPE's page.
+    // Without the boundary the variables kept the root palette's — caught in a
+    // real browser by `verify-ambient-classes.mjs` before this case existed.
+    const scoped = buildTheme('orange', 'light');
+    let tree!: ReactTestRenderer;
+    act(() => {
+      tree = create(
+        <BloomThemeProvider colorPreset="blue" mode="light">
+          <BloomColorScope colorPreset="orange">
+            <Text testID="scoped">scoped</Text>
+          </BloomColorScope>
+        </BloomThemeProvider>,
+      );
+    });
+
+    const published = publishedAbove(tree.root.findByProps({ testID: 'scoped' }));
+    expect(published?.[SURFACE_VAR.fill]).toBe(resolveSurfaceLevel(scoped, 0).background);
+    expect(published?.[SURFACE_VAR.hairline]).toBe(hairlineOn(scoped, resolveSurfaceLevel(scoped, 0).background));
   });
 
   it('publishes nothing outside a theme, rather than a guessed palette', () => {

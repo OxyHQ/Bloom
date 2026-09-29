@@ -1,5 +1,6 @@
 import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 
+import { SurfaceThemeBoundary } from '../../styles/surface-levels';
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildSeedScopeVars } from '../color-scope/seed-scope';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
@@ -118,5 +119,9 @@ export function BloomSeedScope({
     content = <div style={mergedStyle}>{children}</div>;
   }
 
-  return <BloomThemeContext.Provider value={contextValue}>{content}</BloomThemeContext.Provider>;
+  return (
+    <BloomThemeContext.Provider value={contextValue}>
+      <SurfaceThemeBoundary>{content}</SurfaceThemeBoundary>
+    </BloomThemeContext.Provider>
+  );
 }

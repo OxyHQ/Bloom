@@ -268,7 +268,7 @@ chart palette, a Reanimated interpolation — or when it is computed over
 something that is NOT the ambient surface (a tint composited over it, a glass
 pane).
 
-Three things about the variables are deliberate:
+Four things about the variables are deliberate:
 
 - **The utilities live in an `@theme inline` block.** A plain `@theme` alias is
   declared at `:root` and substitutes there, so `bg-ambient` would paint the
@@ -279,6 +279,10 @@ Three things about the variables are deliberate:
   `--bloom-surface: var(--background)` would answer for the whole document and
   a `BloomColorScope` subtree — which paints its own `--background` — would keep
   reading the app-wide one.
+- **A theme scope re-derives the bundle.** Under `BloomColorScope` /
+  `BloomSeedScope` the hook answers with the scope's theme, so both scopes mount
+  `SurfaceThemeBoundary`, which re-publishes the ambient rung and fill under
+  the new theme. Without it `bg-ambient` kept the app-wide page inside a scope.
 - **On web the provider is a `display: contents` element.** It carries the
   properties without a box, so the container's layout is untouched.
 

@@ -40,7 +40,7 @@ const CHROME = process.env.CHROME_PATH ?? '/opt/google/chrome/chrome';
 const argUrl = process.argv.indexOf('--url');
 const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 const STORY = 'base-surface-levels--ambient-classes';
-const PROBES = ['page', 'explicit', 'nested-rung', 'content-panel', 'color-scope'];
+const PROBES = ['page', 'explicit', 'nested-rung', 'content-panel', 'scope-in-panel', 'color-scope', 'popover'];
 
 const puppeteer = loadPuppeteer();
 const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox'] });
@@ -54,6 +54,15 @@ try {
       waitUntil: 'networkidle0',
     });
     await page.waitForSelector('[data-testid="page-class"]', { timeout: 30000 });
+
+    // The popover is portaled from inside the ContentPanel. Open it with a
+    // TRUSTED click at the trigger's real coordinates.
+    const trigger = await page.waitForSelector('::-p-text(Open ambient popover)');
+    const box = await trigger.boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForSelector('[data-testid="popover-class"]', { timeout: 10000 });
+    // Let the entrance settle so the swatches are read at rest.
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
     const readings = await page.evaluate((ids) => {
       const read = (testId) => {

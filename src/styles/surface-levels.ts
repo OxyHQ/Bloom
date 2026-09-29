@@ -282,6 +282,23 @@ export function SurfaceLevelProvider({ level, fill, children }: SurfaceLevelProv
   return vars ? createElement(VariableContextProvider, { value: vars }, provided) : provided;
 }
 
+/**
+ * Re-publish the AMBIENT surface under the theme in scope.
+ *
+ * `useSurfaceFill()` answers from the nearest publisher's rung and fill, but
+ * derives everything with the theme in scope — so under a `BloomColorScope` on
+ * the page it returns the SCOPE's page colour, and its hairline and text rungs
+ * are the scope's. The variables a provider published above the scope were
+ * derived from the outer theme, so the scope boundary has to derive them again,
+ * or `bg-ambient` inside it keeps the app-wide page while the hook moves.
+ * `BloomColorScope` and `BloomSeedScope` mount this INSIDE their new theme
+ * context; it keeps the rung and fill exactly as published.
+ */
+export function SurfaceThemeBoundary({ children }: { children?: ReactNode }) {
+  const { level, fill } = useContext(SurfaceLevelContext);
+  return createElement(SurfaceLevelProvider, { level, fill: fill ?? undefined }, children);
+}
+
 /** The ambient rung, as a number. `0` when nothing published one. */
 export function useSurfaceLevelValue(): SurfaceLevel {
   return useContext(SurfaceLevelContext).level;

@@ -1,6 +1,7 @@
 import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { SurfaceThemeBoundary } from '../../styles/surface-levels';
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildSeedScopeVars } from '../color-scope/seed-scope';
 import { getVariableContextProvider } from '../color-scope/style-builder';
@@ -109,5 +110,9 @@ export function BloomSeedScope({
     content
   );
 
-  return <BloomThemeContext.Provider value={contextValue}>{scoped}</BloomThemeContext.Provider>;
+  return (
+    <BloomThemeContext.Provider value={contextValue}>
+      <SurfaceThemeBoundary>{scoped}</SurfaceThemeBoundary>
+    </BloomThemeContext.Provider>
+  );
 }
