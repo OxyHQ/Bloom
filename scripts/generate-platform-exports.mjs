@@ -103,6 +103,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./sidebar', 'sidebar/index.ts'],
   ['./app-shell', 'app-shell/index.ts'],
   ['./page-header', 'page-header/index.ts'],
+  ['./cover-header', 'cover-header/index.ts'],
   ['./notification-center', 'notification-center/index.ts'],
   ['./theme-toggle', 'theme-toggle/index.ts'],
   ['./settings-modal', 'settings-modal/index.ts'],

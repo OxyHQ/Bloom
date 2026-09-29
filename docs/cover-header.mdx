@@ -1,0 +1,56 @@
+---
+title: CoverHeader
+description: A cover band with content rising into its bottom edge — a profile's banner and the avatar that overlaps it.
+order: 106
+---
+
+# CoverHeader
+
+A cover band (a photo, or anything you draw) and a content column whose top
+rises `overlap` points into the band's bottom edge. It is the geometry of a
+profile page's banner-plus-avatar, and of `AiProfileCard`, which is built on it.
+
+```tsx
+import { CoverHeader } from '@oxy.so/bloom/cover-header';
+
+<CoverHeader coverSource={bannerUrl} coverHeight={170} overlap={45}
+  contentStyle={{ paddingHorizontal: 16 }}>
+  <Avatar size={90} source={avatarUrl} />
+  <Text variant="title-2-medium">Maya Collins</Text>
+</CoverHeader>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `coverSource` | — | photo across the band; without one the band is `background-tertiary` |
+| `coverPosition` | `{ x: 0.5, y: 0.5 }` | where the crop sits, as `object-position` fractions |
+| `cover` | — | drawn in the band instead of the photo |
+| `coverHeight` | `170` | height of the band |
+| `overlap` | `45` | how far the content rises into the band, clamped to `0..coverHeight` |
+| `coverStyle` | — | the band's style (corner radii, another fill) |
+| `contentStyle` | — | the content column's style; its `paddingTop` is the component's |
+| `testID` | — | also names `-cover`, `-cover-image` and `-content` |
+
+## How the overlap is made
+
+By layout. Nothing is moved.
+
+- The band is the **first** child, positioned absolutely over the top `coverHeight`.
+- The content is the **last** child, in flow, with `paddingTop: coverHeight - overlap`.
+
+There is no negative margin, no transform and no `zIndex`, and each of those
+has broken a profile before:
+
+- A **transform** keeps the layout box where it was. The content paints 45pt higher,
+  but whatever comes next (a tab strip, a list's next row) still starts after the
+  un-moved box, which leaves a 45pt hole.
+- A **negative margin** on the content leaves the paint order to whichever
+  view happens to create a stacking context first. Inside a native
+  virtualized cell, that has put the avatar under the banner.
+- **`zIndex`** belongs to the overlay stack (`docs/overlay.mdx`), never to a component.
+
+Because the content is the later sibling, it paints over the band on iOS,
+Android and web. The measured height is the real one. A list header or
+sticky section placed after a `CoverHeader` starts exactly where its content ends.
