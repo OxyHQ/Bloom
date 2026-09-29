@@ -158,6 +158,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: 'अटैचमेंट',
   removeAttachment: (name) => `${name} हटाएं`,
   suggestions: { mention: 'लोग', command: 'कमांड', emoji: 'इमोजी' },
+  suggestionVerified: 'सत्यापित',
+  searchingSuggestions: 'खोज रहे हैं…',
+  noSuggestions: { mention: 'कोई व्यक्ति नहीं मिला', command: 'कोई कमांड नहीं मिला', emoji: 'कोई इमोजी नहीं मिला' },
   attachmentItems: { gallery: 'गैलरी', camera: 'कैमरा', file: 'फ़ाइल', location: 'लोकेशन', contact: 'संपर्क', poll: 'पोल', music: 'संगीत' },
 };
 

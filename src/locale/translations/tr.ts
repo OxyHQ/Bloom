@@ -159,6 +159,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: 'Ekler',
   removeAttachment: (name) => `Kaldır: ${name}`,
   suggestions: { mention: 'Kişiler', command: 'Komutlar', emoji: 'Emoji' },
+  suggestionVerified: 'Doğrulanmış',
+  searchingSuggestions: 'Aranıyor…',
+  noSuggestions: { mention: 'Kişi bulunamadı', command: 'Komut bulunamadı', emoji: 'Emoji bulunamadı' },
   attachmentItems: { gallery: 'Galeri', camera: 'Kamera', file: 'Dosya', location: 'Konum', contact: 'Kişi', poll: 'Anket', music: 'Müzik' },
 };
 

@@ -66,6 +66,8 @@ export interface ChatComposerSuggestion {
   avatar?: string;
   /** The glyph itself, for `kind="emoji"`. */
   emoji?: string;
+  /** Draws the verified marker after the name, for `kind="mention"`. */
+  verified?: boolean;
   disabled?: boolean;
 }
 
@@ -91,6 +93,21 @@ export interface SuggestionListProps extends PartProps {
   maxHeight?: number;
   /** Accessible name of the listbox. Defaults to a name derived from `kind`. */
   accessibilityLabel?: string;
+  /**
+   * The caller is still searching. Draws a named, busy "Searching…" line in
+   * place of the rows, so a list that has nothing YET is not mistaken for one
+   * that found nothing. Default `false`.
+   */
+  loading?: boolean;
+  /**
+   * Draws a "No people found" line when a finished search is empty. Off by
+   * default, and an empty list draws nothing — right for a composer that shows
+   * the list only while it has rows; a picker the user opened on purpose wants
+   * the answer.
+   */
+  showEmpty?: boolean;
+  /** Replaces the localized empty line. */
+  emptyLabel?: string;
 }
 
 export interface ChatComposerLabels {

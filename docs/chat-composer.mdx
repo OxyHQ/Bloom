@@ -136,6 +136,10 @@ Times ("12:41", "Yesterday") never appear here. `VoiceRecorder` takes `seconds` 
 
 One `SuggestionList` serves all three kinds; only the leading slot differs (an avatar, a glyph disc, the emoji). Rows are `role="option"` inside a `role="listbox"` with `aria-selected` — the spelling react-native-web reads; `accessibilityState` alone would render a list with no state on web. Each row is named by its label **and** handle, because "Ana" alone is ambiguous in a group.
 
+A person marked `verified` gets the accent verified badge after the name, and the row's name says so ("Ana Restrepo, Verified, @ana"); the marker belongs to `kind="mention"` only.
+
+The list also answers the two states a search passes through. `loading` replaces the rows with a named, busy "Searching…" line, so a list with nothing *yet* is not read as one that found nothing. An empty list still draws nothing by default — right for a composer that shows the list only while it has rows — and `showEmpty` draws the localized "No people found" line instead (`emptyLabel` replaces it), for a picker the user opened on purpose.
+
 The list renders **in flow** above the bar rather than in a portal. Anchoring it over the conversation is a layout decision an app makes with its own container (`position: absolute` on a wrapper); a portal here would have to guess the scroll parent.
 
 ## Voice recorder
@@ -227,7 +231,7 @@ State colours 150ms; the mic ↔ send cross-fade 220ms; the recording dot pulses
 
 `ComposerBanner` — `kind`, `title`, `preview`, `thumbnail`, `icon`, `accentColor`, `onClose`, `closeLabel`, `trailing`.
 `ComposerAttachmentStrip` — `attachments`, `onRemove`, `size` (56), `removeLabel`.
-`SuggestionList` — `kind`, `suggestions`, `activeIndex`, `onSelectSuggestion`, `onActiveIndexChange`, `header`, `maxHeight` (232).
+`SuggestionList` — `kind`, `suggestions` (each may carry `verified`), `activeIndex`, `onSelectSuggestion`, `onActiveIndexChange`, `header`, `maxHeight` (232), `loading`, `showEmpty`, `emptyLabel`.
 `VoiceRecorder` — `state`, `seconds`, `duration`, `amplitudes`, `playing`, `onPlayToggle`, `onCancel`, `onDelete`, `onSend`, `onLock`, `slideToCancel`, `labels`.
 `AttachmentMenu` — `open`/`defaultOpen`/`onOpenChange`, `items`, `layout`, `columns`, `onSelect`, `recent`, `label`.
 `EmojiPicker` — `groups`, `onSelectEmoji`, `activeGroup`, `query`, `filter`, `frequentlyUsed`, `skinTone`, `columns` (8), `height` (288), `tabs`, `activeTab`, `labels`.

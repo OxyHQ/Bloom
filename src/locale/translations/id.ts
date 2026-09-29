@@ -158,6 +158,9 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attachments: 'Lampiran',
   removeAttachment: (name) => `Hapus ${name}`,
   suggestions: { mention: 'Orang', command: 'Perintah', emoji: 'Emoji' },
+  suggestionVerified: 'Terverifikasi',
+  searchingSuggestions: 'Mencari…',
+  noSuggestions: { mention: 'Orang tidak ditemukan', command: 'Perintah tidak ditemukan', emoji: 'Emoji tidak ditemukan' },
   attachmentItems: { gallery: 'Galeri', camera: 'Kamera', file: 'File', location: 'Lokasi', contact: 'Kontak', poll: 'Polling', music: 'Musik' },
 };
 

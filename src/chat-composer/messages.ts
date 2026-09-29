@@ -46,6 +46,12 @@ export interface ChatComposerMessages {
   removeAttachment: (name: string) => string;
   /** `SuggestionList`'s name per kind. */
   suggestions: Record<SuggestionKind, string>;
+  /** A suggestion row's verified marker, as announced. */
+  suggestionVerified: string;
+  /** `SuggestionList` while its caller is still searching. */
+  searchingSuggestions: string;
+  /** `SuggestionList` when a finished search found nothing, per kind. */
+  noSuggestions: Record<SuggestionKind, string>;
   /** `AttachmentMenu`'s default rows. */
   attachmentItems: Record<AttachmentMenuItemId, string>;
 }
@@ -77,5 +83,8 @@ export const CHAT_COMPOSER_MESSAGES: MessageCatalog<ChatComposerMessages> = defi
   attachments: 'Attachments',
   removeAttachment: (name) => `Remove ${name}`,
   suggestions: { mention: 'People', command: 'Commands', emoji: 'Emoji' },
+  suggestionVerified: 'Verified',
+  searchingSuggestions: 'Searching…',
+  noSuggestions: { mention: 'No people found', command: 'No commands found', emoji: 'No emoji found' },
   attachmentItems: { gallery: 'Gallery', camera: 'Camera', file: 'File', location: 'Location', contact: 'Contact', poll: 'Poll', music: 'Music' },
 });

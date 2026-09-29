@@ -575,6 +575,49 @@ describe('SuggestionList', () => {
     press(byTestId('l-row-1'));
     expect(onSelectSuggestion).not.toHaveBeenCalled();
   });
+
+  const ana = { id: '1', label: 'Ana Restrepo', handle: '@ana' };
+  const marcel = { id: '2', label: 'Marcel Dubé', handle: '@marcel' };
+
+  it('marks a verified person, and says so in the row name', () => {
+    mount(
+      <SuggestionList
+        kind="mention"
+        suggestions={[{ ...ana, verified: true }, marcel]}
+        testID="l"
+      />,
+    );
+    expect(document.querySelector('[data-testid="l-verified-1"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="l-verified-2"]')).toBeNull();
+    expect(byTestId('l-row-1').getAttribute('aria-label')).toBe('Ana Restrepo, Verified, @ana');
+    expect(byTestId('l-row-2').getAttribute('aria-label')).toBe('Marcel Dubé @marcel');
+  });
+
+  it('draws no verified marker outside a mention list', () => {
+    mount(<SuggestionList kind="command" suggestions={[{ ...ana, verified: true }]} testID="l" />);
+    expect(document.querySelector('[data-testid="l-verified-1"]')).toBeNull();
+  });
+
+  it('says it is still searching instead of drawing rows, or nothing', () => {
+    mount(<SuggestionList kind="mention" suggestions={rows} loading testID="l" />);
+    expect(document.querySelector('[data-testid="l-loading"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="l-row-1"]')).toBeNull();
+    expect(container.textContent).toContain('Searching…');
+
+    mount(<SuggestionList kind="mention" suggestions={[]} loading testID="l" />);
+    expect(document.querySelector('[data-testid="l-loading"]')).not.toBeNull();
+  });
+
+  it('draws nothing for an empty list unless asked to answer "nothing found"', () => {
+    mount(<SuggestionList kind="mention" suggestions={[]} testID="l" />);
+    expect(container.textContent).toBe('');
+
+    mount(<SuggestionList kind="mention" suggestions={[]} showEmpty testID="l" />);
+    expect(byTestId('l-empty').textContent).toBe('No people found');
+
+    mount(<SuggestionList kind="mention" suggestions={[]} showEmpty emptyLabel="Nadie" testID="l" />);
+    expect(byTestId('l-empty').textContent).toBe('Nadie');
+  });
 });
 
 // ---------------------------------------------------------------------------
