@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useDialogContext } from '../dialog/context';
 import { StyledView } from '../styles/styled-primitives';
+import { TicketGenieEnteredContext } from './context';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 function phase(start: number, end: number, value: number) {
   'worklet';
@@ -26,6 +27,7 @@ export function TicketGenieSurface({
   const reduced = useReducedMotion();
   const progress = useSharedValue(reduced ? 0 : 1);
   const [height, setHeight] = useState(280);
+  const [entered, setEntered] = useState(reduced || !corner);
   const { height: viewportHeight } = useWindowDimensions();
   useEffect(() => {
     progress.value = withTiming(isClosing ? 1 : 0, {
@@ -33,6 +35,11 @@ export function TicketGenieSurface({
       easing: Easing.bezier(0.42, 0, 0.58, 1),
     });
   }, [isClosing, progress, reduced]);
+  useEffect(() => {
+    if (isClosing || !corner) return;
+    const timer = setTimeout(() => setEntered(true), reduced ? 0 : 480);
+    return () => clearTimeout(timer);
+  }, [isClosing, corner, reduced]);
   const style = useAnimatedStyle(() => {
     const p = reduced ? 0 : progress.value;
     const extension = 64 * phase(0, 0.42, p);
@@ -56,12 +63,14 @@ export function TicketGenieSurface({
     };
   }, [progress, reduced, corner, height, viewportHeight]);
   return (
+    <TicketGenieEnteredContext.Provider value={entered}>
     <AnimatedView
       onLayout={(event) => setHeight(event.nativeEvent.layout.height || 280)}
       style={[corner ? { flex: 1, minHeight: 0 } : {}, style]}
     >
       {children}
     </AnimatedView>
+    </TicketGenieEnteredContext.Provider>
   );
 }
 export function TicketCornerGenieSurface({

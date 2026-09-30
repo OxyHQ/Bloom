@@ -1,4 +1,5 @@
 import {
+  memo,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -43,7 +44,7 @@ const randomSeed = () => {
 };
 
 /** Animated procedural artwork; shared geometry, face rig and materials across platforms. */
-export function AgentAvatar({
+function AgentAvatarComponent({
   config,
   size = 64,
   paused = false,
@@ -297,3 +298,6 @@ export function AgentAvatar({
     </StyledView>
   );
 }
+
+export const AgentAvatar = memo(AgentAvatarComponent);
+AgentAvatar.displayName = 'AgentAvatar';

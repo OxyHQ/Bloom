@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ProjectBoard } from '../ProjectBoard';
 import { cloneColumns, dropTarget, moveTicket, sortColumns } from '../shared';
@@ -178,6 +178,25 @@ describe('ProjectBoard interactions', () => {
       'Two',
       'One',
     ]);
+  });
+  it('puts a long native creation form inside a bounded scroll view that keeps submit taps', () => {
+    const previousOS = Platform.OS;
+    Platform.OS = 'ios';
+    try {
+      const screen = renderBoard();
+      fireEvent.press(screen.getByLabelText('Add ticket to To do'));
+      const scroll = screen.getByTestId('project-board-create-scroll');
+      expect(StyleSheet.flatten(scroll.props.style).maxHeight).toBeGreaterThan(0);
+      expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
+      expect(StyleSheet.flatten(scroll.props.contentContainerStyle).padding).toBe(16);
+      fireEvent.changeText(screen.getByLabelText('Ticket title'), 'Long task');
+      fireEvent.changeText(screen.getByLabelText('Description'), Array(40).fill('Context line').join('\n'));
+      fireEvent.press(screen.getByTestId('project-board-create-submit'));
+      expect(screen.getByText('Long task')).toBeTruthy();
+      screen.unmount();
+    } finally {
+      Platform.OS = previousOS;
+    }
   });
   it('opens details, toggles favorites and posts trimmed comments', () => {
     const onColumnsChange = jest.fn();

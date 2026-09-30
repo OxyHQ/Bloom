@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Platform } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -47,6 +48,7 @@ export function EditorRail({
   );
   return (
     <AnimatedView
+      {...(Platform.OS === 'web' && !active ? { inert: true } : {})}
       pointerEvents={active ? 'auto' : 'none'}
       aria-hidden={!active}
       accessibilityElementsHidden={!active}

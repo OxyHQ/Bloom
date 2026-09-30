@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Platform, ScrollView } from 'react-native';
-import { TokensChartCard } from '../chart-cards/TokensChartCard';
+import { Linking, Platform, ScrollView, useWindowDimensions } from 'react-native';
+import { TicketTokenChart } from './TicketTokenChart';
 import { useDialogControl } from '../dialog/context';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
@@ -93,6 +93,7 @@ export function TicketDetailDialog({
   } = useProjectBoardPlatform();
   const control = useDialogControl();
   const rtl = useIsRtl();
+  const { width: viewportWidth } = useWindowDimensions();
   const [comment, setComment] = useState('');
   const [editingDescription, setEditingDescription] = useState(false);
   const [draft, setDraft] = useState(ticket.description ?? '');
@@ -175,7 +176,7 @@ export function TicketDetailDialog({
       containerStyle={{
         alignItems: 'flex-end',
         justifyContent: 'flex-start',
-        padding: 12,
+        padding: viewportWidth < 640 ? 8 : 12,
       }}
       panelStyle={{
         width: '100%',
@@ -605,7 +606,7 @@ export function TicketDetailDialog({
                       </View>
                     )}
                     {ticket.tokenUsage && (
-                      <TokensChartCard
+                      <TicketTokenChart
                         title={m.tokens}
                         {...ticket.tokenUsage}
                         plotHeight={190}

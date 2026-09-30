@@ -1,9 +1,9 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useDialogContext } from '../dialog/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { TicketGenieEnteredContext } from './context';
 const styles = {
-  'animate-chart-reveal': 'bloom-ticket-detail-animate-chart-reveal',
   band: 'bloom-ticket-detail-band',
   bands: 'bloom-ticket-detail-bands',
   genie: 'bloom-ticket-detail-genie',
@@ -12,7 +12,7 @@ const styles = {
   surface: 'bloom-ticket-detail-surface',
 };
 const CSS =
-  '/* React Aria keeps the panel mounted for the shared Genie timeline.\n * Its pixels bend into the bottom-right dock; the shell never slides. */\n.bloom-ticket-detail-panel[data-entering], .bloom-ticket-detail-panel[data-exiting] { animation: bloom-ticket-detail-detail-presence 560ms linear both; }\n.bloom-ticket-detail-panel[data-exiting] { pointer-events: none; }\n@keyframes bloom-ticket-detail-detail-presence {\n  from { opacity: 0.9999; }\n  to { opacity: 1; }\n}\n.bloom-ticket-detail-genie, .bloom-ticket-detail-surface { position: relative; height: 100%; min-height: 0; }\n.bloom-ticket-detail-genie { isolation: isolate; }\n/* Start the chart\'s own drawing animation only after the visual bands hand\n * back to the live panel, so it never flashes a completed copy first. */\n.bloom-ticket-detail-genie:not([data-entered="true"]) :global(.bloom-ticket-detail-animate-chart-reveal) {\n  animation: none;\n  clip-path: inset(0 100% 0 0);\n}\n/* Skip the barely visible lead-in while retaining the clean Genie handoff. */\n.bloom-ticket-detail-surface :global(.bloom-ticket-detail-animate-chart-reveal) { animation-delay: -150ms; }\n.bloom-ticket-detail-shadow {\n  position: absolute;\n  inset: 0;\n  border-radius: 24px;\n  pointer-events: none;\n  transform-origin: right bottom;\n  box-shadow: -10px 0 34px rgb(0 0 0 / 0.05), -10px 0 250px rgb(0 0 0 / 0.25);\n}\n.bloom-ticket-detail-bands { position: absolute; inset: 0; pointer-events: none; opacity: 0; }\n.bloom-ticket-detail-band {\n  position: absolute;\n  top: 0;\n  left: 0;\n  overflow: hidden;\n  contain: strict;\n  transform-origin: 0 0;\n  will-change: transform;\n  backface-visibility: hidden;\n}\n@media (prefers-reduced-motion: reduce) {\n  .bloom-ticket-detail-panel[data-entering], .bloom-ticket-detail-panel[data-exiting] { animation: none; }\n}\n';
+  '/* React Aria keeps the panel mounted for the shared Genie timeline.\n * Its pixels bend into the bottom-right dock; the shell never slides. */\n.bloom-ticket-detail-panel[data-entering], .bloom-ticket-detail-panel[data-exiting] { animation: bloom-ticket-detail-detail-presence 560ms linear both; }\n.bloom-ticket-detail-panel[data-exiting] { pointer-events: none; }\n@keyframes bloom-ticket-detail-detail-presence {\n  from { opacity: 0.9999; }\n  to { opacity: 1; }\n}\n.bloom-ticket-detail-genie, .bloom-ticket-detail-surface { position: relative; height: 100%; min-height: 0; }\n.bloom-ticket-detail-genie { isolation: isolate; }\n/* Start the chart\'s own drawing animation only after the visual bands hand\n * back to the live panel, so it never flashes a completed copy first. */\n.bloom-ticket-detail-genie:not([data-entered="true"]) .bloom-ticket-detail-chart svg {\n  visibility: hidden;\n}\n.bloom-ticket-detail-shadow {\n  position: absolute;\n  inset: 0;\n  border-radius: 24px;\n  pointer-events: none;\n  transform-origin: right bottom;\n  box-shadow: -10px 0 34px rgb(0 0 0 / 0.05), -10px 0 250px rgb(0 0 0 / 0.25);\n}\n.bloom-ticket-detail-bands { position: absolute; inset: 0; pointer-events: none; opacity: 0; }\n.bloom-ticket-detail-band {\n  position: absolute;\n  top: 0;\n  left: 0;\n  overflow: hidden;\n  contain: strict;\n  transform-origin: 0 0;\n  will-change: transform;\n  backface-visibility: hidden;\n}\n@media (prefers-reduced-motion: reduce) {\n  .bloom-ticket-detail-panel[data-entering], .bloom-ticket-detail-panel[data-exiting] { animation: none; }\n}\n';
 
 const DURATION = 480;
 const FRAMES = 32;
@@ -93,8 +93,8 @@ function rebaseIds(copy: HTMLElement, prefix: string) {
  * gradient fills differently in each perspective-transformed clipping band.
  * A shared bitmap keeps every band on the same paint, at device resolution. */
 async function snapshotCharts(source: HTMLDivElement, copy: HTMLDivElement) {
-  const charts = source.querySelectorAll<SVGSVGElement>('svg.recharts-surface');
-  const copies = copy.querySelectorAll<SVGSVGElement>('svg.recharts-surface');
+  const charts = source.querySelectorAll<SVGSVGElement>('.bloom-ticket-detail-chart svg');
+  const copies = copy.querySelectorAll<SVGSVGElement>('.bloom-ticket-detail-chart svg');
   await Promise.allSettled(
     Array.from(charts, async (chart, index) => {
       const { width, height } = chart.getBoundingClientRect();
@@ -206,6 +206,7 @@ export function TicketCornerGenieSurface({
   const shadowRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(1);
   const reducedMotion = useReducedMotion();
+  const [entered, setEntered] = useState(reducedMotion);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -215,6 +216,7 @@ export function TicketCornerGenieSurface({
     if (!root || !surface || !bands || !shadow) return;
     if (reducedMotion) {
       root.dataset.entered = 'true';
+      setEntered(true);
       surface.style.opacity = '1';
       shadow.style.opacity = '1';
       bands.replaceChildren();
@@ -247,7 +249,7 @@ export function TicketCornerGenieSurface({
         // invisible plot adds SVG serialization, PNG encoding, and two decodes
         // to the cold opening path without contributing any visible pixels.
         template
-          .querySelectorAll('svg.recharts-surface')
+          .querySelectorAll('.bloom-ticket-detail-chart svg')
           .forEach((chart) => chart.remove());
       }
       if (cancelled) return;
@@ -346,6 +348,7 @@ export function TicketCornerGenieSurface({
           progressRef.current = to;
           if (!exiting) {
             root.dataset.entered = 'true';
+            setEntered(true);
             surface.style.opacity = '1';
             shadow.style.opacity = '1';
             shadow.style.transform = 'none';
@@ -381,6 +384,7 @@ export function TicketCornerGenieSurface({
   }, [exiting, reducedMotion]);
 
   return (
+    <TicketGenieEnteredContext.Provider value={entered}>
     <div ref={rootRef} className={styles.genie}>
       <div
         ref={shadowRef}
@@ -397,5 +401,6 @@ export function TicketCornerGenieSurface({
       </div>
       <div ref={bandsRef} aria-hidden inert className={styles.bands} />
     </div>
+    </TicketGenieEnteredContext.Provider>
   );
 }

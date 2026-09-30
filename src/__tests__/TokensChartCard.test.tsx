@@ -74,6 +74,41 @@ describe('tokens geometry matches recharts', () => {
 });
 
 describe('TokensChartCard', () => {
+  it('pauses at the full plot without RAF and restarts from zero when animation becomes active', () => {
+    const priorFrame = global.requestAnimationFrame;
+    const priorCancel = global.cancelAnimationFrame;
+    const callbacks: FrameRequestCallback[] = [];
+    const request = jest.fn((callback: FrameRequestCallback) => { callbacks.push(callback); return callbacks.length; });
+    const cancel = jest.fn();
+    global.requestAnimationFrame = request;
+    global.cancelAnimationFrame = cancel;
+    let clock = 0;
+    const now = jest.spyOn(Date, 'now').mockImplementation(() => clock);
+    const ui = (animate: boolean) => <BloomThemeProvider mode="light" colorPreset="teal"><TokensChartCard testID="tokens" data={DATA} animate={animate} /></BloomThemeProvider>;
+    const screen = render(ui(false));
+    try {
+      layoutPlot(screen.getByTestId);
+      expect(screen.getByTestId('tokens-reveal').props.width).toBe(680);
+      expect(request).not.toHaveBeenCalled();
+      screen.rerender(ui(true));
+      expect(screen.getByTestId('tokens-reveal').props.width).toBe(0);
+      expect(request).toHaveBeenCalledTimes(1);
+      clock = 900;
+      act(() => callbacks[0]?.(clock));
+      expect(screen.getByTestId('tokens-reveal').props.width).toBeGreaterThan(0);
+      expect(screen.getByTestId('tokens-reveal').props.width).toBeLessThan(680);
+      screen.rerender(ui(false));
+      expect(screen.getByTestId('tokens-reveal').props.width).toBe(680);
+      expect(cancel).toHaveBeenCalled();
+      screen.rerender(ui(true));
+      expect(screen.getByTestId('tokens-reveal').props.width).toBe(0);
+    } finally {
+      screen.unmount();
+      now.mockRestore();
+      global.requestAnimationFrame = priorFrame;
+      global.cancelAnimationFrame = priorCancel;
+    }
+  });
   it('keeps the card shell: radius 20, 12 top and bottom only, the header over the plot', () => {
     const { getByTestId } = renderCard(<TokensChartCard testID="tokens" data={DATA} headline={667.7} delta="+9.4%" />);
     const theme = buildTheme('teal', 'light');

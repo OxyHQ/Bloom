@@ -8,12 +8,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
+import { ThinkingLabel } from '../agent-thinking/ThinkingLabel';
 import { useTrackEvents } from '../agent-creator/use-track-events';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
+import { Text, TYPE_SCALE } from '../typography';
 import type { Agent } from './data';
 import type { AvatarNodes } from './handoff';
 import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
@@ -83,7 +84,7 @@ export function ReplyHeader({
           : formatChatMessage(messages.editAgent, agent.name)
       }
       onPress={onEdit}
-      className="my-1 min-w-0 flex-row items-center gap-1 rounded-lg"
+      className="my-1 min-w-0 flex-row items-center gap-1 rounded-lg text-start text-body-2-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
     >
       <AnimatedView
         ref={(node: View | null) => {
@@ -121,16 +122,16 @@ export function ReplyHeader({
         <AnimatedView
           aria-hidden={!thinking}
           role={thinking ? 'status' : undefined}
-          style={[
-            { position: 'absolute', insetInlineStart: 0, top: 0 },
-            status,
-          ]}
+          style={status}
         >
-          <Text variant="body-2-medium" style={{ color: colors.textSecondary }}>
+          <ThinkingLabel variant="body-2-medium" color={colors.textSecondary}>
             {messages.thinking}
-          </Text>
+          </ThinkingLabel>
         </AnimatedView>
-        <AnimatedView aria-hidden={thinking} style={name}>
+        <AnimatedView
+          aria-hidden={thinking}
+          style={[{ marginTop: -TYPE_SCALE['body-2-medium'].lineHeight }, name]}
+        >
           <Text variant="body-2-medium" style={{ color: colors.textSecondary }}>
             {agent.name}
           </Text>

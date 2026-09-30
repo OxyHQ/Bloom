@@ -12,16 +12,18 @@ import {
   ScrollView,
   useWindowDimensions,
   type View,
+  type ViewStyle,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
+  cancelAnimation,
+  Easing,
   runOnJS,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withTiming,
+  type AnimatedStyle,
 } from 'react-native-reanimated';
 import { Avatar } from '../avatar';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
@@ -48,6 +50,7 @@ import {
   SourceView,
 } from './SourcePrimitives';
 import { TicketDetailDialog } from './TicketDetailDialog';
+import { TicketPresenceList } from './TicketPresence';
 import { cx, PRIORITY_STYLES } from './constants';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
@@ -260,18 +263,34 @@ export function ProjectBoardBase({
   const boardRect = useRef<BoardRect | null>(null);
   const boardNode = useRef<View>(null);
   const [activeTicket, setActiveTicket] = useState<ProjectTicket | null>(null);
+  const [droppingId, setDroppingId] = useState<string | null>(null);
   const activeId = useRef<string | null>(null);
   const [over, setOver] = useState<{ columnId: string; index: number } | null>(
     null,
   );
   const targetRef = useRef<typeof over>(null);
   const beforeKeyboard = useRef<ProjectColumn[] | null>(null);
+  const beforePointer = useRef<ProjectColumn[] | null>(null);
   const keyboardActive = useRef(false);
   const lastDragEnd = useRef(0);
   const draggedWidth = useSharedValue(261);
   const dragX = useSharedValue(0);
   const dragY = useSharedValue(0);
   const fingerOffset = useRef({ x: 0, y: 0 });
+  const dropFrame = useRef(0);
+  const dropGeneration = useRef(0);
+  useEffect(() => () => {
+    dropGeneration.current++;
+    if (dropFrame.current) cancelAnimationFrame(dropFrame.current);
+    cancelAnimation(dragX);
+    cancelAnimation(dragY);
+    cancelAnimation(draggedWidth);
+  }, [dragX, dragY, draggedWidth]);
+  const finishDrop = useCallback((generation?: number) => {
+    if (generation !== undefined && generation !== dropGeneration.current) return;
+    setActiveTicket(null);
+    setDroppingId(null);
+  }, []);
   const overlayStyle = useAnimatedStyle(
     () => ({
       position: 'absolute',
@@ -341,6 +360,13 @@ export function ProjectBoardBase({
       measure();
       const rect = ticketRects.current[id];
       activeId.current = id;
+      beforePointer.current = cloneColumns(columnsRef.current);
+      dropGeneration.current++;
+      cancelAnimation(dragX);
+      cancelAnimation(dragY);
+      cancelAnimation(draggedWidth);
+      if (dropFrame.current) cancelAnimationFrame(dropFrame.current);
+      setDroppingId(null);
       fingerOffset.current = {
         x: rect ? x - rect.x : 0,
         y: rect ? y - rect.y : 0,
@@ -372,6 +398,15 @@ export function ProjectBoardBase({
       ) {
         targetRef.current = next;
         setOver(next);
+      }
+      if (next) {
+        const current = columnsRef.current;
+        const source = current.find((column) => column.tickets.some((ticket) => ticket.id === activeId.current));
+        if (source && source.id !== next.columnId) {
+          const preview = moveTicket(current, activeId.current, next.columnId, next.index);
+          columnsRef.current = preview;
+          setColumns(preview);
+        }
       }
       const board = boardRect.current;
       if (board && (x < board.x + 32 || x > board.x + board.width - 32)) {
@@ -419,14 +454,45 @@ export function ProjectBoardBase({
         AccessibilityInfo.announceForAccessibility?.(
           `${activeTicket?.code ?? ''}, ${columnsRef.current.find((column) => column.id === target.columnId)?.title ?? target.columnId}`,
         );
+      } else if (beforePointer.current) {
+        columnsRef.current = beforePointer.current;
+        setColumns(beforePointer.current);
       }
+      beforePointer.current = null;
       activeId.current = null;
       targetRef.current = null;
       lastDragEnd.current = Date.now();
-      setActiveTicket(null);
       setOver(null);
+      if (reducedMotion) {
+        finishDrop();
+        return;
+      }
+      setDroppingId(id);
+      const generation = ++dropGeneration.current;
+      // React first mounts the destination ticket; its window rect is the
+      // landing position even after a column reorder or a scaled preview.
+      dropFrame.current = requestAnimationFrame(() => {
+        const node = ticketNodes.current[id];
+        if (!node) {
+          finishDrop(generation);
+          return;
+        }
+        node.measureInWindow((x, y, width) => {
+          if (generation !== dropGeneration.current) return;
+          if (![x, y, width].every(Number.isFinite) || width <= 0) {
+            finishDrop(generation);
+            return;
+          }
+          const config = { duration: 320, easing: Easing.bezier(0.22, 1, 0.36, 1) };
+          dragX.value = withTiming(x, config);
+          draggedWidth.value = withTiming(width, config);
+          dragY.value = withTiming(y, config, (finished) => {
+            if (finished) runOnJS(finishDrop)(generation);
+          });
+        });
+      });
     },
-    [visibleColumns, activeTicket, commit],
+    [visibleColumns, activeTicket, commit, reducedMotion, finishDrop, dragX, dragY, draggedWidth],
   );
   function keyboardMove(id: string, key: string) {
     const current = columnsRef.current;
@@ -792,8 +858,6 @@ export function ProjectBoardBase({
                   contentContainerStyle={{
                     paddingHorizontal: 6,
                     paddingTop: 8,
-                    paddingBottom: 6,
-                    gap: 6,
                   }}
                   accessibilityLabel={column.title}
                   onScroll={(event) => {
@@ -803,18 +867,23 @@ export function ProjectBoardBase({
                   }}
                   scrollEventThrottle={16}
                 >
-                  {column.tickets.map((ticket, index) => (
+                  <TicketPresenceList tickets={column.tickets} retainId={beforePointer.current ? activeTicket?.id : undefined}>
+                    {({ ticket, present }, paintStyle, onHeight) => present || (activeTicket?.id === ticket.id && beforePointer.current !== null) ? (
                     <DraggableTicket
                       key={ticket.id}
                       nativeID={`${boardId}-${ticket.id}`}
                       ticket={ticket}
+                      interactive={present}
                       members={members}
                       dragging={activeTicket?.id === ticket.id}
+                      landing={droppingId === ticket.id}
+                      paintStyle={paintStyle}
+                      onHeight={onHeight}
                       target={
-                        over?.columnId === column.id && over.index === index
+                        over?.columnId === column.id && over.index === column.tickets.findIndex((item) => item.id === ticket.id)
                       }
                       register={(node) => {
-                        ticketNodes.current[ticket.id] = node;
+                        if (present) ticketNodes.current[ticket.id] = node;
                       }}
                       onLayout={measure}
                       onOpen={() => openDetail(ticket.id)}
@@ -851,7 +920,16 @@ export function ProjectBoardBase({
                         }
                       }}
                     />
-                  ))}
+                    ) : (
+                      <SourceView onLayout={(event) => onHeight(event.nativeEvent.layout.height)}>
+                        <AnimatedView style={paintStyle}>
+                          <SourceView className="pointer-events-none opacity-20">
+                            <TicketCard overlay ticket={ticket} members={members} />
+                          </SourceView>
+                        </AnimatedView>
+                      </SourceView>
+                    )}
+                  </TicketPresenceList>
                   {over?.columnId === column.id &&
                     over.index >= column.tickets.length && (
                       <StyledView
@@ -868,7 +946,14 @@ export function ProjectBoardBase({
       {activeTicket && (
         <Portal>
           <OverlayRoot>
-            <AnimatedView pointerEvents="none" style={overlayStyle}>
+            <AnimatedView
+              testID="project-board-drag-overlay"
+              pointerEvents="none"
+              aria-hidden
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={overlayStyle}
+            >
               <TicketCard overlay ticket={activeTicket} members={members} />
             </AnimatedView>
           </OverlayRoot>
@@ -915,8 +1000,12 @@ export function ProjectBoardBase({
 function DraggableTicket({
   nativeID,
   ticket,
+  interactive,
   members,
   dragging,
+  landing,
+  paintStyle,
+  onHeight,
   target,
   register,
   onLayout,
@@ -928,8 +1017,12 @@ function DraggableTicket({
 }: {
   nativeID: string;
   ticket: ProjectTicket;
+  interactive: boolean;
   members: Readonly<Record<string, ProjectMember>>;
   dragging: boolean;
+  landing: boolean;
+  paintStyle: AnimatedStyle<ViewStyle>;
+  onHeight: (height: number) => void;
   target: boolean;
   register: (node: View | null) => void;
   onLayout: () => void;
@@ -940,7 +1033,6 @@ function DraggableTicket({
   onAccessibleMove: (direction: 'up' | 'down' | 'next' | 'previous') => void;
 }) {
   const { colors } = useTheme();
-  const reducedMotion = useReducedMotion();
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   const callbacks = useRef({ onStart, onUpdate, onEnd });
   callbacks.current = { onStart, onUpdate, onEnd };
@@ -976,21 +1068,21 @@ function DraggableTicket({
   return (
     <GestureDetector gesture={gesture}>
       <AnimatedView
-        entering={reducedMotion ? undefined : FadeIn.duration(320)}
-        exiting={reducedMotion ? undefined : FadeOut.duration(320)}
-        layout={reducedMotion ? undefined : LinearTransition.duration(260)}
         className="shrink-0 touch-manipulation rounded-xl outline-none focus-visible:ring-[2.5px] focus-visible:ring-border-button-hover"
         style={{
-          opacity: dragging ? 0.2 : 1,
+          opacity: landing ? 0 : dragging ? 0.2 : 1,
           borderTopWidth: target ? 3 : 0,
           borderTopColor: colors.primary,
         }}
       >
         <StyledPressable
-          nativeID={nativeID}
+          nativeID={interactive ? nativeID : undefined}
           ref={register}
-          onLayout={onLayout}
-          onPress={onOpen}
+          onLayout={(event) => {
+            onHeight(event.nativeEvent.layout.height);
+            onLayout();
+          }}
+          onPress={interactive ? onOpen : undefined}
           accessibilityRole="button"
           accessibilityLabel={m.openTicket(ticket.code, ticket.title)}
           aria-haspopup="dialog"
@@ -1014,7 +1106,9 @@ function DraggableTicket({
             );
           }}
         >
-          <TicketCard ticket={ticket} members={members} />
+          <AnimatedView style={paintStyle}>
+            <TicketCard ticket={ticket} members={members} />
+          </AnimatedView>
         </StyledPressable>
       </AnimatedView>
     </GestureDetector>
