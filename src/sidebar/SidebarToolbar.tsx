@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Button, CloseButton } from '../button';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { StyledView } from '../styles/styled-primitives';
@@ -27,6 +28,8 @@ export function SidebarToolbar({
 }: SidebarToolbarProps) {
   const common = useCommonMessages();
   const palette = useSidebarPalette();
+  const direction = useDirectionProps();
+  const rtl = useIsRtl();
   const input = useRef<TextInput>(null);
   const trigger = useRef<React.ComponentRef<typeof Button>>(null);
   const [width, setWidth] = useState(0);
@@ -62,9 +65,9 @@ export function SidebarToolbar({
     const hidden = Math.min(1, progress.value * 1.5);
     return {
       opacity: 1 - hidden,
-      transform: [{ translateX: 8 * hidden }, { scale: 1 - 0.05 * hidden }],
+      transform: [{ translateX: (rtl ? -8 : 8) * hidden }, { scale: 1 - 0.05 * hidden }],
     };
-  }, [progress]);
+  }, [progress, rtl]);
   const close = () => {
     search.onValueChange('');
     search.onOpenChange(false);
@@ -73,6 +76,7 @@ export function SidebarToolbar({
   const label = search.accessibilityLabel ?? common.search;
   return (
     <StyledView
+      {...direction}
       testID={testID}
       className="relative h-9 shrink-0"
       style={[{ height: 36 }, style]}
@@ -86,7 +90,7 @@ export function SidebarToolbar({
         {actions.map((action, index) => (
           <AnimatedView
             key={index}
-            className={`flex transition-[opacity,transform] duration-200 motion-reduce:transition-none ${search.open ? 'pointer-events-none translate-x-2 scale-95 opacity-0' : 'translate-x-0 scale-100 opacity-100'}`}
+            className={`flex transition-[opacity,transform] duration-200 motion-reduce:transition-none ${search.open ? `pointer-events-none ${rtl ? '-translate-x-2' : 'translate-x-2'} scale-95 opacity-0` : 'translate-x-0 scale-100 opacity-100'}`}
             style={[{ flex: 1 }, actionsStyle]}
             pointerEvents={search.open ? 'none' : 'auto'}
             aria-hidden={search.open}
@@ -143,8 +147,8 @@ export function SidebarToolbar({
                 height: 36,
                 borderWidth: 0,
                 backgroundColor: palette.tertiary,
-                paddingLeft: 12,
-                paddingRight: 36,
+                paddingInlineStart: 12,
+                paddingInlineEnd: 36,
               }}
             >
               <TextFieldInput
