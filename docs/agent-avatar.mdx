@@ -1,0 +1,24 @@
+---
+title: Agent Avatar
+description: Procedural agent artwork with editable recipes, expressions and motion.
+---
+
+# Agent Avatar
+
+`AgentAvatar` draws the same artwork with `react-native-svg` on web, iOS and Android. Recipes retain their own colors when the application theme changes.
+
+```tsx
+import { AgentAvatar, FOLD_CONFIG } from '@oxy.so/bloom/agent-avatar';
+
+<AgentAvatar config={{ ...FOLD_CONFIG, eyes: 'curious', hue: 254 }} size={64} label="Peri" />
+```
+
+`config` is an `AvatarConfig`. The published presets include blobs, folded paper and aliens; the original recipe schema also retains its mascot settings. The source artwork currently renders the mascot family through the blob silhouette and material path; outfit and activity settings have no additional renderer. `parsePreset` validates saved recipes and migrates older field values.
+
+Change `entranceKey` to replay the curled arrival and `workingKey` to play a hop and full paper turn. `workingCycles` defaults to one. `paused`, reduced motion and `motion: 0` freeze animation; expression and explicit gaze changes still render. Sleeping agents use closed lids and four drifting sleep marks. The original `interactive` and `portrait` compatibility props remain reserved.
+
+`className` and `style` apply to the outer layout node through Bloom's NativeWind wrapper. `label` defaults to the translated “Agent avatar” in the nearest locale scope (`locale` overrides it); `accessibilityLabel` overrides it. Prefer a meaningful name when the image identifies an agent.
+
+The renderer preserves the original silhouettes, projection, expression springs, blink timing, attention, wandering, fold turns, shape morphs, gradient stops and deterministic grain tile. It updates drawing geometry on the JavaScript animation clock and pauses in the background or when outside the viewport on web. Large animated grids should be profiled on the target device.
+
+Grain uses the original seed-713 tile and `soft-light` compositing on isolated React Native view layers, shared with web. This requires the new native renderer and Android 10 or later; older native renderers do not implement this blend mode. Blob grain follows the original backing-pixel scale (capped at 2×), while paper grain follows the original CSS-pixel scale. Sleep marks retain the original `ui-rounded, system-ui, sans-serif` font stack; installed fonts can differ between platforms. Physical-device pixel comparisons remain necessary.

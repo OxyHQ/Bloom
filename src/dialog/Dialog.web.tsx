@@ -178,6 +178,8 @@ function CenterOrSideDialog({
   control,
   open: controlledOpen,
   startOpen,
+  presentation = 'default',
+  exitDuration: customExitDuration,
   onClose,
   testID,
   title,
@@ -267,7 +269,7 @@ function CenterOrSideDialog({
   }, [isControlled, controlledOpen]);
 
   const exitDuration =
-    resolvedPlacement === 'center' ? FADE_OUT_DURATION : ANIMATION_DURATION;
+    presentation === 'custom' ? customExitDuration ?? 0 : resolvedPlacement === 'center' ? FADE_OUT_DURATION : ANIMATION_DURATION;
 
   useEffect(() => {
     if (!isClosing) return;
@@ -323,8 +325,8 @@ function CenterOrSideDialog({
   );
 
   const context = useMemo(
-    () => ({ close, isWithinDialog: true }),
-    [close],
+    () => ({ close, isWithinDialog: true, isClosing }),
+    [close, isClosing],
   );
 
   if (!isOpen) return null;
@@ -342,7 +344,7 @@ function CenterOrSideDialog({
                 the app's lifetime. `modal` makes the app's
                 `OverlayInertBoundary` take the page out of the tab order and
                 the accessibility tree while it is open. */}
-            <OverlayRoot modal>
+            <OverlayRoot modal style={containerStyle} className={containerClassName}>
               <ModalKeyboard
                 panelRef={panelRef}
                 closing={isClosing}
@@ -362,14 +364,17 @@ function CenterOrSideDialog({
                 // opacity animation on the blur's ancestor composites the group in
                 // isolation and leaves `backdrop-filter` nothing to sample.
                 progress={backdropFade}
-                style={{
+                dimOpacity={presentation === 'custom' ? 0 : undefined}
+                blurIntensity={presentation === 'custom' ? 0 : undefined}
+                style={[{
                   position: WEB_POSITION_FIXED,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  paddingHorizontal: 20,
-                }}
+                  paddingHorizontal: presentation === 'custom' ? undefined : 20,
+                }, containerStyle]}
               >
                 <DialogPanel
+                  presentation={presentation}
                   panelRef={panelRef}
                   testID={testID}
                   label={label}
@@ -377,7 +382,7 @@ function CenterOrSideDialog({
                   description={description}
                   actions={actions}
                   header={header}
-                  style={style}
+                  style={[panelStyle, style]}
                   maxWidth={maxWidth}
                   contentPadding={contentPadding}
                   maxHeightRatio={maxHeightRatio}
@@ -431,6 +436,7 @@ function CenterOrSideDialog({
 }
 
 function DialogPanel({
+  presentation,
   panelRef,
   testID,
   label,
@@ -447,6 +453,7 @@ function DialogPanel({
   isClosing,
   children,
 }: {
+  presentation?: DialogProps['presentation'];
   panelRef: React.RefObject<View | null>;
   testID?: string;
   label?: string;
@@ -478,7 +485,7 @@ function DialogPanel({
   // The card's own `maxHeight` (the ratio percentage below) does the exact
   // capping — the viewport is just the bound the reshape may not exceed.
   const morphState = useDialogMorph({
-    enabled: morph !== false,
+    enabled: presentation !== 'custom' && morph !== false,
     measurable: scrollable !== false,
     maxHeight: viewportHeight,
     maxWidth,
@@ -518,7 +525,7 @@ function DialogPanel({
       style={[
         {
           position: 'relative',
-          ...surfaceStyle(SURFACE_SHAPES.panel),
+          ...(presentation === 'custom' ? {} : surfaceStyle(SURFACE_SHAPES.panel)),
           width: '100%',
           maxWidth,
           // The Dialog OWNS the size cap + scroll boundary (its content renders
@@ -526,18 +533,18 @@ function DialogPanel({
           // capped at `maxHeightRatio` of the viewport and scrolls inside the
           // rounded card (via the ScrollView below) — consumers never add their
           // own height cap / ScrollView. `overflow: hidden` clips to the radius.
-          maxHeight: `${Math.round(heightRatio * 100)}%`,
-          overflow: 'hidden',
+          maxHeight: presentation === 'custom' ? undefined : `${Math.round(heightRatio * 100)}%`,
+          overflow: presentation === 'custom' ? 'visible' : 'hidden',
           backgroundColor: 'transparent',
           // `--bloom-surface` on the element that carries the fill, so web CSS
           // inside the dialog reads the dialog's colour and not the colour of
           // whatever surface it was opened over.
           ...material.vars,
-          borderWidth: 1,
+          borderWidth: presentation === 'custom' ? 0 : 1,
           borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
           // Design-system overlay elevation (`shadow-m`) as a `boxShadow` — RN-Web
           // deprecated the `shadow*` style props.
-          ...bloomShadowStyle('m'),
+          ...(presentation === 'custom' ? {} : bloomShadowStyle('m')),
           // Above this surface's OWN backdrop, and nothing more: `OverlayRoot`
           // sets a z-index and a fixed position, so it is a stacking context and
           // this value is scoped inside it. Where this dialog sits relative to
@@ -545,7 +552,7 @@ function DialogPanel({
           // `OverlayRoot` (see `src/overlay/stack.ts`) — never a number here.
           zIndex: Z_INDEX.raised,
         },
-        isClosing ? ZOOM_FADE_OUT : ZOOM_FADE_IN,
+        presentation === 'custom' ? undefined : isClosing ? ZOOM_FADE_OUT : ZOOM_FADE_IN,
         // Drives `height` (and `maxWidth`) only while a morph is in flight; at
         // rest it resolves to `height: 'auto'` — the natural sizing above. Placed
         // before `style` so a consumer's explicit size still wins.
@@ -554,7 +561,7 @@ function DialogPanel({
         { backgroundColor: 'transparent' },
       ]}
     >
-      <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />
+      {presentation !== 'custom' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />}
       <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
       {header ? (
         // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large

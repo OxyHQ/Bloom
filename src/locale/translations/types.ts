@@ -1,6 +1,10 @@
+import type { MULTI_AGENT_CHAT_MESSAGES } from '../../multi-agent-chat/messages';
+import type { AGENT_CREATOR_MESSAGES } from '../../agent-creator/messages';
+import type { PROJECT_BOARD_MESSAGES } from '../../project-board/messages';
 // Every Bloom family's strings, by catalog id. Type-only: importing this links
 // nothing. A language module is typed `Translations`, so a family missing from
 // one, or a key missing from a family, fails the type-check.
+import type { AGENT_AVATAR_MESSAGES } from '../../agent-avatar/messages';
 import type { CatalogMessages } from '../messages';
 import type { SURFACES_MESSAGES } from '../../surfaces/messages';
 import type { CONTACT_CARD_MESSAGES } from '../../contact-card/messages';
@@ -132,6 +136,10 @@ import type { CONNECTION_DOTS_MESSAGES } from '../../connection-dots/messages';
 import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
 
 export interface Translations {
+  readonly MULTI_AGENT_CHAT_MESSAGES: CatalogMessages<typeof MULTI_AGENT_CHAT_MESSAGES>;
+  AGENT_CREATOR_MESSAGES: CatalogMessages<typeof AGENT_CREATOR_MESSAGES>;
+  PROJECT_BOARD_MESSAGES: CatalogMessages<typeof PROJECT_BOARD_MESSAGES>;
+  readonly AGENT_AVATAR_MESSAGES: CatalogMessages<typeof AGENT_AVATAR_MESSAGES>;
   readonly SURFACES_MESSAGES: CatalogMessages<typeof SURFACES_MESSAGES>;
   readonly CONTACT_CARD_MESSAGES: CatalogMessages<typeof CONTACT_CARD_MESSAGES>;
   readonly CHAT_LIST_MESSAGES: CatalogMessages<typeof CHAT_LIST_MESSAGES>;

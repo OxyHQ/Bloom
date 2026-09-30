@@ -350,6 +350,9 @@ export function SettingsModal({
 
   const pageConfig = currentPage ? pages[currentPage] : undefined;
   const closeLabel = labels?.close ?? messages.close;
+  const pageContent = typeof pageConfig?.content === 'function'
+    ? pageConfig.content({ onBack: isCompact ? requestNavigation : undefined, backLabel: labels?.back ?? common.back, onClose: requestClose, closeLabel })
+    : pageConfig?.content;
 
   return (
     <ModalPortal>
@@ -422,7 +425,7 @@ export function SettingsModal({
                   {layout === 'compact' ? (
                     compactPageOpen && pageConfig ? (
                       <View style={styles.content}>
-                        <PageScroller
+                        {pageConfig.fullBleed ? typeof pageConfig.content === 'function' ? pageContent : <><PageHeader title={pageConfig.title} onBack={requestNavigation} backLabel={labels?.back ?? common.back} safeArea={false} placement="inline" />{pageContent}</> : <PageScroller
                           header={{
                             title: pageConfig.title,
                             onBack: requestNavigation,
@@ -436,8 +439,8 @@ export function SettingsModal({
                           insetTop={CONTENT_INSET.compact}
                           testID={testID}
                         >
-                          {pageConfig.content}
-                        </PageScroller>
+                          {pageContent}
+                        </PageScroller>}
                       </View>
                     ) : (
                       <View style={styles.content}>
@@ -469,7 +472,7 @@ export function SettingsModal({
                         testID={testID}
                       />
                       <View style={styles.content}>
-                        <PageScroller
+                        {pageConfig?.fullBleed ? pageContent : <PageScroller
                           header={{
                             title: pageConfig?.title ?? '',
                             closeLabel,
@@ -481,8 +484,8 @@ export function SettingsModal({
                           insetTop={pageConfig?.compactTitle ? 6 : 12}
                           testID={testID}
                         >
-                          {pageConfig?.content}
-                        </PageScroller>
+                          {pageContent}
+                        </PageScroller>}
                       </View>
                     </>
                   )}

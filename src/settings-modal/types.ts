@@ -31,11 +31,22 @@ export interface SettingsNavGroup {
   items: SettingsNavItem[];
 }
 
+/** Navigation supplied to a page that renders its own header. */
+export interface SettingsModalPageNavigation {
+  /** Returns to the section list on compact screens; absent when the rail is visible. */
+  onBack?: () => void;
+  backLabel: string;
+  onClose: () => void;
+  closeLabel: string;
+}
+
 /** One page of the content pane. */
 export interface SettingsModalPage {
+  /** Page owns its header and scrolling (for a searchable catalog, for example). */
+  fullBleed?: boolean;
   /** Heading of the shared PageHeader. */
   title: string;
-  content: ReactNode;
+  content: ReactNode | ((navigation: SettingsModalPageNavigation) => ReactNode);
   /**
    * Used on the Storage page: a 6px gap below PageHeader instead of 12px, because the page
    * already carries 10px of headroom for the dropzone's progress badge.
@@ -87,6 +98,7 @@ export interface SettingsModalProps {
 // ---------------------------------------------------------------------------
 
 export interface SettingsCardProps {
+  className?: string;
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;

@@ -95,6 +95,7 @@ describe('the field contract', () => {
     // Named rather than counted: a count moves for the wrong reasons, and this
     // list is the deliverable of the adoption work.
     expect(READERS).toEqual([
+      'agent-creator',
       'card-form',
       'checkbox',
       'date-picker',
@@ -124,7 +125,9 @@ describe('the field contract', () => {
     // `field` itself publishes the contract rather than consuming it, and its
     // own suite is `FieldAssociation.test.tsx`.
     const consumers = READERS.filter((family) => family !== 'field');
-    const missing = consumers.filter((family) => !gate.includes(`'../${family}'`));
+    // An internal subject is still a real family reader; public exports stay intentional.
+    const exercised = new Set(Array.from(gate.matchAll(/['"]\.\.\/([^/'"]+)(?:\/[^'"]+)?['"]/g), match => match[1]));
+    const missing = consumers.filter((family) => !exercised.has(family));
     expect(missing).toEqual([]);
   });
 });

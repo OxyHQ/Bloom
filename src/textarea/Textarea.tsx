@@ -1,6 +1,6 @@
 import { useBloomAppearance } from '../appearance';
 import React, { useRef, useState } from 'react';
-import { Platform, StyleSheet, TextInput, type TextStyle, View } from 'react-native';
+import { Platform, StyleSheet, TextInput, type TextStyle, type TextInputProps, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -23,6 +23,9 @@ import {
 
 import { useFieldMembership } from '../field/membership';
 import type { TextareaProps } from './types';
+import { styled } from 'react-native-css';
+import { StyledView } from '../styles/styled-primitives';
+const StyledTextInput: React.ComponentType<TextInputProps & {ref?: React.Ref<TextInput>}> = styled(TextInput, {className: 'style'});
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -70,6 +73,10 @@ export function Textarea({
   tooltip = false,
   style,
   inputStyle,
+  className,
+  fieldClassName,
+  inputClassName,
+  fieldStyle,
   inputRef,
   accessibilityLabel,
   nativeID,
@@ -116,6 +123,7 @@ export function Textarea({
   const controlStyle = StyleSheet.flatten([
     {
       fontFamily: SANS_FONT_FAMILY,
+      ...(inputClassName ? {} : {
       fontSize: TEXT_FIELD_TEXT.fontSize,
       lineHeight: line,
       fontWeight: TEXT_FIELD_TEXT.fontWeight,
@@ -124,6 +132,7 @@ export function Textarea({
       paddingRight: TEXT_FIELD_INPUT_INSET,
       paddingTop: 0,
       paddingBottom: 0,
+      }),
       margin: 0,
       minWidth: 0,
       width: '100%',
@@ -148,16 +157,17 @@ export function Textarea({
   ]) as TextStyle;
 
   return (
-    <View style={[{ width: '100%' }, style]} testID={testID}>
+    <StyledView className={className} style={[{ width: '100%' }, style]} testID={testID}>
       {label ? (
         <TextFieldLabel required={field.required} tooltip={tooltip}>
           {label}
         </TextFieldLabel>
       ) : null}
 
-      <View
+      <StyledView
+        className={fieldClassName}
         style={[
-          {
+          fieldClassName ? null : {
             borderRadius: TEXT_FIELD_RADIUS,
             borderWidth: TEXT_FIELD_RING_WIDTH,
             paddingHorizontal: TEXT_FIELD_GEOMETRY[size].paddingHorizontal - TEXT_FIELD_RING_WIDTH,
@@ -165,6 +175,7 @@ export function Textarea({
             ...paint,
           },
           TEXT_FIELD_WEB_TRANSITION,
+          fieldStyle,
         ]}
         {...(IS_WEB
           ? ({
@@ -175,7 +186,8 @@ export function Textarea({
               onMouseLeave: onHoverOut,
             } as Record<string, unknown>)
           : {})}>
-        <TextInput
+        <StyledTextInput
+          className={inputClassName}
           {...rest}
           {...(IS_WEB && field.disabled ? ({ disabled: true } as Record<string, unknown>) : {})}
           ref={mergeRefs([innerRef, inputRef])}
@@ -207,10 +219,10 @@ export function Textarea({
           }}
           style={controlStyle}
         />
-      </View>
+      </StyledView>
 
       {hint || showCount ? (
-        <View
+        <StyledView
           style={{
             flexDirection: 'row',
             alignItems: 'flex-start',
@@ -236,8 +248,8 @@ export function Textarea({
               {maxLength ? `${count}/${maxLength}` : String(count)}
             </Text>
           ) : null}
-        </View>
+        </StyledView>
       ) : null}
-    </View>
+    </StyledView>
   );
 }

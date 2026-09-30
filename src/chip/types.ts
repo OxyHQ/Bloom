@@ -105,6 +105,9 @@ export interface ChipProps {
   onKeyDown?: (event: { key: string; preventDefault: () => void }) => void;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  /** NativeWind recipe override; omitted keeps the standard pill. */
+  className?: string;
+  textClassName?: string;
   accessibilityLabel?: string;
   testID?: string;
 }

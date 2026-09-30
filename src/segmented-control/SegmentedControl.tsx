@@ -31,6 +31,7 @@ import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles
 import type { WebCssStyle } from '../styles/web-view-style';
 
 import { useFieldMembership } from '../field/membership';
+import { StyledView, StyledPressable } from '../styles/styled-primitives';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import { webDataSet } from '../styles/web-data';
 
@@ -182,6 +183,7 @@ export function SegmentedControl<T extends string>({
   onChange,
   children,
   style,
+  className,
   disabled = false,
   accessibilityHint,
   nativeID,
@@ -202,6 +204,7 @@ export function SegmentedControl<T extends string>({
   onValueChange?: (value: T) => void;
   onChange?: (value: T) => void;
   children: React.ReactNode;
+  className?: string;
   style?: StyleProp<ViewStyle>;
   /**
    * Disables every segment.
@@ -354,7 +357,8 @@ export function SegmentedControl<T extends string>({
 
   return (
     <GestureDetector gesture={gesture} touchAction="pan-y">
-    <View
+    <StyledView
+      className={className}
       ref={groupRef}
       {...webDataSet({ bloomSegmentedGroup: '' })}
       testID={testID}
@@ -391,7 +395,7 @@ export function SegmentedControl<T extends string>({
       <InternalContext.Provider value={contextValue}>
         {children}
       </InternalContext.Provider>
-    </View>
+    </StyledView>
     </GestureDetector>
   );
 }
@@ -404,6 +408,7 @@ const InternalItemContext = createContext<{
 export function SegmentedControlItem({
   value,
   style,
+  className,
   children,
   onPress: onPressProp,
   accessibilityLabel,
@@ -413,6 +418,7 @@ export function SegmentedControlItem({
 }: {
   value: string;
   children: React.ReactNode;
+  className?: string;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   accessibilityLabel?: string;
@@ -518,8 +524,8 @@ export function SegmentedControlItem({
   );
 
   return (
-    <View
-      style={{ flexGrow: 1, flexDirection: 'row', alignItems: 'stretch' }}
+    <StyledPressable
+      className={className}
       onLayout={evt => {
         const measuredPosition = {
           x: evt.nativeEvent.layout.x,
@@ -529,8 +535,7 @@ export function SegmentedControlItem({
           ctx.updatePosition(measuredPosition);
         }
         setPosition(measuredPosition);
-      }}>
-      <Pressable
+      }}
         {...(IS_WEB ? ({ dataSet: { bloomSegmentedItem: '' }, onKeyDown } as Record<string, unknown>) : {})}
         onPress={onPress}
         onHoverIn={onHoverIn}
@@ -552,8 +557,7 @@ export function SegmentedControlItem({
         <InternalItemContext.Provider value={itemContext}>
           {children}
         </InternalItemContext.Provider>
-      </Pressable>
-    </View>
+    </StyledPressable>
   );
 }
 

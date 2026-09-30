@@ -23,7 +23,7 @@ export function socialButtonLabel(brandLabel: string, action: SocialButtonAction
 }
 
 /** A provider's real multi-colour mark. */
-function ColorLogo({
+export function ColorLogo({
   logo,
   size,
   inverted,

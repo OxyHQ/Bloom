@@ -170,6 +170,8 @@ export type DialogControlProps = DialogControlRefProps & {
 export type DialogContextProps = {
   close: DialogControlProps['close'];
   isWithinDialog: boolean;
+  /** Remains true until the imperative exit completes. */
+  isClosing?: boolean;
 };
 
 /**
@@ -229,6 +231,10 @@ export type DialogAction = {
  * be a responsive map that collapses to a bottom-sheet on narrow viewports.
  */
 export type DialogProps = React.PropsWithChildren<{
+  /** Content owns paint and motion; shared overlay, focus and dismissal remain. */
+  presentation?: 'default' | 'custom';
+  /** Custom presentation exit lifetime, in milliseconds. */
+  exitDuration?: number;
   /**
    * Imperative open/close handle from `useDialogControl()`. Optional — omit it
    * when driving the dialog with the controlled `open` prop instead.

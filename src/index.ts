@@ -1969,8 +1969,6 @@ export type { LinkPreviewCardProps } from './link-preview';
 // Stat / profile widgets
 export { CompositionBar } from './composition-bar';
 export type { CompositionBarProps, CompositionCategory } from './composition-bar';
-export { DotGridMeter } from './dot-grid-meter';
-export type { DotGridMeterProps } from './dot-grid-meter';
 export { Meter, MeterRing, StatBar, meterFraction, meterValue, resolveMeterColors } from './stat-bar';
 export type {
   AnyMeterProps,
@@ -2132,3 +2130,8 @@ export * from './note-card';
 export * from './note-editor';
 export * from './outline-nav';
 export * from './tag-field';
+
+export * from './agent-avatar';
+export * from './agent-creator';
+export * from './project-board';
+export * from './multi-agent-chat';

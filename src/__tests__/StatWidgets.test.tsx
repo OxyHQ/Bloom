@@ -4,7 +4,6 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import {
   CompositionBar,
-  DotGridMeter,
   StatBar,
   ActivityHeatmap,
   bucketByDay,
@@ -58,32 +57,6 @@ describe('CompositionBar', () => {
     );
     // Content is 300 of 400 → 75%.
     expect(getByText('300 @ 75')).toBeTruthy();
-  });
-});
-
-describe('DotGridMeter', () => {
-  // These read the FLAT `aria-value*` props, which is the spelling that reaches
-  // both platforms: react-native-web drops the `accessibilityValue` object
-  // entirely, and React Native folds these three back into it. That is the whole
-  // reason the meter changed — and it is also why these assertions cannot be the
-  // gate. They run under the repo-wide react-native mock, so they read a prop
-  // straight back off a stub and would pass for either spelling; the ATTRIBUTE
-  // assertions in `aria-state-web.test.tsx` are what see the difference.
-  it('states the progressbar value in the spelling web reads', () => {
-    const { getByTestId } = renderWithTheme(
-      <DotGridMeter filled={7} total={12} testID="dots" />,
-    );
-    const node = getByTestId('dots');
-    expect(node.props['aria-valuemin']).toBe(0);
-    expect(node.props['aria-valuemax']).toBe(12);
-    expect(node.props['aria-valuenow']).toBe(7);
-  });
-
-  it('clamps filled to total', () => {
-    const { getByTestId } = renderWithTheme(
-      <DotGridMeter filled={99} total={5} testID="dots" />,
-    );
-    expect(getByTestId('dots').props['aria-valuenow']).toBe(5);
   });
 });
 

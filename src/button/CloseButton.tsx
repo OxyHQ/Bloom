@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
-import { Platform, Pressable } from 'react-native';
+import { Platform } from 'react-native';
+import { StyledPressable } from '../styles/styled-primitives';
 import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
@@ -69,6 +70,7 @@ function CloseButtonComponent({
   disabled = false,
   accessibilityLabel,
   style,
+  className,
   testID,
 }: CloseButtonProps) {
   const theme = useTheme();
@@ -90,7 +92,8 @@ function CloseButtonComponent({
   };
 
   return (
-    <Pressable
+    <StyledPressable
+      className={className}
       {...(IS_WEB ? ({ dataSet: { bloomButtonClose: '' } } as Record<string, unknown>) : {})}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
@@ -120,7 +123,7 @@ function CloseButtonComponent({
           strokeLinecap="round"
         />
       </Svg>
-    </Pressable>
+    </StyledPressable>
   );
 }
 

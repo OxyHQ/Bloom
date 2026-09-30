@@ -1,6 +1,7 @@
 export { Sidebar } from './Sidebar';
 export { SidebarFolder } from './SidebarFolder';
 export { SidebarItem } from './SidebarItem';
+export { SidebarToolbar } from './SidebarToolbar';
 export { SIDEBAR_METRICS } from './metrics';
 export { SidebarModeSwitcher } from './SidebarModeSwitcher';
 export { SidebarPlanCard } from './SidebarPlanCard';
@@ -33,6 +34,7 @@ export type {
   SidebarSurface,
   SidebarTeam,
   SidebarTeamMenuProps,
+  SidebarToolbarProps,
   SidebarTree,
   SidebarTreeFolder,
   SidebarTreeItem,
