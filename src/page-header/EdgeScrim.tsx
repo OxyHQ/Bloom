@@ -6,7 +6,9 @@ import { useSvgIdPrefix } from '../styles/svg-id';
 
 /**
  * The floating header's EDGE EFFECT: the page colour at the top, fading to
- * nothing below the islands.
+ * nothing below the islands. `edge="bottom"` is the same ramp mirrored — the
+ * colour at the bottom, fading to nothing above — for chrome that floats at the
+ * bottom of a scroller (a pinned composer, a sidebar's lower edge).
  *
  * ── WHY IT IS A GRADIENT AND NOT A BLUR ─────────────────────────────────────
  *
@@ -90,15 +92,23 @@ export const SCRIM_STOPS = [
 export interface EdgeScrimProps {
   /** The page colour the ramp starts from — opaque, alpha travels separately. */
   color: string;
+  /**
+   * The edge the colour is solid at. `top` (default) fades downward; `bottom`
+   * fades upward. Mirrored in the gradient's own axis rather than with a
+   * `rotate` transform on the host, so the scrim's box stays where its layout
+   * put it on every platform.
+   */
+  edge?: 'top' | 'bottom';
   testID?: string;
 }
 
-const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({ color, testID }) => {
+const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({ color, edge = 'top', testID }) => {
   const id = `${useSvgIdPrefix('bloom-page-header-scrim')}gradient`;
+  const fromBottom = edge === 'bottom';
   return (
     <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} testID={testID}>
       <Defs>
-        <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+        <LinearGradient id={id} x1="0" y1={fromBottom ? '1' : '0'} x2="0" y2={fromBottom ? '0' : '1'}>
           {SCRIM_STOPS.map((stop) => (
             <Stop
               key={stop.offset}
