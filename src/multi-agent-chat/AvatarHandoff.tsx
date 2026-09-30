@@ -42,6 +42,10 @@ function FlyingAvatar({
 }) {
   const reduced = useReducedMotion(),
     progress = useSharedValue(0);
+  // Only plain geometry and the id cross into the native UI runtime.
+  // The committed DrawingContext stays on the JS side for SVG rendering.
+  const from = avatar.from;
+  const agentId = avatar.agent.id;
   const duration = kind === 'group' ? 700 : answering ? 800 : 950,
     delay = kind === 'group' ? index * 80 : answering ? 0 : index * 120;
   useEffect(() => {
@@ -55,15 +59,15 @@ function FlyingAvatar({
             kind === 'group' ? Easing.bezier(0.22, 1, 0.36, 1) : Easing.linear,
         },
         (finished) => {
-          if (finished) runOnJS(onArrive)(avatar.agent.id);
+          if (finished) runOnJS(onArrive)(agentId);
         },
       ),
     );
     return () => cancelAnimation(progress);
-  }, [progress, reduced, delay, duration, kind, onArrive, avatar.agent.id]);
+  }, [progress, reduced, delay, duration, kind, onArrive, agentId]);
   const animated = useAnimatedStyle(() => {
     const point = avatarFlightPoint(
-      avatar.from,
+      from,
       target,
       progress.value,
       kind === 'first',
@@ -73,15 +77,15 @@ function FlyingAvatar({
       transform: [
         { translateX: point.x },
         { translateY: point.y },
-        { scaleX: point.width / avatar.from.width },
-        { scaleY: point.height / avatar.from.height },
+        { scaleX: point.width / from.width },
+        { scaleY: point.height / from.height },
       ],
       opacity:
         kind === 'first' && !answering && t >= 0.78
           ? Math.max(0, (1 - t) / 0.22)
           : 1,
     };
-  }, [avatar.from, target, progress, kind, answering]);
+  }, [from, target, progress, kind, answering]);
   return (
     <AnimatedView
       pointerEvents="none"
