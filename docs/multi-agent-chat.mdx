@@ -1,0 +1,69 @@
+# Multi-agent Chat
+
+`MultiAgentChat` combines individual and group conversations, the agent creator,
+animated avatars, an editable agent library and a demo marketplace.
+
+```tsx
+import { MultiAgentChat } from '@oxy.so/bloom/multi-agent-chat';
+
+<MultiAgentChat
+  onRespond={async (agent, messages, signal) => {
+    const response = await fetch('/api/agents/respond', {
+      method: 'POST', signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent, messages }),
+    });
+    if (!response.ok) throw new Error('Agent response failed');
+    return (await response.json()).text;
+  }}
+/>
+```
+
+Without `onRespond`, the workspace returns sample responses. Each participant
+responds in conversation order. Stop cancels the request and reveal timers;
+partial replies remain visible. Chat switching keeps each draft and generation
+separate; deleting a conversation aborts its outstanding work.
+
+`initialWorkspace` supplies agents and conversations; `onWorkspaceChange` exposes
+edits for host persistence. `storageKey` defaults to `bloom:multi-agent-chat` on
+web; set it to `null` to disable browser storage. Native keeps session state until
+the host stores the workspace. Invalid stored data falls back to the initial demo.
+
+`defaultEditorId` initially opens an agent's editor on desktop. The compact editor
+uses a side surface. `voices` and `onPreviewVoice` connect a native speech provider;
+web can use device speech. `onCopy` supplies native clipboard integration; the
+default native fallback opens the share sheet.
+
+Marketplace plugin choices are workspace demo configuration. They do not authorize
+or connect external accounts. Supply real integrations through the host.
+
+The React Native layout and state are shared across platforms. Thin bindings pick
+Bloom's existing web/native Dialog, ComposerPanel and AgentCreator implementations.
+Layout utilities require the consumer NativeWind/Tailwind source scanning described
+in `docs/styles.mdx`. Theme colours come from Bloom's provider.
+
+Group creation and the first group message move the avatar artwork between
+measured positions with the source timings. Web renders the decorative journey
+through a portal; native uses a local absolute overlay that does not intercept
+touches. The preview publishes its exact committed drawing command stream to an internal
+observer. The journey retains that frame and renders it through the same shared
+SVG renderer, preserving the departing face and pose without restarting motion.
+Reduced motion skips the flights and snaps the editor rail into place. Missing
+or unmounted measurements cancel the decoration without delaying responses.
+Reply actions appear on mouse hover or keyboard focus and remain visible on touch.
+
+`providers` replaces the demo model catalogue in the shared `ComposerPanel`.
+Its model picker, stop action, permission picker and attachments retain the
+composer family’s current behavior. The workspace uses the active Bloom locale;
+its application copy is registered with the shared message catalogue.
+
+Marketplace links use the `marketplace` URL parameter on web. A recognized item
+opens directly in its detail view. Notifications render in the shared portal and
+overlay layer without moving the conversation or composer.
+
+The generated Bloom theme fixes numeric spacing to a 4px grid and emits radii
+and container widths in pixels. This preserves the same utility classes and
+geometry on web and native. NativeWind’s default 14px rem otherwise compiles
+`gap-2.5` to 8.75px rather than 10px; the installed preview also drops Metro’s
+`inlineRem` option on one export path. No consumer rem workaround is required
+for these component utilities: import Bloom’s generated theme/preset.

@@ -53,10 +53,12 @@ export function Collapsible({
   collapsed,
   children,
   style,
+  stretch = false,
 }: {
   collapsed: boolean;
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  stretch?: boolean;
 }) {
   const progress = useSidebarCollapseProgress(collapsed);
   const natural = useSharedValue(0);
@@ -72,10 +74,10 @@ export function Collapsible({
 
   return (
     <Animated.View
-      style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }, style, animated]}
+      style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden', ...(stretch ? { flex: 1 } : {}) }, style, animated]}
     >
       <View
-        style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}
+        style={{ flexDirection: 'row', alignItems: 'center', flexShrink: stretch ? 1 : 0, ...(stretch ? { flex: 1, minWidth: 0 } : {}) }}
         onLayout={(event: LayoutChangeEvent) => {
           natural.value = event.nativeEvent.layout.width;
         }}

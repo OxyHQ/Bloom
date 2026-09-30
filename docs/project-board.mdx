@@ -1,0 +1,35 @@
+# Project Board
+
+A shared project board for web, iOS and Android. It keeps the original five-column ticket layout, compact member avatars, priority/project chips, sort/filter/display menus, empty-column illustration, create-more flow and ticket detail panel.
+
+```tsx
+import { ProjectBoard } from '@oxy.so/bloom/project-board';
+
+<ProjectBoard
+  initialColumns={columns}
+  members={members}
+  projects={['Bloom', 'Product']}
+  currentUserId="maya"
+  onColumnsChange={saveColumns}
+/>
+```
+
+`initialColumns` is copied on mount. Updates are local until `onColumnsChange` persists them. Limits are display metadata, as in the original board; reaching a limit does not reject a ticket. The package has no demo people or fake activity. The Project Board template outside `src/` supplies the original columns, people, descriptions, discussion, resources and token series.
+
+Tickets carry description, assignees, priority, project, favorite state and comments. `resources` supplies external resource chips; `tokenUsage` supplies the existing `TokensChartCard`. Opening a card calls `onTicketOpen`. `initialTicketId` opens a detail panel on mount; web also recognizes `#ticket=<id>` and hash changes. Provide `onCopyTicketLink` and `onCopyTicketId` for the product's native clipboard and routing integration; web defaults to the current URL and browser clipboard. Copy failures are announced.
+
+Creation and detail panels use `useDialogControl()` through Bloom's platform-bound Dialog. Creation trims fields, rejects a blank title and supports creating several tickets without closing. Detail edits persist immediately; description editing has Save/Cancel. Comments reject whitespace and append without replacing history.
+
+Drag uses Gesture Handler and Reanimated on both platforms: mouse movement activates after five pixels; touch activates after 180 ms. Hit testing chooses the column underneath the pointer before its ticket positions, so a short neighboring column cannot steal a drop. Empty columns accept drops; dropping outside or cancelling leaves the original order intact. Filtered moves preserve hidden tickets. Drag sets sorting back to manual. Pointer proximity scrolls columns and the board during movement.
+
+On web, Enter opens a ticket; space picks it up, arrows move it, space commits and Escape restores the previous order. Left/right follow the locale direction. Native screen-reader actions move up/down or to an adjacent column. Fixed strings use the Project Board catalog in all fifteen Bloom languages. Direction follows the existing locale/I18nManager hook; content supplied in props remains product data.
+
+## Motion and verification
+
+The original Tailwind class recipes, custom SVG glyphs, empty-state geometry and reveal timing remain in the shared NativeWind content. The template preserves the original 272px drawer, 325ms reveal, 273px columns and shell insets while reusing Bloom’s current Sidebar. Buttons, chips, fields, selectors, menus, tooltips and charts compose Bloom 6.4 primitives. Palette and material follow the current Bloom theme.
+
+Web runs the original create Genie displacement field and the detail Genie’s cached perspective bands: live content remains interactive at rest; visual copies are inert and have rebased SVG IDs. The dialogs retain Bloom’s imperative lifecycle, focus handling and overlay stack through `presentation="custom"`. Entry/exit reverse from the current shape when interrupted and respect reduced motion.
+
+React Native can animate the original stretch, scale, translation and timing through Reanimated, but it does not expose a View’s live pixels as `feDisplacementMap` input or DOM clipping bands. Those two pixel deformations remain specific to web. Native touch/paint behavior has not been verified on a physical device; platform CSS exports do not establish pixel equivalence.
+
+Chrome at 1440×900 compared the original and Bloom side by side: create measured 560×230px and detail 609×876px in both, with the original descriptions, people, resources, activity and token data. Real browser checks cover wide/compact, dark and RTL rendering, keyboard moves, creation, favorites, comments and Escape. Thirteen focused Jest cases cover data transitions, interactions and default/custom Dialog completion semantics. Browser keyboard capture is intentional because react-native-web consumes space before bubbling. Pointer dragging remains a separate browser check; the final scripted drag started from a card outside the horizontally scrolled viewport and did not establish a drop result.

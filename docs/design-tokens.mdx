@@ -291,6 +291,14 @@ and muted/accent aliases do not represent separate elevations.
 - **Shadow**: `shadow-s`, `shadow-m` (web box-shadow). On native surfaces apply
   `bloomShadowStyle('s' | 'm')` (returns RN elevation/shadow props).
 
+Numeric Tailwind utilities retain their authored pixel geometry too: the theme
+uses a 4px `--spacing` unit, pixel-valued radius names (`rounded-3xl` is 24px),
+and pixel-valued container widths. The NativeWind 5 preview otherwise treats
+rem as 14px, shrinking `gap-2.5` to 8.75px. Its Metro option is not forwarded on
+one export path, and a CSS root font size does not fix rem inside inlined custom
+properties. `native-utility-geometry.test.ts` runs Tailwind → native compilation
+without a consumer override and asserts the actual output values.
+
 ### Chart series
 
 `--chart-1` through `--chart-9` and their `--chart-N-active` partners are

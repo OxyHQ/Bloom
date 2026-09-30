@@ -21,7 +21,7 @@ const REPRESENTATIVE_PARTS = [
 
 // Stat / profile widget components added to the public surface.
 const NEW_FLAT_COMPONENTS = [
-  'CompositionBar', 'DotGridMeter', 'StatBar', 'ActivityHeatmap',
+  'CompositionBar', 'StatBar', 'ActivityHeatmap',
 ] as const;
 
 /**

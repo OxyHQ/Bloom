@@ -20,7 +20,7 @@
 
 ### What it is
 
-Components, hooks and design tokens published as `@oxy.so/bloom` across 168 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
+Components, hooks and design tokens published as `@oxy.so/bloom` through component subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
 Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
 
@@ -151,7 +151,7 @@ Every palette is generated from a single seed colour by a dependency free colour
 
 ## Components
 
-Bloom publishes 168 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
+Bloom publishes each component family through a subpath export. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
 
 Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/<RiName>`. Metro does not tree-shake, so the flat `@oxy.so/bloom/icons` barrel ships all 480 glyphs to any app that names one — see [icons](./docs/icons.mdx) for the measurement and when to reach for which import. The barrel keeps working unchanged — it stays an exact `exports` key, and an exact key beats a pattern everywhere.
 
@@ -163,7 +163,7 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 | Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
 | Forms | `text-field`, `textarea`, `phone-input`, `input-otp`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `date-picker`, `file-upload`, `auth-card`, `stepper`, `rating`, `wizard` |
 | Layout and lists | `grid`, `list`, `scroll`, `settings-list`, `card`, `cover-header`, `accordion`, `aspect-ratio`, `divider`, `item`, `carousel` |
-| Data and charts | `table`, `data-table`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
+| Data and charts | `table`, `data-table`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `stat-bar`, `activity-heatmap`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
 | Music and media | `media-card`, `media-controls`, `media-header`, `media-player`, `media-shelf`, `track-list`, `queue-panel`, `lyrics`, `music-library`, `creator-studio`, `sortable-media` |
 | Housing | `home-search`, `listing-actions`, `listing-editor`, `offering-badge`, `place-reviews`, `property-insights`, `tenancy`, `eviction` |
 | Stays and booking | `listing-card`, `listing-details`, `stay-search`, `stay-filters`, `booking`, `category-bar`, `map-marker` |

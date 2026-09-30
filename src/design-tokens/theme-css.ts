@@ -1,3 +1,5 @@
+import { COMPONENT_CONTAINERS, COMPONENT_COLOR_ROLES, COMPONENT_RADIUS, COMPONENT_SHADOWS } from './component-roles';
+import { TYPE_SCALE } from '../typography/scale';
 /**
  * Tailwind v4 `@theme` block generator for the Oxy Unified Design Language.
  *
@@ -62,6 +64,7 @@ export function bloomThemeCss(): string {
 
   // Bloom's namespaced semantic color roles (bg-fill, text-text-*, border-*).
   for (const [role, value] of Object.entries({
+    ...COMPONENT_COLOR_ROLES,
     ...FILL_ROLES,
     ...TEXT_ROLES,
     ...ACCENT_TEXT_ROLES,
@@ -88,6 +91,11 @@ export function bloomThemeCss(): string {
   // `divider` is a semantic alias of the border token (M3 outlineVariant) so
   // `bg-divider` / `border-divider` read intentionally in list/section UIs.
   lines.push('  --color-divider: var(--border);');
+
+  // A rem defaults to 14px in the native CSS compiler. Authored numeric
+  // utilities use the same 4px grid as the web, without consumer configuration.
+  lines.push('  --spacing: 4px;');
+  for (const [name, width] of Object.entries(COMPONENT_CONTAINERS)) lines.push(`  --container-${name}: ${width};`);
 
   // Spacing.
   for (const [key, value] of Object.entries(SPACING)) {
@@ -122,6 +130,16 @@ export function bloomThemeCss(): string {
     lines.push(`  --text-${name}--font-weight: ${role.weight};`);
     lines.push(`  --font-${name}: ${FONT_FAMILY_VARS[role.family]};`);
   }
+
+  // The detailed component typography vocabulary shares Typography's exact ramp.
+  for (const [name, role] of Object.entries(TYPE_SCALE)) {
+    lines.push(`  --text-${name}: ${role.fontSize}px;`);
+    lines.push(`  --text-${name}--line-height: ${lineHeightRatio(role.lineHeight, role.fontSize)};`);
+    lines.push(`  --text-${name}--font-weight: ${role.fontWeight};`);
+    lines.push(`  --text-${name}--letter-spacing: ${role.letterSpacing}px;`);
+  }
+  for (const [name, radius] of Object.entries(COMPONENT_RADIUS)) lines.push(`  --radius-${name}: ${radius};`);
+  for (const [name, shadow] of Object.entries(COMPONENT_SHADOWS)) lines.push(`  --shadow-${name}: ${shadow};`);
 
   // Bloom raw families.
   lines.push(`  --font-bloom-sans: ${FONT_FAMILY_VARS.sans};`);

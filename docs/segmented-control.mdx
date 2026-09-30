@@ -130,3 +130,5 @@ the application root, as for BottomBar. The plain variant also accepts dragging.
 ## API migration
 
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
+
+`className` is supported by the root and each `SegmentedControlItem`. An item’s layout, press behavior and measured indicator geometry share one pressable node; `flex-1` therefore lays out the selectable item on both platforms.

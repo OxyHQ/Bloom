@@ -4,7 +4,6 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Switch } from '../switch';
 import { Slider } from '../slider';
-import { DotGridMeter } from '../dot-grid-meter';
 import { resetAccessibleNameWarningsForTests } from '../hooks/use-accessible-name-warning';
 
 /**
@@ -119,25 +118,21 @@ describe('missing accessible name guard', () => {
       <>
         <Switch checked onCheckedChange={noop} />
         <Slider value={40} min={0} max={100} onValueChange={noop} />
-        <DotGridMeter filled={3} total={10} />
       </>,
     );
 
     expect(bloomWarnings('Switch')).toHaveLength(1);
     expect(bloomWarnings('Slider')).toHaveLength(1);
-    expect(bloomWarnings('DotGridMeter')).toHaveLength(1);
   });
 
-  it('stays silent when Slider and DotGridMeter are named', () => {
+  it('stays silent when Slider is named', () => {
     mount(
       <>
         <Slider value={40} min={0} max={100} onValueChange={noop} accessibilityLabel="Volume" />
-        <DotGridMeter filled={3} total={10} accessibilityLabel="Diversity" />
       </>,
     );
 
     expect(bloomWarnings('Slider')).toHaveLength(0);
-    expect(bloomWarnings('DotGridMeter')).toHaveLength(0);
   });
 
   /**

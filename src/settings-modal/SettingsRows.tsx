@@ -1,6 +1,7 @@
 import React, { Children, Fragment, isValidElement, useContext, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SettingsRowPositionContext, useSettingsLayout, useSettingsPalette } from './context';
@@ -49,12 +50,12 @@ function flatChildren(children: ReactNode): ReactNode[] {
 }
 
 /** Grouped card. Its rows separate themselves; the last carries no hairline. */
-export function SettingsCard({ children, style, testID }: SettingsCardProps) {
+export function SettingsCard({ children, className, style, testID }: SettingsCardProps) {
   useSettingsWebCss();
   const palette = useSettingsPalette();
   const items = flatChildren(children);
   return (
-    <View
+    <StyledView className={className}
       testID={testID}
       style={[styles.card, { backgroundColor: palette.secondary }, settingsRingVars(palette), style]}
     >
@@ -67,7 +68,7 @@ export function SettingsCard({ children, style, testID }: SettingsCardProps) {
           {child}
         </SettingsRowPositionContext.Provider>
       ))}
-    </View>
+    </StyledView>
   );
 }
 

@@ -1,3 +1,5 @@
+import { COMPONENT_SPACING, COMPONENT_CONTAINERS, COMPONENT_COLOR_ROLES, COMPONENT_RADIUS, COMPONENT_SHADOWS } from './component-roles';
+import { TYPE_SCALE } from '../typography/scale';
 /**
  * The Bloom Tailwind / NativeWind preset — the SINGLE opt-in that gives every
  * Oxy app the same semantic design-token utility classes.
@@ -13,8 +15,8 @@
  *   };
  *
  * The preset only EXTENDS `theme` (everything lives under `theme.extend`), so it
- * is purely additive: existing Tailwind built-ins (`p-4`, `rounded-lg`,
- * `text-sm`) and the app's own `var(--x)`-backed color utilities keep working.
+ * keeps the authored utility names. Numeric spacing and radii use px so
+ * NativeWind's default 14px rem cannot shrink the 4px layout grid.
  *
  * Cross-platform: NativeWind reads the same `tailwind.config.js`, so the SAME
  * class names (`bg-fill`, `text-text-tertiary`, `p-space-8`, `rounded-radius-20`,
@@ -38,7 +40,7 @@ import {
 import { SHADOW_BOX } from './shadows';
 
 /** A Tailwind `fontSize` value: `[size, { lineHeight }]`. */
-type FontSizeValue = [string, { lineHeight: string }];
+type FontSizeValue = [string, { lineHeight: string; fontWeight?: string; letterSpacing?: string }];
 /** A Tailwind `fontFamily` value: `[family, { fontWeight }]`. */
 type FontFamilyValue = [string, { fontWeight: string }];
 
@@ -48,6 +50,7 @@ export interface TailwindPresetThemeExtend {
   textColor: Record<string, string>;
   borderColor: Record<string, string>;
   spacing: Record<string, string>;
+  maxWidth: Record<string, string>;
   borderRadius: Record<string, string>;
   borderWidth: Record<string, string>;
   fontSize: Record<string, FontSizeValue>;
@@ -121,20 +124,21 @@ export const bloomTailwindPreset: TailwindPreset = Object.freeze({
   theme: {
     extend: {
       // Generic color bucket — feeds every color utility family.
-      colors: { ...COLOR_ROLES },
+      colors: { ...COMPONENT_COLOR_ROLES, ...COLOR_ROLES },
       // Targeted buckets so the namespaced roles resolve on the right utility.
       backgroundColor: { ...FILL_ROLES },
       textColor: { ...TEXT_ROLES, ...ACCENT_TEXT_ROLES },
       borderColor: { ...BORDER_ROLES },
 
-      spacing: SPACING_PX,
-      borderRadius: RADIUS_PX,
+      spacing: { ...COMPONENT_SPACING, ...SPACING_PX },
+      maxWidth: { ...COMPONENT_CONTAINERS },
+      borderRadius: { ...RADIUS_PX, ...COMPONENT_RADIUS },
       borderWidth: BORDER_WIDTH_PX,
 
-      fontSize: buildFontSize(),
+      fontSize: { ...buildFontSize(), ...Object.fromEntries(Object.entries(TYPE_SCALE).map(([name, role]) => [name, [`${role.fontSize}px`, { lineHeight: `${role.lineHeight}px`, fontWeight: String(role.fontWeight), letterSpacing: `${role.letterSpacing}px` }] satisfies FontSizeValue])) },
       fontFamily: buildFontFamily(),
 
-      boxShadow: { s: SHADOW_BOX.s, m: SHADOW_BOX.m },
+      boxShadow: { ...COMPONENT_SHADOWS, s: SHADOW_BOX.s, m: SHADOW_BOX.m },
     },
   },
 });

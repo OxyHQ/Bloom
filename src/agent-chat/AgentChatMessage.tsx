@@ -309,3 +309,10 @@ export function AgentChatMessage({
   );
 }
 AgentChatMessage.displayName = 'AgentChatMessage';
+
+/** Paragraph reveal shared by conversation surfaces. Each line enters only once. */
+export function StreamedText({text,paragraphs=false}:{text:string;paragraphs?:boolean}) {
+  const reduced=useReducedMotion(), palette=useAgentChatPalette();
+  const lines=text.split('\n').filter(line=>line.trim()!=='');
+  return <View style={{gap:paragraphs?12:0}}>{lines.map((line,index)=><Line key={index} text={line} color={palette.text} animate={!reduced}/>)}</View>;
+}

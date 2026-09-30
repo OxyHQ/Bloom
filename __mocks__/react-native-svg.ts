@@ -49,3 +49,7 @@ export const TSpan = createSvgComponent('TSpan');
 export const Image = createSvgComponent('SvgImage');
 
 export default Svg;
+
+export const Filter = createSvgComponent('Filter');
+export const FeGaussianBlur = createSvgComponent('FeGaussianBlur');
+export const SvgXml = createSvgComponent('SvgXml');

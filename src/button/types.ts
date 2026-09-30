@@ -244,6 +244,8 @@ export type LinkButtonProps = ButtonProps;
 
 /** Props of `CloseButton`. */
 export interface CloseButtonProps {
+  /** Utility classes applied to the control laid out by its parent. */
+  className?: string;
   onPress?: () => void;
   /** `2xs` 16 · `xs` 20 (default) · `sm` 24 · `md` 32. */
   size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';

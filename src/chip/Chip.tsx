@@ -18,6 +18,7 @@ import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CHIP_GEOMETRY, resolveChipPaint, resolveChipRing } from './shared';
 import type { ChipProps } from './types';
+import { StyledView, StyledPressable } from '../styles/styled-primitives';
 
 /**
  * The chip, five rungs and four fills. The rung table and the paint recipe are
@@ -129,6 +130,8 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     onKeyDown,
     style,
     textStyle,
+    className,
+    textClassName,
     accessibilityLabel,
     testID,
   },
@@ -159,15 +162,17 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   const geometry = CHIP_GEOMETRY[size];
 
   const containerStyle = useMemo((): WebCssStyle => ({
+    ...(className ? {} : {
     height: geometry.height,
     borderRadius: borderRadius.full,
     paddingHorizontal: geometry.paddingHorizontal,
     backgroundColor: paint.background,
     borderWidth: paint.borderWidth,
     borderColor: paint.border,
+    }),
     flexDirection: 'row',
     alignItems: 'center',
-    gap: geometry.iconGap,
+    ...(className ? {} : { gap: geometry.iconGap }),
     alignSelf: 'flex-start',
     ...(geometry.minWidth ? { minWidth: geometry.minWidth, justifyContent: 'center' } : null),
     // A pill is a fixed-size token. In a flex row of chips (a filter bar, a tag
@@ -175,19 +180,19 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     // neighbours into ellipsis. `overflow: hidden` keeps the content inside the
     // radius.
     flexShrink: 0,
-    overflow: 'hidden',
+    ...(className ? {} : { overflow: 'hidden' as const }),
     // The `:focus-visible` ring colour, read by the adopted sheet. A custom
     // property because the value is a resolved theme token the static sheet
     // cannot know; native has no such style key and ignores it.
     '--bloom-chip-ring': ring,
-  }), [geometry, paint, ring]);
+  }), [className, geometry, paint, ring]);
 
   const labelStyle = useMemo((): TextStyle => ({
-    color: paint.foreground,
+    ...(className ? {} : { color: paint.foreground }),
     // The label yields before the pill does: a chip narrower than its text
     // ellipsises rather than overflowing its own radius.
     flexShrink: 1,
-  }), [paint]);
+  }), [className, paint]);
 
   // Icons inside the pill are sized to the RUNG, not to whatever the caller
   // happened to pass. A slot with a fixed box does that without reaching into
@@ -223,7 +228,7 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     <>
       {startIcon != null ? <View style={iconSlotStyle}>{startIcon}</View> : null}
       {typeof children === 'string' ? (
-        <Text variant={geometry.type} numberOfLines={1} style={[labelStyle, textStyle]}>
+        <Text className={textClassName ?? className?.split(/\s+/).filter(token => /^(text-|font-|leading-|tracking-|whitespace-)/.test(token)).join(" ")} variant={geometry.type} numberOfLines={1} style={[labelStyle, textStyle]}>
           {children}
         </Text>
       ) : (
@@ -252,7 +257,8 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
           : { accessibilityState: { disabled, selected }, 'aria-pressed': selected };
 
     return (
-      <Pressable
+      <StyledPressable
+        className={className}
         ref={ref}
         // The DOM hook the adopted sheet above hangs off.
         //
@@ -304,19 +310,20 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
         testID={testID}
       >
         {content}
-      </Pressable>
+      </StyledPressable>
     );
   }
 
   return (
-    <View
+    <StyledView
+      className={className}
       ref={ref}
       style={[containerStyle, disabled && { opacity: 0.5 }, style]}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
       {content}
-    </View>
+    </StyledView>
   );
 });
 

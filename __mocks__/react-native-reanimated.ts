@@ -59,6 +59,12 @@ const Reanimated = {
     (...args: unknown[]) => {
       handlers.forEach((handler) => handler?.(...args));
     },
+  // Keeps frame subscription state, without claiming to simulate the UI clock.
+  useFrameCallback: (_callback: unknown, autostart = true) => {
+    const ref = useRef<{isActive:boolean;setActive:(active:boolean)=>void}|null>(null);
+    if (!ref.current) { const state = {isActive:autostart,setActive(active:boolean){state.isActive=active;}}; ref.current=state; }
+    return ref.current;
+  },
   // Reduced motion defaults to off in tests; suites that need it on can override.
   useReducedMotion: () => false,
   // Mirrors `withTiming` below: the real `withSpring` also takes a completion
@@ -184,6 +190,7 @@ export const useAnimatedReaction = Reanimated.useAnimatedReaction;
 export const useAnimatedProps = Reanimated.useAnimatedProps;
 export const useAnimatedScrollHandler = Reanimated.useAnimatedScrollHandler;
 export const useComposedEventHandler = Reanimated.useComposedEventHandler;
+export const useFrameCallback = Reanimated.useFrameCallback;
 export const useReducedMotion = Reanimated.useReducedMotion;
 export const withSpring = Reanimated.withSpring;
 export const withTiming = Reanimated.withTiming;

@@ -1,4 +1,4 @@
-import type { TextInput, TextInputProps } from 'react-native';
+import type { TextInput, TextInputProps, StyleProp, ViewStyle } from 'react-native';
 
 import type { ViewStyleProp, TextStyleProp } from '../styles';
 import type { TextFieldSize } from '../text-field';
@@ -46,5 +46,10 @@ export type TextareaProps = Omit<
     tooltip?: boolean;
     /** Style for the `TextInput` itself (the outer `style` is the whole field). */
     inputStyle?: TextStyleProp['style'];
+    /** Opt-in recipes for borderless/autogrowing composed fields. */
+    className?: string;
+    fieldClassName?: string;
+    inputClassName?: string;
+    fieldStyle?: StyleProp<ViewStyle>;
     inputRef?: React.RefObject<TextInput | null> | React.ForwardedRef<TextInput>;
   };
