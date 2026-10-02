@@ -12,28 +12,35 @@ import Animated, {
 } from 'react-native-reanimated';
 import { EYES, type AvatarConfig } from '../agent-avatar';
 import { AgentFace } from '../agent-avatar/AgentFace';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { StyledImage, StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
+export type EmotionChoice = { id: string; label: string; config: AvatarConfig; disabled?: boolean; thumbnail?: string };
 function Emotion({
   config,
-  eyes,
+  choice,
+  backgroundColor,
+  active,
+  count,
   index,
   rotation,
   onChange,
 }: {
   config: AvatarConfig;
-  eyes: AvatarConfig['eyes'];
+  choice: EmotionChoice;
+  backgroundColor?: string;
+  active: boolean;
+  count: number;
   index: number;
   rotation: SharedValue<number>;
-  onChange: (eyes: AvatarConfig['eyes']) => void;
+  onChange: (id: string) => void;
 }) {
   const messages = useAgentCreatorMessages();
   const { colors } = useTheme();
-  const angle = (index * 360) / EYES.length;
+  const angle = (index * 360) / count;
   const counterRotation = useAnimatedStyle(
     () => ({ transform: [{ rotate: `${-rotation.value - angle}deg` }] }),
     [rotation, angle],
@@ -55,21 +62,22 @@ function Emotion({
       <AnimatedView style={counterRotation}>
         <StyledPressable
           accessibilityRole="button"
-          accessibilityLabel={messages.emotions[eyes]}
-          aria-pressed={config.eyes === eyes}
-          accessibilityState={{ selected: config.eyes === eyes }}
-          onPress={() => onChange(eyes)}
+          accessibilityLabel={choice.label}
+          aria-pressed={active}
+          accessibilityState={{ selected: active, disabled: choice.disabled }}
+          aria-disabled={choice.disabled}
+          disabled={choice.disabled}
+          onPress={() => onChange(choice.id)}
           pointerEvents="auto"
-          className={`pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring ${config.eyes === eyes ? 'border-foreground-icon-secondary' : 'border-transparent'}`}
+          className={`pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring ${active ? 'border-foreground-icon-secondary' : 'border-transparent'}`}
           style={{
-            backgroundColor: `hsl(${config.hue}, ${config.saturation}%, ${config.lightness ?? 80}%)`,
-            borderColor: config.eyes === eyes ? colors.icon : 'transparent',
+            backgroundColor: backgroundColor ?? `hsl(${config.hue}, ${config.saturation}%, ${config.lightness ?? 80}%)`,
+            borderColor: active ? colors.icon : 'transparent',
           }}
         >
-          <AgentFace
+          {choice.thumbnail ? <StyledImage source={{ uri: choice.thumbnail }} resizeMode="contain" accessible={false} style={{ width: 27, height: 27, opacity: choice.disabled ? 0.35 : 1 }} /> : <AgentFace
             config={{
-              ...config,
-              eyes,
+              ...choice.config,
               eyeSize: 24,
               eyeGap: 36,
               lookAt: 'center',
@@ -77,7 +85,7 @@ function Emotion({
               idle: false,
             }}
             size={34}
-          />
+          />}
         </StyledPressable>
       </AnimatedView>
     </StyledView>
@@ -88,11 +96,22 @@ function Emotion({
 export function EmotionPicker({
   config,
   onChange,
+  choices: choicesProp,
+  value: valueProp,
+  onSelect,
+  backgroundColor,
 }: {
   config: AvatarConfig;
+  backgroundColor?: string;
+  choices?: readonly EmotionChoice[];
+  value?: string;
+  onSelect?: (id: string) => void;
   onChange: (eyes: AvatarConfig['eyes']) => void;
 }) {
   const messages = useAgentCreatorMessages();
+  const choices = choicesProp ?? EYES.map((eyes) => ({ id: eyes, label: messages.emotions[eyes], config: { ...config, eyes } }));
+  const value = valueProp ?? config.eyes;
+  const emit = (id: string) => onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']);
   const ref = useRef<View>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
@@ -123,7 +142,7 @@ export function EmotionPicker({
     if (Platform.OS === 'web' && typeof document !== 'undefined')
       document.addEventListener('visibilitychange', visibility);
     return () => {
-      subscription?.remove();
+      subscription?.remove?.();
       if (Platform.OS === 'web' && typeof document !== 'undefined')
         document.removeEventListener('visibilitychange', visibility);
     };
@@ -182,15 +201,18 @@ export function EmotionPicker({
             orbit,
           ]}
         >
-          {EYES.map((eyes, index) => (
+          {choices.map((choice, index) => (
             <Emotion
-              key={eyes}
+              key={choice.id}
               config={config}
-              eyes={eyes}
+              choice={choice}
+              backgroundColor={backgroundColor}
+              active={value === choice.id}
+              count={choices.length}
               index={index}
               rotation={rotation}
               onChange={(value) => {
-                if (!suppressClick.value) onChange(value);
+                if (!suppressClick.value) emit(value);
               }}
             />
           ))}

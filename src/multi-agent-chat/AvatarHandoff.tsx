@@ -12,13 +12,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
 import { Drawing } from '../agent-avatar/SvgDrawing';
-import { useIsRtl } from '../hooks/use-is-rtl';
 import { OverlayRoot } from '../overlay';
 import { StyledView } from '../styles/styled-primitives';
 import { useChatComponents } from './context';
 import {
   avatarFlightPoint,
-  badgeFlightTarget,
+  profileFlightTarget,
   measureAvatar,
   type AvatarHandoffState,
   type AvatarRect,
@@ -133,7 +132,6 @@ export function AvatarHandoff({
   onFinish: () => void;
 }) {
   const { FlightHost } = useChatComponents();
-  const rtl = useIsRtl();
   const [destinations, setDestinations] = useState<Record<string, AvatarRect>>(
     {},
   );
@@ -151,7 +149,7 @@ export function AvatarHandoff({
             rect &&
             handoff.kind === 'first' &&
             avatar.agent.id !== handoff.responderId
-              ? badgeFlightTarget(rect, rtl)
+              ? profileFlightTarget(rect)
               : rect,
           ] as const;
         }),
@@ -187,7 +185,6 @@ export function AvatarHandoff({
     onFinish,
     width,
     height,
-    rtl,
   ]);
   const relative = (rect: AvatarRect): AvatarRect =>
     Platform.OS === 'web' || !origin

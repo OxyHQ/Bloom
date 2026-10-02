@@ -18,6 +18,15 @@ const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'oben links', 'top-right': 'oben
 const MESSAGE_MEDIA_MESSAGES__items = (n: number) => plural('de', n, { one: '{n} Element', other: '{n} Elemente' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "Reagieren",
+  working: "Arbeiten",
+  avatarStyle: "Avatar-Stil",
+  proceduralAvatar: "Aktueller Avatar",
+  betaPreset: "Charaktervorlage (Beta)",
+  betaEyes: "Augenstil",
+  eyewear: "Brille",
+  accessory: "Accessoire",
+  characterOption: (_category, _id, title) => String(title),
   editor: "Agenten-Editor",
   newBot: "Neuer Bot",
   closeEditor: "Agenten-Editor schließen",
@@ -2484,7 +2493,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Agentenavatar" },
+  AGENT_AVATAR_MESSAGES: { label: "Agentenavatar", unavailable: "Avatar nicht verfügbar", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

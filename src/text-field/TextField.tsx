@@ -14,6 +14,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useFieldControl } from '../field/context';
 import { mergeRefs } from '../hooks/merge-refs';
 import {
@@ -169,6 +170,7 @@ export function TextField({
   style,
 }: TextFieldProps) {
   const theme = useTheme();
+  const direction = useDirectionProps();
   const invalidProp = invalidNew ?? isInvalid ?? false;
   const group = useContext(TextFieldGroupContext);
   const bare = group !== null;
@@ -228,6 +230,7 @@ export function TextField({
   return (
     <Context.Provider value={context}>
       <View
+        {...direction}
         style={[
           a.flex_row,
           a.align_center,
@@ -307,7 +310,7 @@ function LeadingAddon({
 
   return (
     <View
-      style={[a.z_20, { flexShrink: 0, marginRight: TEXT_FIELD_LEADING_GAP }]}
+      style={[a.z_20, { flexShrink: 0, marginInlineEnd: TEXT_FIELD_LEADING_GAP }]}
       {...(webHandlers as Record<string, unknown> | undefined)}>
       {children}
     </View>
@@ -364,6 +367,7 @@ export function TextFieldInput({
   ...rest
 }: TextFieldInputProps) {
   const theme = useTheme();
+  const rtl = useIsRtl();
   const invalidProp = invalidNew ?? isInvalid;
   // Hidden until asked. Only a secure field can be revealed; for any other the
   // prop is inert, so `secureTextEntry` passes through untouched.
@@ -517,8 +521,10 @@ export function TextFieldInput({
       minWidth: 0,
       // Longhands, so a caller's `paddingRight` (Search's clear button) wins on
       // web too — `paddingHorizontal` becomes `padding-inline`, which outranks it.
-      paddingLeft: TEXT_FIELD_INPUT_INSET,
-      paddingRight: 0,
+      // Resolve against the field's layout direction, not the input's automatic
+      // text direction (an English query may live inside an Arabic interface).
+      paddingLeft: rtl ? 0 : TEXT_FIELD_INPUT_INSET,
+      paddingRight: rtl ? TEXT_FIELD_INPUT_INSET : 0,
     },
     multiline
       ? {
@@ -639,7 +645,7 @@ function RevealButton({
 
   return (
     <View
-      style={[a.z_20, { marginLeft: TEXT_FIELD_TRAILING_GAP - inset, marginRight: -inset }]}
+      style={[a.z_20, { marginInlineStart: TEXT_FIELD_TRAILING_GAP - inset, marginInlineEnd: -inset }]}
       onTouchStart={() => {
         inputWasFocused.current = ctx.inputRef.current?.isFocused() ?? false;
       }}
@@ -916,8 +922,8 @@ export function TextFieldIcon({ icon: Comp, position = 'leading' }: TextFieldIco
       style={[
         a.z_20,
         position === 'leading'
-          ? { marginRight: TEXT_FIELD_LEADING_GAP }
-          : { marginLeft: TEXT_FIELD_TRAILING_GAP },
+          ? { marginInlineEnd: TEXT_FIELD_LEADING_GAP }
+          : { marginInlineStart: TEXT_FIELD_TRAILING_GAP },
       ]}>
       <Comp
         size="md"
@@ -1015,4 +1021,3 @@ export function TextFieldGhost({
     </View>
   );
 }
-

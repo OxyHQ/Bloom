@@ -1,7 +1,7 @@
 import type { View } from 'react-native';
 import {
   avatarFlightPoint,
-  badgeFlightTarget,
+  profileFlightTarget,
   measureAvatar,
   previewAvatarGeometry,
 } from '../handoff';
@@ -76,18 +76,10 @@ describe('committed avatar artwork', () => {
   });
 });
 
-it('merges waiting agents into the same badge point in either writing direction', () => {
-  const badge = { x: 100, y: 40, width: 180, height: 31 };
-  expect(badgeFlightTarget(badge)).toEqual({
-    x: 112,
-    y: 48.5,
-    width: 14,
-    height: 14,
-  });
-  expect(badgeFlightTarget(badge, true)).toEqual({
-    x: 254,
-    y: 48.5,
-    width: 14,
-    height: 14,
-  });
+it('lands waiting agents in the center of the header artwork, independent of name width', () => {
+  const artwork = { x: 100, y: 40, width: 56, height: 56 };
+  const target = profileFlightTarget(artwork);
+  expect(target).toEqual({ x: 121, y: 61, width: 14, height: 14 });
+  expect(target.x + target.width / 2).toBe(artwork.x + artwork.width / 2);
+  expect(target.y + target.height / 2).toBe(artwork.y + artwork.height / 2);
 });

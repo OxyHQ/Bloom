@@ -19,6 +19,15 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   plural('ru', n, { one: '{n} элемент', few: '{n} элемента', many: '{n} элементов', other: '{n} элемента' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "Реакция",
+  working: "Работать",
+  avatarStyle: "Стиль аватара",
+  proceduralAvatar: "Текущий аватар",
+  betaPreset: "Готовый персонаж (бета)",
+  betaEyes: "Стиль глаз",
+  eyewear: "Очки",
+  accessory: "Аксессуар",
+  characterOption: (_category, _id, title) => String(title),
   editor: "Редактор агента",
   newBot: "Новый бот",
   closeEditor: "Закрыть редактор агента",
@@ -2567,7 +2576,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Аватар агента" },
+  AGENT_AVATAR_MESSAGES: { label: "Аватар агента", unavailable: "Аватар недоступен", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

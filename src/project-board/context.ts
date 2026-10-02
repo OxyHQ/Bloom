@@ -36,6 +36,8 @@ export interface ProjectBoardPlatform {
 }
 export const ProjectBoardPlatformContext =
   createContext<ProjectBoardPlatform | null>(null);
+/** The plot starts its own reveal after the panel has reached its live pixels. */
+export const TicketGenieEnteredContext = createContext(true);
 export function useProjectBoardPlatform() {
   const platform = useContext(ProjectBoardPlatformContext);
   if (!platform)

@@ -135,8 +135,8 @@ describe('TextField leadingAddon', () => {
       sm: { paddingLeft: 4, paddingRight: 6 },
     });
     let slot = root.getByTestId('addon').parent!;
-    while (resolvedStyle(slot.props.style).marginRight === undefined) slot = slot.parent!;
-    expect(resolvedStyle(slot.props.style)).toMatchObject({ flexShrink: 0, marginRight: 2 });
+    while (resolvedStyle(slot.props.style).marginInlineEnd === undefined) slot = slot.parent!;
+    expect(resolvedStyle(slot.props.style)).toMatchObject({ flexShrink: 0, marginInlineEnd: 2 });
     // The input keeps the shell height (h-9 / h-8).
     expect(resolvedStyle(root.getByLabelText('Phone Number').props.style).height).toBe(
       TEXT_FIELD_GEOMETRY[size].height,

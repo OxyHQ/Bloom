@@ -139,11 +139,11 @@ export function avatarFlightPoint(
   };
 }
 
-/** Non-answering agents merge into the badge at one 14px landing point. */
-export function badgeFlightTarget(badge: AvatarRect, rtl = false): AvatarRect {
+/** Waiting agents merge into the center of the measured header artwork. */
+export function profileFlightTarget(avatar: AvatarRect): AvatarRect {
   return {
-    x: rtl ? badge.x + badge.width - 26 : badge.x + 12,
-    y: badge.y + (badge.height - 14) / 2,
+    x: avatar.x + (avatar.width - 14) / 2,
+    y: avatar.y + (avatar.height - 14) / 2,
     width: 14,
     height: 14,
   };

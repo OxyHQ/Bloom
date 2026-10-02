@@ -24,4 +24,7 @@ export {
   parsePreset,
 } from './model';
 export type { AvatarConfig, AvatarFamily, AvatarPreset } from './model';
-export type { AgentAvatarProps } from './types';
+export type { AgentAvatarProps, AgentAvatarProviderProps } from './types';
+
+export { AgentAvatarProvider } from './AgentAvatarProvider';
+export type { AvatarCharacterConfig, AvatarCharacterCategory } from './config-character';

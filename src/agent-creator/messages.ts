@@ -1,6 +1,16 @@
 import { defineMessages, type MessageCatalog } from '../locale/messages';
 
 export interface AgentCreatorMessages {
+  reaction: string;
+  working: string;
+  avatarStyle: string;
+  proceduralAvatar: string;
+  betaPreset: string;
+  betaEyes: string;
+  eyewear: string;
+  accessory: string;
+  /** Recovered beta catalog names default to their source titles; hosts may localize by category/ID. */
+  characterOption: (category: string, id: string, title: string) => string;
   editor: string;
   newBot: string;
   closeEditor: string;
@@ -96,6 +106,15 @@ export interface AgentCreatorMessages {
 
 export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
   defineMessages<AgentCreatorMessages>('AGENT_CREATOR_MESSAGES', {
+    reaction: 'React',
+    working: 'Work',
+    avatarStyle: 'Avatar style',
+    proceduralAvatar: 'Current avatar',
+    betaPreset: 'Character preset (beta)',
+    betaEyes: 'Eye style',
+    eyewear: 'Eyewear',
+    accessory: 'Accessory',
+    characterOption: (_category, _id, title) => String(title),
     editor: 'Agent editor',
     newBot: 'New bot',
     closeEditor: 'Close agent editor',

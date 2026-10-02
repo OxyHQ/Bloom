@@ -1,3 +1,5 @@
+import { parseCharacterConfig, type AvatarCharacterConfig } from './config-character';
+
 export const SHAPES = [
   'pebble',
   'circle',
@@ -65,6 +67,8 @@ export const LOOKS = [
 ] as const;
 
 export type AvatarConfig = {
+  /** Optional compiled character renderer; the procedural recipe remains the fallback. */
+  character?: AvatarCharacterConfig;
   family: AvatarFamily;
   foldShape: (typeof FOLD_SHAPES)[number];
   foldDirection: (typeof FOLD_DIRECTIONS)[number];
@@ -568,6 +572,7 @@ export function parsePreset(value: unknown): AvatarPreset {
   if (!LOOKS.includes(c.lookAt as AvatarConfig['lookAt']))
     throw new Error('Unknown gaze direction.');
   config.lookAt = c.lookAt as AvatarConfig['lookAt'];
+  if (c.character !== undefined) config.character = parseCharacterConfig(c.character);
   return {
     name: p.name.slice(0, 48) || 'Untitled',
     description: 'Your saved direction',

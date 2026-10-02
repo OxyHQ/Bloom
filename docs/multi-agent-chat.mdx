@@ -3,6 +3,11 @@
 `MultiAgentChat` combines individual and group conversations, the agent creator,
 animated avatars, an editable agent library and a demo marketplace.
 
+The conversation header centers a 56px agent avatar above a 28px name capsule.
+Press it to edit the active agent, or choose participants in a group chat. Long
+names truncate within the available header width; navigation and conversation
+actions keep their own hit areas on narrow screens.
+
 ```tsx
 import { MultiAgentChat } from '@oxy.so/bloom/multi-agent-chat';
 
@@ -67,3 +72,10 @@ geometry on web and native. NativeWind’s default 14px rem otherwise compiles
 `gap-2.5` to 8.75px rather than 10px; the installed preview also drops Metro’s
 `inlineRem` option on one export path. No consumer rem workaround is required
 for these component utilities: import Bloom’s generated theme/preset.
+
+Browser checks for header alignment, keyboard editing, long names and sidebar
+search transitions: `node scripts/verify-chat-interactions.mjs` against Storybook
+on port 6006. Set `BLOOM_PLAYWRIGHT_MODULE` if Playwright is installed elsewhere.
+The search width has one animation owner per platform: CSS on web and Reanimated
+on native. Combining them restarts the CSS transition every frame and doubles
+the observed opening time.

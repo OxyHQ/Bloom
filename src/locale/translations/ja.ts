@@ -16,6 +16,15 @@ import { has as vendorCard_has, counted as vendorCard_counted } from '../../vend
 const CALL_UI_MESSAGES__CORNERS = { 'top-left': '左上', 'top-right': '右上', 'bottom-left': '左下', 'bottom-right': '右下' };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "リアクション",
+  working: "作業する",
+  avatarStyle: "アバターのスタイル",
+  proceduralAvatar: "現在のアバター",
+  betaPreset: "キャラクタープリセット（ベータ）",
+  betaEyes: "目のスタイル",
+  eyewear: "眼鏡",
+  accessory: "アクセサリー",
+  characterOption: (_category, _id, title) => String(title),
   editor: "エージェント編集",
   newBot: "新しいボット",
   closeEditor: "エージェント編集を閉じる",
@@ -2472,7 +2481,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "エージェントのアバター" },
+  AGENT_AVATAR_MESSAGES: { label: "エージェントのアバター", unavailable: "アバターを表示できません", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

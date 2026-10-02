@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
-import type { TextInput } from 'react-native';
+import { useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { Platform, ScrollView, useWindowDimensions, type ScrollViewProps, type TextInput } from 'react-native';
+import { styled } from 'react-native-css';
 import { useDialogControl } from '../dialog/context';
 import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
@@ -34,6 +35,29 @@ const PRIORITY_STYLES = {
   High: 'bg-status-orange-background text-status-orange-text',
   Urgent: 'bg-status-rose-background text-status-rose-text',
 };
+const ScrollBodyBase: ComponentType<Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>> = ScrollView;
+const StyledScrollView: ComponentType<ScrollViewProps> = styled(ScrollBodyBase, { className: 'style' });
+
+function TicketFormBody({ children }: { children: ReactNode }) {
+  const { height } = useWindowDimensions();
+  if (Platform.OS === 'web') return (
+    <View className="max-h-[calc(100dvh-56px)] overflow-y-auto rounded-3xl bg-background-primary-default p-4 outline-none">
+      {children}
+    </View>
+  );
+  return (
+    <StyledScrollView
+      className="rounded-3xl bg-background-primary-default"
+      testID="project-board-create-scroll"
+      style={{ maxHeight: height - 56, flexGrow: 0, flexShrink: 1 }}
+      contentContainerStyle={{ padding: 16 }}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="interactive"
+    >
+      {children}
+    </StyledScrollView>
+  );
+}
 export function CreateTicketDialog({
   title: boardTitle,
   initialColumnId,
@@ -140,7 +164,7 @@ export function CreateTicketDialog({
         style={{ width: '100%' }}
       >
         <TicketGenieSurface>
-          <View className="max-h-[calc(100dvh-56px)] overflow-y-auto rounded-3xl bg-background-primary-default p-4 outline-none">
+          <TicketFormBody>
             <View className="flex flex-col gap-12">
               <View className="flex flex-col gap-2.5">
                 <View className="flex items-start justify-between gap-3">
@@ -365,7 +389,7 @@ export function CreateTicketDialog({
                 </View>
               </View>
             </View>
-          </View>
+          </TicketFormBody>
         </TicketGenieSurface>
       </View>
     </Dialog>

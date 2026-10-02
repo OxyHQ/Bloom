@@ -4,10 +4,7 @@ import { View } from 'react-native';
 import { Button } from '../button/Button';
 import { AgentAvatar } from './AgentAvatar';
 import {
-  ALIEN_CONFIG,
-  ALIEN_PRESETS,
   DEFAULT_CONFIG,
-  EYES,
   FOLD_CONFIG,
   FOLD_PRESETS,
   FOLD_SHAPES,
@@ -25,26 +22,12 @@ export const Basic: Story = {};
 export const Presets: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-      {[...PRESETS, ...FOLD_PRESETS, ...ALIEN_PRESETS].map((preset) => (
+      {[...PRESETS, ...FOLD_PRESETS].map((preset) => (
         <AgentAvatar
           key={preset.name}
           label={preset.name}
           config={preset.config}
           size={96}
-        />
-      ))}
-    </View>
-  ),
-};
-export const Expressions: Story = {
-  render: () => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-      {EYES.map((eyes) => (
-        <AgentAvatar
-          key={eyes}
-          label={eyes}
-          config={{ ...FOLD_CONFIG, eyes }}
-          size={72}
         />
       ))}
     </View>
@@ -96,7 +79,7 @@ export const SourceParity: Story = {
         width: 900,
       }}
     >
-      {[DEFAULT_CONFIG, FOLD_CONFIG, ALIEN_CONFIG].flatMap((config, family) =>
+      {[DEFAULT_CONFIG, FOLD_CONFIG].flatMap((config, family) =>
         (['solid', 'mist', 'ribbons', 'prism'] as const).map((material) =>
           [32, 64, 96, 200].map((size) => (
             <View

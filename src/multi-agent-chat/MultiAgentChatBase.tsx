@@ -24,6 +24,7 @@ import { Text } from '../typography';
 import { AvatarHandoff } from './AvatarHandoff';
 import { ChatDialogFrame, SupportCopy } from './ChatDialogFrame';
 import { ChatSidebar } from './ChatSidebar';
+import { ChatAgentProfile } from './ChatAgentProfile';
 import { useChatComponents } from './context';
 import {
   conversationFor,
@@ -70,55 +71,6 @@ type Panel =
   | 'support'
   | null;
 
-function AgentStack({
-  agents,
-  size = 40,
-  nodes,
-}: {
-  agents: Agent[];
-  size?: number;
-  nodes?: AvatarNodes;
-}) {
-  return (
-    <StyledView
-      style={{ width: size, height: size }}
-      accessibilityLabel={agents.map((a) => a.name).join(', ')}
-    >
-      {agents.slice(0, 3).map((agent, i) => (
-        <StyledView
-          key={agent.id}
-          ref={(node: View | null) => {
-            if (nodes) {
-              if (node) nodes.set(agent.id, node);
-              else nodes.delete(agent.id);
-            }
-          }}
-          collapsable={false}
-          style={{
-            width: agents.length === 1 ? size : size * 0.65,
-            height: agents.length === 1 ? size : size * 0.65,
-            position: 'absolute',
-            left:
-              agents.length === 1
-                ? 0
-                : i === 1
-                  ? size * 0.4
-                  : i === 2
-                    ? size * 0.2
-                    : 0,
-            top: i === 2 ? size * 0.4 : 0,
-          }}
-        >
-          <AgentAvatar
-            config={agent.avatar}
-            size={agents.length === 1 ? size : size * 0.65}
-            label={agent.name}
-          />
-        </StyledView>
-      ))}
-    </StyledView>
-  );
-}
 /** Shared workspace implementation. Platform bindings select Bloom's existing surfaces only. */
 export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
@@ -136,7 +88,6 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     Dialog,
     ComposerPanel,
     AgentCreator,
-    Surface,
     Dropdown: D,
   } = useChatComponents();
   const { colors } = useTheme();
@@ -145,7 +96,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
   const root = useRef<View>(null),
     pickerAvatars = useRef<AvatarNodes>(new Map()),
     emptyAvatars = useRef<AvatarNodes>(new Map()),
-    badgeRef = useRef<View>(null),
+    profileAvatarRef = useRef<View>(null),
     replyAvatars = useRef<AvatarNodes>(new Map());
   const [handoff, setHandoff] = useState<AvatarHandoffState | null>(null),
     [flightOrigin, setFlightOrigin] = useState<AvatarRect | null>(null);
@@ -170,7 +121,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         ? emptyAvatars.current.get(id)
         : id === handoff?.responderId
           ? replyAvatars.current.get(id)
-          : (badgeRef.current ?? undefined),
+          : (profileAvatarRef.current ?? undefined),
     [handoff?.kind, handoff?.responderId],
   );
   const { width } = useWindowDimensions();
@@ -247,25 +198,28 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     setEditor({ ...agent, avatar: { ...agent.avatar } });
     if (compact) open('editor');
   };
-  const saveAgent = (agent: Agent) => {
-    setEditor(agent);
-    update((s) => {
-      const previous = s.agents.find((a) => a.id === agent.id);
-      return {
-        ...s,
-        agents: previous
-          ? s.agents.map((a) => (a.id === agent.id ? agent : a))
-          : [...s.agents, agent],
-        chats: s.chats.map((c) =>
-          c.agentIds.length === 1 &&
-          c.agentIds[0] === agent.id &&
-          (c.title === previous?.name || c.title === previous?.label)
-            ? { ...c, title: agent.name }
-            : c,
-        ),
-      };
-    });
-  };
+  const saveAgent = useCallback(
+    (agent: Agent) => {
+      setEditor(agent);
+      update((s) => {
+        const previous = s.agents.find((a) => a.id === agent.id);
+        return {
+          ...s,
+          agents: previous
+            ? s.agents.map((a) => (a.id === agent.id ? agent : a))
+            : [...s.agents, agent],
+          chats: s.chats.map((c) =>
+            c.agentIds.length === 1 &&
+            c.agentIds[0] === agent.id &&
+            (c.title === previous?.name || c.title === previous?.label)
+              ? { ...c, title: agent.name }
+              : c,
+          ),
+        };
+      });
+    },
+    [update],
+  );
   const createAgent = () => {
     const agent = {
       id: chatId('agent'),
@@ -416,18 +370,22 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     follow.current = true;
     void replies.send(text, id, avatars.length ? 800 : 0, chat);
   };
-  const editPanel = editor && (
-    <AgentCreator
-      agent={editor}
-      onChange={saveAgent}
-      voices={voices}
-      onPreviewVoice={onPreviewVoice}
-      onClose={() => {
-        setEditor(null);
-        if (panel === 'editor') close();
-      }}
-      style={{ flex: 1 }}
-    />
+  const editPanel = useMemo(
+    () =>
+      editor && (
+        <AgentCreator
+          agent={editor}
+          onChange={saveAgent}
+          voices={voices}
+          onPreviewVoice={onPreviewVoice}
+          onClose={() => {
+            setEditor(null);
+            if (panel === 'editor') surface.close();
+          }}
+          style={{ flex: 1 }}
+        />
+      ),
+    [AgentCreator, editor, saveAgent, voices, onPreviewVoice, panel, surface],
   );
   const sortedChats = useMemo(
     () =>
@@ -441,7 +399,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
             .includes(query.toLocaleLowerCase()),
         )
         .sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)),
-    [workspace.chats, query],
+    [workspace.chats, workspace.agents, query],
   );
   const sidebar = (
     <ChatSidebar
@@ -580,114 +538,104 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         accessibilityLabel={messages.agentConversation}
         className="flex min-h-0 min-w-0 flex-1 flex-col rounded-3xl bg-background-secondary-default"
       >
-        <StyledView className="flex h-[55px] shrink-0 items-start gap-2 px-3 pt-3 flex-row">
-          {phone && (
-            <IconButton
-              icon={RiMenuLine}
-              accessibilityLabel={messages.openConversations}
-              size="sm"
-              onPress={() => open('navigation')}
-            />
-          )}
-          <StyledView className="flex min-w-0 flex-1 flex-row">
+        <StyledView className="relative h-[100px] shrink-0">
+          <StyledView
+            pointerEvents="box-none"
+            className="absolute inset-0 flex-row justify-center px-16 pt-1.5"
+          >
             <StyledView
-              ref={badgeRef}
-              collapsable={false}
-              className="relative z-40 min-w-0 max-w-full rounded-full"
+              pointerEvents="box-none"
+              className="min-w-0 max-w-full items-center self-start"
             >
-              <Surface
-                fill={colors.backgroundSecondary}
-                radius={999}
-                style={{ position: 'absolute', inset: 0 }}
-                pointerEvents="none"
-              />
-              <StyledPressable
-                accessibilityRole="button"
-                accessibilityLabel={
+              <ChatAgentProfile
+                agents={participants}
+                avatarRef={profileAvatarRef}
+                expanded={
                   participants.length === 1
-                    ? formatChatMessage(
-                        messages.editAgent,
-                        participants[0]!.name,
-                      )
-                    : messages.editConversationAgents
+                    ? editor?.id === participants[0]!.id
+                    : panel === 'picker'
                 }
                 onPress={() =>
                   participants.length === 1
                     ? edit(participants[0]!)
                     : chooseAgents(chat?.agentIds)
                 }
-                className="flex h-[31px] min-w-0 max-w-full items-center gap-2 rounded-full px-2 pe-3 text-body-2-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring flex-row"
-              >
-                <AgentStack agents={participants} size={20} />
-                <Text
-                  numberOfLines={1}
-                  className="truncate text-body-2-medium text-text-secondary"
-                >
-                  {participants.length === 1
-                    ? participants[0]!.name
-                    : participants
-                        .slice(0, 3)
-                        .map((a) => a.label || a.name)
-                        .join(' + ')}
-                </Text>
-                {participants.length > 3 && (
-                  <Text className="shrink-0">+{participants.length - 3}</Text>
-                )}
-              </StyledPressable>
+              />
             </StyledView>
           </StyledView>
-          <StyledPressable
-            accessibilityRole="button"
-            accessibilityLabel={messages.copyConversation}
-            onPress={() =>
-              chat && void copy(transcript(chat), messages.conversationCopied)
-            }
-            className="rounded p-1 text-foreground-icon-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-          >
-            <RiShare2Line width={16} height={16} fill={colors.textSecondary} />
-          </StyledPressable>
-          <D.DropdownMenu>
-            <D.DropdownMenuTrigger asChild>
-              <StyledPressable
-                accessibilityRole="button"
-                accessibilityLabel={messages.conversationOptions}
-                className="rounded p-1 text-foreground-icon-secondary"
-              >
-                <RiMoreFill
-                  width={16}
-                  height={16}
-                  fill={colors.textSecondary}
-                />
-              </StyledPressable>
-            </D.DropdownMenuTrigger>
-            <D.DropdownMenuContent
-              label={messages.conversationOptions}
-              align="end"
-              className="rounded-[14px] p-1"
-              style={{ borderRadius: 14, padding: 4 }}
+          {phone && (
+            <StyledView
+              style={{ position: 'absolute', top: 12, insetInlineStart: 12 }}
             >
-              <D.DropdownMenuLabel>
-                {messages.inThisConversation}
-              </D.DropdownMenuLabel>
-              {participants.map((agent) => (
+              <IconButton
+                icon={RiMenuLine}
+                accessibilityLabel={messages.openConversations}
+                size="sm"
+                onPress={() => open('navigation')}
+              />
+            </StyledView>
+          )}
+          <StyledView
+            className="flex-row items-center gap-2"
+            style={{ position: 'absolute', top: 12, insetInlineEnd: 12 }}
+          >
+            <StyledPressable
+              accessibilityRole="button"
+              accessibilityLabel={messages.copyConversation}
+              onPress={() =>
+                chat && void copy(transcript(chat), messages.conversationCopied)
+              }
+              className="rounded p-1 text-foreground-icon-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              <RiShare2Line
+                width={16}
+                height={16}
+                fill={colors.textSecondary}
+              />
+            </StyledPressable>
+            <D.DropdownMenu>
+              <D.DropdownMenuTrigger asChild>
+                <StyledPressable
+                  accessibilityRole="button"
+                  accessibilityLabel={messages.conversationOptions}
+                  className="rounded p-1 text-foreground-icon-secondary"
+                >
+                  <RiMoreFill
+                    width={16}
+                    height={16}
+                    fill={colors.textSecondary}
+                  />
+                </StyledPressable>
+              </D.DropdownMenuTrigger>
+              <D.DropdownMenuContent
+                label={messages.conversationOptions}
+                align="end"
+                className="rounded-[14px] p-1"
+                style={{ borderRadius: 14, padding: 4 }}
+              >
+                <D.DropdownMenuLabel>
+                  {messages.inThisConversation}
+                </D.DropdownMenuLabel>
+                {participants.map((agent) => (
+                  <D.DropdownMenuItem
+                    key={agent.id}
+                    onPress={() => edit(agent)}
+                    leading={<AgentAvatar config={agent.avatar} size={20} />}
+                    className="px-2 py-1.5 text-body-medium"
+                  >
+                    {formatChatMessage(messages.editAgent, agent.name)}
+                  </D.DropdownMenuItem>
+                ))}
                 <D.DropdownMenuItem
-                  key={agent.id}
-                  onPress={() => edit(agent)}
-                  leading={<AgentAvatar config={agent.avatar} size={20} />}
+                  onPress={() => chooseAgents(chat?.agentIds)}
+                  leading={<RiGroupLine width={16} height={16} />}
                   className="px-2 py-1.5 text-body-medium"
                 >
-                  {formatChatMessage(messages.editAgent, agent.name)}
+                  {messages.startAGroupChat}
                 </D.DropdownMenuItem>
-              ))}
-              <D.DropdownMenuItem
-                onPress={() => chooseAgents(chat?.agentIds)}
-                leading={<RiGroupLine width={16} height={16} />}
-                className="px-2 py-1.5 text-body-medium"
-              >
-                {messages.startAGroupChat}
-              </D.DropdownMenuItem>
-            </D.DropdownMenuContent>
-          </D.DropdownMenu>
+              </D.DropdownMenuContent>
+            </D.DropdownMenu>
+          </StyledView>
         </StyledView>
         <ScrollSurface
           scrollRef={scroll}

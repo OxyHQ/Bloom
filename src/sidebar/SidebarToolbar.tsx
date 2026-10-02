@@ -12,7 +12,7 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { StyledView } from '../styles/styled-primitives';
-import { TextField, TextFieldInput } from '../text-field';
+import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { useSidebarPalette } from './palette';
 import { IS_WEB } from './parts';
 import type { SidebarToolbarProps } from './types';
@@ -35,19 +35,25 @@ export function SidebarToolbar({
   const [width, setWidth] = useState(0);
   const reduced = useReducedMotion();
   const progress = useSharedValue(Number(search.open));
+  const actionsProgress = useSharedValue(Number(search.open));
   useEffect(() => {
-    progress.value = reduced
-      ? Number(search.open)
-      : withTiming(Number(search.open), {
-          duration: 300,
-          easing: Easing.bezier(0.42, 0, 0.58, 1),
-        });
+    // The browser owns its CSS transition. Feeding intermediate Reanimated
+    // widths into it restarts that transition every frame and doubles the lag.
+    if (!IS_WEB) {
+      const easing = Easing.bezier(0.4, 0, 0.2, 1);
+      progress.value = reduced
+        ? Number(search.open)
+        : withTiming(Number(search.open), { duration: 300, easing });
+      actionsProgress.value = reduced
+        ? Number(search.open)
+        : withTiming(Number(search.open), { duration: 200, easing });
+    }
     if (search.open) {
       const frame = requestAnimationFrame(() => input.current?.focus());
       return () => cancelAnimationFrame(frame);
     }
     return undefined;
-  }, [search.open, reduced, progress]);
+  }, [search.open, reduced, progress, actionsProgress]);
   const slots = actions.length + 1;
   const collapsedWidth = width > 0 ? (width - 8 * (slots - 1)) / slots : 76;
   const searchWidth = useAnimatedStyle(
@@ -62,12 +68,15 @@ export function SidebarToolbar({
     [width, collapsedWidth, progress],
   );
   const actionsStyle = useAnimatedStyle(() => {
-    const hidden = Math.min(1, progress.value * 1.5);
+    const hidden = actionsProgress.value;
     return {
       opacity: 1 - hidden,
-      transform: [{ translateX: (rtl ? -8 : 8) * hidden }, { scale: 1 - 0.05 * hidden }],
+      transform: [
+        { translateX: (rtl ? -8 : 8) * hidden },
+        { scale: 1 - 0.05 * hidden },
+      ],
     };
-  }, [progress, rtl]);
+  }, [actionsProgress, rtl]);
   const close = () => {
     search.onValueChange('');
     search.onOpenChange(false);
@@ -90,8 +99,8 @@ export function SidebarToolbar({
         {actions.map((action, index) => (
           <AnimatedView
             key={index}
-            className={`flex transition-[opacity,transform] duration-200 motion-reduce:transition-none ${search.open ? `pointer-events-none ${rtl ? '-translate-x-2' : 'translate-x-2'} scale-95 opacity-0` : 'translate-x-0 scale-100 opacity-100'}`}
-            style={[{ flex: 1 }, actionsStyle]}
+            className={`flex ${IS_WEB ? `transition-[opacity,transform] duration-200 motion-reduce:transition-none ${search.open ? `pointer-events-none ${rtl ? '-translate-x-2' : 'translate-x-2'} scale-95 opacity-0` : 'translate-x-0 scale-100 opacity-100'}` : ''}`}
+            style={[{ flex: 1 }, !IS_WEB && actionsStyle]}
             pointerEvents={search.open ? 'none' : 'auto'}
             aria-hidden={search.open}
             accessibilityElementsHidden={search.open}
@@ -105,7 +114,7 @@ export function SidebarToolbar({
         ))}
       </StyledView>
       <AnimatedView
-        className="absolute inset-y-0 start-0 z-10 overflow-hidden rounded-full bg-background-tertiary-default transition-[width] duration-300 ease-in-out motion-reduce:transition-none"
+        className={`absolute inset-y-0 start-0 z-10 overflow-hidden rounded-full bg-background-tertiary-default ${IS_WEB ? 'transition-[width] duration-300 ease-in-out motion-reduce:transition-none' : ''}`}
         style={[
           {
             position: 'absolute',
@@ -115,7 +124,9 @@ export function SidebarToolbar({
             borderRadius: 999,
             backgroundColor: palette.tertiary,
           },
-          searchWidth,
+          IS_WEB
+            ? { width: search.open ? '100%' : collapsedWidth }
+            : searchWidth,
         ]}
       >
         {!search.open ? (
@@ -151,6 +162,7 @@ export function SidebarToolbar({
                 paddingInlineEnd: 36,
               }}
             >
+              <TextFieldIcon icon={RiSearchLine} />
               <TextFieldInput
                 inputRef={input}
                 label={label}

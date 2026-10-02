@@ -1,12 +1,15 @@
 /** @jest-environment jsdom */
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { CharacterRuntimeContext } from '../../agent-avatar/context';
 import { FOLD_CONFIG } from '../../agent-avatar/model';
 import { Field } from '../../field';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator.web';
 import { CustomColorPicker } from '../CustomColorPicker';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
+// This suite measures real DOM controls; the separately tested hosted renderer needs browser APIs.
+jest.mock('../../agent-avatar/CharacterAvatar', () => ({ CharacterAvatar: () => null }));
 
 let container: HTMLDivElement, root: Root;
 beforeEach(() => {
@@ -138,4 +141,19 @@ it('uses the requested locale for drawn and announced editor copy', () => {
   ).not.toBeNull();
   expect(container.querySelector('[aria-label="Agent name"]')).toBeNull();
   expect(container.textContent).toContain('Notificaciones');
+});
+
+
+it('announces a custom beta body color and returns to a named color through the shared palette', () => {
+  const character = { preset: 'blue_beret', bodyColor: '#123456', selections: { eyes: 'oval' } };
+  const agent = { id: 'beta', name: 'Felipe', label: '', description: '', avatar: { ...FOLD_CONFIG, character } };
+  const capabilities = { key: JSON.stringify(character), selected: { color: 'blue', eyes: 'oval' }, available: { 'color:blue': true } };
+  const onChange = jest.fn();
+  render(<CharacterRuntimeContext.Provider value={{ runtimeUrl: '/runtime.mjs', capabilitiesByKey: new Map([[capabilities.key, capabilities]]) }}><AgentCreator agent={agent} onChange={onChange} /></CharacterRuntimeContext.Provider>);
+  const custom = container.querySelector('[aria-label="Custom avatar color"]')!;
+  const blue = container.querySelector('[aria-label="Blue avatar"]')!;
+  expect(custom.getAttribute('aria-pressed')).toBe('true');
+  expect(blue.getAttribute('aria-pressed')).toBe('false');
+  act(() => blue.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  expect(onChange).toHaveBeenLastCalledWith({ ...agent, avatar: { ...agent.avatar, character: { preset: 'blue_beret', selections: { eyes: 'oval', color: 'blue' } } } });
 });
