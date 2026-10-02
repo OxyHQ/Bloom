@@ -20,7 +20,7 @@ const characters = [
   ['blue_spectacles', 'Josh'],
   ['lime_headphones', 'Iggy'],
 ] as const;
-const runtimeUrl = '/bloom-character/runtime.mjs?v=render-budget-4';
+const runtimeUrl = '/bloom-character/runtime.mjs?v=shared-renderer-1';
 const meta = {
   title: 'Application/Agent Avatar/Characters',
   parameters: { layout: 'padded' },
@@ -285,9 +285,8 @@ function ManyAvatarGallery() {
       <StyledView className="w-full max-w-[1020px] gap-5 p-4">
         <Text variant="title-2-medium">48 original and migrated avatars</Text>
         <Text variant="body-regular">
-          Scroll the gallery and use each avatar’s React or Work button.
-          Overflow avatars retain their painted 3D image and reclaim a renderer
-          when you interact.
+          Each visible avatar animates independently. Scroll the gallery and use
+          each avatar’s React or Work button.
         </Text>
         <Button onPress={() => setPaused((value) => !value)}>
           {paused ? 'Resume all' : 'Pause all'}

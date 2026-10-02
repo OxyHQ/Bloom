@@ -1,25 +1,25 @@
 // Optional renderer adapter. The generated engine and data alongside it remain unmodified.
-import createModule from './orbit-characters.mjs';
 import { customizeAppearance, encodeAppearance } from './appearance-codec.mjs';
-import { acquireLegacyEngine, legacyEngineStats } from './legacy-engine.mjs';
+import {
+  acquireLegacyEngine,
+  legacyEngineStats,
+  getCharacterEngine,
+  acquireCharacterPreparation,
+} from './legacy-engine.mjs';
 import { createManagedAvatar, managedAvatarStats } from './managed-avatar.mjs';
+import {
+  acquireSharedSurface,
+  sharedSurfaceStats,
+  renderSharedBatch,
+} from './shared-surface.mjs';
+import { characterPixels } from './resolution.mjs';
 
-let modulePromise;
-let serial = 0;
 let frame = 0;
-let lastFrame = -Infinity;
 let nextClient = 0;
 let lastRenderMilliseconds = 0;
+let renderCost = 8;
 const clients = new Set();
 const category = { shape: 0, color: 1, eyes: 2, eyewear: 3, accessory: 4 };
-function engine() {
-  return (modulePromise ??= createModule({
-    locateFile: (file) => new URL(file, import.meta.url).href,
-  }).catch((error) => {
-    modulePromise = undefined;
-    throw error;
-  }));
-}
 function schedule() {
   if (!frame && clients.size && !document.hidden)
     frame = requestAnimationFrame(tick);
@@ -27,20 +27,58 @@ function schedule() {
 function tick(time) {
   frame = 0;
   if (document.hidden) return;
-  if (time - lastFrame >= 1000 / 30 - 1) {
-    lastFrame = time;
+  {
     const batch = [...clients];
     const started = performance.now();
-    for (let i = 0; i < batch.length; i++) {
-      const index = nextClient % batch.length;
-      nextClient = (index + 1) % batch.length;
-      const client = batch[index];
-      if (clients.has(client)) client.render(time / 1000);
-      // One native render cannot be interrupted, but a crowded page must not
-      // submit every remaining avatar after it has spent its frame allowance.
-      if (performance.now() - started >= 8) break;
+    const presentations = [];
+    // The CPU submission timer cannot see deferred GPU/driver work. Include
+    // the previous completed batch's cost when deciding how much to submit.
+    // Round up by at most one atomic draw so batching can amortize the driver
+    // check instead of getting permanently stuck at a one-character estimate.
+    const batchLimit = Math.max(1, Math.ceil(8 / renderCost));
+    const touched = [];
+    try {
+      renderSharedBatch(() => {
+        for (let i = 0; i < batch.length; i++) {
+          const index = nextClient % batch.length;
+          nextClient = (index + 1) % batch.length;
+          const client = batch[index];
+          // Rate-limit each character, not the whole document. Crowds can use
+          // intervening browser frames without forcing every avatar down to 30/N.
+          if (
+            clients.has(client) &&
+            time - (client.lastTick ?? -Infinity) >= 1000 / 30 - 1
+          ) {
+            client.lastTick = time;
+            touched.push(client);
+            const present = client.render(time / 1000);
+            if (present) presentations.push(present);
+          }
+          // One native render cannot be interrupted, but a crowded page must not
+          // submit every remaining avatar after it has spent its frame allowance.
+          if (
+            presentations.length >= batchLimit ||
+            performance.now() - started >= 8
+          )
+            break;
+        }
+      });
+    } catch (error) {
+      // A context-level error cannot be attributed after a shared submission.
+      // Discard every pending image and report it to every touched character.
+      presentations.length = 0;
+      for (const client of touched) client.fail(error);
     }
+    // Submit the batch before copying any WebGL pixels to 2D. Interleaving
+    // these operations forces a GPU synchronization for every avatar.
+    for (const present of presentations) present();
     lastRenderMilliseconds = performance.now() - started;
+    if (presentations.length) {
+      const measured = lastRenderMilliseconds / presentations.length;
+      // React immediately to a slower GPU; recover capacity gradually to avoid
+      // alternating huge batches and long blocked browser frames.
+      renderCost = Math.max(measured, renderCost * 0.9 + measured * 0.1, 0.1);
+    }
   }
   schedule();
 }
@@ -50,7 +88,7 @@ function visibility() {
 }
 const instances = new Set();
 
-/** Original engine and shared animation clock; contour caches are isolated by legacy-engine. */
+/** Original engine and shared animation clock; scoped geometry identities stay distinct. */
 export async function createAvatar(canvas, initial, callbacks = {}) {
   if (!initial.config.character && !initial.legacy)
     throw new Error('A recovered character recipe is required');
@@ -73,31 +111,33 @@ async function createLiveCharacter(
   const lease = initial.legacy?.points
     ? await acquireLegacyEngine(initial.legacy.points)
     : null;
-  const module = lease?.module ?? (await engine());
+  const module = lease?.module ?? (await getCharacterEngine());
+  let releasePreparation = await acquireCharacterPreparation();
   if (!isCurrent() || !canvas.isConnected) {
+    releasePreparation();
     lease?.release();
     return { update() {}, dispose() {}, diagnostics: () => ({ ready: false }) };
   }
-  const id = `bloom-character-${++serial}`;
   const output = canvas.getContext('2d');
   if (!output) {
+    releasePreparation();
     lease?.release();
     throw new Error('Character output canvas is unavailable');
   }
-  const makeSurface = () => {
-    const node = document.createElement('canvas');
-    node.id = id;
-    node.style.display = 'none';
-    node.setAttribute('aria-hidden', 'true');
-    canvas.parentElement.appendChild(node);
-    return node;
-  };
-  let surface = makeSurface();
+  let surfaceLease;
+  try {
+    surfaceLease = acquireSharedSurface(canvas.parentElement);
+  } catch (error) {
+    releasePreparation();
+    lease?.release();
+    throw error;
+  }
   let character;
   try {
-    character = new module.Character(`#${id}`, 128, 128);
+    character = surfaceLease.create(module, 128, 128);
   } catch (error) {
-    surface.remove();
+    releasePreparation();
+    surfaceLease.release();
     lease?.release();
     throw error;
   }
@@ -125,7 +165,46 @@ async function createLiveCharacter(
   let pointerId, pointerStart, previousReaction;
   let lastReaction = null,
     lastReactionKind = null;
-  character.setQuality(initial.portrait ? 1 : 0); // Original automatic quality; compact static thumbnails.
+  let acquiringPreparation = false;
+  const preparationQueue = [];
+  function finishPreparation() {
+    const release = releasePreparation;
+    releasePreparation = undefined;
+    release?.();
+  }
+  function prepare(operation) {
+    if (disposed) return;
+    if (releasePreparation) {
+      operation();
+      return;
+    }
+    preparationQueue.push(operation);
+    if (acquiringPreparation) return;
+    acquiringPreparation = true;
+    void acquireCharacterPreparation().then((release) => {
+      acquiringPreparation = false;
+      if (disposed) {
+        preparationQueue.length = 0;
+        release();
+        return;
+      }
+      releasePreparation = release;
+      try {
+        for (const next of preparationQueue.splice(0)) next();
+        if (
+          !character.preparationStats().pending &&
+          !character.hasPendingUpdate()
+        )
+          finishPreparation();
+        wake();
+      } catch (error) {
+        finishPreparation();
+        callbacks.onError?.(error);
+      }
+    });
+  }
+
+  character.setQuality(1); // Resize selects mesh detail using CSS size, independent of DPR.
   // Readiness means painted pixels, not merely an engine submission.
   const play = (kind) => {
     if (activity === kind) return;
@@ -155,82 +234,14 @@ async function createLiveCharacter(
   };
   const client = {
     visibility: wake,
+    fail(error) {
+      clients.delete(client);
+      finishPreparation();
+      callbacks.onError?.(error);
+    },
     render(time) {
       try {
-        const submitted = character.render(time);
-        if (submitted) {
-          if (
-            !fit &&
-            !character.preparationStats().pending &&
-            !character.hasPendingUpdate()
-          ) {
-            measurement.width = canvas.width;
-            measurement.height = canvas.height;
-            measure.drawImage(surface, 0, 0, canvas.width, canvas.height);
-            const { data, width, height } = measure.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height,
-            );
-            let minX = width,
-              minY = height,
-              maxX = -1,
-              maxY = -1;
-            for (let y = 0; y < height; y++)
-              for (let x = 0; x < width; x++) {
-                if (data[(y * width + x) * 4 + 3] > 24) {
-                  minX = Math.min(minX, x);
-                  maxX = Math.max(maxX, x);
-                  minY = Math.min(minY, y);
-                  maxY = Math.max(maxY, y);
-                }
-              }
-            if (maxX >= minX) {
-              const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
-              fit = [
-                (minX + maxX) / 2 - extent / 2,
-                (minY + maxY) / 2 - extent / 2,
-                extent,
-              ];
-            }
-          }
-          // Retain the previous portrait while a changed shape is preparing.
-          if (!fit) return;
-          output.clearRect(0, 0, canvas.width, canvas.height);
-          if (fit)
-            output.drawImage(
-              surface,
-              fit[0],
-              fit[1],
-              fit[2],
-              fit[2],
-              0,
-              0,
-              canvas.width,
-              canvas.height,
-            );
-          else output.drawImage(surface, 0, 0, canvas.width, canvas.height);
-        }
-        if (submitted && fit && transitionImage) {
-          // Geometry preparation keeps the previous image; blend only after the
-          // new original-engine surface has pixels. Reduced motion skips it.
-          transitionStarted ??= time;
-          const progress = animate()
-            ? Math.min(1, (time - transitionStarted) / 0.18)
-            : 1;
-          if (progress < 1) {
-            output.globalAlpha = 1 - progress;
-            output.drawImage(
-              transitionImage,
-              0,
-              0,
-              canvas.width,
-              canvas.height,
-            );
-            output.globalAlpha = 1;
-          } else transitionImage = null;
-        }
+        const submitted = surfaceLease.render(() => character.render(time));
         const renderError = character.renderError();
         if (renderError || character.preparationStats().failed)
           throw new Error(
@@ -238,60 +249,169 @@ async function createLiveCharacter(
               character.preparationError() ||
               'Character preparation failed',
           );
-        if (
-          submitted &&
-          fit &&
-          !character.preparationStats().pending &&
-          !character.hasPendingUpdate() &&
-          fingerprint === pendingFingerprint
-        ) {
-          dirty = false;
-          if (!ready) {
-            ready = true;
-            callbacks.onReady?.();
+        if (!submitted) return;
+        const revision = surfaceLease.revision;
+        return () => {
+          if (disposed || revision !== surfaceLease.revision) return;
+          try {
+            if (submitted) {
+              if (
+                !fit &&
+                !character.preparationStats().pending &&
+                !character.hasPendingUpdate()
+              ) {
+                measurement.width = canvas.width;
+                measurement.height = canvas.height;
+                surfaceLease.copy(
+                  measure,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+                const { data, width, height } = measure.getImageData(
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+                let minX = width,
+                  minY = height,
+                  maxX = -1,
+                  maxY = -1;
+                for (let y = 0; y < height; y++)
+                  for (let x = 0; x < width; x++) {
+                    if (data[(y * width + x) * 4 + 3] > 24) {
+                      minX = Math.min(minX, x);
+                      maxX = Math.max(maxX, x);
+                      minY = Math.min(minY, y);
+                      maxY = Math.max(maxY, y);
+                    }
+                  }
+                if (maxX >= minX) {
+                  const extent =
+                    Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
+                  fit = [
+                    (minX + maxX) / 2 - extent / 2,
+                    (minY + maxY) / 2 - extent / 2,
+                    extent,
+                  ];
+                }
+              }
+              // Retain the previous portrait while a changed shape is preparing.
+              if (!fit) return;
+              output.clearRect(0, 0, canvas.width, canvas.height);
+              if (fit)
+                surfaceLease.copy(
+                  output,
+                  fit[0],
+                  fit[1],
+                  fit[2],
+                  fit[2],
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+              else surfaceLease.copy(output);
+            }
+            if (submitted && fit && transitionImage) {
+              // Geometry preparation keeps the previous image; blend only after the
+              // new original-engine surface has pixels. Reduced motion skips it.
+              transitionStarted ??= time;
+              const progress = animate()
+                ? Math.min(1, (time - transitionStarted) / 0.18)
+                : 1;
+              if (progress < 1) {
+                output.globalAlpha = 1 - progress;
+                output.drawImage(
+                  transitionImage,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+                output.globalAlpha = 1;
+              } else transitionImage = null;
+            }
+            if (
+              submitted &&
+              fit &&
+              !character.preparationStats().pending &&
+              !character.hasPendingUpdate() &&
+              fingerprint === pendingFingerprint
+            ) {
+              dirty = false;
+              finishPreparation();
+              if (!ready) {
+                ready = true;
+                callbacks.onReady?.();
+              }
+              callbacks.onPaint?.(!transitionImage);
+              if (activityMode && workDuration && !workTimer) {
+                workTimer = setTimeout(() => {
+                  workTimer = undefined;
+                  workDuration = undefined;
+                  prepare(() => {
+                    play(0);
+                    switchMode(false);
+                  });
+                  dirty = true;
+                  wake();
+                }, workDuration);
+              }
+              if (!animate()) clients.delete(client);
+            }
+          } catch (error) {
+            clients.delete(client);
+            finishPreparation();
+            callbacks.onError?.(error);
           }
-          callbacks.onPaint?.(!transitionImage);
-          if (activityMode && workDuration && !workTimer) {
-            workTimer = setTimeout(() => {
-              workTimer = undefined;
-              workDuration = undefined;
-              play(0);
-              switchMode(false);
-              dirty = true;
-              wake();
-            }, workDuration);
-          }
-          if (!animate()) clients.delete(client);
-        }
+        };
       } catch (error) {
         clients.delete(client);
+        finishPreparation();
         callbacks.onError?.(error);
       }
     },
   };
-  const resize = () => {
-    const css = Math.max(1, Math.min(canvas.clientWidth, canvas.clientHeight));
-    const pixels = Math.max(
-      64,
-      Math.min(512, Math.round(css * Math.min(devicePixelRatio || 1, 2))),
-    );
-    if (canvas.width !== pixels || canvas.height !== pixels) {
-      canvas.width = pixels;
-      canvas.height = pixels;
-      fit = null;
-    }
-    character.resize(pixels, pixels);
-    character.setDisplayScale(pixels / css);
-    dirty = true;
-    wake();
-  };
+  let currentQuality, currentScale;
+  const resize = () =>
+    prepare(() => {
+      const css = Math.max(
+        1,
+        Math.min(canvas.clientWidth, canvas.clientHeight),
+      );
+      const pixels = characterPixels(canvas);
+      if (canvas.width !== pixels || canvas.height !== pixels) {
+        canvas.width = pixels;
+        canvas.height = pixels;
+        fit = null;
+      }
+      const quality = props.portrait || css <= 128 ? 1 : 2;
+      if (currentQuality !== quality) {
+        character.setQuality(quality);
+        currentQuality = quality;
+      }
+      character.resize(pixels, pixels);
+      if (currentScale !== pixels / css) {
+        character.setDisplayScale(pixels / css);
+        currentScale = pixels / css;
+      }
+      dirty = true;
+      wake();
+    });
   const switchMode = (next, resetAppearance = false) => {
     if (activityMode === next && !resetAppearance) return;
     const state = new Uint8Array(character.state());
     character.delete();
-    surface.remove();
-    surface = makeSurface();
-    character = new module.Character(`#${id}`, 128, 128, { activities: next });
+
+    character = surfaceLease.create(module, 128, 128, { activities: next });
+    currentQuality = currentScale = undefined;
     activityMode = next;
     fit = null;
     sequence = 0n;
@@ -299,7 +419,7 @@ async function createLiveCharacter(
     activity = 0;
     ready = false;
     dirty = true;
-    character.setQuality(props.portrait ? 1 : 0);
+    character.setQuality(1);
     character.restore(state);
     // This recovered engine paints a transparent frame when reduced motion is
     // enabled before its first appearance. Freeze our clock after a painted
@@ -332,14 +452,15 @@ async function createLiveCharacter(
     dirty = true;
     wake();
   };
-  const work = () => {
-    if (!animate()) return;
-    clearTimeout(workTimer);
-    switchMode(true);
-    play(1);
-    workTimer = undefined;
-    workDuration = 2200 * Math.max(1, Math.min(10, props.workingCycles || 1));
-  };
+  const work = () =>
+    prepare(() => {
+      if (!animate()) return;
+      clearTimeout(workTimer);
+      switchMode(true);
+      play(1);
+      workTimer = undefined;
+      workDuration = 2200 * Math.max(1, Math.min(10, props.workingCycles || 1));
+    });
   let appearanceTimer, pendingFingerprint;
   const applyAppearance = (value) => {
     const recipe = value;
@@ -470,13 +591,19 @@ async function createLiveCharacter(
         appearanceTimer = setTimeout(() => {
           if (disposed) return;
           try {
-            applyAppearance(recipe);
+            prepare(() => {
+              if (pendingFingerprint === nextFingerprint)
+                applyAppearance(recipe);
+            });
             wake();
           } catch (error) {
             callbacks.onError?.(error);
           }
         }, 80);
-      } else applyAppearance(recipe);
+      } else
+        prepare(() => {
+          if (pendingFingerprint === nextFingerprint) applyAppearance(recipe);
+        });
     }
     // The recovered engine needs its first appearance rendered with this off.
     // Our scheduler freezes the completed frame instead.
@@ -603,7 +730,8 @@ async function createLiveCharacter(
     canvas.removeEventListener('pointerleave', leave);
     window.removeEventListener('blur', cancel);
     character.delete();
-    surface.remove();
+    finishPreparation();
+    surfaceLease.release();
     lease?.release();
     if (!instances.size) {
       document.removeEventListener('visibilitychange', visibility);
@@ -631,6 +759,8 @@ async function createLiveCharacter(
       ready,
       pending:
         dirty ||
+        acquiringPreparation ||
+        preparationQueue.length > 0 ||
         Boolean(character.preparationStats().pending) ||
         character.hasPendingUpdate(),
     }),
@@ -638,7 +768,7 @@ async function createLiveCharacter(
 }
 
 // A geometry cache must never serve a different silhouette under the same
-// appearance key. Keep the old painted image while switching contour modules.
+// appearance key. Keep the old painted image while replacing the scoped character.
 async function createLegacyCharacter(canvas, initial, callbacks) {
   let controller,
     shapeKey,
@@ -723,16 +853,7 @@ function createPortrait(canvas, initial, callbacks) {
     cancel;
   const update = (props) => {
     if (disposed) return;
-    const pixels = Math.max(
-      64,
-      Math.min(
-        512,
-        Math.round(
-          Math.min(canvas.clientWidth, canvas.clientHeight) *
-            Math.min(devicePixelRatio || 1, 2),
-        ),
-      ),
-    );
+    const pixels = characterPixels(canvas);
     const key = JSON.stringify([
       props.config.character,
       props.legacy,
@@ -778,6 +899,18 @@ function createPortrait(canvas, initial, callbacks) {
           canvas,
           { ...props, paused: true, interactive: false },
           {
+            onPreparationStart() {
+              if (finished || !current()) return;
+              // Waiting for another avatar's preparation is not engine work.
+              // Start the deadline only after this controller is constructed.
+              timer = setTimeout(() => {
+                if (current())
+                  callbacks.onError?.(
+                    new Error('Character preview preparation timed out'),
+                  );
+                finish();
+              }, 20000);
+            },
             onCapabilities(value) {
               capabilities = value;
               if (current()) callbacks.onCapabilities?.(value);
@@ -805,14 +938,7 @@ function createPortrait(canvas, initial, callbacks) {
         if (finished || !current()) {
           controller.dispose();
           finish();
-        } else
-          timer = setTimeout(() => {
-            if (current())
-              callbacks.onError?.(
-                new Error('Character preview preparation timed out'),
-              );
-            finish();
-          }, 20000);
+        }
         await completion;
       } catch (error) {
         if (current()) callbacks.onError?.(error);
@@ -842,6 +968,7 @@ export function runtimeStats() {
   return {
     renderMilliseconds: lastRenderMilliseconds,
     budget: managedAvatarStats(),
+    surface: sharedSurfaceStats(),
     instances: instances.size,
     active: clients.size,
     scheduled: !!frame,

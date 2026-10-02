@@ -7,10 +7,24 @@ import { characterHtml, scriptJson } from '../character-html';
 
 const root = resolve(__dirname, '../../..');
 describe('optional character runtime', () => {
-  it('bounds GPU leases during crowd rendering, interaction and async disposal', () => {
+  it('checks shared render errors before publication without losing setup probes', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-render-errors.mjs'],
+      { cwd: root },
+    );
+  });
+  it('serializes cold preparation and cleans up both capped and shared leases', () => {
     execFileSync(
       process.execPath,
       ['--test', 'scripts/test-avatar-render-budget.mjs'],
+      { cwd: root },
+    );
+  });
+  it('admits preparation owners in order and cancels queued owners without leaking a turn', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-preparation-scope.mjs'],
       { cwd: root },
     );
   });

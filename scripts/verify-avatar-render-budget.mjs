@@ -72,7 +72,7 @@ try {
         gate.contexts.add(context);
         const count = gate.contextCount();
         gate.contextPeak = Math.max(gate.contextPeak, count);
-        if (count > 4) gate.quotaViolations.push({ count, canvas: this.id });
+        if (count > 1) gate.quotaViolations.push({ count, canvas: this.id });
       }
       return context;
     };
@@ -164,27 +164,38 @@ try {
     'Every original, migrated and portrait canvas must contain pixels',
   );
   assert.ok(
-    crowd.contextPeak <= 4,
-    'Actual browser contexts, not just bookkeeping, must stay within four',
+    crowd.contextPeak === 1,
+    'Actual browser contexts, not just bookkeeping, must stay at one',
   );
   assert.deepEqual(crowd.quotaViolations, []);
-  assert.ok(crowd.stats.budget.peak <= 4);
+  assert.equal(crowd.stats.surface.contexts, 1);
   console.log('crowd', JSON.stringify(crowd));
 
   // Cold pointer input must promote a real still image and replay its reaction.
-  const coldReaction = await page.evaluate(() =>
-    gate.controls.findIndex(
-      (control, i) =>
-        i < 24 &&
-        control.diagnostics()?.suspended &&
-        control.diagnostics()?.lastReaction == null,
-    ),
+  const coldReaction = 0;
+  await page.evaluate(() => {
+    for (const i of [0, 24]) {
+      gate.props[i] = { ...gate.props[i], paused: true };
+      gate.controls[i].update(gate.props[i]);
+    }
+  });
+  await page.waitForFunction(
+    () => [0, 24].every((i) => gate.controls[i].diagnostics()?.suspended),
+    {},
+    { timeout: 30000 },
   );
-  assert.ok(
-    coldReaction >= 0,
-    'The crowd must contain suspended original avatars',
-  );
-  await page.locator(`#avatar-${coldReaction}`).click();
+  await page.evaluate((i) => {
+    gate.props[i] = { ...gate.props[i], paused: false };
+    gate.controls[i].update(gate.props[i]);
+    // Input in this same task exercises replay before any renderer can start.
+    gate.canvases[i].dispatchEvent(
+      new PointerEvent('pointerdown', {
+        button: 0,
+        isPrimary: true,
+        bubbles: true,
+      }),
+    );
+  }, coldReaction);
   await page.waitForFunction(
     (i) =>
       gate.controls[i].diagnostics()?.lastReaction === 0 || gate.errors.length,
@@ -200,17 +211,9 @@ try {
   );
 
   // A cold migrated avatar must retain an imperative work request while loading.
-  const coldWork = await page.evaluate(() =>
-    gate.controls.findIndex(
-      (control, i) => i >= 24 && i < 40 && control.diagnostics()?.suspended,
-    ),
-  );
-  assert.ok(
-    coldWork >= 24,
-    'The crowd must contain suspended migrated avatars',
-  );
+  const coldWork = 24;
   await page.evaluate((i) => {
-    gate.props[i] = { ...gate.props[i], workingKey: 1 };
+    gate.props[i] = { ...gate.props[i], paused: false, workingKey: 1 };
     gate.controls[i].update(gate.props[i]);
   }, coldWork);
   await page.waitForFunction(
@@ -386,7 +389,7 @@ try {
   assert.deepEqual(final.errors, []);
   assert.deepEqual(final.disposedCallbacks, []);
   assert.deepEqual(final.quotaViolations, []);
-  assert.ok(final.contextPeak <= 4);
+  assert.ok(final.contextPeak === 1);
   assert.equal(final.contexts, 0);
   assert.equal(final.stats.instances, 0);
   assert.equal(final.stats.active, 0);
@@ -396,6 +399,11 @@ try {
   assert.ok(final.stats.budget.snapshots <= 64);
   assert.deepEqual(final.stats.legacy, {
     modules: 0,
+    sharedModules: 1,
+    characters: 0,
+    preparationWaiters: 0,
+    preparationActive: false,
+    dispatchTimers: 0,
     pending: 0,
     worker: false,
   });
@@ -403,7 +411,7 @@ try {
   assert.deepEqual(pageErrors, []);
   console.log('release', JSON.stringify(final));
   console.log(
-    'PASS: 48 mixed avatars, cold interaction/work, visibility and rapid disposal; at most four actual contexts.',
+    'PASS: 48 mixed avatars, cold interaction/work, visibility and rapid disposal; one actual context.',
   );
 } catch (error) {
   if (page && !page.isClosed()) {

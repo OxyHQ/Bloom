@@ -38,21 +38,44 @@ Alien avatars have been removed from the available catalog. Saved aliens, mascot
 
 `paused`, reduced motion and `motion: 0` stop animation after a complete appearance frame. `portrait` prepares a static thumbnail. The beta can report readiness while drawing transparency if initialized with its reduced-motion flag; the adapter waits for painted pixels and then freezes its clock instead.
 
-Web shares the beta engine and one animation clock per document, with a shared budget of **four live renderers** across original and migrated avatars. Additional avatars retain real 3D pixels from their last completed frame while their GPU renderer is released. Pointer interaction and React/Work commands prioritize reclaiming a renderer; overflow images remain visible while that renderer prepares. A newly visible avatar without a cached frame waits for its first rendering slot. This bounds graphics resources; the recovered engine’s synchronous first preparation can still cause a long task, especially for uncached migrated contours. Leaving the viewport or hiding the document releases the renderer lease, and returning avatars can display their retained image before resuming animation.
+Web uses one physical WebGL2 context and a packed canvas shared by every visible, animated character. Each original or migrated avatar keeps its own animation, input, work state and render targets. `shared-surface.mjs` maps default-framebuffer operations into its region, resolves MSAA locally before the atlas copy, and clips presentation to prevent neighbouring avatars leaking into a fitted image. Deleting one character cannot destroy the shared context; the last lease releases it. The shared clock targets 30 fps with a round-robin submission allowance; this is a target, not a guarantee of 30 fps per avatar on every device.
 
-Different migrated contours isolate their rendering modules because the recovered engine caches geometry by its original appearance key; they share one preparation worker. Unused contour modules are released. Use `portrait` for galleries and selectors. Static preparation is serialized and the image cache is bounded to 64 entries; unmount releases listeners and rendering resources. Storybook’s **Many Avatars** story exercises 48 original/migrated avatars with per-avatar React/Work controls and document scrolling.
+Shaders and linked programs are shared by exact source and attribute bindings. Logical program handles retain independent uniforms and Emscripten metadata; switching skips values already present on the physical program. Small avatars (up to 128 CSS pixels) use the original compact mesh. The drawing resolution uses DPR at most 1 up to 64 CSS pixels, 1.5 up to 128, and 2 above that, with a 64-pixel floor and 512-pixel ceiling. The original engine derives its fur draw count from that drawing size, so reducing prepared fur arrays would not reduce its draw calls. Original fur and materials remain in use. The two 512-pixel mipmapped RGBA8 images and the 576×960 RGBA8 atlas share storage only when bytes and parameters match exactly; mutation or framebuffer attachment creates an independent copy. Private render targets, mutable geometry buffers and other textures remain per-character.
+
+Driver errors are checked once at the end of a synchronous shared submission batch. Native setup/probing and Emscripten’s own `GL.lastError` checks retain their behavior. A graphics error discards every pending image in that batch and reports failure to its touched characters; it is never converted into a successful frame. The scheduler estimates the full completed cost, including driver synchronization and image presentation, to limit later batches. An 8 ms CPU-only submission timer was insufficient: software WebGL could queue hundreds of milliseconds of GPU work before that timer expired. A single native render remains non-interruptible.
+
+Original and migrated bodies share one rendering WASM module and one preparation worker (the worker owns its own WASM instance). Prepared geometry identities include the contour and attachment transform. Cold preparation is admitted serially, while already painted moving avatars remain resident. Offscreen/background characters release their lease and retain their last complete 2D image. Static portraits use a bounded 64-image cache and release rendering resources after painting. Storybook’s **Many Avatars** story exercises 48 original/migrated avatars with React/Work controls and scrolling.
+
+### Physical-device measurements
+
+The [recorded benchmark](./benchmarks/avatar-shared-renderer.json) uses a Pixel 8a (Mali-G715, Android 16, Android WebView 148), with all avatars visible at 48 CSS pixels and 64 backing pixels. Original presets and migrated contours alternate. After every avatar is ready, a three-second warmup precedes a roughly five-second sample. Output pixel hashes confirm that every avatar moves; page RAF cadence is measured separately from each avatar's paint rate.
+
+| Visible avatars | Mean paints per avatar per second | Page RAF interval, p95 | Time until all are ready | WebGL contexts |
+| --- | --- | --- | --- | --- |
+| 24 | 3.76 | 25.2 ms | 24.6 s | 1 |
+| 48 | 2.59 | 25.2 ms | 74.1 s | 1 |
+
+These results remove context loss, but **do not deliver fluid 30 fps animation**. Preparation latency and per-character drawing cost still need improvement. Readiness starts with a new document and engine but warm HTTP caches; it is not a cold-download measurement. Pixel-hash readback adds about 7.5–8.4 ms per batch every 500 ms. This short run does not establish sustained thermal performance.
+
+Exact texture sharing avoids a calculated 109.85 MiB of duplicate requested mip storage at 24 avatars and 224.47 MiB at 48. These are payload calculations, not measurements of total GPU memory. Both runs have nine physical programs and zero graphics errors; deleting one preserves its neighbours, and deleting all releases the context, characters and preparation worker. Touch reactions are accepted in both runs. The working state is settled at 24; at 48 it is accepted and active but still pending at the single 1.8-second observation. The recorded asset snapshot predates the later failed-allocation rollback guard, which is covered separately by the browser surface test.
 
 In the repository, run the scheduler tests and the browser budget check (with Storybook running):
 
 ```bash
-node --test scripts/test-avatar-render-budget.mjs
+node --test scripts/test-avatar-render-budget.mjs scripts/test-avatar-preparation-scope.mjs scripts/test-avatar-render-errors.mjs
+node scripts/verify-avatar-shared-surface.mjs
+node scripts/verify-avatar-shared-programs.mjs
+node scripts/verify-avatar-shared-textures.mjs
+node scripts/verify-avatar-runtime-errors.mjs
+node scripts/verify-avatar-preparation-scope.mjs
 node scripts/verify-avatar-render-budget.mjs
+node scripts/verify-avatar-shared-renderer.mjs
 ```
 
 `className` and `style` apply to the outer layout node through Bloom's NativeWind wrapper. `label` defaults to the translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel` overrides the name. Prefer a meaningful name when the avatar identifies an agent.
 
 ## Native and fallback
 
-The optional native bridge uses `react-native-webview` and requires an absolute runtime URL reachable by the device. Web is verified in Chrome; physical-device validation remains pending. Each native WebView owns a separate document, so the four-renderer web budget is **not an application-wide native limit**. Separate WebViews cannot share engine memory, graphics contexts or the web document’s viewport reclamation.
+The optional native bridge uses `react-native-webview` and requires an absolute runtime URL reachable by the device. The web adapter is also exercised in a physical Android WebView; that does not validate a React Native multi-WebView screen. Each native WebView owns a separate document, so context sharing is **per document, not application-wide on native**. Separate WebViews cannot share engine memory, graphics contexts or the web document’s viewport reclamation.
 
 An unavailable runtime or missing native peer displays the translated unavailable state. Consumers without a runtime provider retain the universal SVG renderer for procedural recipes. That renderer preserves the original contours, folds, expression springs and deterministic grain; it does not support the beta's new 3D parts.

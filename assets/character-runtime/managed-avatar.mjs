@@ -1,21 +1,10 @@
 import { renderBudget } from './render-budget.mjs';
+import { characterPixels } from './resolution.mjs';
 
 const snapshots = new Map();
 const waiting = new Map();
-const pixelsFor = (canvas) =>
-  Math.max(
-    64,
-    Math.min(
-      512,
-      Math.round(
-        Math.min(canvas.clientWidth, canvas.clientHeight) *
-          Math.min(devicePixelRatio || 1, 2),
-      ),
-    ),
-  );
-
-// Presentation lifetime is independent of the GPU lease. Overflow avatars keep
-// their real engine pixels and can reclaim a lease through pointer/command input.
+// Presentation lifetime is independent of the rendering lease. Offscreen and
+// paused avatars retain real engine pixels until they need rendering again.
 export function createManagedAvatar(canvas, initial, callbacks, factory) {
   let props = initial,
     controller,
@@ -42,7 +31,7 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
       props.config.character,
       props.legacy,
       props.config.lookAt,
-      pixelsFor(canvas),
+      characterPixels(canvas),
     ]);
   const priority = () =>
     pendingWork || pendingReaction || performance.now() < urgentUntil
@@ -121,6 +110,7 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
           },
         });
         controller = created;
+        if (!disposed) callbacks.onPreparationStart?.();
         created.update(props, true);
         return created;
       } finally {

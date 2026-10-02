@@ -144,3 +144,28 @@ test('a renderer failure frees preparation capacity for the remaining avatars', 
   broken.dispose();
   next.dispose();
 });
+
+test('shared context admission serializes preparation and retains all 48 moving characters', async () => {
+  const h = harness(Infinity);
+  for (let i = 0; i < 48; i++) h.add();
+  await h.frame();
+  await h.frame();
+  assert.equal(
+    h.live(),
+    1,
+    'A second cold preparation waits for actual pixels',
+  );
+  for (let i = 0; i < 100; i++) {
+    for (const item of h.items) if (item.starts) item.lease.painted();
+    await h.frame();
+  }
+  assert.equal(h.live(), 48);
+  assert.ok(h.items.every((item) => item.starts === 1 && item.stops === 0));
+  h.items[0].lease.update({ visible: false });
+  await h.frame();
+  assert.equal(h.live(), 47);
+  assert.ok(h.items.slice(1).every((item) => item.stops === 0));
+  for (const item of h.items) item.lease.dispose();
+  assert.equal(h.live(), 0);
+  assert.equal(h.budget.stats().registered, 0);
+});
