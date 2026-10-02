@@ -1,5 +1,8 @@
 import { useContext } from 'react';
-import { CharacterRuntimeContext } from '../agent-avatar/context';
+import {
+  CharacterRuntimeContext,
+  CharacterCapabilitiesContext,
+} from '../agent-avatar/context';
 import type {
   AvatarCharacterCategory,
   AvatarCharacterConfig,
@@ -20,8 +23,9 @@ export function CharacterControls({
   onChange: (character: AvatarCharacterConfig | undefined) => void;
 }) {
   const messages = useAgentCreatorMessages();
-  const { runtimeUrl, capabilities, capabilitiesByKey } = useContext(
-    CharacterRuntimeContext,
+  const { runtimeUrl } = useContext(CharacterRuntimeContext);
+  const { capabilities, capabilitiesByKey } = useContext(
+    CharacterCapabilitiesContext,
   );
   const {
     Select,

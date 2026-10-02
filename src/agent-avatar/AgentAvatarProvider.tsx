@@ -1,6 +1,10 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import type { AgentAvatarProviderProps } from './types';
-import { type CharacterCapabilities, CharacterRuntimeContext } from './context';
+import {
+  type CharacterCapabilities,
+  CharacterRuntimeContext,
+  CharacterCapabilitiesContext,
+} from './context';
 
 const EMPTY_CAPABILITIES: ReadonlyMap<string, CharacterCapabilities> =
   new Map();
@@ -61,12 +65,15 @@ export function AgentAvatarProvider({
     [runtimeUrl],
   );
   const value = useMemo(
-    () => ({ runtimeUrl, capabilitiesByKey, reportCapabilities }),
-    [runtimeUrl, capabilitiesByKey, reportCapabilities],
+    () => ({ runtimeUrl, reportCapabilities }),
+    [runtimeUrl, reportCapabilities],
   );
+  const catalog = useMemo(() => ({ capabilitiesByKey }), [capabilitiesByKey]);
   return (
     <CharacterRuntimeContext.Provider value={value}>
-      {children}
+      <CharacterCapabilitiesContext.Provider value={catalog}>
+        {children}
+      </CharacterCapabilitiesContext.Provider>
     </CharacterRuntimeContext.Provider>
   );
 }

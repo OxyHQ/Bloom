@@ -1,8 +1,11 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import { AgentAvatar, type AvatarConfig } from '../agent-avatar';
 import type { AvatarCharacterCategory } from '../agent-avatar/config-character';
-import { CharacterRuntimeContext } from '../agent-avatar/context';
+import {
+  CharacterRuntimeContext,
+  CharacterCapabilitiesContext,
+} from '../agent-avatar/context';
 import {
   legacyCharacterRecipe,
   legacyNativeShape,
@@ -46,13 +49,18 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   const [reactionKey, setReactionKey] = useState(0);
   const [workingKey, setWorkingKey] = useState(0);
   const runtime = useContext(CharacterRuntimeContext);
+  const catalog = useContext(CharacterCapabilitiesContext);
+  const previewConfig = useMemo(
+    () => ({ ...c, lookAt: 'wander' as const }),
+    [c],
+  );
   const { runtimeUrl } = runtime;
   const beta = Boolean(c.character && c.character.preset !== 'bloom');
   const nativeShape = legacyNativeShape(c);
   const key = JSON.stringify(beta ? c.character : legacyCharacterRecipe(c));
   const capabilities =
-    runtime.capabilitiesByKey?.get(key) ??
-    (runtime.capabilities?.key === key ? runtime.capabilities : undefined);
+    catalog.capabilitiesByKey?.get(key) ??
+    (catalog.capabilities?.key === key ? catalog.capabilities : undefined);
   const betaColor =
     capabilities?.selected.color ?? c.character?.selections?.color;
   const customColorValue = beta
@@ -315,7 +323,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               }}
             >
               <AgentAvatar
-                config={{ ...c, lookAt: 'wander' }}
+                config={previewConfig}
                 size={162}
                 interactive={Boolean(runtimeUrl)}
                 reactionKey={reactionKey}

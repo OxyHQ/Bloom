@@ -3,15 +3,21 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { AgentAvatarProvider } from '../AgentAvatarProvider';
 import {
   CharacterRuntimeContext,
+  CharacterCapabilitiesContext,
   type CharacterCapabilities,
 } from '../context';
 
 describe('runtime-scoped avatar capabilities', () => {
   let renderer: ReactTestRenderer;
-  let context: React.ContextType<typeof CharacterRuntimeContext>;
-  let observations: React.ContextType<typeof CharacterRuntimeContext>[];
+  type ObservedContext = React.ContextType<typeof CharacterRuntimeContext> &
+    React.ContextType<typeof CharacterCapabilitiesContext>;
+  let context: ObservedContext;
+  let observations: ObservedContext[];
   function Consumer() {
-    context = useContext(CharacterRuntimeContext);
+    context = {
+      ...useContext(CharacterRuntimeContext),
+      ...useContext(CharacterCapabilitiesContext),
+    };
     observations.push(context);
     return null;
   }
