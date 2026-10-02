@@ -26,6 +26,15 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "تفاعل",
+  working: "اعمل",
+  avatarStyle: "نمط الصورة الرمزية",
+  proceduralAvatar: "الصورة الرمزية الحالية",
+  betaPreset: "شخصية جاهزة (تجريبية)",
+  betaEyes: "نمط العيون",
+  eyewear: "نظارات",
+  accessory: "إكسسوار",
+  characterOption: (_category, _id, title) => String(title),
   editor: "محرر الوكيل",
   newBot: "روبوت جديد",
   closeEditor: "إغلاق محرر الوكيل",
@@ -2814,7 +2823,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "صورة الوكيل" },
+  AGENT_AVATAR_MESSAGES: { label: "صورة الوكيل", unavailable: "الصورة الرمزية غير متاحة", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

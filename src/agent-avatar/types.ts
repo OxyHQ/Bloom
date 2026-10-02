@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { AvatarConfig } from './model';
 
@@ -7,9 +8,12 @@ export type AgentAvatarProps = {
   paused?: boolean;
   label?: string;
   locale?: string;
-  /** Compatibility options reserved by the original artwork. */
+  /** Enables pointer and touch reactions when a 3D runtime provider is available. */
   interactive?: boolean;
+  /** Uses a cached still portrait for optional character previews, avoiding a live renderer per thumbnail. */
   portrait?: boolean;
+  /** Replays the supported 3D reaction (signature or migrated silhouette wave) when the key changes. */
+  reactionKey?: number;
   entranceKey?: number;
   workingKey?: number;
   workingCycles?: number;
@@ -19,3 +23,10 @@ export type AgentAvatarProps = {
   testID?: string;
 };
 export type AvatarProps = AgentAvatarProps;
+
+export type { AvatarCharacterConfig, AvatarCharacterCategory } from './config-character';
+
+export type AgentAvatarProviderProps = {
+  runtimeUrl: string;
+  children: ReactNode;
+};

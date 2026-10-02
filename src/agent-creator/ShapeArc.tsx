@@ -1,4 +1,11 @@
-import { useId, useRef, useState, type ComponentType, type Ref } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ComponentType,
+  type Ref,
+} from 'react';
 import { Platform, type View, type ViewProps } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -11,14 +18,18 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
-import { AgentAvatar, FOLD_SHAPES, type AvatarConfig } from '../agent-avatar';
+import { FOLD_SHAPES, type AvatarConfig } from '../agent-avatar/model';
 import { useIsRtl } from '../hooks/use-is-rtl';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import {
+  StyledImage,
+  StyledPressable,
+  StyledView,
+} from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
-import { wrapShape } from './shared';
 import { useTrackEvents } from './use-track-events';
+import { ShapeSilhouette } from './ShapeSilhouette';
 
 // RNW supports these listbox properties; native handles equivalent accessibility actions.
 type ListboxViewProps = Omit<ViewProps, 'role'> & {
@@ -37,15 +48,24 @@ const trackClip: ArcCssStyle = {
   clipPath:
     'polygon(0 0, 15% 0, 30% 36%, 50% 50%, 70% 36%, 85% 0, 100% 0, 100% 100%, 0 100%)',
 };
+export type ShapeArcChoice = {
+  id: string;
+  label: string;
+  config: AvatarConfig;
+  thumbnail?: string;
+};
+const wrap = (slot: number, count: number) => ((slot % count) + count) % count;
 function ShapeSlot({
-  config,
   slot,
   position,
   sign,
   id,
   onSelect,
+  choices,
+  value,
 }: {
-  config: AvatarConfig;
+  choices: readonly ShapeArcChoice[];
+  value: string;
   slot: number;
   position: SharedValue<number>;
   sign: number;
@@ -54,8 +74,8 @@ function ShapeSlot({
 }) {
   const messages = useAgentCreatorMessages();
   const { colors } = useTheme();
-  const shape = FOLD_SHAPES[wrapShape(slot)]!;
-  const active = config.foldShape === shape;
+  const choice = choices[wrap(slot, choices.length)]!;
+  const active = value === choice.id;
   const animated = useAnimatedStyle(() => {
     const angle = (slot - position.value) * 0.34;
     return {
@@ -86,26 +106,23 @@ function ShapeSlot({
         role="option"
         tabIndex={-1}
         aria-selected={active}
-        accessibilityLabel={messages.shapeLabel(messages.shapes[shape])}
+        accessibilityLabel={messages.shapeLabel(choice.label)}
         onPress={() => onSelect(slot)}
         className={`flex size-14 cursor-grab items-center justify-center rounded-2xl outline-none transition-colors hover:bg-background-secondary-default active:cursor-grabbing${active ? ' bg-background-secondary-default ring-1 ring-border-button-default' : ''}`}
         style={{
           backgroundColor: active ? colors.backgroundSecondary : 'transparent',
         }}
       >
-        <AgentAvatar
-          config={{
-            ...config,
-            foldShape: shape,
-            face: false,
-            idle: false,
-            motion: 0,
-            lookAt: 'center',
-          }}
-          size={56}
-          paused
-          label={messages.silhouetteLabel(messages.shapes[shape])}
-        />
+        {choice.thumbnail ? (
+          <StyledImage
+            source={{ uri: choice.thumbnail }}
+            resizeMode="contain"
+            accessible={false}
+            style={{ width: 56, height: 56 }}
+          />
+        ) : (
+          <ShapeSilhouette config={choice.config} />
+        )}
       </StyledPressable>
     </AnimatedView>
   );
@@ -115,15 +132,42 @@ function ShapeSlot({
 export function ShapeArc({
   config,
   onChange,
+  choices: choicesProp,
+  value: valueProp,
+  onSelect,
 }: {
   config: AvatarConfig;
+  choices?: readonly ShapeArcChoice[];
+  value?: string;
+  onSelect?: (id: string) => void;
   onChange: (shape: AvatarConfig['foldShape']) => void;
 }) {
   const messages = useAgentCreatorMessages();
   const { colors } = useTheme();
+  const choices =
+    choicesProp ??
+    FOLD_SHAPES.map((shape) => ({
+      id: shape,
+      label: messages.shapes[shape],
+      config: {
+        ...config,
+        family: 'fold' as const,
+        character: undefined,
+        foldShape: shape,
+      },
+    }));
+  const value = valueProp ?? config.foldShape;
+  const emit = (slot: number) => {
+    const choice = choices[wrap(slot, choices.length)]!;
+    if (onSelect) onSelect(choice.id);
+    else onChange(choice.id as AvatarConfig['foldShape']);
+  };
   const id = useId();
   const ref = useRef<View>(null);
-  const initial = Math.max(0, FOLD_SHAPES.indexOf(config.foldShape));
+  const initial = Math.max(
+    0,
+    choices.findIndex((choice) => choice.id === value),
+  );
   const target = useSharedValue(initial);
   const position = useSharedValue(initial);
   const [center, setCenter] = useState(initial);
@@ -137,6 +181,15 @@ export function ShapeArc({
       ? next
       : withSpring(next, { stiffness: 180, damping: 28 });
   };
+  useEffect(() => {
+    const selected = choices.findIndex((choice) => choice.id === value);
+    if (selected < 0) return;
+    const current = Math.round(target.value);
+    let delta = selected - wrap(current, choices.length);
+    if (delta > choices.length / 2) delta -= choices.length;
+    if (delta < -choices.length / 2) delta += choices.length;
+    if (delta) move(current + delta);
+  }, [value, choices.length]);
   useAnimatedReaction(
     () => Math.round(position.value),
     (value, previous) => {
@@ -147,7 +200,7 @@ export function ShapeArc({
   const select = (slot: number) => {
     if (suppressClick.value) return;
     move(slot);
-    onChange(FOLD_SHAPES[wrapShape(slot)]!);
+    emit(slot);
   };
   const drag = Gesture.Pan()
     .activeOffsetX([-5, 5])
@@ -181,15 +234,15 @@ export function ShapeArc({
         ? Math.round(target.value) + step
         : key === 'Home'
           ? 0
-          : FOLD_SHAPES.length - 1;
+          : choices.length - 1;
       move(next);
-      onChange(FOLD_SHAPES[wrapShape(next)]!);
+      emit(next);
       return true;
     },
   );
   const slots = Array.from({ length: 9 }, (_, index) => center + index - 4);
   const selectedSlot = slots.find(
-    (slot) => FOLD_SHAPES[wrapShape(slot)] === config.foldShape,
+    (slot) => choices[wrap(slot, choices.length)]?.id === value,
   );
   return (
     <GestureDetector gesture={drag}>
@@ -213,14 +266,15 @@ export function ShapeArc({
             Math.round(target.value) +
             (event.nativeEvent.actionName === 'increment' ? 1 : -1);
           move(next);
-          onChange(FOLD_SHAPES[wrapShape(next)]!);
+          emit(next);
         }}
       >
         {slots.map((slot) => (
           <ShapeSlot
             key={slot}
             id={id}
-            config={config}
+            choices={choices}
+            value={value}
             slot={slot}
             position={position}
             sign={sign}

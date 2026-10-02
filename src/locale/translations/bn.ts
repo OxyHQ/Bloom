@@ -16,6 +16,15 @@ import { has as vendorCard_has, counted as vendorCard_counted } from '../../vend
 const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'উপরে বাঁয়ে', 'top-right': 'উপরে ডানে', 'bottom-left': 'নিচে বাঁয়ে', 'bottom-right': 'নিচে ডানে' };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "প্রতিক্রিয়া দেখান",
+  working: "কাজ করুন",
+  avatarStyle: "অবতারের ধরন",
+  proceduralAvatar: "বর্তমান অবতার",
+  betaPreset: "প্রস্তুত চরিত্র (বিটা)",
+  betaEyes: "চোখের ধরন",
+  eyewear: "চশমা",
+  accessory: "অনুষঙ্গ",
+  characterOption: (_category, _id, title) => String(title),
   editor: "এজেন্ট সম্পাদক",
   newBot: "নতুন বট",
   closeEditor: "এজেন্ট সম্পাদক বন্ধ করুন",
@@ -2472,7 +2481,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "এজেন্টের অবতার" },
+  AGENT_AVATAR_MESSAGES: { label: "এজেন্টের অবতার", unavailable: "অবতার উপলব্ধ নেই", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

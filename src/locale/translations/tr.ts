@@ -16,6 +16,15 @@ import { has as vendorCard_has, counted as vendorCard_counted } from '../../vend
 const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'sol üst', 'top-right': 'sağ üst', 'bottom-left': 'sol alt', 'bottom-right': 'sağ alt' };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "Tepki ver",
+  working: "Çalış",
+  avatarStyle: "Avatar stili",
+  proceduralAvatar: "Mevcut avatar",
+  betaPreset: "Hazır karakter (beta)",
+  betaEyes: "Göz stili",
+  eyewear: "Gözlük",
+  accessory: "Aksesuar",
+  characterOption: (_category, _id, title) => String(title),
   editor: "Ajan düzenleyici",
   newBot: "Yeni bot",
   closeEditor: "Ajan düzenleyiciyi kapat",
@@ -2472,7 +2481,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Ajan avatarı" },
+  AGENT_AVATAR_MESSAGES: { label: "Ajan avatarı", unavailable: "Avatar kullanılamıyor", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

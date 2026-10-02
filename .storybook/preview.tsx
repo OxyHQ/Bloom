@@ -9,8 +9,12 @@ import './preview.css';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AgentAvatarProvider } from '../src/agent-avatar/AgentAvatarProvider';
 import { BloomThemeProvider } from '../src/theme';
-import { APP_COLOR_PRESETS, type AppColorName } from '../src/theme/color-presets';
+import {
+  APP_COLOR_PRESETS,
+  type AppColorName,
+} from '../src/theme/color-presets';
 import { SurfaceProvider } from '../src/surfaces';
 import { PortalProvider, PortalOutlet } from '../src/portal';
 
@@ -49,36 +53,54 @@ import { PortalProvider, PortalOutlet } from '../src/portal';
  */
 const withProviders: Decorator = (Story, context) => {
   const documentScroll = context.parameters.bloomScroll === 'document';
-  const viewportHeight = context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh';
-  const mode = (context.globals.theme as 'light' | 'dark' | 'system') ?? 'light';
+  const viewportHeight =
+    context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh';
+  const mode =
+    (context.globals.theme as 'light' | 'dark' | 'system') ?? 'light';
   const requestedPreset = context.globals.colorPreset as AppColorName;
-  const colorPreset = Object.prototype.hasOwnProperty.call(APP_COLOR_PRESETS, requestedPreset) ? requestedPreset : 'oxy';
+  const colorPreset = Object.prototype.hasOwnProperty.call(
+    APP_COLOR_PRESETS,
+    requestedPreset,
+  )
+    ? requestedPreset
+    : 'oxy';
 
   return (
     <SafeAreaProvider>
       <BloomThemeProvider mode={mode} colorPreset={colorPreset}>
         <PortalProvider>
-          <SurfaceProvider>
-            <div
-              data-bloom-story-layout={context.parameters.layout ?? 'padded'}
-              data-bloom-story-view={context.viewMode}
-              data-bloom-story-scroll={documentScroll ? 'document' : 'contained'}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: context.parameters.layout === 'fullscreen' ? 'stretch' : 'flex-start',
-                width: '100%',
-                minWidth: 0,
-                minHeight: documentScroll && context.parameters.layout === 'fullscreen' ? viewportHeight : 0,
-                ...(context.parameters.layout === 'fullscreen' && !documentScroll
-                  ? { height: viewportHeight }
-                  : {}),
-              }}
-            >
-              <Story />
-            </div>
-            <PortalOutlet />
-          </SurfaceProvider>
+          <AgentAvatarProvider runtimeUrl="/bloom-character/runtime.mjs?v=unified-native-eyes-2">
+            <SurfaceProvider>
+              <div
+                data-bloom-story-layout={context.parameters.layout ?? 'padded'}
+                data-bloom-story-view={context.viewMode}
+                data-bloom-story-scroll={
+                  documentScroll ? 'document' : 'contained'
+                }
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems:
+                    context.parameters.layout === 'fullscreen'
+                      ? 'stretch'
+                      : 'flex-start',
+                  width: '100%',
+                  minWidth: 0,
+                  minHeight:
+                    documentScroll && context.parameters.layout === 'fullscreen'
+                      ? viewportHeight
+                      : 0,
+                  ...(context.parameters.layout === 'fullscreen' &&
+                  !documentScroll
+                    ? { height: viewportHeight }
+                    : {}),
+                }}
+              >
+                <Story />
+              </div>
+              <PortalOutlet />
+            </SurfaceProvider>
+          </AgentAvatarProvider>
         </PortalProvider>
       </BloomThemeProvider>
     </SafeAreaProvider>
@@ -112,7 +134,15 @@ const preview: Preview = {
         order: [
           'Introduction',
           'Foundations',
-          ['Color', 'Color System Playground', 'Typography', 'Fonts', 'Icons', 'Design Tokens', 'Motion'],
+          [
+            'Color',
+            'Color System Playground',
+            'Typography',
+            'Fonts',
+            'Icons',
+            'Design Tokens',
+            'Motion',
+          ],
           'Base',
           'Blocks',
           'Charts',
@@ -142,7 +172,8 @@ const preview: Preview = {
         title: 'Color',
         icon: 'paintbrush',
         items: Object.entries(APP_COLOR_PRESETS).map(([value, preset]) => ({
-          value, title: preset.name,
+          value,
+          title: preset.name,
         })),
         dynamicTitle: true,
       },

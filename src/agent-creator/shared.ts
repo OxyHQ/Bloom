@@ -26,21 +26,7 @@ export function normalizeAgentPreferences(
       typeof value?.notifications === 'boolean' ? value.notifications : true,
   };
 }
-export function avatarHex(
-  c: Pick<AvatarConfig, 'hue' | 'saturation' | 'lightness'>,
-) {
-  const light = (c.lightness ?? 76) / 100,
-    a = (c.saturation / 100) * Math.min(light, 1 - light);
-  const channel = (n: number) => {
-    const k = (n + c.hue / 30) % 12;
-    return Math.round(
-      255 * (light - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))),
-    )
-      .toString(16)
-      .padStart(2, '0');
-  };
-  return `#${channel(0)}${channel(8)}${channel(4)}`;
-}
+export { avatarHex } from '../agent-avatar/avatar-color';
 export function hexAppearance(hex: string): Partial<AvatarConfig> | null {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return null;
   const [r = 0, g = 0, b = 0] = [1, 3, 5].map(

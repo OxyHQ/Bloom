@@ -6,7 +6,7 @@ import type { AvatarConfig } from './model';
 import type { ShapeMorph } from './shape-morph';
 import { WORKING_SECONDS, workingPose } from './working';
 const TAU = Math.PI * 2;
-function silhouette(c: AvatarConfig, phase: number) {
+export function avatarSilhouette(c: AvatarConfig, phase: number) {
   const path = new DrawingPath();
   if (c.family === 'alien') {
     const sx =
@@ -123,7 +123,7 @@ export function drawAvatar(
     return;
   }
   ctx.save();
-  ctx.clip(silhouette(c, phase));
+  ctx.clip(avatarSilhouette(c, phase));
   const color = (offset: number, light: number, alpha = 1) =>
     `hsla(${c.hue + offset},${c.saturation}%,${light}%,${alpha})`;
   ctx.fillStyle = color(0, c.material === 'solid' ? 55 : 58);
@@ -186,7 +186,7 @@ export function drawAvatar(
   ctx.restore();
   if (c.face) {
     ctx.save();
-    ctx.clip(silhouette(c, phase));
+    ctx.clip(avatarSilhouette(c, phase));
     drawFace(ctx, c, phase, rig, gaze, cssSize);
     ctx.restore();
     if (c.idle) drawSleepMarks(ctx, c, phase, gaze);

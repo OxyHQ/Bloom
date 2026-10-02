@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
 import tailwindcss from '@tailwindcss/vite';
-import { mergeConfig } from 'vite';
+import { mergeConfig, type ViteDevServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,8 +10,12 @@ const __dirname = path.dirname(__filename);
 const config: StorybookConfig = {
   // `templates/` holds full-screen templates as stories only: composed
   // from Bloom's components, never published (outside `src`, not in `files`).
-  stories: ['../src/**/*.stories.@(ts|tsx|mdx)', '../templates/**/*.stories.@(ts|tsx)'],
+  stories: [
+    '../src/**/*.stories.@(ts|tsx|mdx)',
+    '../templates/**/*.stories.@(ts|tsx)',
+  ],
   addons: ['@storybook/addon-docs'],
+  staticDirs: [{ from: '../assets/character-runtime', to: '/bloom-character' }],
   framework: {
     name: '@storybook/react-vite',
     options: {},
@@ -64,12 +68,37 @@ const config: StorybookConfig = {
       plugins: [
         tailwindcss(),
         {
+          name: 'bloom-character-runtime-reload',
+          // Static ESM/WASM assets do not participate in React Fast Refresh.
+          // Reload the document so an edited adapter cannot mix with cached
+          // engine modules or capability keys from the previous revision.
+          configureServer(server: ViteDevServer) {
+            const directory = path.resolve(
+              __dirname,
+              '../assets/character-runtime',
+            );
+            server.watcher.add(directory);
+            const reload = (file: string) => {
+              if (file.startsWith(directory + path.sep))
+                server.ws.send({ type: 'full-reload', path: '*' });
+            };
+            server.watcher.on('change', reload);
+            server.httpServer?.once('close', () =>
+              server.watcher.off('change', reload),
+            );
+          },
+        },
+        {
           name: 'bloom-expo-web-bootstrap',
           // Expo's web bridge is an empty exported function plus a side-effect
           // polyfill import. Its package marks only the latter as side-effectful,
           // allowing production tree shaking to drop the bridge and installer.
           transform(code: string, id: string) {
-            if (/\/expo-modules-core\/src\/ensureNativeModulesAreInstalled\.ts$/.test(id.split('?')[0]!)) {
+            if (
+              /\/expo-modules-core\/src\/ensureNativeModulesAreInstalled\.ts$/.test(
+                id.split('?')[0]!,
+              )
+            ) {
               return { code, map: null, moduleSideEffects: true };
             }
             return null;
@@ -85,14 +114,17 @@ const config: StorybookConfig = {
           transformMixedEsModules: true,
           // Resolve only the installed RNW internals; preserve optional-peer
           // try/catch boundaries elsewhere in the graph.
-          ignoreTryCatch: (id: string) => !id.startsWith('react-native-web/dist/'),
+          ignoreTryCatch: (id: string) =>
+            !id.startsWith('react-native-web/dist/'),
         },
       },
       // Agent worktrees each carry a full `node_modules` and `lib/`; watching
       // them exhausts the inotify limit (ENOSPC) and kills the dev server.
       // Anchor the exclusion below this project: a blanket **/.worktrees/**
       // also ignores every source file when Storybook itself runs in a worktree.
-      server: { watch: { ignored: [path.resolve(__dirname, '../.worktrees/**')] } },
+      server: {
+        watch: { ignored: [path.resolve(__dirname, '../.worktrees/**')] },
+      },
       resolve: {
         alias: [
           {

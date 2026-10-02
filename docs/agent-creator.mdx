@@ -1,6 +1,6 @@
 ---
 title: AgentCreator
-description: Controlled agent profile editor with live avatar, emotion orbit, shape arc, custom color, and speech preferences.
+description: Controlled agent profile editor with a live 3D avatar, eye orbit, shape arc, custom color, and speech preferences.
 order: 105
 ---
 
@@ -25,9 +25,17 @@ Mount under `BloomProvider` and give the editor a bounded height. Layout classes
 
 ## Appearance
 
-The preview is 162px. Sixteen upright expression chips orbit at a 116px radius; dragging or a mouse wheel rotates the orbit. Hover, focus, backgrounding and reduced motion pause automatic movement. The shape selector uses the source's 210px circular track, unbounded index, spring, drag and wheel geometry. Choose a silhouette by pressing it; keyboard arrows, Home and End select shapes on web. BloomProvider’s direction reverses horizontal movement in RTL.
+The preview is 162px. With `AgentAvatarProvider`, one shape arc combines the eleven original engine shapes with eight distinct migrated bodies: pebble, squircle, slender, pocket, petal, star, cloud and shield. Equivalent circle, triangle, flower, diamond and heart recipes reuse the original geometry. Alien avatars have been removed from the available catalog and examples; saved alien recipes remain readable for compatibility.
 
-Nine glossy color presets preserve the avatar's other controls. The custom picker contains a saturation/brightness field, hue rail and hex entry; dark custom fills switch to light eyes. HSV state preserves the selected hue when the field reaches black or gray. Invalid hex input resets to the last emitted color. Speech and appearance edits preserve the agent's identity and unrelated fields.
+The eye orbit offers nine original 3D eye styles for both body sources. Migrated bodies default to oval eyes; historical expression, eye-size, spacing and tilt settings no longer alter their faces. The engine owns eye geometry and animation, and its capabilities disable unsupported combinations. Changing shape clears an incompatible eye override. Original presets keep their authored eyes until explicitly edited.
+
+Upright eye chips orbit at a 116px radius; dragging or a mouse wheel rotates the orbit. Hover, focus, backgrounding and reduced motion pause automatic movement. The shape selector uses a 210px circular track, an unbounded index, spring, drag and wheel geometry. Choose a silhouette by pressing it; keyboard arrows, Home and End select shapes on web. BloomProvider’s direction reverses horizontal movement in RTL.
+
+Nine glossy color presets and the shared custom picker edit both original and migrated bodies. The picker contains a saturation/brightness field, hue rail and hex entry. HSV state preserves the selected hue when the field reaches black or gray; invalid hex input resets to the last emitted color. Choosing a named engine swatch clears its custom RGB override. Speech and appearance edits preserve the agent’s identity and unrelated fields.
+
+The preview accepts pointer and touch reactions. **React** and **Work** buttons also support keyboard activation and preview the original engine’s animations on either body source. Working returns to the interactive preview after its episode. Eye chips and original shape chips use catalog PNG thumbnails. Migrated shape chips use cached static SVG silhouettes from their actual contours, matching the catalog’s flat pink artwork. The shape wheel renders no avatars or 3D canvases.
+
+The preset selector provides authored characters; eyewear and accessories use Bloom Select on both original and migrated bodies. Explicit selections survive switching between these bodies. Headwear, Bulb, bow and Tuft attach to migrated contour anchors; eyewear and headphones keep their original placement. Intact presets retain their authored signature reaction; edited and migrated bodies use the original 3D wave. Catalog titles retain their original English names by default. Hosts can translate them through `labels.characterOption(category, id, title)`; control labels follow the editor locale. Consumers without a runtime provider retain compatibility rendering and controls for saved procedural recipes.
 
 ## Preferences and speech
 
@@ -39,7 +47,7 @@ Web previews use the browser's local device voice catalog and cancel playback wh
 
 ## Locale and shared primitives
 
-All fixed labels, hints, accessible names and picker values use the `AGENT_CREATOR_MESSAGES` catalog and Bloom’s 15 supported locales. `locale` overrides the root locale for this editor; `labels` overrides individual catalog entries. Agent names, descriptions and host voice names remain consumer data.
+Fixed labels, hints and accessible control names use the `AGENT_CREATOR_MESSAGES` catalog and Bloom’s 15 supported locales. `locale` overrides the root locale for this editor; `labels` overrides individual catalog entries. Agent names, descriptions and host voice names remain consumer data.
 
 Profile inputs, textarea, select, switch, segmented control, close control and popover reuse Bloom’s current primitives. Original layout and interaction class chains are retained. Bloom’s active palette and materials supply their colors. The custom HSV picker reads `Field` membership: disabling the enclosing field disables its gestures, keyboard updates and hex input; field errors and descriptions associate with its inputs.
 

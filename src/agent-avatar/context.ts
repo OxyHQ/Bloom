@@ -5,3 +5,16 @@ import type { DrawingContext } from './drawing';
 export const AvatarDrawingObserver = createContext<
   ((drawing: DrawingContext) => void) | null
 >(null);
+
+export type CharacterCapabilities = {
+  key: string;
+  available: Record<string, boolean>;
+  selected: Record<string, string>;
+};
+/** The application hosts the optional renderer assets at this module URL. */
+export const CharacterRuntimeContext = createContext<{
+  runtimeUrl?: string;
+  capabilities?: CharacterCapabilities;
+  capabilitiesByKey?: ReadonlyMap<string, CharacterCapabilities>;
+  reportCapabilities?: (value: CharacterCapabilities) => void;
+}>({});

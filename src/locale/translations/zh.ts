@@ -16,6 +16,15 @@ import { has as vendorCard_has, counted as vendorCard_counted } from '../../vend
 const CALL_UI_MESSAGES__CORNERS = { 'top-left': '左上角', 'top-right': '右上角', 'bottom-left': '左下角', 'bottom-right': '右下角' };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "做出反应",
+  working: "工作",
+  avatarStyle: "头像风格",
+  proceduralAvatar: "当前头像",
+  betaPreset: "预设角色（测试版）",
+  betaEyes: "眼睛风格",
+  eyewear: "眼镜",
+  accessory: "配饰",
+  characterOption: (_category, _id, title) => String(title),
   editor: "智能体编辑器",
   newBot: "新机器人",
   closeEditor: "关闭智能体编辑器",
@@ -2456,7 +2465,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "智能体头像" },
+  AGENT_AVATAR_MESSAGES: { label: "智能体头像", unavailable: "头像不可用", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

@@ -16,6 +16,15 @@ import { has as vendorCard_has, counted as vendorCard_counted } from '../../vend
 const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'kiri atas', 'top-right': 'kanan atas', 'bottom-left': 'kiri bawah', 'bottom-right': 'kanan bawah' };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  reaction: "Bereaksi",
+  working: "Bekerja",
+  avatarStyle: "Gaya avatar",
+  proceduralAvatar: "Avatar saat ini",
+  betaPreset: "Karakter bawaan (beta)",
+  betaEyes: "Gaya mata",
+  eyewear: "Kacamata",
+  accessory: "Aksesori",
+  characterOption: (_category, _id, title) => String(title),
   editor: "Editor agen",
   newBot: "Bot baru",
   closeEditor: "Tutup editor agen",
@@ -2471,7 +2480,7 @@ const translations: Translations = {
 },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Avatar agen" },
+  AGENT_AVATAR_MESSAGES: { label: "Avatar agen", unavailable: "Avatar tidak tersedia", },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,
