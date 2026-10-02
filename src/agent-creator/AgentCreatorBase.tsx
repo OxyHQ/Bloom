@@ -510,9 +510,8 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   maxLength={48}
                   value={agent.name}
                   onChangeText={(name) => onChange({ ...agent, name })}
-                  placeholder={
-                    'Michael Scott' /* i18n-exempt: original example person’s proper name */
-                  }
+                  /* i18n-exempt: original example person’s proper name */
+                  placeholder={'Michael Scott'}
                 />
               </StyledView>
             </StyledView>
