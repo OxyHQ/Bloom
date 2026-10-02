@@ -14,7 +14,11 @@ export type CharacterCapabilities = {
 /** The application hosts the optional renderer assets at this module URL. */
 export const CharacterRuntimeContext = createContext<{
   runtimeUrl?: string;
+  reportCapabilities?: (value: CharacterCapabilities) => void;
+}>({});
+
+/** Only editors subscribe to catalog updates; renderer input stays stable. */
+export const CharacterCapabilitiesContext = createContext<{
   capabilities?: CharacterCapabilities;
   capabilitiesByKey?: ReadonlyMap<string, CharacterCapabilities>;
-  reportCapabilities?: (value: CharacterCapabilities) => void;
 }>({});

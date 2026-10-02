@@ -69,7 +69,7 @@ const withProviders: Decorator = (Story, context) => {
     <SafeAreaProvider>
       <BloomThemeProvider mode={mode} colorPreset={colorPreset}>
         <PortalProvider>
-          <AgentAvatarProvider runtimeUrl="/bloom-character/runtime.mjs?v=unified-native-eyes-2">
+          <AgentAvatarProvider runtimeUrl="/bloom-character/runtime.mjs?v=render-budget-4">
             <SurfaceProvider>
               <div
                 data-bloom-story-layout={context.parameters.layout ?? 'padded'}

@@ -144,6 +144,11 @@ try {
     props = { ...props, paused: false, reactionKey: 1 };
     control.update(props);
   });
+  await page.waitForFunction(
+    () => control.diagnostics().lastReaction === 0,
+    {},
+    { timeout: 30000 },
+  );
   assert.equal(
     await page.evaluate(() => control.diagnostics().lastReaction),
     0,
@@ -154,6 +159,40 @@ try {
     1,
     'Customized presets fall back to the original Wave',
   );
+  // A cached duplicate must contain the final edited color, not a frame from
+  // the debounce interval or the preceding appearance transition.
+  await page.evaluate(() => {
+    props = {
+      ...props,
+      paused: true,
+      config: {
+        ...props.config,
+        character: { ...props.config.character, bodyColor: '#ff6600' },
+      },
+    };
+    control.update(props);
+  });
+  await page.waitForFunction(
+    () =>
+      !control.diagnostics().pending && runtime.runtimeStats().instances === 0,
+    {},
+    { timeout: 30000 },
+  );
+  const cachedCopy = await page.evaluate(async () => {
+    const original = document.querySelector('canvas');
+    const duplicate = document.createElement('canvas');
+    duplicate.style.cssText = original.style.cssText;
+    document.body.appendChild(duplicate);
+    const copy = await runtime.createAvatar(duplicate, props);
+    const result = {
+      same: duplicate.toDataURL() === original.toDataURL(),
+      ready: copy.diagnostics().ready,
+    };
+    copy.dispose();
+    duplicate.remove();
+    return result;
+  });
+  assert.deepEqual(cachedCopy, { same: true, ready: true });
   await page.evaluate(() => control.dispose());
   assert.equal(await page.evaluate(() => runtime.runtimeStats().instances), 0);
 

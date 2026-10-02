@@ -38,12 +38,21 @@ Alien avatars have been removed from the available catalog. Saved aliens, mascot
 
 `paused`, reduced motion and `motion: 0` stop animation after a complete appearance frame. `portrait` prepares a static thumbnail. The beta can report readiness while drawing transparency if initialized with its reduced-motion flag; the adapter waits for painted pixels and then freezes its clock instead.
 
-Web shares the beta engine and one animation clock per document. Different migrated contours isolate their rendering modules because the recovered engine caches geometry by its original appearance key; they share one preparation worker. Unused contour modules are released. Animated characters each need a graphics surface. Use `portrait` for galleries and selectors. Static thumbnail preparation is serialized, retains a bounded cache and releases its graphics surface after painting. Offscreen/background avatars pause; unmount releases listeners and rendering resources.
+Web shares the beta engine and one animation clock per document, with a shared budget of **four live renderers** across original and migrated avatars. Additional avatars retain real 3D pixels from their last completed frame while their GPU renderer is released. Pointer interaction and React/Work commands prioritize reclaiming a renderer; overflow images remain visible while that renderer prepares. A newly visible avatar without a cached frame waits for its first rendering slot. This bounds graphics resources; the recovered engine’s synchronous first preparation can still cause a long task, especially for uncached migrated contours. Leaving the viewport or hiding the document releases the renderer lease, and returning avatars can display their retained image before resuming animation.
+
+Different migrated contours isolate their rendering modules because the recovered engine caches geometry by its original appearance key; they share one preparation worker. Unused contour modules are released. Use `portrait` for galleries and selectors. Static preparation is serialized and the image cache is bounded to 64 entries; unmount releases listeners and rendering resources. Storybook’s **Many Avatars** story exercises 48 original/migrated avatars with per-avatar React/Work controls and document scrolling.
+
+In the repository, run the scheduler tests and the browser budget check (with Storybook running):
+
+```bash
+node --test scripts/test-avatar-render-budget.mjs
+node scripts/verify-avatar-render-budget.mjs
+```
 
 `className` and `style` apply to the outer layout node through Bloom's NativeWind wrapper. `label` defaults to the translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel` overrides the name. Prefer a meaningful name when the avatar identifies an agent.
 
 ## Native and fallback
 
-The optional native bridge uses `react-native-webview` and requires an absolute runtime URL reachable by the device. Web is verified in Chrome; physical-device validation remains pending. Separate WebViews cannot share engine memory or graphics contexts.
+The optional native bridge uses `react-native-webview` and requires an absolute runtime URL reachable by the device. Web is verified in Chrome; physical-device validation remains pending. Each native WebView owns a separate document, so the four-renderer web budget is **not an application-wide native limit**. Separate WebViews cannot share engine memory, graphics contexts or the web document’s viewport reclamation.
 
 An unavailable runtime or missing native peer displays the translated unavailable state. Consumers without a runtime provider retain the universal SVG renderer for procedural recipes. That renderer preserves the original contours, folds, expression springs and deterministic grain; it does not support the beta's new 3D parts.

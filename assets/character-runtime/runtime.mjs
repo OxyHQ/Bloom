@@ -2,11 +2,14 @@
 import createModule from './orbit-characters.mjs';
 import { customizeAppearance, encodeAppearance } from './appearance-codec.mjs';
 import { acquireLegacyEngine, legacyEngineStats } from './legacy-engine.mjs';
+import { createManagedAvatar, managedAvatarStats } from './managed-avatar.mjs';
 
 let modulePromise;
 let serial = 0;
 let frame = 0;
 let lastFrame = -Infinity;
+let nextClient = 0;
+let lastRenderMilliseconds = 0;
 const clients = new Set();
 const category = { shape: 0, color: 1, eyes: 2, eyewear: 3, accessory: 4 };
 function engine() {
@@ -26,7 +29,18 @@ function tick(time) {
   if (document.hidden) return;
   if (time - lastFrame >= 1000 / 30 - 1) {
     lastFrame = time;
-    for (const client of [...clients]) client.render(time / 1000);
+    const batch = [...clients];
+    const started = performance.now();
+    for (let i = 0; i < batch.length; i++) {
+      const index = nextClient % batch.length;
+      nextClient = (index + 1) % batch.length;
+      const client = batch[index];
+      if (clients.has(client)) client.render(time / 1000);
+      // One native render cannot be interrupted, but a crowded page must not
+      // submit every remaining avatar after it has spent its frame allowance.
+      if (performance.now() - started >= 8) break;
+    }
+    lastRenderMilliseconds = performance.now() - started;
   }
   schedule();
 }
@@ -41,8 +55,12 @@ export async function createAvatar(canvas, initial, callbacks = {}) {
   if (!initial.config.character && !initial.legacy)
     throw new Error('A recovered character recipe is required');
   if (initial.portrait) return createPortrait(canvas, initial, callbacks);
-  if (initial.legacy) return createLegacyCharacter(canvas, initial, callbacks);
-  return createLiveCharacter(canvas, initial, callbacks);
+  return createManagedAvatar(canvas, initial, callbacks, createCharacter);
+}
+function createCharacter(canvas, initial, callbacks) {
+  return initial.legacy
+    ? createLegacyCharacter(canvas, initial, callbacks)
+    : createLiveCharacter(canvas, initial, callbacks);
 }
 
 async function createLiveCharacter(
@@ -224,14 +242,15 @@ async function createLiveCharacter(
           submitted &&
           fit &&
           !character.preparationStats().pending &&
-          !character.hasPendingUpdate()
+          !character.hasPendingUpdate() &&
+          fingerprint === pendingFingerprint
         ) {
           dirty = false;
           if (!ready) {
             ready = true;
             callbacks.onReady?.();
           }
-          callbacks.onPaint?.();
+          callbacks.onPaint?.(!transitionImage);
           if (activityMode && workDuration && !workTimer) {
             workTimer = setTimeout(() => {
               workTimer = undefined;
@@ -312,6 +331,14 @@ async function createLiveCharacter(
     }
     dirty = true;
     wake();
+  };
+  const work = () => {
+    if (!animate()) return;
+    clearTimeout(workTimer);
+    switchMode(true);
+    play(1);
+    workTimer = undefined;
+    workDuration = 2200 * Math.max(1, Math.min(10, props.workingCycles || 1));
   };
   let appearanceTimer, pendingFingerprint;
   const applyAppearance = (value) => {
@@ -415,7 +442,7 @@ async function createLiveCharacter(
       dirty = true;
     }
   };
-  const update = (next) => {
+  const update = (next, silent = false) => {
     if (disposed) return;
     props = next;
     const recipe = props.legacy
@@ -456,19 +483,16 @@ async function createLiveCharacter(
     character.setReducedMotion(false);
     if (
       hasWork &&
+      !silent &&
       previousWork !== props.workingKey &&
       props.workingKey !== undefined &&
       animate()
     ) {
-      clearTimeout(workTimer);
-      switchMode(true);
-      play(1);
-      workTimer = undefined;
-      // Count visible activity time, not time spent preparing its scene.
-      workDuration = 2200 * Math.max(1, Math.min(10, props.workingCycles || 1));
+      work();
     }
     if (
       hasWork &&
+      !silent &&
       previousReaction !== props.reactionKey &&
       props.reactionKey !== undefined
     )
@@ -597,6 +621,8 @@ async function createLiveCharacter(
   return {
     update,
     dispose,
+    react,
+    work,
     diagnostics: () => ({
       lastReaction,
       lastReactionKind,
@@ -619,12 +645,12 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
     revision = 0,
     disposed = false,
     latest = initial;
-  const update = async (next) => {
+  const update = async (next, silent = false) => {
     if (disposed) return;
     latest = next;
     const key = JSON.stringify(next.legacy.points ?? null);
     if (shapeKey === key) {
-      controller?.update(next);
+      controller?.update(next, silent);
       return;
     }
     const snapshot = controller?.diagnostics().ready
@@ -661,7 +687,7 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
         return;
       }
       controller = created;
-      controller.update(latest);
+      controller.update(latest, true);
     } catch (error) {
       if (!current()) return;
       shapeKey = undefined;
@@ -670,8 +696,8 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
   };
   await update(initial);
   return {
-    update(next) {
-      void update(next).catch((error) => {
+    update(next, silent = false) {
+      void update(next, silent).catch((error) => {
         if (!disposed) callbacks.onError?.(error);
       });
     },
@@ -680,6 +706,8 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
       ++revision;
       controller?.dispose();
     },
+    react: () => controller?.react(),
+    work: () => controller?.work(),
     diagnostics: () => controller?.diagnostics(),
   };
 }
@@ -746,7 +774,7 @@ function createPortrait(canvas, initial, callbacks) {
       };
       cancel = finish;
       try {
-        controller = await createLiveCharacter(
+        controller = await createManagedAvatar(
           canvas,
           { ...props, paused: true, interactive: false },
           {
@@ -772,6 +800,7 @@ function createPortrait(canvas, initial, callbacks) {
               queueMicrotask(finish);
             },
           },
+          createCharacter,
         );
         if (finished || !current()) {
           controller.dispose();
@@ -811,6 +840,8 @@ const registryKey = Symbol.for('bloom.character.runtimes');
 /** Diagnostics are read on demand; no DOM/debug updates run on the animation clock. */
 export function runtimeStats() {
   return {
+    renderMilliseconds: lastRenderMilliseconds,
+    budget: managedAvatarStats(),
     instances: instances.size,
     active: clients.size,
     scheduled: !!frame,

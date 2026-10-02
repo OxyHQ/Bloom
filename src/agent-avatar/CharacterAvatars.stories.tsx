@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button } from '../button/Button';
+import { StyledView } from '../styles/styled-primitives';
+import { Text } from '../typography';
 import { AgentCreator } from '../agent-creator/AgentCreator.web';
 import type { AgentCreatorAgent } from '../agent-creator/types';
 import { AgentAvatar } from './AgentAvatar';
@@ -18,7 +20,7 @@ const characters = [
   ['blue_spectacles', 'Josh'],
   ['lime_headphones', 'Iggy'],
 ] as const;
-const runtimeUrl = '/bloom-character/runtime.mjs?v=unified-native-eyes-2';
+const runtimeUrl = '/bloom-character/runtime.mjs?v=render-budget-4';
 const meta = {
   title: 'Application/Agent Avatar/Characters',
   parameters: { layout: 'padded' },
@@ -210,3 +212,97 @@ function MigratedEditor() {
   );
 }
 export const LegacyEditor: Story = { render: () => <MigratedEditor /> };
+
+const stressCharacters = Array.from({ length: 48 }, (_, index) => {
+  const variant = Math.floor(index / 2) % 8;
+  const migrated = index % 2 === 1;
+  const original = characters[variant]!;
+  const legacy = legacyCharacters[variant]!;
+  return {
+    id: `stress-avatar-${index + 1}`,
+    name: migrated ? legacy.id : original[1],
+    kind: migrated ? 'Migrated' : 'Original',
+    config: migrated
+      ? legacy.config
+      : { ...FOLD_CONFIG, character: { preset: original[0] } },
+  };
+});
+
+function StressAvatar({
+  item,
+  paused,
+}: {
+  item: (typeof stressCharacters)[number];
+  paused: boolean;
+}) {
+  const [workingKey, setWorking] = useState(0);
+  const [reactionKey, setReaction] = useState(0);
+  return (
+    <StyledView
+      testID={item.id}
+      className="w-[148px] items-center gap-2 rounded-2xl border border-border-button-default p-3"
+      style={{ width: 148 }}
+    >
+      <AgentAvatar
+        config={item.config}
+        size={96}
+        paused={paused}
+        interactive
+        workingKey={workingKey}
+        reactionKey={reactionKey}
+        label={`${item.kind} ${item.name}`}
+      />
+      <Text variant="body-medium" numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Text variant="caption-2-regular">{item.kind}</Text>
+      <StyledView className="flex-row gap-2">
+        <Button
+          size="xs"
+          disabled={paused}
+          accessibilityLabel={`React ${item.id}`}
+          onPress={() => setReaction((key) => key + 1)}
+        >
+          React
+        </Button>
+        <Button
+          size="xs"
+          disabled={paused}
+          accessibilityLabel={`Work ${item.id}`}
+          onPress={() => setWorking((key) => key + 1)}
+        >
+          Work
+        </Button>
+      </StyledView>
+    </StyledView>
+  );
+}
+
+function ManyAvatarGallery() {
+  const [paused, setPaused] = useState(false);
+  return (
+    <AgentAvatarProvider runtimeUrl={runtimeUrl}>
+      <StyledView className="w-full max-w-[1020px] gap-5 p-4">
+        <Text variant="title-2-medium">48 original and migrated avatars</Text>
+        <Text variant="body-regular">
+          Scroll the gallery and use each avatar’s React or Work button.
+          Overflow avatars retain their painted 3D image and reclaim a renderer
+          when you interact.
+        </Text>
+        <Button onPress={() => setPaused((value) => !value)}>
+          {paused ? 'Resume all' : 'Pause all'}
+        </Button>
+        <StyledView className="flex-row flex-wrap gap-4">
+          {stressCharacters.map((item) => (
+            <StressAvatar key={item.id} item={item} paused={paused} />
+          ))}
+        </StyledView>
+      </StyledView>
+    </AgentAvatarProvider>
+  );
+}
+
+export const ManyAvatars: Story = {
+  parameters: { layout: 'fullscreen', bloomScroll: 'document' },
+  render: () => <ManyAvatarGallery />,
+};

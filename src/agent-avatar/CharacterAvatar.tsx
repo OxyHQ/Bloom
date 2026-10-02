@@ -201,13 +201,17 @@ export function CharacterAvatar(props: AgentAvatarProps) {
     };
   }, []);
   useEffect(() => setFailed(false), [runtimeUrl, config.character]);
+  const legacy = useMemo(
+    () =>
+      !config.character || config.character.preset === 'bloom'
+        ? legacyRecipe(config)
+        : undefined,
+    [config],
+  );
   const value = useMemo(
     () => ({
       config,
-      legacy:
-        !config.character || config.character.preset === 'bloom'
-          ? legacyRecipe(config)
-          : undefined,
+      legacy,
       paused: paused || !active,
       portrait,
       workingKey,
@@ -219,6 +223,7 @@ export function CharacterAvatar(props: AgentAvatarProps) {
     }),
     [
       config,
+      legacy,
       paused,
       portrait,
       active,

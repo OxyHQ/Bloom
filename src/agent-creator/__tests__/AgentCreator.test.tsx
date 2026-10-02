@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
-import { CharacterRuntimeContext } from '../../agent-avatar/context';
+import { CharacterRuntimeFixture } from './support/character-runtime-fixture';
 import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
 import {
   legacyCharacterRecipe,
@@ -121,11 +121,11 @@ describe('optional character editor', () => {
     expect(plain.queryByTestId('agent-creator-character-controls')).toBeNull();
     plain.unmount();
     const view = render(
-      <CharacterRuntimeContext.Provider value={{ runtimeUrl: '/runtime.mjs' }}>
+      <CharacterRuntimeFixture value={{ runtimeUrl: '/runtime.mjs' }}>
         <BloomThemeProvider>
           <AgentCreator agent={agent} onChange={onChange} />
         </BloomThemeProvider>
-      </CharacterRuntimeContext.Provider>,
+      </CharacterRuntimeFixture>,
     );
     const preset = view.UNSAFE_getAllByType(Select)[0]!;
     fireEvent(preset, 'valueChange', 'blue_beret');
@@ -147,7 +147,7 @@ describe('optional character editor', () => {
       selected: { eyes: 'oval', color: 'pink', shape: 'rounded_diamond' },
     };
     const view = render(
-      <CharacterRuntimeContext.Provider
+      <CharacterRuntimeFixture
         value={{
           runtimeUrl: '/runtime.mjs',
           capabilitiesByKey: new Map([[capabilities.key, capabilities]]),
@@ -156,7 +156,7 @@ describe('optional character editor', () => {
         <BloomThemeProvider>
           <AgentCreator agent={configured} onChange={onChange} />
         </BloomThemeProvider>
-      </CharacterRuntimeContext.Provider>,
+      </CharacterRuntimeFixture>,
     );
     expect(view.UNSAFE_getByType(EmotionPicker).props.value).toBe('oval');
     expect(view.getByLabelText('Round inset').props.disabled).toBe(true);
@@ -198,7 +198,7 @@ it('edits custom beta body RGB through the existing picker and retains the entir
     selected: { color: 'blue', shape: 'heart', eyes: 'oval', accessory: 'bow' },
   };
   const view = render(
-    <CharacterRuntimeContext.Provider
+    <CharacterRuntimeFixture
       value={{
         runtimeUrl: '/runtime.mjs',
         capabilitiesByKey: new Map([[capabilities.key, capabilities]]),
@@ -207,7 +207,7 @@ it('edits custom beta body RGB through the existing picker and retains the entir
       <BloomThemeProvider>
         <AgentCreator agent={configured} onChange={onChange} />
       </BloomThemeProvider>
-    </CharacterRuntimeContext.Provider>,
+    </CharacterRuntimeFixture>,
   );
   expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
   expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(
@@ -265,7 +265,7 @@ describe('shared original-engine editor catalog', () => {
       available: { 'eyes:dots': true },
     };
     return render(
-      <CharacterRuntimeContext.Provider
+      <CharacterRuntimeFixture
         value={{
           runtimeUrl: '/runtime.mjs',
           capabilitiesByKey: new Map([[key, caps]]),
@@ -274,7 +274,7 @@ describe('shared original-engine editor catalog', () => {
         <BloomThemeProvider>
           <AgentCreator agent={configured} onChange={onChange} />
         </BloomThemeProvider>
-      </CharacterRuntimeContext.Provider>,
+      </CharacterRuntimeFixture>,
     );
   }
 
@@ -449,7 +449,7 @@ it('edits migrated accessories, eyewear, eyes and color while preserving the ori
       },
     };
     return (
-      <CharacterRuntimeContext.Provider
+      <CharacterRuntimeFixture
         value={{
           runtimeUrl: '/runtime.mjs',
           capabilitiesByKey: new Map([[key, caps]]),
@@ -464,7 +464,7 @@ it('edits migrated accessories, eyewear, eyes and color while preserving the ori
             }}
           />
         </BloomThemeProvider>
-      </CharacterRuntimeContext.Provider>
+      </CharacterRuntimeFixture>
     );
   }
   const view = render(<ControlledEditor />);
