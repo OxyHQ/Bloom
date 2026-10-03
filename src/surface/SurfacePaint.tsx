@@ -1,7 +1,7 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import type { SurfaceShape } from '../shapes/corner-types';
-import React, { memo, useEffect } from 'react';
-import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
+import React, { memo, useCallback, useEffect, useState } from 'react';
+import { Platform, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useSvgIdPrefix } from '../styles/svg-id';
 import { StyledView } from '../styles/styled-primitives';
@@ -47,6 +47,13 @@ export const SurfacePaint = memo(function SurfacePaint({
   const resolvedFill = resolveSurfaceTint(fill ?? 'transparent');
   const id = useSvgIdPrefix('bloom-surface');
   const isWeb = Platform.OS === 'web';
+  const [nativeSize, setNativeSize] = useState<{ width: number; height: number } | null>(null);
+  const onNativeLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return;
+    setNativeSize(previous => previous?.width === width && previous.height === height
+      ? previous : { width, height });
+  }, []);
   useSurfaceRefraction(isWeb);
   useEffect(() => {
     if (isWeb) adoptStyleSheet('bloom-surface-paint-web-css', WEB_PAINT_CSS);
@@ -67,17 +74,20 @@ export const SurfacePaint = memo(function SurfacePaint({
   return (
     <View
       testID={testID}
+      onLayout={onNativeLayout}
       pointerEvents="none"
       style={[StyleSheet.absoluteFill, geometry, { overflow: 'hidden' }]}
     >
+      {/* Android SVG percentage paths cache canvas dimensions after first paint.
+          Update the actual Rect geometry when this backing View changes size. */}
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           {sheen ? <LinearGradient id={`${id}-sheen`} x1="0" y1="0" x2="0" y2="1">
             {optics.sheen.map(stop => <Stop key={stop.offset} offset={String(stop.offset)} stopColor={stop.color} stopOpacity={stop.opacity} />)}
           </LinearGradient> : null}
         </Defs>
-        {fill !== undefined ? <Rect x="0" y="0" width="100%" height="100%" fill={base.color} fillOpacity={base.opacity} /> : null}
-        {sheen ? <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}-sheen)`} /> : null}
+        {fill !== undefined ? <Rect x="0" y="0" width={nativeSize?.width ?? '100%'} height={nativeSize?.height ?? '100%'} fill={base.color} fillOpacity={base.opacity} /> : null}
+        {sheen ? <Rect x="0" y="0" width={nativeSize?.width ?? '100%'} height={nativeSize?.height ?? '100%'} fill={`url(#${id}-sheen)`} /> : null}
       </Svg>
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, geometry, { boxShadow: optics.rim }]} />
     </View>
