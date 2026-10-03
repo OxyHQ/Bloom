@@ -4,6 +4,7 @@ import { legacyContours } from '../agent-avatar/legacy-contours';
 import { radialContour } from '../agent-avatar/legacy-recipe';
 import type { AvatarConfig } from '../agent-avatar/model';
 import { CHARACTER_COLORS } from './constants';
+import { ClippoArtwork } from './ClippoArtwork';
 
 const silhouettes = new Map<string, { path: string; viewBox: string }>();
 
@@ -49,6 +50,12 @@ export const ShapeSilhouette = memo(function ShapeSilhouette({
 }: {
   config: AvatarConfig;
 }) {
+  if (
+    config.character?.selections?.shape === 'clippo' ||
+    (config.character?.preset === 'clippo' &&
+      !config.character.selections?.shape)
+  )
+    return <ClippoArtwork kind="shape" />;
   const { path, viewBox } = silhouette(config);
   return (
     <Svg

@@ -376,6 +376,7 @@ export function createSharedTexturePool(gl) {
   const context = new Proxy(gl, {
     get(target, property) {
       if (Object.hasOwn(api, property)) return api[property];
+      if (methods.has(property)) return methods.get(property);
       const value = Reflect.get(target, property, target);
       if (typeof value !== 'function') return value;
       if (!methods.has(property))

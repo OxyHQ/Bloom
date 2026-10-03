@@ -63,13 +63,20 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     (catalog.capabilities?.key === key ? catalog.capabilities : undefined);
   const betaColor =
     capabilities?.selected.color ?? c.character?.selections?.color;
+  const betaBodyColor =
+    c.character?.bodyColor ??
+    (c.character?.preset === 'clippo' && !c.character.selections?.color
+      ? '#999b9d'
+      : undefined);
   const customColorValue = beta
-    ? (c.character?.bodyColor ??
+    ? (betaBodyColor ??
       CHARACTER_COLORS[betaColor as keyof typeof CHARACTER_COLORS] ??
       avatarHex(c))
     : (c.character?.bodyColor ?? avatarHex(c));
   const selectedEyes =
-    capabilities?.selected.eyes ?? c.character?.selections?.eyes ?? 'oval';
+    capabilities?.selected.eyes ??
+    c.character?.selections?.eyes ??
+    (c.character?.preset === 'clippo' ? 'clippo' : 'oval');
   const characterConfig = (
     category: AvatarCharacterCategory,
     id: string,
@@ -106,7 +113,13 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
           },
         };
     const selections = { ...character.selections, [category]: id };
-    if (category === 'shape') delete selections.eyes;
+    if (category === 'shape') {
+      // Authored transplant eyes fit every body. Native catalog styles still
+      // need their shape-dependent compatibility reset.
+      if (selectedEyes === 'todd' || selectedEyes === 'clippo')
+        selections.eyes = selectedEyes;
+      else delete selections.eyes;
+    }
     const next = { ...character, selections };
     if (category === 'color') delete next.bodyColor;
     return { ...c, character: next };
@@ -184,7 +197,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
           id,
           label: messages.characterOption('shape', id, title),
           config: characterConfig('shape', id),
-          thumbnail: `${thumbnailBase}thumbnails/shapes/${id}.png`,
+          ...(id === 'clippo'
+            ? {}
+            : { thumbnail: `${thumbnailBase}thumbnails/shapes/${id}.png` }),
         })),
         ...migratedShapes.map(({ family, shape, title }) => ({
           id: `legacy:${family}:${shape}`,
@@ -194,7 +209,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
       ]
     : undefined;
   const shapeValue = beta
-    ? (capabilities?.selected.shape ?? c.character?.selections?.shape)
+    ? (capabilities?.selected.shape ??
+      c.character?.selections?.shape ??
+      (c.character?.preset === 'clippo' ? 'clippo' : undefined))
     : (nativeShape ??
       `legacy:${c.family}:${c.family === 'fold' ? c.foldShape : c.shape}`);
   const selectShape = (id: string) => {
@@ -211,7 +228,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
         id,
         label: messages.characterOption('eyes', id, title),
         config: characterConfig('eyes', id),
-        thumbnail: `${thumbnailBase}thumbnails/eyes/${id}.png`,
+        ...(id === 'clippo'
+          ? { artwork: 'clippo' as const }
+          : { thumbnail: `${thumbnailBase}thumbnails/eyes/${id}.png` }),
         disabled:
           !capabilities || capabilities.available[`eyes:${id}`] === false,
       }))
@@ -418,8 +437,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               {beta &&
                 CHARACTER_OPTIONS.color.map(([id, title]) => {
                   const active =
-                    !c.character?.bodyColor &&
-                    capabilities?.selected.color === id;
+                    !betaBodyColor && capabilities?.selected.color === id;
                   const hex = CHARACTER_COLORS[id];
                   const disabled =
                     !capabilities ||
@@ -445,19 +463,17 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               <Popover>
                 <PopoverTrigger asChild label={messages.customColor}>
                   <StyledPressable
-                    aria-pressed={
-                      beta ? Boolean(c.character?.bodyColor) : undefined
-                    }
+                    aria-pressed={beta ? Boolean(betaBodyColor) : undefined}
                     accessibilityState={{
-                      selected: beta && Boolean(c.character?.bodyColor),
+                      selected: beta && Boolean(betaBodyColor),
                     }}
                     className="relative size-[26px] shrink-0 overflow-hidden rounded-full"
                   >
                     <GlossArt
-                      rainbow={!beta || !c.character?.bodyColor}
-                      center={beta ? c.character?.bodyColor : undefined}
-                      edge={beta ? c.character?.bodyColor : undefined}
-                      active={beta && Boolean(c.character?.bodyColor)}
+                      rainbow={!beta || !betaBodyColor}
+                      center={beta ? betaBodyColor : undefined}
+                      edge={beta ? betaBodyColor : undefined}
+                      active={beta && Boolean(betaBodyColor)}
                     />
                   </StyledPressable>
                 </PopoverTrigger>

@@ -397,7 +397,11 @@ try {
   assert.equal(final.stats.budget.registered, 0);
   assert.equal(final.stats.budget.resident, 0);
   assert.ok(final.stats.budget.snapshots <= 64);
-  assert.deepEqual(final.stats.legacy, {
+  const { preparationCache, ...releasedEngine } = final.stats.legacy;
+  assert.equal(preparationCache.maximumBytes, 8 * 1024 * 1024);
+  assert.ok(preparationCache.bytes <= preparationCache.maximumBytes);
+  assert.ok(preparationCache.entries <= 16);
+  assert.deepEqual(releasedEngine, {
     modules: 0,
     sharedModules: 1,
     characters: 0,

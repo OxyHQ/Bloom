@@ -4,6 +4,7 @@
 import { createSharedProgramPool } from './shared-programs.mjs';
 import { createRenderErrorBoundary } from './render-errors.mjs';
 import { createSharedTexturePool } from './shared-textures.mjs';
+import { createPoseTransition } from './pose-transition.mjs';
 
 const atlasKey = Symbol.for('bloom.character.shared-surface.v1');
 let serial = 0;
@@ -33,6 +34,7 @@ function createAtlas() {
   const resourceMethods = new Map();
   const gl = new Proxy(textures.context, {
     get(target, key) {
+      if (resourceMethods.has(key)) return resourceMethods.get(key);
       const value = Reflect.get(target, key, target);
       if (typeof value !== 'function') return value;
       if (!resourceMethods.has(key)) {
@@ -153,6 +155,7 @@ function createAtlas() {
     revision++;
   }
   function acquire(parent) {
+    renderErrors.assertAvailable();
     const node = document.createElement('canvas');
     node.id = `bloom-character-surface-${++serial}`;
     node.width = node.height = 128;
@@ -189,6 +192,7 @@ function createAtlas() {
           return descriptor.get.call(node);
         },
         set(value) {
+          renderErrors.assertAvailable();
           if (value === descriptor.get.call(node)) return;
           const previous = descriptor.get.call(node);
           descriptor.set.call(node, value);
@@ -233,114 +237,143 @@ function createAtlas() {
       );
     }
     const methods = new Map();
+    function contextProperty(target, key) {
+      if (key === 'canvas') return node;
+      if (key === 'drawingBufferWidth') return node.width;
+      if (key === 'drawingBufferHeight') return node.height;
+      if (key === 'getExtension')
+        return (name) =>
+          name === 'WEBGL_lose_context'
+            ? { loseContext() {}, restoreContext() {} }
+            : gl.getExtension(name);
+      if (key === 'getParameter')
+        return (name) =>
+          name === gl.VIEWPORT
+            ? new Int32Array(viewport)
+            : name === gl.SCISSOR_BOX
+              ? new Int32Array(scissor)
+              : gl.getParameter(name);
+      if (key === 'isEnabled')
+        return (name) =>
+          name === gl.SCISSOR_TEST ? scissorEnabled : gl.isEnabled(name);
+      if (key === 'bindFramebuffer')
+        return (target, buffer) => {
+          gl.bindFramebuffer(target, buffer);
+          if (target === gl.FRAMEBUFFER || target === gl.DRAW_FRAMEBUFFER)
+            drawFramebuffer = buffer;
+          if (target === gl.FRAMEBUFFER || target === gl.READ_FRAMEBUFFER)
+            readFramebuffer = buffer;
+          clip();
+          setViewport();
+        };
+      if (key === 'viewport')
+        return (...value) => {
+          viewport = value;
+          setViewport();
+        };
+      if (key === 'scissor')
+        return (...value) => {
+          scissor = value;
+          clip();
+        };
+      if (key === 'enable' || key === 'disable')
+        return (value) => {
+          if (value === gl.SCISSOR_TEST) {
+            scissorEnabled = key === 'enable';
+            clip();
+          } else gl[key](value);
+        };
+      if (key === 'blitFramebuffer')
+        return (...args) => {
+          if (drawFramebuffer === null && readFramebuffer !== null) {
+            // WebGL requires identical source/destination bounds for an MSAA
+            // resolve. Resolve at local coordinates before translating into the
+            // atlas; this scratch attachment is shared by equal-sized avatars.
+            const target = resolveTarget(node.width, node.height);
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, target.framebuffer);
+            gl.disable(gl.SCISSOR_TEST);
+            gl.blitFramebuffer(...args);
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.framebuffer);
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+            clip();
+            gl.blitFramebuffer(
+              0,
+              0,
+              node.width,
+              node.height,
+              entry.x,
+              entry.y,
+              entry.x + node.width,
+              entry.y + node.height,
+              gl.COLOR_BUFFER_BIT,
+              gl.NEAREST,
+            );
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readFramebuffer);
+            return;
+          }
+          if (readFramebuffer === null) {
+            args[0] += entry.x;
+            args[2] += entry.x;
+            args[1] += entry.y;
+            args[3] += entry.y;
+          }
+          if (drawFramebuffer === null) {
+            args[4] += entry.x;
+            args[6] += entry.x;
+            args[5] += entry.y;
+            args[7] += entry.y;
+          }
+          gl.blitFramebuffer(...args);
+        };
+      if (key === 'readPixels')
+        return (x, y, ...args) =>
+          gl.readPixels(
+            x + (readFramebuffer === null ? entry.x : 0),
+            y + (readFramebuffer === null ? entry.y : 0),
+            ...args,
+          );
+      const value = Reflect.get(target, key, target);
+      if (typeof value !== 'function') return value;
+      if (!methods.has(key)) methods.set(key, value.bind(target));
+      return methods.get(key);
+    }
     const context = new Proxy(gl, {
       get(target, key) {
-        if (key === 'canvas') return node;
-        if (key === 'drawingBufferWidth') return node.width;
-        if (key === 'drawingBufferHeight') return node.height;
-        if (key === 'getExtension')
-          return (name) =>
-            name === 'WEBGL_lose_context'
-              ? { loseContext() {}, restoreContext() {} }
-              : gl.getExtension(name);
-        if (key === 'getParameter')
-          return (name) =>
-            name === gl.VIEWPORT
-              ? new Int32Array(viewport)
-              : name === gl.SCISSOR_BOX
-                ? new Int32Array(scissor)
-                : gl.getParameter(name);
-        if (key === 'isEnabled')
-          return (name) =>
-            name === gl.SCISSOR_TEST ? scissorEnabled : gl.isEnabled(name);
-        if (key === 'bindFramebuffer')
-          return (target, buffer) => {
-            gl.bindFramebuffer(target, buffer);
-            if (target === gl.FRAMEBUFFER || target === gl.DRAW_FRAMEBUFFER)
-              drawFramebuffer = buffer;
-            if (target === gl.FRAMEBUFFER || target === gl.READ_FRAMEBUFFER)
-              readFramebuffer = buffer;
-            clip();
-            setViewport();
+        // Methods are stable per logical surface. Resolve them once instead of
+        // walking every nested GL adapter and allocating closures on each draw.
+        // Canvas size and other non-method properties must remain live.
+        if (methods.has(key)) return methods.get(key);
+        const value = contextProperty(target, key);
+        if (typeof value === 'function') {
+          const guarded = (...args) => {
+            renderErrors.assertAvailable();
+            return value(...args);
           };
-        if (key === 'viewport')
-          return (...value) => {
-            viewport = value;
-            setViewport();
-          };
-        if (key === 'scissor')
-          return (...value) => {
-            scissor = value;
-            clip();
-          };
-        if (key === 'enable' || key === 'disable')
-          return (value) => {
-            if (value === gl.SCISSOR_TEST) {
-              scissorEnabled = key === 'enable';
-              clip();
-            } else gl[key](value);
-          };
-        if (key === 'blitFramebuffer')
-          return (...args) => {
-            if (drawFramebuffer === null && readFramebuffer !== null) {
-              // WebGL requires identical source/destination bounds for an MSAA
-              // resolve. Resolve at local coordinates before translating into the
-              // atlas; this scratch attachment is shared by equal-sized avatars.
-              const target = resolveTarget(node.width, node.height);
-              gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, target.framebuffer);
-              gl.disable(gl.SCISSOR_TEST);
-              gl.blitFramebuffer(...args);
-              gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.framebuffer);
-              gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-              clip();
-              gl.blitFramebuffer(
-                0,
-                0,
-                node.width,
-                node.height,
-                entry.x,
-                entry.y,
-                entry.x + node.width,
-                entry.y + node.height,
-                gl.COLOR_BUFFER_BIT,
-                gl.NEAREST,
-              );
-              gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readFramebuffer);
-              return;
-            }
-            if (readFramebuffer === null) {
-              args[0] += entry.x;
-              args[2] += entry.x;
-              args[1] += entry.y;
-              args[3] += entry.y;
-            }
-            if (drawFramebuffer === null) {
-              args[4] += entry.x;
-              args[6] += entry.x;
-              args[5] += entry.y;
-              args[7] += entry.y;
-            }
-            gl.blitFramebuffer(...args);
-          };
-        if (key === 'readPixels')
-          return (x, y, ...args) =>
-            gl.readPixels(
-              x + (readFramebuffer === null ? entry.x : 0),
-              y + (readFramebuffer === null ? entry.y : 0),
-              ...args,
-            );
-        const value = Reflect.get(target, key, target);
-        if (typeof value !== 'function') return value;
-        if (!methods.has(key)) methods.set(key, value.bind(target));
-        return methods.get(key);
+          methods.set(key, guarded);
+          return guarded;
+        }
+        return value;
       },
+    });
+    const pose = createPoseTransition(context, {
+      assertAvailable: renderErrors.assertAvailable,
     });
     const original = node.getContext.bind(node);
     node.getContext = (type, ...args) =>
-      type === 'webgl2' ? context : original(type, ...args);
+      type === 'webgl2' ? pose.context : original(type, ...args);
     return {
       canvas: node,
-      render: renderErrors.render,
+      render(operation, poseReady) {
+        pose.beginFrame();
+        try {
+          return renderErrors.render(operation);
+        } finally {
+          pose.endFrame(poseReady?.() ?? true);
+        }
+      },
+      beginTransition: pose.beginTransition,
+      cancelTransition: pose.cancel,
+      transitionStats: pose.stats,
       create(module, ...options) {
         return new module.Character('#' + node.id, ...options);
       },
@@ -355,6 +388,7 @@ function createAtlas() {
         dw = node.width,
         dh = node.height,
       ) {
+        renderErrors.assertReadable();
         // A fit can extend beyond its character's surface. Clip to this tile,
         // preserving the destination transform, so neighbours never bleed in.
         const x = Math.max(0, sx),
@@ -373,13 +407,16 @@ function createAtlas() {
           (w * dw) / sw,
           (h * dh) / sh,
         );
+        pose.presented();
       },
       get revision() {
         return revision;
       },
       release() {
         if (released) return;
+        renderErrors.assertAvailable();
         released = true;
+        pose.dispose();
         entries.delete(entry);
         node.remove();
         if (!entries.size) {
@@ -397,6 +434,11 @@ function createAtlas() {
   return {
     acquire,
     render: renderErrors.render,
+    renderDeferred: renderErrors.renderDeferred,
+    wait: renderErrors.wait,
+    get pending() {
+      return renderErrors.pending;
+    },
     stats: () => ({
       contexts: 1,
       surfaces: entries.size,
@@ -422,6 +464,21 @@ export function renderSharedBatch(operation) {
   const atlas = globalThis[atlasKey];
   return atlas ? atlas.render(operation) : operation();
 }
+// Publication runs synchronously while the GPU transaction remains locked.
+// Creation, preparation delivery, resize and deletion must await settlement.
+export function renderSharedBatchDeferred(operation, publish) {
+  const atlas = globalThis[atlasKey];
+  if (atlas) return atlas.renderDeferred(operation, publish);
+  return Promise.resolve().then(() => {
+    const result = operation();
+    publish?.(result);
+    return result;
+  });
+}
+export function waitForSharedRender() {
+  return globalThis[atlasKey]?.wait() ?? Promise.resolve();
+}
+export const sharedRenderPending = () => globalThis[atlasKey]?.pending ?? false;
 export const sharedSurfaceStats = () =>
   globalThis[atlasKey]?.stats() ?? {
     contexts: 0,

@@ -481,6 +481,7 @@ export function createSharedProgramPool(gl) {
   const context = new Proxy(gl, {
     get(target, property) {
       if (Object.hasOwn(api, property)) return api[property];
+      if (bound.has(property)) return bound.get(property);
       const value = Reflect.get(target, property, target);
       if (typeof value !== "function") return value;
       if (!bound.has(property)) {

@@ -7,6 +7,62 @@ import { characterHtml, scriptJson } from '../character-html';
 
 const root = resolve(__dirname, '../../..');
 describe('optional character runtime', () => {
+  it('builds outward Clippo tube geometry with actual open holes and bounded native records', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-clippo-geometry.mjs'],
+      { cwd: root },
+    );
+  });
+  it('resolves Clippo and authored defaults while honoring independent saved overrides', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-character-recipe.mjs'],
+      { cwd: root },
+    );
+  });
+  it('retains commands across replacement and in-place appearance preparation without replay after pause', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-managed-commands.mjs'],
+      { cwd: root },
+    );
+  });
+  it('preserves complete authored-part records and activity payloads while rejecting malformed geometry', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-authored-parts.mjs'],
+      { cwd: root },
+    );
+  });
+  it('verifies the original controller ABI and rejects stale or unsupported native pointers', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-controller-mode.mjs'],
+      { cwd: root },
+    );
+  });
+  it('caches GL method dispatch without freezing live drawing-buffer properties', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-gl-dispatch.mjs'],
+      { cwd: root },
+    );
+  });
+  it('reuses exact contour preparation without aliasing appearances or transferable buffers', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-preparation-cache.mjs'],
+      { cwd: root },
+    );
+  });
+  it('retains the preparation turn while worker and cached replies await GPU completion', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-preparation-delivery.mjs'],
+      { cwd: root },
+    );
+  });
   it('checks shared render errors before publication without losing setup probes', () => {
     execFileSync(
       process.execPath,

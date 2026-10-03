@@ -1,25 +1,19 @@
 // Shared preparation worker. Only copies of completed scenes are deformed;
 // the recovered engine, packaged meshes and native manifests remain intact.
-import createModule from './orbit-characters.mjs';
-import { decodeAppearance, encodeAppearance } from './appearance-codec.mjs';
+import createModule from "./orbit-characters.mjs";
+import { decodeAppearance, encodeAppearance } from "./appearance-codec.mjs";
+import { composeAuthoredParts } from "./authored-parts.mjs";
+import { sha256 } from "./sha256.mjs";
 import {
   deformLegacyAssembly,
   inspectLegacyAssembly,
   legacyAttachmentOffset,
-} from './legacy-geometry.mjs';
+} from "./legacy-geometry.mjs";
 const engine = createModule({
   locateFile: (file) => new URL(file, import.meta.url).href,
 });
-const digest = async (value) =>
-  Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest(
-        'SHA-256',
-        typeof value === 'string' ? new TextEncoder().encode(value) : value,
-      ),
-    ),
-    (byte) => byte.toString(16).padStart(2, '0'),
-  ).join('');
+const digest = (value) =>
+  sha256(typeof value === "string" ? new TextEncoder().encode(value) : value);
 // Cache only identities, never the large prepared buffers. The same face with
 // no accessories tells us exactly which meshes belong to eyes and eyewear.
 const faceIdentities = new Map();
@@ -48,7 +42,7 @@ async function accessoryTransforms(module, data, source) {
       data.activities,
     );
     if (!base.bytes)
-      throw new Error(base.error || 'Accessory reference preparation failed');
+      throw new Error(base.error || "Accessory reference preparation failed");
     names = new Set(
       inspectLegacyAssembly(base.bytes)
         .parts.slice(1)
@@ -94,6 +88,16 @@ self.onmessage = ({ data }) => {
           ...(await accessoryTransforms(module, data, source)),
         });
       }
+      if (
+        result.bytes &&
+        (data.authoredParts?.shape === "clippo" ||
+          data.authoredParts?.eyes === "clippo")
+      ) {
+        const { composeClippoAssembly } = await import("./clippo-geometry.mjs");
+        result.bytes = await composeClippoAssembly(module, result.bytes, data);
+      }
+      if (result.bytes && data.authoredParts)
+        result.bytes = await composeAuthoredParts(module, result.bytes, data);
       self.postMessage(
         { id: data.id, ...result },
         result.bytes ? [result.bytes.buffer] : [],

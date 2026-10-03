@@ -5,12 +5,20 @@ import { Button } from '../button/Button';
 import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
 import { AgentCreator } from '../agent-creator/AgentCreator.web';
+import { CHARACTER_OPTIONS } from '../agent-creator/constants';
 import type { AgentCreatorAgent } from '../agent-creator/types';
 import { AgentAvatar } from './AgentAvatar';
 import { AgentAvatarProvider } from './AgentAvatarProvider';
-import { FOLD_CONFIG, FOLD_SHAPES, DEFAULT_CONFIG, SHAPES } from './model';
+import {
+  FOLD_CONFIG,
+  FOLD_SHAPES,
+  DEFAULT_CONFIG,
+  SHAPES,
+  parsePreset,
+} from './model';
 
 const characters = [
+  ['clippo', 'Clippo'],
   ['blue_beret', 'Felipe'],
   ['alfred', 'Alfred'],
   ['purple_heart', 'Jojo'],
@@ -20,7 +28,7 @@ const characters = [
   ['blue_spectacles', 'Josh'],
   ['lime_headphones', 'Iggy'],
 ] as const;
-const runtimeUrl = '/bloom-character/runtime.mjs?v=shared-renderer-1';
+const runtimeUrl = '/bloom-character/runtime.mjs?v=shared-parts-2';
 const meta = {
   title: 'Application/Agent Avatar/Characters',
   parameters: { layout: 'padded' },
@@ -305,3 +313,146 @@ export const ManyAvatars: Story = {
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
   render: () => <ManyAvatarGallery />,
 };
+
+function SharedPartsLab() {
+  const [eyes, setEyes] = useState<string | undefined>('todd');
+  const [accessory, setAccessory] = useState('felipe_beret');
+  const [paused, setPaused] = useState(false);
+  const [reaction, setReaction] = useState(0);
+  const [working, setWorking] = useState(0);
+  const shapes = [
+    ...CHARACTER_OPTIONS.shape.map(([shape, name]) => ({
+      id: shape,
+      name,
+      config: {
+        ...FOLD_CONFIG,
+        character: {
+          preset: 'blue_beret',
+          selections: { shape, eyes, accessory },
+        },
+      },
+    })),
+    ...legacyCharacters.map(({ id, config }) => ({
+      id,
+      name: id,
+      config: {
+        ...config,
+        character: { preset: 'bloom', selections: { eyes, accessory } },
+      },
+    })),
+  ];
+  return (
+    <AgentAvatarProvider runtimeUrl={runtimeUrl}>
+      <View style={{ gap: 20, padding: 16, maxWidth: 980 }}>
+        <Text>Todd’s eyes and Felipe’s beret on every shape</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <Button onPress={() => setPaused((value) => !value)}>
+            {paused ? 'Resume' : 'Pause'}
+          </Button>
+          <Button onPress={() => setEyes('todd')}>Todd eyes</Button>
+          <Button onPress={() => setEyes(undefined)}>Default eyes</Button>
+          <Button onPress={() => setAccessory('felipe_beret')}>
+            Felipe’s beret
+          </Button>
+          <Button onPress={() => setAccessory('none')}>No hat</Button>
+          <Button onPress={() => setReaction((value) => value + 1)}>
+            React
+          </Button>
+          <Button onPress={() => setWorking((value) => value + 1)}>Work</Button>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+          {shapes.map(({ id, name, config }) => (
+            <View key={id} style={{ width: 128, alignItems: 'center', gap: 8 }}>
+              <AgentAvatar
+                config={config}
+                label={name}
+                size={96}
+                interactive
+                paused={paused}
+                reactionKey={reaction}
+                workingKey={working}
+                testID={`shared-part-${id}`}
+              />
+              <Text>{name}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </AgentAvatarProvider>
+  );
+}
+export const SharedParts: Story = { render: () => <SharedPartsLab /> };
+
+function ClippoLab() {
+  const [agent, setAgent] = useState<AgentCreatorAgent>({
+    id: 'clippo',
+    name: 'Clippo',
+    label: 'Assistant',
+    description: '',
+    avatar: { ...FOLD_CONFIG, character: { preset: 'clippo' } },
+  });
+  const [reaction, setReaction] = useState(0);
+  const [working, setWorking] = useState(0);
+  return (
+    <AgentAvatarProvider runtimeUrl={runtimeUrl}>
+      <StyledView className="flex flex-row flex-wrap gap-8 p-6">
+        <StyledView className="items-center gap-4">
+          <AgentAvatar
+            config={agent.avatar}
+            size={280}
+            interactive
+            reactionKey={reaction}
+            workingKey={working}
+            label="Clippo"
+            testID="clippo-preview"
+          />
+          <StyledView className="flex flex-row gap-3">
+            <Button onPress={() => setReaction((key) => key + 1)}>
+              Reaction
+            </Button>
+            <Button onPress={() => setWorking((key) => key + 1)}>
+              Working
+            </Button>
+            <Button
+              onPress={() => {
+                const saved = JSON.parse(
+                  JSON.stringify({ name: agent.name, config: agent.avatar }),
+                );
+                setAgent({ ...agent, avatar: parsePreset(saved).config });
+              }}
+            >
+              Reload saved avatar
+            </Button>
+          </StyledView>
+          <StyledView
+            testID="clippo-shared-eyes"
+            className="flex max-w-[480px] flex-row flex-wrap gap-4"
+          >
+            {CHARACTER_OPTIONS.shape
+              .filter(([id]) => id !== 'clippo')
+              .map(([id, title]) => (
+                <AgentAvatar
+                  key={id}
+                  config={{
+                    ...FOLD_CONFIG,
+                    character: {
+                      preset: 'clippo',
+                      selections: { shape: id, eyes: 'clippo' },
+                    },
+                  }}
+                  size={64}
+                  portrait
+                  paused
+                  label={title}
+                />
+              ))}
+          </StyledView>
+        </StyledView>
+        <StyledView style={{ width: 360, height: 900 }}>
+          <AgentCreator agent={agent} onChange={setAgent} />
+        </StyledView>
+      </StyledView>
+    </AgentAvatarProvider>
+  );
+}
+export const Clippo: Story = { render: () => <ClippoLab /> };

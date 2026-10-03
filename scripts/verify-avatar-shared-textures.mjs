@@ -308,6 +308,8 @@ try {
     return { before, after, glError: real.getError() };
   });
   const pixels = await page.evaluate(async () => {
+    const { createPoseTransition } =
+      await import('/bloom-character/pose-transition.mjs');
     const { createSharedTexturePool } =
       await import('/bloom-character/shared-textures.mjs');
     const source = document.createElement('canvas'),
@@ -320,7 +322,8 @@ try {
       raw = get('webgl2', { alpha: true, antialias: false }),
       physical = dest.getContext('webgl2', { alpha: true, antialias: false }),
       pool = createSharedTexturePool(physical),
-      pooled = pool.context,
+      pose = createPoseTransition(pool.context),
+      pooled = pose.context,
       mapping = new WeakMap(),
       bound = new Map();
     const mapped = (x) =>
@@ -383,7 +386,10 @@ try {
     for (let frame = 0; frame < 120; frame++) {
       for (let index = 0; index < chars.length; index++) {
         const c = chars[index];
-        if (c.render(frame / 30)) {
+        pose.beginFrame((frame * 1000) / 30);
+        const submitted = c.render(frame / 30);
+        pose.endFrame(true);
+        if (submitted) {
           raw.readPixels(0, 0, 128, 128, raw.RGBA, raw.UNSIGNED_BYTE, a);
           physical.readPixels(0, 0, 128, 128, raw.RGBA, raw.UNSIGNED_BYTE, b);
           comparisons++;

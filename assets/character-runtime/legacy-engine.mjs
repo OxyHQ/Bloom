@@ -1,7 +1,16 @@
-import createModule from './orbit-characters.mjs';
+import createModule from "./orbit-characters.mjs";
+import { createControllerModeAdapter } from "./controller-mode.mjs";
+import {
+  createPreparationCache,
+  preparationKey,
+} from "./preparation-cache.mjs";
+import { waitForSharedRender } from "./shared-surface.mjs";
 
+let controller;
 const pool = new Map();
+const authoredFacades = new Map();
 const pending = new Map();
+const prepared = createPreparationCache();
 const originalScope = Object.freeze({ points: undefined });
 let modulePromise,
   originalFacade,
@@ -21,7 +30,7 @@ function pumpPreparationQueue() {
   activePreparation = undefined;
   const next = preparationQueue.shift();
   if (!next) return;
-  next.signal?.removeEventListener('abort', next.abort);
+  next.signal?.removeEventListener("abort", next.abort);
   const lease = { released: false };
   activePreparation = lease;
   next.resolve(() => {
@@ -42,17 +51,17 @@ function scoped(scope, operation) {
   // native queue until this owner's preparation has settled.
   globalThis.setTimeout = function (callback, delay, ...args) {
     const nativeDispatcher =
-      typeof callback === 'function' &&
+      typeof callback === "function" &&
       Number(delay) === 0 &&
       Function.prototype.toString
         .call(callback)
         .includes(
-          'safeSetTimeout.mapping[id]=undefined;callUserCallback(func)',
+          "safeSetTimeout.mapping[id]=undefined;callUserCallback(func)",
         );
     let handle;
     handle = schedule.call(
       globalThis,
-      typeof callback === 'function'
+      typeof callback === "function"
         ? (...values) => {
             if (nativeDispatcher) dispatchTimers.delete(handle);
             try {
@@ -92,7 +101,7 @@ export function acquireCharacterPreparation(signal) {
     const abort = () => {
       const index = preparationQueue.indexOf(entry);
       if (index >= 0) preparationQueue.splice(index, 1);
-      reject(new DOMException('Character preparation aborted', 'AbortError'));
+      reject(new DOMException("Character preparation aborted", "AbortError"));
       pumpPreparationQueue();
     };
     const entry = { resolve, reject, signal, abort };
@@ -100,7 +109,7 @@ export function acquireCharacterPreparation(signal) {
       abort();
       return;
     }
-    signal?.addEventListener('abort', abort, { once: true });
+    signal?.addEventListener("abort", abort, { once: true });
     preparationQueue.push(entry);
     pumpPreparationQueue();
   });
@@ -117,41 +126,55 @@ function stopIdleWorker() {
   }, 0);
 }
 
+async function finishRequest(id, result, reused = false) {
+  const entry = pending.get(id);
+  if (!entry || entry.delivering) return;
+  entry.delivering = true;
+  try {
+    await entry.complete(result, reused);
+  } finally {
+    // Keep the owner's turn while the GPU boundary and native completion are
+    // still waiting, even if that owner has already been canceled or deleted.
+    pending.delete(id);
+    pumpPreparationQueue();
+    stopIdleWorker();
+  }
+}
+
 function preparationWorker() {
   clearTimeout(idleTimer);
   if (worker) return worker;
-  worker = new Worker(new URL('./legacy-worker.mjs', import.meta.url), {
-    type: 'module',
+  worker = new Worker(new URL("./legacy-worker.mjs", import.meta.url), {
+    type: "module",
   });
   worker.onmessage = ({ data }) => {
-    const entry = pending.get(data.id);
-    if (!entry) return;
-    pending.delete(data.id);
-    entry.complete(data);
-    pumpPreparationQueue();
-    stopIdleWorker();
+    void finishRequest(data.id, data);
   };
   worker.onerror = () => {
-    const failed = [...pending.values()];
-    pending.clear();
+    const failed = [...pending.keys()];
     worker?.terminate();
     worker = undefined;
-    for (const entry of failed)
-      entry.complete({
-        error: 'Character preparation failed',
+    for (const id of failed)
+      void finishRequest(id, {
+        error: "Character preparation failed",
         milliseconds: 0,
       });
-    pumpPreparationQueue();
-    stopIdleWorker();
   };
   return worker;
 }
 
 function sharedModule() {
   if (!modulePromise) {
-    modulePromise = createModule({
-      locateFile: (file) => new URL(file, import.meta.url).href,
-    })
+    controller = createControllerModeAdapter(
+      () => new URL("./orbit-characters.wasm", import.meta.url),
+    );
+    modulePromise = Promise.race([
+      createModule({
+        locateFile: (file) => new URL(file, import.meta.url).href,
+        instantiateWasm: controller.instantiateWasm,
+      }),
+      controller.failure,
+    ])
       .then((module) => {
         module.orbitPrepare = (
           id,
@@ -165,22 +188,48 @@ function sharedModule() {
             module.orbitCompletePreparation(
               id,
               null,
-              'Character preparation requires a scoped call',
+              "Character preparation requires a scoped call",
               0,
             );
             return;
           }
           const request = ++sequence;
-          const complete = (result) =>
-            scoped(scope, () => {
+          const cacheKeyExact = preparationKey({
+            appearance,
+            quality,
+            key: cacheKey,
+            activities,
+            points: scope.points,
+            authoredParts: scope.authoredParts,
+          });
+          const complete = async (result, reused = false) => {
+            await waitForSharedRender();
+            return scoped(scope, () => {
+              if (result.bytes && !result.error && !reused)
+                prepared.set(cacheKeyExact, result.bytes);
               module.orbitCompletePreparation(
                 id,
                 result.bytes ?? null,
-                result.error || '',
+                result.error || "",
                 result.milliseconds || 0,
               );
             });
+          };
           pending.set(request, { complete });
+          const cached = prepared.get(cacheKeyExact);
+          if (cached) {
+            // Preserve asynchronous completion and the owner's preparation
+            // turn. Completing inside orbitPrepare would re-enter native
+            // dispatch while its job is still being registered.
+            queueMicrotask(() => {
+              void finishRequest(
+                request,
+                { bytes: cached, milliseconds: 0 },
+                true,
+              );
+            });
+            return;
+          }
           try {
             preparationWorker().postMessage({
               id: request,
@@ -189,12 +238,13 @@ function sharedModule() {
               key: cacheKey,
               activities,
               points: scope.points,
+              authoredParts: scope.authoredParts,
             });
           } catch (error) {
-            pending.delete(request);
-            complete({ error: String(error), milliseconds: 0 });
-            pumpPreparationQueue();
-            stopIdleWorker();
+            void finishRequest(request, {
+              error: String(error),
+              milliseconds: 0,
+            });
           }
         };
         return module;
@@ -209,34 +259,60 @@ function sharedModule() {
 
 function facade(module, scope) {
   const result = Object.create(module);
-  function wrap(target) {
+  const handles = new WeakMap();
+  function wrap(target, activities = false, source) {
+    controller.register(target, activities, source);
     const methods = new Map();
     let deleted = false;
     characters++;
-    return new Proxy(target, {
+    const proxy = new Proxy(target, {
       get(instance, key) {
         const value = Reflect.get(instance, key, instance);
-        if (typeof value !== 'function' || key === 'constructor') return value;
+        if (typeof value !== "function" || key === "constructor") return value;
         if (!methods.has(key))
           methods.set(key, (...args) => {
             const returned = scoped(scope, () => value.apply(instance, args));
-            if (key === 'delete' && !deleted) {
+            if (key === "applyActivity" && returned === 0 && activities)
+              controller.markBound(instance);
+            if (key === "delete" && !deleted) {
+              controller.unregister(instance);
               deleted = true;
               characters--;
               stopIdleWorker();
             }
             // Embind handle clones retain the same native character and scope.
             if (returned !== instance && returned instanceof module.Character)
-              return wrap(returned);
+              return wrap(returned, activities, instance);
             return returned;
           });
         return methods.get(key);
       },
     });
+    handles.set(proxy, target);
+    return proxy;
   }
+  result.controllerMode = (character, enabled) => {
+    const instance = handles.get(character);
+    if (!instance)
+      throw new Error(
+        "Character controller belongs to a different engine scope",
+      );
+    return scoped(scope, () => controller.controllerMode(instance, enabled));
+  };
+  result.controllerState = (character) => {
+    const instance = handles.get(character);
+    if (!instance)
+      throw new Error(
+        "Character controller belongs to a different engine scope",
+      );
+    return scoped(scope, () => controller.controllerState(instance));
+  };
   result.Character = function Character(...args) {
     clearTimeout(idleTimer);
-    return wrap(scoped(scope, () => new module.Character(...args)));
+    return wrap(
+      scoped(scope, () => new module.Character(...args)),
+      args[3]?.activities,
+    );
   };
   result.Character.prototype = module.Character.prototype;
   return result;
@@ -245,18 +321,50 @@ function facade(module, scope) {
 /** Original and custom bodies share one WASM instance and preparation worker.
  * Prepared mesh identities distinguish contours inside the shared GPU cache.
  */
-export async function getCharacterEngine() {
+function normalizeAuthoredParts(value) {
+  if (!value || !Object.keys(value).length) return undefined;
+  if (
+    Object.keys(value).some(
+      (key) => !["shape", "eyes", "accessory"].includes(key),
+    ) ||
+    (value.shape !== undefined && value.shape !== "clippo") ||
+    (value.eyes !== undefined && !["todd", "clippo"].includes(value.eyes)) ||
+    (value.accessory !== undefined && value.accessory !== "felipe_beret")
+  )
+    throw new Error("Unsupported authored character part");
+  return Object.freeze({
+    ...(value.shape ? { shape: value.shape } : {}),
+    ...(value.eyes ? { eyes: value.eyes } : {}),
+    ...(value.accessory ? { accessory: value.accessory } : {}),
+  });
+}
+export async function getCharacterEngine(parts) {
+  const authoredParts = normalizeAuthoredParts(parts);
   const module = await sharedModule();
-  originalFacade ??= facade(module, originalScope);
-  return originalFacade;
+  if (!authoredParts) {
+    originalFacade ??= facade(module, originalScope);
+    return originalFacade;
+  }
+  // Canonical authored selections have only eleven non-empty combinations.
+  const key = JSON.stringify(authoredParts);
+  if (!authoredFacades.has(key))
+    authoredFacades.set(
+      key,
+      facade(module, { points: undefined, authoredParts }),
+    );
+  return authoredFacades.get(key);
 }
 
-export async function acquireLegacyEngine(points) {
+export async function acquireLegacyEngine(points, parts) {
   clearTimeout(idleTimer);
-  const key = JSON.stringify(points);
+  const authoredParts = normalizeAuthoredParts(parts);
+  const key = JSON.stringify([points, authoredParts]);
   let entry = pool.get(key);
   if (!entry) {
-    const scope = { points: points.map((point) => point.slice()) };
+    const scope = {
+      points: points.map((point) => point.slice()),
+      authoredParts,
+    };
     entry = {
       references: 0,
       facade: sharedModule().then((module) => facade(module, scope)),
@@ -290,4 +398,5 @@ export const legacyEngineStats = () => ({
   dispatchTimers: dispatchTimers.size,
   pending: pending.size,
   worker: !!worker,
+  preparationCache: prepared.stats(),
 });

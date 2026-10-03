@@ -51,6 +51,8 @@ try {
   );
   assert.equal(await page.evaluate(() => window.fail), undefined);
   await page.locator('canvas').first().click();
+  // Native input is delivered after an in-flight GPU batch completes.
+  await page.waitForFunction(() => control.diagnostics().lastReaction !== null);
   assert.equal(
     await page.evaluate(() => control.diagnostics().lastReaction),
     0,
@@ -121,7 +123,7 @@ try {
     control.update(props);
   });
   await page.waitForFunction(
-    () => runtime.runtimeStats().active === 0,
+    () => !control.diagnostics().pending && runtime.runtimeStats().active === 0,
     {},
     { timeout: 30000 },
   );
@@ -233,7 +235,12 @@ try {
     {},
     { timeout: 60000 },
   );
-  await page.waitForTimeout(100);
+  // The final portrait's resources are released after its GPU fence settles.
+  await page.waitForFunction(
+    () => runtime.runtimeStats().surface.contexts === 0 || failures.length,
+    {},
+    { timeout: 30000 },
+  );
   const portraits = await page.evaluate(() => ({
     completed,
     failures,

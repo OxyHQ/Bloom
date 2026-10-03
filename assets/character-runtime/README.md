@@ -31,11 +31,13 @@ use compact meshes independent of device pixel ratio. Fur and original materials
 remain intact. resolution.mjs selects backing size by CSS size and DPR, activating
 the original engine's existing size-dependent fur LOD.
 
-Physical Pixel 8a measurements and asset fingerprints are recorded in
-docs/benchmarks/avatar-shared-renderer.json, with interpretation in
-docs/agent-avatar.mdx. All 24/48 avatars move without context loss, but measured
-mean paint rates are only 3.76/2.59 Hz per avatar and all-ready latency is
-24.6/74.1 seconds with warm HTTP caches. The 30fps target is not achieved.
+Physical Pixel 8a measurements and exact asset fingerprints are recorded in
+docs/benchmarks/avatar-continuous-renderer.json (same-character controllers and
+pose transitions, before shared authored parts). All 24/48 avatars move with
+one context and no graphics errors. Median paint rates are 4.42/2.29 Hz per avatar;
+all-ready latency is 14.85/24.80 seconds with warm HTTP caches. The 30 fps target
+is not achieved. Earlier snapshots are retained for comparison; see
+docs/agent-avatar.mdx for workload and measurement limitations.
 
 Original and migrated contours share a rendering WASM module and one preparation
 worker, which owns a separate WASM instance. Geometry identities include contour and attachment transforms. The adapter
@@ -44,10 +46,50 @@ that boundary is specific to the integrity-pinned glue. Its native global batch
 can combine jobs from different characters, so wrapping callbacks alone is not
 sufficient: the preparation lease spans mutation, deferred jobs and first paint. Cold preparation is
 serialized; painted moving neighbours remain resident. Static portraits are
-cached (up to 64 images), and release graphics surfaces after painting.
+cached (up to 64 images), and release graphics surfaces after painting. Exact contour preparations use an independent 8 MiB/16-entry LRU cache, including appearance, quality, activity and contour and authored-part identity; returned buffers are copied. The preparation owner receives a render turn every batch until its first complete paint. Recent interactions receive alternate-batch priority without starving the remaining round-robin queue.
 Offscreen/background characters release their leases. Pause and reduced motion
 freeze a complete visible frame. The binary's initial reduced-motion flag can
 produce transparent frames; the adapter freezes its clock after painting instead.
+
+Shared submissions contain at most eight avatars and an 8 ms CPU allowance. A WebGL fence is polled asynchronously before error checks and presentation, allowing the page to process input while the GPU works. Lifecycle and native input operations wait for this boundary; DOM pointer capture remains synchronous. Diagnostics separate CPU submission/presentation from elapsed GPU waiting and task dispatch. This improves responsiveness without claiming faster GPU throughput.
+
+React and Work retain one native Character, its prepared meshes and animation
+clock. controller-mode.mjs verifies the original WASM SHA-256 before capturing
+its memory through the supported instantiateWasm hook. A JS hash fallback keeps
+this check working on insecure HTTP WebView origins. The adapter validates the
+Embind handle, native type marker, live instance, bounds and boolean controller
+field on every access; memory growth never leaves a stale typed view. Its ABI
+layout is specific to the pinned WASM and must be re-proved for another binary.
+Activity support prepares the original props up front. A constructor without
+activity support rejects Restore/Start; incremental preparation is not assumed.
+Stop completion reads the original current phase/activity/episode, since both
+copyActivityRestore and hasPendingUpdate can misrepresent outro completion.
+Appearance changes retain any simultaneous Work/React request until the new
+scene is painted; pausing or disposal cancels those requests.
+Queued reactions retain the original Busy semantics until the suspended reaction
+finishes. verify-avatar-controller-continuity.mjs checks the complete runtime
+switches, native identity, unchanged geometry, original outro and real pixels.
+pose-transition.mjs interpolates reflected transform/skin uniform blocks and
+camera for 180 ms from the last presented pose. It preserves material/discrete
+bytes and original animation of newly added props. No bitmap crossfade or
+replacement mesh renderer is involved.
+
+authored-parts.mjs exposes eyes:todd and accessory:felipe_beret across all 20
+shapes. The worker copies complete native records from lime_frog and blue_beret,
+retaining materials and animation deltas, fits them after contour deformation,
+and removes the generic fitting references. Original activity data remains intact; the aggregate scene bounds expand to
+include the fitted parts. Virtual IDs never reach native catalog selection. Cache keys include
+these parts; verify-avatar-authored-parts.mjs checks all 20 real rendered shapes,
+original/migrated Work and React, generic selections and cleanup.
+
+clippo-geometry.mjs adds a smooth open tube and an independently selectable
+Clippo eye/brow set as native prepared records. It generates capped tube meshes,
+retains the original eye deformation fields and uses the recovered smooth
+material in the same renderer. No raster cutout or additional WebGL context is
+used. character-recipe.mjs resolves the clippo preset to its virtual shape/eyes
+and grey paint; explicit selections override those defaults. Runtime capabilities
+retain the caller's raw saved key, including when an explicit default selection
+leaves the prepared appearance unchanged. Editor chips are static SVG artwork.
 
 Current editing supports the beta's original catalog combinations and actual
 availability constraints. appearance-codec.mjs validates explicit RGB and optional eye
@@ -69,7 +111,8 @@ Migrated bodies support original eyewear and accessories. Headwear, Bulb, bow
 and Tuft receive rigid contour-relative translations; eyewear and headphones
 keep original placement. A bounded reference cache identifies attachment meshes
 without changing eyes, materials or fur vectors. Intact presets retain authored
-signature reactions; edited and migrated bodies fall back to the original Wave.
+signature reactions; edited and migrated bodies use the original Wave when
+the engine rejects Signature.
 Mascots and hidden faces still use SVG.
 Original material/grain effects become the beta's 3D surface.
 
@@ -79,7 +122,7 @@ verify-avatar-shared-renderer.mjs for crowd lifetime and actual 24/48-avatar mot
 verify-avatar-shared-surface.mjs checks atlas pixels, MSAA and failed allocation;
 verify-avatar-shared-programs.mjs and verify-avatar-shared-textures.mjs compare
 actual frame pixels against the original commands and verify independent changes.
-verify-avatar-runtime-errors.mjs injects a GL failure before publication. They inspect painted pixels, interaction,
+verify-avatar-runtime-errors.mjs injects a GL failure before publication. verify-avatar-deferred-input.mjs forces a delayed GPU fence and checks real mouse capture, reactions, appearance edits, resizing and disposal during that wait. They inspect painted pixels, interaction,
 activity, transitions and resource cleanup, not just preparation callbacks.
 
 The optional native bridge uses separate WebViews, which cannot share the web

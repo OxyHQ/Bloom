@@ -247,7 +247,11 @@ it('edits custom beta body RGB through the existing picker and retains the entir
 });
 
 describe('shared original-engine editor catalog', () => {
-  function withRuntime(configured: AgentCreatorAgent, onChange = jest.fn()) {
+  function withRuntime(
+    configured: AgentCreatorAgent,
+    onChange = jest.fn(),
+    selected: Record<string, string> = {},
+  ) {
     const beta =
       configured.avatar.character &&
       configured.avatar.character.preset !== 'bloom';
@@ -261,6 +265,7 @@ describe('shared original-engine editor catalog', () => {
       selected: {
         shape: 'circle',
         eyes: configured.avatar.character?.selections?.eyes ?? 'oval',
+        ...selected,
       },
       available: { 'eyes:dots': true },
     };
@@ -278,7 +283,7 @@ describe('shared original-engine editor catalog', () => {
     );
   }
 
-  it('offers all nineteen unique shapes in the same arc for both saved recipe kinds', () => {
+  it('offers all twenty unique shapes in the same arc for both saved recipe kinds', () => {
     const kinds = [
       agent,
       {
@@ -289,12 +294,13 @@ describe('shared original-engine editor catalog', () => {
     for (const configured of kinds) {
       const view = withRuntime(configured);
       const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
-      expect(choices).toHaveLength(19);
+      expect(choices).toHaveLength(20);
       expect(
         new Set(choices.map((choice: { id: string }) => choice.id)).size,
-      ).toBe(19);
+      ).toBe(20);
       expect(choices.map((choice: { id: string }) => choice.id)).toEqual(
         expect.arrayContaining([
+          'clippo',
           'circle',
           'heart',
           'rounded_triangle',
@@ -310,9 +316,76 @@ describe('shared original-engine editor catalog', () => {
       );
       expect(view.queryByLabelText('Happy')).toBeNull();
       expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toHaveLength(
-        9,
+        11,
       );
       view.unmount();
+    }
+  });
+
+  it('offers Clippo static artwork and retains its independent eyes across every body', () => {
+    const configured = {
+      ...agent,
+      avatar: {
+        ...agent.avatar,
+        character: { preset: 'clippo', selections: { eyes: 'clippo' } },
+      },
+    };
+    const view = withRuntime(configured, jest.fn(), { color: 'blue' });
+    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
+      '#999b9d',
+    );
+    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(
+      false,
+    );
+    expect(
+      view.UNSAFE_getAllByType(GlossArt).find((node) => node.props.active)
+        ?.props,
+    ).toMatchObject({ center: '#999b9d', edge: '#999b9d', rainbow: false });
+    const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
+    expect(
+      eyes.find((choice: { id: string }) => choice.id === 'clippo'),
+    ).toMatchObject({
+      artwork: 'clippo',
+      disabled: false,
+    });
+    expect(
+      eyes.find((choice: { id: string }) => choice.id === 'clippo').thumbnail,
+    ).toBeUndefined();
+    const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
+    expect(
+      choices.find((choice: { id: string }) => choice.id === 'clippo')
+        .thumbnail,
+    ).toBeUndefined();
+    for (const choice of choices)
+      expect(choice.config.character.selections.eyes).toBe('clippo');
+    view.unmount();
+  });
+
+  it('retains Todd eyes and Felipe’s beret when selecting any shape', () => {
+    const configured = {
+      ...agent,
+      avatar: {
+        ...agent.avatar,
+        character: {
+          preset: 'blue_beret',
+          selections: { eyes: 'todd', accessory: 'felipe_beret' },
+        },
+      },
+    };
+    const view = withRuntime(configured);
+    const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
+    expect(
+      eyes.find((choice: { id: string }) => choice.id === 'todd'),
+    ).toMatchObject({
+      thumbnail: '/thumbnails/eyes/todd.png',
+      disabled: false,
+    });
+    const choices = view.UNSAFE_getByType(ShapeArc).props.choices;
+    for (const choice of choices) {
+      expect(choice.config.character.selections).toMatchObject({
+        eyes: 'todd',
+        accessory: 'felipe_beret',
+      });
     }
   });
 

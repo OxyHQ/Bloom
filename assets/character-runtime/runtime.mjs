@@ -10,77 +10,119 @@ import { createManagedAvatar, managedAvatarStats } from './managed-avatar.mjs';
 import {
   acquireSharedSurface,
   sharedSurfaceStats,
-  renderSharedBatch,
+  renderSharedBatchDeferred,
+  waitForSharedRender,
+  sharedRenderPending,
 } from './shared-surface.mjs';
 import { characterPixels } from './resolution.mjs';
+import { characterRecipe, authoredPartsFor } from './character-recipe.mjs';
 
 let frame = 0;
+let rendering = false;
 let nextClient = 0;
 let lastRenderMilliseconds = 0;
+let lastRenderWaitMilliseconds = 0;
 let renderCost = 8;
+let attentionTurn = false;
 const clients = new Set();
 const category = { shape: 0, color: 1, eyes: 2, eyewear: 3, accessory: 4 };
 function schedule() {
-  if (!frame && clients.size && !document.hidden)
+  if (!frame && !rendering && clients.size && !document.hidden)
     frame = requestAnimationFrame(tick);
 }
-function tick(time) {
+async function tick(time) {
   frame = 0;
   if (document.hidden) return;
-  {
+  rendering = true;
+  try {
     const batch = [...clients];
     const started = performance.now();
     const presentations = [];
-    // The CPU submission timer cannot see deferred GPU/driver work. Include
-    // the previous completed batch's cost when deciding how much to submit.
-    // Round up by at most one atomic draw so batching can amortize the driver
-    // check instead of getting permanently stuck at a one-character estimate.
-    const batchLimit = Math.max(1, Math.ceil(8 / renderCost));
+    // Await the GPU without blocking the page. Bound CPU work and batch size
+    // separately: driver wait time must not collapse every batch to one draw.
+    const batchLimit = Math.min(8, Math.max(1, Math.ceil(8 / renderCost)));
+    let submittedAt = started,
+      presentationCost = 0;
     const touched = [];
+    // Preparation is globally serialized by the recovered engine. Its owner
+    // must get a chance to commit and paint every frame; waiting behind every
+    // resident avatar makes startup latency grow quadratically with the crowd.
+    const preparing = batch.find((client) => client.preparing());
+    // Give the most recent interaction a responsive cadence, but reserve
+    // alternate turns for the round-robin crowd so no avatar is starved.
+    const attended = batch
+      .filter((client) => client.attention(time) > 0)
+      .sort((a, b) => b.attention(time) - a.attention(time))[0];
+    const preferred = preparing ?? (attentionTurn ? attended : undefined);
+    attentionTurn = !attentionTurn;
+    const ordered = preferred ? [preferred] : [];
+    for (let i = 0; i < batch.length; i++) {
+      const client = batch[(nextClient + i) % batch.length];
+      if (client !== preferred) ordered.push(client);
+    }
     try {
-      renderSharedBatch(() => {
-        for (let i = 0; i < batch.length; i++) {
-          const index = nextClient % batch.length;
-          nextClient = (index + 1) % batch.length;
-          const client = batch[index];
-          // Rate-limit each character, not the whole document. Crowds can use
-          // intervening browser frames without forcing every avatar down to 30/N.
-          if (
-            clients.has(client) &&
-            time - (client.lastTick ?? -Infinity) >= 1000 / 30 - 1
-          ) {
-            client.lastTick = time;
-            touched.push(client);
-            const present = client.render(time / 1000);
-            if (present) presentations.push(present);
+      await renderSharedBatchDeferred(
+        () => {
+          for (const client of ordered) {
+            if (client !== preferred)
+              nextClient = (batch.indexOf(client) + 1) % batch.length;
+            // Rate-limit each character, not the whole document. Crowds can use
+            // intervening browser frames without forcing every avatar down to 30/N.
+            if (
+              clients.has(client) &&
+              (client === preparing ||
+                time - (client.lastTick ?? -Infinity) >= 1000 / 30 - 1)
+            ) {
+              client.lastTick = time;
+              touched.push(client);
+              const present = client.render(time / 1000);
+              if (present) presentations.push(present);
+            }
+            // One native render cannot be interrupted, but a crowded page must not
+            // submit every remaining avatar after it has spent its frame allowance.
+            if (
+              presentations.length >= batchLimit ||
+              performance.now() - started >= 8
+            )
+              break;
           }
-          // One native render cannot be interrupted, but a crowded page must not
-          // submit every remaining avatar after it has spent its frame allowance.
-          if (
-            presentations.length >= batchLimit ||
-            performance.now() - started >= 8
-          )
-            break;
-        }
-      });
+          submittedAt = performance.now();
+        },
+        () => {
+          const began = performance.now();
+          for (const present of presentations) present();
+          presentationCost = performance.now() - began;
+        },
+      );
     } catch (error) {
       // A context-level error cannot be attributed after a shared submission.
       // Discard every pending image and report it to every touched character.
       presentations.length = 0;
-      for (const client of touched) client.fail(error);
+      for (const client of touched) {
+        try {
+          client.fail(error);
+        } catch (callbackError) {
+          queueMicrotask(() => {
+            throw callbackError;
+          });
+        }
+      }
     }
-    // Submit the batch before copying any WebGL pixels to 2D. Interleaving
-    // these operations forces a GPU synchronization for every avatar.
-    for (const present of presentations) present();
-    lastRenderMilliseconds = performance.now() - started;
+    lastRenderMilliseconds = submittedAt - started + presentationCost;
+    lastRenderWaitMilliseconds = Math.max(
+      0,
+      performance.now() - started - lastRenderMilliseconds,
+    );
     if (presentations.length) {
       const measured = lastRenderMilliseconds / presentations.length;
       // React immediately to a slower GPU; recover capacity gradually to avoid
       // alternating huge batches and long blocked browser frames.
       renderCost = Math.max(measured, renderCost * 0.9 + measured * 0.1, 0.1);
     }
+  } finally {
+    rendering = false;
+    schedule();
   }
-  schedule();
 }
 function visibility() {
   for (const client of instances) client.visibility();
@@ -96,9 +138,7 @@ export async function createAvatar(canvas, initial, callbacks = {}) {
   return createManagedAvatar(canvas, initial, callbacks, createCharacter);
 }
 function createCharacter(canvas, initial, callbacks) {
-  return initial.legacy
-    ? createLegacyCharacter(canvas, initial, callbacks)
-    : createLiveCharacter(canvas, initial, callbacks);
+  return createScopedCharacter(canvas, initial, callbacks);
 }
 
 async function createLiveCharacter(
@@ -108,11 +148,13 @@ async function createLiveCharacter(
   isCurrent = () => true,
   previousImage = null,
 ) {
+  const authoredParts = authoredPartsFor(initial);
   const lease = initial.legacy?.points
-    ? await acquireLegacyEngine(initial.legacy.points)
+    ? await acquireLegacyEngine(initial.legacy.points, authoredParts)
     : null;
-  const module = lease?.module ?? (await getCharacterEngine());
+  const module = lease?.module ?? (await getCharacterEngine(authoredParts));
   let releasePreparation = await acquireCharacterPreparation();
+  await waitForSharedRender();
   if (!isCurrent() || !canvas.isConnected) {
     releasePreparation();
     lease?.release();
@@ -132,9 +174,12 @@ async function createLiveCharacter(
     lease?.release();
     throw error;
   }
+  const supportsActivities = !initial.portrait;
   let character;
   try {
-    character = surfaceLease.create(module, 128, 128);
+    character = surfaceLease.create(module, 128, 128, {
+      activities: supportsActivities,
+    });
   } catch (error) {
     releasePreparation();
     surfaceLease.release();
@@ -158,6 +203,9 @@ async function createLiveCharacter(
     episode = 0n,
     activity = 0;
   let workTimer,
+    workRequest = 0,
+    stoppingWork = false,
+    queuedReaction = false,
     workDuration,
     lastActivityResult,
     previousWork,
@@ -165,23 +213,45 @@ async function createLiveCharacter(
   let pointerId, pointerStart, previousReaction;
   let lastReaction = null,
     lastReactionKind = null;
+  let attentionStarted = 0,
+    attentionUntil = 0;
+  const attend = (duration) => {
+    attentionStarted = performance.now();
+    attentionUntil = attentionStarted + duration;
+  };
+  // hasPendingUpdate also includes reactions whose clock is suspended while
+  // Work owns the character. Geometry completion must use preparation revisions,
+  // otherwise that old reaction holds the global preparation lease forever.
+  const scenePrepared = () => {
+    const state = character.preparationStats();
+    return (
+      !state.pending &&
+      !state.failed &&
+      state.generation === state.committedGeneration
+    );
+  };
   let acquiringPreparation = false;
   const preparationQueue = [];
-  function finishPreparation() {
+  function finishPreparation(force = false) {
+    if (!force && (acquiringPreparation || preparationQueue.length)) return;
     const release = releasePreparation;
     releasePreparation = undefined;
     release?.();
   }
   function prepare(operation) {
     if (disposed) return;
-    if (releasePreparation) {
+    if (releasePreparation && !sharedRenderPending()) {
       operation();
       return;
     }
     preparationQueue.push(operation);
     if (acquiringPreparation) return;
     acquiringPreparation = true;
-    void acquireCharacterPreparation().then((release) => {
+    const admission = releasePreparation
+      ? Promise.resolve(releasePreparation)
+      : acquireCharacterPreparation();
+    void admission.then(async (release) => {
+      await waitForSharedRender();
       acquiringPreparation = false;
       if (disposed) {
         preparationQueue.length = 0;
@@ -191,11 +261,7 @@ async function createLiveCharacter(
       releasePreparation = release;
       try {
         for (const next of preparationQueue.splice(0)) next();
-        if (
-          !character.preparationStats().pending &&
-          !character.hasPendingUpdate()
-        )
-          finishPreparation();
+        if (scenePrepared()) finishPreparation();
         wake();
       } catch (error) {
         finishPreparation();
@@ -225,23 +291,39 @@ async function createLiveCharacter(
   // A queued still must finish if its selector moves it offscreen mid-prepare;
   // otherwise one clipped slot blocks every visible thumbnail until timeout.
   const active = () => (visible || props.portrait) && !document.hidden;
+  let wakeQueued = false;
   const wake = () => {
     if (disposed) return;
+    if (sharedRenderPending()) {
+      if (!wakeQueued) {
+        wakeQueued = true;
+        void waitForSharedRender().then(() => {
+          wakeQueued = false;
+          wake();
+        });
+      }
+      return;
+    }
     character.setActive(active());
     if (active() && (dirty || !ready || animate())) clients.add(client);
     else clients.delete(client);
     schedule();
   };
   const client = {
+    preparing: () => Boolean(releasePreparation),
+    attention: (time) => (time < attentionUntil ? attentionStarted : 0),
     visibility: wake,
     fail(error) {
       clients.delete(client);
-      finishPreparation();
+      finishPreparation(true);
       callbacks.onError?.(error);
     },
     render(time) {
       try {
-        const submitted = surfaceLease.render(() => character.render(time));
+        const submitted = surfaceLease.render(
+          () => character.render(time),
+          scenePrepared,
+        );
         const renderError = character.renderError();
         if (renderError || character.preparationStats().failed)
           throw new Error(
@@ -249,17 +331,20 @@ async function createLiveCharacter(
               character.preparationError() ||
               'Character preparation failed',
           );
+        // Return to pointer/reaction control only after the authored Work outro
+        // clears its phase and episode; render skips do not indicate completion.
+        if (stoppingWork && module.controllerState(character).settled) {
+          stoppingWork = false;
+          switchMode(false);
+        }
+        if (queuedReaction && !activityMode) attemptReaction();
         if (!submitted) return;
         const revision = surfaceLease.revision;
         return () => {
           if (disposed || revision !== surfaceLease.revision) return;
           try {
             if (submitted) {
-              if (
-                !fit &&
-                !character.preparationStats().pending &&
-                !character.hasPendingUpdate()
-              ) {
+              if (!fit && scenePrepared()) {
                 measurement.width = canvas.width;
                 measurement.height = canvas.height;
                 surfaceLease.copy(
@@ -341,8 +426,7 @@ async function createLiveCharacter(
             if (
               submitted &&
               fit &&
-              !character.preparationStats().pending &&
-              !character.hasPendingUpdate() &&
+              scenePrepared() &&
               fingerprint === pendingFingerprint
             ) {
               dirty = false;
@@ -353,12 +437,15 @@ async function createLiveCharacter(
               }
               callbacks.onPaint?.(!transitionImage);
               if (activityMode && workDuration && !workTimer) {
+                const request = workRequest;
                 workTimer = setTimeout(() => {
+                  if (request !== workRequest) return;
                   workTimer = undefined;
                   workDuration = undefined;
                   prepare(() => {
+                    if (request !== workRequest) return;
                     play(0);
-                    switchMode(false);
+                    stoppingWork = true;
                   });
                   dirty = true;
                   wake();
@@ -380,7 +467,19 @@ async function createLiveCharacter(
     },
   };
   let currentQuality, currentScale;
-  const resize = () =>
+  const resize = () => {
+    const cssSize = Math.max(
+      1,
+      Math.min(canvas.clientWidth, canvas.clientHeight),
+    );
+    const backingSize = characterPixels(canvas);
+    if (
+      canvas.width === backingSize &&
+      canvas.height === backingSize &&
+      currentQuality === (props.portrait || cssSize <= 128 ? 1 : 2) &&
+      currentScale === backingSize / cssSize
+    )
+      return;
     prepare(() => {
       const css = Math.max(
         1,
@@ -405,63 +504,105 @@ async function createLiveCharacter(
       dirty = true;
       wake();
     });
-  const switchMode = (next, resetAppearance = false) => {
-    if (activityMode === next && !resetAppearance) return;
-    const state = new Uint8Array(character.state());
-    character.delete();
-
-    character = surfaceLease.create(module, 128, 128, { activities: next });
-    currentQuality = currentScale = undefined;
-    activityMode = next;
-    fit = null;
-    sequence = 0n;
-    episode = 0n;
-    activity = 0;
-    ready = false;
-    dirty = true;
-    character.setQuality(1);
-    character.restore(state);
-    // This recovered engine paints a transparent frame when reduced motion is
-    // enabled before its first appearance. Freeze our clock after a painted
-    // frame instead, preserving both initial visibility and reduced motion.
-    character.setReducedMotion(false);
-
-    if (next)
-      character.applyActivity({
-        command: 3,
-        sequence: 0n,
-        episodeId: 0n,
-        episodeHighWater: 0n,
-        activity: 0,
-        outcome: 0,
-        entry: 1,
-      });
-    resize();
   };
-  const react = () => {
-    if (!ready || !animate()) return;
-    if (activityMode) return;
+  const bindController = (next = false) => {
+    if (!supportsActivities) return;
+    const result = character.applyActivity({
+      command: 3,
+      sequence: 0n,
+      episodeId: 0n,
+      episodeHighWater: 0n,
+      activity: 0,
+      outcome: 0,
+      entry: 1,
+    });
+    if (result !== 0)
+      throw new Error(`Character activity initialization failed: ${result}`);
+    module.controllerMode(character, next);
+  };
+  const switchMode = (next, resetAppearance = false) => {
+    if (resetAppearance) {
+      // Only a frozen appearance edit needs a new native scene: the original
+      // appearance blend otherwise stops on its first frame. React/Work never
+      // enter this branch and keep their character, preparation, clock and fit.
+      const state = new Uint8Array(character.state());
+      character.delete();
+      character = surfaceLease.create(module, 128, 128, {
+        activities: supportsActivities,
+      });
+      currentQuality = currentScale = undefined;
+      sequence = episode = 0n;
+      activity = 0;
+      character.setQuality(1);
+      character.restore(state);
+      character.setReducedMotion(false);
+      bindController(next);
+      resize();
+    } else {
+      if (activityMode === next) return;
+      surfaceLease.beginTransition(180);
+      module.controllerMode(character, next);
+    }
+    activityMode = next;
+    dirty = true;
+  };
+  const attemptReaction = () => {
     lastReactionKind = 2;
     lastReaction = character.playReaction(lastReactionKind);
-    // Authored signatures belong to named presets. Catalog edits and migrated
-    // bodies use the same engine's Wave when that signature is unsupported.
+    // Named presets retain their signature; edited bodies use the original Wave.
     if (lastReaction === 2) {
       lastReactionKind = 1;
       lastReaction = character.playReaction(lastReactionKind);
     }
-    dirty = true;
-    wake();
+    // An interrupted signature resumes its clock on the next reactive render.
+    // Keep one latest request queued until that signature releases the controller.
+    queuedReaction = lastReaction === 1;
   };
-  const work = () =>
+  const react = () => {
+    const request = ++workRequest;
+    clearTimeout(workTimer);
+    workTimer = workDuration = undefined;
+    const apply = () => {
+      if (disposed || request !== workRequest || !ready || !animate()) return;
+      attend(3000);
+      queuedReaction = true;
+      if (activityMode) {
+        play(0);
+        stoppingWork = true;
+      } else attemptReaction();
+      dirty = true;
+      wake();
+    };
+    if (sharedRenderPending()) void waitForSharedRender().then(apply);
+    else apply();
+  };
+  const work = () => {
+    // Invalidate an already queued Stop as soon as a new request arrives,
+    // including requests made while the previous GPU batch is still in flight.
+    const request = ++workRequest;
+    clearTimeout(workTimer);
+    workTimer = workDuration = undefined;
     prepare(() => {
-      if (!animate()) return;
-      clearTimeout(workTimer);
+      if (request !== workRequest || !animate() || !supportsActivities) return;
+      queuedReaction = false;
+      stoppingWork = false;
       switchMode(true);
       play(1);
-      workTimer = undefined;
       workDuration = 2200 * Math.max(1, Math.min(10, props.workingCycles || 1));
+      attend(workDuration + 1000);
     });
-  let appearanceTimer, pendingFingerprint;
+  };
+  let appearanceTimer, pendingFingerprint, lastCapabilities;
+  const reportCapabilities = (available, selected) => {
+    lastCapabilities = {
+      key: JSON.stringify(
+        props.legacy ? characterRecipe(props) : props.config.character,
+      ),
+      available,
+      selected,
+    };
+    callbacks.onCapabilities?.(lastCapabilities);
+  };
   const applyAppearance = (value) => {
     const recipe = value;
     const nextFingerprint = JSON.stringify(recipe);
@@ -477,28 +618,49 @@ async function createLiveCharacter(
         removedOverride ||
         (appliedRecipe.bodyColor && !recipe.bodyColor)
       ) {
-        const base = props.legacy
-          ? encodeAppearance({
-              version: 1,
-              shape: 'circle',
-              color: 'blue',
-              eyes: 'oval',
-              eyewear: 'none',
-              accessories: [],
-              accessoryColors: {},
-              constrained: 0,
-              depth: 0.5,
-              model: null,
-              rig: null,
-              hereCharacter: null,
-            })
-          : module.presetAppearance(recipe.preset);
+        const base =
+          props.legacy || recipe.preset === 'clippo'
+            ? encodeAppearance({
+                version: 1,
+                shape: 'circle',
+                color: 'blue',
+                eyes: 'oval',
+                eyewear: 'none',
+                accessories: [],
+                accessoryColors: {},
+                constrained: 0,
+                depth: 0.5,
+                model: null,
+                rig: null,
+                hereCharacter: null,
+              })
+            : module.presetAppearance(recipe.preset);
         if (character.restore(base))
           throw new Error('Invalid character appearance');
       }
       for (const key of Object.keys(category)) {
-        const value = recipe.selections?.[key];
-        if (!value) continue;
+        const selected = authoredParts[key] ?? recipe.selections?.[key];
+        // Virtual choices replace copied prepared meshes in the worker. The
+        // original engine still selects its own valid backing geometry.
+        const value =
+          key === 'shape' && selected === 'clippo'
+            ? 'circle'
+            : key === 'eyes' && (selected === 'todd' || selected === 'clippo')
+              ? ['oval', 'round_inset', 'dots'].find((id) =>
+                  character.isAvailable(category.eyes, id),
+                )
+              : key === 'accessory' && selected === 'felipe_beret'
+                ? character.isAvailable(category.accessory, 'beret')
+                  ? 'beret'
+                  : 'none'
+                : selected;
+        if (!value) {
+          if (key === 'eyes' && (selected === 'todd' || selected === 'clippo'))
+            throw new Error(
+              `No compatible fitting reference for ${selected} eyes`,
+            );
+          continue;
+        }
         if (key === 'accessory' && value === 'none') {
           for (const item of module.catalog(4))
             if (character.isSelected(4, item.id)) character.select(4, item.id);
@@ -557,27 +719,55 @@ async function createLiveCharacter(
           if (character.isSelected(index, item.id)) selected[key] = item.id;
         }
       }
+      available['shape:clippo'] = true;
+      available['eyes:clippo'] = true;
+      available['eyes:todd'] = true;
+      if (authoredParts.shape) selected.shape = authoredParts.shape;
+      available['accessory:felipe_beret'] = true;
+      if (
+        authoredParts.eyes ||
+        (recipe.preset === 'lime_frog' && !recipe.selections?.eyes)
+      )
+        selected.eyes = authoredParts.eyes ?? 'todd';
+      if (
+        authoredParts.accessory ||
+        (recipe.preset === 'blue_beret' && !recipe.selections?.accessory)
+      )
+        selected.accessory = 'felipe_beret';
       available['accessory:none'] = true;
       selected.accessory ??= 'none';
-      callbacks.onCapabilities?.({ key: fingerprint, available, selected });
+      reportCapabilities(available, selected);
       dirty = true;
     }
   };
+  let deferredUpdate;
   const update = (next, silent = false) => {
     if (disposed) return;
+    if (sharedRenderPending()) {
+      const queued = Boolean(deferredUpdate);
+      deferredUpdate = [next, silent];
+      if (!queued)
+        void waitForSharedRender().then(() => {
+          const value = deferredUpdate;
+          deferredUpdate = undefined;
+          if (value && !disposed) update(...value);
+        });
+      return;
+    }
     props = next;
-    const recipe = props.legacy
-      ? {
-          preset: 'legacy',
-          selections: {
-            shape: props.legacy.shape ?? 'circle',
-            eyes: props.legacy.eyes ?? 'oval',
-            ...props.legacy.selections,
-          },
-          ...props.legacy.patch,
-        }
-      : props.config.character;
+    const recipe = characterRecipe(props);
     const nextFingerprint = JSON.stringify(recipe);
+    // Explicitly choosing a preset's default changes its saved recipe, but not
+    // its prepared appearance. Re-key the actual capabilities without rebuilding.
+    const rawKey = JSON.stringify(
+      props.legacy ? recipe : props.config.character,
+    );
+    if (
+      nextFingerprint === fingerprint &&
+      lastCapabilities &&
+      lastCapabilities.key !== rawKey
+    )
+      reportCapabilities(lastCapabilities.available, lastCapabilities.selected);
     // Dragging the shared color picker may emit dozens of values per second.
     // Prepare only its latest value while retaining the existing painted frame.
     if (pendingFingerprint !== nextFingerprint) {
@@ -647,6 +837,18 @@ async function createLiveCharacter(
     dirty = true;
     wake();
   };
+  function input(operation) {
+    const apply = () => {
+      if (disposed) return;
+      try {
+        operation();
+      } catch (error) {
+        client.fail(error);
+      }
+    };
+    if (sharedRenderPending()) void waitForSharedRender().then(apply);
+    else apply();
+  }
   function pointer(event) {
     if (!props.interactive || !animate()) return;
     const phase = {
@@ -657,8 +859,11 @@ async function createLiveCharacter(
     }[event.type];
     if (event.type === 'pointerdown') {
       if (event.button !== 0 || pointerId != null || !event.isPrimary) return;
+      attend(3000);
       pointerStart = [event.clientX, event.clientY];
       pointerId = event.pointerId;
+      // Capture while the physical pointer is still down. GPU completion may
+      // arrive after pointerup, when setPointerCapture would throw instead.
       canvas.setPointerCapture(pointerId);
     }
     if (pointerId != null && pointerId !== event.pointerId) return;
@@ -668,38 +873,41 @@ async function createLiveCharacter(
       localY = (event.clientY - r.top) / r.height;
     const x = fit ? (fit[0] + localX * fit[2]) / canvas.width : localX;
     const y = fit ? (fit[1] + localY * fit[2]) / canvas.height : localY;
-    if (activityMode && phase === 1)
-      character.setReadyGaze(x, y, performance.now() / 1000);
-    if (!activityMode)
-      character.pointer(phase, event.pointerId, x, y, performance.now() / 1000);
+    const id = event.pointerId,
+      at = performance.now() / 1000;
+    const tap =
+      phase === 2 &&
+      pointerStart &&
+      Math.hypot(
+        event.clientX - pointerStart[0],
+        event.clientY - pointerStart[1],
+      ) < 6;
+    input(() => {
+      if (activityMode && phase === 1) character.setReadyGaze(x, y, at);
+      if (!activityMode) character.pointer(phase, id, x, y, at);
+      if (tap) react();
+      dirty = true;
+      wake();
+    });
     if (phase === 2 || phase === 3) {
-      if (
-        phase === 2 &&
-        pointerStart &&
-        Math.hypot(
-          event.clientX - pointerStart[0],
-          event.clientY - pointerStart[1],
-        ) < 6
-      )
-        react();
-      if (canvas.hasPointerCapture(event.pointerId))
-        canvas.releasePointerCapture(event.pointerId);
+      if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
       pointerId = undefined;
+      pointerStart = undefined;
     }
-    dirty = true;
-    wake();
   }
   const cancel = () => {
-    if (pointerId != null)
-      character.pointer(3, pointerId, 0.5, 0.5, performance.now() / 1000);
+    const id = pointerId;
     pointerId = undefined;
     pointerStart = undefined;
+    if (id != null)
+      input(() => character.pointer(3, id, 0.5, 0.5, performance.now() / 1000));
   };
   const leave = () => {
-    if (pointerId == null) {
-      if (activityMode) character.clearReadyGaze(performance.now() / 1000);
-      else character.pointer(1, 0, 0.5, 0.5, performance.now() / 1000);
-    }
+    if (pointerId == null)
+      input(() => {
+        if (activityMode) character.clearReadyGaze(performance.now() / 1000);
+        else character.pointer(1, 0, 0.5, 0.5, performance.now() / 1000);
+      });
   };
   canvas.addEventListener('lostpointercapture', cancel);
   canvas.addEventListener('pointerleave', leave);
@@ -729,10 +937,14 @@ async function createLiveCharacter(
     canvas.removeEventListener('lostpointercapture', cancel);
     canvas.removeEventListener('pointerleave', leave);
     window.removeEventListener('blur', cancel);
-    character.delete();
-    finishPreparation();
-    surfaceLease.release();
-    lease?.release();
+    const release = () => {
+      character.delete();
+      finishPreparation(true);
+      surfaceLease.release();
+      lease?.release();
+    };
+    if (sharedRenderPending()) void waitForSharedRender().then(release);
+    else release();
     if (!instances.size) {
       document.removeEventListener('visibilitychange', visibility);
       cancelAnimationFrame(frame);
@@ -742,6 +954,7 @@ async function createLiveCharacter(
   try {
     update(initial);
     resize();
+    bindController();
   } catch (error) {
     dispose();
     throw error;
@@ -756,20 +969,21 @@ async function createLiveCharacter(
       lastReactionKind,
       lastActivityResult,
       activityMode,
+      stoppingWork,
+      queuedReaction,
       ready,
       pending:
         dirty ||
         acquiringPreparation ||
         preparationQueue.length > 0 ||
-        Boolean(character.preparationStats().pending) ||
-        character.hasPendingUpdate(),
+        !scenePrepared(),
     }),
   };
 }
 
 // A geometry cache must never serve a different silhouette under the same
 // appearance key. Keep the old painted image while replacing the scoped character.
-async function createLegacyCharacter(canvas, initial, callbacks) {
+async function createScopedCharacter(canvas, initial, callbacks) {
   let controller,
     shapeKey,
     revision = 0,
@@ -778,7 +992,10 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
   const update = async (next, silent = false) => {
     if (disposed) return;
     latest = next;
-    const key = JSON.stringify(next.legacy.points ?? null);
+    const key = JSON.stringify([
+      next.legacy?.points ?? null,
+      authoredPartsFor(next),
+    ]);
     if (shapeKey === key) {
       controller?.update(next, silent);
       return;
@@ -838,7 +1055,8 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
     },
     react: () => controller?.react(),
     work: () => controller?.work(),
-    diagnostics: () => controller?.diagnostics(),
+    diagnostics: () =>
+      controller?.diagnostics() ?? { ready: false, pending: !disposed },
   };
 }
 
@@ -967,11 +1185,12 @@ const registryKey = Symbol.for('bloom.character.runtimes');
 export function runtimeStats() {
   return {
     renderMilliseconds: lastRenderMilliseconds,
+    renderWaitMilliseconds: lastRenderWaitMilliseconds,
     budget: managedAvatarStats(),
     surface: sharedSurfaceStats(),
     instances: instances.size,
     active: clients.size,
-    scheduled: !!frame,
+    scheduled: !!frame || rendering,
     cachedPortraits: portraits.size,
     legacy: legacyEngineStats(),
   };

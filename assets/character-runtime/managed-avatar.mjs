@@ -56,7 +56,8 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
     refresh();
   }
   function commands() {
-    if (!controller?.diagnostics?.()?.ready) return;
+    const state = controller?.diagnostics?.();
+    if (disposed || still() || !ready || !state?.ready || state.pending) return;
     if (pendingWork)
       promote(
         2500 * Math.max(1, Math.min(10, props.workingCycles || 1)) + 1000,
@@ -107,6 +108,9 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
               for (const receive of waiting.get(cacheKey) ?? []) receive();
             }
             callbacks.onPaint?.();
+            // Scope replacements and in-place edits may settle without another
+            // onReady event. Deliver retained commands only after their paint.
+            if (pendingWork || pendingReaction) queueMicrotask(commands);
           },
         });
         controller = created;
@@ -168,7 +172,8 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
       pendingReaction = false;
     }
     appearance();
-    const queueCommands = !controller?.diagnostics?.()?.ready;
+    const state = controller?.diagnostics?.();
+    const queueCommands = !ready || !state?.ready || !!state.pending;
     if (!still() && (work || reaction)) {
       if (queueCommands) {
         pendingWork ||= work;

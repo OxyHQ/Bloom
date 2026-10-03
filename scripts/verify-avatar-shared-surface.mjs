@@ -17,8 +17,13 @@ try {
     `${process.argv[2] || 'http://localhost:6006'}/__bloom_surface.html`,
   );
   const result = await page.evaluate(async () => {
-    const { acquireSharedSurface, sharedSurfaceStats } =
-      await import('/bloom-character/shared-surface.mjs');
+    const {
+      acquireSharedSurface,
+      sharedSurfaceStats,
+      renderSharedBatchDeferred,
+      waitForSharedRender,
+      sharedRenderPending,
+    } = await import('/bloom-character/shared-surface.mjs');
     const a = acquireSharedSurface(document.body),
       b = acquireSharedSurface(document.body);
     a.canvas.width = 80;
@@ -27,6 +32,19 @@ try {
     b.canvas.height = 72;
     const first = a.canvas.getContext('webgl2'),
       second = b.canvas.getContext('webgl2');
+    const cachedMethods = [
+      'getExtension',
+      'getParameter',
+      'isEnabled',
+      'bindFramebuffer',
+      'viewport',
+      'scissor',
+      'enable',
+      'disable',
+      'blitFramebuffer',
+      'readPixels',
+      'clear',
+    ].every((name) => first[name] === first[name]);
     const output = document.createElement('canvas');
     output.width = output.height = 100;
     const ctx = output.getContext('2d', { willReadFrequently: true });
@@ -95,6 +113,10 @@ try {
     first.deleteRenderbuffer(renderbuffer);
     b.canvas.width = 100;
     b.canvas.height = 100;
+    const liveDimensions = [
+      second.drawingBufferWidth,
+      second.drawingBufferHeight,
+    ];
     paint(first, [1, 0, 0, 1]);
     paint(second, [0, 1, 0, 1]);
     first.getExtension('WEBGL_lose_context').loseContext();
@@ -130,6 +152,59 @@ try {
       paint(second, [0, 1, 0, 1]);
       return 'ok';
     });
+    const deferredOrder = [];
+    const completion = renderSharedBatchDeferred(
+      () => {
+        paint(second, [1, 0, 1, 1]);
+      },
+      () => {
+        deferredOrder.push('publish');
+        ctx.clearRect(0, 0, 100, 100);
+        b.copy(ctx);
+      },
+    );
+    const pendingDuringWait = sharedRenderPending();
+    let blockedCopy = false,
+      blockedResize = false;
+    try {
+      b.copy(ctx);
+    } catch {
+      blockedCopy = true;
+    }
+    try {
+      b.canvas.width = 80;
+    } catch {
+      blockedResize = true;
+    }
+    const waiter = waitForSharedRender().then(() =>
+      deferredOrder.push('waiter'),
+    );
+    await completion;
+    await waiter;
+    const deferredPixel = pixel(50, 50);
+    let deferredError,
+      failedPublished = false;
+    try {
+      await renderSharedBatchDeferred(
+        () => second.enable(0xffffffff),
+        () => {
+          failedPublished = true;
+        },
+      );
+    } catch (error) {
+      deferredError = String(error);
+    }
+    const deferred = {
+      order: deferredOrder,
+      pendingDuringWait,
+      blockedCopy,
+      blockedResize,
+      width: b.canvas.width,
+      pixel: deferredPixel,
+      error: deferredError,
+      failedPublished,
+      pendingAfter: sharedRenderPending(),
+    };
     b.release();
     b.release();
     const getParameter = WebGL2RenderingContext.prototype.getParameter;
@@ -156,6 +231,9 @@ try {
     small.release();
     WebGL2RenderingContext.prototype.getParameter = getParameter;
     return {
+      deferred,
+      cachedMethods,
+      liveDimensions,
       red,
       green,
       padding,
@@ -176,6 +254,17 @@ try {
       final: sharedSurfaceStats(),
     };
   });
+  assert.deepEqual(result.deferred.order, ['publish', 'waiter']);
+  assert.equal(result.deferred.pendingDuringWait, true);
+  assert.equal(result.deferred.blockedCopy, true);
+  assert.equal(result.deferred.blockedResize, true);
+  assert.equal(result.deferred.width, 100);
+  assert.deepEqual(result.deferred.pixel, [255, 0, 255, 255]);
+  assert.match(result.deferred.error, /0x500/);
+  assert.equal(result.deferred.failedPublished, false);
+  assert.equal(result.deferred.pendingAfter, false);
+  assert.equal(result.cachedMethods, true);
+  assert.deepEqual(result.liveDimensions, [100, 100]);
   assert.deepEqual(result.red, [255, 0, 0, 255]);
   assert.deepEqual(result.green, [0, 255, 0, 255]);
   assert.deepEqual(result.padding, [

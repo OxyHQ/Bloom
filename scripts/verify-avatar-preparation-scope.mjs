@@ -212,7 +212,7 @@ await (async () => {
       interrupted.render(performance.now() / 1000);
       releaseInterrupted();
       let admittedAfterRelease = false;
-      const nextTurn = adapter.acquireCharacterPreparation().then(release => {
+      const nextTurn = adapter.acquireCharacterPreparation().then((release) => {
         admittedAfterRelease = true;
         return release;
       });
@@ -277,7 +277,11 @@ await (async () => {
       assert.equal(x.stats.failed, false);
       assert.ok(Number(x.stats.completed) > 0);
     }
-    assert.equal(result.requests.filter((x) => x.points).length, 3);
+    assert.equal(result.requests.filter((x) => x.points).length, 2);
+    assert.ok(
+      result.before.preparationCache.hits >= 1,
+      'returning to an identical contour reuses exact completed preparation',
+    );
     assert.equal(
       new Set(result.requests.filter((x) => x.points).map((x) => x.key)).size,
       1,
