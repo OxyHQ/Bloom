@@ -1,0 +1,7 @@
+$ jest --runInBand "--watchman=false" src/__tests__/SurfacePaintResize.test.tsx src/__tests__/Surface.web.test.tsx src/__tests__/DialogBottomSheet.test.tsx
+
+Test Suites: 3 passed, 3 total
+Tests:       39 passed, 39 total
+Snapshots:   0 total
+Time:        5.481 s
+Ran all test suites matching src/__tests__/SurfacePaintResize.test.tsx|src/__tests__/Surface.web.test.tsx|src/__tests__/DialogBottomSheet.test.tsx.

@@ -75,11 +75,11 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
-function renderSheet(onDismiss: () => void) {
+function renderSheet(onDismiss: () => void, onDismissAttempt?: () => boolean) {
   const ref = createRef<BottomSheetRef>();
   const utils = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <BottomSheet ref={ref} onDismiss={onDismiss}>
+      <BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={onDismissAttempt}>
         <Text>Body</Text>
       </BottomSheet>
     </BloomThemeProvider>,
@@ -132,4 +132,18 @@ describe('BottomSheet pan-to-dismiss gesture', () => {
     });
     expect(onDismiss).not.toHaveBeenCalled();
   });
+});
+
+
+it('keeps a vetoed drag mounted and does not announce completion', () => {
+  mockPanGestures.length = 0;
+  const onDismiss = jest.fn();
+  const guard = jest.fn(() => false);
+  const screen = renderSheet(onDismiss, guard);
+  for (const gesture of mockPanGestures) {
+    act(() => gesture.onEnd?.({ velocityY: 1500, translationY: 500 }));
+  }
+  expect(guard).toHaveBeenCalled();
+  expect(onDismiss).not.toHaveBeenCalled();
+  expect(screen.getByText('Body')).toBeTruthy();
 });

@@ -1,0 +1,6 @@
+$ jest --runInBand "--watchman=false" src/__tests__/adoption-matrix.test.ts
+Test Suites: 1 passed, 1 total
+Tests:       11 passed, 11 total
+Snapshots:   0 total
+Time:        0.659 s
+Ran all test suites matching src/__tests__/adoption-matrix.test.ts.

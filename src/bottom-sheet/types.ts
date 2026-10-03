@@ -38,6 +38,7 @@ export interface BottomSheetProps {
      */
     style?: StyleProp<AnimatedStyle<ViewStyle>>;
     enableHandlePanningGesture?: boolean;
+    /** Veto user Back/backdrop/Escape/pan requests before closing; imperative dismiss bypasses it. */
     onDismissAttempt?: () => boolean;
     detached?: boolean; // If true, shows with margins and rounded corners. If false, full width with rounded top only.
     /**

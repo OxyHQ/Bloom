@@ -1,0 +1,89 @@
+{
+  "sourceCommit": "efa54000221298f95006815d1ab087647b563e4c",
+  "baseCommit": "d7cc14b1da4ce568917bb19f5ebf8588f6164262",
+  "sources": [
+    {
+      "path": "docs/bottom-sheet.mdx",
+      "sha256": "b866f1b107f342de19d01f7e10b4db10b1d99e26e9ed226a00bab0b7dc6e28d9",
+      "bytes": 6732
+    },
+    {
+      "path": "src/__tests__/BottomSheet.test.tsx",
+      "sha256": "e198b53bf67e2b2b13b7399918b7bb82f35c7cbf5f3741ecbcc73c2f2e4157fc",
+      "bytes": 17093
+    },
+    {
+      "path": "src/__tests__/BottomSheetGesture.test.tsx",
+      "sha256": "8802942811c43bc8f48324ee9e38250428830de4977388a21535f42f3b71389d",
+      "bytes": 5393
+    },
+    {
+      "path": "src/__tests__/DialogBottomSheet.test.tsx",
+      "sha256": "3c0c038c993b4c074681dbf4b306c3f705d92a7ee89c89a218dd75364d75f338",
+      "bytes": 12560
+    },
+    {
+      "path": "src/bottom-sheet/BottomSheetBase.tsx",
+      "sha256": "9a7a47dbeb6fa6e6e85be2b425d5b9d95e852af45cc894a1fe8fa8cef7833b2b",
+      "bytes": 40353
+    },
+    {
+      "path": "src/bottom-sheet/types.ts",
+      "sha256": "da573b386644f0db1ef57fc8701ccbef890c154feb78d90d1c28fb8a579d37c0",
+      "bytes": 8171
+    }
+  ],
+  "records": [
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/logs/build.log",
+      "sha256": "9da4cac3bb6e2fef2e49421b2a0f63b1b584446d2b9557a126433e700fdefe22",
+      "bytes": 6226
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/logs/final-tests.log",
+      "sha256": "f8c099b26ef56f295bc30654a08c18055a2767853de9833df770a2e7f2eee53f",
+      "bytes": 646
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/logs/green.log",
+      "sha256": "d59a5a3ef050d1dcacc7fcb0904d4d7f86e24cb68bd392c556bd081aec07bb74",
+      "bytes": 483
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/logs/install.log",
+      "sha256": "42beeb4a3ad873ba52f4bd18cba84fb96f6980092128f4e8048ece264e463b64",
+      "bytes": 7558
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/logs/red.log",
+      "sha256": "450584a8c8bb5d17e011cfca8a1a92b31dbfd2509631ab65b6d3dba3230903d8",
+      "bytes": 28153
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/logs/types.log",
+      "sha256": "6e0f651428fe78db2569836a83e8577af1d4c9cdd7921475cc72731af4fec6ca",
+      "bytes": 176
+    }
+  ],
+  "results": {
+    "RED": "2 failed,19 passed: protected Back removes Modal; explicit dismiss fails to notify",
+    "GREEN": "6 suites,79 passed,0 failed",
+    "types": "PASS incl isolated consumer control",
+    "build": "PASS CJS/ESM/types,package targets,freshness negative controls",
+    "nativeDeviceCandidateFix": "NOT YET EXECUTED",
+    "touchIssue": "UNRESOLVED and not claimed fixed"
+  },
+  "commands": [
+    "bun install --frozen-lockfile --minimum-release-age=0",
+    "bun run test --runInBand --watchman=false src/__tests__/BottomSheet.test.tsx",
+    "bun run test --runInBand --watchman=false src/__tests__/BottomSheet.test.tsx src/__tests__/BottomSheetGesture.test.tsx src/__tests__/DialogBottomSheet.test.tsx src/__tests__/surface-store.test.ts src/__tests__/surface-prompts.test.tsx src/__tests__/DialogKeyboard.web.test.tsx",
+    "bun run typescript",
+    "bun run build"
+  ],
+  "limits": [
+    "Jest renders native BottomSheet and Modal callback with mocked platform/animations; not pixel or real gesture timing evidence",
+    "Original Android reproduction operated by root using installed Bloom6.2.0; same relevant source persists on main7.1.1",
+    "Sibling Metro sources remained frozen; no local node_modules mutation",
+    "No publish, version bump or device installation performed"
+  ]
+}

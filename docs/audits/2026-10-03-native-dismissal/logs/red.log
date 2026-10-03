@@ -1,0 +1,501 @@
+$ jest --runInBand "--watchman=false" src/__tests__/BottomSheet.test.tsx
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:29:20)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:45:29)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:56:5)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:75:7)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:95:27)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:109:27)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+      17 |
+      18 | function renderWithDarkTheme(ui: React.ReactElement) {
+    > 19 |   return render(
+         |                ^
+      20 |     <BloomThemeProvider mode="dark" colorPreset="teal">
+      21 |       {ui}
+      22 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithDarkTheme (src/__tests__/BottomSheet.test.tsx:19:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:119:27)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:135:52)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:154:52)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:175:27)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:193:27)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:208:29)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:227:31)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:262:50)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:288:27)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:307:27)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:335:7)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:363:18)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:377:20)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:390:20)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+       9 |
+      10 | function renderWithTheme(ui: React.ReactElement) {
+    > 11 |   return render(
+         |                ^
+      12 |     <BloomThemeProvider mode="light" colorPreset="teal">
+      13 |       {ui}
+      14 |     </BloomThemeProvider>,
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at renderWithTheme (src/__tests__/BottomSheet.test.tsx:11:16)
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:404:20)
+
+FAIL src/__tests__/BottomSheet.test.tsx (6.036 s)
+  ● protected sheet dismissal lifecycle › keeps a protected native modal visible when Android Back is requested
+
+    No instances found with node type: "Modal"
+
+      381 |     expect(guard).toHaveBeenCalledTimes(1);
+      382 |     expect(onDismiss).not.toHaveBeenCalled();
+    > 383 |     expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
+          |                   ^
+      384 |   });
+      385 |
+      386 |   it('settles an explicit close even when user dismissal is blocked, then reopens', () => {
+
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:383:19)
+
+  ● protected sheet dismissal lifecycle › settles an explicit close even when user dismissal is blocked, then reopens
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      392 |     act(() => ref.current?.dismiss());
+      393 |     act(() => jest.advanceTimersByTime(400));
+    > 394 |     expect(onDismiss).toHaveBeenCalledTimes(1);
+          |                       ^
+      395 |     expect(guard).not.toHaveBeenCalled();
+      396 |     act(() => ref.current?.present());
+      397 |     expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
+
+      at Object.<anonymous> (src/__tests__/BottomSheet.test.tsx:394:23)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 19 passed, 21 total
+Snapshots:   0 total
+Time:        6.183 s
+Ran all test suites matching src/__tests__/BottomSheet.test.tsx.
+error: script "test" exited with code 1

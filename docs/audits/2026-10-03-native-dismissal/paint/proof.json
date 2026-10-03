@@ -1,0 +1,24 @@
+{
+  "source": "d5690d26",
+  "sources": [
+    {
+      "path": "src/dialog/DialogBottomSheet.tsx",
+      "sha256": "1ba45657ffbd4deeb1a1d46a306cca011113e802c888e7340fc0d52fea47bba6",
+      "bytes": 17215
+    },
+    {
+      "path": "src/__tests__/DialogBottomSheet.test.tsx",
+      "sha256": "7e59e4155f581fe8a04d81c2b5608b1433885645709a2756e5e03b2c9a944636",
+      "bytes": 13914
+    }
+  ],
+  "records": [
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/paint/green.log",
+      "sha256": "6390587ced1db8643da5e924c198c368396fccb21b4dcb9b1cabbe0eda9dc72c",
+      "bytes": 19570
+    }
+  ],
+  "result": "15 tests PASS on7.x; runtime/test byte-identical to6.2 maintenance fix8572e8a4",
+  "limits": "Historical7.1.2 pack predates paint fix; not a current release candidate. Final Oxy adoption uses6.2.1 maintenance. No device touch fix claimed."
+}
