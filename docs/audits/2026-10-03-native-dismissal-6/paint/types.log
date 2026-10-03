@@ -1,0 +1,2 @@
+$ tsc --noEmit && node scripts/verify-consumer-typecheck.mjs
+verify-consumer-typecheck: ok — 2294 src files typecheck with no @types/node; positive control fired (1 TS2339).
