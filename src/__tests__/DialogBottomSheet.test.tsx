@@ -329,3 +329,23 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
     expect(flattened.flex).toBeUndefined();
   });
 });
+
+
+it('the explicit close icon completes a protected native dialog once and allows reopening', () => {
+  jest.useFakeTimers();
+  let control: ReturnType<typeof useDialogControl> | undefined;
+  const onClose = jest.fn();
+  const screen = renderWithTheme(<Harness>{(c) => {
+    control = c;
+    return <Dialog control={c} placement="bottom" header={{ title: 'Protected' }} dismissOnBackdrop={false} onClose={onClose}><Text>Protected body</Text></Dialog>;
+  }}</Harness>);
+  act(() => control?.open());
+  fireEvent.press(screen.getByLabelText('Close'));
+  act(() => jest.advanceTimersByTime(400));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  act(() => control?.open());
+  expect(screen.getByText('Protected body')).toBeTruthy();
+  screen.unmount();
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
+});

@@ -56,7 +56,7 @@ On web the open sheet owns the keyboard like a dialog does (`overlay/ModalKeyboa
 | `onDismiss?` | `() => void` | — | Fires when the sheet finishes closing. |
 | `enablePanDownToClose?` | `boolean` | `true` | |
 | `enableHandlePanningGesture?` | `boolean` | `true` | |
-| `onDismissAttempt?` | `() => boolean` | — | Return `false` to veto a dismiss attempt. |
+| `onDismissAttempt?` | `() => boolean` | — | Return `false` to veto user Back/backdrop/Escape/pan before closing. Explicit ref dismissal bypasses this guard and always reports completion. |
 | `detached?` | `boolean` | `false` | Float with horizontal margins and rounded corners on all sides. |
 | `showHandle?` | `boolean` | `true` | Toggle the drag handle pill. |
 | `backdropOpacity?` | `number` | `0.5` | Opacity (0–1) of the dimming backdrop once fully visible. |

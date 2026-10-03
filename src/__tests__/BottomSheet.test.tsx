@@ -1,5 +1,5 @@
 import React, { createRef } from 'react';
-import { Dimensions, Text, View } from 'react-native';
+import { Dimensions, Modal, Text, View } from 'react-native';
 import { act, render, within } from '@testing-library/react-native';
 
 import { useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
@@ -363,4 +363,49 @@ it('publishes declared custom background at the sheet level reset', () => {
   const screen = renderWithTheme(<BottomSheet ref={ref} backgroundFill="#123456" backgroundComponent={() => <View />}><Probe /></BottomSheet>);
   act(() => ref.current?.present());
   expect(screen.getByTestId('surface-probe').props.children.join('')).toBe('#123456|0');
+});
+
+
+describe('protected sheet dismissal lifecycle', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => { jest.runOnlyPendingTimers(); jest.useRealTimers(); });
+
+  it('keeps a protected native modal visible when Android Back is requested', () => {
+    const ref = createRef<BottomSheetRef>();
+    const onDismiss = jest.fn();
+    const guard = jest.fn(() => false);
+    const screen = renderWithTheme(<BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}><Text>Protected</Text></BottomSheet>);
+    act(() => ref.current?.present());
+    act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+    act(() => jest.advanceTimersByTime(400));
+    expect(guard).toHaveBeenCalledTimes(1);
+    expect(onDismiss).not.toHaveBeenCalled();
+    expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
+  });
+
+  it('settles an explicit close even when user dismissal is blocked, then reopens', () => {
+    const ref = createRef<BottomSheetRef>();
+    const onDismiss = jest.fn();
+    const guard = jest.fn(() => false);
+    const screen = renderWithTheme(<BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}><Text>Protected</Text></BottomSheet>);
+    act(() => ref.current?.present());
+    act(() => ref.current?.dismiss());
+    act(() => jest.advanceTimersByTime(400));
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(guard).not.toHaveBeenCalled();
+    act(() => ref.current?.present());
+    expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
+  });
+
+  it('settles an allowed Android Back request exactly once', () => {
+    const ref = createRef<BottomSheetRef>();
+    const onDismiss = jest.fn();
+    const guard = jest.fn(() => true);
+    const screen = renderWithTheme(<BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}><Text>Allowed</Text></BottomSheet>);
+    act(() => ref.current?.present());
+    act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+    act(() => jest.advanceTimersByTime(400));
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(guard).toHaveBeenCalledTimes(1);
+  });
 });
