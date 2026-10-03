@@ -52,6 +52,13 @@ export function originalBodyColor(module, preset) {
   originalPaint.set(preset, hex);
   return hex;
 }
+/** Editable backing paint, with the original RGB retained for unnamed colors. */
+export function originalPalettePaint(module, preset) {
+  const color = decodeAppearance(module.presetAppearance(preset)).color;
+  return module.catalog(1).some((item) => item.id === color)
+    ? { color }
+    : { color: 'yellow', bodyColor: originalBodyColor(module, preset) };
+}
 export function recordHasLabel(info, part, label) {
   const needle = encoder.encode(label),
     bytes = info.bytes;
@@ -256,9 +263,14 @@ export async function composePresetBody(module, bytes, request) {
   );
 }
 /** Native catalog pieces can be transplanted onto any actual body. */
-export async function composeCatalogParts(module, bytes, request) {
+export async function composeCatalogParts(
+  module,
+  bytes,
+  request,
+  categories = ['eyes', 'eyewear', 'accessory'],
+) {
   let info = authoredAssemblyRecords(bytes);
-  for (const category of ['eyes', 'eyewear', 'accessory']) {
+  for (const category of categories) {
     const id = request.authoredParts?.[category];
     if (!id) continue;
     const virtualAccessory = category === 'accessory' && id === 'felipe_beret';
@@ -275,7 +287,9 @@ export async function composeCatalogParts(module, bytes, request) {
     let fitted = [];
     if (id !== 'none' && !virtualAccessory) {
       const donor = await reference(module, category, id, request);
-      const transforms = fitCatalogPartRecords(info, donor, category, id);
+      const transforms = fitCatalogPartRecords(info, donor, category, id, {
+        singleEye: request.authoredParts?.eyes === 'cyclops',
+      });
       fitted = await Promise.all(
         transforms.map(({ part, ...transform }) =>
           transformAuthoredRecord(donor.bytes, part, transform),

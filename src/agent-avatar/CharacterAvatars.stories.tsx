@@ -5,17 +5,11 @@ import { Button } from '../button/Button';
 import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
 import { AgentCreator } from '../agent-creator/AgentCreator.web';
-import { CHARACTER_OPTIONS } from '../agent-creator/constants';
 import type { AgentCreatorAgent } from '../agent-creator/types';
 import { AgentAvatar } from './AgentAvatar';
 import { AgentAvatarProvider } from './AgentAvatarProvider';
-import {
-  FOLD_CONFIG,
-  FOLD_SHAPES,
-  DEFAULT_CONFIG,
-  SHAPES,
-  parsePreset,
-} from './model';
+import { CHARACTER_SHAPES, createConfigForShape } from './character-shapes';
+import { FOLD_CONFIG, parsePreset } from './model';
 
 const characters = [
   ['clippo', 'Clippo'],
@@ -28,7 +22,7 @@ const characters = [
   ['blue_spectacles', 'Josh'],
   ['lime_headphones', 'Iggy'],
 ] as const;
-const runtimeUrl = '/bloom-character/runtime.mjs?v=universal-parts-3';
+const runtimeUrl = '/bloom-character/runtime.mjs?v=unified-shapes-4';
 const meta = {
   title: 'Application/Agent Avatar/Characters',
   parameters: { layout: 'padded' },
@@ -89,24 +83,17 @@ function CharacterLab() {
             justifyContent: 'center',
           }}
         >
-          {FOLD_SHAPES.map((foldShape) => (
-            <AgentAvatar
-              key={foldShape}
-              config={{ ...FOLD_CONFIG, foldShape }}
-              portrait
-              paused
-              size={64}
-              label={foldShape}
-            />
-          ))}
-          {SHAPES.map((shape) => (
+          {CHARACTER_SHAPES.map(([shape, label]) => (
             <AgentAvatar
               key={shape}
-              config={{ ...DEFAULT_CONFIG, shape }}
+              config={createConfigForShape(
+                { ...FOLD_CONFIG, character: { preset } },
+                shape,
+              )}
               portrait
               paused
               size={64}
-              label={shape}
+              label={label}
             />
           ))}
         </View>
@@ -138,23 +125,28 @@ function CharacterEditor() {
 }
 export const Editor: Story = { render: () => <CharacterEditor /> };
 
-const legacyCharacters = [
-  ...FOLD_SHAPES.filter(
-    (shape) => !['heart', 'flower', 'diamond'].includes(shape),
-  ).map((foldShape) => ({
-    id: `fold-${foldShape}`,
-    config: { ...FOLD_CONFIG, foldShape },
-  })),
-  ...SHAPES.filter(
-    (shape) => !['circle', 'triangle', 'flower', 'diamond'].includes(shape),
-  ).map((shape) => ({
-    id: `blob-${shape}`,
-    config: { ...DEFAULT_CONFIG, shape },
-  })),
-];
+const shapeCharacters = CHARACTER_SHAPES.map(([id, name]) => ({
+  id,
+  name,
+  config: createConfigForShape(
+    {
+      ...FOLD_CONFIG,
+      character: {
+        preset: 'blue_beret',
+        selections: {
+          color: 'blue',
+          eyes: 'oval',
+          eyewear: 'none',
+          accessory: 'none',
+        },
+      },
+    },
+    id,
+  ),
+}));
 function MigratedCharacters() {
   const [selected, setSelected] = useState(
-    legacyCharacters.find((item) => item.id === 'fold-cloud')!,
+    shapeCharacters.find((item) => item.id === 'cloud')!,
   );
   const [working, setWorking] = useState(0);
   const [reaction, setReaction] = useState(0);
@@ -182,7 +174,7 @@ function MigratedCharacters() {
             maxWidth: 900,
           }}
         >
-          {legacyCharacters.map((item) => (
+          {shapeCharacters.map((item) => (
             <View
               key={item.id}
               style={{ alignItems: 'center', width: 130, gap: 8 }}
@@ -194,7 +186,7 @@ function MigratedCharacters() {
                 paused
                 label={item.id}
               />
-              <Button onPress={() => setSelected(item)}>{item.id}</Button>
+              <Button onPress={() => setSelected(item)}>{item.name}</Button>
             </View>
           ))}
         </View>
@@ -209,7 +201,7 @@ function MigratedEditor() {
     name: 'Cloud',
     label: 'Design',
     description: '',
-    avatar: { ...FOLD_CONFIG, foldShape: 'cloud' },
+    avatar: shapeCharacters.find((item) => item.id === 'cloud')!.config,
   });
   return (
     <AgentAvatarProvider runtimeUrl={runtimeUrl}>
@@ -225,11 +217,12 @@ const stressCharacters = Array.from({ length: 48 }, (_, index) => {
   const variant = Math.floor(index / 2) % 8;
   const migrated = index % 2 === 1;
   const original = characters[variant]!;
-  const legacy = legacyCharacters[variant]!;
+  const legacy =
+    shapeCharacters[Math.floor(index / 2) % shapeCharacters.length]!;
   return {
     id: `stress-avatar-${index + 1}`,
-    name: migrated ? legacy.id : original[1],
-    kind: migrated ? 'Migrated' : 'Original',
+    name: migrated ? legacy.name : original[1],
+    kind: migrated ? 'Shape' : 'Preset',
     config: migrated
       ? legacy.config
       : { ...FOLD_CONFIG, character: { preset: original[0] } },
@@ -291,7 +284,7 @@ function ManyAvatarGallery() {
   return (
     <AgentAvatarProvider runtimeUrl={runtimeUrl}>
       <StyledView className="w-full max-w-[1020px] gap-5 p-4">
-        <Text variant="title-2-medium">48 original and migrated avatars</Text>
+        <Text variant="title-2-medium">48 avatars sharing one renderer</Text>
         <Text variant="body-regular">
           Each visible avatar animates independently. Scroll the gallery and use
           each avatar’s React or Work button.
@@ -320,27 +313,23 @@ function SharedPartsLab() {
   const [paused, setPaused] = useState(false);
   const [reaction, setReaction] = useState(0);
   const [working, setWorking] = useState(0);
-  const shapes = [
-    ...CHARACTER_OPTIONS.shape.map(([shape, name]) => ({
-      id: shape,
-      name,
-      config: {
-        ...FOLD_CONFIG,
-        character: {
-          preset: 'blue_beret',
-          selections: { shape, eyes, accessory },
-        },
+  const appearance = {
+    ...FOLD_CONFIG,
+    character: {
+      preset: 'blue_beret',
+      selections: {
+        color: 'blue',
+        eyes: eyes ?? 'oval',
+        eyewear: 'none',
+        accessory,
       },
-    })),
-    ...legacyCharacters.map(({ id, config }) => ({
-      id,
-      name: id,
-      config: {
-        ...config,
-        character: { preset: 'bloom', selections: { eyes, accessory } },
-      },
-    })),
-  ];
+    },
+  };
+  const shapes = CHARACTER_SHAPES.map(([id, name]) => ({
+    id,
+    name,
+    config: createConfigForShape(appearance, id),
+  }));
   return (
     <AgentAvatarProvider runtimeUrl={runtimeUrl}>
       <View style={{ gap: 20, padding: 16, maxWidth: 980 }}>
@@ -428,24 +417,31 @@ function ClippoLab() {
             testID="clippo-shared-eyes"
             className="flex max-w-[480px] flex-row flex-wrap gap-4"
           >
-            {CHARACTER_OPTIONS.shape
-              .filter(([id]) => id !== 'clippo')
-              .map(([id, title]) => (
+            {CHARACTER_SHAPES.filter(([id]) => id !== 'clippo').map(
+              ([id, title]) => (
                 <AgentAvatar
                   key={id}
-                  config={{
-                    ...FOLD_CONFIG,
-                    character: {
-                      preset: 'clippo',
-                      selections: { shape: id, eyes: 'clippo' },
+                  config={createConfigForShape(
+                    {
+                      ...FOLD_CONFIG,
+                      character: {
+                        preset: 'clippo',
+                        selections: {
+                          eyes: 'clippo',
+                          eyewear: 'none',
+                          accessory: 'none',
+                        },
+                      },
                     },
-                  }}
+                    id,
+                  )}
                   size={64}
                   portrait
                   paused
                   label={title}
                 />
-              ))}
+              ),
+            )}
           </StyledView>
         </StyledView>
         <StyledView style={{ width: 360, height: 900 }}>
@@ -517,52 +513,24 @@ function UniversalCustomizationLab({
                 gap: 16,
               }}
             >
-              {[
-                ...CHARACTER_OPTIONS.shape.map(([shape, label]) => ({
-                  label,
-                  config: {
-                    ...FOLD_CONFIG,
-                    character: {
-                      preset: 'lime_frog',
-                      selections: { shape, eyes: 'cyclops' },
-                    },
-                  },
-                })),
-                ...(
-                  [
-                    'slender',
-                    'pocket',
-                    'petal',
-                    'star',
-                    'cloud',
-                    'shield',
-                  ] as const
-                ).map((foldShape) => ({
-                  label: foldShape,
-                  config: {
-                    ...FOLD_CONFIG,
-                    foldShape,
-                    character: {
-                      preset: 'bloom',
-                      selections: { eyes: 'cyclops' },
-                    },
-                  },
-                })),
-                ...(['pebble', 'squircle'] as const).map((shape) => ({
-                  label: shape,
-                  config: {
-                    ...DEFAULT_CONFIG,
-                    shape,
-                    character: {
-                      preset: 'bloom',
-                      selections: { eyes: 'cyclops' },
-                    },
-                  },
-                })),
-              ].map(({ config, label }) => (
+              {CHARACTER_SHAPES.map(([shape, label]) => (
                 <AgentAvatar
                   key={label}
-                  config={config}
+                  config={createConfigForShape(
+                    {
+                      ...FOLD_CONFIG,
+                      character: {
+                        preset: 'lime_frog',
+                        selections: {
+                          eyes: 'cyclops',
+                          color: 'lime',
+                          eyewear: 'none',
+                          accessory: 'none',
+                        },
+                      },
+                    },
+                    shape,
+                  )}
                   size={64}
                   portrait
                   paused

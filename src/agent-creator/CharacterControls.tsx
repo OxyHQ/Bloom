@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useRef } from 'react';
 import {
   CharacterRuntimeContext,
   CharacterCapabilitiesContext,
@@ -17,10 +17,12 @@ import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
 export function CharacterControls({
   character,
   capabilitiesKey,
+  selected,
   onChange,
 }: {
   character?: AvatarCharacterConfig;
   capabilitiesKey?: string;
+  selected?: Readonly<Record<string, string>>;
   onChange: (character: AvatarCharacterConfig | undefined) => void;
 }) {
   const messages = useAgentCreatorMessages();
@@ -37,11 +39,21 @@ export function CharacterControls({
     SelectItem,
     SelectItemText,
   } = useAgentCreatorBindings();
-  if (!runtimeUrl) return null;
   const key = capabilitiesKey ?? JSON.stringify(character);
-  const resolved =
+  const current =
     capabilitiesByKey?.get(key) ??
     (character && capabilities?.key === key ? capabilities : undefined);
+  const retained = useRef<{
+    preset?: string;
+    selected: Readonly<Record<string, string>>;
+  }>({ selected: {} });
+  if (retained.current.preset !== character?.preset)
+    retained.current = { preset: character?.preset, selected: {} };
+  if (current) retained.current.selected = current.selected;
+  const resolved = {
+    selected: selected ?? current?.selected ?? retained.current.selected,
+  };
+  if (!runtimeUrl) return null;
   const row = (
     label: string,
     value: string,
@@ -91,11 +103,14 @@ export function CharacterControls({
   if (character && !presets.some((item) => item.id === character.preset))
     presets.push({
       id: character.preset,
-      title: messages.characterOption(
-        'preset',
-        character.preset,
-        character.preset,
-      ),
+      title:
+        character.preset === 'legacy'
+          ? messages.proceduralAvatar
+          : messages.characterOption(
+              'preset',
+              character.preset,
+              character.preset,
+            ),
     });
   const labels: Record<AvatarCharacterCategory, string> = {
     shape: messages.shape,
@@ -133,9 +148,7 @@ export function CharacterControls({
               ).map(([id, title]) => ({
                 id,
                 title: messages.characterOption(category, id, title),
-                disabled:
-                  !resolved ||
-                  resolved.available[`${category}:${id}`] === false,
+                disabled: false,
               })),
               (id) => {
                 onChange({

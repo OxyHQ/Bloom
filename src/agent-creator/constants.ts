@@ -1,3 +1,4 @@
+import { NATIVE_CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
 import type { AgentLanguage, AgentPreferences } from './types';
 export const AGENT_LANGUAGES = [
   { id: 'auto', label: 'Auto-detect' },
@@ -69,21 +70,7 @@ export const CHARACTER_PRESETS = [
   { id: 'lime_headphones', title: 'Iggy' },
 ] as const;
 export const CHARACTER_OPTIONS = {
-  shape: [
-    ['clippo', 'Clippo'],
-    ['todd', 'Todd'],
-    ['circle', 'Circle'],
-    ['rounded_triangle', 'Rounded triangle'],
-    ['capsule', 'Capsule'],
-    ['rounded_head_two_ears', 'Rounded head with two ears'],
-    ['six_lobed_flower', 'Six lobed flower'],
-    ['heart', 'Heart'],
-    ['four_lobed_butterfly', 'Four lobed butterfly'],
-    ['circle_two_ears', 'Circle with two ears'],
-    ['twelve_scalloped_rosette', 'Twelve scalloped rosette'],
-    ['rounded_cube', 'Hexagon'],
-    ['rounded_diamond', 'Rounded diamond'],
-  ],
+  shape: NATIVE_CHARACTER_SHAPES,
   color: [
     ['pink', 'Pink'],
     ['orchid', 'Orchid'],
@@ -130,15 +117,4 @@ export const CHARACTER_OPTIONS = {
   ],
 } as const;
 
-/** RGB swatches returned by the recovered engine's Color catalog. */
-export const CHARACTER_COLORS = {
-  pink: '#fa70ab',
-  orchid: '#dd6adc',
-  violet: '#a25bff',
-  blue: '#4778ff',
-  cyan: '#00b1ff',
-  teal: '#04bb9f',
-  lime: '#b6d80b',
-  yellow: '#ffcc38',
-  coral: '#ff8066',
-} as const;
+export { CHARACTER_COLORS } from '../agent-avatar/character-colors';

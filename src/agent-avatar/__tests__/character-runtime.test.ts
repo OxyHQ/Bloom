@@ -7,6 +7,20 @@ import { characterHtml, scriptJson } from '../character-html';
 
 const root = resolve(__dirname, '../../..');
 describe('optional character runtime', () => {
+  it('ships exact source contours and retains the canonical recipe on all migrated bodies', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-migrated-contours.mjs'],
+      { cwd: root },
+    );
+  });
+  it('retains original unnamed material paint through a valid editable palette backing', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-original-paint.mjs'],
+      { cwd: root },
+    );
+  });
   it('places a single native eye on each face and leaves unselected geometry untouched', () => {
     execFileSync(
       process.execPath,

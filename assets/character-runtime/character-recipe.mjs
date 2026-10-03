@@ -1,6 +1,60 @@
 /** Resolve editable defaults without passing virtual catalog IDs to the engine. */
+import { MIGRATED_CONTOURS } from './migrated-contours.mjs';
+export function isLegacyRecipe(props) {
+  return !props.config.character || props.config.character.preset === 'bloom';
+}
+export const MIGRATED_SHAPE_IDS = Object.freeze([
+  'slender',
+  'pocket',
+  'petal',
+  'star',
+  'cloud',
+  'shield',
+  'pebble',
+  'squircle',
+]);
+export function withCharacterGeometry(props) {
+  const shape = props.config.character?.selections?.shape;
+  if (!Object.hasOwn(MIGRATED_CONTOURS, shape)) return props;
+  return {
+    ...props,
+    legacy: props.legacy?.points
+      ? props.legacy
+      : { points: MIGRATED_CONTOURS[shape] },
+  };
+}
+const PRESET_DEFAULTS = Object.freeze({
+  blue_beret: { eyes: 'oval', eyewear: 'none', accessory: 'felipe_beret' },
+  alfred: {
+    eyes: 'sleepy_lids',
+    eyewear: 'tall_oval_frames',
+    accessory: 'bow',
+  },
+  purple_heart: {
+    eyes: 'oval',
+    eyewear: 'round_sunglasses',
+    accessory: 'none',
+  },
+  lime_frog: { eyes: 'todd', eyewear: 'none', accessory: 'bow' },
+  coral_monocle: {
+    eyes: 'double_highlights',
+    eyewear: 'monocle',
+    accessory: 'none',
+  },
+  gus: { eyes: 'oval', eyewear: 'classic_sunglasses', accessory: 'orb' },
+  blue_spectacles: {
+    eyes: 'crescent_inset',
+    eyewear: 'tall_oval_frames',
+    accessory: 'three_lobe',
+  },
+  lime_headphones: {
+    eyes: 'swept_lids',
+    eyewear: 'none',
+    accessory: 'headphones',
+  },
+});
 export function characterRecipe(props) {
-  if (props.legacy)
+  if (props.legacy && isLegacyRecipe(props))
     return {
       preset: 'legacy',
       selections: {
@@ -34,11 +88,17 @@ export function authoredPartsFor(props) {
     recipe?.eyeSpacing !== undefined ||
     Object.keys(selections).length,
   );
+  const defaults =
+    selections.shape && !isLegacyRecipe(props)
+      ? PRESET_DEFAULTS[recipe.preset]
+      : undefined;
   const eyes =
     selections.eyes ??
+    defaults?.eyes ??
     (customized && recipe?.preset === 'lime_frog' ? 'todd' : undefined);
   const accessory =
     selections.accessory ??
+    defaults?.accessory ??
     (customized && recipe?.preset === 'blue_beret'
       ? 'felipe_beret'
       : undefined);
@@ -46,19 +106,23 @@ export function authoredPartsFor(props) {
   const bodyPreset =
     selections.shape === 'todd'
       ? 'lime_frog'
-      : !props.legacy &&
+      : !isLegacyRecipe(props) &&
+          !props.legacy?.points &&
           !selections.shape &&
           ORIGINAL_PRESETS.includes(recipe?.preset)
         ? recipe.preset
         : undefined;
   return {
     ...(bodyPreset ? { bodyPreset } : {}),
-    ...(bodyPreset && (recipe.bodyColor || selections.color)
+    ...(bodyPreset &&
+    (recipe.bodyColor || selections.color || bodyPreset !== recipe.preset)
       ? { paintBody: true }
       : {}),
     ...(selections.shape === 'clippo' ? { shape: 'clippo' } : {}),
     ...(eyes ? { eyes } : {}),
-    ...(selections.eyewear ? { eyewear: selections.eyewear } : {}),
+    ...((selections.eyewear ?? defaults?.eyewear)
+      ? { eyewear: selections.eyewear ?? defaults?.eyewear }
+      : {}),
     ...(accessory ? { accessory } : {}),
     ...(recipe?.eyeSpacing !== undefined && recipe.eyeSpacing !== 1
       ? { eyeSpacing: recipe.eyeSpacing }
@@ -93,7 +157,7 @@ export function bodySignatureFor(props) {
     parts = authoredPartsFor(props);
   if (parts.bodyPreset) return parts.bodyPreset;
   if (
-    !props.legacy &&
+    !isLegacyRecipe(props) &&
     !recipe.selections?.shape &&
     ORIGINAL_PRESETS.includes(recipe.preset)
   )

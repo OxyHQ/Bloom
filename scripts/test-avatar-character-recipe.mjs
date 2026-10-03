@@ -50,7 +50,7 @@ test('all authored parts compose on migrated and native shapes without leaking t
     ...selections,
   });
   const p = {
-    ...props({ preset: 'clippo' }),
+    ...props({ preset: 'bloom' }),
     legacy: { shape: 'circle', eyes: 'oval', selections },
   };
   assert.deepEqual(authoredPartsFor(p), selections);
@@ -71,7 +71,12 @@ test('intact Todd and Felipe keep their original preset and edited variants keep
     authoredPartsFor(
       props({ preset: 'blue_beret', selections: { shape: 'clippo' } }),
     ),
-    { shape: 'clippo', accessory: 'felipe_beret' },
+    {
+      shape: 'clippo',
+      eyes: 'oval',
+      eyewear: 'none',
+      accessory: 'felipe_beret',
+    },
   );
 });
 

@@ -9,7 +9,7 @@ const expectedPortraits = JSON.parse(
     'bun',
     [
       '-e',
-      "import {CHARACTER_OPTIONS} from './src/agent-creator/constants'; console.log(JSON.stringify(CHARACTER_OPTIONS.shape.filter(([id]) => !id.startsWith('legacy:') && id !== 'clippo').length));",
+      "import {CHARACTER_SHAPES} from './src/agent-avatar/character-shapes'; console.log(JSON.stringify(CHARACTER_SHAPES.filter(([id]) => id !== 'clippo').length));",
     ],
     { cwd: new URL('..', import.meta.url), encoding: 'utf8' },
   ),
@@ -60,7 +60,7 @@ try {
   );
   await page.evaluate(async () => {
     window.editorRuntime =
-      await import('/bloom-character/runtime.mjs?v=universal-parts-3');
+      await import('/bloom-character/runtime.mjs?v=unified-shapes-4');
   });
   const settle = async () => {
     await page.waitForTimeout(500);

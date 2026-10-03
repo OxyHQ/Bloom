@@ -1,178 +1,254 @@
-/** Original engine/WASM CPU compositor matrix: all native parts on every actual body.
- * Requires Storybook; creates no WebGL context. Exact requested labels and body
- * vertex bytes are asserted independently of visual browser gates. */
+/** Original-engine CPU/WASM compositor matrix on all21 actual bodies.
+ * This checks588 single parts,1512 eye/eyewear pairs and756 eye/accessory pairs.
+ * No WebGL context is created; real pixel/selected-recipe gates remain separate. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 const { chromium } = createRequire(import.meta.url)(
   process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
 );
-(async () => {
-  const b = await chromium.launch({ args: ['--no-sandbox'] });
-  try {
-    const p = await b.newPage();
-    await p.route('**/__catalog.html', (r) =>
-      r.fulfill({ contentType: 'text/html', body: '<body></body>' }),
-    );
-    await p.goto(
-      `${process.argv[2] || 'http://localhost:6006'}/__catalog.html`,
-    );
-    const result = await p.evaluate(async () => {
-      const m = await (
-        await import('/bloom-character/orbit-characters.mjs')
-      ).default({ locateFile: (f) => '/bloom-character/' + f });
-      const { encodeAppearance } =
-        await import('/bloom-character/appearance-codec.mjs');
-      const { NATIVE_PARTS } =
-        await import('/bloom-character/character-recipe.mjs');
-      const {
-        composePresetBody,
-        composeCatalogParts,
-        recordHasLabel,
-        catalogPartCacheStats,
-        originalBodyColor,
-      } = await import('/bloom-character/catalog-parts.mjs');
-      const {
-        authoredAssemblyRecords,
-        composeAuthoredParts,
-        fitAuthoredEyeSpacing,
-      } = await import('/bloom-character/authored-parts.mjs');
-      const { composeClippoAssembly } =
-        await import('/bloom-character/clippo-geometry.mjs');
-      const shapes = [
-        ...m.catalog(0).map((x) => ({ id: x.id, shape: x.id })),
-        {
-          id: 'todd',
-          shape: 'rounded_head_two_ears',
-          parts: { bodyPreset: 'lime_frog' },
-        },
-        { id: 'clippo', shape: 'circle', parts: { shape: 'clippo' } },
-      ];
-      const rows = [],
-        errors = [];
-      for (const body of shapes)
-        for (const category of ['eyes', 'eyewear', 'accessory'])
-          for (const id of NATIVE_PARTS[category]) {
-            try {
-              let appearance, base;
-              for (const eyes of ['dots', 'oval', ...NATIVE_PARTS.eyes]) {
-                appearance = encodeAppearance({
-                  version: 1,
-                  shape: body.shape,
-                  color: 'blue',
-                  eyes,
-                  eyewear: 'none',
-                  accessories: [],
-                  accessoryColors: {},
-                  constrained: 0,
-                  depth: 0.5,
-                  model: null,
-                  rig: null,
-                  hereCharacter: null,
-                });
-                const r = m.orbitPrepareAssembly(
-                  appearance,
-                  0,
-                  'matrix-base-' + body.id,
-                  false,
-                );
-                if (!r.bytes || r.error) continue;
-                const info = authoredAssemblyRecords(r.bytes.slice());
-                if (
-                  !info.records
-                    .slice(1)
-                    .some((part) =>
-                      NATIVE_PARTS.eyes.some((label) =>
-                        recordHasLabel(info, part, label),
-                      ),
-                    )
-                )
-                  continue;
-                base = info.bytes;
-                break;
-              }
-              if (!base) throw Error('neutral base missing');
-              const request = {
-                appearance,
-                quality: 0,
-                key: 'matrix-' + body.id + '-' + category + '-' + id,
-                activities: false,
-                authoredParts: { ...body.parts, [category]: id },
-              };
-              let bytes = await composePresetBody(m, base, request);
-              bytes = await composeClippoAssembly(m, bytes, request);
-              const before = authoredAssemblyRecords(bytes);
-              const expectedBody = bytes.slice(
-                before.body.vertexOffset,
-                before.body.vertexOffset + before.body.vertexCount * 96,
-              );
-              bytes = await composeCatalogParts(m, bytes, request);
-              bytes = await composeAuthoredParts(m, bytes, request);
-              bytes = await fitAuthoredEyeSpacing(bytes, request);
-              const out = authoredAssemblyRecords(bytes),
-                actual = bytes.slice(
-                  out.body.vertexOffset,
-                  out.body.vertexOffset + out.body.vertexCount * 96,
-                );
-              if (
-                actual.length !== expectedBody.length ||
-                !actual.every((v, i) => v === expectedBody[i])
-              )
-                throw Error('body vertices changed during part edit');
-              const matching = out.records
-                .slice(1)
-                .filter((part) => recordHasLabel(out, part, id));
-              if (id !== 'none' && !matching.length)
-                throw Error('exact donor ID missing');
-              rows.push({
-                body: body.id,
-                category,
-                id,
-                vertices: matching.map((p) => p.vertexCount),
-              });
-            } catch (e) {
-              errors.push({ body: body.id, category, id, error: String(e) });
-            }
-          }
-      return {
-        rows,
-        errors,
-        cache: catalogPartCacheStats(),
-        paints: {
-          gus: originalBodyColor(m, 'gus'),
-          blue_beret: originalBodyColor(m, 'blue_beret'),
-        },
-      };
-    });
-    fs.writeFileSync(
-      '/tmp/bloom-catalog-matrix.json',
-      JSON.stringify(result, null, 2),
-    );
-    assert.deepEqual(result.errors, []);
-    assert.deepEqual(result.paints, { gus: '#ffd838', blue_beret: '#4778ff' });
-    assert.equal(result.rows.length, 312);
-    assert.ok(result.cache.bytes <= result.cache.maximumBytes);
-    assert.equal(
-      new Set(
-        result.rows.map((row) => [row.body, row.category, row.id].join(':')),
-      ).size,
-      result.rows.length,
-    );
-    console.log(
-      JSON.stringify(
-        {
-          rows: result.rows.length,
-          errors: result.errors,
-          cache: result.cache,
-        },
-        null,
-        2,
+const browser = await chromium.launch({ args: ['--no-sandbox'] });
+try {
+  const page = await browser.newPage();
+  await page.route('**/__catalog.html', (r) =>
+    r.fulfill({ contentType: 'text/html', body: '<body>' }),
+  );
+  await page.goto(
+    `${process.argv[2] || 'http://localhost:6006'}/__catalog.html`,
+  );
+  const result = await page.evaluate(async () => {
+    const m = await (
+      await import('/bloom-character/orbit-characters.mjs')
+    ).default({ locateFile: (f) => '/bloom-character/' + f });
+    const { encodeAppearance } =
+      await import('/bloom-character/appearance-codec.mjs');
+    const { NATIVE_PARTS } =
+      await import('/bloom-character/character-recipe.mjs');
+    const { MIGRATED_CONTOURS } =
+      await import('/bloom-character/migrated-contours.mjs');
+    const {
+      composePresetBody,
+      composeCatalogParts,
+      recordHasLabel,
+      catalogPartCacheStats,
+      originalBodyColor,
+    } = await import('/bloom-character/catalog-parts.mjs');
+    const {
+      authoredAssemblyRecords,
+      authoredEyeRecords,
+      composeAuthoredParts,
+      fitAuthoredEyeSpacing,
+      fitAuthoredHeadwear,
+    } = await import('/bloom-character/authored-parts.mjs');
+    const { deformLegacyAssembly } =
+      await import('/bloom-character/legacy-geometry.mjs');
+    const { composeClippoAssembly } =
+      await import('/bloom-character/clippo-geometry.mjs');
+    const { composeCyclopsAssembly } =
+      await import('/bloom-character/cyclops-geometry.mjs');
+    const { sha256 } = await import('/bloom-character/sha256.mjs');
+    const shapes = [
+      ...m.catalog(0).map((x) => ({ id: x.id, shape: x.id })),
+      {
+        id: 'todd',
+        shape: 'circle',
+        parts: { bodyPreset: 'lime_frog', paintBody: true },
+      },
+      { id: 'clippo', shape: 'circle', parts: { shape: 'clippo' } },
+      ...Object.entries(MIGRATED_CONTOURS).map(([id, points]) => ({
+        id,
+        shape: 'circle',
+        points,
+      })),
+    ];
+    const eyes = [...NATIVE_PARTS.eyes, 'todd', 'clippo', 'cyclops'],
+      accessories = [...NATIVE_PARTS.accessory, 'felipe_beret'];
+    const jobs = [
+      ...eyes.map((eyes) => ({ kind: 'single-eye', eyes })),
+      ...NATIVE_PARTS.eyewear.map((eyewear) => ({
+        kind: 'single-eyewear',
+        eyes: 'oval',
+        eyewear,
+      })),
+      ...accessories.map((accessory) => ({
+        kind: 'single-accessory',
+        eyes: 'oval',
+        accessory,
+      })),
+      ...eyes.flatMap((eyes) =>
+        NATIVE_PARTS.eyewear.map((eyewear) => ({
+          kind: 'eye-eyewear',
+          eyes,
+          eyewear,
+        })),
       ),
-    );
-  } finally {
-    await b.close();
-  }
-})().catch((e) => {
-  console.error(e.stack);
-  process.exitCode = 1;
-});
+      ...eyes.flatMap((eyes) =>
+        ['hat', 'headphones', 'bow'].map((accessory) => ({
+          kind: 'eye-accessory',
+          eyes,
+          accessory,
+        })),
+      ),
+    ];
+    const rows = [],
+      errors = [];
+    for (const body of shapes) {
+      let appearance, base;
+      for (const eye of ['dots', 'oval', ...NATIVE_PARTS.eyes]) {
+        appearance = encodeAppearance({
+          version: 1,
+          shape: body.shape,
+          color: 'blue',
+          eyes: eye,
+          eyewear: 'none',
+          accessories: [],
+          accessoryColors: {},
+          constrained: 0,
+          depth: 0.5,
+          model: null,
+          rig: null,
+          hereCharacter: null,
+        });
+        const r = m.orbitPrepareAssembly(
+          appearance,
+          0,
+          'matrix-base-' + body.id,
+          false,
+        );
+        if (!r.bytes || r.error) continue;
+        const info = authoredAssemblyRecords(r.bytes.slice());
+        if (!authoredEyeRecords(info).length) continue;
+        base = info.bytes;
+        break;
+      }
+      if (!base) {
+        errors.push({ body: body.id, error: 'neutral base missing' });
+        continue;
+      }
+      for (const job of jobs) {
+        try {
+          const parts = {
+            ...body.parts,
+            eyes: job.eyes,
+            ...(job.eyewear ? { eyewear: job.eyewear } : {}),
+            ...(job.accessory ? { accessory: job.accessory } : {}),
+          };
+          const request = {
+            appearance,
+            quality: 0,
+            key: 'matrix-' + body.id + '-' + JSON.stringify(job),
+            activities: false,
+            authoredParts: parts,
+            points: body.points,
+          };
+          let bytes = await composePresetBody(m, base, request);
+          if (body.points)
+            bytes = deformLegacyAssembly(bytes, {
+              points: body.points,
+              geometryKey: await sha256(
+                new TextEncoder().encode(
+                  JSON.stringify([body.id, body.points]),
+                ),
+              ),
+            });
+          if (parts.shape === 'clippo' || parts.eyes === 'clippo')
+            bytes = await composeClippoAssembly(m, bytes, request);
+          const before = authoredAssemblyRecords(bytes),
+            expected = bytes.slice(
+              before.body.vertexOffset,
+              before.body.vertexOffset + before.body.vertexCount * 96,
+            );
+          bytes = await composeCatalogParts(m, bytes, request, [
+            'eyes',
+            'accessory',
+          ]);
+          bytes = await composeAuthoredParts(m, bytes, request);
+          if (parts.eyes === 'cyclops')
+            bytes = await composeCyclopsAssembly(m, bytes, request);
+          bytes = await composeCatalogParts(m, bytes, request, ['eyewear']);
+          bytes = await fitAuthoredEyeSpacing(bytes, request);
+          bytes = await fitAuthoredHeadwear(bytes, request);
+          const out = authoredAssemblyRecords(bytes),
+            actual = bytes.slice(
+              out.body.vertexOffset,
+              out.body.vertexOffset + out.body.vertexCount * 96,
+            );
+          if (
+            actual.length !== expected.length ||
+            !actual.every((v, i) => v === expected[i])
+          )
+            throw Error('body vertices changed during part edit');
+          const matching = (id) =>
+            out.records.slice(1).filter((p) => recordHasLabel(out, p, id));
+          if (
+            NATIVE_PARTS.eyes.includes(job.eyes) &&
+            !matching(job.eyes).length
+          )
+            throw Error('requested native eye geometry missing');
+          if (!NATIVE_PARTS.eyes.includes(job.eyes)) {
+            const count = authoredEyeRecords(out).length,
+              expectedCount = job.eyes === 'cyclops' ? 5 : 4;
+            if (count !== expectedCount)
+              throw Error(
+                `requested ${job.eyes} geometry count ${count}, expected${expectedCount}`,
+              );
+          }
+          for (const category of ['eyewear', 'accessory']) {
+            const id = job[category];
+            if (!id || id === 'none') continue;
+            const actualId = id === 'felipe_beret' ? 'beret' : id;
+            if (!matching(actualId).length)
+              throw Error(`requested ${category}:${id} geometry missing`);
+          }
+          rows.push({
+            body: body.id,
+            ...job,
+            eyeRecords: authoredEyeRecords(out).length,
+            vertices: out.body.vertexCount,
+          });
+        } catch (e) {
+          errors.push({ body: body.id, ...job, error: String(e) });
+        }
+      }
+    }
+    return {
+      rows,
+      errors,
+      cache: catalogPartCacheStats(),
+      paints: {
+        gus: originalBodyColor(m, 'gus'),
+        blue_beret: originalBodyColor(m, 'blue_beret'),
+      },
+      shapes: shapes.map((s) => s.id),
+      jobs: jobs.length,
+    };
+  });
+  fs.writeFileSync(
+    '/tmp/bloom-catalog-matrix.json',
+    JSON.stringify(result, null, 2),
+  );
+  const summary = {
+    rows: result.rows.length,
+    errors: result.errors,
+    shapes: result.shapes.length,
+    jobs: result.jobs,
+    cache: result.cache,
+  };
+  console.log(JSON.stringify(summary, null, 2));
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.shapes.length, 21);
+  assert.equal(result.jobs, 136);
+  assert.equal(result.rows.length, 2856);
+  assert.deepEqual(result.paints, { gus: '#ffd838', blue_beret: '#4778ff' });
+  assert.ok(result.cache.bytes <= result.cache.maximumBytes);
+  assert.equal(
+    new Set(
+      result.rows.map((r) =>
+        JSON.stringify([r.body, r.kind, r.eyes, r.eyewear, r.accessory]),
+      ),
+    ).size,
+    result.rows.length,
+  );
+} finally {
+  await browser.close();
+}

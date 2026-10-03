@@ -1,15 +1,19 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { AgentAvatar, type AvatarConfig } from '../agent-avatar';
+import {
+  CHARACTER_SHAPES,
+  NATIVE_CHARACTER_SHAPES,
+  createConfigForShape,
+  currentCharacterShape,
+  materializeCharacter,
+} from '../agent-avatar/character-shapes';
 import type { AvatarCharacterCategory } from '../agent-avatar/config-character';
 import {
   CharacterRuntimeContext,
   CharacterCapabilitiesContext,
 } from '../agent-avatar/context';
-import {
-  legacyCharacterRecipe,
-  legacyNativeShape,
-} from '../agent-avatar/legacy-recipe';
+import { legacyCharacterRecipe } from '../agent-avatar/legacy-recipe';
 import { Button } from '../button/Button';
 import { CloseButton } from '../button/CloseButton';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -56,11 +60,23 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   );
   const { runtimeUrl } = runtime;
   const beta = Boolean(c.character && c.character.preset !== 'bloom');
-  const nativeShape = legacyNativeShape(c);
   const key = JSON.stringify(beta ? c.character : legacyCharacterRecipe(c));
-  const capabilities =
+  const currentCapabilities =
     catalog.capabilitiesByKey?.get(key) ??
     (catalog.capabilities?.key === key ? catalog.capabilities : undefined);
+  const retained = useRef<{ owner: string; selected: Record<string, string> }>({
+    owner: '',
+    selected: {},
+  });
+  const owner = JSON.stringify([agent.id, c.character?.preset ?? 'bloom']);
+  if (retained.current.owner !== owner)
+    retained.current = { owner, selected: {} };
+  if (currentCapabilities)
+    retained.current.selected = currentCapabilities.selected;
+  const capabilities = currentCapabilities ?? {
+    selected: retained.current.selected,
+    available: {},
+  };
   const betaColor =
     c.character?.selections?.color ?? capabilities?.selected.color;
   const betaBodyColor =
@@ -79,7 +95,11 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
       capabilities?.selected.bodyColor ??
       CHARACTER_COLORS[betaColor as keyof typeof CHARACTER_COLORS] ??
       avatarHex(c))
-    : (c.character?.bodyColor ?? avatarHex(c));
+    : (c.character?.bodyColor ??
+      CHARACTER_COLORS[
+        c.character?.selections?.color as keyof typeof CHARACTER_COLORS
+      ] ??
+      avatarHex(c));
   const selectedEyes =
     c.character?.selections?.eyes ??
     capabilities?.selected.eyes ??
@@ -93,7 +113,12 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   const selectedAccessory =
     c.character?.selections?.accessory ?? capabilities?.selected.accessory;
   const selectedParts = {
-    eyes: selectedEyes,
+    ...(c.character?.selections?.eyes ||
+    capabilities.selected.eyes ||
+    c.character?.preset === 'clippo' ||
+    c.character?.preset === 'lime_frog'
+      ? { eyes: selectedEyes }
+      : {}),
     ...(selectedEyewear ? { eyewear: selectedEyewear } : {}),
     ...(selectedAccessory ? { accessory: selectedAccessory } : {}),
   };
@@ -101,55 +126,18 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     category: AvatarCharacterCategory,
     id: string,
   ): AvatarConfig => {
-    if (
-      !beta &&
-      (category === 'eyes' ||
-        category === 'eyewear' ||
-        category === 'accessory')
-    )
-      return {
-        ...c,
-        character: {
-          ...c.character,
-          preset: 'bloom',
-          selections: { ...c.character?.selections, [category]: id },
-        },
-      };
-    const character = beta
-      ? c.character!
-      : {
-          preset: 'blue_beret',
-          bodyColor: customColorValue,
-          ...(c.character?.eyeSpacing !== undefined
-            ? { eyeSpacing: c.character.eyeSpacing }
-            : {}),
-          selections: {
-            eyewear:
-              c.character?.selections?.eyewear ??
-              capabilities?.selected.eyewear ??
-              'none',
-            accessory:
-              c.character?.selections?.accessory ??
-              capabilities?.selected.accessory ??
-              'none',
-            eyes: selectedEyes,
-          },
-        };
+    if (category === 'shape')
+      return createConfigForShape(c, id, capabilities.selected);
+    const character = materializeCharacter(c, capabilities.selected);
     // Choosing a body retains the edited face and the preset's effective parts.
     // Presets supply defaults; their catalog restrictions do not own edits.
     const selections = {
       ...selectedParts,
-      ...(category === 'shape' && !betaBodyColor && betaColor
-        ? { color: betaColor }
-        : {}),
       ...character.selections,
       [category]: id,
     };
     const next = {
       ...character,
-      ...(category === 'shape' && betaBodyColor
-        ? { bodyColor: betaBodyColor }
-        : {}),
       selections,
     };
     if (category === 'color') delete next.bodyColor;
@@ -161,84 +149,28 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     ? runtimeUrl.slice(0, runtimeUrl.lastIndexOf('/') + 1)
     : '';
   const eyeBackground = customColorValue;
-  const migratedShapes = [
-    ...(['slender', 'pocket', 'petal', 'star', 'cloud', 'shield'] as const).map(
-      (shape) => ({
-        family: 'fold' as const,
-        shape,
-        title: messages.shapes[shape],
-      }),
-    ),
-    ...(
-      [
-        ['pebble', 'Pebble'],
-        ['squircle', 'Squircle'],
-      ] as const
-    ).map(([shape, title]) => ({
-      family: 'blob' as const,
-      shape,
-      title: messages.characterOption('shape', shape, title),
-    })),
-  ];
-  const migratedConfig = (
-    family: 'fold' | 'blob',
-    shape: string,
-  ): AvatarConfig => {
-    const { character: _character, ...existing } = c;
-    const color = hexAppearance(customColorValue);
-    return {
-      ...existing,
-      ...color,
-      lightEyes: beta ? false : c.lightEyes,
-      family,
-      ...(family === 'fold'
-        ? { foldShape: shape as AvatarConfig['foldShape'] }
-        : { shape: shape as AvatarConfig['shape'] }),
-      ...(runtimeUrl
-        ? {
-            character: {
-              preset: 'bloom',
-              selections: selectedParts,
-              ...(c.character?.eyeSpacing !== undefined
-                ? { eyeSpacing: c.character.eyeSpacing }
-                : {}),
-            },
-          }
-        : {}),
-    };
-  };
   const shapeChoices = runtimeUrl
-    ? [
-        ...CHARACTER_OPTIONS.shape.map(([id, title]) => ({
-          id,
-          label: messages.characterOption('shape', id, title),
-          config: characterConfig('shape', id),
-          ...(id === 'clippo' || id === 'todd'
-            ? {}
-            : { thumbnail: `${thumbnailBase}thumbnails/shapes/${id}.png` }),
-        })),
-        ...migratedShapes.map(({ family, shape, title }) => ({
-          id: `legacy:${family}:${shape}`,
-          label: title,
-          config: migratedConfig(family, shape),
-        })),
-      ]
+    ? CHARACTER_SHAPES.map(([id, title]) => ({
+        id,
+        label:
+          id in messages.shapes
+            ? messages.shapes[id as keyof typeof messages.shapes]
+            : messages.characterOption('shape', id, title),
+        config: createConfigForShape(c, id, capabilities.selected),
+        ...(NATIVE_CHARACTER_SHAPES.some(([shape]) => shape === id) &&
+        id !== 'clippo' &&
+        id !== 'todd'
+          ? { thumbnail: `${thumbnailBase}thumbnails/shapes/${id}.png` }
+          : {}),
+      }))
     : undefined;
-  const shapeValue = beta
-    ? (c.character?.selections?.shape ??
-      capabilities?.selected.shape ??
-      (c.character?.preset === 'clippo' ? 'clippo' : undefined))
-    : (nativeShape ??
-      `legacy:${c.family}:${c.family === 'fold' ? c.foldShape : c.shape}`);
-  const selectShape = (id: string) => {
-    if (id.startsWith('legacy:')) {
-      const [, family, shape] = id.split(':');
-      onChange({
-        ...agent,
-        avatar: migratedConfig(family as 'fold' | 'blob', shape!),
-      });
-    } else selectCharacter('shape', id);
-  };
+  const shapeValue =
+    c.character?.selections?.shape ??
+    (beta
+      ? (capabilities.selected.shape ??
+        (c.character?.preset === 'clippo' ? 'clippo' : undefined))
+      : currentCharacterShape(c));
+  const selectShape = (id: string) => selectCharacter('shape', id);
   const eyeChoices = runtimeUrl
     ? CHARACTER_OPTIONS.eyes.map(([id, title]) => ({
         id,
@@ -247,8 +179,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
         ...(id === 'clippo' || id === 'cyclops'
           ? { artwork: id }
           : { thumbnail: `${thumbnailBase}thumbnails/eyes/${id}.png` }),
-        disabled:
-          !capabilities || capabilities.available[`eyes:${id}`] === false,
+        disabled: false,
       }))
     : undefined;
   const appearance = (patch: Partial<AvatarConfig>) => {
@@ -402,8 +333,15 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
             </StyledView>
           )}
           <CharacterControls
-            character={c.character ?? { preset: 'bloom' }}
+            character={
+              runtimeUrl
+                ? beta
+                  ? c.character
+                  : materializeCharacter(c, capabilities.selected)
+                : c.character
+            }
             capabilitiesKey={key}
+            selected={capabilities.selected}
             onChange={(character) => {
               if (character)
                 onChange({ ...agent, avatar: { ...c, character } });
@@ -421,7 +359,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 boxShadow: '0 1px 2px rgba(0,0,0,.05)',
               }}
             >
-              {!beta &&
+              {!runtimeUrl &&
                 AVATAR_COLORS.map(([hue, saturation, name, center, edge]) => {
                   const active =
                     c.hue === hue &&
@@ -450,14 +388,11 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     </StyledPressable>
                   );
                 })}
-              {beta &&
+              {runtimeUrl &&
                 CHARACTER_OPTIONS.color.map(([id, title]) => {
-                  const active =
-                    !betaBodyColor && capabilities?.selected.color === id;
+                  const active = !betaBodyColor && betaColor === id;
                   const hex = CHARACTER_COLORS[id];
-                  const disabled =
-                    !capabilities ||
-                    capabilities.available[`color:${id}`] === false;
+                  const disabled = false;
                   return (
                     <StyledPressable
                       key={id}
@@ -479,17 +414,19 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               <Popover>
                 <PopoverTrigger asChild label={messages.customColor}>
                   <StyledPressable
-                    aria-pressed={beta ? Boolean(betaBodyColor) : undefined}
+                    aria-pressed={
+                      runtimeUrl ? Boolean(betaBodyColor) : undefined
+                    }
                     accessibilityState={{
-                      selected: beta && Boolean(betaBodyColor),
+                      selected: Boolean(runtimeUrl) && Boolean(betaBodyColor),
                     }}
                     className="relative size-[26px] shrink-0 overflow-hidden rounded-full"
                   >
                     <GlossArt
-                      rainbow={!beta || !betaBodyColor}
-                      center={beta ? betaBodyColor : undefined}
-                      edge={beta ? betaBodyColor : undefined}
-                      active={beta && Boolean(betaBodyColor)}
+                      rainbow={!runtimeUrl || !betaBodyColor}
+                      center={runtimeUrl ? betaBodyColor : undefined}
+                      edge={runtimeUrl ? betaBodyColor : undefined}
+                      active={Boolean(runtimeUrl) && Boolean(betaBodyColor)}
                     />
                   </StyledPressable>
                 </PopoverTrigger>
@@ -505,14 +442,14 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     onChange={(hex) => {
                       const next = hexAppearance(hex);
                       if (!next) return;
-                      if (beta)
+                      if (runtimeUrl)
                         onChange({
                           ...agent,
                           avatar: {
                             ...c,
                             ...next,
                             character: {
-                              ...c.character!,
+                              ...materializeCharacter(c, capabilities.selected),
                               bodyColor: hex.toLowerCase(),
                             },
                           },

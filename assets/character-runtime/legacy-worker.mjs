@@ -3,7 +3,10 @@
 import createModule from './orbit-characters.mjs';
 import { decodeAppearance, encodeAppearance } from './appearance-codec.mjs';
 import { composePresetBody, composeCatalogParts } from './catalog-parts.mjs';
-import { fitAuthoredEyeSpacing } from './authored-parts.mjs';
+import {
+  fitAuthoredEyeSpacing,
+  fitAuthoredHeadwear,
+} from './authored-parts.mjs';
 import { composeAuthoredParts } from './authored-parts.mjs';
 import { sha256 } from './sha256.mjs';
 import {
@@ -101,7 +104,10 @@ self.onmessage = ({ data }) => {
         result.bytes = await composeClippoAssembly(module, result.bytes, data);
       }
       if (result.bytes && data.authoredParts) {
-        result.bytes = await composeCatalogParts(module, result.bytes, data);
+        result.bytes = await composeCatalogParts(module, result.bytes, data, [
+          'eyes',
+          'accessory',
+        ]);
         result.bytes = await composeAuthoredParts(module, result.bytes, data);
         if (data.authoredParts.eyes === 'cyclops') {
           const { composeCyclopsAssembly } =
@@ -112,7 +118,11 @@ self.onmessage = ({ data }) => {
             data,
           );
         }
+        result.bytes = await composeCatalogParts(module, result.bytes, data, [
+          'eyewear',
+        ]);
         result.bytes = await fitAuthoredEyeSpacing(result.bytes, data);
+        result.bytes = await fitAuthoredHeadwear(result.bytes, data);
       }
       self.postMessage(
         { id: data.id, ...result },

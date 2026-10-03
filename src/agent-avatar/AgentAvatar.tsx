@@ -12,7 +12,7 @@ export const AgentAvatar = memo(function AgentAvatar(props: AgentAvatarProps) {
     props.config.character && props.config.character.preset !== 'bloom';
   const legacy = runtimeUrl && !legacyRecipeUnsupported(props.config);
   return beta || legacy ? (
-    <CharacterAvatar key={beta ? 'character' : 'legacy'} {...props} />
+    <CharacterAvatar {...props} />
   ) : (
     <ProceduralAvatar {...props} />
   );

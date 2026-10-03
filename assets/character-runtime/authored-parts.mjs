@@ -604,9 +604,65 @@ function eyeCenters(info) {
   if (sides.some((side) => !side.length)) fail('catalog face anchors missing');
   return sides.map((side) => union(side));
 }
+/** Front surface at a face anchor, sampled from the actual indexed body.
+ * A thick source eyeball's rear bound is not a safe anchor for shallow eyes.
+ */
+export function authoredBodyFront(info, x, y) {
+  const part = info.body;
+  if (!Number.isInteger(part.vertexOffset)) return -Infinity;
+  const view = new DataView(
+    info.bytes.buffer,
+    info.bytes.byteOffset,
+    info.bytes.byteLength,
+  );
+  let at = part.vertexOffset + part.vertexCount * 96;
+  const count32 = view.getUint32(at, true);
+  const start32 = at + 4;
+  at = start32 + count32 * 4;
+  const count16 = view.getUint32(at, true),
+    start16 = at + 4;
+  let front = -Infinity;
+  const vertex = (index) => {
+    if (index >= part.vertexCount) fail('body surface index');
+    return [0, 1, 2].map((k) =>
+      view.getFloat32(part.vertexOffset + index * 96 + k * 4, true),
+    );
+  };
+  for (const [start, count, stride] of [
+    [start32, count32, 4],
+    [start16, count16, 2],
+  ]) {
+    if (count % 3) fail('body triangle index count');
+    for (let i = 0; i < count; i += 3) {
+      const points = [0, 1, 2].map((k) =>
+        vertex(
+          stride === 4
+            ? view.getUint32(start + (i + k) * stride, true)
+            : view.getUint16(start + (i + k) * stride, true),
+        ),
+      );
+      const [a, b, c] = points;
+      const det = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]);
+      if (Math.abs(det) < 1e-12) continue;
+      const u = ((b[1] - c[1]) * (x - c[0]) + (c[0] - b[0]) * (y - c[1])) / det;
+      const v = ((c[1] - a[1]) * (x - c[0]) + (a[0] - c[0]) * (y - c[1])) / det;
+      const w = 1 - u - v;
+      if (Math.min(u, v, w) >= -1e-6)
+        front = Math.max(front, u * a[2] + v * b[2] + w * c[2]);
+    }
+  }
+  return front;
+}
+
 /** Fit independently selectable native parts against the target's real body
  * and face records. Donor proportions remain uniform, never stretched flat. */
-export function fitCatalogPartRecords(target, donor, category, id) {
+export function fitCatalogPartRecords(
+  target,
+  donor,
+  category,
+  id,
+  { singleEye = false } = {},
+) {
   const selected =
     category === 'eyes'
       ? authoredEyeRecords(donor)
@@ -616,20 +672,54 @@ export function fitCatalogPartRecords(target, donor, category, id) {
   if (!selected.length) fail(`missing catalog ${category}:${id}`);
   const bodyWidth = (info) => info.body.bounds.max[0] - info.body.bounds.min[0];
   if (category === 'eyes' || category === 'eyewear') {
-    const dst = eyeCenters(target),
+    // A Cyclops face has one actual eye, not a collapsed left/right pair.
+    // Monocles surround its full eye. Two-lens styles retain both native lenses,
+    // fitted to the two halves of that eye rather than the discarded old face.
+    const singleBounds = singleEye ? union(authoredEyeRecords(target)) : null;
+    const dst = singleBounds
+        ? id === 'monocle'
+          ? [singleBounds, singleBounds]
+          : [0, 1].map((side) => ({
+              min: singleBounds.min.map((value, k) =>
+                k === 0 && side === 1 ? midpoint(singleBounds, 0) : value,
+              ),
+              max: singleBounds.max.map((value, k) =>
+                k === 0 && side === 0 ? midpoint(singleBounds, 0) : value,
+              ),
+            }))
+        : eyeCenters(target),
       src = eyeCenters(donor);
     const gap = (a) => Math.abs(midpoint(a[1], 0) - midpoint(a[0], 0));
-    const scale = Math.max(0.25, Math.min(2, gap(dst) / gap(src)));
-    if (category === 'eyes')
+    // Eye diameter follows the body, not the spacing of the old eye pair.
+    // Todd's stalks have over twice the neutral face gap on the same size body.
+    const clippo =
+      target.body.furCount === 0 &&
+      hasAuthoredLabel(target.bytes, target.body, 'metal');
+    const scale =
+      category === 'eyes'
+        ? clippo
+          ? 1
+          : Math.max(0.65, Math.min(1.2, bodyWidth(target) / bodyWidth(donor)))
+        : Math.max(0.25, Math.min(2, gap(dst) / gap(src)));
+    if (category === 'eyes') {
+      const fronts = dst.map((bounds) =>
+        authoredBodyFront(target, midpoint(bounds, 0), midpoint(bounds, 1)),
+      );
       return selected.map((part) => {
         const side = midpoint(part.bounds, 0) < 0 ? 0 : 1;
         const origin = [0, 1, 2].map((k) => midpoint(src[side], k));
         const translate = [0, 1].map((k) => midpoint(dst[side], k) - origin[k]);
+        const depth = (src[side].max[2] - src[side].min[2]) * scale;
+        const front = fronts[side];
+        // Keep some embedding, while the majority of a shallow native eye
+        // remains outside the real face. Open Clippo holes return no surface.
+        const back = Math.max(dst[side].min[2], front - depth * 0.35);
         translate.push(
-          dst[side].min[2] - (src[side].min[2] - origin[2]) * scale - origin[2],
+          back - (src[side].min[2] - origin[2]) * scale - origin[2],
         );
         return { part, scale, origin, translate };
       });
+    }
     const middle = [0, 1, 2].map(
       (k) => (midpoint(src[0], k) + midpoint(src[1], k)) / 2,
     );
@@ -648,19 +738,48 @@ export function fitCatalogPartRecords(target, donor, category, id) {
       const z = Math.max(...parts.map((p) => p.bounds.max[2]));
       return union(parts.filter((p) => p.bounds.max[2] > z - 0.05));
     });
+    // Sunglasses can be a single centered mesh, including both temples.
+    // Its full minimum Z is the rear of the temples, not the front lens plane.
+    // Use the same frontmost 0.05-unit band as the separate-lens classifier.
+    const separateFronts = frontBounds.filter(Boolean);
+    const frontZ = separateFronts.length
+      ? Math.min(...separateFronts.map((bounds) => bounds.min[2]))
+      : Math.max(...selected.map((part) => part.bounds.max[2])) - 0.05;
+    // Whole-frame sunglasses cannot move individual lenses independently.
+    // Fit their outside span to the final face instead of amplifying a donor's
+    // small interocular gap (Todd has widely spaced stalks on a normal body).
+    const centralScale = separateFronts.length
+      ? scale
+      : Math.max(
+          0.25,
+          Math.min(
+            2,
+            ((Math.max(...dst.map((b) => b.max[0])) -
+              Math.min(...dst.map((b) => b.min[0]))) *
+              1.18) /
+              (Math.max(...selected.map((p) => p.bounds.max[0])) -
+                Math.min(...selected.map((p) => p.bounds.min[0]))),
+          ),
+        );
     return selected.map((part) => {
       const x = midpoint(part.bounds, 0) - middle[0];
       if (Math.abs(x) <= gap(src) * 0.15)
         return {
           part,
-          scale,
+          scale: centralScale,
           origin: middle,
-          translate: destination.map((v, k) => v - middle[k]),
+          translate: destination.map((v, k) =>
+            k === 2
+              ? Math.max(...dst.map((bounds) => bounds.max[2])) +
+                0.012 -
+                ((frontZ - middle[2]) * centralScale + middle[2])
+              : v - middle[k],
+          ),
         };
       const side = x < 0 ? 0 : 1,
         front = frontBounds[side];
       const lensScale = Math.min(
-        2,
+        singleEye && id === 'monocle' ? 4 : 2,
         Math.max(
           Math.min(scale, 1.2),
           ((dst[side].max[0] - dst[side].min[0]) * 1.08) /
@@ -707,4 +826,65 @@ export function fitCatalogPartRecords(target, donor, category, id) {
   }
   const translate = crown.map((v, k) => v - origin[k]);
   return selected.map((part) => ({ part, scale, origin, translate }));
+}
+
+/** Clear the final face after all independently selected eyes and frames fit.
+ * Only rigidly raise crown accessories; headphones/bows retain their native
+ * side/lower-face attachment. Unedited native presets never invoke this pass.
+ */
+export async function fitAuthoredHeadwear(bytes, request) {
+  const id = request.authoredParts?.accessory;
+  if (
+    ![
+      'felipe_beret',
+      'beret',
+      'beanie',
+      'hat',
+      'crown',
+      'orb',
+      'three_lobe',
+    ].includes(id)
+  )
+    return bytes;
+  const info = authoredAssemblyRecords(bytes),
+    label = id === 'felipe_beret' ? 'beret' : id;
+  const head = info.records
+    .slice(1)
+    .filter((p) => hasAuthoredLabel(bytes, p, label));
+  const frames = request.authoredParts?.eyewear;
+  const eyes = new Set(authoredEyeRecords(info));
+  const face = info.records
+    .slice(1)
+    .filter(
+      (p) =>
+        eyes.has(p) ||
+        hasAuthoredLabel(bytes, p, 'brows') ||
+        (frames && frames !== 'none' && hasAuthoredLabel(bytes, p, frames)),
+    );
+  if (!head.length || !face.length) return bytes;
+  let raise = 0;
+  for (const h of head)
+    for (const eye of face) {
+      const a = h.bounds,
+        b = eye.bounds;
+      if (a.max[0] <= b.min[0] || a.min[0] >= b.max[0] || a.max[1] <= b.min[1])
+        continue;
+      raise = Math.max(raise, b.max[1] + 0.035 - a.min[1]);
+    }
+  if (raise <= 0) return bytes;
+  const selected = new Set(head);
+  return assembleAuthoredRecords(
+    info,
+    await Promise.all(
+      info.records.map((p) =>
+        selected.has(p)
+          ? translateAuthoredRecord(bytes, p, [0, raise, 0])
+          : {
+              bytes: bytes.slice(p.start, p.end),
+              name: p.name,
+              bounds: p.bounds,
+            },
+      ),
+    ),
+  );
 }

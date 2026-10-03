@@ -25,8 +25,12 @@ import {
   bodySignatureFor,
   bodySelectionDefaults,
   NATIVE_PARTS,
+  ORIGINAL_PRESETS,
+  MIGRATED_SHAPE_IDS,
+  isLegacyRecipe,
+  withCharacterGeometry,
 } from './character-recipe.mjs';
-import { originalBodyColor } from './catalog-parts.mjs';
+import { originalBodyColor, originalPalettePaint } from './catalog-parts.mjs';
 
 let frame = 0;
 let rendering = false;
@@ -607,7 +611,7 @@ async function createLiveCharacter(
   const reportCapabilities = (available, selected) => {
     lastCapabilities = {
       key: JSON.stringify(
-        props.legacy ? characterRecipe(props) : props.config.character,
+        isLegacyRecipe(props) ? characterRecipe(props) : props.config.character,
       ),
       available,
       selected,
@@ -618,6 +622,17 @@ async function createLiveCharacter(
     const recipe = value;
     const nextFingerprint = JSON.stringify(recipe);
     if (nextFingerprint !== fingerprint) {
+      const defaultPreset = ORIGINAL_PRESETS.includes(recipe.preset)
+        ? recipe.preset
+        : authoredParts.bodyPreset;
+      const sourcePaint = defaultPreset
+        ? originalPalettePaint(module, defaultPreset)
+        : null;
+      const customizedParts = Object.keys(authoredParts).length > 0;
+      const implicitBodyColor =
+        customizedParts && !recipe.bodyColor && !recipe.selections?.color
+          ? sourcePaint?.bodyColor
+          : undefined;
       // Catalog selection owns the engine's part transitions. Restoring the
       // named preset on every selection needlessly resets the whole character.
       const removedOverride = Object.keys(appliedRecipe?.selections ?? {}).some(
@@ -629,15 +644,16 @@ async function createLiveCharacter(
         removedOverride ||
         (appliedRecipe.bodyColor && !recipe.bodyColor)
       ) {
-        const originalDefault = authoredParts.bodyPreset
-          ? decodeAppearance(module.presetAppearance(authoredParts.bodyPreset))
-          : null;
         let base =
-          props.legacy || recipe.preset === 'clippo' || authoredParts.bodyPreset
+          props.legacy ||
+          recipe.preset === 'clippo' ||
+          recipe.preset === 'legacy' ||
+          authoredParts.bodyPreset ||
+          (sourcePaint?.bodyColor && customizedParts)
             ? encodeAppearance({
                 version: 1,
                 shape: 'circle',
-                color: originalDefault?.color ?? 'blue',
+                color: sourcePaint?.color ?? 'blue',
                 eyes: 'dots',
                 eyewear: 'none',
                 accessories: [],
@@ -652,6 +668,7 @@ async function createLiveCharacter(
         if (
           !props.legacy &&
           recipe.preset !== 'clippo' &&
+          recipe.preset !== 'legacy' &&
           !authoredParts.bodyPreset &&
           Object.keys(authoredParts).length
         ) {
@@ -670,19 +687,21 @@ async function createLiveCharacter(
         // Virtual choices replace copied prepared meshes in the worker. The
         // original engine still selects its own valid backing geometry.
         const value =
-          key === 'shape' && selected === 'todd'
+          key === 'shape' && MIGRATED_SHAPE_IDS.includes(selected)
             ? 'circle'
-            : key === 'shape' && selected === 'clippo'
+            : key === 'shape' && selected === 'todd'
               ? 'circle'
-              : key === 'eyes' && authoredParts.eyes
-                ? ['oval', 'round_inset', 'dots', ...NATIVE_PARTS.eyes].find(
-                    (id) => character.isAvailable(category.eyes, id),
-                  )
-                : key === 'accessory' && authoredParts.accessory
-                  ? 'none'
-                  : key === 'eyewear' && authoredParts.eyewear
+              : key === 'shape' && selected === 'clippo'
+                ? 'circle'
+                : key === 'eyes' && authoredParts.eyes
+                  ? ['oval', 'round_inset', 'dots', ...NATIVE_PARTS.eyes].find(
+                      (id) => character.isAvailable(category.eyes, id),
+                    )
+                  : key === 'accessory' && authoredParts.accessory
                     ? 'none'
-                    : selected;
+                    : key === 'eyewear' && authoredParts.eyewear
+                      ? 'none'
+                      : selected;
         if (!value) {
           if (key === 'eyes' && authoredParts.eyes)
             throw new Error(
@@ -702,8 +721,10 @@ async function createLiveCharacter(
           throw new Error(`Unsupported character selection: ${key}`);
       }
       const patch =
-        props.legacy?.patch ??
-        (recipe.bodyColor ? { bodyColor: recipe.bodyColor } : null);
+        (isLegacyRecipe(props) ? props.legacy?.patch : undefined) ??
+        (recipe.bodyColor || implicitBodyColor
+          ? { bodyColor: recipe.bodyColor ?? implicitBodyColor }
+          : null);
       if (patch) {
         // One authored preset uses an unnamed color. Enter the engine's normal
         // editable palette before replacing that paint with an explicit RGB.
@@ -758,6 +779,9 @@ async function createLiveCharacter(
       for (const key of ['eyes', 'eyewear', 'accessory'])
         if (authoredParts[key]) selected[key] = authoredParts[key];
       available['shape:todd'] = true;
+      for (const id of MIGRATED_SHAPE_IDS) available[`shape:${id}`] = true;
+      if (MIGRATED_SHAPE_IDS.includes(recipe.selections?.shape))
+        selected.shape = recipe.selections.shape;
       available['eyes:cyclops'] = true;
       if (
         authoredParts.bodyPreset === 'lime_frog' ||
@@ -781,12 +805,14 @@ async function createLiveCharacter(
         selected.accessory = authoredParts.accessory ?? 'felipe_beret';
       available['accessory:none'] = true;
       selected.accessory ??= 'none';
-      const originalPreset = authoredParts.bodyPreset ?? recipe.preset;
+      const originalPreset = ORIGINAL_PRESETS.includes(recipe.preset)
+        ? recipe.preset
+        : authoredParts.bodyPreset;
       if (
         !recipe.bodyColor &&
         !recipe.selections?.color &&
-        originalPreset !== 'clippo' &&
-        !props.legacy
+        ORIGINAL_PRESETS.includes(originalPreset) &&
+        !isLegacyRecipe(props)
       ) {
         const originalColor = decodeAppearance(
           module.presetAppearance(originalPreset),
@@ -799,6 +825,10 @@ async function createLiveCharacter(
           delete selected.color;
           selected.bodyColor = originalBodyColor(module, originalPreset);
         }
+      }
+      if (recipe.bodyColor) {
+        delete selected.color;
+        selected.bodyColor = recipe.bodyColor;
       }
       reportCapabilities(available, selected);
       dirty = true;
@@ -824,7 +854,7 @@ async function createLiveCharacter(
     // Explicitly choosing a preset's default changes its saved recipe, but not
     // its prepared appearance. Re-key the actual capabilities without rebuilding.
     const rawKey = JSON.stringify(
-      props.legacy ? recipe : props.config.character,
+      isLegacyRecipe(props) ? recipe : props.config.character,
     );
     if (
       nextFingerprint === fingerprint &&
@@ -1055,6 +1085,7 @@ async function createScopedCharacter(canvas, initial, callbacks) {
     latest = initial;
   const update = async (next, silent = false) => {
     if (disposed) return;
+    next = withCharacterGeometry(next);
     latest = next;
     const key = JSON.stringify([
       next.legacy?.points ?? null,

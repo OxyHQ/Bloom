@@ -228,7 +228,7 @@ it('announces a custom beta body color and returns to a named color through the 
       ...agent.avatar,
       character: {
         preset: 'blue_beret',
-        selections: { eyes: 'oval', color: 'blue' },
+        selections: { eyes: 'oval', color: 'blue', accessory: 'felipe_beret' },
       },
     },
   });

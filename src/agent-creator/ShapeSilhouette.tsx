@@ -1,3 +1,4 @@
+import { characterShapeGeometry } from '../agent-avatar/character-shapes';
 import { memo } from 'react';
 import Svg, { Path } from 'react-native-svg';
 import { legacyContours } from '../agent-avatar/legacy-contours';
@@ -63,7 +64,7 @@ export const ShapeSilhouette = memo(function ShapeSilhouette({
       !config.character.selections?.shape)
   )
     return <ClippoArtwork kind="shape" />;
-  const { path, viewBox } = silhouette(config);
+  const { path, viewBox } = silhouette(characterShapeGeometry(config));
   return (
     <Svg
       width={56}
