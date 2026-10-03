@@ -1,0 +1,24 @@
+{
+  "source": "6ec6c774",
+  "sources": [
+    {
+      "path": "src/surface/SurfacePaint.tsx",
+      "sha256": "22733463d4d0cccb878a5f5412ad7c20d5671cb49fe9930f2a3ccc5a7752ad03",
+      "bytes": 4439
+    },
+    {
+      "path": "src/__tests__/SurfacePaintResize.test.tsx",
+      "sha256": "df328c148c10954498226cdf11e714c8e28b77501c5016b9872d7fa547d5c334",
+      "bytes": 1950
+    }
+  ],
+  "records": [
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/resize/green.log",
+      "sha256": "392baba4f6ba0ac7fa975d0630f8bdce33fae1a9aff2dc3c13cf00cd3875ac6e",
+      "bytes": 411
+    }
+  ],
+  "results": "3suites39PASS on7.x; exact runtime/test forward-port from6.2 source16a98eca",
+  "scope": "Native SVG Rect geometry tracks public backing View layout; web CSS unchanged. Native validation/publishing tracked on maintenance PR259; historical7.1.2 tarball superseded, no new7pack claimed."
+}
