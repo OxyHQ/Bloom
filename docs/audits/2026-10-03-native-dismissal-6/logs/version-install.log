@@ -1,0 +1,75 @@
+bun install v1.4.2 (744846f84)
+Saved lockfile
+
+$ [ -n "$BLOOM_VERIFY_PACKAGE_RUNNING" ] || bun run build || true
+$ node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts
+[generate-platform-exports] wrote src/agent-chat/index.web.ts from src/agent-chat/index.ts
+[generate-platform-exports] wrote src/ai-chat/index.web.ts from src/ai-chat/index.ts
+[generate-platform-exports] wrote src/alert-dialog/index.web.ts from src/alert-dialog/index.ts
+[generate-platform-exports] wrote src/app-shell/index.web.ts from src/app-shell/index.ts
+[generate-platform-exports] wrote src/avatar-group/index.web.ts from src/avatar-group/index.ts
+[generate-platform-exports] wrote src/bottom-bar/index.web.ts from src/bottom-bar/index.ts
+[generate-platform-exports] wrote src/bottom-sheet/index.web.ts from src/bottom-sheet/index.ts
+[generate-platform-exports] wrote src/button-group/index.web.ts from src/button-group/index.ts
+[generate-platform-exports] wrote src/button/index.web.ts from src/button/index.ts
+[generate-platform-exports] wrote src/chat-composer/index.web.ts from src/chat-composer/index.ts
+[generate-platform-exports] wrote src/command/index.web.ts from src/command/index.ts
+[generate-platform-exports] wrote src/composer-loader/index.web.ts from src/composer-loader/index.ts
+[generate-platform-exports] wrote src/composer-panel/index.web.ts from src/composer-panel/index.ts
+[generate-platform-exports] wrote src/connection-dots/index.web.ts from src/connection-dots/index.ts
+[generate-platform-exports] wrote src/connection-status/index.web.ts from src/connection-status/index.ts
+[generate-platform-exports] wrote src/content-panel/index.web.ts from src/content-panel/index.ts
+[generate-platform-exports] wrote src/context-menu/index.web.ts from src/context-menu/index.ts
+[generate-platform-exports] wrote src/dialog/index.web.ts from src/dialog/index.ts
+[generate-platform-exports] wrote src/dropdown-menu/index.web.ts from src/dropdown-menu/index.ts
+[generate-platform-exports] wrote src/fab/index.web.ts from src/fab/index.ts
+[generate-platform-exports] wrote src/fonts/index.web.ts from src/fonts/index.ts
+[generate-platform-exports] wrote src/frosted-icon-button/index.web.ts from src/frosted-icon-button/index.ts
+[generate-platform-exports] wrote src/hover-card/index.web.ts from src/hover-card/index.ts
+[generate-platform-exports] wrote src/index.web.ts from src/index.ts
+[generate-platform-exports] wrote src/list/index.web.ts from src/list/index.ts
+[generate-platform-exports] wrote src/loading/index.web.ts from src/loading/index.ts
+[generate-platform-exports] wrote src/media-flight/index.web.ts from src/media-flight/index.ts
+[generate-platform-exports] wrote src/menubar/index.web.ts from src/menubar/index.ts
+[generate-platform-exports] wrote src/motion/index.web.ts from src/motion/index.ts
+[generate-platform-exports] wrote src/popover/index.web.ts from src/popover/index.ts
+[generate-platform-exports] wrote src/portal/index.web.ts from src/portal/index.ts
+[generate-platform-exports] wrote src/progressive-blur/index.web.ts from src/progressive-blur/index.ts
+[generate-platform-exports] wrote src/scroll/index.web.ts from src/scroll/index.ts
+[generate-platform-exports] wrote src/select/index.web.ts from src/select/index.ts
+[generate-platform-exports] wrote src/social-button/index.web.ts from src/social-button/index.ts
+[generate-platform-exports] wrote src/sticker/index.web.ts from src/sticker/index.ts
+[generate-platform-exports] wrote src/surface/index.web.ts from src/surface/index.ts
+[generate-platform-exports] wrote src/surfaces/index.web.ts from src/surfaces/index.ts
+[generate-platform-exports] wrote src/tab-bar/index.web.ts from src/tab-bar/index.ts
+[generate-platform-exports] wrote src/theme/color-scope/index.web.ts from src/theme/color-scope/index.ts
+[generate-platform-exports] wrote src/theme/index.web.ts from src/theme/index.ts
+[generate-platform-exports] wrote src/theme/seed-scope/index.web.ts from src/theme/seed-scope/index.ts
+[generate-platform-exports] wrote src/tooltip/index.web.ts from src/tooltip/index.ts
+[generate-platform-exports] wrote src/zoomable-media-gallery/index.web.ts from src/zoomable-media-gallery/index.ts
+[generate-platform-exports] wrote 219 subpaths to package.json#exports and 218 to package.json#typesVersions
+[generate-platform-exports] package.json is now 141204 bytes
+[generate-theme-css] wrote src/design-tokens/theme.css (6665 bytes)
+[generate-design-tokens-json] wrote src/design-tokens/tokens.json (652711 bytes)
+$ bob build
+ℹ [module] Cleaning up previous build at lib/module
+ℹ [typescript] Cleaning up previous build at lib/typescript
+ℹ [commonjs] Cleaning up previous build at lib/commonjs
+ℹ [typescript] Generating type definitions with tsc
+ℹ [module] Compiling 2311 files in src with babel
+ℹ [commonjs] Compiling 2311 files in src with babel
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✔ [module] Wrote files to lib/module
+✔ [commonjs] Wrote files to lib/commonjs
+✔ [typescript] Wrote definition files to lib/typescript
+$ node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree
+[verify-package] ok — 20926 files packed, all 1217 literal exports targets present plus 5 pattern target(s) expanded (9158 in lib/typescript/), 238 guides in docs/, 6 subpath(s) require()-able under Node v24.21.0 (3 of them also import()-able as ESM, 3 known-unresolvable)
+[verify-build-freshness] auditing lib/ in this worktree, as it sits on disk
+[verify-build-freshness] ok — 16528 exported values and 6360 exported types across 2263 modules are all present in the build shipped beside them (3 negative controls absent)
+
+Checked 1512 installs across 1329 packages (no changes) [32.63s]

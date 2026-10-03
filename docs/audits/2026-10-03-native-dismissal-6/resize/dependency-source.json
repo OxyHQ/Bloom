@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/home/nate/Oxy/oxy/.worktrees/1519-native-dialog-candidate-20261003/packages/test-app-expo/node_modules/react-native-svg/package.json",
+    "sha256": "6448c640d6d03f697ecea05c0fe9ab30f8dcc28806cba18a923a8d3cbb6d1797",
+    "bytes": 5437
+  },
+  {
+    "path": "/home/nate/Oxy/oxy/.worktrees/1519-native-dialog-candidate-20261003/packages/test-app-expo/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgView.java",
+    "sha256": "75a2bd5e60727f242433005e10bc0c7a07bf86e1e1cfddc5ce09af9004bfcede",
+    "bytes": 12561
+  },
+  {
+    "path": "/home/nate/Oxy/oxy/.worktrees/1519-native-dialog-candidate-20261003/packages/test-app-expo/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/VirtualView.java",
+    "sha256": "d21c62f90c7af7551274504fc09232ebf8e5b2672d7ffa80253158a5d2ecef08",
+    "bytes": 17318
+  },
+  {
+    "path": "/home/nate/Oxy/oxy/.worktrees/1519-native-dialog-candidate-20261003/packages/test-app-expo/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/RectView.java",
+    "sha256": "12ab97e0090492605ab98b603faae5b6cbf2cd5147c45cd8c3de424d9b167442",
+    "bytes": 3460
+  }
+]

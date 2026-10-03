@@ -1,0 +1,35 @@
+{
+  "sourceRuntimeUnchanged": "16a98eca",
+  "sources": [
+    {
+      "path": "docs/adoption-matrix.mdx",
+      "sha256": "cf82478570ba1c23b758e649a7e0be88da1b099b9f9f72484f993747e271f650",
+      "bytes": 35948
+    }
+  ],
+  "records": [
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal-6/adoption/generate.log",
+      "sha256": "238c443774a0b2784df9dee129598f05c281741576c78c65cb3e806601e94386",
+      "bytes": 114
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal-6/adoption/green.log",
+      "sha256": "92d34292e534d474831452feec7e4bf8028cc3fb0aba81fc060c4a7f51948cce",
+      "bytes": 250
+    }
+  ],
+  "privateCI": {
+    "path": "/home/nate/Oxy/.agent-evidence/i04-bloom-621-ci-shard4.log",
+    "sha256": "e04b0f88b69f42db422791cfd1c6561ba3d7073a6ff27d04489b7f7793c4b3e2",
+    "bytes": 3144783
+  },
+  "priorCI": {
+    "run": 37119959648,
+    "head": "8312eb78",
+    "result": "Build+8shardsPASS; shard4 only adoption matrix1FAIL/720PASS"
+  },
+  "fix": "Canonical generator updates2counts after SurfacePaintResize imports surface/theme; no runtime/test edit",
+  "localGate": "11PASS",
+  "packageLimit": "Candidate tarball retains earlier adoption documentation, runtime remains byte-identical. Docs ship in package; final release must freshly build/pack/publish current reviewed maintenance head. No whole-tarball equality claimed across this docs change."
+}

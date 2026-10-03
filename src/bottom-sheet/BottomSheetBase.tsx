@@ -133,14 +133,11 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     const bodyPanRef = useRef<GestureType | undefined>(undefined);
     const handlePanRef = useRef<GestureType | undefined>(undefined);
 
-    // Dismiss callbacks
+    // Completion is not a user request: once closed, every owner must hear it.
+    // Vetoes are checked before a user-triggered close starts, never after it.
     const safeClose = useCallback(() => {
-        if (onDismissAttempt?.()) {
-            onDismiss?.();
-        } else if (!onDismissAttempt) {
-            onDismiss?.();
-        }
-    }, [onDismissAttempt, onDismiss]);
+        onDismiss?.();
+    }, [onDismiss]);
 
     // Mirror `safeClose` and `rendered` into refs so the unmount cleanup can
     // fire the latest dismiss callback when needed, without re-binding the
@@ -251,6 +248,20 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         };
     }, [colors.border]);
 
+    // Gesture callbacks cross to JS before consulting the consumer's veto.
+    // A refused drag springs back; it never hides the Modal or strands its owner.
+    const requestPanDismiss = useCallback((generation: number, velocity: number) => {
+        if (closeGenerationRef.current !== generation || hasClosedRef.current) return;
+        if (onDismissAttempt && !onDismissAttempt()) {
+            translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
+            return;
+        }
+        translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
+        opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
+            if (finished) runOnJS(finishClose)(generation);
+        });
+    }, [onDismissAttempt, translateY, screenHeightSV, opacity, finishClose]);
+
     const present = useCallback(() => {
         setRendered(true);
         setVisible(true);
@@ -336,15 +347,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         (distance > closeThreshold && velocity > -300);
 
                     if (shouldClose) {
-                        // Snapshot the generation on the UI thread at the
-                        // moment the close gesture commits. The completion
-                        // callback only fires `finishClose` if no reopen
-                        // bumped the generation in between.
-                        const generation = closeGeneration.value;
-                        translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
-                        opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
-                            if (finished) runOnJS(finishClose)(generation);
-                        });
+                        runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
                     } else {
                         translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
                     }
@@ -396,16 +399,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                     (distance > closeThreshold && velocity > -300);
 
                 if (shouldClose) {
-                    const generation = closeGeneration.value;
-                    translateY.value = withSpring(screenHeightSV.value, {
-                        ...SPRING_CONFIG,
-                        velocity: velocity,
-                    });
-                    opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
-                        if (finished) {
-                            runOnJS(finishClose)(generation);
-                        }
-                    });
+                    runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
                 } else {
                     translateY.value = withSpring(0, {
                         ...SPRING_CONFIG,
@@ -417,7 +411,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         // values that change the gesture's behavior. `finishClose` is stable
         // (useCallback with stable deps).
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [enablePanDownToClose, detached, manualActivation, nativeGesture, finishClose]);
+    }, [enablePanDownToClose, detached, manualActivation, nativeGesture, requestPanDismiss]);
 
     // Dedicated handle pan — only built in `manualActivation` mode. Always
     // active so users can drag the handle even while content is mid-scroll.
@@ -456,17 +450,13 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                     (distance > closeThreshold && velocity > -300);
 
                 if (shouldClose) {
-                    const generation = closeGeneration.value;
-                    translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
-                    opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
-                        if (finished) runOnJS(finishClose)(generation);
-                    });
+                    runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
                 } else {
                     translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
                 }
             });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [manualActivation, enablePanDownToClose, enableHandlePanningGesture, detached, finishClose]);
+    }, [manualActivation, enablePanDownToClose, enableHandlePanningGesture, detached, requestPanDismiss]);
 
     // CRITICAL — the shared values each `useAnimatedStyle` READS (translateY,
     // opacity, screenHeightSV, keyboardHeight) MUST be listed in its dependency
@@ -698,7 +688,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         : <View style={[styles.nonScrollableContent, surfaceCorners, { overflow: 'hidden' }]}>{surfaceChildren}</View>;
 
     return (
-        <Shell visible={rendered} onRequestClose={dismiss} keyboardHeight={keyboardHeight}>
+        <Shell visible={rendered} onRequestClose={handleBackdropPress} keyboardHeight={keyboardHeight}>
             {/* Web keyboard and focus: in on open, back on close, Tab kept in
                 the sheet, Escape a USER dismissal — through `onDismissAttempt`,
                 exactly like the backdrop. The sheet had no keyboard path at
