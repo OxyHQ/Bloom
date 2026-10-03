@@ -13,6 +13,7 @@ import Animated, {
 import { EYES, type AvatarConfig } from '../agent-avatar';
 import { AgentFace } from '../agent-avatar/AgentFace';
 import { ClippoArtwork } from './ClippoArtwork';
+import { CyclopsArtwork } from './CyclopsArtwork';
 import {
   StyledImage,
   StyledPressable,
@@ -29,7 +30,7 @@ export type EmotionChoice = {
   config: AvatarConfig;
   disabled?: boolean;
   thumbnail?: string;
-  artwork?: 'clippo';
+  artwork?: 'clippo' | 'cyclops';
 };
 function Emotion({
   config,
@@ -89,7 +90,9 @@ function Emotion({
             borderColor: active ? colors.icon : 'transparent',
           }}
         >
-          {choice.artwork === 'clippo' ? (
+          {choice.artwork === 'cyclops' ? (
+            <CyclopsArtwork opacity={choice.disabled ? 0.35 : 1} />
+          ) : choice.artwork === 'clippo' ? (
             <ClippoArtwork kind="eyes" opacity={choice.disabled ? 0.35 : 1} />
           ) : choice.thumbnail ? (
             <StyledImage

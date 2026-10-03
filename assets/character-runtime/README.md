@@ -74,12 +74,12 @@ camera for 180 ms from the last presented pose. It preserves material/discrete
 bytes and original animation of newly added props. No bitmap crossfade or
 replacement mesh renderer is involved.
 
-authored-parts.mjs exposes eyes:todd and accessory:felipe_beret across all 20
+authored-parts.mjs exposes eyes:todd and accessory:felipe_beret across all 21
 shapes. The worker copies complete native records from lime_frog and blue_beret,
 retaining materials and animation deltas, fits them after contour deformation,
 and removes the generic fitting references. Original activity data remains intact; the aggregate scene bounds expand to
 include the fitted parts. Virtual IDs never reach native catalog selection. Cache keys include
-these parts; verify-avatar-authored-parts.mjs checks all 20 real rendered shapes,
+these parts; verify-avatar-authored-parts.mjs checks all 21 real rendered shapes,
 original/migrated Work and React, generic selections and cleanup.
 
 clippo-geometry.mjs adds a smooth open tube and an independently selectable
@@ -91,9 +91,22 @@ and grey paint; explicit selections override those defaults. Runtime capabilitie
 retain the caller's raw saved key, including when an explicit default selection
 leaves the prepared appearance unchanged. Editor chips are static SVG artwork.
 
-Current editing supports the beta's original catalog combinations and actual
-availability constraints. appearance-codec.mjs validates explicit RGB and optional eye
-transform edits through the original engine. Untouched presets keep their bytes.
+catalog-parts.mjs fits actual original eye, eyewear and accessory meshes across
+all bodies. Named presets supply editable defaults; changing a part retains the
+original body. Opaque sunglasses recover their hidden-eye fitting references
+without replacing the body. Donor records have an 8 MiB/24-entry bounded cache.
+verify-avatar-catalog-parts.mjs checks 312 combinations, exact requested mesh
+labels, preserved body vertices and the cache bound.
+
+cyclops-geometry.mjs adds one native white eyeball, a teal iris, pupil and glint;
+its layered meshes retain native blink/look deformation. character.eyeSpacing
+(0.5–1.5) translates paired eyes and glasses without changing lens size; single
+eyes ignore that multiplier. Todd's actual body is also independently selectable
+as shape:todd. verify-avatar-cyclops.mjs checks actual eye colors, movement and
+cleanup; verify-avatar-customization.mjs exercises all eye styles on Todd in the
+real editor, spacing, shape changes and accessories. appearance-codec.mjs
+validates explicit RGB through the original engine. Untouched presets keep their
+bytes; unnamed original paint is reported from its actual material.
 
 legacy-geometry.mjs transforms copies of prepared scene assemblies: existing
 Bloom contours deform the body, pose deltas, normals and fur roots. The packaged
@@ -107,12 +120,20 @@ diamond and heart recipes reuse the original beta shapes instead of duplicates.
 Alien avatars are removed from the visible catalog, with saved-data compatibility. The
 migrated bodies use the original catalog eyes at their authored proportions and
 animations; old expression/eye transform fields no longer alter the 3D face.
-Migrated bodies support original eyewear and accessories. Headwear, Bulb, bow
-and Tuft receive rigid contour-relative translations; eyewear and headphones
-keep original placement. A bounded reference cache identifies attachment meshes
-without changing eyes, materials or fur vectors. Intact presets retain authored
-signature reactions; edited and migrated bodies use the original Wave when
-the engine rejects Signature.
+All visible bodies accept native catalog eyes, eyewear and accessories through
+original donor assemblies. Fitting uses the actual target face/crown anchors;
+Clippo headwear is scaled to its narrow crown. A bounded reference cache retains
+original material/animation data, and spacing moves the eye groups without
+stretching lenses. `verify-avatar-catalog-parts.mjs` checks all 312 native
+body/part combinations, exact requested labels, unchanged body vertices and
+cache bounds without creating a WebGL context. Intact presets retain authored
+signature reactions. Independent piece edits retain the body's original
+signature. Native shapes use their corresponding authored signature; distinct
+migrated contours and Clippo use Todd's signature as the common default.
+The adapter never substitutes the original Wave/maracas reaction. A pinned,
+validated controller scope borrows only the reaction identity during the original
+native dispatch and restores it immediately; saved appearance and materials
+remain independent. Named bodies also retain their original fitted Work payload.
 Mascots and hidden faces still use SVG.
 Original material/grain effects become the beta's 3D surface.
 

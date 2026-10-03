@@ -75,6 +75,49 @@ it('announces selected avatar colors and profile fields through real react-nativ
   ).toBe('Designer');
 });
 
+it('names fitted eye spacing, exposes its bounds and edits it with the keyboard', () => {
+  const character = { preset: 'lime_frog', eyeSpacing: 1.23 };
+  const key = JSON.stringify(character);
+  const agent = {
+    id: 'todd',
+    name: 'Todd',
+    label: '',
+    description: '',
+    avatar: { ...FOLD_CONFIG, character },
+  };
+  const onChange = jest.fn();
+  render(
+    <CharacterRuntimeFixture
+      value={{
+        runtimeUrl: '/runtime.mjs',
+        capabilitiesByKey: new Map([
+          [
+            key,
+            { key, available: {}, selected: { eyes: 'todd', shape: 'todd' } },
+          ],
+        ]),
+      }}
+    >
+      <AgentCreator agent={agent} onChange={onChange} />
+    </CharacterRuntimeFixture>,
+  );
+  const slider = container.querySelector('[aria-label="Eye spacing"]')!;
+  expect(slider.getAttribute('role')).toBe('slider');
+  expect(slider.getAttribute('aria-valuemin')).toBe('50');
+  expect(slider.getAttribute('aria-valuemax')).toBe('150');
+  expect(slider.getAttribute('aria-valuenow')).toBe('123');
+  const thumb = slider.querySelector('[data-bloom-slider-thumb]')!;
+  act(() =>
+    thumb.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+    ),
+  );
+  expect(onChange).toHaveBeenLastCalledWith({
+    ...agent,
+    avatar: { ...agent.avatar, character: { ...character, eyeSpacing: 1.24 } },
+  });
+});
+
 it('announces the custom saturation/brightness and hue values', () => {
   render(<CustomColorPicker value="#ff0000" onChange={() => {}} />);
   const field = container.querySelector(

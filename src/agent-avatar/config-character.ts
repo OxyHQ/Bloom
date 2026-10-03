@@ -9,6 +9,8 @@ export type AvatarCharacterConfig = {
   selections?: Partial<Record<AvatarCharacterCategory, string>>;
   /** Custom body RGB accepted by the original renderer, stored as lowercase #RRGGBB. */
   bodyColor?: string;
+  /** Multiplier of the body's fitted eye spacing, from 0.5 to 1.5. Absent keeps the authored default. */
+  eyeSpacing?: number;
 };
 
 const categories: readonly AvatarCharacterCategory[] = [
@@ -28,6 +30,16 @@ export function parseCharacterConfig(value: unknown): AvatarCharacterConfig {
   const candidate = value as Record<string, unknown>;
   if (!validId(candidate.preset)) throw new Error('Invalid character preset.');
   const result: AvatarCharacterConfig = { preset: candidate.preset };
+  if (candidate.eyeSpacing !== undefined) {
+    if (
+      typeof candidate.eyeSpacing !== 'number' ||
+      !Number.isFinite(candidate.eyeSpacing) ||
+      candidate.eyeSpacing < 0.5 ||
+      candidate.eyeSpacing > 1.5
+    )
+      throw new Error('Invalid character eye spacing.');
+    result.eyeSpacing = candidate.eyeSpacing;
+  }
   if (candidate.bodyColor !== undefined) {
     if (
       typeof candidate.bodyColor !== 'string' ||

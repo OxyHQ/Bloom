@@ -62,21 +62,41 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     catalog.capabilitiesByKey?.get(key) ??
     (catalog.capabilities?.key === key ? catalog.capabilities : undefined);
   const betaColor =
-    capabilities?.selected.color ?? c.character?.selections?.color;
+    c.character?.selections?.color ?? capabilities?.selected.color;
   const betaBodyColor =
     c.character?.bodyColor ??
     (c.character?.preset === 'clippo' && !c.character.selections?.color
       ? '#999b9d'
-      : undefined);
+      : undefined) ??
+    (!betaColor ? capabilities?.selected.bodyColor : undefined);
   const customColorValue = beta
     ? (betaBodyColor ??
+      (c.character?.selections?.color
+        ? CHARACTER_COLORS[
+            c.character.selections.color as keyof typeof CHARACTER_COLORS
+          ]
+        : undefined) ??
+      capabilities?.selected.bodyColor ??
       CHARACTER_COLORS[betaColor as keyof typeof CHARACTER_COLORS] ??
       avatarHex(c))
     : (c.character?.bodyColor ?? avatarHex(c));
   const selectedEyes =
-    capabilities?.selected.eyes ??
     c.character?.selections?.eyes ??
-    (c.character?.preset === 'clippo' ? 'clippo' : 'oval');
+    capabilities?.selected.eyes ??
+    (c.character?.preset === 'clippo'
+      ? 'clippo'
+      : c.character?.preset === 'lime_frog'
+        ? 'todd'
+        : 'oval');
+  const selectedEyewear =
+    c.character?.selections?.eyewear ?? capabilities?.selected.eyewear;
+  const selectedAccessory =
+    c.character?.selections?.accessory ?? capabilities?.selected.accessory;
+  const selectedParts = {
+    eyes: selectedEyes,
+    ...(selectedEyewear ? { eyewear: selectedEyewear } : {}),
+    ...(selectedAccessory ? { accessory: selectedAccessory } : {}),
+  };
   const characterConfig = (
     category: AvatarCharacterCategory,
     id: string,
@@ -100,6 +120,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
       : {
           preset: 'blue_beret',
           bodyColor: customColorValue,
+          ...(c.character?.eyeSpacing !== undefined
+            ? { eyeSpacing: c.character.eyeSpacing }
+            : {}),
           selections: {
             eyewear:
               c.character?.selections?.eyewear ??
@@ -112,15 +135,23 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
             eyes: selectedEyes,
           },
         };
-    const selections = { ...character.selections, [category]: id };
-    if (category === 'shape') {
-      // Authored transplant eyes fit every body. Native catalog styles still
-      // need their shape-dependent compatibility reset.
-      if (selectedEyes === 'todd' || selectedEyes === 'clippo')
-        selections.eyes = selectedEyes;
-      else delete selections.eyes;
-    }
-    const next = { ...character, selections };
+    // Choosing a body retains the edited face and the preset's effective parts.
+    // Presets supply defaults; their catalog restrictions do not own edits.
+    const selections = {
+      ...selectedParts,
+      ...(category === 'shape' && !betaBodyColor && betaColor
+        ? { color: betaColor }
+        : {}),
+      ...character.selections,
+      [category]: id,
+    };
+    const next = {
+      ...character,
+      ...(category === 'shape' && betaBodyColor
+        ? { bodyColor: betaBodyColor }
+        : {}),
+      selections,
+    };
     if (category === 'color') delete next.bodyColor;
     return { ...c, character: next };
   };
@@ -167,25 +198,10 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
         ? {
             character: {
               preset: 'bloom',
-              selections: {
-                eyes: selectedEyes,
-                ...((capabilities?.selected.eyewear ??
-                c.character?.selections?.eyewear)
-                  ? {
-                      eyewear:
-                        capabilities?.selected.eyewear ??
-                        c.character?.selections?.eyewear,
-                    }
-                  : {}),
-                ...((capabilities?.selected.accessory ??
-                c.character?.selections?.accessory)
-                  ? {
-                      accessory:
-                        capabilities?.selected.accessory ??
-                        c.character?.selections?.accessory,
-                    }
-                  : {}),
-              },
+              selections: selectedParts,
+              ...(c.character?.eyeSpacing !== undefined
+                ? { eyeSpacing: c.character.eyeSpacing }
+                : {}),
             },
           }
         : {}),
@@ -197,7 +213,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
           id,
           label: messages.characterOption('shape', id, title),
           config: characterConfig('shape', id),
-          ...(id === 'clippo'
+          ...(id === 'clippo' || id === 'todd'
             ? {}
             : { thumbnail: `${thumbnailBase}thumbnails/shapes/${id}.png` }),
         })),
@@ -209,8 +225,8 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
       ]
     : undefined;
   const shapeValue = beta
-    ? (capabilities?.selected.shape ??
-      c.character?.selections?.shape ??
+    ? (c.character?.selections?.shape ??
+      capabilities?.selected.shape ??
       (c.character?.preset === 'clippo' ? 'clippo' : undefined))
     : (nativeShape ??
       `legacy:${c.family}:${c.family === 'fold' ? c.foldShape : c.shape}`);
@@ -228,8 +244,8 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
         id,
         label: messages.characterOption('eyes', id, title),
         config: characterConfig('eyes', id),
-        ...(id === 'clippo'
-          ? { artwork: 'clippo' as const }
+        ...(id === 'clippo' || id === 'cyclops'
+          ? { artwork: id }
           : { thumbnail: `${thumbnailBase}thumbnails/eyes/${id}.png` }),
         disabled:
           !capabilities || capabilities.available[`eyes:${id}`] === false,

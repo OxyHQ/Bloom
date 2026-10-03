@@ -4,6 +4,7 @@ import {
   clippoPath,
   tubeMesh,
   composeClippoAssembly,
+  clippoFaceEyeFit,
 } from '../assets/character-runtime/clippo-geometry.mjs';
 const cross = (a, b) => [
   a[1] * b[2] - a[2] * b[1],
@@ -111,5 +112,30 @@ test('unselected native assemblies pass through untouched without source prepara
       authoredParts: { eyes: 'todd' },
     }),
     bytes,
+  );
+});
+
+test('Clippo white eye size and depth do not collapse with narrow native eye spacing', () => {
+  const body = { min: [-1, -1, -0.88], max: [1, 1, 0.88] };
+  for (const center of [-0.1, -0.2, -0.46, 0.1, 0.2, 0.46]) {
+    const anchor = {
+      min: [center - 0.1, 0.05, 0.783],
+      max: [center + 0.1, 0.35, 0.905],
+    };
+    const fit = clippoFaceEyeFit(body, anchor);
+    assert.deepEqual(fit.radius, [0.2, 0.21, 0.14]);
+    assert.ok(Math.abs(fit.center[0] - center) < 1e-12);
+    assert.ok(
+      fit.center[2] + fit.radius[2] > 1.05,
+      'white-eye front remains beyond backing face',
+    );
+    assert.ok(
+      Math.abs(fit.center[2] - fit.radius[2] - anchor.min[2]) < 1e-12,
+      'eye remains attached at original back surface',
+    );
+  }
+  assert.throws(
+    () => clippoFaceEyeFit(body, { min: [NaN, 0, 0], max: [1, 1, 1] }),
+    /fitting bounds/,
   );
 });

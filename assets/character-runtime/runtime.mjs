@@ -1,5 +1,9 @@
 // Optional renderer adapter. The generated engine and data alongside it remain unmodified.
-import { customizeAppearance, encodeAppearance } from './appearance-codec.mjs';
+import {
+  customizeAppearance,
+  encodeAppearance,
+  decodeAppearance,
+} from './appearance-codec.mjs';
 import {
   acquireLegacyEngine,
   legacyEngineStats,
@@ -15,7 +19,14 @@ import {
   sharedRenderPending,
 } from './shared-surface.mjs';
 import { characterPixels } from './resolution.mjs';
-import { characterRecipe, authoredPartsFor } from './character-recipe.mjs';
+import {
+  characterRecipe,
+  authoredPartsFor,
+  bodySignatureFor,
+  bodySelectionDefaults,
+  NATIVE_PARTS,
+} from './character-recipe.mjs';
+import { originalBodyColor } from './catalog-parts.mjs';
 
 let frame = 0;
 let rendering = false;
@@ -548,12 +559,12 @@ async function createLiveCharacter(
   };
   const attemptReaction = () => {
     lastReactionKind = 2;
-    lastReaction = character.playReaction(lastReactionKind);
-    // Named presets retain their signature; edited bodies use the original Wave.
-    if (lastReaction === 2) {
-      lastReactionKind = 1;
-      lastReaction = character.playReaction(lastReactionKind);
-    }
+    lastReaction = module.controllerSignature(
+      character,
+      bodySignatureFor(props),
+    );
+    if (lastReaction === 2)
+      throw new Error('Original body signature is unavailable');
     // An interrupted signature resumes its clock on the next reactive render.
     // Keep one latest request queued until that signature releases the controller.
     queuedReaction = lastReaction === 1;
@@ -618,13 +629,16 @@ async function createLiveCharacter(
         removedOverride ||
         (appliedRecipe.bodyColor && !recipe.bodyColor)
       ) {
-        const base =
-          props.legacy || recipe.preset === 'clippo'
+        const originalDefault = authoredParts.bodyPreset
+          ? decodeAppearance(module.presetAppearance(authoredParts.bodyPreset))
+          : null;
+        let base =
+          props.legacy || recipe.preset === 'clippo' || authoredParts.bodyPreset
             ? encodeAppearance({
                 version: 1,
                 shape: 'circle',
-                color: 'blue',
-                eyes: 'oval',
+                color: originalDefault?.color ?? 'blue',
+                eyes: 'dots',
                 eyewear: 'none',
                 accessories: [],
                 accessoryColors: {},
@@ -635,6 +649,19 @@ async function createLiveCharacter(
                 hereCharacter: null,
               })
             : module.presetAppearance(recipe.preset);
+        if (
+          !props.legacy &&
+          recipe.preset !== 'clippo' &&
+          !authoredParts.bodyPreset &&
+          Object.keys(authoredParts).length
+        ) {
+          // Selecting the preset's existing shape/backing eye is a native no-op,
+          // so select() never clears HERE's material overrides. Donor pieces
+          // need an editable controller while retaining all authored defaults.
+          const editable = decodeAppearance(base);
+          editable.hereCharacter = null;
+          base = encodeAppearance(editable);
+        }
         if (character.restore(base))
           throw new Error('Invalid character appearance');
       }
@@ -643,19 +670,21 @@ async function createLiveCharacter(
         // Virtual choices replace copied prepared meshes in the worker. The
         // original engine still selects its own valid backing geometry.
         const value =
-          key === 'shape' && selected === 'clippo'
+          key === 'shape' && selected === 'todd'
             ? 'circle'
-            : key === 'eyes' && (selected === 'todd' || selected === 'clippo')
-              ? ['oval', 'round_inset', 'dots'].find((id) =>
-                  character.isAvailable(category.eyes, id),
-                )
-              : key === 'accessory' && selected === 'felipe_beret'
-                ? character.isAvailable(category.accessory, 'beret')
-                  ? 'beret'
-                  : 'none'
-                : selected;
+            : key === 'shape' && selected === 'clippo'
+              ? 'circle'
+              : key === 'eyes' && authoredParts.eyes
+                ? ['oval', 'round_inset', 'dots', ...NATIVE_PARTS.eyes].find(
+                    (id) => character.isAvailable(category.eyes, id),
+                  )
+                : key === 'accessory' && authoredParts.accessory
+                  ? 'none'
+                  : key === 'eyewear' && authoredParts.eyewear
+                    ? 'none'
+                    : selected;
         if (!value) {
-          if (key === 'eyes' && (selected === 'todd' || selected === 'clippo'))
+          if (key === 'eyes' && authoredParts.eyes)
             throw new Error(
               `No compatible fitting reference for ${selected} eyes`,
             );
@@ -712,13 +741,29 @@ async function createLiveCharacter(
       const selected = {};
       for (const [key, index] of Object.entries(category)) {
         for (const item of module.catalog(index)) {
-          available[`${key}:${item.id}`] = character.isAvailable(
-            index,
-            item.id,
-          );
+          available[`${key}:${item.id}`] = NATIVE_PARTS[key]?.includes(item.id)
+            ? true
+            : character.isAvailable(index, item.id);
           if (character.isSelected(index, item.id)) selected[key] = item.id;
         }
       }
+      if (authoredParts.bodyPreset)
+        Object.assign(
+          selected,
+          bodySelectionDefaults(
+            authoredParts.bodyPreset,
+            decodeAppearance(module.presetAppearance(authoredParts.bodyPreset)),
+          ),
+        );
+      for (const key of ['eyes', 'eyewear', 'accessory'])
+        if (authoredParts[key]) selected[key] = authoredParts[key];
+      available['shape:todd'] = true;
+      available['eyes:cyclops'] = true;
+      if (
+        authoredParts.bodyPreset === 'lime_frog' ||
+        (recipe.preset === 'lime_frog' && !recipe.selections?.shape)
+      )
+        selected.shape = 'todd';
       available['shape:clippo'] = true;
       available['eyes:clippo'] = true;
       available['eyes:todd'] = true;
@@ -733,9 +778,28 @@ async function createLiveCharacter(
         authoredParts.accessory ||
         (recipe.preset === 'blue_beret' && !recipe.selections?.accessory)
       )
-        selected.accessory = 'felipe_beret';
+        selected.accessory = authoredParts.accessory ?? 'felipe_beret';
       available['accessory:none'] = true;
       selected.accessory ??= 'none';
+      const originalPreset = authoredParts.bodyPreset ?? recipe.preset;
+      if (
+        !recipe.bodyColor &&
+        !recipe.selections?.color &&
+        originalPreset !== 'clippo' &&
+        !props.legacy
+      ) {
+        const originalColor = decodeAppearance(
+          module.presetAppearance(originalPreset),
+        ).color;
+        if (
+          !module
+            .catalog(category.color)
+            .some((item) => item.id === originalColor)
+        ) {
+          delete selected.color;
+          selected.bodyColor = originalBodyColor(module, originalPreset);
+        }
+      }
       reportCapabilities(available, selected);
       dirty = true;
     }

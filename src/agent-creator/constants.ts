@@ -71,6 +71,7 @@ export const CHARACTER_PRESETS = [
 export const CHARACTER_OPTIONS = {
   shape: [
     ['clippo', 'Clippo'],
+    ['todd', 'Todd'],
     ['circle', 'Circle'],
     ['rounded_triangle', 'Rounded triangle'],
     ['capsule', 'Capsule'],
@@ -95,6 +96,7 @@ export const CHARACTER_OPTIONS = {
     ['coral', 'Coral'],
   ],
   eyes: [
+    ['cyclops', 'Single eye'],
     ['clippo', 'Clippo'],
     ['todd', 'Todd'],
     ['swept_lids', 'Swept lids'],

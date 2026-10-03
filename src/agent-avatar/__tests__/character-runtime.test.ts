@@ -7,6 +7,13 @@ import { characterHtml, scriptJson } from '../character-html';
 
 const root = resolve(__dirname, '../../..');
 describe('optional character runtime', () => {
+  it('places a single native eye on each face and leaves unselected geometry untouched', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-cyclops.mjs'],
+      { cwd: root },
+    );
+  });
   it('builds outward Clippo tube geometry with actual open holes and bounded native records', () => {
     execFileSync(
       process.execPath,

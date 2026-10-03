@@ -3,6 +3,17 @@
  */
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
+const expectedPortraits = JSON.parse(
+  execFileSync(
+    'bun',
+    [
+      '-e',
+      "import {CHARACTER_OPTIONS} from './src/agent-creator/constants'; console.log(JSON.stringify(CHARACTER_OPTIONS.shape.filter(([id]) => !id.startsWith('legacy:') && id !== 'clippo').length));",
+    ],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' },
+  ),
+);
 const require = createRequire(import.meta.url);
 const { chromium } = require(
   process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
@@ -49,7 +60,7 @@ try {
   );
   await page.evaluate(async () => {
     window.editorRuntime =
-      await import('/bloom-character/runtime.mjs?v=shared-parts-2');
+      await import('/bloom-character/runtime.mjs?v=universal-parts-3');
   });
   const settle = async () => {
     await page.waitForTimeout(500);
@@ -73,14 +84,14 @@ try {
   };
   await settle();
   await page.waitForFunction(
-    () => {
+    (expectedPortraits) => {
       const canvases = [
         ...document.querySelectorAll(
           '[data-testid="clippo-shared-eyes"] canvas',
         ),
       ];
       return (
-        canvases.length === 11 &&
+        canvases.length === expectedPortraits &&
         canvases.every((canvas) =>
           canvas
             .getContext('2d')
@@ -89,7 +100,7 @@ try {
         )
       );
     },
-    {},
+    expectedPortraits,
     { timeout: 180000 },
   );
   await page.screenshot({
@@ -107,7 +118,7 @@ try {
   await page.waitForFunction(
     () =>
       document
-        .querySelector('[aria-label="Todd"]')
+        .querySelector('[aria-label="Todd"][aria-pressed]')
         ?.getAttribute('aria-pressed') === 'true',
   );
   await settle();
@@ -149,8 +160,52 @@ try {
     path: '/tmp/bloom-story-clippo-edited.png',
     fullPage: true,
   });
+  await page.goto(
+    `${base}/iframe.html?id=application-agent-avatar-characters--single-eye&viewMode=story`,
+  );
+  await page.waitForFunction(
+    () => {
+      const canvases = [
+        ...document.querySelectorAll(
+          '[data-testid="cyclops-shared-eyes"] canvas',
+        ),
+      ];
+      return (
+        canvases.length === 21 &&
+        canvases.every((canvas) =>
+          canvas
+            .getContext('2d')
+            ?.getImageData(0, 0, canvas.width, canvas.height)
+            .data.some((value, index) => index % 4 === 3 && value > 24),
+        )
+      );
+    },
+    {},
+    { timeout: 180000 },
+  );
+  assert.equal(
+    await page.getByText('Avatar unavailable', { exact: true }).count(),
+    0,
+  );
+  assert.equal(
+    await page
+      .getByRole('button', { name: 'Single eye', exact: true })
+      .getAttribute('aria-pressed'),
+    'true',
+  );
+  assert.equal(
+    await page
+      .getByRole('slider', { name: 'Eye spacing', exact: true })
+      .count(),
+    0,
+  );
+  assert.deepEqual(errors, []);
+  await page.screenshot({
+    path: '/tmp/bloom-story-single-eye.png',
+    fullPage: true,
+  });
   console.log(
-    'PASS: Clippo default, Todd/Clippo eye controls, keyboard shape wheel and saved recipe in Storybook.',
+    'PASS: Clippo controls and saved recipe, plus Single Eye across all 21 shapes in Storybook.',
   );
 } finally {
   await browser.close();

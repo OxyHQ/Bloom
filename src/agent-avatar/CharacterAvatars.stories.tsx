@@ -28,7 +28,7 @@ const characters = [
   ['blue_spectacles', 'Josh'],
   ['lime_headphones', 'Iggy'],
 ] as const;
-const runtimeUrl = '/bloom-character/runtime.mjs?v=shared-parts-2';
+const runtimeUrl = '/bloom-character/runtime.mjs?v=universal-parts-3';
 const meta = {
   title: 'Application/Agent Avatar/Characters',
   parameters: { layout: 'padded' },
@@ -172,7 +172,7 @@ function MigratedCharacters() {
         />
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <Button onPress={() => setWorking((key) => key + 1)}>Working</Button>
-          <Button onPress={() => setReaction((key) => key + 1)}>Wave</Button>
+          <Button onPress={() => setReaction((key) => key + 1)}>React</Button>
         </View>
         <View
           style={{
@@ -456,3 +456,132 @@ function ClippoLab() {
   );
 }
 export const Clippo: Story = { render: () => <ClippoLab /> };
+
+function UniversalCustomizationLab({
+  singleEye = false,
+}: {
+  singleEye?: boolean;
+}) {
+  const [agent, setAgent] = useState<AgentCreatorAgent>({
+    id: 'todd-customization',
+    name: singleEye ? 'Single eye' : 'Todd',
+    label: 'Assistant',
+    description: '',
+    avatar: {
+      ...FOLD_CONFIG,
+      character: {
+        preset: 'lime_frog',
+        ...(singleEye ? { selections: { eyes: 'cyclops' } } : {}),
+      },
+    },
+  });
+  const [reaction, setReaction] = useState(0);
+  const [working, setWorking] = useState(0);
+  return (
+    <AgentAvatarProvider runtimeUrl={runtimeUrl}>
+      <View
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 32, padding: 24 }}
+      >
+        <View style={{ width: 320, alignItems: 'center', gap: 16 }}>
+          <AgentAvatar
+            config={agent.avatar}
+            size={280}
+            interactive
+            reactionKey={reaction}
+            workingKey={working}
+            label="Todd customization"
+            testID="universal-avatar-preview"
+          />
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Button onPress={() => setReaction((key) => key + 1)}>
+              Reaction
+            </Button>
+            <Button onPress={() => setWorking((key) => key + 1)}>
+              Working
+            </Button>
+          </View>
+          <Text testID="universal-avatar-config">
+            {JSON.stringify(
+              agent.avatar.character ?? { preset: 'bloom' },
+              null,
+              2,
+            )}
+          </Text>
+          {singleEye && (
+            <View
+              testID="cyclops-shared-eyes"
+              style={{
+                width: 320,
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 16,
+              }}
+            >
+              {[
+                ...CHARACTER_OPTIONS.shape.map(([shape, label]) => ({
+                  label,
+                  config: {
+                    ...FOLD_CONFIG,
+                    character: {
+                      preset: 'lime_frog',
+                      selections: { shape, eyes: 'cyclops' },
+                    },
+                  },
+                })),
+                ...(
+                  [
+                    'slender',
+                    'pocket',
+                    'petal',
+                    'star',
+                    'cloud',
+                    'shield',
+                  ] as const
+                ).map((foldShape) => ({
+                  label: foldShape,
+                  config: {
+                    ...FOLD_CONFIG,
+                    foldShape,
+                    character: {
+                      preset: 'bloom',
+                      selections: { eyes: 'cyclops' },
+                    },
+                  },
+                })),
+                ...(['pebble', 'squircle'] as const).map((shape) => ({
+                  label: shape,
+                  config: {
+                    ...DEFAULT_CONFIG,
+                    shape,
+                    character: {
+                      preset: 'bloom',
+                      selections: { eyes: 'cyclops' },
+                    },
+                  },
+                })),
+              ].map(({ config, label }) => (
+                <AgentAvatar
+                  key={label}
+                  config={config}
+                  size={64}
+                  portrait
+                  paused
+                  label={label}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+        <View style={{ width: 360, height: 960 }}>
+          <AgentCreator agent={agent} onChange={setAgent} />
+        </View>
+      </View>
+    </AgentAvatarProvider>
+  );
+}
+export const UniversalCustomization: Story = {
+  render: () => <UniversalCustomizationLab />,
+};
+export const SingleEye: Story = {
+  render: () => <UniversalCustomizationLab singleEye />,
+};

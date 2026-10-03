@@ -8,6 +8,7 @@ import type {
   AvatarCharacterConfig,
 } from '../agent-avatar/config-character';
 import { StyledView } from '../styles/styled-primitives';
+import { Slider } from '../slider';
 import { Text } from '../typography';
 import { CHARACTER_OPTIONS, CHARACTER_PRESETS } from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
@@ -120,8 +121,8 @@ export function CharacterControls({
           (category) =>
             row(
               labels[category],
-              resolved?.selected[category] ??
-                character.selections?.[category] ??
+              character.selections?.[category] ??
+                resolved?.selected[category] ??
                 'none',
               (category === 'accessory'
                 ? [
@@ -139,11 +140,49 @@ export function CharacterControls({
               (id) => {
                 onChange({
                   ...character,
-                  selections: { ...character.selections, [category]: id },
+                  selections: {
+                    ...(['eyes', 'eyewear', 'accessory'] as const).reduce(
+                      (parts, part) => ({
+                        ...parts,
+                        ...(resolved?.selected[part]
+                          ? { [part]: resolved.selected[part] }
+                          : {}),
+                      }),
+                      {},
+                    ),
+                    ...character.selections,
+                    [category]: id,
+                  },
                 });
               },
               labels[category],
             ),
+        )}
+      {character &&
+        (character.selections?.eyes ?? resolved?.selected.eyes) !==
+          'cyclops' && (
+          <StyledView className="flex flex-row items-center gap-3">
+            <Text className="w-[96px] text-body-regular text-text-primary">
+              {messages.eyeSpacing}
+            </Text>
+            <StyledView className="min-w-0 flex-1">
+              <Slider
+                size="sm"
+                min={50}
+                max={150}
+                step={1}
+                value={Math.round((character.eyeSpacing ?? 1) * 100)}
+                accessibilityLabel={messages.eyeSpacing}
+                showTooltip={false}
+                onValueChange={(value) =>
+                  onChange({ ...character, eyeSpacing: value / 100 })
+                }
+              />
+            </StyledView>
+            <Text className="text-body-small text-text-secondary">
+              {Math.round((character.eyeSpacing ?? 1) * 100)}%
+            </Text>
+          </StyledView>
         )}
     </StyledView>
   );

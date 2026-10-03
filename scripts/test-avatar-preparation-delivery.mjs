@@ -1,6 +1,6 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { readFile } from "node:fs/promises";
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { readFile } from 'node:fs/promises';
 
 let namespace = 0;
 const deferred = () => {
@@ -27,7 +27,7 @@ async function fixture() {
   };
   module.Character = class {
     render() {
-      module.orbitPrepare(1, new Uint8Array([1, 2, 3]), 1, "scene", false);
+      module.orbitPrepare(1, new Uint8Array([1, 2, 3]), 1, 'scene', false);
     }
     delete() {}
   };
@@ -44,17 +44,26 @@ async function fixture() {
     }
   };
   globalThis.__bloomDeliveryFixture = { module, state };
-  const data = (source) => "data:text/javascript," + encodeURIComponent(source);
+  const data = (source) => 'data:text/javascript,' + encodeURIComponent(source);
   let source = await readFile(
-    new URL("../assets/character-runtime/legacy-engine.mjs", import.meta.url),
-    "utf8",
+    new URL('../assets/character-runtime/legacy-engine.mjs', import.meta.url),
+    'utf8',
+  );
+  source = source.replace(
+    /(['"])\.\/character-recipe\.mjs\1/,
+    JSON.stringify(
+      new URL(
+        '../assets/character-runtime/character-recipe.mjs',
+        import.meta.url,
+      ).href,
+    ),
   );
   source = source
     .replace(
       /(['"])\.\/controller-mode\.mjs\1/,
       JSON.stringify(
         new URL(
-          "../assets/character-runtime/controller-mode.mjs",
+          '../assets/character-runtime/controller-mode.mjs',
           import.meta.url,
         ).href,
       ),
@@ -63,7 +72,7 @@ async function fixture() {
       /(['"])\.\/orbit-characters\.mjs\1/,
       JSON.stringify(
         data(
-          "export default ()=>Promise.resolve(globalThis.__bloomDeliveryFixture.module);",
+          'export default ()=>Promise.resolve(globalThis.__bloomDeliveryFixture.module);',
         ),
       ),
     )
@@ -71,7 +80,7 @@ async function fixture() {
       /(['"])\.\/shared-surface\.mjs\1/,
       JSON.stringify(
         data(
-          "export const waitForSharedRender=()=>globalThis.__bloomDeliveryFixture.state.wait();",
+          'export const waitForSharedRender=()=>globalThis.__bloomDeliveryFixture.state.wait();',
         ),
       ),
     )
@@ -79,7 +88,7 @@ async function fixture() {
       /(['"])\.\/preparation-cache\.mjs\1/,
       JSON.stringify(
         new URL(
-          "../assets/character-runtime/preparation-cache.mjs",
+          '../assets/character-runtime/preparation-cache.mjs',
           import.meta.url,
         ).href,
       ),
@@ -87,12 +96,12 @@ async function fixture() {
   source = source.replace(
     /(['"])\.\/legacy-worker\.mjs\1/,
     JSON.stringify(
-      new URL("../assets/character-runtime/legacy-worker.mjs", import.meta.url)
+      new URL('../assets/character-runtime/legacy-worker.mjs', import.meta.url)
         .href,
     ),
   );
   const engine = await import(
-    data(source + "\n// test namespace " + namespace++)
+    data(source + '\n// test namespace ' + namespace++)
   );
   const lease = await engine.acquireLegacyEngine([
     [1, 0],
@@ -113,7 +122,7 @@ async function fixture() {
   };
 }
 
-test("worker replies retain a canceled preparation turn until the GPU boundary completes", async () => {
+test('worker replies retain a canceled preparation turn until the GPU boundary completes', async () => {
   const f = await fixture();
   try {
     const release = await f.engine.acquireCharacterPreparation();
@@ -144,7 +153,7 @@ test("worker replies retain a canceled preparation turn until the GPU boundary c
     assert.equal(f.engine.legacyEngineStats().pending, 1);
     f.gate.resolve();
     (await next)();
-    assert.deepEqual(f.completed, [{ id: 1, bytes: [5, 6], error: "" }]);
+    assert.deepEqual(f.completed, [{ id: 1, bytes: [5, 6], error: '' }]);
     assert.equal(f.engine.legacyEngineStats().pending, 0);
     assert.equal(f.engine.legacyEngineStats().preparationActive, false);
     f.lease.release();
@@ -154,7 +163,7 @@ test("worker replies retain a canceled preparation turn until the GPU boundary c
   }
 });
 
-test("cached completion is asynchronous, respects the GPU boundary and avoids another worker request", async () => {
+test('cached completion is asynchronous, respects the GPU boundary and avoids another worker request', async () => {
   const f = await fixture();
   try {
     f.gate.resolve();
@@ -175,7 +184,7 @@ test("cached completion is asynchronous, respects the GPU boundary and avoids an
     assert.equal(
       f.completed.length,
       1,
-      "cached bytes must not complete reentrantly inside render",
+      'cached bytes must not complete reentrantly inside render',
     );
     await flush();
     assert.equal(f.requests.length, 1);
@@ -207,31 +216,31 @@ test("cached completion is asynchronous, respects the GPU boundary and avoids an
   }
 });
 
-test("authored Clippo/Todd/Felipe scopes normalize ordering and stay independent", async () => {
+test('authored Clippo/Todd/Felipe scopes normalize ordering and stay independent', async () => {
   const f = await fixture();
   try {
     const combination = {
-      shape: "clippo",
-      eyes: "todd",
-      accessory: "felipe_beret",
+      shape: 'clippo',
+      eyes: 'todd',
+      accessory: 'felipe_beret',
     };
     const first = await f.engine.getCharacterEngine(combination);
     const reordered = await f.engine.getCharacterEngine({
-      accessory: "felipe_beret",
-      eyes: "todd",
-      shape: "clippo",
+      accessory: 'felipe_beret',
+      eyes: 'todd',
+      shape: 'clippo',
     });
     const other = await f.engine.getCharacterEngine({
-      shape: "clippo",
-      eyes: "clippo",
-      accessory: "felipe_beret",
+      shape: 'clippo',
+      eyes: 'clippo',
+      accessory: 'felipe_beret',
     });
     assert.equal(first, reordered);
     assert.notEqual(first, other);
     const combinations = [];
-    for (const shape of [undefined, "clippo"])
-      for (const eyes of [undefined, "todd", "clippo"])
-        for (const accessory of [undefined, "felipe_beret"]) {
+    for (const shape of [undefined, 'clippo'])
+      for (const eyes of [undefined, 'todd', 'clippo'])
+        for (const accessory of [undefined, 'felipe_beret']) {
           if (!shape && !eyes && !accessory) continue;
           combinations.push(
             await f.engine.getCharacterEngine({
@@ -243,15 +252,15 @@ test("authored Clippo/Todd/Felipe scopes normalize ordering and stay independent
         }
     assert.equal(new Set(combinations).size, 11);
     await assert.rejects(
-      f.engine.getCharacterEngine({ shape: "circle" }),
+      f.engine.getCharacterEngine({ shape: 'circle' }),
       /Unsupported authored/,
     );
     await assert.rejects(
-      f.engine.getCharacterEngine({ eyes: "oval" }),
+      f.engine.getCharacterEngine({ eyes: 'unknown-eye' }),
       /Unsupported authored/,
     );
     await assert.rejects(
-      f.engine.getCharacterEngine({ shape: "clippo", unexpected: true }),
+      f.engine.getCharacterEngine({ shape: 'clippo', unexpected: true }),
       /Unsupported authored/,
     );
     const release = await f.engine.acquireCharacterPreparation();

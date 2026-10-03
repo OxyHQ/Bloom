@@ -158,8 +158,8 @@ try {
   );
   assert.equal(
     await page.evaluate(() => control.diagnostics().lastReactionKind),
-    1,
-    'Customized presets fall back to the original Wave',
+    2,
+    'Customized bodies retain their original signature reaction',
   );
   // A cached duplicate must contain the final edited color, not a frame from
   // the debounce interval or the preceding appearance transition.

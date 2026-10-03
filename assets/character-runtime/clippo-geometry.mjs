@@ -3,6 +3,7 @@
 import {
   authoredAssemblyRecords,
   translateAuthoredRecord,
+  transformAuthoredRecord,
 } from './authored-parts.mjs';
 import { decodeAppearance } from './appearance-codec.mjs';
 import { sha256 } from './sha256.mjs';
@@ -28,6 +29,36 @@ export const CLIPPO_EYES = Object.freeze([
     radius: [0.255, 0.265, 0.14],
   }),
 ]);
+/** Eye size follows the solid face, independently from native eye spacing.
+ * A narrow native gap is a placement choice, not a request for shallow eyes. */
+export function clippoFaceEyeFit(bodyBounds, anchor) {
+  const values = [
+    ...bodyBounds.min,
+    ...bodyBounds.max,
+    ...anchor.min,
+    ...anchor.max,
+  ];
+  if (
+    !values.every(Number.isFinite) ||
+    [bodyBounds, anchor].some((bounds) =>
+      bounds.min.some((v, k) => v > bounds.max[k]),
+    )
+  )
+    fail('invalid eye fitting bounds');
+  const eyeScale = Math.max(
+    0.65,
+    Math.min(1.2, (bodyBounds.max[0] - bodyBounds.min[0]) / 2),
+  );
+  return {
+    eyeScale,
+    center: [
+      (anchor.min[0] + anchor.max[0]) / 2,
+      (anchor.min[1] + anchor.max[1]) / 2,
+      anchor.min[2] + 0.14 * eyeScale,
+    ],
+    radius: [0.2, 0.21, 0.14].map((v) => v * eyeScale),
+  };
+}
 // Continuous open wire, from the inner endpoint through the upper curl to the
 // outer endpoint. The two holes come from geometry, never an alpha cutout.
 const PATH = [
@@ -483,13 +514,21 @@ export async function composeClippoAssembly(module, bytes, request) {
             return true;
         return false;
       };
-      if (appearance.accessories.some(named))
-        records[p.part] = await translateAuthoredRecord(bytes, p, [
-          center[0] - oldCenter[0],
-          records[0].bounds.max[1] - info.body.bounds.max[1],
-          0,
-        ]);
-      else if (appearance.eyewear !== 'none' && named(appearance.eyewear))
+      if (appearance.accessories.some(named)) {
+        // Scale the whole attachment about the original crown so a narrow metal
+        // head does not inherit the much wider circle's hat/headphone footprint.
+        const scale = 0.56;
+        const origin = [oldCenter[0], info.body.bounds.max[1], oldCenter[2]];
+        records[p.part] = await transformAuthoredRecord(bytes, p, {
+          scale,
+          origin,
+          translate: [
+            0.02 - origin[0],
+            records[0].bounds.max[1] - origin[1],
+            -origin[2],
+          ],
+        });
+      } else if (appearance.eyewear !== 'none' && named(appearance.eyewear))
         records[p.part] = await translateAuthoredRecord(bytes, p, [
           newFace[0] - faceCenter[0],
           newFace[1] - faceCenter[1],
@@ -516,10 +555,10 @@ export async function composeClippoAssembly(module, bytes, request) {
         outer = pair[0],
         origin = centerOf(outer.bounds),
         anchor = anchors[side].bounds;
-      const center = shape
-        ? CLIPPO_EYES[side].center
-        : [...centerOf(anchor).slice(0, 2), anchor.min[2] + 0.14];
-      const radius = shape ? CLIPPO_EYES[side].radius : [0.2, 0.21, 0.14],
+      const fittedEye = clippoFaceEyeFit(info.body.bounds, anchor);
+      const eyeScale = fittedEye.eyeScale;
+      const center = shape ? CLIPPO_EYES[side].center : fittedEye.center;
+      const radius = shape ? CLIPPO_EYES[side].radius : fittedEye.radius,
         scale = radius.map(
           (r, k) => (r * 2) / (outer.bounds.max[k] - outer.bounds.min[k]),
         );
@@ -561,11 +600,11 @@ export async function composeClippoAssembly(module, bytes, request) {
             [-0.08, 0.41, 0],
             [0.08, 0.4, 0],
             [0.14, 0.35, 0],
-          ].map((p) => p.map((v, k) => v + center[k]));
+          ].map((p) => p.map((v, k) => v * eyeScale + center[k]));
       if (shape) browPath.forEach((p) => (p[2] = 0.19));
       const browMesh = tubeMesh(
           Array.from({ length: 17 }, (_, i) => bezier(browPath, i / 16)),
-          shape ? 0.065 : 0.045,
+          shape ? 0.065 : 0.045 * eyeScale,
           12,
         ),
         prefix = smoothPrefix('brows', [0.16, 0.09, 0.09]);

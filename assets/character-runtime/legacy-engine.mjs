@@ -1,10 +1,11 @@
-import createModule from "./orbit-characters.mjs";
-import { createControllerModeAdapter } from "./controller-mode.mjs";
+import { NATIVE_PARTS, ORIGINAL_PRESETS } from './character-recipe.mjs';
+import createModule from './orbit-characters.mjs';
+import { createControllerModeAdapter } from './controller-mode.mjs';
 import {
   createPreparationCache,
   preparationKey,
-} from "./preparation-cache.mjs";
-import { waitForSharedRender } from "./shared-surface.mjs";
+} from './preparation-cache.mjs';
+import { waitForSharedRender } from './shared-surface.mjs';
 
 let controller;
 const pool = new Map();
@@ -30,7 +31,7 @@ function pumpPreparationQueue() {
   activePreparation = undefined;
   const next = preparationQueue.shift();
   if (!next) return;
-  next.signal?.removeEventListener("abort", next.abort);
+  next.signal?.removeEventListener('abort', next.abort);
   const lease = { released: false };
   activePreparation = lease;
   next.resolve(() => {
@@ -51,17 +52,17 @@ function scoped(scope, operation) {
   // native queue until this owner's preparation has settled.
   globalThis.setTimeout = function (callback, delay, ...args) {
     const nativeDispatcher =
-      typeof callback === "function" &&
+      typeof callback === 'function' &&
       Number(delay) === 0 &&
       Function.prototype.toString
         .call(callback)
         .includes(
-          "safeSetTimeout.mapping[id]=undefined;callUserCallback(func)",
+          'safeSetTimeout.mapping[id]=undefined;callUserCallback(func)',
         );
     let handle;
     handle = schedule.call(
       globalThis,
-      typeof callback === "function"
+      typeof callback === 'function'
         ? (...values) => {
             if (nativeDispatcher) dispatchTimers.delete(handle);
             try {
@@ -101,7 +102,7 @@ export function acquireCharacterPreparation(signal) {
     const abort = () => {
       const index = preparationQueue.indexOf(entry);
       if (index >= 0) preparationQueue.splice(index, 1);
-      reject(new DOMException("Character preparation aborted", "AbortError"));
+      reject(new DOMException('Character preparation aborted', 'AbortError'));
       pumpPreparationQueue();
     };
     const entry = { resolve, reject, signal, abort };
@@ -109,7 +110,7 @@ export function acquireCharacterPreparation(signal) {
       abort();
       return;
     }
-    signal?.addEventListener("abort", abort, { once: true });
+    signal?.addEventListener('abort', abort, { once: true });
     preparationQueue.push(entry);
     pumpPreparationQueue();
   });
@@ -144,8 +145,8 @@ async function finishRequest(id, result, reused = false) {
 function preparationWorker() {
   clearTimeout(idleTimer);
   if (worker) return worker;
-  worker = new Worker(new URL("./legacy-worker.mjs", import.meta.url), {
-    type: "module",
+  worker = new Worker(new URL('./legacy-worker.mjs', import.meta.url), {
+    type: 'module',
   });
   worker.onmessage = ({ data }) => {
     void finishRequest(data.id, data);
@@ -156,7 +157,7 @@ function preparationWorker() {
     worker = undefined;
     for (const id of failed)
       void finishRequest(id, {
-        error: "Character preparation failed",
+        error: 'Character preparation failed',
         milliseconds: 0,
       });
   };
@@ -166,7 +167,7 @@ function preparationWorker() {
 function sharedModule() {
   if (!modulePromise) {
     controller = createControllerModeAdapter(
-      () => new URL("./orbit-characters.wasm", import.meta.url),
+      () => new URL('./orbit-characters.wasm', import.meta.url),
     );
     modulePromise = Promise.race([
       createModule({
@@ -188,7 +189,7 @@ function sharedModule() {
             module.orbitCompletePreparation(
               id,
               null,
-              "Character preparation requires a scoped call",
+              'Character preparation requires a scoped call',
               0,
             );
             return;
@@ -201,6 +202,7 @@ function sharedModule() {
             activities,
             points: scope.points,
             authoredParts: scope.authoredParts,
+            eyeSpacing: scope.authoredParts?.eyeSpacing,
           });
           const complete = async (result, reused = false) => {
             await waitForSharedRender();
@@ -210,7 +212,7 @@ function sharedModule() {
               module.orbitCompletePreparation(
                 id,
                 result.bytes ?? null,
-                result.error || "",
+                result.error || '',
                 result.milliseconds || 0,
               );
             });
@@ -239,6 +241,7 @@ function sharedModule() {
               activities,
               points: scope.points,
               authoredParts: scope.authoredParts,
+              eyeSpacing: scope.authoredParts?.eyeSpacing,
             });
           } catch (error) {
             void finishRequest(request, {
@@ -268,13 +271,13 @@ function facade(module, scope) {
     const proxy = new Proxy(target, {
       get(instance, key) {
         const value = Reflect.get(instance, key, instance);
-        if (typeof value !== "function" || key === "constructor") return value;
+        if (typeof value !== 'function' || key === 'constructor') return value;
         if (!methods.has(key))
           methods.set(key, (...args) => {
             const returned = scoped(scope, () => value.apply(instance, args));
-            if (key === "applyActivity" && returned === 0 && activities)
+            if (key === 'applyActivity' && returned === 0 && activities)
               controller.markBound(instance);
-            if (key === "delete" && !deleted) {
+            if (key === 'delete' && !deleted) {
               controller.unregister(instance);
               deleted = true;
               characters--;
@@ -295,7 +298,7 @@ function facade(module, scope) {
     const instance = handles.get(character);
     if (!instance)
       throw new Error(
-        "Character controller belongs to a different engine scope",
+        'Character controller belongs to a different engine scope',
       );
     return scoped(scope, () => controller.controllerMode(instance, enabled));
   };
@@ -303,9 +306,29 @@ function facade(module, scope) {
     const instance = handles.get(character);
     if (!instance)
       throw new Error(
-        "Character controller belongs to a different engine scope",
+        'Character controller belongs to a different engine scope',
       );
     return scoped(scope, () => controller.controllerState(instance));
+  };
+  result.controllerSignature = (character, preset) => {
+    const instance = handles.get(character);
+    if (!instance)
+      throw new Error(
+        'Character controller belongs to a different engine scope',
+      );
+    return scoped(scope, () =>
+      controller.controllerSignature(instance, preset),
+    );
+  };
+  result.controllerWithSignature = (character, preset, operation) => {
+    const instance = handles.get(character);
+    if (!instance)
+      throw new Error(
+        'Character controller belongs to a different engine scope',
+      );
+    return scoped(scope, () =>
+      controller.controllerWithSignature(instance, preset, operation),
+    );
   };
   result.Character = function Character(...args) {
     clearTimeout(idleTimer);
@@ -323,20 +346,46 @@ function facade(module, scope) {
  */
 function normalizeAuthoredParts(value) {
   if (!value || !Object.keys(value).length) return undefined;
+  const keys = [
+    'bodyPreset',
+    'paintBody',
+    'shape',
+    'eyes',
+    'eyewear',
+    'accessory',
+    'eyeSpacing',
+  ];
   if (
-    Object.keys(value).some(
-      (key) => !["shape", "eyes", "accessory"].includes(key),
-    ) ||
-    (value.shape !== undefined && value.shape !== "clippo") ||
-    (value.eyes !== undefined && !["todd", "clippo"].includes(value.eyes)) ||
-    (value.accessory !== undefined && value.accessory !== "felipe_beret")
+    Object.keys(value).some((key) => !keys.includes(key)) ||
+    (value.bodyPreset !== undefined &&
+      !ORIGINAL_PRESETS.includes(value.bodyPreset)) ||
+    (value.paintBody !== undefined && typeof value.paintBody !== 'boolean') ||
+    (value.shape !== undefined && value.shape !== 'clippo') ||
+    (value.eyes !== undefined &&
+      ![...NATIVE_PARTS.eyes, 'todd', 'clippo', 'cyclops'].includes(
+        value.eyes,
+      )) ||
+    (value.eyewear !== undefined &&
+      !NATIVE_PARTS.eyewear.includes(value.eyewear)) ||
+    (value.accessory !== undefined &&
+      ![...NATIVE_PARTS.accessory, 'felipe_beret'].includes(value.accessory)) ||
+    (value.eyeSpacing !== undefined &&
+      (!Number.isFinite(value.eyeSpacing) ||
+        value.eyeSpacing < 0.5 ||
+        value.eyeSpacing > 1.5))
   )
-    throw new Error("Unsupported authored character part");
-  return Object.freeze({
-    ...(value.shape ? { shape: value.shape } : {}),
-    ...(value.eyes ? { eyes: value.eyes } : {}),
-    ...(value.accessory ? { accessory: value.accessory } : {}),
-  });
+    throw new Error('Unsupported authored character part');
+  return Object.freeze(
+    Object.fromEntries(
+      keys
+        .filter(
+          (key) =>
+            value[key] !== undefined &&
+            !(key === 'eyeSpacing' && value[key] === 1),
+        )
+        .map((key) => [key, value[key]]),
+    ),
+  );
 }
 export async function getCharacterEngine(parts) {
   const authoredParts = normalizeAuthoredParts(parts);
@@ -345,14 +394,19 @@ export async function getCharacterEngine(parts) {
     originalFacade ??= facade(module, originalScope);
     return originalFacade;
   }
-  // Canonical authored selections have only eleven non-empty combinations.
+  // Retain a bounded set of recipe facades; live Characters own their scopes.
   const key = JSON.stringify(authoredParts);
   if (!authoredFacades.has(key))
     authoredFacades.set(
       key,
       facade(module, { points: undefined, authoredParts }),
     );
-  return authoredFacades.get(key);
+  const result = authoredFacades.get(key);
+  authoredFacades.delete(key);
+  authoredFacades.set(key, result);
+  if (authoredFacades.size > 64)
+    authoredFacades.delete(authoredFacades.keys().next().value);
+  return result;
 }
 
 export async function acquireLegacyEngine(points, parts) {

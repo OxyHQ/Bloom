@@ -78,6 +78,11 @@ it('round-trips the named Clippo preset and independently reusable Clippo body a
     { preset: 'clippo' },
     { preset: 'blue_beret', selections: { shape: 'clippo', eyes: 'todd' } },
     {
+      preset: 'blue_beret',
+      selections: { shape: 'todd', eyes: 'cyclops' },
+      eyeSpacing: 0.8,
+    },
+    {
       preset: 'alfred',
       selections: { shape: 'heart', eyes: 'clippo' },
       bodyColor: '#999b9d',
@@ -89,4 +94,48 @@ it('round-trips the named Clippo preset and independently reusable Clippo body a
     expect(parsePreset(saved).config.character).toEqual(character);
     expect(parsePreset(saved).config.foldShape).toBe(FOLD_CONFIG.foldShape);
   }
+});
+
+it.each([0.5, 1, 1.5])(
+  'round-trips explicit fitted eye spacing %s',
+  (eyeSpacing) => {
+    const character = { preset: 'lime_frog', eyeSpacing };
+    expect(
+      parsePreset({ name: 'Todd', config: { ...FOLD_CONFIG, character } })
+        .config.character,
+    ).toEqual(character);
+  },
+);
+
+it.each([0.49, 1.51, NaN, Infinity, -Infinity, '1', null])(
+  'rejects invalid fitted eye spacing %#',
+  (eyeSpacing) => {
+    expect(() =>
+      parseCharacterConfig({ preset: 'lime_frog', eyeSpacing }),
+    ).toThrow('Invalid character eye spacing');
+  },
+);
+
+it('keeps authored eye spacing implicit when a recipe has not been adjusted', () => {
+  expect(parseCharacterConfig({ preset: 'lime_frog' })).not.toHaveProperty(
+    'eyeSpacing',
+  );
+});
+
+it('round-trips an independent single-eye style without introducing a body or discarding paired spacing', () => {
+  const character = {
+    preset: 'lime_frog',
+    selections: { eyes: 'cyclops', eyewear: 'monocle', accessory: 'crown' },
+    eyeSpacing: 1.28,
+  };
+  const saved = JSON.parse(
+    JSON.stringify({
+      name: 'Single eye',
+      config: { ...FOLD_CONFIG, character },
+    }),
+  );
+  expect(parsePreset(saved).config.character).toEqual(character);
+  expect(parsePreset(saved).config.character?.selections).not.toHaveProperty(
+    'shape',
+  );
 });

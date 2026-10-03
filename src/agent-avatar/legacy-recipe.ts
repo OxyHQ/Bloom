@@ -9,6 +9,7 @@ export type LegacyRecipe = {
   points?: Point[];
   shape?: string;
   eyes: string;
+  eyeSpacing?: number;
   selections?: Pick<
     NonNullable<AvatarCharacterConfig['selections']>,
     'eyewear' | 'accessory'
@@ -89,6 +90,9 @@ export function legacyCharacterRecipe(config: AvatarConfig) {
         : {}),
     },
     bodyColor: customization?.bodyColor ?? avatarHex(config),
+    ...(customization?.eyeSpacing !== undefined
+      ? { eyeSpacing: customization.eyeSpacing }
+      : {}),
   };
 }
 
@@ -110,6 +114,9 @@ export function legacyRecipe(
       ? { shape }
       : { points: radialContour(legacyContours(config), samples) }),
     eyes: recipe.selections.eyes,
+    ...(recipe.eyeSpacing !== undefined
+      ? { eyeSpacing: recipe.eyeSpacing }
+      : {}),
     ...(eyewear || accessory
       ? {
           selections: {
