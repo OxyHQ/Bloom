@@ -4,6 +4,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { Dialog, useDialogControl } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { Rect } from 'react-native-svg';
 
 /**
  * Minimal shape of a `react-test-renderer` JSON node — enough to walk the tree
@@ -65,6 +66,33 @@ function Harness({
 }
 
 describe('Dialog bottom placement delegates to BottomSheet', () => {
+  it.each(['light', 'dark'] as const)('paints the default bottom dialog body in %s mode', (mode) => {
+    const result = render(
+      <BloomThemeProvider mode={mode} colorPreset="teal">
+        <Dialog open placement="bottom"><Text>Body</Text></Dialog>
+      </BloomThemeProvider>,
+    );
+    const paint = result.UNSAFE_root.findAll(node => typeof node.type === 'function' && node.type.name === 'SurfacePaint')[0];
+    expect(paint).toBeDefined();
+    const fillRect = paint!.findAllByType(Rect).find(node => node.props.fillOpacity !== undefined);
+    expect(fillRect).toBeDefined();
+    expect(fillRect!.props.fill).not.toBe('transparent');
+    expect(fillRect!.props.fillOpacity).toBeGreaterThan(0);
+  });
+
+  it('preserves an explicitly transparent bottom dialog panel', () => {
+    const result = renderWithTheme(
+      <Dialog open placement="bottom" panelStyle={{ backgroundColor: 'transparent' }}>
+        <Text>Body</Text>
+      </Dialog>,
+    );
+    const paint = result.UNSAFE_root.findAll(node => typeof node.type === 'function' && node.type.name === 'SurfacePaint')[0];
+    expect(paint).toBeDefined();
+    const fillRect = paint!.findAllByType(Rect).find(node => node.props.fillOpacity !== undefined);
+    expect(fillRect).toBeDefined();
+    expect(fillRect!.props.fill).toBe('transparent');
+  });
+
   it('does not render bottom-sheet content until opened', () => {
     const { queryByText } = renderWithTheme(
       <Harness>
