@@ -1,0 +1,30 @@
+{
+  "sourceVersionCommit": "d4367cc4",
+  "runtimeSourceCommit": "efa54000",
+  "version": "7.1.2",
+  "published": false,
+  "buildAndPackSameCommand": true,
+  "command": "bun run build && bun pm pack --destination /home/nate/Oxy/.agent-evidence/i04-bloom-7.1.2-candidate",
+  "commandExit": 0,
+  "artifact": {
+    "path": "/home/nate/Oxy/.agent-evidence/i04-bloom-7.1.2-candidate/oxy.so-bloom-7.1.2.tgz",
+    "sha256": "2b44b9f029ceec9a723080c8e37ec8a129c4f2113f44882ec46c74ba9f5a34c1",
+    "sha1": "c1e3c8beedd24d0bf07af49da63eafaa60ccdfbf",
+    "bytes": 30538236,
+    "files": 21941
+  },
+  "registryPreflight": {
+    "version": "7.1.1",
+    "dist-tags": {
+      "inbox-maintenance": "4.34.5",
+      "latest": "7.1.1"
+    }
+  },
+  "packageJsonSha256": "92dd2024aced658ef4e021d303ba18e4402f56e2892f126aad2b39fa10accdb7",
+  "bunLockSha256": "dcd1104b451084137bd2787c88f5edbc5e8781f3b6ffbb35e81174031a2d563e",
+  "notes": [
+    "Version-only delta; lockfile unchanged after install",
+    "Full build/pack output was tool-captured and truncated; original complete build log covers byte-identical runtime source",
+    "Native candidate replay and registry publication pending"
+  ]
+}
