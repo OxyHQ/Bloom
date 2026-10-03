@@ -1,0 +1,84 @@
+$ jest --runInBand "--watchman=false" src/__tests__/SurfacePaintResize.test.tsx
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+      10 | describe('native surface paint resize', () => {
+      11 |   it('updates fill and sheen geometry on height and width changes', () => {
+    > 12 |     const view = render(<BloomThemeProvider mode="light">
+         |                        ^
+      13 |       <SurfacePaint testID="paint" fill="#ffffff" radius={24} />
+      14 |     </BloomThemeProvider>);
+      15 |     for (const [width, height] of [[320, 240], [320, 790], [411, 790], [320, 180]]) {
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at Object.<anonymous> (src/__tests__/SurfacePaintResize.test.tsx:12:24)
+
+  console.error
+    react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+
+      28 |
+      29 |   it('keeps explicit alpha and optional sheen independent of geometry', () => {
+    > 30 |     const view = render(<BloomThemeProvider mode="light">
+         |                        ^
+      31 |       <SurfacePaint testID="paint" fill="rgba(10, 20, 30, 0.4)" sheen={false} />
+      32 |     </BloomThemeProvider>);
+      33 |     act(() => fireEvent(view.getByTestId('paint'), 'layout', {
+
+      at Object.process.env.NODE_ENV.exports.create (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:17337:17)
+      at create (node_modules/@testing-library/react-native/src/render-act.ts:15:29)
+      at callback (node_modules/@testing-library/react-native/src/act.ts:31:24)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:814:22)
+      at actImplementation (node_modules/@testing-library/react-native/src/act.ts:30:25)
+      at renderWithAct (node_modules/@testing-library/react-native/src/render-act.ts:13:11)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:69:33)
+      at renderInternal (node_modules/@testing-library/react-native/src/render.tsx:44:10)
+      at Object.<anonymous> (src/__tests__/SurfacePaintResize.test.tsx:30:24)
+
+FAIL src/__tests__/SurfacePaintResize.test.tsx
+  ● native surface paint resize › updates fill and sheen geometry on height and width changes
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 320
+    Received: "100%"
+
+      20 |       expect(rectangles).toHaveLength(2);
+      21 |       for (const rectangle of rectangles) {
+    > 22 |         expect(rectangle.props.width).toBe(width);
+         |                                       ^
+      23 |         expect(rectangle.props.height).toBe(height);
+      24 |       }
+      25 |     }
+
+      at Object.<anonymous> (src/__tests__/SurfacePaintResize.test.tsx:22:39)
+
+  ● native surface paint resize › keeps explicit alpha and optional sheen independent of geometry
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 600
+    Received: "100%"
+
+      36 |     const rectangles = view.UNSAFE_getAllByType(Rect);
+      37 |     expect(rectangles).toHaveLength(1);
+    > 38 |     expect(rectangles[0]!.props.height).toBe(600);
+         |                                         ^
+      39 |     expect(rectangles[0]!.props.fillOpacity).toBe(0.4);
+      40 |   });
+      41 | });
+
+      at Object.<anonymous> (src/__tests__/SurfacePaintResize.test.tsx:38:41)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        0.906 s
+Ran all test suites matching src/__tests__/SurfacePaintResize.test.tsx.
+error: script "test" exited with code 1

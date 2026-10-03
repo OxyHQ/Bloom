@@ -1,0 +1,116 @@
+{
+  "sourceCommit": "16a98eca8c62136af8f49ccce76c34f5def892a0",
+  "sources": [
+    {
+      "path": "bun.lock",
+      "sha256": "567c53ee2b3fb1123e75c468a6e28f28af841acb4f5befe5cfb20f2e40a2fab2",
+      "bytes": 435288
+    },
+    {
+      "path": "docs/bottom-sheet.mdx",
+      "sha256": "b866f1b107f342de19d01f7e10b4db10b1d99e26e9ed226a00bab0b7dc6e28d9",
+      "bytes": 6732
+    },
+    {
+      "path": "docs/releases/6.2.1.md",
+      "sha256": "484ddebd7d0d7a9fe61c0ae7707629ec3312aed96229acc247f7a26ee4f280db",
+      "bytes": 1609
+    },
+    {
+      "path": "package.json",
+      "sha256": "de7928d116bee53aae6d6e1b79d71c3ce2527e9173efe2f895be1e410d4f81b1",
+      "bytes": 141204
+    },
+    {
+      "path": "src/__tests__/BottomSheet.test.tsx",
+      "sha256": "e198b53bf67e2b2b13b7399918b7bb82f35c7cbf5f3741ecbcc73c2f2e4157fc",
+      "bytes": 17093
+    },
+    {
+      "path": "src/__tests__/BottomSheetGesture.test.tsx",
+      "sha256": "8802942811c43bc8f48324ee9e38250428830de4977388a21535f42f3b71389d",
+      "bytes": 5393
+    },
+    {
+      "path": "src/__tests__/DialogBottomSheet.test.tsx",
+      "sha256": "7e59e4155f581fe8a04d81c2b5608b1433885645709a2756e5e03b2c9a944636",
+      "bytes": 13914
+    },
+    {
+      "path": "src/__tests__/SurfacePaintResize.test.tsx",
+      "sha256": "df328c148c10954498226cdf11e714c8e28b77501c5016b9872d7fa547d5c334",
+      "bytes": 1950
+    },
+    {
+      "path": "src/bottom-sheet/BottomSheetBase.tsx",
+      "sha256": "9a7a47dbeb6fa6e6e85be2b425d5b9d95e852af45cc894a1fe8fa8cef7833b2b",
+      "bytes": 40353
+    },
+    {
+      "path": "src/bottom-sheet/types.ts",
+      "sha256": "da573b386644f0db1ef57fc8701ccbef890c154feb78d90d1c28fb8a579d37c0",
+      "bytes": 8171
+    },
+    {
+      "path": "src/dialog/DialogBottomSheet.tsx",
+      "sha256": "1ba45657ffbd4deeb1a1d46a306cca011113e802c888e7340fc0d52fea47bba6",
+      "bytes": 17215
+    },
+    {
+      "path": "src/surface/SurfacePaint.tsx",
+      "sha256": "22733463d4d0cccb878a5f5412ad7c20d5671cb49fe9930f2a3ccc5a7752ad03",
+      "bytes": 4439
+    }
+  ],
+  "records": [
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal-6/resize/build-pack.log",
+      "sha256": "1cb751442d765a50f37e117e7c77183fbb966460d7873a6ad382fd583ff4cf0f",
+      "bytes": 1241436
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal-6/resize/dependency-source.json",
+      "sha256": "6a2e47a637fdfe44b3cc7bef83c68f114653eb0aef67273363febde05b96666b",
+      "bytes": 1156
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal-6/resize/green.log",
+      "sha256": "3c8bd865122b1ca44040056db9930c37f05b7125c1831c9eae79394fefc5ce35",
+      "bytes": 898
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal-6/resize/red.log",
+      "sha256": "80357b1b3b7ce4bc377bf3cb9a876ecbd6acfe9363c4b920f355dd2cb79b9d95",
+      "bytes": 4316
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal-6/resize/types.log",
+      "sha256": "20b233b2564b265498e97535a75af5e5804f229719e290420a9a75d9d66adae1",
+      "bytes": 176
+    }
+  ],
+  "priorDeviceReceipt": {
+    "path": "/home/nate/Oxy/.agent-evidence/root-1519-20261003/android-touch-1056/candidate621-observation.json",
+    "sha256": "d9f0faf8644972422a0f63ee0dfa2655b282007893006ad0306f9cf9d77ae0d9",
+    "bytes": 4229
+  },
+  "tarball": {
+    "path": "/home/nate/Oxy/.agent-evidence/i04-bloom-6.2.1-resized-candidate.tgz",
+    "sha256": "786373e70f9dbf848639643e1ad7a91b3635db8c7b080bee71257178a51aac86",
+    "bytes": 19928286,
+    "files": 20940,
+    "sha1": "e02b04afcbd2096f079bb058e0e908f4ea5963cf"
+  },
+  "results": {
+    "RED": "2 failures: rectangle dimensions remain100% after layout",
+    "GREEN": "9suites110PASS; TS+consumer controlPASS; fresh build+pack/package/freshnessPASS",
+    "deviceCandidate": "PENDING",
+    "published": false
+  },
+  "limits": [
+    "Prior candidate lifecycle passed but resized paint failed with morph both enabled and disabled.",
+    "Native SVG primitives mocked in Jest; actual painted geometry requires root device observation.",
+    "Only public onLayout updates native Rect dimensions; web CSS/radii/tokens/gesture APIs unchanged.",
+    "No assertion that this fixes prior authentication-dialog touch behavior."
+  ]
+}
