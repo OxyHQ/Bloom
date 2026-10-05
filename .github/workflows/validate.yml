@@ -2,6 +2,8 @@ name: Validate Bloom
 
 on:
   pull_request:
+  # main lands through a merge queue whose one required check is `CI complete`.
+  merge_group:
   push:
     branches: [main]
   workflow_dispatch:
@@ -61,3 +63,23 @@ jobs:
       # Keep the runtime/Intl data aligned with the build. --no-opt mitigates
       # the documented V8 contextify crashes; it cannot go in NODE_OPTIONS.
       - run: node --no-opt node_modules/jest/bin/jest.js --watchman=false --maxWorkers=2 --shard=${{ matrix.shard }}/9
+
+  # The one required check of the main merge queue: green only when every job
+  # above is, so a skipped or cancelled shard can never read as a pass.
+  ci-complete:
+    name: CI complete
+    if: always()
+    needs: [build, tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every job passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          for result in $RESULTS; do
+            if [ "$result" != success ]; then
+              echo "::error::a required job ended $result"
+              exit 1
+            fi
+          done
