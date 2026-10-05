@@ -8,7 +8,7 @@ function harness(limit = 4) {
   let live = 0,
     peak = 0;
   const items = [];
-  function add({ deferred = false, still = false } = {}) {
+  function add({ deferred = false, still = false, interactive = false } = {}) {
     const item = { starts: 0, stops: 0, resolve: undefined, lease: undefined };
     item.lease = budget.register({
       start() {
@@ -29,7 +29,7 @@ function harness(limit = 4) {
         throw error;
       },
     });
-    item.lease.update({ visible: true, still });
+    item.lease.update({ visible: true, still, interactive });
     items.push(item);
     return item;
   }
@@ -55,6 +55,29 @@ test('every avatar in a crowd gets painted without exceeding four GPU objects', 
   for (const item of h.items) item.lease.dispose();
   assert.equal(h.live(), 0);
   assert.equal(h.budget.stats().registered, 0);
+});
+
+test('an editor preview prepares before passive avatars mounted ahead of it', async () => {
+  // Preparation is serialized, so first-come order left an editor mounted
+  // after a crowd of thumbnails without capabilities (its controls disabled)
+  // until every one of them had painted. Even under reduced motion (still).
+  const h = harness();
+  const crowd = Array.from({ length: 12 }, () =>
+    h.add({ deferred: true, still: true }),
+  );
+  await h.frame();
+  assert.equal(crowd[0].starts, 1);
+  const editor = h.add({ deferred: true, still: true, interactive: true });
+  await h.frame();
+  assert.equal(editor.starts, 0);
+  // The surface already preparing finishes; the editor is admitted next.
+  crowd[0].resolve();
+  await Promise.resolve();
+  crowd[0].lease.painted();
+  await h.frame();
+  assert.equal(editor.starts, 1);
+  assert.equal(crowd.filter((item) => item.starts).length, 1);
+  for (const item of h.items) item.lease.dispose();
 });
 
 test('cancelled async construction still occupies its slot until disposal', async () => {
@@ -143,4 +166,50 @@ test('a renderer failure frees preparation capacity for the remaining avatars', 
   assert.deepEqual(errors, ['preparation failed']);
   broken.dispose();
   next.dispose();
+});
+
+test('a managed avatar tells the budget whether it is interactive, even when still', async () => {
+  const noop = () => {};
+  class Observer {
+    observe() {}
+    disconnect() {}
+  }
+  Object.assign(globalThis, {
+    IntersectionObserver: Observer,
+    ResizeObserver: Observer,
+    devicePixelRatio: 1,
+    document: { hidden: false, addEventListener: noop, removeEventListener: noop },
+  });
+  const { renderBudget } = await import('../assets/character-runtime/render-budget.mjs');
+  const { createManagedAvatar } = await import('../assets/character-runtime/managed-avatar.mjs');
+  const register = renderBudget.register;
+  const reported = [];
+  renderBudget.register = () => ({
+    update: (value) => reported.push(value),
+    painted: noop,
+    fail: noop,
+    dispose: noop,
+  });
+  try {
+    const canvas = {
+      clientWidth: 162,
+      clientHeight: 162,
+      addEventListener: noop,
+      removeEventListener: noop,
+    };
+    for (const interactive of [true, false]) {
+      reported.length = 0;
+      const avatar = createManagedAvatar(
+        canvas,
+        { config: { character: { preset: 'bloom' } }, interactive, reduced: true },
+        {},
+        async () => ({}),
+      );
+      assert.equal(reported.at(-1).still, true);
+      assert.equal(reported.at(-1).interactive, interactive);
+      avatar.dispose();
+    }
+  } finally {
+    renderBudget.register = register;
+  }
 });
