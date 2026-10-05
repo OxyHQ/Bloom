@@ -57,6 +57,7 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
       visible: (visible || props.portrait) && !document.hidden,
       still: still(),
       priority: still() ? 0 : priority(),
+      interactive: !!props.interactive,
       needsPaint: !ready,
     });
   function promote(duration = 5000) {

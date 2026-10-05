@@ -57,11 +57,17 @@ export function createRenderBudget(
       selected.add(e);
       if (e.needsPaint) preparing = true;
     }
+    // An interactive surface (an editor's live preview) is admitted before
+    // passive thumbnails: its capabilities enable the controls around it, and
+    // mount order alone left those controls disabled until every avatar
+    // mounted earlier had prepared, one at a time.
     const pending = eligible
       .filter((e) => e.needsPaint && !selected.has(e))
       .sort(
         (a, b) =>
-          Number(!!resident(b)) - Number(!!resident(a)) || a.order - b.order,
+          Number(!!resident(b)) - Number(!!resident(a)) ||
+          Number(!!b.interactive) - Number(!!a.interactive) ||
+          a.order - b.order,
       );
     if (selected.size < limit && pending.length) {
       const next =
@@ -97,6 +103,7 @@ export function createRenderBudget(
         priority: 0,
         needsPaint: true,
         still: false,
+        interactive: false,
         starting: false,
         controller: null,
         wanted: false,
