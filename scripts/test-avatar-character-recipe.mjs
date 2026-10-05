@@ -47,8 +47,9 @@ test('Clippo independently accepts shape, eye, accessory and color overrides', (
 test('all authored parts compose on migrated and native shapes without leaking the preset body', () => {
   const selections = { eyes: 'clippo', accessory: 'felipe_beret' };
   assert.deepEqual(authoredPartsFor(props({ preset: 'alfred', selections })), {
-    bodyPreset: 'alfred',
+    faceShape: 'rounded_triangle',
     ...selections,
+    eyewear: 'tall_oval_frames',
   });
   const p = {
     ...props({ preset: 'bloom' }),
@@ -66,7 +67,12 @@ test('intact Todd and Felipe keep their original preset and edited variants keep
   }
   assert.deepEqual(
     authoredPartsFor(props({ preset: 'lime_frog', bodyColor: '#123456' })),
-    { bodyPreset: 'lime_frog', paintBody: true, eyes: 'todd' },
+    {
+      faceShape: 'rounded_head_two_ears',
+      eyes: 'todd',
+      eyewear: 'none',
+      accessory: 'bow',
+    },
   );
   assert.deepEqual(
     authoredPartsFor(
@@ -82,23 +88,24 @@ test('intact Todd and Felipe keep their original preset and edited variants keep
 });
 
 test('native eyes, eyewear, accessories and explicit spacing keep the actual named body', () => {
-  for (const preset of [
-    'blue_beret',
-    'alfred',
-    'purple_heart',
-    'lime_frog',
-    'coral_monocle',
-    'gus',
-    'blue_spectacles',
-    'lime_headphones',
-  ]) {
+  const presetShapes = {
+    blue_beret: 'six_lobed_flower',
+    alfred: 'rounded_triangle',
+    purple_heart: 'heart',
+    lime_frog: 'rounded_head_two_ears',
+    coral_monocle: 'twelve_scalloped_rosette',
+    gus: 'rounded_diamond',
+    blue_spectacles: 'rounded_cube',
+    lime_headphones: 'circle_two_ears',
+  };
+  for (const [preset, shape] of Object.entries(presetShapes)) {
     const input = props({
       preset,
       selections: { eyes: 'oval', eyewear: 'monocle', accessory: 'crown' },
       eyeSpacing: 1.3,
     });
     const parts = authoredPartsFor(input);
-    assert.equal(parts.bodyPreset, preset);
+    assert.equal(parts.faceShape, shape);
     assert.equal(parts.eyes, 'oval');
     assert.equal(parts.eyewear, 'monocle');
     assert.equal(parts.accessory, 'crown');
@@ -133,8 +140,7 @@ test('explicit Todd body keeps the chosen paint and pieces independently of pres
       }),
     ),
     {
-      bodyPreset: 'lime_frog',
-      paintBody: true,
+      faceShape: 'rounded_head_two_ears',
       eyes: 'dots',
       eyewear: 'none',
       accessory: 'none',
@@ -235,7 +241,12 @@ test('authored body capability defaults replace neutral fitting choices and reta
       eyes: 'round_inset',
       accessories: ['bow'],
     }),
-    { shape: 'todd', eyes: 'todd', eyewear: 'none', accessory: 'bow' },
+    {
+      shape: 'rounded_head_two_ears',
+      eyes: 'todd',
+      eyewear: 'none',
+      accessory: 'bow',
+    },
   );
   assert.equal(
     bodySelectionDefaults('blue_beret', {

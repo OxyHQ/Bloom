@@ -9,7 +9,6 @@ import {
   shapeFaceLayout,
   authoredAssemblyRecords,
 } from './authored-parts.mjs';
-import { composeAuthoredParts } from './authored-parts.mjs';
 import { sha256 } from './sha256.mjs';
 import {
   deformLegacyAssembly,
@@ -119,7 +118,6 @@ self.onmessage = ({ data }) => {
           'eyes',
           'accessory',
         ]);
-        result.bytes = await composeAuthoredParts(module, result.bytes, data);
         if (data.authoredParts.eyes === 'cyclops') {
           const { composeCyclopsAssembly } =
             await import('./cyclops-geometry.mjs');

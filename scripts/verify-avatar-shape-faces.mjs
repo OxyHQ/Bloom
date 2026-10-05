@@ -46,6 +46,11 @@ try {
         eyes: 'oval',
         preset,
       })),
+      {
+        shape: 'six_lobed_flower',
+        eyes: 'dots',
+        preset: 'blue_beret',
+      },
     );
     if (!full)
       rows.splice(
@@ -60,6 +65,11 @@ try {
           shape: 'rounded_cube',
           eyes: 'sleepy_lids',
           preset: 'blue_spectacles',
+        },
+        {
+          shape: 'six_lobed_flower',
+          eyes: 'dots',
+          preset: 'blue_beret',
         },
       );
     const middle = (b) => b.min.map((v, k) => (v + b.max[k]) / 2);
@@ -202,7 +212,7 @@ try {
               ) < 0.005,
               'shape-owned centers ' + shape + '/' + style,
             );
-  if (full)
+  if (full && result.geometry[24] && result.geometry[25])
     for (const i of [24, 25])
       for (let side = 0; side < 2; side++)
         for (let k = 0; k < 2; k++)

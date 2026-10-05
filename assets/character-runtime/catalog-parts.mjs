@@ -113,6 +113,37 @@ async function reference(module, category, id, request) {
     references.set(key, cached);
     return cached;
   }
+  if (category === 'eyes' && id === 'todd') {
+    const result = module.orbitPrepareAssembly(
+      module.presetAppearance('lime_frog'),
+      request.quality,
+      `${request.key}:donor:eyes:todd`,
+      false,
+    );
+    if (!result.bytes || result.error)
+      fail(result.error || 'Todd eye donor missing');
+    const info = authoredAssemblyRecords(result.bytes.slice());
+    if (!authoredEyeRecords(info).length) fail('Todd eye meshes missing');
+    return info;
+  }
+  if (category === 'accessory' && id === 'felipe_beret') {
+    const result = module.orbitPrepareAssembly(
+      module.presetAppearance('blue_beret'),
+      request.quality,
+      `${request.key}:donor:accessory:felipe_beret`,
+      false,
+    );
+    if (!result.bytes || result.error)
+      fail(result.error || 'Felipe beret donor missing');
+    const info = authoredAssemblyRecords(result.bytes.slice());
+    if (
+      !info.records
+        .slice(1)
+        .some((part) => recordHasLabel(info, part, 'beret'))
+    )
+      fail('Felipe beret mesh missing');
+    return info;
+  }
   const shapes = module.catalog(0).map((item) => item.id),
     eyes =
       category === 'eyes'
@@ -282,8 +313,10 @@ export async function composeCatalogParts(
       authoredEyeRecords(info).every((p) => recordHasLabel(info, p, id))
     )
       continue;
-    const virtualAccessory = category === 'accessory' && id === 'felipe_beret';
-    if (!NATIVE_PARTS[category].includes(id) && !virtualAccessory) continue;
+    const virtual =
+      (category === 'accessory' && id === 'felipe_beret') ||
+      (category === 'eyes' && id === 'todd');
+    if (!NATIVE_PARTS[category].includes(id) && !virtual) continue;
     const records = info.records.map((part) => record(info, part));
     const removed = new Set(
       info.records
@@ -294,12 +327,18 @@ export async function composeCatalogParts(
     if (category === 'eyes' && !removed.size)
       fail('target face classification missing');
     let fitted = [];
-    if (id !== 'none' && !virtualAccessory) {
+    if (id !== 'none') {
       const donor = await reference(module, category, id, request);
-      const transforms = fitCatalogPartRecords(info, donor, category, id, {
-        singleEye: request.authoredParts?.eyes === 'cyclops',
-        faceLayout: request.faceLayout,
-      });
+      const transforms = fitCatalogPartRecords(
+        info,
+        donor,
+        category,
+        id === 'felipe_beret' ? 'beret' : id,
+        {
+          singleEye: request.authoredParts?.eyes === 'cyclops',
+          faceLayout: request.faceLayout,
+        },
+      );
       fitted = await Promise.all(
         transforms.map(({ part, ...transform }) =>
           transformAuthoredRecord(donor.bytes, part, transform),

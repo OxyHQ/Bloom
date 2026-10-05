@@ -1,4 +1,4 @@
-import { decodeAppearance, encodeAppearance } from './appearance-codec.mjs';
+import { encodeAppearance } from './appearance-codec.mjs';
 import { inspectLegacyAssembly } from './legacy-geometry.mjs';
 import { sha256 } from './sha256.mjs';
 import { MIGRATED_FACES } from './migrated-faces.mjs';
@@ -68,23 +68,6 @@ export function authoredAssemblyRecords(bytes) {
   };
 }
 
-function prepared(
-  module,
-  appearance,
-  request,
-  label,
-  activities = request.activities,
-) {
-  const result = module.orbitPrepareAssembly(
-    appearance,
-    request.quality,
-    `${request.key}:${label}`,
-    activities,
-  );
-  if (!result.bytes || result.error)
-    fail(result.error || `${label} preparation failed`);
-  return result.bytes.slice();
-}
 function midpoint(bounds, axis) {
   return (bounds.min[axis] + bounds.max[axis]) / 2;
 }
@@ -239,216 +222,6 @@ export async function transformAuthoredRecord(
       ),
     },
   };
-}
-
-/** Inject the actual Todd eyes / Felipe beret after custom contour fitting.
- * Native oval/beret are fitting references only; their meshes are removed.
- * Every other target record and the animation/activity payload are retained;
- * aggregate scene bounds expand when an authored part extends beyond them.
- */
-export async function composeAuthoredParts(module, bytes, request) {
-  // Clippo shape/face is composed first by the worker. This helper then handles
-  // only Todd/Felipe so all parts remain independently selectable.
-  const selected = {
-    ...(request.authoredParts?.eyes === 'todd' ? { eyes: 'todd' } : {}),
-    ...(request.authoredParts?.accessory === 'felipe_beret'
-      ? { accessory: 'felipe_beret' }
-      : {}),
-  };
-  if (!selected?.eyes && !selected?.accessory) return bytes;
-  if (
-    (selected.eyes && selected.eyes !== 'todd') ||
-    (selected.accessory && selected.accessory !== 'felipe_beret')
-  )
-    fail('unknown part');
-  const target = authoredAssemblyRecords(bytes);
-  const appearance = decodeAppearance(request.appearance);
-  if (
-    selected.accessory &&
-    appearance.accessories.length &&
-    (appearance.accessories.length !== 1 ||
-      appearance.accessories[0] !== 'beret')
-  )
-    fail('Felipe requires a beret or bare-head fitting reference');
-
-  // The native eye shader identity is length-prefixed in each record. Named
-  // presets can retain their original state when a virtual selection matches
-  // its backing catalog value; stripping their accessory in a reference state
-  // would violate the original engine's complete-Here-preset validation.
-  let targetEyes = target.records
-    .slice(1)
-    .filter(
-      (part) =>
-        hasAuthoredLabel(bytes, part, appearance.eyes) ||
-        hasAuthoredLabel(bytes, part, 'source_integrated_eye'),
-    );
-  if (selected.eyes && !targetEyes.length) {
-    const eyeReference = structuredClone(appearance);
-    eyeReference.hereCharacter = null;
-    eyeReference.accessories = [];
-    eyeReference.accessoryColors = {};
-    eyeReference.eyewear = 'none';
-    if (eyeReference.model) {
-      eyeReference.model.accessories = {};
-      eyeReference.model.eyewear = null;
-    }
-    const face = authoredAssemblyRecords(
-      prepared(
-        module,
-        encodeAppearance(eyeReference),
-        request,
-        'authored-eye-reference',
-      ),
-    );
-    const eyeNames = new Set(face.records.slice(1).map((part) => part.name));
-    targetEyes = target.records.filter((part) => eyeNames.has(part.name));
-  }
-  if (selected.eyes && targetEyes.length < 2)
-    fail('missing eye fitting meshes');
-  const targetHat = selected.accessory
-    ? target.records
-        .slice(1)
-        .filter((part) => hasAuthoredLabel(bytes, part, 'beret'))
-    : [];
-
-  const replacements = new Map();
-  if (selected.eyes) {
-    // Quality-0/1 authored renderable records were compared byte-for-byte with
-    // activities on/off. The copied eyes/hat are identical; avoid preparing an
-    // unused ~2.6 MB hands/panel payload for each reference, not the target.
-    const sourceBytes = prepared(
-      module,
-      new Uint8Array(module.presetAppearance('lime_frog')),
-      request,
-      'authored-todd',
-      request.quality === 0 || request.quality === 1
-        ? false
-        : request.activities,
-    );
-    const source = authoredAssemblyRecords(sourceBytes);
-    const eyes = source.records.slice(1, 5);
-    if (
-      eyes.length !== 4 ||
-      !eyes.every((part) =>
-        hasAuthoredLabel(sourceBytes, part, 'source_integrated_eye'),
-      )
-    )
-      fail('unrecognized Todd eye assembly');
-    for (const sign of [-1, 1]) {
-      const group = targetEyes.filter(
-        (part) => Math.sign(midpoint(part.bounds, 0)) === sign,
-      );
-      if (!group.length) fail('missing eye fitting anchor');
-      const destination = union(group);
-      const pair = eyes.filter(
-        (part) => Math.sign(midpoint(part.bounds, 0)) === sign,
-      );
-      if (pair.length !== 2) fail('Todd eye pair');
-      const outer = pair[0];
-      // Interocular distance controls centers, never the authored eye size.
-      // Circle and Todd are both ~2 units wide but their native gaps differ
-      // by more than 2x; scaling by that gap buried the white rim in the body.
-      // Clippo is a narrow open wire: its bounds are not a solid face width.
-      const clippo =
-        target.body.furCount === 0 &&
-        hasAuthoredLabel(bytes, target.body, 'metal');
-      const intrinsic = request.faceLayout;
-      const sourceRadius =
-        Math.max(
-          outer.bounds.max[0] - outer.bounds.min[0],
-          outer.bounds.max[1] - outer.bounds.min[1],
-        ) / 2;
-      const scale = intrinsic
-        ? intrinsic.radius / sourceRadius
-        : clippo
-          ? 1
-          : Math.max(
-              0.65,
-              Math.min(
-                1.2,
-                (target.body.bounds.max[0] - target.body.bounds.min[0]) /
-                  (source.body.bounds.max[0] - source.body.bounds.min[0]),
-              ),
-            );
-      const origin = [0, 1, 2].map((k) => midpoint(outer.bounds, k));
-      const center = intrinsic?.centers[sign < 0 ? 0 : 1];
-      const translate = [0, 1].map(
-        (k) => (center?.[k] ?? midpoint(destination, k)) - origin[k],
-      );
-      translate.push(
-        (center?.[2] ?? destination.min[2]) -
-          ((outer.bounds.min[2] - origin[2]) * scale + origin[2]),
-      );
-      replacements.set(
-        group[0].part,
-        await Promise.all(
-          pair.map((part) =>
-            transformAuthoredRecord(sourceBytes, part, {
-              scale,
-              origin,
-              translate,
-            }),
-          ),
-        ),
-      );
-      for (const part of group.slice(1)) replacements.set(part.part, []);
-    }
-  }
-  if (selected.accessory) {
-    const sourceBytes = prepared(
-      module,
-      new Uint8Array(module.presetAppearance('blue_beret')),
-      request,
-      'authored-felipe',
-      request.quality === 0 || request.quality === 1
-        ? false
-        : request.activities,
-    );
-    const source = authoredAssemblyRecords(sourceBytes);
-    const hat = source.records.slice(3, 6);
-    if (
-      hat.length !== 3 ||
-      !hat.every((part) => hasAuthoredLabel(sourceBytes, part, 'beret'))
-    )
-      fail('unrecognized Felipe beret assembly');
-    const bounds = union(hat);
-    const destinationBounds = targetHat.length ? union(targetHat) : null;
-    const transforms = destinationBounds
-      ? hat.map((part) => ({
-          part,
-          scale: Math.min(
-            1.5,
-            (destinationBounds.max[0] - destinationBounds.min[0]) /
-              (bounds.max[0] - bounds.min[0]),
-          ),
-          origin: [0, 1, 2].map((k) => midpoint(bounds, k)),
-          translate: [0, 1, 2].map(
-            (k) => midpoint(destinationBounds, k) - midpoint(bounds, k),
-          ),
-        }))
-      : fitCatalogPartRecords(target, source, 'accessory', 'beret');
-    const fitted = await Promise.all(
-      transforms.map(({ part, ...transform }) =>
-        transformAuthoredRecord(sourceBytes, part, transform),
-      ),
-    );
-    if (targetHat.length) {
-      replacements.set(targetHat[0].part, fitted);
-      for (const part of targetHat.slice(1)) replacements.set(part.part, []);
-    } else replacements.set(-1, fitted);
-  }
-  const records = target.records.flatMap(
-    (part) =>
-      replacements.get(part.part) ?? [
-        {
-          bytes: bytes.slice(part.start, part.end),
-          name: part.name,
-          bounds: part.bounds,
-        },
-      ],
-  );
-  records.push(...(replacements.get(-1) ?? []));
-  return assembleAuthoredRecords(target, records);
 }
 
 /** Rebuild the native cache identity and scene extents after attachment fitting. */
@@ -620,8 +393,10 @@ export function shapeFaceLayout(info, request, module) {
       face.centers[1][0] - face.centers[0][0],
       face.centers[1][1] - face.centers[0][1],
     );
-    const radius = Math.max(face.radius, 0.23);
-    const eyeGap = Math.max(sourceGap, 0.58, radius / 0.4);
+    const sixLobedFace =
+      request.authoredParts?.faceShape === 'six_lobed_flower';
+    const radius = Math.max(face.radius, sixLobedFace ? 0.24 : 0);
+    const eyeGap = Math.max(sourceGap, radius * 2.1);
     const centerX = (face.centers[0][0] + face.centers[1][0]) / 2;
     return {
       // Small native marks can understate the space their replacement styles

@@ -687,7 +687,10 @@ async function createLiveCharacter(
           throw new Error('Invalid character appearance');
       }
       for (const key of Object.keys(category)) {
-        const selected = authoredParts[key] ?? recipe.selections?.[key];
+        const selected =
+          (key === 'shape' ? authoredParts.faceShape : undefined) ??
+          authoredParts[key] ??
+          recipe.selections?.[key];
         // Virtual choices replace copied prepared meshes in the worker. The
         // original engine still selects its own valid backing geometry.
         const value =
@@ -788,6 +791,7 @@ async function createLiveCharacter(
         selected.shape = recipe.selections.shape;
       available['eyes:cyclops'] = true;
       if (
+        recipe.selections?.shape === 'todd' ||
         authoredParts.bodyPreset === 'lime_frog' ||
         (recipe.preset === 'lime_frog' && !recipe.selections?.shape)
       )

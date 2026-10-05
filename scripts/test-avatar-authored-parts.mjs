@@ -4,12 +4,10 @@ import {
   authoredAssemblyRecords,
   translateAuthoredRecord,
   transformAuthoredRecord,
-  composeAuthoredParts,
   fitCatalogPartRecords,
   authoredBodyFront,
   fitAuthoredHeadwear,
 } from '../assets/character-runtime/authored-parts.mjs';
-import { encodeAppearance } from '../assets/character-runtime/appearance-codec.mjs';
 
 // Bounded record fixture exercises serialization, not the original renderer.
 // Real source materials/meshes/pixels are checked by the browser gate.
@@ -221,110 +219,6 @@ test('uniform fitting scales pose deltas and bounds while retaining normals and 
   );
   for (const scale of [0, -1, NaN, Infinity])
     await assert.rejects(transformAuthoredRecord(f.bytes, part, { scale }));
-});
-
-test('Todd eye diameter follows equal-size bodies independently from their native interocular spacing', async () => {
-  function assembly(gap, source) {
-    const body = fixture(0, 144),
-      parts = [body];
-    body.view.setUint32(body.start + 24, 1, true);
-    for (let vertex = 0; vertex < 3; vertex++)
-      for (let k = 0; k < 3; k++)
-        body.view.setFloat32(
-          body.vertices + vertex * 96 + k * 4,
-          vertex === 0 ? -1 : vertex === 1 ? 1 : 0,
-          true,
-        );
-    for (const sign of [-1, 1])
-      for (let layer = 0; layer < (source ? 2 : 1); layer++) {
-        const part = fixture(
-          0,
-          144,
-          String(parts.length).repeat(64) + ':surface:shadow',
-        );
-        const label = new TextEncoder().encode(
-          source ? 'source_integrated_eye' : 'oval',
-        );
-        part.view.setUint32(part.start + 24, 1, true);
-        part.view.setUint32(part.start + 112, label.length, true);
-        part.bytes.set(label, part.start + 116);
-        const width = source ? (layer ? 0.24 : 0.344) : 0.2,
-          center = (sign * gap) / 2;
-        const min = [center - width / 2, 0.3, 0.42 + layer * 0.15],
-          max = [center + width / 2, 0.68, 0.6 + layer * 0.003];
-        for (let k = 0; k < 3; k++) {
-          part.view.setFloat32(part.start + k * 4, min[k], true);
-          part.view.setFloat32(part.start + 12 + k * 4, max[k], true);
-        }
-        for (let vertex = 0; vertex < 3; vertex++)
-          for (let k = 0; k < 3; k++)
-            part.view.setFloat32(
-              part.vertices + vertex * 96 + k * 4,
-              vertex === 0
-                ? min[k]
-                : vertex === 1
-                  ? max[k]
-                  : (min[k] + max[k]) / 2,
-              true,
-            );
-        parts.push(part);
-      }
-    const size = 4 + parts.reduce((sum, p) => sum + p.end - p.start, 0) + 160,
-      bytes = new Uint8Array(size);
-    new DataView(bytes.buffer).setUint32(0, parts.length, true);
-    let at = 4;
-    for (const p of parts) {
-      bytes.set(p.bytes.subarray(p.start, p.end), at);
-      at += p.end - p.start;
-    }
-    return bytes;
-  }
-  const source = assembly(0.92, true);
-  const module = {
-    presetAppearance: () => new Uint8Array(),
-    orbitPrepareAssembly: () => ({ bytes: source }),
-  };
-  const appearance = encodeAppearance({
-    version: 1,
-    shape: 'circle',
-    color: 'blue',
-    eyes: 'oval',
-    eyewear: 'none',
-    accessories: [],
-    accessoryColors: {},
-    constrained: 0,
-    depth: 0.5,
-    model: null,
-    rig: null,
-    hereCharacter: null,
-  });
-  for (const gap of [0.2, 0.41, 0.92]) {
-    const bytes = await composeAuthoredParts(module, assembly(gap, false), {
-      appearance,
-      quality: 0,
-      key: 'fixture',
-      activities: false,
-      authoredParts: { eyes: 'todd' },
-    });
-    const eyes = authoredAssemblyRecords(bytes).records.slice(1);
-    assert.equal(eyes.length, 4);
-    for (const eye of [eyes[0], eyes[2]]) {
-      assert.ok(
-        Math.abs(eye.bounds.max[0] - eye.bounds.min[0] - 0.344) < 1e-6,
-        'white eye remains full authored width',
-      );
-      assert.ok(
-        Math.abs(eye.bounds.max[2] - eye.bounds.min[2] - 0.18) < 1e-6,
-        'eye depth remains visible',
-      );
-      assert.ok(
-        Math.abs(
-          Math.abs((eye.bounds.min[0] + eye.bounds.max[0]) / 2) - gap / 2,
-        ) < 1e-6,
-        'independent centers use requested reference gap',
-      );
-    }
-  }
 });
 
 test('eyewear fits the final single eye without losing paired lenses or burying the bridge', () => {

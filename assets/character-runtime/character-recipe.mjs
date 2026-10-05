@@ -24,30 +24,50 @@ export function withCharacterGeometry(props) {
   };
 }
 const PRESET_DEFAULTS = Object.freeze({
-  blue_beret: { eyes: 'oval', eyewear: 'none', accessory: 'felipe_beret' },
+  blue_beret: {
+    shape: 'six_lobed_flower',
+    eyes: 'oval',
+    eyewear: 'none',
+    accessory: 'felipe_beret',
+  },
   alfred: {
+    shape: 'rounded_triangle',
     eyes: 'sleepy_lids',
     eyewear: 'tall_oval_frames',
     accessory: 'bow',
   },
   purple_heart: {
+    shape: 'heart',
     eyes: 'oval',
     eyewear: 'round_sunglasses',
     accessory: 'none',
   },
-  lime_frog: { eyes: 'todd', eyewear: 'none', accessory: 'bow' },
+  lime_frog: {
+    shape: 'rounded_head_two_ears',
+    eyes: 'todd',
+    eyewear: 'none',
+    accessory: 'bow',
+  },
   coral_monocle: {
+    shape: 'twelve_scalloped_rosette',
     eyes: 'double_highlights',
     eyewear: 'monocle',
     accessory: 'none',
   },
-  gus: { eyes: 'oval', eyewear: 'classic_sunglasses', accessory: 'orb' },
+  gus: {
+    shape: 'rounded_diamond',
+    eyes: 'oval',
+    eyewear: 'classic_sunglasses',
+    accessory: 'orb',
+  },
   blue_spectacles: {
+    shape: 'rounded_cube',
     eyes: 'crescent_inset',
     eyewear: 'tall_oval_frames',
     accessory: 'three_lobe',
   },
   lime_headphones: {
+    shape: 'circle_two_ears',
     eyes: 'swept_lids',
     eyewear: 'none',
     accessory: 'headphones',
@@ -85,10 +105,12 @@ export function authoredPartsFor(props) {
   const customized = Boolean(
     props.legacy || recipe?.bodyColor || Object.keys(selections).length,
   );
-  const defaults =
-    selections.shape && !isLegacyRecipe(props)
-      ? PRESET_DEFAULTS[recipe.preset]
-      : undefined;
+  const defaults = !isLegacyRecipe(props)
+    ? PRESET_DEFAULTS[recipe.preset]
+    : undefined;
+  const selectedShape = selections.shape ?? defaults?.shape;
+  const shape =
+    selectedShape === 'todd' ? 'rounded_head_two_ears' : selectedShape;
   const eyes =
     selections.eyes ??
     defaults?.eyes ??
@@ -101,14 +123,11 @@ export function authoredPartsFor(props) {
       : undefined);
   if (!customized) return {};
   const bodyPreset =
-    selections.shape === 'todd'
-      ? 'lime_frog'
-      : !isLegacyRecipe(props) &&
-          !props.legacy?.points &&
-          !selections.shape &&
-          ORIGINAL_PRESETS.includes(recipe?.preset)
-        ? recipe.preset
-        : undefined;
+    !shape &&
+    !isLegacyRecipe(props) &&
+    ORIGINAL_PRESETS.includes(recipe?.preset)
+      ? recipe.preset
+      : undefined;
   return {
     ...(bodyPreset ? { bodyPreset } : {}),
     ...(bodyPreset &&
@@ -117,9 +136,8 @@ export function authoredPartsFor(props) {
       : {}),
     ...(selections.shape === 'clippo' ? { shape: 'clippo' } : {}),
     ...((!isLegacyRecipe(props) || !props.legacy?.points) &&
-    (MIGRATED_SHAPE_IDS.includes(selections.shape) ||
-      NATIVE_PARTS.shape.includes(selections.shape))
-      ? { faceShape: selections.shape }
+    (MIGRATED_SHAPE_IDS.includes(shape) || NATIVE_PARTS.shape.includes(shape))
+      ? { faceShape: shape }
       : {}),
     ...(eyes ? { eyes } : {}),
     ...((selections.eyewear ?? defaults?.eyewear)
@@ -164,12 +182,16 @@ export function bodySignatureFor(props) {
   // Distinct migrated contours and Clippo use Todd's original signature as the
   // shared standard; they never fall back to the original Wave/maracas.
   if (props.legacy?.points) return 'lime_frog';
-  return BODY_SIGNATURES[recipe.selections?.shape] ?? 'lime_frog';
+  return (
+    BODY_SIGNATURES[
+      recipe.selections?.shape ?? PRESET_DEFAULTS[recipe.preset]?.shape
+    ] ?? 'lime_frog'
+  );
 }
 /** Prepared authored bodies retain their actual defaults, not the fitting scene's catalog selections. */
 export function bodySelectionDefaults(preset, appearance) {
   return {
-    shape: preset === 'lime_frog' ? 'todd' : appearance.shape,
+    shape: appearance.shape,
     eyes: preset === 'lime_frog' ? 'todd' : appearance.eyes,
     eyewear: appearance.eyewear ?? 'none',
     accessory:

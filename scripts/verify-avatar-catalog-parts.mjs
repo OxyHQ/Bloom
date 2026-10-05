@@ -37,7 +37,6 @@ try {
     const {
       authoredAssemblyRecords,
       authoredEyeRecords,
-      composeAuthoredParts,
       fitAuthoredEyeSpacing,
       fitAuthoredHeadwear,
       shapeFaceLayout,
@@ -53,8 +52,8 @@ try {
       ...m.catalog(0).map((x) => ({ id: x.id, shape: x.id })),
       {
         id: 'todd',
-        shape: 'circle',
-        parts: { bodyPreset: 'lime_frog', paintBody: true },
+        shape: 'rounded_head_two_ears',
+        parts: { faceShape: 'rounded_head_two_ears' },
       },
       { id: 'clippo', shape: 'circle', parts: { shape: 'clippo' } },
       ...Object.entries(MIGRATED_CONTOURS).map(([id, points]) => ({
@@ -173,7 +172,6 @@ try {
             'eyes',
             'accessory',
           ]);
-          bytes = await composeAuthoredParts(m, bytes, request);
           if (parts.eyes === 'cyclops')
             bytes = await composeCyclopsAssembly(m, bytes, request);
           bytes = await composeCatalogParts(m, bytes, request, ['eyewear']);
