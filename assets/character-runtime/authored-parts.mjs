@@ -616,11 +616,22 @@ export function shapeFaceLayout(info, request, module) {
       }
       if (!face) fail('native shape face reference missing');
     }
+    const eyeGap = Math.hypot(
+      face.centers[1][0] - face.centers[0][0],
+      face.centers[1][1] - face.centers[0][1],
+    );
+    const maxRadius = eyeGap * 0.4;
+    const radius = Math.min(
+      Math.max(face.radius, Math.min(0.2, maxRadius)),
+      maxRadius,
+    );
     return {
-      radius: face.radius,
+      // Some native styles are drawn as small marks. Preserve their anchors,
+      // while giving replacement styles a useful size that respects the gap.
+      radius,
       centers: face.centers.map(([x, y, z]) => {
         const front = authoredBodyFront(info, x, y);
-        return [x, y, Number.isFinite(front) ? front - face.radius * 0.3 : z];
+        return [x, y, Number.isFinite(front) ? front - radius * 0.3 : z];
       }),
     };
   }
