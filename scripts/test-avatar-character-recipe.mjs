@@ -30,6 +30,7 @@ test('Clippo independently accepts shape, eye, accessory and color overrides', (
   });
   assert.equal(characterRecipe(p).bodyColor, undefined);
   assert.deepEqual(authoredPartsFor(p), {
+    faceShape: 'heart',
     eyes: 'todd',
     accessory: 'felipe_beret',
   });
@@ -53,7 +54,7 @@ test('all authored parts compose on migrated and native shapes without leaking t
     ...props({ preset: 'bloom' }),
     legacy: { shape: 'circle', eyes: 'oval', selections },
   };
-  assert.deepEqual(authoredPartsFor(p), selections);
+  assert.deepEqual(authoredPartsFor(p), { faceShape: 'circle', ...selections });
   assert.equal(characterRecipe(p).preset, 'legacy');
   assert.equal(characterRecipe(p).selections.shape, 'circle');
 });
@@ -101,7 +102,7 @@ test('native eyes, eyewear, accessories and explicit spacing keep the actual nam
     assert.equal(parts.eyes, 'oval');
     assert.equal(parts.eyewear, 'monocle');
     assert.equal(parts.accessory, 'crown');
-    assert.equal(parts.eyeSpacing, 1.3);
+    assert.equal(parts.eyeSpacing, undefined);
     assert.equal(input.config.character.selections.shape, undefined);
   }
   const legacy = {
@@ -114,7 +115,7 @@ test('native eyes, eyewear, accessories and explicit spacing keep the actual nam
     config: {},
   };
   assert.equal(characterRecipe(legacy).eyeSpacing, 0.7);
-  assert.equal(authoredPartsFor(legacy).eyeSpacing, 0.7);
+  assert.equal(authoredPartsFor(legacy).eyeSpacing, undefined);
   assert.equal(authoredPartsFor(legacy).bodyPreset, undefined);
 });
 test('explicit Todd body keeps the chosen paint and pieces independently of preset', () => {

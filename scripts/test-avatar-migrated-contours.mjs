@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MIGRATED_CONTOURS } from '../assets/character-runtime/migrated-contours.mjs';
-import { sourceContours } from './generate-avatar-contours.mjs';
+import { sourceContours, sourceFaces } from './generate-avatar-contours.mjs';
+import { MIGRATED_FACES } from '../assets/character-runtime/migrated-faces.mjs';
 import {
   withCharacterGeometry,
   characterRecipe,
@@ -35,7 +36,7 @@ test('canonical contour geometry preserves preset, palette, RGB and every select
     assert.equal(authoredPartsFor(props).bodyPreset, undefined);
     assert.equal(authoredPartsFor(props).eyes, 'cyclops');
     assert.equal(authoredPartsFor(props).accessory, 'headphones');
-    assert.equal(authoredPartsFor(props).eyeSpacing, 0.7);
+    assert.equal(authoredPartsFor(props).eyeSpacing, undefined);
     const explicit = {
       ...props,
       legacy: {
@@ -70,8 +71,21 @@ test('canonical legacy starting recipe keeps explicit named paint and defaults w
   assert.equal(characterRecipe(props).preset, 'legacy');
   assert.equal(characterRecipe(props).selections.color, 'blue');
   assert.deepEqual(authoredPartsFor(props), {
+    faceShape: 'cloud',
     eyes: 'oval',
     eyewear: 'none',
     accessory: 'none',
   });
+});
+test('contour face centers and sizes equal the original shape-owned source defaults', () => {
+  assert.deepEqual(MIGRATED_FACES, sourceFaces());
+  assert.equal(MIGRATED_FACES.cloud.centers[0][1], -8 / 83);
+  assert.equal(
+    MIGRATED_FACES.slender.centers[1][0] - MIGRATED_FACES.slender.centers[0][0],
+    (42 * 0.86) / 83,
+  );
+  assert.notDeepEqual(
+    MIGRATED_FACES.petal.centers,
+    MIGRATED_FACES.cloud.centers,
+  );
 });

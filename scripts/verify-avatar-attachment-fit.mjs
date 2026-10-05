@@ -1,5 +1,5 @@
 /** Requires the original-engine Storybook assets and Playwright. Checks native
- * fitted geometry, saved spacing, animation after fitting and resource release. */
+ * fitted geometry, inert legacy spacing, animation after fitting and resource release. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -151,29 +151,25 @@ try {
     pixels: gate.controls.map((_, i) => gate.hash(i)),
   }));
   for (const p of initial.pixels) assert.ok(p.painted > 100);
-  const spaces = [0.6, 1, 1.4].map((n) =>
-    initial.assemblies.find(
-      (a) =>
-        a.parts.eyewear === 'tall_oval_frames' &&
-        Math.abs(a.spacing - n) < 1e-6,
-    ),
+  const framed = initial.assemblies.filter(
+    (a) => a.parts.eyewear === 'tall_oval_frames',
   );
-  assert.ok(spaces.every(Boolean), 'worker receives all saved spacing values');
-  assert.ok(
-    Math.abs(spaces[0].gap / spaces[1].gap - 0.6) < 0.02,
-    'closer eyes keep independent mesh positions',
-  );
-  assert.ok(
-    Math.abs(spaces[2].gap / spaces[1].gap - 1.4) < 0.02,
-    'wider eyes keep independent mesh positions',
-  );
-  assert.equal(spaces[1].frameWidths.length, 2);
-  for (const sample of [spaces[0], spaces[2]])
-    for (let i = 0; i < 2; i++)
-      assert.ok(
-        Math.abs(sample.frameWidths[i] - spaces[1].frameWidths[i]) < 1e-5,
-        'spacing preserves lens size',
-      );
+  assert.ok(framed.length > 0, 'worker prepares the framed face');
+  for (const sample of framed) {
+    assert.equal(
+      sample.spacing,
+      1,
+      'historical spacing does not reach preparation',
+    );
+    assert.equal(sample.frameWidths.length, 2);
+    assert.ok(sample.gap > 0, 'shape retains distinct eye anchors');
+  }
+  for (const index of [9, 11])
+    assert.deepEqual(
+      initial.pixels[index],
+      initial.pixels[10],
+      'Historical spacing values produce identical painted eyes and frames',
+    );
   await page.screenshot({ path: '/tmp/bloom-attachment-fit-gate.png' });
   for (const index of [0, 5, 11]) {
     await page.evaluate((index) => {
@@ -248,7 +244,7 @@ try {
     JSON.stringify(initial, null, 2),
   );
   console.log(
-    'PASS: nine fitted accessories, actual 0.6/1/1.4 eye geometry, native Work/React, no errors and full cleanup.',
+    'PASS: nine fitted accessories, identical geometry for legacy spacing values, native Work/React, no errors and full cleanup.',
   );
 } finally {
   await browser.close();

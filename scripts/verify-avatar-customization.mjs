@@ -184,30 +184,13 @@ try {
   }
   await page.getByRole('button', { name: 'Todd', exact: true }).click();
   state = await settle(state.paints);
-  const spacing = page.getByRole('slider', {
-    name: 'Eye spacing',
-    exact: true,
-  });
-  for (const [key, value] of [
-    ['Home', 0.5],
-    ['End', 1.5],
-  ]) {
-    const before = state;
-    await spacing.locator('[data-bloom-slider-thumb]').focus();
-    await page.keyboard.press(key);
-    state = await settle(before.paints);
-    assert.equal(state.character.eyeSpacing, value);
-    assert.equal(state.capabilities.selected.eyes, 'todd');
-    assert.notEqual(
-      state.hash,
-      before.hash,
-      'Spacing must change painted eyes',
-    );
-    await page.screenshot({
-      path: `/tmp/bloom-todd-spacing-${value}.png`,
-      fullPage: true,
-    });
-  }
+  assert.equal(
+    await page
+      .getByRole('slider', { name: 'Eye spacing', exact: true })
+      .count(),
+    0,
+    'Each shape supplies its own eye layout',
+  );
   const shape = page.getByRole('listbox', {
     name: 'Avatar shape',
     exact: true,
@@ -223,8 +206,8 @@ try {
   );
   assert.equal(
     state.character.eyeSpacing,
-    1.5,
-    'Shape changes keep explicit spacing',
+    undefined,
+    'Shape changes do not write a spacing override',
   );
   const beforePreset = state;
   await choose('Avatar style', 'Clippo');
@@ -245,7 +228,7 @@ try {
     JSON.stringify(results, null, 2),
   );
   console.log(
-    'PASS: Todd body accepts every eye through the editor, spacing changes pixels, shape changes preserve choices, and Clippo accessories paint.',
+    'PASS: Todd body accepts every eye through the editor, shape-owned eye placement has no editor slider, shape changes preserve choices, and Clippo accessories paint.',
   );
 } finally {
   await browser.close();

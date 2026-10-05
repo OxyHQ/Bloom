@@ -99,12 +99,12 @@ verify-avatar-catalog-parts.mjs checks 312 combinations, exact requested mesh
 labels, preserved body vertices and the cache bound.
 
 cyclops-geometry.mjs adds one native white eyeball, a teal iris, pupil and glint;
-its layered meshes retain native blink/look deformation. character.eyeSpacing
-(0.5–1.5) translates paired eyes and glasses without changing lens size; single
-eyes ignore that multiplier. Todd's actual body is also independently selectable
+its layered meshes retain native blink/look deformation. Each shape owns eye
+positions and size, shared by every eye style; historical character.eyeSpacing
+values are ignored. Todd's actual body is also independently selectable
 as shape:todd. verify-avatar-cyclops.mjs checks actual eye colors, movement and
 cleanup; verify-avatar-customization.mjs exercises all eye styles on Todd in the
-real editor, spacing, shape changes and accessories. appearance-codec.mjs
+real editor, shape changes and accessories. appearance-codec.mjs
 validates explicit RGB through the original engine. Untouched presets keep their
 bytes; unnamed original paint is reported from its actual material.
 

@@ -4,6 +4,7 @@
 import { decodeAppearance, encodeAppearance } from './appearance-codec.mjs';
 import {
   authoredAssemblyRecords,
+  authoredEyeRecords,
   assembleAuthoredRecords,
   fitCatalogPartRecords,
   transformAuthoredRecord,
@@ -273,6 +274,14 @@ export async function composeCatalogParts(
   for (const category of categories) {
     const id = request.authoredParts?.[category];
     if (!id) continue;
+    // An authored body's own eye style already has its exact sculpted layout.
+    if (
+      category === 'eyes' &&
+      request.authoredParts.bodyPreset &&
+      authoredEyeRecords(info).length &&
+      authoredEyeRecords(info).every((p) => recordHasLabel(info, p, id))
+    )
+      continue;
     const virtualAccessory = category === 'accessory' && id === 'felipe_beret';
     if (!NATIVE_PARTS[category].includes(id) && !virtualAccessory) continue;
     const records = info.records.map((part) => record(info, part));
@@ -289,6 +298,7 @@ export async function composeCatalogParts(
       const donor = await reference(module, category, id, request);
       const transforms = fitCatalogPartRecords(info, donor, category, id, {
         singleEye: request.authoredParts?.eyes === 'cyclops',
+        faceLayout: request.faceLayout,
       });
       fitted = await Promise.all(
         transforms.map(({ part, ...transform }) =>

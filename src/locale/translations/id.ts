@@ -22,7 +22,6 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   proceduralAvatar: "Avatar saat ini",
   betaPreset: "Karakter bawaan (beta)",
   betaEyes: "Gaya mata",
-  eyeSpacing: "Jarak mata",
   eyewear: "Kacamata",
   accessory: "Aksesori",
   characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "Satu mata" : String(title),

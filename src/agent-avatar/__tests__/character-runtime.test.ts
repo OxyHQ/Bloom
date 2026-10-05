@@ -7,6 +7,13 @@ import { characterHtml, scriptJson } from '../character-html';
 
 const root = resolve(__dirname, '../../..');
 describe('optional character runtime', () => {
+  it('uses shape-owned centers and sizes across donor styles while ignoring historical spacing', () => {
+    execFileSync(
+      process.execPath,
+      ['--test', 'scripts/test-avatar-shape-faces.mjs'],
+      { cwd: root },
+    );
+  });
   it('ships exact source contours and retains the canonical recipe on all migrated bodies', () => {
     execFileSync(
       process.execPath,

@@ -556,9 +556,22 @@ export async function composeClippoAssembly(module, bytes, request) {
         origin = centerOf(outer.bounds),
         anchor = anchors[side].bounds;
       const fittedEye = clippoFaceEyeFit(info.body.bounds, anchor);
-      const eyeScale = fittedEye.eyeScale;
-      const center = shape ? CLIPPO_EYES[side].center : fittedEye.center;
-      const radius = shape ? CLIPPO_EYES[side].radius : fittedEye.radius,
+      const layout = request.faceLayout;
+      const eyeScale = layout ? layout.radius / 0.21 : fittedEye.eyeScale;
+      const center = shape
+        ? CLIPPO_EYES[side].center
+        : layout
+          ? [
+              layout.centers[side][0],
+              layout.centers[side][1],
+              layout.centers[side][2] + 0.14 * eyeScale,
+            ]
+          : fittedEye.center;
+      const radius = shape
+          ? CLIPPO_EYES[side].radius
+          : layout
+            ? [0.2, 0.21, 0.14].map((v) => v * eyeScale)
+            : fittedEye.radius,
         scale = radius.map(
           (r, k) => (r * 2) / (outer.bounds.max[k] - outer.bounds.min[k]),
         );

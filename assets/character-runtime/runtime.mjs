@@ -41,6 +41,10 @@ let renderCost = 8;
 let attentionTurn = false;
 const clients = new Set();
 const category = { shape: 0, color: 1, eyes: 2, eyewear: 3, accessory: 4 };
+const appearanceFingerprint = (recipe) => {
+  const { eyeSpacing: _historicalSpacing, ...appearance } = recipe;
+  return JSON.stringify(appearance);
+};
 function schedule() {
   if (!frame && !rendering && clients.size && !document.hidden)
     frame = requestAnimationFrame(tick);
@@ -620,7 +624,7 @@ async function createLiveCharacter(
   };
   const applyAppearance = (value) => {
     const recipe = value;
-    const nextFingerprint = JSON.stringify(recipe);
+    const nextFingerprint = appearanceFingerprint(recipe);
     if (nextFingerprint !== fingerprint) {
       const defaultPreset = ORIGINAL_PRESETS.includes(recipe.preset)
         ? recipe.preset
@@ -850,7 +854,7 @@ async function createLiveCharacter(
     }
     props = next;
     const recipe = characterRecipe(props);
-    const nextFingerprint = JSON.stringify(recipe);
+    const nextFingerprint = appearanceFingerprint(recipe);
     // Explicitly choosing a preset's default changes its saved recipe, but not
     // its prepared appearance. Re-key the actual capabilities without rebuilding.
     const rawKey = JSON.stringify(

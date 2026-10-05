@@ -25,7 +25,6 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   proceduralAvatar: "Текущий аватар",
   betaPreset: "Готовый персонаж (бета)",
   betaEyes: "Стиль глаз",
-  eyeSpacing: "Расстояние между глазами",
   eyewear: "Очки",
   accessory: "Аксессуар",
   characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "Один глаз" : String(title),

@@ -477,7 +477,7 @@ describe('shared original-engine editor catalog', () => {
   );
 
   it.each(['round_inset', 'sleepy_lids', 'dots'])(
-    'keeps %s, eyewear, headwear and spacing on every body',
+    'keeps %s, eyewear, headwear and historical metadata on every body',
     (eyes) => {
       const configured = {
         ...agent,
@@ -521,28 +521,11 @@ describe('shared original-engine editor catalog', () => {
         selections: { eyes: id, eyewear: 'none', accessory: 'none' },
       });
     }
-    const slider = view.getByLabelText('Eye spacing');
-    expect(slider.props).toMatchObject({
-      'aria-valuenow': 100,
-      'aria-valuemin': 50,
-      'aria-valuemax': 150,
-    });
-    expect(slider.props['aria-disabled']).not.toBe(true);
-    fireEvent(
-      view
-        .UNSAFE_getAllByProps({ accessibilityLabel: 'Eye spacing' })
-        .find((node) => typeof node.props.onValueChange === 'function')!,
-      'valueChange',
-      135,
-    );
-    expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-      preset: 'lime_frog',
-      eyeSpacing: 1.35,
-    });
+    expect(view.queryByLabelText('Eye spacing')).toBeNull();
     view.unmount();
   });
 
-  it('uses static single-eye artwork on every body and hides paired-eye spacing without discarding it', () => {
+  it('uses static single-eye artwork on every body and preserves historical recipe metadata', () => {
     const configured = {
       ...agent,
       avatar: {
@@ -570,71 +553,6 @@ describe('shared original-engine editor catalog', () => {
         eyeSpacing: 1.23,
         selections: { eyes: 'cyclops' },
       });
-    view.unmount();
-  });
-
-  it('keeps accepting spacing drag values while the edited recipe awaits new capabilities', () => {
-    const initial = {
-      ...agent,
-      avatar: { ...agent.avatar, character: { preset: 'lime_frog' } },
-    };
-    const initialKey = JSON.stringify(initial.avatar.character);
-    const onChange = jest.fn();
-    function DragEditor() {
-      const [current, setCurrent] = useState<AgentCreatorAgent>(initial);
-      return (
-        <CharacterRuntimeFixture
-          value={{
-            runtimeUrl: '/runtime.mjs',
-            capabilitiesByKey: new Map([
-              [
-                initialKey,
-                {
-                  key: initialKey,
-                  available: {},
-                  selected: { eyes: 'todd', shape: 'todd' },
-                },
-              ],
-            ]),
-          }}
-        >
-          <BloomThemeProvider>
-            <AgentCreator
-              agent={current}
-              onChange={(next) => {
-                onChange(next);
-                setCurrent(next);
-              }}
-            />
-          </BloomThemeProvider>
-        </CharacterRuntimeFixture>
-      );
-    }
-    const view = render(<DragEditor />);
-    const emit = (value: number) =>
-      fireEvent(
-        view
-          .UNSAFE_getAllByProps({ accessibilityLabel: 'Eye spacing' })
-          .find((node) => typeof node.props.onValueChange === 'function')!,
-        'valueChange',
-        value,
-      );
-    emit(123);
-    expect(view.getByLabelText('Eye spacing').props['aria-disabled']).not.toBe(
-      true,
-    );
-    expect(view.getByLabelText('Eye spacing').props['aria-valuenow']).toBe(123);
-    // Capabilities still belong to initialKey, as they do during native preparation.
-    emit(137);
-    expect(view.getByLabelText('Eye spacing').props['aria-disabled']).not.toBe(
-      true,
-    );
-    expect(view.getByLabelText('Eye spacing').props['aria-valuenow']).toBe(137);
-    expect(onChange).toHaveBeenCalledTimes(2);
-    expect(onChange.mock.lastCall![0].avatar.character).toEqual({
-      preset: 'lime_frog',
-      eyeSpacing: 1.37,
-    });
     view.unmount();
   });
 

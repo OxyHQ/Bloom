@@ -32,7 +32,6 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   proceduralAvatar: "الصورة الرمزية الحالية",
   betaPreset: "شخصية جاهزة (تجريبية)",
   betaEyes: "نمط العيون",
-  eyeSpacing: "المسافة بين العينين",
   eyewear: "نظارات",
   accessory: "إكسسوار",
   characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "عين واحدة" : String(title),

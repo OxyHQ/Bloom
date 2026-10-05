@@ -8,15 +8,16 @@ const { chromium } = createRequire(import.meta.url)(
   process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
 );
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const facesOnly = process.argv.includes('--faces');
 try {
   const page = await browser.newPage();
   await page.route('**/__catalog.html', (r) =>
     r.fulfill({ contentType: 'text/html', body: '<body>' }),
   );
   await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/__catalog.html`,
+    `${process.argv.find((v) => v.startsWith('http')) || 'http://localhost:6006'}/__catalog.html`,
   );
-  const result = await page.evaluate(async () => {
+  const result = await page.evaluate(async (facesOnly) => {
     const m = await (
       await import('/bloom-character/orbit-characters.mjs')
     ).default({ locateFile: (f) => '/bloom-character/' + f });
@@ -39,6 +40,7 @@ try {
       composeAuthoredParts,
       fitAuthoredEyeSpacing,
       fitAuthoredHeadwear,
+      shapeFaceLayout,
     } = await import('/bloom-character/authored-parts.mjs');
     const { deformLegacyAssembly } =
       await import('/bloom-character/legacy-geometry.mjs');
@@ -92,6 +94,7 @@ try {
     ];
     const rows = [],
       errors = [];
+    if (facesOnly) jobs.splice(eyes.length);
     for (const body of shapes) {
       let appearance, base;
       for (const eye of ['dots', 'oval', ...NATIVE_PARTS.eyes]) {
@@ -129,6 +132,9 @@ try {
         try {
           const parts = {
             ...body.parts,
+            ...(body.id !== 'todd' && body.id !== 'clippo'
+              ? { faceShape: body.id }
+              : {}),
             eyes: job.eyes,
             ...(job.eyewear ? { eyewear: job.eyewear } : {}),
             ...(job.accessory ? { accessory: job.accessory } : {}),
@@ -151,6 +157,11 @@ try {
                 ),
               ),
             });
+          request.faceLayout = shapeFaceLayout(
+            authoredAssemblyRecords(bytes),
+            request,
+            m,
+          );
           if (parts.shape === 'clippo' || parts.eyes === 'clippo')
             bytes = await composeClippoAssembly(m, bytes, request);
           const before = authoredAssemblyRecords(bytes),
@@ -192,6 +203,50 @@ try {
               throw Error(
                 `requested ${job.eyes} geometry count ${count}, expected${expectedCount}`,
               );
+            const face = authoredEyeRecords(out);
+            const groups =
+              job.eyes === 'cyclops'
+                ? [face]
+                : [-1, 1].map((sign) =>
+                    face.filter(
+                      (p) =>
+                        Math.sign((p.bounds.min[0] + p.bounds.max[0]) / 2) ===
+                        sign,
+                    ),
+                  );
+            for (const [i, group] of groups.entries()) {
+              if (!group.length) throw Error('missing intrinsic face group');
+              const bounds = {
+                min: [0, 1].map((k) =>
+                  Math.min(...group.map((p) => p.bounds.min[k])),
+                ),
+                max: [0, 1].map((k) =>
+                  Math.max(...group.map((p) => p.bounds.max[k])),
+                ),
+              };
+              const radius =
+                job.eyes === 'cyclops'
+                  ? (bounds.max[0] - bounds.min[0]) / 2
+                  : Math.max(
+                      bounds.max[0] - bounds.min[0],
+                      bounds.max[1] - bounds.min[1],
+                    ) / 2;
+              const expectedRadius =
+                request.faceLayout.radius * (job.eyes === 'cyclops' ? 2 : 1);
+              if (Math.abs(radius - expectedRadius) > 0.005)
+                throw Error('eye style changed shape-owned size');
+              for (let k = 0; k < 2; k++) {
+                const center = (bounds.min[k] + bounds.max[k]) / 2;
+                const desired =
+                  job.eyes === 'cyclops'
+                    ? (request.faceLayout.centers[0][k] +
+                        request.faceLayout.centers[1][k]) /
+                      2
+                    : request.faceLayout.centers[i][k];
+                if (Math.abs(center - desired) > 0.005)
+                  throw Error('eye style moved shape-owned center');
+              }
+            }
           }
           for (const category of ['eyewear', 'accessory']) {
             const id = job[category];
@@ -222,7 +277,7 @@ try {
       shapes: shapes.map((s) => s.id),
       jobs: jobs.length,
     };
-  });
+  }, facesOnly);
   fs.writeFileSync(
     '/tmp/bloom-catalog-matrix.json',
     JSON.stringify(result, null, 2),
@@ -237,8 +292,8 @@ try {
   console.log(JSON.stringify(summary, null, 2));
   assert.deepEqual(result.errors, []);
   assert.equal(result.shapes.length, 21);
-  assert.equal(result.jobs, 136);
-  assert.equal(result.rows.length, 2856);
+  assert.equal(result.jobs, facesOnly ? 12 : 136);
+  assert.equal(result.rows.length, facesOnly ? 252 : 2856);
   assert.deepEqual(result.paints, { gus: '#ffd838', blue_beret: '#4778ff' });
   assert.ok(result.cache.bytes <= result.cache.maximumBytes);
   assert.equal(

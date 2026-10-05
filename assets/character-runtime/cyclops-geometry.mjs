@@ -108,11 +108,21 @@ export async function composeCyclopsAssembly(module, bytes, request) {
     )
   )
     fail('original eye layout changed');
-  const placement = cyclopsPlacement(
-    target.body.bounds,
-    previousEyes,
-    hasAuthoredLabel(bytes, target.body, 'metal'),
-  );
+  const layout = request.faceLayout;
+  const placement = layout
+    ? {
+        radius: layout.radius * 2,
+        center: [0, 1]
+          .map((k) => (layout.centers[0][k] + layout.centers[1][k]) / 2)
+          .concat(
+            Math.max(...layout.centers.map((c) => c[2])) + layout.radius * 0.5,
+          ),
+      }
+    : cyclopsPlacement(
+        target.body.bounds,
+        previousEyes,
+        hasAuthoredLabel(bytes, target.body, 'metal'),
+      );
   const origin = center(outer.bounds);
   const scale = (placement.radius * 2) / span(outer.bounds, 0);
   const white = await eyeRecord(

@@ -22,7 +22,6 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   proceduralAvatar: "Mevcut avatar",
   betaPreset: "Hazır karakter (beta)",
   betaEyes: "Göz stili",
-  eyeSpacing: "Göz aralığı",
   eyewear: "Gözlük",
   accessory: "Aksesuar",
   characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "Tek göz" : String(title),

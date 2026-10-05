@@ -75,7 +75,7 @@ it('announces selected avatar colors and profile fields through real react-nativ
   ).toBe('Designer');
 });
 
-it('names fitted eye spacing, exposes its bounds and edits it with the keyboard', () => {
+it('offers eye styles without an eye-placement control, including saved spacing recipes', () => {
   const character = { preset: 'lime_frog', eyeSpacing: 1.23 };
   const key = JSON.stringify(character);
   const agent = {
@@ -101,21 +101,13 @@ it('names fitted eye spacing, exposes its bounds and edits it with the keyboard'
       <AgentCreator agent={agent} onChange={onChange} />
     </CharacterRuntimeFixture>,
   );
-  const slider = container.querySelector('[aria-label="Eye spacing"]')!;
-  expect(slider.getAttribute('role')).toBe('slider');
-  expect(slider.getAttribute('aria-valuemin')).toBe('50');
-  expect(slider.getAttribute('aria-valuemax')).toBe('150');
-  expect(slider.getAttribute('aria-valuenow')).toBe('123');
-  const thumb = slider.querySelector('[data-bloom-slider-thumb]')!;
-  act(() =>
-    thumb.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
-    ),
-  );
-  expect(onChange).toHaveBeenLastCalledWith({
-    ...agent,
-    avatar: { ...agent.avatar, character: { ...character, eyeSpacing: 1.24 } },
-  });
+  expect(container.querySelector('[aria-label="Eye spacing"]')).toBeNull();
+  expect(
+    container
+      .querySelector('[aria-label="Todd"]')
+      ?.getAttribute('aria-pressed'),
+  ).toBe('true');
+  expect(onChange).not.toHaveBeenCalled();
 });
 
 it('announces the custom saturation/brightness and hue values', () => {

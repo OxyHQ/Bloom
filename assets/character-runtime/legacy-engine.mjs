@@ -1,4 +1,8 @@
-import { NATIVE_PARTS, ORIGINAL_PRESETS } from './character-recipe.mjs';
+import {
+  NATIVE_PARTS,
+  ORIGINAL_PRESETS,
+  MIGRATED_SHAPE_IDS,
+} from './character-recipe.mjs';
 import createModule from './orbit-characters.mjs';
 import { createControllerModeAdapter } from './controller-mode.mjs';
 import {
@@ -354,6 +358,7 @@ function normalizeAuthoredParts(value) {
     'eyewear',
     'accessory',
     'eyeSpacing',
+    'faceShape',
   ];
   if (
     Object.keys(value).some((key) => !keys.includes(key)) ||
@@ -361,6 +366,10 @@ function normalizeAuthoredParts(value) {
       !ORIGINAL_PRESETS.includes(value.bodyPreset)) ||
     (value.paintBody !== undefined && typeof value.paintBody !== 'boolean') ||
     (value.shape !== undefined && value.shape !== 'clippo') ||
+    (value.faceShape !== undefined &&
+      ![...MIGRATED_SHAPE_IDS, ...NATIVE_PARTS.shape].includes(
+        value.faceShape,
+      )) ||
     (value.eyes !== undefined &&
       ![...NATIVE_PARTS.eyes, 'todd', 'clippo', 'cyclops'].includes(
         value.eyes,
@@ -368,21 +377,13 @@ function normalizeAuthoredParts(value) {
     (value.eyewear !== undefined &&
       !NATIVE_PARTS.eyewear.includes(value.eyewear)) ||
     (value.accessory !== undefined &&
-      ![...NATIVE_PARTS.accessory, 'felipe_beret'].includes(value.accessory)) ||
-    (value.eyeSpacing !== undefined &&
-      (!Number.isFinite(value.eyeSpacing) ||
-        value.eyeSpacing < 0.5 ||
-        value.eyeSpacing > 1.5))
+      ![...NATIVE_PARTS.accessory, 'felipe_beret'].includes(value.accessory))
   )
     throw new Error('Unsupported authored character part');
   return Object.freeze(
     Object.fromEntries(
       keys
-        .filter(
-          (key) =>
-            value[key] !== undefined &&
-            !(key === 'eyeSpacing' && value[key] === 1),
-        )
+        .filter((key) => value[key] !== undefined && key !== 'eyeSpacing')
         .map((key) => [key, value[key]]),
     ),
   );

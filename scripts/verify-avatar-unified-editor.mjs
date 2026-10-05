@@ -109,6 +109,13 @@ try {
     await option.click();
   };
   await settle();
+  assert.equal(
+    await page
+      .getByRole('slider', { name: 'Eye spacing', exact: true })
+      .count(),
+    0,
+    'Eye placement belongs to the shape, not an editor control',
+  );
   await page.getByRole('button', { name: 'Blue avatar', exact: true }).click();
   await page.getByRole('button', { name: 'Todd', exact: true }).click();
   await choose('Accessory', 'Felipe’s beret');

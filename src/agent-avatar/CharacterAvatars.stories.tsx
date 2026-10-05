@@ -22,7 +22,7 @@ const characters = [
   ['blue_spectacles', 'Josh'],
   ['lime_headphones', 'Iggy'],
 ] as const;
-const runtimeUrl = '/bloom-character/runtime.mjs?v=unified-shapes-4';
+const runtimeUrl = '/bloom-character/runtime.mjs?v=shape-eye-layout-5';
 const meta = {
   title: 'Application/Agent Avatar/Characters',
   parameters: { layout: 'padded' },

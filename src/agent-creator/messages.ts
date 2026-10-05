@@ -7,7 +7,6 @@ export interface AgentCreatorMessages {
   proceduralAvatar: string;
   betaPreset: string;
   betaEyes: string;
-  eyeSpacing: string;
   eyewear: string;
   accessory: string;
   /** Recovered beta catalog names default to their source titles; hosts may localize by category/ID. */
@@ -113,7 +112,6 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     proceduralAvatar: 'Current avatar',
     betaPreset: 'Character preset (beta)',
     betaEyes: 'Eye style',
-    eyeSpacing: 'Eye spacing',
     eyewear: 'Eyewear',
     accessory: 'Accessory',
     characterOption: (category, id, title) =>

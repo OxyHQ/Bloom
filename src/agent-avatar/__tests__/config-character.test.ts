@@ -97,7 +97,7 @@ it('round-trips the named Clippo preset and independently reusable Clippo body a
 });
 
 it.each([0.5, 1, 1.5])(
-  'round-trips explicit fitted eye spacing %s',
+  'round-trips historical eye-spacing metadata %s',
   (eyeSpacing) => {
     const character = { preset: 'lime_frog', eyeSpacing };
     expect(
@@ -108,7 +108,7 @@ it.each([0.5, 1, 1.5])(
 );
 
 it.each([0.49, 1.51, NaN, Infinity, -Infinity, '1', null])(
-  'rejects invalid fitted eye spacing %#',
+  'rejects invalid historical eye-spacing metadata %#',
   (eyeSpacing) => {
     expect(() =>
       parseCharacterConfig({ preset: 'lime_frog', eyeSpacing }),
@@ -116,7 +116,7 @@ it.each([0.49, 1.51, NaN, Infinity, -Infinity, '1', null])(
   },
 );
 
-it('keeps authored eye spacing implicit when a recipe has not been adjusted', () => {
+it('does not add historical eye-spacing metadata to new recipes', () => {
   expect(parseCharacterConfig({ preset: 'lime_frog' })).not.toHaveProperty(
     'eyeSpacing',
   );

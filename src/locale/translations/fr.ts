@@ -29,7 +29,6 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   proceduralAvatar: "Avatar actuel",
   betaPreset: "Personnage prédéfini (bêta)",
   betaEyes: "Style des yeux",
-  eyeSpacing: "Écartement des yeux",
   eyewear: "Lunettes",
   accessory: "Accessoire",
   characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "Œil unique" : String(title),

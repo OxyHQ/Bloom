@@ -107,6 +107,13 @@ try {
     path: '/tmp/bloom-story-clippo.png',
     fullPage: true,
   });
+  assert.equal(
+    await page
+      .getByRole('slider', { name: 'Eye spacing', exact: true })
+      .count(),
+    0,
+    'Paired eyes use shape-owned placement without an editor slider',
+  );
   await clippo.click();
   await settle();
   assert.equal(

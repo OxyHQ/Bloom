@@ -173,7 +173,7 @@ describe('legacy appearance migration', () => {
     expect(Object.keys(legacyRecipe(config).patch)).toEqual(['bodyColor']);
   });
 
-  it('retains explicit fitted eye spacing in both renderer payload and capability identity', () => {
+  it('retains historical eye-spacing metadata in both renderer payload and capability identity', () => {
     const config = recipe({
       eyeGap: 12,
       character: {

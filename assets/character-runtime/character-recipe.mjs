@@ -83,10 +83,7 @@ export function authoredPartsFor(props) {
   const recipe = characterRecipe(props);
   const selections = recipe?.selections ?? {};
   const customized = Boolean(
-    props.legacy ||
-    recipe?.bodyColor ||
-    recipe?.eyeSpacing !== undefined ||
-    Object.keys(selections).length,
+    props.legacy || recipe?.bodyColor || Object.keys(selections).length,
   );
   const defaults =
     selections.shape && !isLegacyRecipe(props)
@@ -119,14 +116,16 @@ export function authoredPartsFor(props) {
       ? { paintBody: true }
       : {}),
     ...(selections.shape === 'clippo' ? { shape: 'clippo' } : {}),
+    ...((!isLegacyRecipe(props) || !props.legacy?.points) &&
+    (MIGRATED_SHAPE_IDS.includes(selections.shape) ||
+      NATIVE_PARTS.shape.includes(selections.shape))
+      ? { faceShape: selections.shape }
+      : {}),
     ...(eyes ? { eyes } : {}),
     ...((selections.eyewear ?? defaults?.eyewear)
       ? { eyewear: selections.eyewear ?? defaults?.eyewear }
       : {}),
     ...(accessory ? { accessory } : {}),
-    ...(recipe?.eyeSpacing !== undefined && recipe.eyeSpacing !== 1
-      ? { eyeSpacing: recipe.eyeSpacing }
-      : {}),
   };
 }
 export const ORIGINAL_PRESETS = Object.freeze([
@@ -180,6 +179,19 @@ export function bodySelectionDefaults(preset, appearance) {
   };
 }
 export const NATIVE_PARTS = Object.freeze({
+  shape: Object.freeze([
+    'circle',
+    'rounded_triangle',
+    'capsule',
+    'rounded_head_two_ears',
+    'six_lobed_flower',
+    'heart',
+    'four_lobed_butterfly',
+    'circle_two_ears',
+    'twelve_scalloped_rosette',
+    'rounded_cube',
+    'rounded_diamond',
+  ]),
   eyes: Object.freeze([
     'swept_lids',
     'oval',

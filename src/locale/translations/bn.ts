@@ -22,7 +22,6 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   proceduralAvatar: "বর্তমান অবতার",
   betaPreset: "প্রস্তুত চরিত্র (বিটা)",
   betaEyes: "চোখের ধরন",
-  eyeSpacing: "চোখের ব্যবধান",
   eyewear: "চশমা",
   accessory: "অনুষঙ্গ",
   characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "একটি চোখ" : String(title),

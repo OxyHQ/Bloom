@@ -8,7 +8,6 @@ import type {
   AvatarCharacterConfig,
 } from '../agent-avatar/config-character';
 import { StyledView } from '../styles/styled-primitives';
-import { Slider } from '../slider';
 import { Text } from '../typography';
 import { CHARACTER_OPTIONS, CHARACTER_PRESETS } from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
@@ -170,32 +169,6 @@ export function CharacterControls({
               },
               labels[category],
             ),
-        )}
-      {character &&
-        (character.selections?.eyes ?? resolved?.selected.eyes) !==
-          'cyclops' && (
-          <StyledView className="flex flex-row items-center gap-3">
-            <Text className="w-[96px] text-body-regular text-text-primary">
-              {messages.eyeSpacing}
-            </Text>
-            <StyledView className="min-w-0 flex-1">
-              <Slider
-                size="sm"
-                min={50}
-                max={150}
-                step={1}
-                value={Math.round((character.eyeSpacing ?? 1) * 100)}
-                accessibilityLabel={messages.eyeSpacing}
-                showTooltip={false}
-                onValueChange={(value) =>
-                  onChange({ ...character, eyeSpacing: value / 100 })
-                }
-              />
-            </StyledView>
-            <Text className="text-body-small text-text-secondary">
-              {Math.round((character.eyeSpacing ?? 1) * 100)}%
-            </Text>
-          </StyledView>
         )}
     </StyledView>
   );

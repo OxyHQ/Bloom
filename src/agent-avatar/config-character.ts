@@ -9,7 +9,7 @@ export type AvatarCharacterConfig = {
   selections?: Partial<Record<AvatarCharacterCategory, string>>;
   /** Custom body RGB accepted by the original renderer, stored as lowercase #RRGGBB. */
   bodyColor?: string;
-  /** Multiplier of the body's fitted eye spacing, from 0.5 to 1.5. Absent keeps the authored default. */
+  /** @deprecated Retained when reading saved recipes; ignored by the renderer. Each shape owns its eye layout. */
   eyeSpacing?: number;
 };
 

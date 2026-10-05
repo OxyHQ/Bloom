@@ -1,6 +1,8 @@
 import { decodeAppearance, encodeAppearance } from './appearance-codec.mjs';
 import { inspectLegacyAssembly } from './legacy-geometry.mjs';
 import { sha256 } from './sha256.mjs';
+import { MIGRATED_FACES } from './migrated-faces.mjs';
+import { MIGRATED_CONTOURS } from './migrated-contours.mjs';
 
 const encoder = new TextEncoder();
 const BODY = ':body:no-shadow:studio-fur-v6:';
@@ -350,20 +352,31 @@ export async function composeAuthoredParts(module, bytes, request) {
       const clippo =
         target.body.furCount === 0 &&
         hasAuthoredLabel(bytes, target.body, 'metal');
-      const scale = clippo
-        ? 1
-        : Math.max(
-            0.65,
-            Math.min(
-              1.2,
-              (target.body.bounds.max[0] - target.body.bounds.min[0]) /
-                (source.body.bounds.max[0] - source.body.bounds.min[0]),
-            ),
-          );
+      const intrinsic = request.faceLayout;
+      const sourceRadius =
+        Math.max(
+          outer.bounds.max[0] - outer.bounds.min[0],
+          outer.bounds.max[1] - outer.bounds.min[1],
+        ) / 2;
+      const scale = intrinsic
+        ? intrinsic.radius / sourceRadius
+        : clippo
+          ? 1
+          : Math.max(
+              0.65,
+              Math.min(
+                1.2,
+                (target.body.bounds.max[0] - target.body.bounds.min[0]) /
+                  (source.body.bounds.max[0] - source.body.bounds.min[0]),
+              ),
+            );
       const origin = [0, 1, 2].map((k) => midpoint(outer.bounds, k));
-      const translate = [0, 1].map((k) => midpoint(destination, k) - origin[k]);
+      const center = intrinsic?.centers[sign < 0 ? 0 : 1];
+      const translate = [0, 1].map(
+        (k) => (center?.[k] ?? midpoint(destination, k)) - origin[k],
+      );
       translate.push(
-        destination.min[2] -
+        (center?.[2] ?? destination.min[2]) -
           ((outer.bounds.min[2] - origin[2]) * scale + origin[2]),
       );
       replacements.set(
@@ -494,87 +507,9 @@ export async function assembleAuthoredRecords(target, records) {
   return result;
 }
 
-/** Saved spacing adjusts each authored eye group without stretching its meshes. */
-export async function fitAuthoredEyeSpacing(bytes, request) {
-  const amount = request.eyeSpacing ?? 1;
-  if (!Number.isFinite(amount) || amount < 0.5 || amount > 1.5)
-    fail('eye spacing range');
-  if (amount === 1 || request.authoredParts?.eyes === 'cyclops') return bytes;
-  const info = authoredAssemblyRecords(bytes),
-    appearance = decodeAppearance(request.appearance);
-  const labels = [
-    appearance.eyes,
-    'source_integrated_eye',
-    'brows',
-    request.authoredParts?.eyes,
-  ].filter(Boolean);
-  const eyes = info.records
-    .slice(1)
-    .filter((p) => labels.some((label) => hasAuthoredLabel(bytes, p, label)));
-  const groups = [-1, 1].map((sign) =>
-    eyes.filter((p) => Math.sign(midpoint(p.bounds, 0)) === sign),
-  );
-  if (groups.some((group) => !group.length))
-    fail('missing eye spacing anchors');
-  const centers = groups.map((group) =>
-      midpoint(
-        union(group.filter((p) => !hasAuthoredLabel(bytes, p, 'brows'))),
-        0,
-      ),
-    ),
-    middle = (centers[0] + centers[1]) / 2;
-  const fitted = new Map();
-  for (let side = 0; side < 2; side++)
-    for (const part of groups[side])
-      fitted.set(
-        part.part,
-        await translateAuthoredRecord(bytes, part, [
-          (centers[side] - middle) * (amount - 1),
-          0,
-          0,
-        ]),
-      );
-  const eyewear = request.authoredParts?.eyewear ?? appearance.eyewear;
-  if (eyewear && eyewear !== 'none') {
-    const face = union(
-      eyes.filter((p) => !hasAuthoredLabel(bytes, p, 'brows')),
-    );
-    const origin = [middle, midpoint(face, 1), face.max[2]];
-    for (const part of info.records
-      .slice(1)
-      .filter((p) => hasAuthoredLabel(bytes, p, eyewear))) {
-      if (
-        eyewear === 'monocle' ||
-        Math.abs(midpoint(part.bounds, 0) - middle) >
-          (centers[1] - centers[0]) * 0.15
-      ) {
-        const side = midpoint(part.bounds, 0) < middle ? 0 : 1;
-        fitted.set(
-          part.part,
-          await translateAuthoredRecord(bytes, part, [
-            (centers[side] - middle) * (amount - 1),
-            0,
-            0,
-          ]),
-        );
-      } else
-        fitted.set(
-          part.part,
-          await transformAuthoredRecord(bytes, part, { scale: amount, origin }),
-        );
-    }
-  }
-  return assembleAuthoredRecords(
-    info,
-    info.records.map(
-      (p) =>
-        fitted.get(p.part) ?? {
-          bytes: bytes.slice(p.start, p.end),
-          name: p.name,
-          bounds: p.bounds,
-        },
-    ),
-  );
+/** Historical spacing fields no longer override shape-owned geometry. */
+export async function fitAuthoredEyeSpacing(bytes) {
+  return bytes;
 }
 
 const EYE_LABELS = [
@@ -589,6 +524,7 @@ const EYE_LABELS = [
   'crescent_inset',
   'sleepy_lids',
 ];
+const nativeFaces = new Map();
 export function authoredEyeRecords(info) {
   return info.records
     .slice(1)
@@ -603,6 +539,129 @@ function eyeCenters(info) {
   );
   if (sides.some((side) => !side.length)) fail('catalog face anchors missing');
   return sides.map((side) => union(side));
+}
+/** Capture the body's face once, before selecting any replacement eye style. */
+export function shapeFaceLayout(info, request, module) {
+  if (request.authoredParts?.shape === 'clippo')
+    return {
+      centers: [
+        [-102 / 240, 135 / 240, 0.03],
+        [46 / 240, 93 / 240, 0.03],
+      ],
+      radius: 0.265,
+    };
+  const shape =
+    request.authoredParts?.faceShape ??
+    Object.keys(MIGRATED_CONTOURS).find(
+      (id) =>
+        request.points?.length === MIGRATED_CONTOURS[id].length &&
+        request.points.every((p, i) =>
+          p.every((v, k) => Math.abs(v - MIGRATED_CONTOURS[id][i][k]) < 1e-9),
+        ),
+    );
+  const migrated = MIGRATED_FACES[shape];
+  if (migrated)
+    return {
+      radius: migrated.radius,
+      centers: migrated.centers.map(([x, y]) => {
+        const front = authoredBodyFront(info, x, y);
+        return [
+          x,
+          y,
+          Number.isFinite(front)
+            ? front - migrated.radius * 0.3
+            : info.body.bounds.max[2] - migrated.radius * 0.3,
+        ];
+      }),
+    };
+  if (shape && module) {
+    let face = nativeFaces.get(shape);
+    if (!face) {
+      for (const eyes of [
+        'oval',
+        'round_inset',
+        'dots',
+        'swept_lids',
+        'sparkle_capsules',
+        'highlight_capsules',
+        'double_highlights',
+        'crescent_inset',
+        'sleepy_lids',
+      ]) {
+        const result = module.orbitPrepareAssembly(
+          encodeAppearance({
+            version: 1,
+            shape,
+            color: 'blue',
+            eyes,
+            eyewear: 'none',
+            accessories: [],
+            accessoryColors: {},
+            constrained: 0,
+            depth: 0.5,
+            model: null,
+            rig: null,
+            hereCharacter: null,
+          }),
+          request.quality,
+          'intrinsic-face:' + shape,
+          false,
+        );
+        if (!result.bytes || result.error) continue;
+        const reference = authoredAssemblyRecords(result.bytes.slice());
+        if (!authoredEyeRecords(reference).length) continue;
+        face = shapeFaceLayout(reference, {});
+        nativeFaces.set(shape, face);
+        break;
+      }
+      if (!face) fail('native shape face reference missing');
+    }
+    return {
+      radius: face.radius,
+      centers: face.centers.map(([x, y, z]) => {
+        const front = authoredBodyFront(info, x, y);
+        return [x, y, Number.isFinite(front) ? front - face.radius * 0.3 : z];
+      }),
+    };
+  }
+  if (request.points?.length) {
+    const xs = request.points.map((p) => p[0]),
+      ys = request.points.map((p) => p[1]);
+    const width = Math.max(...xs) - Math.min(...xs),
+      height = Math.max(...ys) - Math.min(...ys);
+    const x = (Math.max(...xs) + Math.min(...xs)) / 2,
+      y = (Math.max(...ys) + Math.min(...ys)) / 2 + height * 0.05;
+    const halfGap = width * 0.13,
+      radius = Math.min(width * 0.1, height * 0.12, halfGap * 0.8);
+    return {
+      radius,
+      centers: [-1, 1].map((sign) => {
+        const at = x + sign * halfGap,
+          front = authoredBodyFront(info, at, y);
+        return [
+          at,
+          y,
+          Number.isFinite(front)
+            ? front - radius * 0.3
+            : info.body.bounds.max[2] - radius * 0.3,
+        ];
+      }),
+    };
+  }
+  const groups = eyeCenters(info);
+  return {
+    centers: groups.map((bounds) => [
+      midpoint(bounds, 0),
+      midpoint(bounds, 1),
+      bounds.min[2],
+    ]),
+    radius:
+      groups.reduce(
+        (sum, b) =>
+          sum + Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) / 2,
+        0,
+      ) / 2,
+  };
 }
 /** Front surface at a face anchor, sampled from the actual indexed body.
  * A thick source eyeball's rear bound is not a safe anchor for shallow eyes.
@@ -661,7 +720,7 @@ export function fitCatalogPartRecords(
   donor,
   category,
   id,
-  { singleEye = false } = {},
+  { singleEye = false, faceLayout } = {},
 ) {
   const selected =
     category === 'eyes'
@@ -687,7 +746,16 @@ export function fitCatalogPartRecords(
                 k === 0 && side === 0 ? midpoint(singleBounds, 0) : value,
               ),
             }))
-        : eyeCenters(target),
+        : category === 'eyes' && faceLayout
+          ? faceLayout.centers.map(([x, y, z]) => ({
+              min: [x - faceLayout.radius, y - faceLayout.radius, z],
+              max: [
+                x + faceLayout.radius,
+                y + faceLayout.radius,
+                z + faceLayout.radius,
+              ],
+            }))
+          : eyeCenters(target),
       src = eyeCenters(donor);
     const gap = (a) => Math.abs(midpoint(a[1], 0) - midpoint(a[0], 0));
     // Eye diameter follows the body, not the spacing of the old eye pair.
@@ -697,9 +765,20 @@ export function fitCatalogPartRecords(
       hasAuthoredLabel(target.bytes, target.body, 'metal');
     const scale =
       category === 'eyes'
-        ? clippo
-          ? 1
-          : Math.max(0.65, Math.min(1.2, bodyWidth(target) / bodyWidth(donor)))
+        ? faceLayout
+          ? faceLayout.radius /
+            (src.reduce(
+              (sum, b) =>
+                sum + Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) / 2,
+              0,
+            ) /
+              2)
+          : clippo
+            ? 1
+            : Math.max(
+                0.65,
+                Math.min(1.2, bodyWidth(target) / bodyWidth(donor)),
+              )
         : Math.max(0.25, Math.min(2, gap(dst) / gap(src)));
     if (category === 'eyes') {
       const fronts = dst.map((bounds) =>

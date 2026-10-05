@@ -6,6 +6,8 @@ import { composePresetBody, composeCatalogParts } from './catalog-parts.mjs';
 import {
   fitAuthoredEyeSpacing,
   fitAuthoredHeadwear,
+  shapeFaceLayout,
+  authoredAssemblyRecords,
 } from './authored-parts.mjs';
 import { composeAuthoredParts } from './authored-parts.mjs';
 import { sha256 } from './sha256.mjs';
@@ -82,6 +84,9 @@ self.onmessage = ({ data }) => {
         data.key,
         data.activities,
       );
+      // Native preparation may return a view of temporary storage. Subsequent
+      // face/donor reference calls must never overwrite the target scene.
+      if (result.bytes) result.bytes = result.bytes.slice();
       if (result.bytes && data.authoredParts?.bodyPreset)
         result.bytes = await composePresetBody(module, result.bytes, data);
       if (result.bytes && data.points) {
@@ -95,6 +100,12 @@ self.onmessage = ({ data }) => {
           ...(await accessoryTransforms(module, data, source)),
         });
       }
+      if (result.bytes && data.authoredParts)
+        data.faceLayout = shapeFaceLayout(
+          authoredAssemblyRecords(result.bytes),
+          data,
+          module,
+        );
       if (
         result.bytes &&
         (data.authoredParts?.shape === 'clippo' ||

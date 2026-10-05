@@ -22,7 +22,6 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   proceduralAvatar: "当前头像",
   betaPreset: "预设角色（测试版）",
   betaEyes: "眼睛风格",
-  eyeSpacing: "眼睛间距",
   eyewear: "眼镜",
   accessory: "配饰",
   characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "单眼" : String(title),
