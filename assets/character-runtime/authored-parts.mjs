@@ -616,20 +616,19 @@ export function shapeFaceLayout(info, request, module) {
       }
       if (!face) fail('native shape face reference missing');
     }
-    const eyeGap = Math.hypot(
+    const sourceGap = Math.hypot(
       face.centers[1][0] - face.centers[0][0],
       face.centers[1][1] - face.centers[0][1],
     );
-    const maxRadius = eyeGap * 0.4;
-    const radius = Math.min(
-      Math.max(face.radius, Math.min(0.2, maxRadius)),
-      maxRadius,
-    );
+    const radius = Math.max(face.radius, 0.23);
+    const eyeGap = Math.max(sourceGap, 0.58, radius / 0.4);
+    const centerX = (face.centers[0][0] + face.centers[1][0]) / 2;
     return {
-      // Some native styles are drawn as small marks. Preserve their anchors,
-      // while giving replacement styles a useful size that respects the gap.
+      // Small native marks can understate the space their replacement styles
+      // need. Enlarge the shape-owned face anchors with their eye size.
       radius,
-      centers: face.centers.map(([x, y, z]) => {
+      centers: face.centers.map(([, y, z], index) => {
+        const x = centerX + (index === 0 ? -eyeGap / 2 : eyeGap / 2);
         const front = authoredBodyFront(info, x, y);
         return [x, y, Number.isFinite(front) ? front - radius * 0.3 : z];
       }),
