@@ -243,6 +243,33 @@ describe('SettingsModal shell', () => {
 });
 
 describe('SettingsModal responsive layout', () => {
+  it('lets a full-bleed page own its compact header and return to section navigation', () => {
+    setWindow(375, 812);
+    const pages = { general: { title: 'Catalog', fullBleed: true, content: ({ onBack, backLabel }: { onBack?: () => void; backLabel: string }) => <>
+      <RNText>Catalog header</RNText><RNText testID="catalog-back" accessibilityLabel={backLabel} onPress={onBack}>back</RNText>
+    </> } };
+    const { getByTestId, getAllByText, queryByTestId, queryByText } = renderWithTheme(<SettingsModal open initialView="page" groups={GROUPS} pages={pages} testID="settings" />);
+    flush();
+    expect(getAllByText('Catalog header')).toHaveLength(1);
+    expect(queryByTestId('settings-header')).toBeNull();
+    pressHost(getByTestId('catalog-back'));
+    expect(queryByText('Catalog header')).toBeNull();
+    expect(getByTestId('settings-rail')).toBeTruthy();
+  });
+
+  it('supplies no section-back action beside the desktop rail and preserves static compact headers', () => {
+    const content = jest.fn((_navigation: import('../settings-modal').SettingsModalPageNavigation) => <RNText>catalog body</RNText>);
+    const desktop = renderWithTheme(<SettingsModal open groups={GROUPS} pages={{ general: { title: 'Catalog', fullBleed: true, content } }} testID="settings" />);
+    flush();
+    expect(content.mock.calls[content.mock.calls.length - 1]?.[0]).toMatchObject({ onBack: undefined, backLabel: 'Back', closeLabel: 'Close settings' });
+    expect(desktop.getByTestId('settings-rail')).toBeTruthy();
+    desktop.unmount();
+    setWindow(375, 812);
+    const compact = renderWithTheme(<SettingsModal open initialView="page" groups={GROUPS} pages={{ general: { title: 'Catalog', fullBleed: true, content: <RNText>catalog body</RNText> } }} testID="settings" />);
+    flush();
+    expect(compact.getByLabelText('Back')).toBeTruthy();
+  });
+
   it('narrows the rail and the insets on a medium window', () => {
     setWindow(768, 900);
     const { getByTestId } = renderWithTheme(<Controlled />);

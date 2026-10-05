@@ -11,7 +11,7 @@
  * reads emitted ATTRIBUTES through the real react-native-web. What it cannot do
  * is notice a component that is not in it. It imports its subjects BY NAME, so
  * joining it is an act somebody has to remember, and the record of what happens
- * when nobody does is `slider` (fixed) beside `stat-bar`, `dot-grid-meter` and
+ * when nobody does is `slider` (fixed) beside `stat-bar` and
  * `dialog/DialogHeader` (three `role="progressbar"` announcing no value, for as
  * long as they had existed). A hand-maintained list of subjects is the same
  * defect as a hand-maintained allow-list: what is missing from it is skipped,
@@ -451,6 +451,8 @@ describe('the census can see', () => {
       'AnimatedPanel',
       'AnimatedPressable',
       'AnimatedStyledView',
+      // ReplyRow and SelectedAgentPreview wrap the same StyledView host.
+      'AnimatedView',
       // media-header/StickyMediaTopBar: the fade and the aria-hidden share one node.
       'FadeView',
     ]);
@@ -590,7 +592,7 @@ describe('a stateful role spells its state the way web reads it', () => {
   it('no element states a value for native only', () => {
     // `accessibilityValue` reaches native alone. An element setting it without
     // the flat props announces its role and nothing else on web — the exact
-    // shape `slider`, `stat-bar`, `dot-grid-meter` and `DialogHeader` shipped.
+    // shape `slider`, `stat-bar` and `DialogHeader` shipped.
     const violations = ALL.filter(
       (el) => el.props.has('accessibilityValue') && !el.props.has('aria-valuenow'),
     ).map((el) => `${el.file}:${el.line} <${el.tag}>`);

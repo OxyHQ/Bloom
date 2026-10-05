@@ -1,0 +1,58 @@
+---
+title: Agent Avatar
+description: Editable agent artwork and the recovered 3D character renderer.
+---
+
+# Agent Avatar
+
+`AgentAvatar` uses the recovered original beta engine for its 3D characters. With an `AgentAvatarProvider`, existing recipes for the paper and blob silhouettes also render through that engine, retaining its fur, lighting, volume and animation. Circle, triangle, flower, diamond and heart reuse the engine’s corresponding shapes. Eight distinct bodies extend that catalog: pebble, squircle, slender, pocket, petal, star, cloud and shield. Their contours come from Bloom’s existing artwork; saved recipes do not need rewriting. All supported bodies use the original 3D eye catalog and animation.
+
+```tsx
+import { AgentAvatar, AgentAvatarProvider, FOLD_CONFIG } from '@oxy.so/bloom/agent-avatar';
+
+<AgentAvatarProvider runtimeUrl="https://example.com/bloom-character/runtime.mjs">
+  <AgentAvatar
+    config={{ ...FOLD_CONFIG, character: {
+      preset: 'blue_beret', selections: { accessory: 'crown' },
+    } }}
+    size={128}
+    interactive
+    label="Peri"
+  />
+</AgentAvatarProvider>
+```
+
+Host the package's complete `assets/character-runtime/` directory. The provider takes the URL of `runtime.mjs` and loads it only when an avatar is visible. The original generated engine files are preserved byte for byte with an integrity manifest. See the asset directory's README for provenance and source limitations.
+
+## Editing
+
+The `character` recipe holds a `preset` and optional `selections` for shape, color, eyes, eyewear and accessory. Explicit selections override preset defaults. `none` removes eyewear or an accessory. The editor reads the engine's actual selection and availability, including shape-dependent eye styles. Changing shape clears an explicit eye override so an unsupported pair is not restored.
+
+The editor presents one shape catalog and one eye catalog through `ShapeArc` and `EmotionPicker`. The eye orbit offers the engine’s nine native styles for both original and migrated bodies, with unsupported combinations disabled. Migrated bodies default to the original oval eyes. Saved expression, eye-size, spacing and tilt fields no longer modify a migrated face; the engine owns its eye geometry and animation. The shared `GlossArt` palette and custom color picker edit either body source. Original presets keep their authored appearance until explicitly edited.
+
+Alien avatars have been removed from the available catalog. Saved aliens, mascots and hidden-face recipes retain compatibility rendering. The shape selector shows static silhouettes without eyes or accessories: original catalog PNGs and cached SVG contours for migrated bodies. Paper grain and material effects become the engine’s 3D surface. Migrated bodies accept the original eyewear and accessory catalog. Headwear, Bulb, bow and Tuft use rigid contour anchors; eyewear and headphones retain their original placement. Original meshes, materials and fur remain intact.
+
+## Interaction and lifecycle
+
+`interactive` enables the original engine's pointer tracking and touch/drag interaction. Change `reactionKey` from an accessible button to replay its authored signature reaction for an intact preset, or the original 3D wave for customized and migrated bodies. Shape changes retain the last painted frame while the new geometry prepares. Changing `workingKey` starts a working episode and then returns to the interactive mode; `workingCycles` controls its duration. The creator’s **React** and **Work** buttons preview these original animations for both original and migrated bodies.
+
+`paused`, reduced motion and `motion: 0` stop animation after a complete appearance frame. `portrait` prepares a static thumbnail. The beta can report readiness while drawing transparency if initialized with its reduced-motion flag; the adapter waits for painted pixels and then freezes its clock instead.
+
+Web shares the beta engine and one animation clock per document, with a shared budget of **four live renderers** across original and migrated avatars. Additional avatars retain real 3D pixels from their last completed frame while their GPU renderer is released. Pointer interaction and React/Work commands prioritize reclaiming a renderer; overflow images remain visible while that renderer prepares. A newly visible avatar without a cached frame waits for its first rendering slot. This bounds graphics resources; the recovered engine’s synchronous first preparation can still cause a long task, especially for uncached migrated contours. Leaving the viewport or hiding the document releases the renderer lease, and returning avatars can display their retained image before resuming animation.
+
+Different migrated contours isolate their rendering modules because the recovered engine caches geometry by its original appearance key; they share one preparation worker. Unused contour modules are released. Use `portrait` for galleries and selectors. Static preparation is serialized and the image cache is bounded to 64 entries; unmount releases listeners and rendering resources. Storybook’s **Many Avatars** story exercises 48 original/migrated avatars with per-avatar React/Work controls and document scrolling.
+
+In the repository, run the scheduler tests and the browser budget check (with Storybook running):
+
+```bash
+node --test scripts/test-avatar-render-budget.mjs
+node scripts/verify-avatar-render-budget.mjs
+```
+
+`className` and `style` apply to the outer layout node through Bloom's NativeWind wrapper. `label` defaults to the translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel` overrides the name. Prefer a meaningful name when the avatar identifies an agent.
+
+## Native and fallback
+
+The optional native bridge uses `react-native-webview` and requires an absolute runtime URL reachable by the device. Web is verified in Chrome; physical-device validation remains pending. Each native WebView owns a separate document, so the four-renderer web budget is **not an application-wide native limit**. Separate WebViews cannot share engine memory, graphics contexts or the web document’s viewport reclamation.
+
+An unavailable runtime or missing native peer displays the translated unavailable state. Consumers without a runtime provider retain the universal SVG renderer for procedural recipes. That renderer preserves the original contours, folds, expression springs and deterministic grain; it does not support the beta's new 3D parts.

@@ -1,0 +1,2 @@
+$ bun scripts/generate-adoption-matrix.ts
+[generate-adoption-matrix] wrote docs/adoption-matrix.mdx (36090 bytes)

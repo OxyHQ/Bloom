@@ -101,7 +101,7 @@ export function Dialog({
   if (resolvedPlacement === 'bottom') {
     return <DialogBottomSheet {...rest} />;
   }
-  return <CenteredOrSideDialog {...rest} placement={resolvedPlacement} />;
+  return <CenteredOrSideDialog {...rest} placement={rest.presentation === 'custom' ? 'end' : resolvedPlacement} />;
 }
 
 /**
@@ -114,6 +114,9 @@ export function Dialog({
 function CenteredOrSideDialog({
   control,
   open: controlledOpen,
+  startOpen,
+  presentation = 'default',
+  exitDuration,
   onClose,
   testID,
   title,
@@ -155,7 +158,7 @@ function CenteredOrSideDialog({
 
   // Imperative open state for the side placement (the BottomSheet path owns its
   // own visibility via its ref instead).
-  const [sideOpen, setSideOpen] = useState(false);
+  const [sideOpen, setSideOpen] = useState(() => controlledOpen ?? startOpen ?? false);
 
   const theme = useTheme();
   const ref = useRef<BottomSheetRef>(null);
@@ -240,8 +243,8 @@ function CenteredOrSideDialog({
   );
 
   const context = useMemo(
-    () => ({ close, isWithinDialog: true }),
-    [close],
+    () => ({ close, isWithinDialog: true, isClosing: !sideOpen }),
+    [close, sideOpen],
   );
 
   // The array composes the plain surface styles with the morph's reanimated
@@ -299,6 +302,8 @@ function CenteredOrSideDialog({
     return (
       <Context.Provider value={context}>
         <SideSheet
+          presentation={presentation}
+          exitDuration={exitDuration}
           open={sideOpen}
           onDismiss={handleDismiss}
           side={placement}
@@ -394,6 +399,8 @@ function CenteredOrSideDialog({
  * exit animations are safe (the web `removeChild` crash does not apply).
  */
 function SideSheet({
+  presentation,
+  exitDuration,
   open,
   onDismiss,
   side,
@@ -417,6 +424,8 @@ function SideSheet({
   style,
   children,
 }: {
+  presentation?: DialogProps['presentation'];
+  exitDuration?: number;
   open: boolean;
   onDismiss: () => void;
   side: DialogSidePlacement;
@@ -481,7 +490,7 @@ function SideSheet({
 
   useEffect(() => {
     cancelAnimation(progress);
-    const timing = { ...MOTION_RECIPES[open ? 'present' : 'dismiss'], duration: ANIMATION_DURATION, easing: Easing.out(Easing.cubic) };
+    const timing = { ...MOTION_RECIPES[open ? 'present' : 'dismiss'], duration: presentation === 'custom' ? exitDuration ?? 0 : ANIMATION_DURATION, easing: Easing.out(Easing.cubic) };
     if (open) {
       setMounted(true);
       progress.value = withTiming(1, timing);
@@ -491,20 +500,20 @@ function SideSheet({
     progress.value = withTiming(0, timing, (finished) => {
       if (finished) runOnJS(finishClose)();
     });
-  }, [open, mounted, progress, finishClose]);
+  }, [open, mounted, progress, finishClose, presentation, exitDuration]);
 
   const handleBackdropPress = useCallback(() => {
-    if (dismissOnBackdrop) onDismiss();
-  }, [dismissOnBackdrop, onDismiss]);
+    if (dismissOnBackdrop) onHeaderDismiss();
+  }, [dismissOnBackdrop, onHeaderDismiss]);
 
   const hiddenSign = edge === 'left' ? -1 : 1;
   const panelAnimatedStyle = useAnimatedStyle(() => {
     const hidden = 1 - progress.value;
     return {
-      opacity: progress.value,
-      transform: [{ translateX: hidden * travel.value * hiddenSign }],
+      opacity: presentation === 'custom' ? 1 : progress.value,
+      transform: [{ translateX: presentation === 'custom' ? 0 : hidden * travel.value * hiddenSign }],
     };
-  }, [hiddenSign, progress, travel]);
+  }, [hiddenSign, progress, travel, presentation]);
 
   const measurePanel = useCallback(
     (e: { nativeEvent: { layout: { width: number } } }) => {
@@ -557,6 +566,8 @@ function SideSheet({
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         progress={progress}
+        dimOpacity={presentation === 'custom' ? 0 : undefined}
+        blurIntensity={presentation === 'custom' ? 0 : undefined}
         style={sideStyles.backdrop}
       />
 
@@ -569,7 +580,7 @@ function SideSheet({
         onLayout={measurePanel}
         className={panelClassName}
         style={[
-          sideStyles.panel,
+          presentation === 'custom' ? {position: 'absolute'} : sideStyles.panel,
           // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
           // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
           { backgroundColor: 'transparent', pointerEvents: 'auto', ...material.vars },
@@ -580,7 +591,7 @@ function SideSheet({
           { backgroundColor: 'transparent' },
         ]}
       >
-        <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />
+        {presentation !== 'custom' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />}
         <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer body
@@ -597,7 +608,7 @@ function SideSheet({
             <DialogHeaderProvider controller={headerController}>{surfaceChildren}</DialogHeaderProvider>
           </View>
         ) : (
-          <View style={{ padding: contentPadding, borderRadius: panelRadius, overflow: 'hidden' }}>{surfaceChildren}</View>
+          <View style={{ padding: contentPadding, flex: presentation === 'custom' ? 1 : undefined, minHeight: 0, borderRadius: panelRadius, overflow: presentation === 'custom' ? 'visible' : 'hidden' }}>{surfaceChildren}</View>
         )}
         </SurfaceLevelProvider>
       </AnimatedStyledView>

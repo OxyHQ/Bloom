@@ -138,6 +138,7 @@ function Group({
           {group.items.map((item) => (
             <TeamMenuRow key={item.key} item={item} palette={palette} onSelect={onSelect} />
           ))}
+          {group.content}
         </View>
       </View>
     </>

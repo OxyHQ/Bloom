@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { StyleProp, ViewStyle, ScrollViewProps } from 'react-native';
+import type { StyleProp, ViewStyle, ScrollViewProps, GestureResponderEvent, View } from 'react-native';
 
 /** A Remix-style icon: `width` / `height` / `fill`. */
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
@@ -21,6 +21,8 @@ export interface SidebarAvatar {
 
 /** A navigation row. Rows without `href` / `onPress` are decoration only. */
 export interface SidebarNavItem {
+  className?: string;
+  style?: StyleProp<ViewStyle>;
   key: string;
   label: string;
   icon: SidebarIcon;
@@ -62,8 +64,24 @@ export interface SidebarModeSwitcherProps {
 }
 
 export interface SidebarItemProps {
-  icon: SidebarIcon;
+  icon?: SidebarIcon;
+  /** An avatar or other visual in place of the icon. Kept visible while collapsed. */
+  leading?: ReactNode;
   label: string;
+  /** Secondary information under the label. Hidden with the label on collapse. */
+  description?: string;
+  /** Accent selection is the default; neutral uses the sidebar's tertiary surface. */
+  selectedAppearance?: 'accent' | 'neutral';
+  className?: string;
+  labelClassName?: string;
+  descriptionClassName?: string;
+  ref?: Ref<View>;
+  disabled?: boolean;
+  nativeID?: string;
+  accessibilityLabel?: string;
+  'aria-expanded'?: boolean;
+  'aria-haspopup'?: 'menu' | 'dialog' | 'listbox' | 'tree' | 'grid';
+  'aria-describedby'?: string;
   /**
    * The row's size. Inside a `Sidebar` it is inherited from the panel — pass
    * it only for a row standing on its own.
@@ -81,9 +99,25 @@ export interface SidebarItemProps {
   selected?: boolean;
   /** Icon-only square matching the sidebar size (40px for md). */
   collapsed?: boolean;
-  onPress?: () => void;
+  onPress?: (event: GestureResponderEvent) => void;
   /** Secondary touch action. Also expose it through a keyboard-accessible menu. */
-  onLongPress?: () => void;
+  onLongPress?: (event: GestureResponderEvent) => void;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+/** A fixed header row whose search expands across the adjacent action slots. */
+export interface SidebarToolbarProps {
+  actions?: ReadonlyArray<ReactNode>;
+  search: {
+    value: string;
+    onValueChange: (value: string) => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    accessibilityLabel?: string;
+    placeholder?: string;
+    closeLabel?: string;
+  };
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -151,6 +185,8 @@ export interface SidebarMenuItem {
 }
 
 export interface SidebarMenuGroup {
+  /** Optional controls below the group rows (for example, appearance settings). */
+  content?: ReactNode;
   id: string;
   /** Section label above the rows ("Company"). */
   label?: string;
@@ -243,6 +279,11 @@ export interface SidebarUserMenuProps {
 }
 
 export interface SidebarProps {
+  className?: string;
+  /** Replaces the account/logo header. The panel still owns its fixed chrome and scroll area. */
+  header?: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
+  /** Expanded panel inset, also used to measure app-owned scroll content. Defaults to the size's inset. */
+  contentPadding?: number;
   /** Center the main navigation group in space above the persistent footer. */
   contentAlignment?: 'start' | 'center';
   /** App-owned destination content after the built-in rows/tree, inside the same

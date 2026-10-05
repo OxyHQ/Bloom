@@ -3,8 +3,8 @@
  *
  * Most Bloom controls take their accessible name from what they render: a
  * `Button` reads its label, a menu row reads its title, a tab reads its text.
- * Three do not, because they draw a shape and no words — `Switch` (track and
- * thumb), `Slider` (track and knob) and `DotGridMeter` (dots). For those, the
+ * Two do not, because they draw a shape and no words — `Switch` (track and
+ * thumb), `Slider` (track and knob). For those, the
  * caller's `accessibilityLabel` is the ONLY route to a name, on either
  * platform: a caption sitting beside the control is a sibling element, and
  * neither React Native nor react-native-web associates the two.

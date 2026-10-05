@@ -84,6 +84,10 @@ const SUBPATHS = /** @type {const} */ ([
   ['./divider', 'divider/index.ts'],
   ['./breadcrumb', 'breadcrumb/index.ts'],
   ['./pagination', 'pagination/index.ts'],
+  ['./agent-avatar', 'agent-avatar/index.ts'],
+  ['./agent-creator', 'agent-creator/index.ts'],
+  ['./project-board', 'project-board/index.ts'],
+  ['./multi-agent-chat', 'multi-agent-chat/index.ts'],
   ['./agent-limits-card', 'agent-limits-card/index.ts'],
   ['./carousel', 'carousel/index.ts'],
   ['./file-upload', 'file-upload/index.ts'],
@@ -186,7 +190,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./empty-state', 'empty-state/index.ts'],
   ['./connection-dots', 'connection-dots/index.ts'],
   ['./composition-bar', 'composition-bar/index.ts'],
-  ['./dot-grid-meter', 'dot-grid-meter/index.ts'],
   ['./stat-bar', 'stat-bar/index.ts'],
   ['./activity-heatmap', 'activity-heatmap/index.ts'],
   ['./text-field', 'text-field/index.ts'],
@@ -340,6 +343,9 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './agent-creator',
+  './project-board',
+  './multi-agent-chat',
   './bottom-bar',
   './app-shell',
   '.',

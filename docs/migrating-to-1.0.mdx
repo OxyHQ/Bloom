@@ -330,9 +330,9 @@ These break nothing at compile time and change what you see.
 - **Popover positions through the shared placement engine.** Its own resolver
   clamped only the top, so a panel that fit neither above nor below its trigger
   ran off the bottom of the viewport.
-- **`Switch`, `Slider` and `DotGridMeter` warn once, in dev only, when they
-  mount with no accessible name.** All three draw no text, so nothing in the
-  component can supply one. `Switch` and `DotGridMeter` gained an optional
+- **`Switch` and `Slider` warn once, in dev only, when they
+  mount with no accessible name.** Both draw no text, so nothing in the
+  component can supply one. `Switch` gained an optional
   `accessibilityLabel` prop for it; the warning never fires in production, and
   an empty or whitespace-only name counts as missing, because `aria-label=""`
   names nothing.

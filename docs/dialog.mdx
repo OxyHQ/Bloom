@@ -319,3 +319,9 @@ Dialog panels publish level 0 with the painted tint composited against the page 
 ### Shared surface paint
 
 The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.
+
+### Custom presentation motion
+
+`presentation="custom"` on a centered card lets its content own panel paint and entry/exit motion. Its backdrop is transparent; Bloom retains the portal, overlay ordering, inertness, keyboard/focus behavior, screen scope and imperative close lifecycle. Set `exitDuration` in milliseconds to retain content through its exit. `useDialogContext().isClosing` becomes true when any dismissal starts, including Escape and the backdrop. The default presentation and its material/timings are unchanged. Bottom placement retains the BottomSheet presentation.
+
+Project Board composes its original 480ms create Genie and 560ms detail exit lifetime through this opt-in. On native, this custom centered presentation uses the existing side-sheet overlay infrastructure while its content supplies the panel layout.

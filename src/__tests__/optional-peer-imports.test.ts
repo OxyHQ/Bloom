@@ -106,6 +106,7 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
  * second undocumented load site, both fail here.
  */
 const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
+  { peer: 'react-native-webview', file: 'agent-avatar/character-webview.ts' },
   { peer: '@react-native-community/netinfo', file: 'connection-status/netinfo.ts' },
   { peer: 'expo-haptics', file: 'hooks/haptics-module.ts' },
   { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },

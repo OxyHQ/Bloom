@@ -3,3 +3,6 @@ lib/
 .DS_Store
 *.tsbuildinfo
 storybook-static/
+
+# Local reference harnesses and measurements are not package source.
+.local/

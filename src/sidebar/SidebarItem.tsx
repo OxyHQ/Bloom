@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Pressable, View, type GestureResponderEvent } from 'react-native';
+import { View, type GestureResponderEvent } from 'react-native';
+import { StyledPressable } from '../styles/styled-primitives';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -28,11 +29,24 @@ import type { SidebarItemProps } from './types';
  * square's top-end corner instead, so the count survives the collapse. With
  * `href` the row is a link (a real anchor on web).
  */
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   icon: Icon,
+  leading,
   label,
+  description,
+  selectedAppearance = 'accent',
+  className,
+  labelClassName,
+  descriptionClassName,
+  ref,
+  disabled,
+  nativeID,
+  accessibilityLabel,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHaspopup,
+  'aria-describedby': ariaDescribedby,
   size,
   href,
   badge,
@@ -55,10 +69,11 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     const margin = (lane - metrics.row.square) / 2 * progress.value;
     return { marginLeft: margin, marginRight: margin };
   }, [progress, lane, metrics.row.square]);
-  const itemGap = metrics.row.gap;
+  const itemGap = description != null ? 10 : metrics.row.gap;
   const contentStyle = useAnimatedStyle(() => ({ gap: itemGap * (1 - progress.value) }), [progress, itemGap]);
   const collapsedBadgeStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
-  const foreground = selected ? palette.selectedForeground : palette.textSecondary;
+  const neutral = selectedAppearance === 'neutral';
+  const foreground = selected ? neutral ? palette.text : palette.selectedForeground : palette.textSecondary;
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
@@ -82,7 +97,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     // collapsed is the size's own square.
     alignSelf: collapsed && !inSidebar ? 'flex-start' : 'stretch',
     width: collapsed && !inSidebar ? metrics.row.square : undefined,
-    backgroundColor: selected ? palette.selected : hovered ? palette.rowHover : 'transparent',
+    backgroundColor: selected ? neutral ? palette.tertiary : palette.selected : hovered ? palette.rowHover : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
 
@@ -98,8 +113,15 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   return (
     <AnimatedPressable
       {...webProps}
+      ref={ref}
+      className={className}
+      disabled={disabled}
+      nativeID={nativeID}
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHaspopup}
+      aria-describedby={ariaDescribedby}
       role={href ? 'link' : 'button'}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected }}
       onHoverIn={onIn}
       onHoverOut={onOut}
@@ -108,19 +130,22 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
         if (!onPress) return;
         // The host navigates (a router, or an action like opening Settings).
         if (IS_WEB && href) event.preventDefault();
-        onPress();
+        onPress(event);
       }}
       style={[rowStyle, horizontalInset, style]}
       testID={testID}
     >
-      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }, contentStyle]}>
+      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden', ...(description != null ? { flex: 1 } : {}) }, contentStyle]}>
         <View style={{ flexShrink: 0 }}>
-          <Icon width={metrics.row.icon} height={metrics.row.icon} fill={foreground} />
+          {leading ?? (Icon ? <Icon width={metrics.row.icon} height={metrics.row.icon} fill={foreground} /> : null)}
         </View>
-        <Collapsible collapsed={collapsed}>
-          <Text variant={metrics.row.label} numberOfLines={1} style={{ color: foreground }}>
+        <Collapsible collapsed={collapsed} stretch={description != null}>
+          <View style={{ minWidth: 0, ...(description != null ? { flex: 1 } : {}), gap: description != null ? 2 : 0 }}>
+          <Text variant={metrics.row.label} className={labelClassName} numberOfLines={1} style={labelClassName ? undefined : { color: foreground }}>
             {label}
           </Text>
+          {description != null ? <Text variant="body-regular" className={descriptionClassName} numberOfLines={1} style={descriptionClassName ? undefined : { color: palette.textTertiary }}>{description}</Text> : null}
+          </View>
         </Collapsible>
       </Animated.View>
       {badge != null ? <Collapsible collapsed={collapsed}>{badge}</Collapsible> : null}

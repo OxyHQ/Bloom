@@ -197,7 +197,7 @@ export function DialogBottomSheet({
     const maxHeightPercent: `${number}%` = `${Math.round(maxHeightRatio * 100)}%`;
     return [
       {
-        backgroundColor: 'transparent',
+        backgroundColor: theme.colors.background,
         ...surfaceStyle(SURFACE_SHAPES.sheet),
         maxHeight: maxHeightPercent,
       },

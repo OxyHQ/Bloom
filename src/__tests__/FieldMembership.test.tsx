@@ -47,6 +47,7 @@ jest.mock('react-native', () => {
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
+import { CustomColorPicker } from '../agent-creator/CustomColorPicker';
 import { CardFormNumber } from '../card-form';
 import { Checkbox } from '../checkbox';
 import { DeliverySlotPicker } from '../delivery-slot';
@@ -105,6 +106,17 @@ const viewInert = (props: Props) => props['aria-disabled'] === true;
 const inputInert = (props: Props) => props.editable === false;
 
 const SUBJECTS: Subject[] = [
+  {
+    name: 'agent-creator',
+    render: (p) => <CustomColorPicker value="#ff0000" onChange={() => {}} {...p} />,
+    ownNameProp: null,
+    isInert: inputInert,
+    node: 'byName',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'Hex color',
+  },
   {
     name: 'switch',
     render: (p) => <Switch testID={TID} checked={false} onCheckedChange={() => {}} {...p} />,

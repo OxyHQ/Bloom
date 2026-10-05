@@ -466,6 +466,28 @@ describe('the media slot', () => {
     expect(margins(mediaWrapper())).toEqual(['0px', '0px', '0px', '0px']);
   });
 
+  it('draws no bubble at all around a bare block — no fill, border, padding — and floats the time over it', () => {
+    mount(<MessageBubble direction="outgoing" mediaFit="bare" media={<RNView testID="block" />} time="12:41" />);
+    const box = getComputedStyle(bubbleBox('outgoing'));
+    // Read raw: `normalise` drops the alpha channel, which is the whole point here.
+    expect(box.backgroundColor).toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
+    expect(box.borderTopWidth).toBe('0px');
+    expect([box.paddingTop, box.paddingRight, box.paddingBottom, box.paddingLeft]).toEqual(['0px', '0px', '0px', '0px']);
+    // Not clipped: react-native-web emits the longhands, so read both.
+    expect([box.overflowX, box.overflowY]).not.toContain('hidden');
+    // The block keeps its own edges: nothing to cancel, so no negative margins.
+    expect(margins(mediaWrapper())).toEqual(['0px', '0px', '0px', '0px']);
+    expect(mediaWrapper().textContent).toContain('12:41');
+  });
+
+  it('falls back to bleed when a bare block has text beside it, because the text needs a surface', () => {
+    mount(
+      <MessageBubble direction="outgoing" mediaFit="bare" media={<RNView testID="block" />} text="Look" time="12:41" />,
+    );
+    expect(getComputedStyle(bubbleBox('outgoing')).backgroundColor).not.toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
+    expect(margins(mediaWrapper())).toEqual(['-7px', '-12px', '2px', '-12px']);
+  });
+
   it('lets the app force the meta either way', () => {
     mount(
       <MessageBubble

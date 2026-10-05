@@ -1,0 +1,23 @@
+{
+  "runtimeUnchanged": "6ec6c774",
+  "sources": [
+    {
+      "path": "docs/adoption-matrix.mdx",
+      "sha256": "1785f7c4225c9846635d6ca325a7eebdada550dd2458e2a5c3c43dd2d2be4f11",
+      "bytes": 36305
+    }
+  ],
+  "records": [
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/adoption/generate.log",
+      "sha256": "f530f7748f41df101661508c7231b8785cbdee0d39cbacb8ca907ed318036ba0",
+      "bytes": 114
+    },
+    {
+      "path": "docs/audits/2026-10-03-native-dismissal/adoption/green.log",
+      "sha256": "e01647d12822435e131d63317795f39e075521c33cb6f7b4dc24ea495f7d76a3",
+      "bytes": 250
+    }
+  ],
+  "result": "Canonical generated import counts updated;11gate testsPASS; no runtime delta"
+}

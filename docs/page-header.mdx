@@ -77,6 +77,24 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 
 Leaving both at their defaults over a hero photo is the one combination that reads as a bug, and it is a combination the header cannot resolve for you: it does not know what is behind it.
 
+### The same edge at the bottom
+
+Chrome that floats at the BOTTOM of a scroller — a pinned composer, a reply prompt — gets the same edge effect from `EdgeScrim`, exported beside the header. `edge="bottom"` mirrors the ramp: the colour is solid at the bottom and fades to nothing above. Never paint such a footer with a solid fill: a rectangle ends at its own top edge, and that edge is the line this effect exists to remove.
+
+```tsx
+import { EdgeScrim, SCRIM_TAIL_RATIO } from '@oxy.so/bloom/page-header';
+import { useSurfaceFill } from '@oxy.so/bloom/styles';
+
+const surfaceFill = useSurfaceFill();
+
+// Inside a footer that is `position: absolute` / `sticky` at the bottom.
+<View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: -footerHeight * SCRIM_TAIL_RATIO }}>
+  <EdgeScrim edge="bottom" color={surfaceFill} />
+</View>
+```
+
+The scrim sizes to its parent, so the parent carries the height — extend it ABOVE the footer by `SCRIM_TAIL_RATIO` for the same reason the header extends below itself: the fade must finish past the layout, not at it. The colour follows the same rule as `scrimColor`: opaque, and the surface the content is scrolling on.
+
 ## Props
 
 | Prop | Default | |

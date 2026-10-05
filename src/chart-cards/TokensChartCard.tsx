@@ -83,6 +83,8 @@ export interface TokensChartCardProps {
   /** Axis labels under the plot's edges. Default `"Jun 14"` / `"Today"` — pass your own. */
   startLabel?: string;
   endLabel?: string;
+  /** Animate the plot reveal. False paints the complete plot without scheduling frames. */
+  animate?: boolean;
   /** Plot height. Default 200. */
   plotHeight?: number;
   /** Line colour (and the area's). Default purple-400. */
@@ -161,23 +163,24 @@ export function tokensAreaPath(points: readonly Point[], baseY: number): string 
 
 /** A 0 → 1 clock over `duration` on `easing`, started on mount. Snaps when `skip`. */
 function useReveal(skip: boolean): number {
-  const [progress, setProgress] = useState(skip ? 1 : 0);
+  const [frame, setFrame] = useState({ skip, progress: skip ? 1 : 0 });
   useEffect(() => {
     if (skip || typeof requestAnimationFrame !== 'function') {
-      setProgress(1);
+      setFrame((previous) => previous.skip && previous.progress === 1 ? previous : { skip: true, progress: 1 });
       return;
     }
+    setFrame({ skip: false, progress: 0 });
     const start = Date.now();
     let raf = 0;
     const tick = () => {
       const t = Math.min(1, (Date.now() - start) / REVEAL_MS);
-      setProgress(REVEAL_EASE(t));
+      setFrame({ skip: false, progress: REVEAL_EASE(t) });
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [skip]);
-  return skip ? 1 : progress;
+  return skip ? 1 : frame.skip ? 0 : frame.progress;
 }
 
 export function TokensChartCard({
@@ -190,6 +193,7 @@ export function TokensChartCard({
   startLabel: startLabelProp,
   endLabel: endLabelProp,
   plotHeight = TOKENS_PLOT_HEIGHT,
+  animate = true,
   color,
   activeColor,
   activeIndex: controlledIndex,
@@ -209,7 +213,7 @@ export function TokensChartCard({
   const reducedMotion = useReducedMotion();
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
-  const reveal = useReveal(reducedMotion);
+  const reveal = useReveal(reducedMotion || !animate);
 
   const colors = useMemo(() => {
     return {
@@ -336,7 +340,7 @@ export function TokensChartCard({
                   <Stop offset="1" stopColor={colors.line} stopOpacity={0} />
                 </LinearGradient>
                 <ClipPath id={`${id}-reveal`}>
-                  <Rect x={0} y={0} width={size.width * reveal} height={size.height} />
+                  <Rect testID={testID ? `${testID}-reveal` : undefined} x={0} y={0} width={size.width * reveal} height={size.height} />
                 </ClipPath>
               </Defs>
               <G clipPath={`url(#${id}-reveal)`}>

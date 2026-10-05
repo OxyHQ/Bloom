@@ -104,7 +104,7 @@ Router-agnostic `scroll/` core plus adapter imports no router; model: `docs/scro
 
 **RNW drops accessibilityState and accessibilityValue.** Set flat aria-busy/checked/disabled/expanded/selected and aria-value* (RN folds them back). Toggle buttons need BOTH native state and aria-pressed (RN has no pressed concept). Pressable/View aria-disabled inversion: `docs/switch.mdx`, `docs/slider.mdx`.
 
-- **Name is separate:** accessibilityLabel already works on both platforms; don't rename it. Textless Switch/Slider/progressbar/dot-grid-meter cannot inherit sibling captions. Missing Switch label once announced “switch, off” fleet-wide despite aria-checked. Empty labels count as missing; fix: `hooks/use-accessible-name-warning.ts`, same docs.
+- **Name is separate:** accessibilityLabel already works on both platforms; don't rename it. Textless Switch/Slider/progressbar cannot inherit sibling captions. Missing Switch label once announced “switch, off” fleet-wide despite aria-checked. Empty labels count as missing; fix: `hooks/use-accessible-name-warning.ts`, same docs.
 - Assert rendered ATTRIBUTES, not props. `aria-state-web.test.tsx` is mutation-verified but explicitly imports subjects: new components do not join automatically (Slider fixed, three progressbars remained broken).
 - Add subjects to runtime gate AND `aria-state-source-census.test.ts` (state ARIA + interactive names). Spreads prove nothing (Slider spreads pan handlers); spread exemptions are explicit, contents-derived exemptions an equality.
 

@@ -1,0 +1,58 @@
+---
+title: AgentCreator
+description: Controlled agent profile editor with a live 3D avatar, eye orbit, shape arc, custom color, and speech preferences.
+order: 105
+---
+
+# AgentCreator
+
+A controlled editor for an agent's name, label, description, appearance and response preferences. The host owns the agent, saving, and the surrounding panel. The implementation is shared across web, iOS and Android; the platform entry points bind Bloom's existing select and popover surfaces.
+
+```tsx
+import { useState } from 'react';
+import { AgentCreator, type AgentCreatorAgent } from '@oxy.so/bloom/agent-creator';
+import { FOLD_CONFIG } from '@oxy.so/bloom/agent-avatar';
+
+const [agent, setAgent] = useState<AgentCreatorAgent>({
+  id: 'designer', name: 'Designer', label: 'Design', description: '',
+  avatar: { ...FOLD_CONFIG },
+});
+
+<AgentCreator agent={agent} onChange={setAgent} onClose={closePanel} />;
+```
+
+Mount under `BloomProvider` and give the editor a bounded height. Layout classes resolve through Bloom's styled primitives; web consumers must scan Bloom's built `lib/` in their NativeWind/Tailwind pipeline.
+
+## Appearance
+
+The preview is 162px. With `AgentAvatarProvider`, one shape arc combines the eleven original engine shapes with eight distinct migrated bodies: pebble, squircle, slender, pocket, petal, star, cloud and shield. Equivalent circle, triangle, flower, diamond and heart recipes reuse the original geometry. Alien avatars have been removed from the available catalog and examples; saved alien recipes remain readable for compatibility.
+
+The eye orbit offers nine original 3D eye styles for both body sources. Migrated bodies default to oval eyes; historical expression, eye-size, spacing and tilt settings no longer alter their faces. The engine owns eye geometry and animation, and its capabilities disable unsupported combinations. Changing shape clears an incompatible eye override. Original presets keep their authored eyes until explicitly edited.
+
+Upright eye chips orbit at a 116px radius; dragging or a mouse wheel rotates the orbit. Hover, focus, backgrounding and reduced motion pause automatic movement. The shape selector uses a 210px circular track, an unbounded index, spring, drag and wheel geometry. Choose a silhouette by pressing it; keyboard arrows, Home and End select shapes on web. BloomProvider’s direction reverses horizontal movement in RTL.
+
+Nine glossy color presets and the shared custom picker edit both original and migrated bodies. The picker contains a saturation/brightness field, hue rail and hex entry. HSV state preserves the selected hue when the field reaches black or gray; invalid hex input resets to the last emitted color. Choosing a named engine swatch clears its custom RGB override. Speech and appearance edits preserve the agent’s identity and unrelated fields.
+
+The preview accepts pointer and touch reactions. **React** and **Work** buttons also support keyboard activation and preview the original engine’s animations on either body source. Working returns to the interactive preview after its episode. Eye chips and original shape chips use catalog PNG thumbnails. Migrated shape chips use cached static SVG silhouettes from their actual contours, matching the catalog’s flat pink artwork. The shape wheel renders no avatars or 3D canvases.
+
+The preset selector provides authored characters; eyewear and accessories use Bloom Select on both original and migrated bodies. Explicit selections survive switching between these bodies. Headwear, Bulb, bow and Tuft attach to migrated contour anchors; eyewear and headphones keep their original placement. Intact presets retain their authored signature reaction; edited and migrated bodies use the original 3D wave. Catalog titles retain their original English names by default. Hosts can translate them through `labels.characterOption(category, id, title)`; control labels follow the editor locale. Consumers without a runtime provider retain compatibility rendering and controls for saved procedural recipes.
+
+## Preferences and speech
+
+`AgentPreferences` carries `voice`, `speed`, `language` and `notifications`. Defaults are voice `alice`, speed `1`, language `auto`, notifications `true`. Supported speeds are `0.75`, `1`, `1.25`, `1.5`; languages are auto-detect, English, Turkish, Spanish, French, German, Japanese and Portuguese. `normalizeAgentPreferences()` restores supported values and limits voice identifiers to 200 characters.
+
+Web previews use the browser's local device voice catalog and cancel playback when the editor unmounts. iOS and Android hosts provide `voices` (`{ id, name, language }[]`) and `onPreviewVoice(text, preferences)` to integrate their own speech provider; no speech dependency is added to Bloom. Without a provider, native speech selection and preview are disabled while saved preferences remain intact. Changing notification preferences updates data; delivering a notification belongs to the consumer.
+
+`className` and `style` apply to the editor's outer node. Profile limits are 48 characters for name, 60 for label and 500 for description. `onClose` closes the host panel and does not save.
+
+## Locale and shared primitives
+
+Fixed labels, hints and accessible control names use the `AGENT_CREATOR_MESSAGES` catalog and Bloom’s 15 supported locales. `locale` overrides the root locale for this editor; `labels` overrides individual catalog entries. Agent names, descriptions and host voice names remain consumer data.
+
+Profile inputs, textarea, select, switch, segmented control, close control and popover reuse Bloom’s current primitives. Original layout and interaction class chains are retained. Bloom’s active palette and materials supply their colors. The custom HSV picker reads `Field` membership: disabling the enclosing field disables its gestures, keyboard updates and hex input; field errors and descriptions associate with its inputs.
+
+The original rainbow artwork and glossy color artwork are retained. Web applies the original shape mask and scroll blur; native uses SVG clipping and edge gradients for CSS effects its renderer cannot express. Native gesture hit areas remain rectangular, and native scroll fades do not apply a backdrop blur. These adaptations need device verification.
+
+## Validation boundary
+
+Tests verify profile and avatar edits preserve unrelated data, preference updates, host speech preview, color round trips and shape geometry. Jest does not execute gesture arbitration or the Reanimated frame loop; motion, wheel hit testing, custom picker dragging, and native speech providers require browser/device verification.

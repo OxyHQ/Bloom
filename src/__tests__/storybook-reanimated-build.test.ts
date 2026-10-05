@@ -6,7 +6,9 @@ import path from 'node:path';
 it('converts Reanimated mixed-module RNW compiler requires without stripping optional peers', () => {
   const main = readFileSync(path.join(__dirname, '../../.storybook/main.ts'), 'utf8');
   expect(main).toContain('transformMixedEsModules: true');
-  expect(main).toContain("ignoreTryCatch: (id: string) => !id.startsWith('react-native-web/dist/')");
+  expect(main).toMatch(
+    /ignoreTryCatch:\s*\(id: string\)\s*=>\s*!id\.startsWith\('react-native-web\/dist\/'\)/,
+  );
   expect(main).not.toMatch(/find:\s*['"]react-native-reanimated['"]/);
 });
 

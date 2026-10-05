@@ -32,6 +32,7 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiSideBarFill } from '../icons/remix/RiSideBarFill';
 import { Kbd } from '../kbd';
 import { borderRadius } from '../styles/tokens';
+import { StyledView } from '../styles/styled-primitives';
 import { Z_INDEX } from '../styles/z-index';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { ThemeToggle } from '../theme-toggle';
@@ -83,6 +84,7 @@ import { SIDEBAR_MESSAGES } from './messages';
  */
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 
@@ -152,6 +154,9 @@ function SearchField({
 }
 
 const SidebarPanel: React.FC<SidebarProps> = ({
+  className,
+  header,
+  contentPadding,
   items = [],
   primaryAction,
   contentAlignment = 'start',
@@ -272,7 +277,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     },
     [fluid, collapsed, expandedWidth, progress],
   );
-  const expandedPadding = metrics.padding;
+  const expandedPadding = contentPadding ?? metrics.padding;
   const collapsedPadding = metrics.collapsedPaddingX;
   const panelStyle = useAnimatedStyle(() => {
     const p = progress.value;
@@ -287,12 +292,14 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   // app's rows, elements and data — a `Date` among them crashes native on the
   // copy. The mapper reads only whether there is one (`worklet-captures.test.ts`).
   const treeShown = Boolean(tree);
+  const hasHeader = header != null;
   const contentMorph = useAnimatedStyle(() => ({
     height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : undefined,
     opacity: 1 - progress.value,
-    marginTop: treeShown ? 0 : 24 * (1 - progress.value),
-  }), [contentHeight, collapsed, progress, treeShown]);
-  const contentWidth = useAnimatedStyle(() => ({ width: expandedWidth.value - expandedPadding * 2 }), [expandedWidth, expandedPadding]);
+    marginTop: treeShown || hasHeader ? 0 : 24 * (1 - progress.value),
+  }), [contentHeight, collapsed, progress, treeShown, hasHeader]);
+  const contentBorder = contentPadding == null ? 0 : surface === 'card' ? 2 : surface === 'docked' ? 1 : 0;
+  const contentWidth = useAnimatedStyle(() => ({ width: expandedWidth.value - expandedPadding * 2 - contentBorder }), [expandedWidth, expandedPadding, contentBorder]);
   const navInset = useAnimatedStyle(() => {
     const inset = expandedInset * (1 - progress.value);
     return { paddingLeft: inset, paddingRight: inset };
@@ -398,6 +405,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         key={item.key}
         icon={item.icon}
         label={item.label}
+        className={item.className}
+        style={collapsed ? undefined : item.style}
         href={item.href}
         selected={isSelected}
         collapsed={collapsed}
@@ -676,8 +685,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     <SidebarSizeProvider value={size}>
     <SidebarGeometryProvider value={geometry}>
     <CollapseProvider value={progress}>
-      <Animated.View
+      <AnimatedStyledView
         {...dirProps}
+        className={className}
         role="complementary"
         accessibilityLabel={accessibilityLabel}
         onLayout={onPanelLayout}
@@ -689,8 +699,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             flexDirection: 'column',
             justifyContent: 'space-between',
             overflow: surface === 'plain' ? 'hidden' : 'visible',
-            paddingTop: metrics.padding,
-            paddingBottom: metrics.padding,
+            paddingTop: expandedPadding,
+            paddingBottom: expandedPadding,
           },
           chrome,
           panelStyle,
@@ -711,7 +721,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             onLayout={(event) => setHeaderOverlap(Math.min(20, event.nativeEvent.layout.height / 2))}
             style={{ width: '100%', flexShrink: 0, gap: 12, zIndex: Z_INDEX.floating }}
           >
-            {headerRow}
+            {header != null ? typeof header === 'function' ? header({ collapsed }) : header : headerRow}
             {modeSwitcher}
             {showSearch && !flatMobile ? searchButton : null}
           </View>
@@ -805,7 +815,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             {typeof footer === 'function' ? footer({ collapsed }) : footer}
           </View> : null}
         </View>
-      </Animated.View>
+      </AnimatedStyledView>
     </CollapseProvider>
     </SidebarGeometryProvider>
     </SidebarSizeProvider>

@@ -33,6 +33,9 @@ const gestureBuilder = (): MockGesture => {
     failOffsetX: () => builder,
     // Tap tolerances — the tab bar widens both so a drifting finger still taps.
     maxDistance: () => builder,
+    minDistance: () => builder,
+    activateAfterLongPress: () => builder,
+    runOnJS: () => builder,
     maxDuration: () => builder,
     // Tap count and pointer bounds — the image gallery distinguishes a
     // double-tap zoom from a two-finger pinch with these. A missing chain link

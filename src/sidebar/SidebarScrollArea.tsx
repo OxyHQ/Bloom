@@ -48,7 +48,7 @@ export const SidebarScrollArea = forwardRef<ScrollView, SidebarScrollAreaProps>(
       {children}
     </ScrollView>
     {edges.top && <Animated.View testID={`${prefix}-fade-top`} pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[{ position: 'absolute', left: 0, right: 0, top: 0, height: fadeHeight }, topStyle]}><EdgeScrim color={color} /></Animated.View>}
-    {edges.bottom && <Animated.View testID={`${prefix}-fade-bottom`} pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, height: fadeHeight, transform: [{ rotate: '180deg' }] }, bottomStyle]}><EdgeScrim color={color} /></Animated.View>}
+    {edges.bottom && <Animated.View testID={`${prefix}-fade-bottom`} pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, height: fadeHeight }, bottomStyle]}><EdgeScrim color={color} edge="bottom" /></Animated.View>}
   </View>;
 });
 SidebarScrollArea.displayName = 'SidebarScrollArea';

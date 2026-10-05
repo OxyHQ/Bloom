@@ -89,7 +89,6 @@ import {
   DropdownMenuSubTrigger,
 } from '../dropdown-menu';
 import { MenuSurfaceProvider } from '../floating/context';
-import { DotGridMeter } from '../dot-grid-meter';
 import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
 import { Dialog as WebDialog } from '../dialog/Dialog.web';
 import { ToastContent } from '../toast/ToastContent';
@@ -704,30 +703,6 @@ describe('progressbars announce their value', () => {
     expect(el.getAttribute('aria-label')).toBe('Storage');
   });
 
-  it('DotGridMeter', () => {
-    const c = mount(<DotGridMeter filled={3} total={10} testID="dg" />);
-    const el = byTestId(c, 'dg');
-    expect(el.getAttribute('role')).toBe('progressbar');
-    expect(el.getAttribute('aria-valuenow')).toBe('3');
-    expect(el.getAttribute('aria-valuemin')).toBe('0');
-    expect(el.getAttribute('aria-valuemax')).toBe('10');
-  });
-
-  it('DotGridMeter clamps the announced value to the total', () => {
-    const c = mount(<DotGridMeter filled={99} total={10} testID="dg" />);
-    expect(byTestId(c, 'dg').getAttribute('aria-valuenow')).toBe('10');
-  });
-
-  it('DotGridMeter emits the accessible NAME as aria-label', () => {
-    // `StatBar` above always had one, from its required `label`. This one had
-    // no label prop at all, so it announced "3 of 10" with no subject —
-    // the same gap one component over.
-    const c = mount(
-      <DotGridMeter filled={3} total={10} accessibilityLabel="Diversity" testID="dg" />,
-    );
-    expect(byTestId(c, 'dg').getAttribute('aria-label')).toBe('Diversity');
-  });
-
   it('the dialog header wizard step', () => {
     // The controller holds shared values, so it has to be created inside a
     // component rather than beside the assertion.
@@ -745,7 +720,7 @@ describe('progressbars announce their value', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('2');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('4');
-    // The name and the reading. Unlike `Slider` and `DotGridMeter`, this bar
+    // The name and the reading. Unlike `Slider`, this bar
     // always means the same thing, so Bloom supplies both itself rather than
     // taking a prop for them.
     expect(el.getAttribute('aria-label')).toBe('Progress');

@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useMemo, useRef } from 'react';
 import { Platform, type TextInput, View } from 'react-native';
 
 import { mergeRefs } from '../hooks/merge-refs';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SEARCH_MESSAGES } from './messages';
@@ -25,6 +26,8 @@ type SearchProps = Omit<TextFieldInputProps, 'label'> & {
 export const Search = forwardRef<TextInput, SearchProps>(
   function Search({ value, label: labelProp, onClearText, onFocus, onPressIn, ...rest }, ref) {
     const theme = useTheme();
+    const direction = useDirectionProps();
+    const rtl = useIsRtl();
     const common = useCommonMessages();
     const { messages } = useMessages(SEARCH_MESSAGES);
     const label = labelProp ?? common.search;
@@ -66,7 +69,7 @@ export const Search = forwardRef<TextInput, SearchProps>(
     );
 
     return (
-      <View style={[a.w_full, a.relative]}>
+      <View {...direction} style={[a.w_full, a.relative]}>
         <TextField radius={borderRadius.full}>
           <TextFieldIcon icon={MagnifyingGlassIcon} />
           <TextFieldInput
@@ -81,7 +84,7 @@ export const Search = forwardRef<TextInput, SearchProps>(
             autoCorrect={false}
             autoComplete="off"
             autoCapitalize="none"
-            style={showClear ? { paddingRight: 24 } : undefined}
+            style={showClear ? (rtl ? { paddingLeft: 24 } : { paddingRight: 24 }) : undefined}
             {...rest}
             onPressIn={handlePressIn}
             onFocus={handleFocus}
@@ -94,10 +97,8 @@ export const Search = forwardRef<TextInput, SearchProps>(
               a.absolute,
               a.z_20,
               a.my_auto,
-              a.inset_0,
               a.justify_center,
-              a.pr_sm,
-              { left: 'auto' },
+              { top: 0, bottom: 0, insetInlineEnd: 0, paddingInlineEnd: 8 },
             ]}>
             {/* Neutral and transparent. `variant="ghost"` painted an accent
                 wash inside the field, which read as a state the field was not
