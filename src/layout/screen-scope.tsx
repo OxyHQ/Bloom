@@ -39,6 +39,7 @@ import { ScreenContext, ScreenNavigationContext } from '../screen/context';
 import type { PropsWithChildren } from 'react';
 
 import { BottomEdgeProvider } from './bottom-edge';
+import { ScrollMetricsContext } from './scroll-metrics';
 import { ScrollOffsetProvider } from './scroll-offset';
 import { TopEdgeProvider } from './top-edge';
 
@@ -49,7 +50,7 @@ export function ScreenScope({ children }: PropsWithChildren) {
         <TopEdgeProvider>
           <BottomEdgeProvider>
             {/* null means no scroller has claimed this scope yet. */}
-            <ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider>
+            <ScrollMetricsContext.Provider value={null}><ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider></ScrollMetricsContext.Provider>
           </BottomEdgeProvider>
         </TopEdgeProvider>
       </ScreenNavigationContext.Provider>

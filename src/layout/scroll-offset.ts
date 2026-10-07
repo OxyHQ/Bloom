@@ -8,7 +8,11 @@
  * one scroll container has moved. The container is the screen's, and the chrome
  * is usually not inside it, so the number has to travel.
  *
- * Until now it travelled as a prop, and the default when the prop was omitted
+ * Prefer ScrollMetricsProvider with ScrollArea when the footer also needs to
+ * know the remaining content. This lower-level offset-only provider remains
+ * useful for an existing animated scroll owner.
+ *
+ * Originally it travelled as a prop, and the default when the prop was omitted
  * was `window.scrollY` on web and "nothing moves" on native. That default is
  * right for exactly one layout — a web page whose document IS the scroller —
  * and silently wrong for the two that a Bloom app usually has: a desktop panel

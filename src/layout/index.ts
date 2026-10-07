@@ -18,3 +18,9 @@ export { ScreenScope } from './screen-scope';
 export { HeaderDockProvider, useHeaderDockInset } from './header-dock';
 export { StickySection } from './StickySection';
 export type { StickySectionProps } from './StickySection';
+
+export { ScrollMetricsProvider } from './scroll-metrics';
+export { useScrollMetricsBinding } from './use-scroll-metrics-binding';
+export type { ScrollMetricsBindingOptions } from './use-scroll-metrics-binding';
+export { ScrollArea } from './ScrollArea';
+export type { ScrollAreaProps } from './ScrollArea';
