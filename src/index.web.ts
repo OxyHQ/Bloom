@@ -225,11 +225,13 @@ export * from './task-list';
 export * from './agent-chat/index.web';
 export * from './ai-chat/index.web';
 export * from './radio-indicator';
-export { ErrorBoundary } from './error-boundary';
+export { ErrorBoundary, PanelErrorBoundary } from './error-boundary';
 export type {
   ErrorBoundaryProps,
   ErrorBoundaryFallback,
   ErrorBoundaryFallbackContext,
+  PanelErrorBoundaryOptions,
+  PanelErrorBoundaryProps,
 } from './error-boundary';
 export * as Shapes from './shapes';
 export * from './avatar';

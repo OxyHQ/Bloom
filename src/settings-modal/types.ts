@@ -1,3 +1,4 @@
+import type { EmptyStateProps } from '../empty-state/types';
 import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
@@ -212,6 +213,8 @@ export interface SettingsPageSection {
   description?: string;
   action?: ReactNode;
   rows: SettingsRowData[];
+  /** Rendered inside the section card only when rows is empty. */
+  emptyState?: EmptyStateProps;
 }
 
 export interface SettingsGeneralPageProps {
