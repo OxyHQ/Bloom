@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { RADIUS } from '../design-tokens/scales';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 
 import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailThreadMessage, MailAddress, MailThreadStrings } from './types';
@@ -44,8 +44,8 @@ export const MAIL_THREAD_GEOMETRY = {
   glyph: 16,
   /** The star and the overflow trigger. A touch target, so 44. */
   action: 44,
-  /** Radius of a message's own surface. */
-  radius: RADIUS['radius-16'],
+  /** Default radius; rendered messages inherit BloomScope.panelRadius via Card. */
+  radius: SURFACE_SHAPES.sidebar.radius,
 } as const;
 
 /**

@@ -18,6 +18,13 @@ export type ContentPanelChrome = 'elevated' | 'border' | 'none';
 
 export interface ContentPanelProps {
   children: React.ReactNode;
+  /**
+   * `solid` (default) paints a panel surface. `plain` keeps layout, framing and
+   * clipping while leaving the enclosing surface visible, without material,
+   * border or shadow. Descendants inherit the parent's surface level and fill.
+   * In plain mode surface background overrides and surfaceColor are ignored.
+   */
+  appearance?: 'solid' | 'plain';
   /** Opt in to local themed error recovery. Split panes already provide their own boundaries. */
   errorBoundary?: boolean | PanelErrorBoundaryOptions;
   /**

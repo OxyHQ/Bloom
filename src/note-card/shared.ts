@@ -40,7 +40,7 @@ export interface NoteCardGeometry {
   padding: number;
   gap: number;
   /** A rung of the `RADIUS` scale — `Card` takes the rung, the focus ring takes its px. */
-  radius: CardRadius;
+  radius: Exclude<CardRadius, 'panel'>;
   excerptLines: number;
   titleLines: number;
   maxTags: number;

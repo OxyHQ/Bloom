@@ -122,8 +122,16 @@ be ambiguous.
 
 ## Message surfaces and spacing
 
-Collapsed and expanded messages use the same solid `Card`, with radius-16,
+Collapsed and expanded messages use the same solid `Card`, with shared panel geometry,
 no border and small elevation. Expanding changes the contents without replacing
 the card host, so focus stays on the disclosure. `MailThread` separates the
 cards and the earlier-messages control by `space.md` (12); `messageGap` can
 adjust that spacing without wrapping or restyling individual messages.
+
+Message cards use the shared panel shape in both collapsed and expanded states:
+`BloomScope panelRadius` controls their radius, with circular 28px corners by
+default. Compose a matching inline reply with `<Card radius="panel" clipContent>`.
+The message surface, border and elevation remain the same when it opens.
+
+The thread title separates from the messages through spacing; it does not draw
+a divider line beneath the header.

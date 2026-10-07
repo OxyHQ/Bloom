@@ -38,6 +38,7 @@ import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { space } from '../styles/tokens';
+import { usePanelShape } from '../styles/panel-chrome';
 import type {
   CardProps,
   CardBorder,
@@ -75,7 +76,7 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   appearance: appearanceProp,
   tone: toneProp,
   radius,
-  cornerCurve = SURFACE_SHAPES.card.curve,
+  cornerCurve: cornerCurveProp,
   clipContent = false,
   contentStyle,
   elevation,
@@ -92,7 +93,10 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   const theme = useTheme();
   const layer = useSurfaceLayer();
   const parentLevel = useSurfaceLevelValue();
-  const resolvedGeometry = resolveSurfaceGeometry(radius ? RADIUS[radius] : undefined, style, RADIUS['radius-12'], cornerCurve);
+  const panelShape = usePanelShape();
+  const cornerCurve = cornerCurveProp ?? (radius === 'panel' ? panelShape.curve : SURFACE_SHAPES.card.curve);
+  const explicitRadius = radius === 'panel' ? panelShape.radius : radius ? RADIUS[radius] : undefined;
+  const resolvedGeometry = resolveSurfaceGeometry(explicitRadius, style, RADIUS['radius-12'], cornerCurve);
   const appearance = appearanceProp ?? 'solid';
   const {tone} = useBloomAppearance({tone: toneProp}, {size: 'md', tone: 'neutral'});
   const paint = resolveBloomColors(theme.colors, tone, appearance);
