@@ -171,6 +171,7 @@ export {
   ScrollOffsetProvider,
   ScrollMetricsProvider,
   useScrollMetricsBinding,
+  useAnimatedScrollMetricsBinding,
   ScrollArea,
   useScrollOffset,
   ScreenScope,
@@ -178,7 +179,7 @@ export {
   useHeaderDockInset,
   StickySection,
 } from './layout';
-export type { StickySectionProps, ScrollMetricsBindingOptions, ScrollAreaProps } from './layout';
+export type { StickySectionProps, ScrollMetricsBindingOptions, AnimatedScrollMetricsBindingOptions, ScrollAreaProps } from './layout';
 export { Fab } from './fab';
 export type { FabProps, FabSize } from './fab';
 export { FrostedIconButton } from './frosted-icon-button';

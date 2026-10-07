@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import type { ScrollViewProps } from 'react-native';
+import { recordScrollMetrics } from './scroll-metrics-events';
 import { useScrollMetricsValue } from './scroll-metrics';
 
 /** Events accepted by ordinary RN ScrollView, FlatList and SectionList. */
@@ -8,14 +9,13 @@ export type ScrollMetricsBindingOptions = Pick<ScrollViewProps, 'onScroll' | 'on
 /** Bind one scrolling owner to the nearest ScrollMetricsProvider. No React updates per frame. */
 export function useScrollMetricsBinding({ onScroll, onLayout, onContentSizeChange }: ScrollMetricsBindingOptions = {}) {
   const metrics = useScrollMetricsValue();
+  // Reanimated types its processed handler as a function, but returns an object.
+  // Reject that mismatch before an event instead of attempting to call it on JS.
+  if (onScroll != null && typeof onScroll !== 'function') {
+    throw new Error('Bloom useScrollMetricsBinding expects a plain RN onScroll callback. Use useAnimatedScrollMetricsBinding({ handler }) for Reanimated handlers.');
+  }
   const handleScroll = useCallback<NonNullable<ScrollViewProps['onScroll']>>(event => {
-    if (metrics) {
-      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-      if (Number.isFinite(contentSize.height)) metrics.contentHeight.value = Math.max(0, contentSize.height);
-      if (Number.isFinite(layoutMeasurement.height)) metrics.viewportHeight.value = Math.max(0, layoutMeasurement.height);
-      const max = Math.max(0, metrics.contentHeight.value - metrics.viewportHeight.value);
-      if (Number.isFinite(contentOffset.y)) metrics.scrollY.value = Math.min(max, Math.max(0, contentOffset.y));
-    }
+    recordScrollMetrics(metrics, event.nativeEvent);
     onScroll?.(event);
   }, [metrics, onScroll]);
   const handleLayout = useCallback<NonNullable<ScrollViewProps['onLayout']>>(event => {

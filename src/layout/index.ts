@@ -24,3 +24,5 @@ export { useScrollMetricsBinding } from './use-scroll-metrics-binding';
 export type { ScrollMetricsBindingOptions } from './use-scroll-metrics-binding';
 export { ScrollArea } from './ScrollArea';
 export type { ScrollAreaProps } from './ScrollArea';
+export { useAnimatedScrollMetricsBinding } from './use-animated-scroll-metrics-binding';
+export type { AnimatedScrollMetricsBindingOptions } from './use-animated-scroll-metrics-binding';
