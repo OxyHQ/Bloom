@@ -15,11 +15,11 @@ import type { ShadowRole } from '../design-tokens/shadows';
  */
 
 /**
- * A rung of the `RADIUS` scale. Deliberately not a number: a card, a settings
- * group and a link preview are legitimately different surfaces, and the scale is
- * what keeps "different" to seven values rather than seven hundred.
+ * A rung of the `RADIUS` scale, or `panel` to inherit BloomScope.panelRadius
+ * and the shared circular panel curve. Other cards retain the fixed radius
+ * scale, so their geometry does not change with the workspace setting.
  */
-export type CardRadius = keyof typeof RADIUS;
+export type CardRadius = keyof typeof RADIUS | 'panel';
 
 /** Elevation role, or none. Resolved through `bloomShadowStyle`, which owns the platform split. */
 export type CardElevation = 'none' | ShadowRole;
@@ -44,7 +44,7 @@ export interface CardProps {
   /** Preset background + border + elevation. Default `solid` with small elevation. */
   appearance?: BloomAppearance;
   tone?: BloomTone;
-  /** Corner rung. Explicit prop wins over style.borderRadius; default radius-12. */
+  /** Corner rung, or panel to inherit BloomScope.panelRadius and the shared circular curve. Default radius-12. */
   radius?: CardRadius;
   /** Platform-adaptive curve. radius-max remains circular. */
   cornerCurve?: CornerCurve;

@@ -143,7 +143,7 @@ export function MailMessage({
       appearance="solid"
       border="none"
       elevation="s"
-      radius="radius-16"
+      radius="panel"
       testID={testID}
       style={[open ? { paddingBottom: geo.paddingVertical } : null, style]}
     >

@@ -4,6 +4,7 @@ import { render } from '@testing-library/react-native';
 import { BloomScope } from '../appearance';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { Card } from '../card';
 import { Sidebar } from '../sidebar';
 import { ContentPanel as NativePanel } from '../content-panel/ContentPanel';
 import { ContentPanel as WebPanel } from '../content-panel/ContentPanel.web';
@@ -33,6 +34,12 @@ it.each([undefined, 0, 12.5, 40])('preserves circular panel corners with shared 
   }
   expect(native.UNSAFE_getByType(PaintComponent).props).toMatchObject({ radius: expected, shape: { curve: 'round' } });
   native.unmount();
+  const card = render(<Provider><BloomScope panelRadius={panelRadius}><Card radius="panel" border="none" clipContent testID="reply"><Text>Reply</Text></Card></BloomScope></Provider>);
+  for (const id of ['reply', 'reply-clip']) {
+    expect(resolvedStyle(card.getByTestId(id).props.style)).toMatchObject({ borderRadius: expected, borderCurve: 'circular' });
+  }
+  expect(card.UNSAFE_getByType(PaintComponent).props).toMatchObject({ radius: expected, shape: { curve: 'round' } });
+  card.unmount();
   Object.defineProperty(Platform, 'OS', { value: 'web', configurable: true });
   const webSidebar = render(<Provider><BloomScope panelRadius={panelRadius}><Sidebar testID="sidebar" items={[]} /></BloomScope></Provider>);
   expect(resolvedStyle(webSidebar.getByTestId('sidebar').props.style)).toMatchObject({ borderRadius: expected, cornerShape: 'round' });
@@ -46,14 +53,16 @@ it.each([undefined, 0, 12.5, 40])('preserves circular panel corners with shared 
 
 it('inherits the panel setting across control scopes, overrides it locally, and updates it', () => {
   const tree = (radius: number) => <Provider><BloomScope panelRadius={radius}>
-    <BloomScope size="sm"><Sidebar testID="inherited" items={[]} /></BloomScope>
+    <BloomScope size="sm"><Sidebar testID="inherited" items={[]} /><Card radius="panel" testID="inherited-card" /></BloomScope>
     <BloomScope panelRadius={0}><Sidebar testID="override" items={[]} /></BloomScope>
   </BloomScope></Provider>;
   const view = render(tree(16));
   expect(resolvedStyle(view.getByTestId('inherited').props.style).borderRadius).toBe(16);
+  expect(resolvedStyle(view.getByTestId('inherited-card').props.style).borderRadius).toBe(16);
   expect(resolvedStyle(view.getByTestId('override').props.style).borderRadius).toBe(0);
   view.rerender(tree(32));
   expect(resolvedStyle(view.getByTestId('inherited').props.style).borderRadius).toBe(32);
+  expect(resolvedStyle(view.getByTestId('inherited-card').props.style).borderRadius).toBe(32);
   expect(resolvedStyle(view.getByTestId('override').props.style).borderRadius).toBe(0);
 });
 

@@ -133,3 +133,17 @@ Backgrounds resolved by the styled adapter into `style` participate in this cont
 `ref` and `onLayout` address the outer card host in both passive and pressable forms. Responsive card families reuse that measurement rather than adding a layout wrapper. Dashboard, chart, booking, tenancy and specialized cards compose this base; their custom content retains its geometry and semantic colours while neutral fills derive from the surrounding surface.
 
 Material resolution is shared with Surface and overlays: one resolver chooses paint alpha, composited backing, depth and CSS aliases. Plain cards publish explicit backing without applying material or incrementing depth.
+
+## Match workspace panels
+
+`radius="panel"` inherits `BloomScope panelRadius` and the shared circular panel
+curve (28px by default). Use it for message and reply cards that should match
+Sidebar and ContentPanel, without reading geometry tokens in the app. Scoped
+changes update the surface paint and its inner clip together; an explicit
+`cornerCurve` remains an intentional override. Other Card radius defaults are unchanged.
+
+```tsx
+<BloomScope panelRadius={40}>
+  <Card radius="panel" clipContent>Reply composer</Card>
+</BloomScope>
+```

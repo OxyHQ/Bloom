@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
-import { Divider } from '../divider';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { MailLabelChips, MailStar } from '../mail-list/parts';
 import { mailStrings, resolveMailPaint, visibleLabels } from '../mail-list/shared';
@@ -145,7 +144,6 @@ export function MailThread({
           />
         </View>
       ) : null}
-      <Divider />
       <View testID={testID ? `${testID}-messages` : undefined} style={{ paddingTop: space.xs, paddingBottom: space.xs, gap: messageGap }}>
         {entries.map((entry) =>
           entry.kind === 'message' ? (

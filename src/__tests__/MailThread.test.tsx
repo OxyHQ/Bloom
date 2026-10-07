@@ -37,6 +37,8 @@ import {
   defaultExpandedIds,
   visibleAddresses,
 } from '../mail-thread/shared';
+import { BloomScope } from '../appearance';
+import { Card } from '../card';
 import type { MailAddress, MailThreadMessage } from '../mail-thread/types';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -354,6 +356,7 @@ describe('MailThread', () => {
       />,
     );
     expect(byTestId('t-subject').textContent).toBe('Roof survey');
+    expect(byTestId('t').querySelector('[role="separator"]')).toBeNull();
     expect(byTestId('t-labels-work').textContent).toBe('Work');
     expect(byTestId('t-quick-reply').textContent).toBe('reply');
   });
@@ -370,7 +373,7 @@ describe('message cards retain their surface and separation', () => {
       return [computed.backgroundColor, computed.borderTopLeftRadius, computed.borderTopWidth, computed.boxShadow];
     };
     const collapsedPaint = paint();
-    expect(collapsedPaint[1]).toBe('16px');
+    expect(collapsedPaint[1]).toBe('28px');
     expect(Number.parseFloat(collapsedPaint[2] || '0')).toBe(0);
     act(() => toggle.focus());
     click(toggle);
@@ -390,9 +393,22 @@ describe('message cards retain their surface and separation', () => {
     mount(<MailThread messages={SIX.slice(0, 3)} testID="cards" />);
     expect(getComputedStyle(byTestId('cards-messages')).gap).toBe('12px');
     for (const id of ['m1', 'm2', 'm3']) {
-      expect(getComputedStyle(byTestId(`cards-message-${id}`)).borderTopLeftRadius).toBe('16px');
+      expect(getComputedStyle(byTestId(`cards-message-${id}`)).borderTopLeftRadius).toBe('28px');
     }
     mount(<MailThread messages={SIX.slice(0, 3)} messageGap={20} testID="cards" />);
     expect(getComputedStyle(byTestId('cards-messages')).gap).toBe('20px');
   });
+});
+
+it.each([undefined, 0, 12.5, 40])('shares panel shape across opened/closed message and reply card at radius %s', panelRadius => {
+  mount(<BloomScope panelRadius={panelRadius}>
+    <MailMessage {...message('m1')} testID="closed" />
+    <MailMessage {...message('m2')} defaultExpanded testID="opened" />
+    <Card radius="panel" border="none" clipContent testID="reply">Reply</Card>
+  </BloomScope>);
+  for (const id of ['closed', 'opened', 'reply', 'reply-clip']) {
+    const style = getComputedStyle(byTestId(id));
+    expect(style.borderTopLeftRadius).toBe(`${panelRadius ?? 28}px`);
+    // jsdom drops corner-shape; PanelRadius pins the shape passed to native paint.
+  }
 });
