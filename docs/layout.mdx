@@ -243,3 +243,34 @@ This requires a list version supporting that offset; Bloom does not translate
 sticky children outside their native cell bounds. On web the hook always
 returns the header's measured occupancy. Font scaling and safe-area changes
 update it through header layout measurement.
+
+## Coordinated header and footer scrims
+
+`ScrollMetricsProvider` pairs one scrolling owner with the chrome around it.
+`ScrollArea` accepts the props and ref of React Native's `ScrollView`, publishes
+its offset, content height and viewport height, and forwards the caller's
+scroll/layout/content-size callbacks. It adds no padding or background. Keep
+existing top/bottom edge clearance in the content container.
+
+```tsx
+<ScrollMetricsProvider>
+  <PageHeader title="Conversation" placement="overlay" scrim="auto" />
+  <ScrollArea contentContainerStyle={contentStyle}>{messages}</ScrollArea>
+  <PageFooter actions={replyActions} scrim="auto" />
+</ScrollMetricsProvider>
+```
+
+The header fades in after leaving the top. The footer fades out over the last
+20px before the bottom; `scrollThreshold` customizes that fade on either
+component. Short content shows neither scrim. Layout and content-size events
+update the footer before the first scroll and after resize or content changes.
+Native overscroll is clamped. Existing measured safe-area and chrome clearance
+remain unchanged. The provider adds no layout box, and nested providers or
+`ScreenScope` isolate independent panes and overlays.
+
+For a `FlatList`, `SectionList` or existing RN scroll view, call
+`useScrollMetricsBinding({ onScroll, onLayout, onContentSizeChange })` beneath
+the provider and spread its returned props onto that single scroll owner.
+Callbacks are ordinary RN events, so no animated event setup is needed in the
+application. Offset updates use shared values without React rerenders. A
+provider should enclose only one active scrolling owner.

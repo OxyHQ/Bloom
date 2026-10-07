@@ -58,3 +58,16 @@ This is page chrome, always absolutely positioned inside a bounded parent.
 Place it beside the scroller, never inside its scrolling content. A purchase
 summary with price and booking controls belongs to `ActionBar`, which has a
 different opaque, in-flow layout contract.
+
+### Follow the bottom edge of the content
+
+Set `scrim="auto"` inside `ScrollMetricsProvider`, with a sibling `ScrollArea`
+(or a list bound with `useScrollMetricsBinding`). The gradient is absent at the
+bottom, for non-scrollable content, and before measurements arrive. It fades
+in over `scrollThreshold` (default 20px) of remaining content. The actions stay
+visible and their measured clearance does not change. Without a metrics owner,
+`auto` remains hidden; the existing default `always` is unchanged.
+
+Use `PageHeader scrim="auto"` in the same provider for matching behavior at the
+top. Both keep their existing `scrimColor` override independently of scroll
+visibility; neither paints a backing behind the gradient.

@@ -282,3 +282,10 @@ both a local stacking index and native elevation: Android scroll surfaces can
 otherwise paint over its controls. `placement="overlap"` is the document-scroll
 composition for web. Keep the header and list in the same unclipped parent;
 no descendant elevation can escape an ancestor's clipping bounds.
+
+For a header and footer around the same bounded scroller, wrap all three in
+`ScrollMetricsProvider`, render `ScrollArea` for the content and set both scrims
+to `auto`. The provider supplies the local offset to the header and the remaining
+content distance to the footer. It takes precedence over an enclosing Screen's
+scroll owner, so a nested panel follows its own content. See `layout.mdx` for
+list bindings and resizing behavior.

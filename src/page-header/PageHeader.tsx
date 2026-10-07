@@ -24,6 +24,7 @@ import { BUTTON_SHADOW } from '../button/shared';
 import { BloomScope } from "../appearance";
 import { GlassIsland } from '../glass';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
+import { useScrollMetricsValue } from '../layout/scroll-metrics';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { WEB_POSITION_STICKY, WEB_SURFACE_STICKY_TOP, type WebCssStyle } from '../styles/web-view-style';
@@ -186,14 +187,15 @@ function PageHeaderComponent({
 
   // ── The scroll owner ──────────────────────────────────────────────────────
   //
-  // Prop, then Screen, then the nearest ScrollOffsetProvider, then the document on web.
+  // Explicit offset, dock, local metrics, Screen, legacy offset, then the web document.
   // The context step is the one that matters for a Bloom composition: without
   // it a header inside a scrolling panel followed `window.scrollY`, which on a
   // desktop shell never moves, so the header looked deliberately inert.
   const screen = useScreenContext();
   const contextScrollY = useScrollOffset();
+  const metrics = useScrollMetricsValue();
   const internalScrollY = useSharedValue(0);
-  const scrollY = externalScrollY ?? dock?.scrollY ?? screen?.scrollY ?? contextScrollY ?? internalScrollY;
+  const scrollY = externalScrollY ?? dock?.scrollY ?? metrics?.scrollY ?? screen?.scrollY ?? contextScrollY ?? internalScrollY;
   const followsWindow = !externalScrollY && !dock && !screen && !contextScrollY;
 
   useEffect(() => {

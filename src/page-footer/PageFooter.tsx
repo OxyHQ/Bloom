@@ -1,6 +1,8 @@
 import React, { memo, useContext, useEffect, useId, useState } from 'react';
 import { Platform, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { remainingScrollDistance, useScrollMetricsValue } from '../layout/scroll-metrics';
 import { BloomScope } from '../appearance';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from '../page-header/EdgeScrim';
@@ -15,9 +17,14 @@ const BAR_HEIGHT = 56;
 
 /** Page-local controls floating over a bounded scroller, above app navigation. */
 function PageFooterComponent({
-  children, actions, bottomInset, safeArea, scrim = 'always', scrimColor, style, testID,
+  children, actions, bottomInset, safeArea, scrim = 'always', scrimColor, scrollThreshold = 20, style, testID,
 }: PageFooterProps) {
   const theme = useTheme();
+  const metrics = useScrollMetricsValue();
+  const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : 20);
+  const scrimStyle = useAnimatedStyle(() => ({
+    opacity: scrim === 'auto' ? Math.min(1, remainingScrollDistance(metrics) / threshold) : 1,
+  }), [metrics, scrim, threshold]);
   const fill = useSurfaceFill() ?? theme.colors.background;
   const occupied = useBottomEdgeInset();
   const rawBottom = bottomInset ?? occupied;
@@ -51,13 +58,13 @@ function PageFooterComponent({
       style={[styles.container, { bottom, paddingBottom: padBottom }, style]}
     >
       {scrim !== 'none' ? (
-        <View
+        <Animated.View
           pointerEvents="none"
-          style={[styles.scrim, { height: height * (1 + SCRIM_TAIL_RATIO) }]}
+          style={[styles.scrim, { height: height * (1 + SCRIM_TAIL_RATIO) }, scrimStyle]}
           testID={testID ? `${testID}-scrim` : undefined}
         >
           <EdgeScrim edge="bottom" color={scrimColor ?? fill} testID={testID ? `${testID}-scrim-gradient` : undefined} />
-        </View>
+        </Animated.View>
       ) : null}
       <View
         onLayout={onLayout}

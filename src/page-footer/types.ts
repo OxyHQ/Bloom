@@ -17,8 +17,14 @@ export interface PageFooterProps {
    * true on native, false on web. Disable when the containing shell owns it.
    */
   safeArea?: boolean;
-  /** The PageHeader gradient, mirrored upward. Default always. */
-  scrim?: 'always' | 'none';
+  /**
+   * Mirrored PageHeader gradient. Default always preserves existing behavior.
+   * auto follows ScrollMetricsProvider: hidden at the bottom or for short /
+   * unmeasured content, fading in over scrollThreshold of remaining content.
+   */
+  scrim?: 'auto' | 'always' | 'none';
+  /** Distance from the bottom over which the automatic scrim fades. Default 20. */
+  scrollThreshold?: number;
   /** Opaque gradient color; defaults to the containing surface's fill. */
   scrimColor?: string;
   style?: StyleProp<ViewStyle>;
