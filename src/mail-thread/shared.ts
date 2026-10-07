@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { RADIUS } from '../design-tokens/scales';
 
 import { MAIL_THREAD_MESSAGES } from './messages';
 import type { MailThreadMessage, MailAddress, MailThreadStrings } from './types';
@@ -44,7 +45,7 @@ export const MAIL_THREAD_GEOMETRY = {
   /** The star and the overflow trigger. A touch target, so 44. */
   action: 44,
   /** Radius of a message's own surface. */
-  radius: 12,
+  radius: RADIUS['radius-16'],
 } as const;
 
 /**

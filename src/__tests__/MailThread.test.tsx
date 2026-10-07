@@ -358,3 +358,41 @@ describe('MailThread', () => {
     expect(byTestId('t-quick-reply').textContent).toBe('reply');
   });
 });
+
+describe('message cards retain their surface and separation', () => {
+  it('preserves the same card paint and focused disclosure when expanded and collapsed', () => {
+    const onReply = jest.fn();
+    mount(<MailMessage {...message('m1')} onReply={onReply} testID="card" />);
+    const shell = byTestId('card');
+    const toggle = byTestId('card-toggle');
+    const paint = () => {
+      const computed = getComputedStyle(shell);
+      return [computed.backgroundColor, computed.borderTopLeftRadius, computed.borderTopWidth, computed.boxShadow];
+    };
+    const collapsedPaint = paint();
+    expect(collapsedPaint[1]).toBe('16px');
+    expect(Number.parseFloat(collapsedPaint[2] || '0')).toBe(0);
+    act(() => toggle.focus());
+    click(toggle);
+    expect(byTestId('card')).toBe(shell);
+    expect(byTestId('card-toggle')).toBe(toggle);
+    expect(document.activeElement).toBe(toggle);
+    expect(paint()).toEqual(collapsedPaint);
+    click(byTestId('card-reply'));
+    expect(onReply).toHaveBeenCalledTimes(1);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    click(toggle);
+    expect(byTestId('card')).toBe(shell);
+    expect(paint()).toEqual(collapsedPaint);
+  });
+
+  it('separates stacked collapsed and expanded cards using the shared spacing default', () => {
+    mount(<MailThread messages={SIX.slice(0, 3)} testID="cards" />);
+    expect(getComputedStyle(byTestId('cards-messages')).gap).toBe('12px');
+    for (const id of ['m1', 'm2', 'm3']) {
+      expect(getComputedStyle(byTestId(`cards-message-${id}`)).borderTopLeftRadius).toBe('16px');
+    }
+    mount(<MailThread messages={SIX.slice(0, 3)} messageGap={20} testID="cards" />);
+    expect(getComputedStyle(byTestId('cards-messages')).gap).toBe('20px');
+  });
+});

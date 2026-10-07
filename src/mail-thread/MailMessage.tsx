@@ -131,22 +131,20 @@ export function MailMessage({
       : { key: 'forward', label: text.forward, icon: RiShareForwardLine, onPress: onForward },
   ].filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
-  // An OPEN message is a surface, and Bloom's surface is a `Card` — the card
-  // fill, the hairline, the radius scale — not a grey wash painted by hand. A
-  // COLLAPSED one paints nothing, so a thread reads as one list with a card
-  // opened inside it rather than as a column of blocks.
+  // Opening changes the content, not its surface or host. Keeping the Card
+  // mounted also preserves keyboard focus on the disclosure while it expands.
   // Three labelled actions need about 320 of the message's own width; under
   // that the group keeps the glyphs and drops the words, which is what
   // `ButtonGroupItem` is built for — the accessible name is the label either
   // way, so nothing is lost by the labels going.
   const compactReplies = !replyLabelsFit(width);
-  const Shell = open ? Card : View;
-  const shellProps = open
-    ? { variant: 'outlined' as const, radius: 'radius-16' as const, testID }
-    : { testID };
   return (
-    <Shell
-      {...shellProps}
+    <Card
+      appearance="solid"
+      border="none"
+      elevation="s"
+      radius="radius-16"
+      testID={testID}
       style={[open ? { paddingBottom: geo.paddingVertical } : null, style]}
     >
       <View
@@ -316,6 +314,6 @@ export function MailMessage({
           ) : null}
         </View>
       ) : null}
-    </Shell>
+    </Card>
   );
 }

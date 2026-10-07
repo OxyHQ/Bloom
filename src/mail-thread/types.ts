@@ -128,6 +128,8 @@ export interface MailThreadProps {
    * Default 4; `0` never collapses.
    */
   collapseAfter?: number;
+  /** Space between message cards and the earlier-messages control. Default space.md (12). */
+  messageGap?: number;
   /** A slot under the stack — the quick-reply box, or a row of reply buttons. */
   quickReply?: ReactNode;
   /** A slot above the subject — a back button, the mailbox chrome. */

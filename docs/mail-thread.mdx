@@ -119,3 +119,11 @@ identically-named buttons is a thread a screen-reader user cannot navigate.
 The star, the `menu` slot and the three replies are SIBLINGS of the disclosure,
 never children. A button inside a button is invalid, and the press target would
 be ambiguous.
+
+## Message surfaces and spacing
+
+Collapsed and expanded messages use the same solid `Card`, with radius-16,
+no border and small elevation. Expanding changes the contents without replacing
+the card host, so focus stays on the disclosure. `MailThread` separates the
+cards and the earlier-messages control by `space.md` (12); `messageGap` can
+adjust that spacing without wrapping or restyling individual messages.
