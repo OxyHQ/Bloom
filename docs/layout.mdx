@@ -276,3 +276,36 @@ the provider and spread its returned props onto that single scroll owner.
 Callbacks are ordinary RN events, so no animated event setup is needed in the
 application. Offset updates use shared values without React rerenders. A
 provider should enclose only one active scrolling owner.
+
+### Animated lists and tab-bar minimization
+
+A Reanimated processed event handler is an object at runtime, even though its
+TypeScript type looks callable. Do not pass it as the ordinary binding's
+`onScroll` callback. Bind an animated scroll view or virtualized list with
+`useAnimatedScrollMetricsBinding` instead:
+
+```tsx
+const minimizeHandler = useMinimizeOnScroll(); // @oxy.so/bloom/tab-bar
+const binding = useAnimatedScrollMetricsBinding({ handler: minimizeHandler });
+
+return <AnimatedFlashList {...binding} data={items} renderItem={renderItem} />;
+```
+
+Call the hook beneath `ScrollMetricsProvider`, as with `ScrollArea`. The animated
+binding updates metrics on the UI thread and uses Reanimated's own composition
+API, preserving consumer drag and momentum handlers and their contexts. Its
+layout/content-size callbacks update initial, resized and changing content
+extents before another scroll is needed. Existing measurement callbacks can be
+passed through its options. Pass only a processed animated handler in `handler`.
+
+Composition also works in the other direction:
+
+```tsx
+const binding = useAnimatedScrollMetricsBinding();
+const onScroll = useMinimizeOnScroll(binding.onScroll);
+return <AnimatedFlashList {...binding} onScroll={onScroll} data={items} renderItem={renderItem} />;
+```
+
+Keep the returned layout and content-size props in either form. `ScrollArea`
+and `useScrollMetricsBinding` retain ordinary RN callbacks and do not require
+animated components.
