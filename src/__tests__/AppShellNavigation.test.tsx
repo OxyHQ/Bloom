@@ -78,7 +78,7 @@ describe('AppShell', () => {
         paddingTop: gutter, paddingBottom: gutter, paddingLeft: gutter, paddingRight: gutter,
       });
       const panelStyle = resolvedStyle(screen.getByTestId('surface-shell-sidebar').props.style);
-      expect(panelStyle.borderRadius ?? 0).toBe(surface === 'card' ? 24 : 0);
+      expect(panelStyle.borderRadius ?? 0).toBe(surface === 'card' ? 28 : 0);
       expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
       screen.unmount();
     }
