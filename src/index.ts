@@ -178,7 +178,7 @@ export {
   useHeaderDockInset,
   StickySection,
 } from './layout';
-export type { StickySectionProps, ScrollMetricsBindingOptions } from './layout';
+export type { StickySectionProps, ScrollMetricsBindingOptions, ScrollAreaProps } from './layout';
 export { Fab } from './fab';
 export type { FabProps, FabSize } from './fab';
 export { FrostedIconButton } from './frosted-icon-button';

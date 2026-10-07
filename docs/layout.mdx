@@ -248,7 +248,9 @@ update it through header layout measurement.
 
 `ScrollMetricsProvider` pairs one scrolling owner with the chrome around it.
 `ScrollArea` accepts the props and ref of React Native's `ScrollView`, publishes
-its offset, content height and viewport height, and forwards the caller's
+its offset, content height and viewport height. `className` styles the viewport
+and `contentContainerClassName` styles its inner container through Bloom's own
+interop, without requiring a consumer JSX transform. It forwards the caller's
 scroll/layout/content-size callbacks. It adds no padding or background. Keep
 existing top/bottom edge clearance in the content container.
 

@@ -6,7 +6,7 @@ import { ScrollArea, ScrollMetricsProvider, ScreenScope } from '../layout';
 import { remainingScrollDistance, useScrollMetricsValue, type ScrollMetrics } from '../layout/scroll-metrics';
 import { PageHeader } from '../page-header';
 import { PageFooter } from '../page-footer';
-import { resolvedStyle } from './support/rendered-style';
+import { resolvedStyle, classNamesOn, styleEntries } from './support/rendered-style';
 
 function layout(view: ReturnType<typeof render>, id: string, height: number) {
   fireEvent(view.getByTestId(id), 'layout', { nativeEvent: { layout: { width: 390, height, x: 0, y: 0 } } });
@@ -90,4 +90,14 @@ it('isolates independent panes and clears inherited metrics for modal screen sco
   scroll(view, 'inner-area', 600);
   expect(remainingScrollDistance(seen.inner!)).toBe(0);
   expect(remainingScrollDistance(seen.outer!)).toBe(400);
+});
+
+
+it('maps viewport and content utilities without a consumer JSX transform', () => {
+  const view = render(<ScrollMetricsProvider><ScrollArea testID="styled" className="flex-1" contentContainerClassName="p-4" style={{ minHeight: 0 }} contentContainerStyle={{ gap: 12 }} /></ScrollMetricsProvider>);
+  const area = view.getByTestId('styled');
+  expect(classNamesOn(area.props.style)).toContain('flex-1');
+  expect(styleEntries(area.props.contentContainerStyle)).toContainEqual({ $$css: true, contentContainerClassName: 'p-4' });
+  expect(resolvedStyle(area.props.style).minHeight).toBe(0);
+  expect(resolvedStyle(area.props.contentContainerStyle).gap).toBe(12);
 });
