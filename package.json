@@ -784,6 +784,20 @@
         "default": "./lib/commonjs/page-header/index.js"
       }
     },
+    "./page-footer": {
+      "react-native": {
+        "types": "./lib/typescript/module/page-footer/index.d.ts",
+        "default": "./src/page-footer/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/page-footer/index.d.ts",
+        "default": "./lib/module/page-footer/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/page-footer/index.d.ts",
+        "default": "./lib/commonjs/page-footer/index.js"
+      }
+    },
     "./cover-header": {
       "react-native": {
         "types": "./lib/typescript/module/cover-header/index.d.ts",
@@ -3776,6 +3790,9 @@
       ],
       "page-header": [
         "./lib/typescript/module/page-header/index.d.ts"
+      ],
+      "page-footer": [
+        "./lib/typescript/module/page-footer/index.d.ts"
       ],
       "cover-header": [
         "./lib/typescript/module/cover-header/index.d.ts"
