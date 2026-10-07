@@ -3,7 +3,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { parseRgba } from '../theme/color-utils';
 import { surfaceStyle } from '../shapes/surface-style';
-import { SURFACE_SHAPES } from '../design-tokens/shapes';
+import { usePanelShape } from '../styles/panel-chrome';
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -62,7 +62,7 @@ import { SIDEBAR_MESSAGES } from './messages';
  *   panel      `size` wide expanded (p12), its collapsed width at px7 py12 —
  *              with the 1px border that leaves exactly the size's item column
  *              (`metrics.ts`; `md` is the historical 260 / 52 / 36)
- *   surface    `card` radius 24, 1px border-button-white, shadow-sidebar,
+ *   surface    `card` shared panel radius, 1px border-button-white, shadow-sidebar,
  *              background-secondary; `plain` drops the chrome onto
  *              background-full; `docked` keeps the fill, squares the corners
  *              and leaves one hairline on the inner edge, full height
@@ -219,6 +219,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const palette = useSidebarPalette();
   const parentFill = useSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
+  const panelShape = usePanelShape();
   const customSurface = StyleSheet.flatten(style);
   const surfaceFill = customSurface?.backgroundColor ?? (surface === 'plain' ? undefined : (palette.panel));
   const hasFill = typeof surfaceFill === 'string' && surfaceFill !== 'transparent' && parseRgba(surfaceFill)?.a !== 0;
@@ -444,7 +445,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             borderEndColor: palette.dockedEdge,
           }
         : {
-            ...surfaceStyle(SURFACE_SHAPES.sidebar),
+            ...surfaceStyle(panelShape),
             borderWidth: 1,
             borderColor: palette.panelBorder,
             backgroundColor: 'transparent',
@@ -709,7 +710,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           surfaceFillVars(publishedFill),
         ]}
       >
-        {paintsSurface ? <SurfacePaint fill={surfaceFill} shape={{ curve: SURFACE_SHAPES.sidebar.curve }} radius={customSurface?.borderRadius ?? (surface === 'card' ? 24 : 0)} /> : null}
+        {paintsSurface ? <SurfacePaint fill={surfaceFill} shape={{ curve: panelShape.curve }} radius={customSurface?.borderRadius ?? (surface === 'card' ? panelShape.radius : 0)} /> : null}
         <View testID={`${testID ?? 'sidebar'}-main-region`} style={{ width: '100%', minHeight: 0, flexShrink: 1, ...(contentAlignment === 'center' ? { flex: 1, justifyContent: 'center' as const } : {}) }}>
         <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
           {/* Fixed chrome shares the panel's morph, never the destination scroll.

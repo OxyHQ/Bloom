@@ -1,6 +1,6 @@
 /**
  * The FLOATING PANEL chrome — the edge Bloom's big surfaces wear: a hairline
- * plus the soft three-part shadow that lifts a panel off the page background.
+ * plus the shared corner shape and soft three-part shadow that lifts a panel off the page background.
  *
  * It lives here because two surfaces wear the same thing and had it written
  * twice: the `Sidebar`'s panel and the framed `ContentPanel`. A panel that only
@@ -12,6 +12,8 @@
  *   border   the canonical subtle border role in both modes
  */
 import { useContext } from 'react';
+import { BloomAppearanceContext } from '../appearance/context';
+import { SURFACE_SHAPES } from '../design-tokens/shapes';
 
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
@@ -50,4 +52,10 @@ export function resolvePanelChrome(theme: Theme): PanelChrome {
 export function useOptionalPanelChrome(): PanelChrome | null {
   const ctx = useContext(BloomThemeContext);
   return ctx ? resolvePanelChrome(ctx.theme) : null;
+}
+
+/** Shared panel geometry, independently configurable from control size. */
+export function usePanelShape() {
+  const { panelRadius } = useContext(BloomAppearanceContext);
+  return { ...SURFACE_SHAPES.sidebar, radius: panelRadius ?? SURFACE_SHAPES.sidebar.radius };
 }

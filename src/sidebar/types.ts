@@ -151,7 +151,7 @@ export type SidebarVariant = 'panel' | 'rail';
  * page, independent of what it contains. It is the axis two apps differ on
  * most: the same rows read as a different product behind a different edge.
  *
- * - `card` (default) the floating panel: radius 24, a hairline and the panel
+ * - `card` (default) the floating panel: shared panel radius (28 by default), a hairline and the panel
  *   shadow, on the panel fill. A sidebar that sits IN the page.
  * - `plain` no edge at all — no radius, no border, no shadow: the rows sit
  *   straight on the page. The social/reader look, and what a revealed mobile

@@ -37,7 +37,22 @@ import { Button } from '@oxy.so/bloom/button';
 </BloomScope>
 ```
 
-Explicit props win over the nearest scope, which wins over the family's defaults. A nested scope inherits unspecified values. Scopes render no layout node and never carry actions, selection, disabled state, or screen geometry. `appearance` remains explicit so a scope cannot silently turn every control into a filled primary action.
+Explicit props win over the nearest scope, which wins over the family's defaults. A nested scope inherits unspecified values. Scopes render no layout node and never carry actions, selection, disabled state, or screen placement. `appearance` remains explicit so a scope cannot silently turn every control into a filled primary action.
+
+### Panel corners
+
+`BloomScope panelRadius={28}` sets the shared corner radius for `Sidebar surface="card"`
+and framed `ContentPanel` surfaces. The default is 28; any finite non-negative number
+is accepted, including zero. Nested scopes inherit it independently of size and tone.
+The surface, its material, the content clip and web frame/mask all use that radius.
+Plain/docked sidebars and unframed panels remain square. Control corners are unchanged.
+
+```tsx
+<BloomScope size="md" panelRadius={20}>
+  <Sidebar items={items} />
+  <ContentPanel framed>{children}</ContentPanel>
+</BloomScope>
+```
 
 ## Actions and icons
 

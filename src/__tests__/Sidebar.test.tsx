@@ -70,7 +70,7 @@ describe('Sidebar', () => {
     expect(panel).toMatchObject({
       height: '100%',
       flexShrink: 0,
-      borderRadius: 24,
+      borderRadius: 28,
       borderWidth: 1,
       paddingTop: 12,
       paddingLeft: 12,
