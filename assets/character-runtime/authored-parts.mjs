@@ -1,0 +1,754 @@
+import { encodeAppearance } from './appearance-codec.mjs';
+import { inspectLegacyAssembly } from './legacy-geometry.mjs';
+import { sha256 } from './sha256.mjs';
+import { MIGRATED_FACES } from './migrated-faces.mjs';
+import { MIGRATED_CONTOURS } from './migrated-contours.mjs';
+
+const encoder = new TextEncoder();
+const BODY = ':body:no-shadow:studio-fur-v6:';
+const fail = (message) => {
+  throw new Error(`Authored avatar parts: ${message}`);
+};
+const digest = (value) => sha256(encoder.encode(JSON.stringify(value)));
+
+/** Complete native renderable records, including their material/pose prefix.
+ * After the vertex/fur payload the native format stores vertex/index counts,
+ * three flags and four scalars (27 bytes). The next record begins with bounds;
+ * slicing at its mesh name instead would attach the next part's material.
+ */
+export function authoredAssemblyRecords(bytes) {
+  const info = inspectLegacyAssembly(bytes);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let start = 4;
+  const records = info.parts.map((part) => {
+    const end = part.geometryEnd + 27;
+    if (part.nameOffset - 4 < start + 24 || end > bytes.length)
+      fail('truncated renderable');
+    if (view.getUint32(part.geometryEnd, true) !== part.vertexCount)
+      fail('vertex descriptor mismatch');
+    let at = part.vertexOffset + part.vertexCount * 96;
+    const indices32 = view.getUint32(at, true);
+    at += 4 + indices32 * 4;
+    const indices16 = view.getUint32(at, true);
+    if (view.getUint32(part.geometryEnd + 4, true) !== indices32 + indices16)
+      fail('index descriptor mismatch');
+    for (let k = 0; k < 3; k++)
+      if (bytes[part.geometryEnd + 8 + k] > 1) fail('descriptor flags');
+    for (let k = 0; k < 6; k++)
+      if (!Number.isFinite(view.getFloat32(start + k * 4, true)))
+        fail('bounds');
+    for (let k = 0; k < 3; k++)
+      if (
+        view.getFloat32(start + k * 4, true) >
+        view.getFloat32(start + 12 + k * 4, true)
+      )
+        fail('inverted bounds');
+    for (let k = 0; k < 4; k++)
+      if (
+        !Number.isFinite(view.getFloat32(part.geometryEnd + 11 + k * 4, true))
+      )
+        fail('descriptor scalar');
+    for (let i = 0; i < part.furCount * 16; i++)
+      if (!Number.isFinite(view.getFloat32(part.furOffset + i * 4, true)))
+        fail('fur scalar');
+    const record = { ...part, start, end };
+    start = end;
+    return record;
+  });
+  // Activity-enabled scenes append the original hands/panel assemblies here.
+  // Keep that opaque payload intact, rather than imposing a static-scene size.
+  if (bytes.length - start < 100 || bytes.length > 64 * 1024 * 1024)
+    fail(`scene footer (${bytes.length - start} bytes)`);
+  return {
+    ...info,
+    bytes,
+    body: records[0],
+    records,
+    footer: bytes.slice(start),
+  };
+}
+
+function midpoint(bounds, axis) {
+  return (bounds.min[axis] + bounds.max[axis]) / 2;
+}
+function union(parts) {
+  return {
+    min: [0, 1, 2].map((k) =>
+      Math.min(...parts.map((part) => part.bounds.min[k])),
+    ),
+    max: [0, 1, 2].map((k) =>
+      Math.max(...parts.map((part) => part.bounds.max[k])),
+    ),
+  };
+}
+export function hasAuthoredLabel(bytes, part, label) {
+  const needle = encoder.encode(label);
+  for (
+    let at = part.start + 24;
+    at + 4 + needle.length <= part.nameOffset - 4;
+    at++
+  ) {
+    if (
+      new DataView(bytes.buffer, bytes.byteOffset + at, 4).getUint32(
+        0,
+        true,
+      ) !== needle.length
+    )
+      continue;
+    if (needle.every((value, i) => bytes[at + 4 + i] === value)) return true;
+  }
+  return false;
+}
+export async function translateAuthoredRecord(bytes, part, translate) {
+  return transformAuthoredRecord(bytes, part, { translate });
+}
+/** Uniform native attachment fitting preserves authored proportions and all
+ * material/normal records. Pose deltas and known native pivots follow the mesh. */
+export async function transformAuthoredRecord(
+  bytes,
+  part,
+  { scale = 1, origin = [0, 0, 0], translate = [0, 0, 0] } = {},
+) {
+  if (
+    !Number.isFinite(scale) ||
+    scale <= 0 ||
+    scale > 8 ||
+    [origin, translate].some(
+      (v) =>
+        !Array.isArray(v) ||
+        v.length !== 3 ||
+        v.some((x) => !Number.isFinite(x)),
+    )
+  )
+    fail('non-finite translated coordinate or invalid attachment scale');
+  const result = bytes.slice(part.start, part.end);
+  const view = new DataView(result.buffer);
+  const move = (at) => {
+    for (let k = 0; k < 3; k++) {
+      const next = Math.fround(
+        (view.getFloat32(at + k * 4, true) - origin[k]) * scale +
+          origin[k] +
+          translate[k],
+      );
+      if (!Number.isFinite(next)) fail('non-finite translated coordinate');
+      view.setFloat32(at + k * 4, next, true);
+    }
+  };
+  move(0);
+  move(12);
+  // Authored eye/headwear records store their deformation anchor after the
+  // first material albedo. Move that proven XYZ center with their geometry so
+  // native blink/reaction deformation still pivots around the fitted part.
+  if (view.getUint32(24, true) !== 1) fail('authored material prefix');
+  // Original beret and eyewear records also carry an attachment/frame center
+  // at96. Measured native labels+flags identify those layouts; eye records use
+  // these bytes for different optional fields. Generic hat/frame anchors can
+  // differ from the per-mesh material center at40.
+  const attachmentKinds = {
+    beret: [7],
+    beanie: [7],
+    hat: [7],
+    crown: [7],
+    headphones: [2, 3],
+    bow: [9],
+    orb: [8],
+    three_lobe: [8],
+  };
+  const attachmentAnchor =
+    part.nameOffset - 4 - part.start >= 108 &&
+    result[93] === 1 &&
+    ((result[95] === 0 &&
+      Object.entries(attachmentKinds).some(
+        ([label, kinds]) =>
+          kinds.includes(result[94]) && hasAuthoredLabel(bytes, part, label),
+      )) ||
+      (result[92] === 1 &&
+        result[94] === 1 &&
+        result[95] === 1 &&
+        [
+          'monocle',
+          'tall_oval_frames',
+          'separate_trapezoid_lenses',
+          'classic_sunglasses',
+          'round_sunglasses',
+        ].some((label) => hasAuthoredLabel(bytes, part, label))));
+  move(40);
+  if (attachmentAnchor) move(96);
+  for (let i = 0; i < part.vertexCount; i++) {
+    const at = part.vertexOffset - part.start + i * 96;
+    move(at);
+    if (scale !== 1)
+      for (const offset of [24, 48])
+        for (let k = 0; k < 3; k++) {
+          const next = Math.fround(
+            view.getFloat32(at + offset + k * 4, true) * scale,
+          );
+          if (!Number.isFinite(next)) fail('non-finite scaled morph');
+          view.setFloat32(at + offset + k * 4, next, true);
+        }
+  }
+  if (
+    scale !== 1 &&
+    part.nameOffset - 4 - part.start > 160 &&
+    view.getUint32(108, true) === 0
+  ) {
+    const effectAt = 116 + view.getUint32(112, true) + 36;
+    if (
+      effectAt + 10 <= part.nameOffset - 4 - part.start &&
+      result[effectAt] === 5
+    )
+      for (const offset of [2, 6])
+        view.setFloat32(
+          effectAt + offset,
+          view.getFloat32(effectAt + offset, true) * scale,
+          true,
+        );
+  }
+  for (let i = 0; i < part.furCount; i++)
+    move(part.furOffset - part.start + i * 64);
+  // Normals, UVs, material parameters and original blink/reaction deltas stay
+  // byte-exact. Translated geometry receives its own native cache identity.
+  const key = await digest([part.name, scale, origin, translate]);
+  result.set(encoder.encode(key), part.nameOffset - part.start);
+  return {
+    bytes: result,
+    name: key + part.name.slice(64),
+    bounds: {
+      min: part.bounds.min.map(
+        (v, k) => (v - origin[k]) * scale + origin[k] + translate[k],
+      ),
+      max: part.bounds.max.map(
+        (v, k) => (v - origin[k]) * scale + origin[k] + translate[k],
+      ),
+    },
+  };
+}
+
+/** Rebuild the native cache identity and scene extents after attachment fitting. */
+export async function assembleAuthoredRecords(target, records) {
+  const names = records.slice(1).map((record) => record.name);
+  const bodyName =
+    (await digest([target.body.name, names])) +
+    BODY +
+    names.map((name) => `${name.length}:${name}`).join(':');
+  const body = records[0].bytes,
+    encoded = encoder.encode(bodyName);
+  const nameAt = target.body.nameOffset - target.records[0].start;
+  const renamedBody = new Uint8Array(
+    body.length + encoded.length - target.body.nameLength,
+  );
+  renamedBody.set(body.subarray(0, nameAt - 4));
+  new DataView(renamedBody.buffer).setUint32(nameAt - 4, encoded.length, true);
+  renamedBody.set(encoded, nameAt);
+  renamedBody.set(
+    body.subarray(nameAt + target.body.nameLength),
+    nameAt + encoded.length,
+  );
+  records[0].bytes = renamedBody;
+  const result = new Uint8Array(
+    4 +
+      records.reduce((sum, record) => sum + record.bytes.length, 0) +
+      target.footer.length,
+  );
+  new DataView(result.buffer).setUint32(0, records.length, true);
+  let at = 4;
+  for (const record of records) {
+    result.set(record.bytes, at);
+    at += record.bytes.length;
+  }
+  result.set(target.footer, at);
+  const bounds = union(records),
+    footer = new DataView(result.buffer, at, target.footer.length);
+  // The footer retains the original animation/panel payload. Its first and
+  // third bounds sets are aggregate scene extents; the middle set belongs to
+  // the original body and must not move when a hat is added.
+  for (const offset of [0, 56])
+    for (let k = 0; k < 3; k++) {
+      footer.setFloat32(
+        offset + k * 4,
+        Math.min(footer.getFloat32(offset + k * 4, true), bounds.min[k]),
+        true,
+      );
+      footer.setFloat32(
+        offset + 12 + k * 4,
+        Math.max(footer.getFloat32(offset + 12 + k * 4, true), bounds.max[k]),
+        true,
+      );
+    }
+  // Reinspect the assembled native layout before allowing it into the renderer.
+  authoredAssemblyRecords(result);
+  return result;
+}
+
+/** Historical spacing fields no longer override shape-owned geometry. */
+export async function fitAuthoredEyeSpacing(bytes) {
+  return bytes;
+}
+
+const EYE_LABELS = [
+  'source_integrated_eye',
+  'oval',
+  'dots',
+  'swept_lids',
+  'sparkle_capsules',
+  'highlight_capsules',
+  'double_highlights',
+  'round_inset',
+  'crescent_inset',
+  'sleepy_lids',
+];
+const nativeFaces = new Map();
+export function authoredEyeRecords(info) {
+  return info.records
+    .slice(1)
+    .filter((p) =>
+      EYE_LABELS.some((id) => hasAuthoredLabel(info.bytes, p, id)),
+    );
+}
+function eyeCenters(info) {
+  const eyes = authoredEyeRecords(info);
+  const sides = [-1, 1].map((sign) =>
+    eyes.filter((p) => Math.sign(midpoint(p.bounds, 0)) === sign),
+  );
+  if (sides.some((side) => !side.length)) fail('catalog face anchors missing');
+  return sides.map((side) => union(side));
+}
+/** Capture the body's face once, before selecting any replacement eye style. */
+export function shapeFaceLayout(info, request, module) {
+  if (request.authoredParts?.shape === 'clippo')
+    return {
+      centers: [
+        [-102 / 240, 135 / 240, 0.03],
+        [46 / 240, 93 / 240, 0.03],
+      ],
+      radius: 0.265,
+    };
+  const shape =
+    request.authoredParts?.faceShape ??
+    Object.keys(MIGRATED_CONTOURS).find(
+      (id) =>
+        request.points?.length === MIGRATED_CONTOURS[id].length &&
+        request.points.every((p, i) =>
+          p.every((v, k) => Math.abs(v - MIGRATED_CONTOURS[id][i][k]) < 1e-9),
+        ),
+    );
+  const migrated = MIGRATED_FACES[shape];
+  if (migrated)
+    return {
+      radius: migrated.radius,
+      centers: migrated.centers.map(([x, y]) => {
+        const front = authoredBodyFront(info, x, y);
+        return [
+          x,
+          y,
+          Number.isFinite(front)
+            ? front - migrated.radius * 0.3
+            : info.body.bounds.max[2] - migrated.radius * 0.3,
+        ];
+      }),
+    };
+  if (shape && module) {
+    let face = nativeFaces.get(shape);
+    if (!face) {
+      for (const eyes of [
+        'oval',
+        'round_inset',
+        'dots',
+        'swept_lids',
+        'sparkle_capsules',
+        'highlight_capsules',
+        'double_highlights',
+        'crescent_inset',
+        'sleepy_lids',
+      ]) {
+        const result = module.orbitPrepareAssembly(
+          encodeAppearance({
+            version: 1,
+            shape,
+            color: 'blue',
+            eyes,
+            eyewear: 'none',
+            accessories: [],
+            accessoryColors: {},
+            constrained: 0,
+            depth: 0.5,
+            model: null,
+            rig: null,
+            hereCharacter: null,
+          }),
+          request.quality,
+          'intrinsic-face:' + shape,
+          false,
+        );
+        if (!result.bytes || result.error) continue;
+        const reference = authoredAssemblyRecords(result.bytes.slice());
+        if (!authoredEyeRecords(reference).length) continue;
+        face = shapeFaceLayout(reference, {});
+        nativeFaces.set(shape, face);
+        break;
+      }
+      if (!face) fail('native shape face reference missing');
+    }
+    const sourceGap = Math.hypot(
+      face.centers[1][0] - face.centers[0][0],
+      face.centers[1][1] - face.centers[0][1],
+    );
+    const sixLobedFace =
+      request.authoredParts?.faceShape === 'six_lobed_flower';
+    const radius = Math.max(face.radius, sixLobedFace ? 0.24 : 0);
+    const eyeGap = Math.max(sourceGap, radius * 2.1);
+    const centerX = (face.centers[0][0] + face.centers[1][0]) / 2;
+    return {
+      // Small native marks can understate the space their replacement styles
+      // need. Enlarge the shape-owned face anchors with their eye size.
+      radius,
+      centers: face.centers.map(([, y, z], index) => {
+        const x = centerX + (index === 0 ? -eyeGap / 2 : eyeGap / 2);
+        const front = authoredBodyFront(info, x, y);
+        return [x, y, Number.isFinite(front) ? front - radius * 0.3 : z];
+      }),
+    };
+  }
+  if (request.points?.length) {
+    const xs = request.points.map((p) => p[0]),
+      ys = request.points.map((p) => p[1]);
+    const width = Math.max(...xs) - Math.min(...xs),
+      height = Math.max(...ys) - Math.min(...ys);
+    const x = (Math.max(...xs) + Math.min(...xs)) / 2,
+      y = (Math.max(...ys) + Math.min(...ys)) / 2 + height * 0.05;
+    const halfGap = width * 0.13,
+      radius = Math.min(width * 0.1, height * 0.12, halfGap * 0.8);
+    return {
+      radius,
+      centers: [-1, 1].map((sign) => {
+        const at = x + sign * halfGap,
+          front = authoredBodyFront(info, at, y);
+        return [
+          at,
+          y,
+          Number.isFinite(front)
+            ? front - radius * 0.3
+            : info.body.bounds.max[2] - radius * 0.3,
+        ];
+      }),
+    };
+  }
+  const groups = eyeCenters(info);
+  return {
+    centers: groups.map((bounds) => [
+      midpoint(bounds, 0),
+      midpoint(bounds, 1),
+      bounds.min[2],
+    ]),
+    radius:
+      groups.reduce(
+        (sum, b) =>
+          sum + Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) / 2,
+        0,
+      ) / 2,
+  };
+}
+/** Front surface at a face anchor, sampled from the actual indexed body.
+ * A thick source eyeball's rear bound is not a safe anchor for shallow eyes.
+ */
+export function authoredBodyFront(info, x, y) {
+  const part = info.body;
+  if (!Number.isInteger(part.vertexOffset)) return -Infinity;
+  const view = new DataView(
+    info.bytes.buffer,
+    info.bytes.byteOffset,
+    info.bytes.byteLength,
+  );
+  let at = part.vertexOffset + part.vertexCount * 96;
+  const count32 = view.getUint32(at, true);
+  const start32 = at + 4;
+  at = start32 + count32 * 4;
+  const count16 = view.getUint32(at, true),
+    start16 = at + 4;
+  let front = -Infinity;
+  const vertex = (index) => {
+    if (index >= part.vertexCount) fail('body surface index');
+    return [0, 1, 2].map((k) =>
+      view.getFloat32(part.vertexOffset + index * 96 + k * 4, true),
+    );
+  };
+  for (const [start, count, stride] of [
+    [start32, count32, 4],
+    [start16, count16, 2],
+  ]) {
+    if (count % 3) fail('body triangle index count');
+    for (let i = 0; i < count; i += 3) {
+      const points = [0, 1, 2].map((k) =>
+        vertex(
+          stride === 4
+            ? view.getUint32(start + (i + k) * stride, true)
+            : view.getUint16(start + (i + k) * stride, true),
+        ),
+      );
+      const [a, b, c] = points;
+      const det = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]);
+      if (Math.abs(det) < 1e-12) continue;
+      const u = ((b[1] - c[1]) * (x - c[0]) + (c[0] - b[0]) * (y - c[1])) / det;
+      const v = ((c[1] - a[1]) * (x - c[0]) + (a[0] - c[0]) * (y - c[1])) / det;
+      const w = 1 - u - v;
+      if (Math.min(u, v, w) >= -1e-6)
+        front = Math.max(front, u * a[2] + v * b[2] + w * c[2]);
+    }
+  }
+  return front;
+}
+
+/** Fit independently selectable native parts against the target's real body
+ * and face records. Donor proportions remain uniform, never stretched flat. */
+export function fitCatalogPartRecords(
+  target,
+  donor,
+  category,
+  id,
+  { singleEye = false, faceLayout } = {},
+) {
+  const selected =
+    category === 'eyes'
+      ? authoredEyeRecords(donor)
+      : donor.records
+          .slice(1)
+          .filter((p) => hasAuthoredLabel(donor.bytes, p, id));
+  if (!selected.length) fail(`missing catalog ${category}:${id}`);
+  const bodyWidth = (info) => info.body.bounds.max[0] - info.body.bounds.min[0];
+  if (category === 'eyes' || category === 'eyewear') {
+    // A Cyclops face has one actual eye, not a collapsed left/right pair.
+    // Monocles surround its full eye. Two-lens styles retain both native lenses,
+    // fitted to the two halves of that eye rather than the discarded old face.
+    const singleBounds = singleEye ? union(authoredEyeRecords(target)) : null;
+    const dst = singleBounds
+        ? id === 'monocle'
+          ? [singleBounds, singleBounds]
+          : [0, 1].map((side) => ({
+              min: singleBounds.min.map((value, k) =>
+                k === 0 && side === 1 ? midpoint(singleBounds, 0) : value,
+              ),
+              max: singleBounds.max.map((value, k) =>
+                k === 0 && side === 0 ? midpoint(singleBounds, 0) : value,
+              ),
+            }))
+        : category === 'eyes' && faceLayout
+          ? faceLayout.centers.map(([x, y, z]) => ({
+              min: [x - faceLayout.radius, y - faceLayout.radius, z],
+              max: [
+                x + faceLayout.radius,
+                y + faceLayout.radius,
+                z + faceLayout.radius,
+              ],
+            }))
+          : eyeCenters(target),
+      src = eyeCenters(donor);
+    const gap = (a) => Math.abs(midpoint(a[1], 0) - midpoint(a[0], 0));
+    // Eye diameter follows the body, not the spacing of the old eye pair.
+    // Todd's stalks have over twice the neutral face gap on the same size body.
+    const clippo =
+      target.body.furCount === 0 &&
+      hasAuthoredLabel(target.bytes, target.body, 'metal');
+    const scale =
+      category === 'eyes'
+        ? faceLayout
+          ? faceLayout.radius /
+            (src.reduce(
+              (sum, b) =>
+                sum + Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) / 2,
+              0,
+            ) /
+              2)
+          : clippo
+            ? 1
+            : Math.max(
+                0.65,
+                Math.min(1.2, bodyWidth(target) / bodyWidth(donor)),
+              )
+        : Math.max(0.25, Math.min(2, gap(dst) / gap(src)));
+    if (category === 'eyes') {
+      const fronts = dst.map((bounds) =>
+        authoredBodyFront(target, midpoint(bounds, 0), midpoint(bounds, 1)),
+      );
+      return selected.map((part) => {
+        const side = midpoint(part.bounds, 0) < 0 ? 0 : 1;
+        const origin = [0, 1, 2].map((k) => midpoint(src[side], k));
+        const translate = [0, 1].map((k) => midpoint(dst[side], k) - origin[k]);
+        const depth = (src[side].max[2] - src[side].min[2]) * scale;
+        const front = fronts[side];
+        // Keep some embedding, while the majority of a shallow native eye
+        // remains outside the real face. Open Clippo holes return no surface.
+        const back = Math.max(dst[side].min[2], front - depth * 0.35);
+        translate.push(
+          back - (src[side].min[2] - origin[2]) * scale - origin[2],
+        );
+        return { part, scale, origin, translate };
+      });
+    }
+    const middle = [0, 1, 2].map(
+      (k) => (midpoint(src[0], k) + midpoint(src[1], k)) / 2,
+    );
+    const destination = [0, 1, 2].map(
+      (k) => (midpoint(dst[0], k) + midpoint(dst[1], k)) / 2,
+    );
+    const sideParts = [0, 1].map((side) =>
+      selected.filter(
+        (p) =>
+          Math.abs(midpoint(p.bounds, 0) - middle[0]) > gap(src) * 0.15 &&
+          (midpoint(p.bounds, 0) < middle[0] ? 0 : 1) === side,
+      ),
+    );
+    const frontBounds = sideParts.map((parts) => {
+      if (!parts.length) return null;
+      const z = Math.max(...parts.map((p) => p.bounds.max[2]));
+      return union(parts.filter((p) => p.bounds.max[2] > z - 0.05));
+    });
+    // Sunglasses can be a single centered mesh, including both temples.
+    // Its full minimum Z is the rear of the temples, not the front lens plane.
+    // Use the same frontmost 0.05-unit band as the separate-lens classifier.
+    const separateFronts = frontBounds.filter(Boolean);
+    const frontZ = separateFronts.length
+      ? Math.min(...separateFronts.map((bounds) => bounds.min[2]))
+      : Math.max(...selected.map((part) => part.bounds.max[2])) - 0.05;
+    // Whole-frame sunglasses cannot move individual lenses independently.
+    // Fit their outside span to the final face instead of amplifying a donor's
+    // small interocular gap (Todd has widely spaced stalks on a normal body).
+    const centralScale = separateFronts.length
+      ? scale
+      : Math.max(
+          0.25,
+          Math.min(
+            2,
+            ((Math.max(...dst.map((b) => b.max[0])) -
+              Math.min(...dst.map((b) => b.min[0]))) *
+              1.18) /
+              (Math.max(...selected.map((p) => p.bounds.max[0])) -
+                Math.min(...selected.map((p) => p.bounds.min[0]))),
+          ),
+        );
+    return selected.map((part) => {
+      const x = midpoint(part.bounds, 0) - middle[0];
+      if (Math.abs(x) <= gap(src) * 0.15)
+        return {
+          part,
+          scale: centralScale,
+          origin: middle,
+          translate: destination.map((v, k) =>
+            k === 2
+              ? Math.max(...dst.map((bounds) => bounds.max[2])) +
+                0.012 -
+                ((frontZ - middle[2]) * centralScale + middle[2])
+              : v - middle[k],
+          ),
+        };
+      const side = x < 0 ? 0 : 1,
+        front = frontBounds[side];
+      const lensScale = Math.min(
+        singleEye && id === 'monocle' ? 4 : 2,
+        Math.max(
+          Math.min(scale, 1.2),
+          ((dst[side].max[0] - dst[side].min[0]) * 1.08) /
+            (front.max[0] - front.min[0]),
+        ),
+      );
+      const origin = [0, 1, 2].map((k) => midpoint(src[side], k));
+      const translate = [0, 1].map((k) => midpoint(dst[side], k) - origin[k]);
+      translate.push(
+        dst[side].max[2] +
+          0.012 -
+          ((front.min[2] - origin[2]) * lensScale + origin[2]),
+      );
+      return { part, scale: lensScale, origin, translate };
+    });
+  }
+  if (category !== 'accessory') fail('unknown catalog fitting category');
+  // Clippo's crown is narrower than its full curved-wire silhouette.
+  const clippo =
+    target.body.furCount === 0 &&
+    hasAuthoredLabel(target.bytes, target.body, 'metal');
+  const scale = clippo
+    ? 0.56
+    : Math.max(0.35, Math.min(1.5, bodyWidth(target) / bodyWidth(donor)));
+  const origin = [
+    midpoint(donor.body.bounds, 0),
+    donor.body.bounds.max[1],
+    midpoint(donor.body.bounds, 2),
+  ];
+  const crown = [
+    clippo ? 0.02 : midpoint(target.body.bounds, 0),
+    target.body.bounds.max[1],
+    clippo ? 0 : midpoint(target.body.bounds, 2),
+  ];
+  // A bow belongs near the lower face. Crown-mounted accessories retain the
+  // source offset above the actual target crown.
+  if (id === 'bow') {
+    const src = eyeCenters(donor),
+      dst = eyeCenters(target);
+    for (let k = 0; k < 2; k++) {
+      origin[k] = (midpoint(src[0], k) + midpoint(src[1], k)) / 2;
+      crown[k] = (midpoint(dst[0], k) + midpoint(dst[1], k)) / 2;
+    }
+  }
+  const translate = crown.map((v, k) => v - origin[k]);
+  return selected.map((part) => ({ part, scale, origin, translate }));
+}
+
+/** Clear the final face after all independently selected eyes and frames fit.
+ * Only rigidly raise crown accessories; headphones/bows retain their native
+ * side/lower-face attachment. Unedited native presets never invoke this pass.
+ */
+export async function fitAuthoredHeadwear(bytes, request) {
+  const id = request.authoredParts?.accessory;
+  if (
+    ![
+      'felipe_beret',
+      'beret',
+      'beanie',
+      'hat',
+      'crown',
+      'orb',
+      'three_lobe',
+    ].includes(id)
+  )
+    return bytes;
+  const info = authoredAssemblyRecords(bytes),
+    label = id === 'felipe_beret' ? 'beret' : id;
+  const head = info.records
+    .slice(1)
+    .filter((p) => hasAuthoredLabel(bytes, p, label));
+  const frames = request.authoredParts?.eyewear;
+  const eyes = new Set(authoredEyeRecords(info));
+  const face = info.records
+    .slice(1)
+    .filter(
+      (p) =>
+        eyes.has(p) ||
+        hasAuthoredLabel(bytes, p, 'brows') ||
+        (frames && frames !== 'none' && hasAuthoredLabel(bytes, p, frames)),
+    );
+  if (!head.length || !face.length) return bytes;
+  let raise = 0;
+  for (const h of head)
+    for (const eye of face) {
+      const a = h.bounds,
+        b = eye.bounds;
+      if (a.max[0] <= b.min[0] || a.min[0] >= b.max[0] || a.max[1] <= b.min[1])
+        continue;
+      raise = Math.max(raise, b.max[1] + 0.035 - a.min[1]);
+    }
+  if (raise <= 0) return bytes;
+  const selected = new Set(head);
+  return assembleAuthoredRecords(
+    info,
+    await Promise.all(
+      info.records.map((p) =>
+        selected.has(p)
+          ? translateAuthoredRecord(bytes, p, [0, raise, 0])
+          : {
+              bytes: bytes.slice(p.start, p.end),
+              name: p.name,
+              bounds: p.bounds,
+            },
+      ),
+    ),
+  );
+}

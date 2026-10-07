@@ -8,6 +8,7 @@ import {
   CharacterRuntimeContext,
 } from '../context';
 import * as recipes from '../legacy-recipe';
+import { createConfigForShape } from '../character-shapes';
 import { FOLD_CONFIG } from '../model';
 
 // These tests measure React commits and geometry generation, not native engine performance.
@@ -104,5 +105,27 @@ describe('avatar React rendering isolation', () => {
     expect(geometry).toHaveBeenCalledTimes(1);
     act(() => renderer.update(view(1, 1, true, { ...config, foldDepth: 60 })));
     expect(geometry).toHaveBeenCalledTimes(2);
+  });
+  it('keeps the same mounted renderer when crossing authored and migrated bodies', () => {
+    const original = {
+      ...FOLD_CONFIG,
+      character: {
+        preset: 'blue_beret',
+        selections: { color: 'blue', eyes: 'todd' },
+      },
+    };
+    const view = (shape: string) => (
+      <AgentAvatarProvider runtimeUrl="/runtime.mjs">
+        <AgentAvatar config={createConfigForShape(original, shape)} />
+      </AgentAvatarProvider>
+    );
+    act(() => {
+      renderer = create(view('todd'));
+    });
+    const instance = renderer.root.findByType(CharacterAvatar);
+    act(() => renderer.update(view('cloud')));
+    expect(renderer.root.findByType(CharacterAvatar)).toBe(instance);
+    act(() => renderer.update(view('circle')));
+    expect(renderer.root.findByType(CharacterAvatar)).toBe(instance);
   });
 });

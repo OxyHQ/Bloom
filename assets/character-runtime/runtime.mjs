@@ -1,48 +1,147 @@
 // Optional renderer adapter. The generated engine and data alongside it remain unmodified.
-import createModule from './orbit-characters.mjs';
-import { customizeAppearance, encodeAppearance } from './appearance-codec.mjs';
-import { acquireLegacyEngine, legacyEngineStats } from './legacy-engine.mjs';
+import {
+  customizeAppearance,
+  encodeAppearance,
+  decodeAppearance,
+} from './appearance-codec.mjs';
+import {
+  acquireLegacyEngine,
+  legacyEngineStats,
+  getCharacterEngine,
+  acquireCharacterPreparation,
+} from './legacy-engine.mjs';
 import { createManagedAvatar, managedAvatarStats } from './managed-avatar.mjs';
+import {
+  acquireSharedSurface,
+  sharedSurfaceStats,
+  renderSharedBatchDeferred,
+  waitForSharedRender,
+  sharedRenderPending,
+} from './shared-surface.mjs';
+import { characterPixels } from './resolution.mjs';
+import {
+  characterRecipe,
+  authoredPartsFor,
+  bodySignatureFor,
+  bodySelectionDefaults,
+  NATIVE_PARTS,
+  ORIGINAL_PRESETS,
+  MIGRATED_SHAPE_IDS,
+  isLegacyRecipe,
+  withCharacterGeometry,
+} from './character-recipe.mjs';
+import { originalBodyColor, originalPalettePaint } from './catalog-parts.mjs';
 
-let modulePromise;
-let serial = 0;
 let frame = 0;
-let lastFrame = -Infinity;
+let rendering = false;
 let nextClient = 0;
 let lastRenderMilliseconds = 0;
+let lastRenderWaitMilliseconds = 0;
+let renderCost = 8;
+let attentionTurn = false;
 const clients = new Set();
 const category = { shape: 0, color: 1, eyes: 2, eyewear: 3, accessory: 4 };
-function engine() {
-  return (modulePromise ??= createModule({
-    locateFile: (file) => new URL(file, import.meta.url).href,
-  }).catch((error) => {
-    modulePromise = undefined;
-    throw error;
-  }));
-}
+const appearanceFingerprint = (recipe) => {
+  const { eyeSpacing: _historicalSpacing, ...appearance } = recipe;
+  return JSON.stringify(appearance);
+};
 function schedule() {
-  if (!frame && clients.size && !document.hidden)
+  if (!frame && !rendering && clients.size && !document.hidden)
     frame = requestAnimationFrame(tick);
 }
-function tick(time) {
+async function tick(time) {
   frame = 0;
   if (document.hidden) return;
-  if (time - lastFrame >= 1000 / 30 - 1) {
-    lastFrame = time;
+  rendering = true;
+  try {
     const batch = [...clients];
     const started = performance.now();
+    const presentations = [];
+    // Await the GPU without blocking the page. Bound CPU work and batch size
+    // separately: driver wait time must not collapse every batch to one draw.
+    const batchLimit = Math.min(8, Math.max(1, Math.ceil(8 / renderCost)));
+    let submittedAt = started,
+      presentationCost = 0;
+    const touched = [];
+    // Preparation is globally serialized by the recovered engine. Its owner
+    // must get a chance to commit and paint every frame; waiting behind every
+    // resident avatar makes startup latency grow quadratically with the crowd.
+    const preparing = batch.find((client) => client.preparing());
+    // Give the most recent interaction a responsive cadence, but reserve
+    // alternate turns for the round-robin crowd so no avatar is starved.
+    const attended = batch
+      .filter((client) => client.attention(time) > 0)
+      .sort((a, b) => b.attention(time) - a.attention(time))[0];
+    const preferred = preparing ?? (attentionTurn ? attended : undefined);
+    attentionTurn = !attentionTurn;
+    const ordered = preferred ? [preferred] : [];
     for (let i = 0; i < batch.length; i++) {
-      const index = nextClient % batch.length;
-      nextClient = (index + 1) % batch.length;
-      const client = batch[index];
-      if (clients.has(client)) client.render(time / 1000);
-      // One native render cannot be interrupted, but a crowded page must not
-      // submit every remaining avatar after it has spent its frame allowance.
-      if (performance.now() - started >= 8) break;
+      const client = batch[(nextClient + i) % batch.length];
+      if (client !== preferred) ordered.push(client);
     }
-    lastRenderMilliseconds = performance.now() - started;
+    try {
+      await renderSharedBatchDeferred(
+        () => {
+          for (const client of ordered) {
+            if (client !== preferred)
+              nextClient = (batch.indexOf(client) + 1) % batch.length;
+            // Rate-limit each character, not the whole document. Crowds can use
+            // intervening browser frames without forcing every avatar down to 30/N.
+            if (
+              clients.has(client) &&
+              (client === preparing ||
+                time - (client.lastTick ?? -Infinity) >= 1000 / 30 - 1)
+            ) {
+              client.lastTick = time;
+              touched.push(client);
+              const present = client.render(time / 1000);
+              if (present) presentations.push(present);
+            }
+            // One native render cannot be interrupted, but a crowded page must not
+            // submit every remaining avatar after it has spent its frame allowance.
+            if (
+              presentations.length >= batchLimit ||
+              performance.now() - started >= 8
+            )
+              break;
+          }
+          submittedAt = performance.now();
+        },
+        () => {
+          const began = performance.now();
+          for (const present of presentations) present();
+          presentationCost = performance.now() - began;
+        },
+      );
+    } catch (error) {
+      // A context-level error cannot be attributed after a shared submission.
+      // Discard every pending image and report it to every touched character.
+      presentations.length = 0;
+      for (const client of touched) {
+        try {
+          client.fail(error);
+        } catch (callbackError) {
+          queueMicrotask(() => {
+            throw callbackError;
+          });
+        }
+      }
+    }
+    lastRenderMilliseconds = submittedAt - started + presentationCost;
+    lastRenderWaitMilliseconds = Math.max(
+      0,
+      performance.now() - started - lastRenderMilliseconds,
+    );
+    if (presentations.length) {
+      const measured = lastRenderMilliseconds / presentations.length;
+      // React immediately to a slower GPU; recover capacity gradually to avoid
+      // alternating huge batches and long blocked browser frames.
+      renderCost = Math.max(measured, renderCost * 0.9 + measured * 0.1, 0.1);
+    }
+  } finally {
+    rendering = false;
+    schedule();
   }
-  schedule();
 }
 function visibility() {
   for (const client of instances) client.visibility();
@@ -50,7 +149,7 @@ function visibility() {
 }
 const instances = new Set();
 
-/** Original engine and shared animation clock; contour caches are isolated by legacy-engine. */
+/** Original engine and shared animation clock; scoped geometry identities stay distinct. */
 export async function createAvatar(canvas, initial, callbacks = {}) {
   if (!initial.config.character && !initial.legacy)
     throw new Error('A recovered character recipe is required');
@@ -58,9 +157,7 @@ export async function createAvatar(canvas, initial, callbacks = {}) {
   return createManagedAvatar(canvas, initial, callbacks, createCharacter);
 }
 function createCharacter(canvas, initial, callbacks) {
-  return initial.legacy
-    ? createLegacyCharacter(canvas, initial, callbacks)
-    : createLiveCharacter(canvas, initial, callbacks);
+  return createScopedCharacter(canvas, initial, callbacks);
 }
 
 async function createLiveCharacter(
@@ -70,34 +167,41 @@ async function createLiveCharacter(
   isCurrent = () => true,
   previousImage = null,
 ) {
+  const authoredParts = authoredPartsFor(initial);
   const lease = initial.legacy?.points
-    ? await acquireLegacyEngine(initial.legacy.points)
+    ? await acquireLegacyEngine(initial.legacy.points, authoredParts)
     : null;
-  const module = lease?.module ?? (await engine());
+  const module = lease?.module ?? (await getCharacterEngine(authoredParts));
+  let releasePreparation = await acquireCharacterPreparation();
+  await waitForSharedRender();
   if (!isCurrent() || !canvas.isConnected) {
+    releasePreparation();
     lease?.release();
     return { update() {}, dispose() {}, diagnostics: () => ({ ready: false }) };
   }
-  const id = `bloom-character-${++serial}`;
   const output = canvas.getContext('2d');
   if (!output) {
+    releasePreparation();
     lease?.release();
     throw new Error('Character output canvas is unavailable');
   }
-  const makeSurface = () => {
-    const node = document.createElement('canvas');
-    node.id = id;
-    node.style.display = 'none';
-    node.setAttribute('aria-hidden', 'true');
-    canvas.parentElement.appendChild(node);
-    return node;
-  };
-  let surface = makeSurface();
+  let surfaceLease;
+  try {
+    surfaceLease = acquireSharedSurface(canvas.parentElement);
+  } catch (error) {
+    releasePreparation();
+    lease?.release();
+    throw error;
+  }
+  const supportsActivities = !initial.portrait;
   let character;
   try {
-    character = new module.Character(`#${id}`, 128, 128);
+    character = surfaceLease.create(module, 128, 128, {
+      activities: supportsActivities,
+    });
   } catch (error) {
-    surface.remove();
+    releasePreparation();
+    surfaceLease.release();
     lease?.release();
     throw error;
   }
@@ -118,6 +222,9 @@ async function createLiveCharacter(
     episode = 0n,
     activity = 0;
   let workTimer,
+    workRequest = 0,
+    stoppingWork = false,
+    queuedReaction = false,
     workDuration,
     lastActivityResult,
     previousWork,
@@ -125,7 +232,64 @@ async function createLiveCharacter(
   let pointerId, pointerStart, previousReaction;
   let lastReaction = null,
     lastReactionKind = null;
-  character.setQuality(initial.portrait ? 1 : 0); // Original automatic quality; compact static thumbnails.
+  let attentionStarted = 0,
+    attentionUntil = 0;
+  const attend = (duration) => {
+    attentionStarted = performance.now();
+    attentionUntil = attentionStarted + duration;
+  };
+  // hasPendingUpdate also includes reactions whose clock is suspended while
+  // Work owns the character. Geometry completion must use preparation revisions,
+  // otherwise that old reaction holds the global preparation lease forever.
+  const scenePrepared = () => {
+    const state = character.preparationStats();
+    return (
+      !state.pending &&
+      !state.failed &&
+      state.generation === state.committedGeneration
+    );
+  };
+  let acquiringPreparation = false;
+  const preparationQueue = [];
+  function finishPreparation(force = false) {
+    if (!force && (acquiringPreparation || preparationQueue.length)) return;
+    const release = releasePreparation;
+    releasePreparation = undefined;
+    release?.();
+  }
+  function prepare(operation) {
+    if (disposed) return;
+    if (releasePreparation && !sharedRenderPending()) {
+      operation();
+      return;
+    }
+    preparationQueue.push(operation);
+    if (acquiringPreparation) return;
+    acquiringPreparation = true;
+    const admission = releasePreparation
+      ? Promise.resolve(releasePreparation)
+      : acquireCharacterPreparation();
+    void admission.then(async (release) => {
+      await waitForSharedRender();
+      acquiringPreparation = false;
+      if (disposed) {
+        preparationQueue.length = 0;
+        release();
+        return;
+      }
+      releasePreparation = release;
+      try {
+        for (const next of preparationQueue.splice(0)) next();
+        if (scenePrepared()) finishPreparation();
+        wake();
+      } catch (error) {
+        finishPreparation();
+        callbacks.onError?.(error);
+      }
+    });
+  }
+
+  character.setQuality(1); // Resize selects mesh detail using CSS size, independent of DPR.
   // Readiness means painted pixels, not merely an engine submission.
   const play = (kind) => {
     if (activity === kind) return;
@@ -146,91 +310,39 @@ async function createLiveCharacter(
   // A queued still must finish if its selector moves it offscreen mid-prepare;
   // otherwise one clipped slot blocks every visible thumbnail until timeout.
   const active = () => (visible || props.portrait) && !document.hidden;
+  let wakeQueued = false;
   const wake = () => {
     if (disposed) return;
+    if (sharedRenderPending()) {
+      if (!wakeQueued) {
+        wakeQueued = true;
+        void waitForSharedRender().then(() => {
+          wakeQueued = false;
+          wake();
+        });
+      }
+      return;
+    }
     character.setActive(active());
     if (active() && (dirty || !ready || animate())) clients.add(client);
     else clients.delete(client);
     schedule();
   };
   const client = {
+    preparing: () => Boolean(releasePreparation),
+    attention: (time) => (time < attentionUntil ? attentionStarted : 0),
     visibility: wake,
+    fail(error) {
+      clients.delete(client);
+      finishPreparation(true);
+      callbacks.onError?.(error);
+    },
     render(time) {
       try {
-        const submitted = character.render(time);
-        if (submitted) {
-          if (
-            !fit &&
-            !character.preparationStats().pending &&
-            !character.hasPendingUpdate()
-          ) {
-            measurement.width = canvas.width;
-            measurement.height = canvas.height;
-            measure.drawImage(surface, 0, 0, canvas.width, canvas.height);
-            const { data, width, height } = measure.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height,
-            );
-            let minX = width,
-              minY = height,
-              maxX = -1,
-              maxY = -1;
-            for (let y = 0; y < height; y++)
-              for (let x = 0; x < width; x++) {
-                if (data[(y * width + x) * 4 + 3] > 24) {
-                  minX = Math.min(minX, x);
-                  maxX = Math.max(maxX, x);
-                  minY = Math.min(minY, y);
-                  maxY = Math.max(maxY, y);
-                }
-              }
-            if (maxX >= minX) {
-              const extent = Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
-              fit = [
-                (minX + maxX) / 2 - extent / 2,
-                (minY + maxY) / 2 - extent / 2,
-                extent,
-              ];
-            }
-          }
-          // Retain the previous portrait while a changed shape is preparing.
-          if (!fit) return;
-          output.clearRect(0, 0, canvas.width, canvas.height);
-          if (fit)
-            output.drawImage(
-              surface,
-              fit[0],
-              fit[1],
-              fit[2],
-              fit[2],
-              0,
-              0,
-              canvas.width,
-              canvas.height,
-            );
-          else output.drawImage(surface, 0, 0, canvas.width, canvas.height);
-        }
-        if (submitted && fit && transitionImage) {
-          // Geometry preparation keeps the previous image; blend only after the
-          // new original-engine surface has pixels. Reduced motion skips it.
-          transitionStarted ??= time;
-          const progress = animate()
-            ? Math.min(1, (time - transitionStarted) / 0.18)
-            : 1;
-          if (progress < 1) {
-            output.globalAlpha = 1 - progress;
-            output.drawImage(
-              transitionImage,
-              0,
-              0,
-              canvas.width,
-              canvas.height,
-            );
-            output.globalAlpha = 1;
-          } else transitionImage = null;
-        }
+        const submitted = surfaceLease.render(
+          () => character.render(time),
+          scenePrepared,
+        );
         const renderError = character.renderError();
         if (renderError || character.preparationStats().failed)
           throw new Error(
@@ -238,113 +350,293 @@ async function createLiveCharacter(
               character.preparationError() ||
               'Character preparation failed',
           );
-        if (
-          submitted &&
-          fit &&
-          !character.preparationStats().pending &&
-          !character.hasPendingUpdate() &&
-          fingerprint === pendingFingerprint
-        ) {
-          dirty = false;
-          if (!ready) {
-            ready = true;
-            callbacks.onReady?.();
-          }
-          callbacks.onPaint?.(!transitionImage);
-          if (activityMode && workDuration && !workTimer) {
-            workTimer = setTimeout(() => {
-              workTimer = undefined;
-              workDuration = undefined;
-              play(0);
-              switchMode(false);
-              dirty = true;
-              wake();
-            }, workDuration);
-          }
-          if (!animate()) clients.delete(client);
+        // Return to pointer/reaction control only after the authored Work outro
+        // clears its phase and episode; render skips do not indicate completion.
+        if (stoppingWork && module.controllerState(character).settled) {
+          stoppingWork = false;
+          switchMode(false);
         }
+        if (queuedReaction && !activityMode) attemptReaction();
+        if (!submitted) return;
+        const revision = surfaceLease.revision;
+        return () => {
+          if (disposed || revision !== surfaceLease.revision) return;
+          try {
+            if (submitted) {
+              if (!fit && scenePrepared()) {
+                measurement.width = canvas.width;
+                measurement.height = canvas.height;
+                surfaceLease.copy(
+                  measure,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+                const { data, width, height } = measure.getImageData(
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+                let minX = width,
+                  minY = height,
+                  maxX = -1,
+                  maxY = -1;
+                for (let y = 0; y < height; y++)
+                  for (let x = 0; x < width; x++) {
+                    if (data[(y * width + x) * 4 + 3] > 24) {
+                      minX = Math.min(minX, x);
+                      maxX = Math.max(maxX, x);
+                      minY = Math.min(minY, y);
+                      maxY = Math.max(maxY, y);
+                    }
+                  }
+                if (maxX >= minX) {
+                  const extent =
+                    Math.max(maxX - minX + 1, maxY - minY + 1) * 1.22;
+                  fit = [
+                    (minX + maxX) / 2 - extent / 2,
+                    (minY + maxY) / 2 - extent / 2,
+                    extent,
+                  ];
+                }
+              }
+              // Retain the previous portrait while a changed shape is preparing.
+              if (!fit) return;
+              output.clearRect(0, 0, canvas.width, canvas.height);
+              if (fit)
+                surfaceLease.copy(
+                  output,
+                  fit[0],
+                  fit[1],
+                  fit[2],
+                  fit[2],
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+              else surfaceLease.copy(output);
+            }
+            if (submitted && fit && transitionImage) {
+              // Geometry preparation keeps the previous image; blend only after the
+              // new original-engine surface has pixels. Reduced motion skips it.
+              transitionStarted ??= time;
+              const progress = animate()
+                ? Math.min(1, (time - transitionStarted) / 0.18)
+                : 1;
+              if (progress < 1) {
+                output.globalAlpha = 1 - progress;
+                output.drawImage(
+                  transitionImage,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+                output.globalAlpha = 1;
+              } else transitionImage = null;
+            }
+            if (
+              submitted &&
+              fit &&
+              scenePrepared() &&
+              fingerprint === pendingFingerprint
+            ) {
+              dirty = false;
+              finishPreparation();
+              if (!ready) {
+                ready = true;
+                callbacks.onReady?.();
+              }
+              callbacks.onPaint?.(!transitionImage);
+              if (activityMode && workDuration && !workTimer) {
+                const request = workRequest;
+                workTimer = setTimeout(() => {
+                  if (request !== workRequest) return;
+                  workTimer = undefined;
+                  workDuration = undefined;
+                  prepare(() => {
+                    if (request !== workRequest) return;
+                    play(0);
+                    stoppingWork = true;
+                  });
+                  dirty = true;
+                  wake();
+                }, workDuration);
+              }
+              if (!animate()) clients.delete(client);
+            }
+          } catch (error) {
+            clients.delete(client);
+            finishPreparation();
+            callbacks.onError?.(error);
+          }
+        };
       } catch (error) {
         clients.delete(client);
+        finishPreparation();
         callbacks.onError?.(error);
       }
     },
   };
+  let currentQuality, currentScale;
   const resize = () => {
-    const css = Math.max(1, Math.min(canvas.clientWidth, canvas.clientHeight));
-    const pixels = Math.max(
-      64,
-      Math.min(512, Math.round(css * Math.min(devicePixelRatio || 1, 2))),
+    const cssSize = Math.max(
+      1,
+      Math.min(canvas.clientWidth, canvas.clientHeight),
     );
-    if (canvas.width !== pixels || canvas.height !== pixels) {
-      canvas.width = pixels;
-      canvas.height = pixels;
-      fit = null;
-    }
-    character.resize(pixels, pixels);
-    character.setDisplayScale(pixels / css);
-    dirty = true;
-    wake();
+    const backingSize = characterPixels(canvas);
+    if (
+      canvas.width === backingSize &&
+      canvas.height === backingSize &&
+      currentQuality === (props.portrait || cssSize <= 128 ? 1 : 2) &&
+      currentScale === backingSize / cssSize
+    )
+      return;
+    prepare(() => {
+      const css = Math.max(
+        1,
+        Math.min(canvas.clientWidth, canvas.clientHeight),
+      );
+      const pixels = characterPixels(canvas);
+      if (canvas.width !== pixels || canvas.height !== pixels) {
+        canvas.width = pixels;
+        canvas.height = pixels;
+        fit = null;
+      }
+      const quality = props.portrait || css <= 128 ? 1 : 2;
+      if (currentQuality !== quality) {
+        character.setQuality(quality);
+        currentQuality = quality;
+      }
+      character.resize(pixels, pixels);
+      if (currentScale !== pixels / css) {
+        character.setDisplayScale(pixels / css);
+        currentScale = pixels / css;
+      }
+      dirty = true;
+      wake();
+    });
+  };
+  const bindController = (next = false) => {
+    if (!supportsActivities) return;
+    const result = character.applyActivity({
+      command: 3,
+      sequence: 0n,
+      episodeId: 0n,
+      episodeHighWater: 0n,
+      activity: 0,
+      outcome: 0,
+      entry: 1,
+    });
+    if (result !== 0)
+      throw new Error(`Character activity initialization failed: ${result}`);
+    module.controllerMode(character, next);
   };
   const switchMode = (next, resetAppearance = false) => {
-    if (activityMode === next && !resetAppearance) return;
-    const state = new Uint8Array(character.state());
-    character.delete();
-    surface.remove();
-    surface = makeSurface();
-    character = new module.Character(`#${id}`, 128, 128, { activities: next });
-    activityMode = next;
-    fit = null;
-    sequence = 0n;
-    episode = 0n;
-    activity = 0;
-    ready = false;
-    dirty = true;
-    character.setQuality(props.portrait ? 1 : 0);
-    character.restore(state);
-    // This recovered engine paints a transparent frame when reduced motion is
-    // enabled before its first appearance. Freeze our clock after a painted
-    // frame instead, preserving both initial visibility and reduced motion.
-    character.setReducedMotion(false);
-
-    if (next)
-      character.applyActivity({
-        command: 3,
-        sequence: 0n,
-        episodeId: 0n,
-        episodeHighWater: 0n,
-        activity: 0,
-        outcome: 0,
-        entry: 1,
+    if (resetAppearance) {
+      // Only a frozen appearance edit needs a new native scene: the original
+      // appearance blend otherwise stops on its first frame. React/Work never
+      // enter this branch and keep their character, preparation, clock and fit.
+      const state = new Uint8Array(character.state());
+      character.delete();
+      character = surfaceLease.create(module, 128, 128, {
+        activities: supportsActivities,
       });
-    resize();
+      currentQuality = currentScale = undefined;
+      sequence = episode = 0n;
+      activity = 0;
+      character.setQuality(1);
+      character.restore(state);
+      character.setReducedMotion(false);
+      bindController(next);
+      resize();
+    } else {
+      if (activityMode === next) return;
+      surfaceLease.beginTransition(180);
+      module.controllerMode(character, next);
+    }
+    activityMode = next;
+    dirty = true;
+  };
+  const attemptReaction = () => {
+    lastReactionKind = 2;
+    lastReaction = module.controllerSignature(
+      character,
+      bodySignatureFor(props),
+    );
+    if (lastReaction === 2)
+      throw new Error('Original body signature is unavailable');
+    // An interrupted signature resumes its clock on the next reactive render.
+    // Keep one latest request queued until that signature releases the controller.
+    queuedReaction = lastReaction === 1;
   };
   const react = () => {
-    if (!ready || !animate()) return;
-    if (activityMode) return;
-    lastReactionKind = 2;
-    lastReaction = character.playReaction(lastReactionKind);
-    // Authored signatures belong to named presets. Catalog edits and migrated
-    // bodies use the same engine's Wave when that signature is unsupported.
-    if (lastReaction === 2) {
-      lastReactionKind = 1;
-      lastReaction = character.playReaction(lastReactionKind);
-    }
-    dirty = true;
-    wake();
+    const request = ++workRequest;
+    clearTimeout(workTimer);
+    workTimer = workDuration = undefined;
+    const apply = () => {
+      if (disposed || request !== workRequest || !ready || !animate()) return;
+      attend(3000);
+      queuedReaction = true;
+      if (activityMode) {
+        play(0);
+        stoppingWork = true;
+      } else attemptReaction();
+      dirty = true;
+      wake();
+    };
+    if (sharedRenderPending()) void waitForSharedRender().then(apply);
+    else apply();
   };
   const work = () => {
-    if (!animate()) return;
+    // Invalidate an already queued Stop as soon as a new request arrives,
+    // including requests made while the previous GPU batch is still in flight.
+    const request = ++workRequest;
     clearTimeout(workTimer);
-    switchMode(true);
-    play(1);
-    workTimer = undefined;
-    workDuration = 2200 * Math.max(1, Math.min(10, props.workingCycles || 1));
+    workTimer = workDuration = undefined;
+    prepare(() => {
+      if (request !== workRequest || !animate() || !supportsActivities) return;
+      queuedReaction = false;
+      stoppingWork = false;
+      switchMode(true);
+      play(1);
+      workDuration = 2200 * Math.max(1, Math.min(10, props.workingCycles || 1));
+      attend(workDuration + 1000);
+    });
   };
-  let appearanceTimer, pendingFingerprint;
+  let appearanceTimer, pendingFingerprint, lastCapabilities;
+  const reportCapabilities = (available, selected) => {
+    lastCapabilities = {
+      key: JSON.stringify(
+        isLegacyRecipe(props) ? characterRecipe(props) : props.config.character,
+      ),
+      available,
+      selected,
+    };
+    callbacks.onCapabilities?.(lastCapabilities);
+  };
   const applyAppearance = (value) => {
     const recipe = value;
-    const nextFingerprint = JSON.stringify(recipe);
+    const nextFingerprint = appearanceFingerprint(recipe);
     if (nextFingerprint !== fingerprint) {
+      const defaultPreset = ORIGINAL_PRESETS.includes(recipe.preset)
+        ? recipe.preset
+        : authoredParts.bodyPreset;
+      const sourcePaint = defaultPreset
+        ? originalPalettePaint(module, defaultPreset)
+        : null;
+      const customizedParts = Object.keys(authoredParts).length > 0;
+      const implicitBodyColor =
+        customizedParts && !recipe.bodyColor && !recipe.selections?.color
+          ? sourcePaint?.bodyColor
+          : undefined;
       // Catalog selection owns the engine's part transitions. Restoring the
       // named preset on every selection needlessly resets the whole character.
       const removedOverride = Object.keys(appliedRecipe?.selections ?? {}).some(
@@ -356,28 +648,74 @@ async function createLiveCharacter(
         removedOverride ||
         (appliedRecipe.bodyColor && !recipe.bodyColor)
       ) {
-        const base = props.legacy
-          ? encodeAppearance({
-              version: 1,
-              shape: 'circle',
-              color: 'blue',
-              eyes: 'oval',
-              eyewear: 'none',
-              accessories: [],
-              accessoryColors: {},
-              constrained: 0,
-              depth: 0.5,
-              model: null,
-              rig: null,
-              hereCharacter: null,
-            })
-          : module.presetAppearance(recipe.preset);
+        let base =
+          props.legacy ||
+          recipe.preset === 'clippo' ||
+          recipe.preset === 'legacy' ||
+          authoredParts.bodyPreset ||
+          (sourcePaint?.bodyColor && customizedParts)
+            ? encodeAppearance({
+                version: 1,
+                shape: 'circle',
+                color: sourcePaint?.color ?? 'blue',
+                eyes: 'dots',
+                eyewear: 'none',
+                accessories: [],
+                accessoryColors: {},
+                constrained: 0,
+                depth: 0.5,
+                model: null,
+                rig: null,
+                hereCharacter: null,
+              })
+            : module.presetAppearance(recipe.preset);
+        if (
+          !props.legacy &&
+          recipe.preset !== 'clippo' &&
+          recipe.preset !== 'legacy' &&
+          !authoredParts.bodyPreset &&
+          Object.keys(authoredParts).length
+        ) {
+          // Selecting the preset's existing shape/backing eye is a native no-op,
+          // so select() never clears HERE's material overrides. Donor pieces
+          // need an editable controller while retaining all authored defaults.
+          const editable = decodeAppearance(base);
+          editable.hereCharacter = null;
+          base = encodeAppearance(editable);
+        }
         if (character.restore(base))
           throw new Error('Invalid character appearance');
       }
       for (const key of Object.keys(category)) {
-        const value = recipe.selections?.[key];
-        if (!value) continue;
+        const selected =
+          (key === 'shape' ? authoredParts.faceShape : undefined) ??
+          authoredParts[key] ??
+          recipe.selections?.[key];
+        // Virtual choices replace copied prepared meshes in the worker. The
+        // original engine still selects its own valid backing geometry.
+        const value =
+          key === 'shape' && MIGRATED_SHAPE_IDS.includes(selected)
+            ? 'circle'
+            : key === 'shape' && selected === 'todd'
+              ? 'circle'
+              : key === 'shape' && selected === 'clippo'
+                ? 'circle'
+                : key === 'eyes' && authoredParts.eyes
+                  ? ['oval', 'round_inset', 'dots', ...NATIVE_PARTS.eyes].find(
+                      (id) => character.isAvailable(category.eyes, id),
+                    )
+                  : key === 'accessory' && authoredParts.accessory
+                    ? 'none'
+                    : key === 'eyewear' && authoredParts.eyewear
+                      ? 'none'
+                      : selected;
+        if (!value) {
+          if (key === 'eyes' && authoredParts.eyes)
+            throw new Error(
+              `No compatible fitting reference for ${selected} eyes`,
+            );
+          continue;
+        }
         if (key === 'accessory' && value === 'none') {
           for (const item of module.catalog(4))
             if (character.isSelected(4, item.id)) character.select(4, item.id);
@@ -390,8 +728,10 @@ async function createLiveCharacter(
           throw new Error(`Unsupported character selection: ${key}`);
       }
       const patch =
-        props.legacy?.patch ??
-        (recipe.bodyColor ? { bodyColor: recipe.bodyColor } : null);
+        (isLegacyRecipe(props) ? props.legacy?.patch : undefined) ??
+        (recipe.bodyColor || implicitBodyColor
+          ? { bodyColor: recipe.bodyColor ?? implicitBodyColor }
+          : null);
       if (patch) {
         // One authored preset uses an unnamed color. Enter the engine's normal
         // editable palette before replacing that paint with an explicit RGB.
@@ -429,34 +769,107 @@ async function createLiveCharacter(
       const selected = {};
       for (const [key, index] of Object.entries(category)) {
         for (const item of module.catalog(index)) {
-          available[`${key}:${item.id}`] = character.isAvailable(
-            index,
-            item.id,
-          );
+          available[`${key}:${item.id}`] = NATIVE_PARTS[key]?.includes(item.id)
+            ? true
+            : character.isAvailable(index, item.id);
           if (character.isSelected(index, item.id)) selected[key] = item.id;
         }
       }
+      if (authoredParts.bodyPreset)
+        Object.assign(
+          selected,
+          bodySelectionDefaults(
+            authoredParts.bodyPreset,
+            decodeAppearance(module.presetAppearance(authoredParts.bodyPreset)),
+          ),
+        );
+      for (const key of ['eyes', 'eyewear', 'accessory'])
+        if (authoredParts[key]) selected[key] = authoredParts[key];
+      available['shape:todd'] = true;
+      for (const id of MIGRATED_SHAPE_IDS) available[`shape:${id}`] = true;
+      if (MIGRATED_SHAPE_IDS.includes(recipe.selections?.shape))
+        selected.shape = recipe.selections.shape;
+      available['eyes:cyclops'] = true;
+      if (
+        recipe.selections?.shape === 'todd' ||
+        authoredParts.bodyPreset === 'lime_frog' ||
+        (recipe.preset === 'lime_frog' && !recipe.selections?.shape)
+      )
+        selected.shape = 'todd';
+      available['shape:clippo'] = true;
+      available['eyes:clippo'] = true;
+      available['eyes:todd'] = true;
+      if (authoredParts.shape) selected.shape = authoredParts.shape;
+      available['accessory:felipe_beret'] = true;
+      if (
+        authoredParts.eyes ||
+        (recipe.preset === 'lime_frog' && !recipe.selections?.eyes)
+      )
+        selected.eyes = authoredParts.eyes ?? 'todd';
+      if (
+        authoredParts.accessory ||
+        (recipe.preset === 'blue_beret' && !recipe.selections?.accessory)
+      )
+        selected.accessory = authoredParts.accessory ?? 'felipe_beret';
       available['accessory:none'] = true;
       selected.accessory ??= 'none';
-      callbacks.onCapabilities?.({ key: fingerprint, available, selected });
+      const originalPreset = ORIGINAL_PRESETS.includes(recipe.preset)
+        ? recipe.preset
+        : authoredParts.bodyPreset;
+      if (
+        !recipe.bodyColor &&
+        !recipe.selections?.color &&
+        ORIGINAL_PRESETS.includes(originalPreset) &&
+        !isLegacyRecipe(props)
+      ) {
+        const originalColor = decodeAppearance(
+          module.presetAppearance(originalPreset),
+        ).color;
+        if (
+          !module
+            .catalog(category.color)
+            .some((item) => item.id === originalColor)
+        ) {
+          delete selected.color;
+          selected.bodyColor = originalBodyColor(module, originalPreset);
+        }
+      }
+      if (recipe.bodyColor) {
+        delete selected.color;
+        selected.bodyColor = recipe.bodyColor;
+      }
+      reportCapabilities(available, selected);
       dirty = true;
     }
   };
+  let deferredUpdate;
   const update = (next, silent = false) => {
     if (disposed) return;
+    if (sharedRenderPending()) {
+      const queued = Boolean(deferredUpdate);
+      deferredUpdate = [next, silent];
+      if (!queued)
+        void waitForSharedRender().then(() => {
+          const value = deferredUpdate;
+          deferredUpdate = undefined;
+          if (value && !disposed) update(...value);
+        });
+      return;
+    }
     props = next;
-    const recipe = props.legacy
-      ? {
-          preset: 'legacy',
-          selections: {
-            shape: props.legacy.shape ?? 'circle',
-            eyes: props.legacy.eyes ?? 'oval',
-            ...props.legacy.selections,
-          },
-          ...props.legacy.patch,
-        }
-      : props.config.character;
-    const nextFingerprint = JSON.stringify(recipe);
+    const recipe = characterRecipe(props);
+    const nextFingerprint = appearanceFingerprint(recipe);
+    // Explicitly choosing a preset's default changes its saved recipe, but not
+    // its prepared appearance. Re-key the actual capabilities without rebuilding.
+    const rawKey = JSON.stringify(
+      isLegacyRecipe(props) ? recipe : props.config.character,
+    );
+    if (
+      nextFingerprint === fingerprint &&
+      lastCapabilities &&
+      lastCapabilities.key !== rawKey
+    )
+      reportCapabilities(lastCapabilities.available, lastCapabilities.selected);
     // Dragging the shared color picker may emit dozens of values per second.
     // Prepare only its latest value while retaining the existing painted frame.
     if (pendingFingerprint !== nextFingerprint) {
@@ -470,13 +883,19 @@ async function createLiveCharacter(
         appearanceTimer = setTimeout(() => {
           if (disposed) return;
           try {
-            applyAppearance(recipe);
+            prepare(() => {
+              if (pendingFingerprint === nextFingerprint)
+                applyAppearance(recipe);
+            });
             wake();
           } catch (error) {
             callbacks.onError?.(error);
           }
         }, 80);
-      } else applyAppearance(recipe);
+      } else
+        prepare(() => {
+          if (pendingFingerprint === nextFingerprint) applyAppearance(recipe);
+        });
     }
     // The recovered engine needs its first appearance rendered with this off.
     // Our scheduler freezes the completed frame instead.
@@ -520,6 +939,18 @@ async function createLiveCharacter(
     dirty = true;
     wake();
   };
+  function input(operation) {
+    const apply = () => {
+      if (disposed) return;
+      try {
+        operation();
+      } catch (error) {
+        client.fail(error);
+      }
+    };
+    if (sharedRenderPending()) void waitForSharedRender().then(apply);
+    else apply();
+  }
   function pointer(event) {
     if (!props.interactive || !animate()) return;
     const phase = {
@@ -530,8 +961,11 @@ async function createLiveCharacter(
     }[event.type];
     if (event.type === 'pointerdown') {
       if (event.button !== 0 || pointerId != null || !event.isPrimary) return;
+      attend(3000);
       pointerStart = [event.clientX, event.clientY];
       pointerId = event.pointerId;
+      // Capture while the physical pointer is still down. GPU completion may
+      // arrive after pointerup, when setPointerCapture would throw instead.
       canvas.setPointerCapture(pointerId);
     }
     if (pointerId != null && pointerId !== event.pointerId) return;
@@ -541,38 +975,41 @@ async function createLiveCharacter(
       localY = (event.clientY - r.top) / r.height;
     const x = fit ? (fit[0] + localX * fit[2]) / canvas.width : localX;
     const y = fit ? (fit[1] + localY * fit[2]) / canvas.height : localY;
-    if (activityMode && phase === 1)
-      character.setReadyGaze(x, y, performance.now() / 1000);
-    if (!activityMode)
-      character.pointer(phase, event.pointerId, x, y, performance.now() / 1000);
+    const id = event.pointerId,
+      at = performance.now() / 1000;
+    const tap =
+      phase === 2 &&
+      pointerStart &&
+      Math.hypot(
+        event.clientX - pointerStart[0],
+        event.clientY - pointerStart[1],
+      ) < 6;
+    input(() => {
+      if (activityMode && phase === 1) character.setReadyGaze(x, y, at);
+      if (!activityMode) character.pointer(phase, id, x, y, at);
+      if (tap) react();
+      dirty = true;
+      wake();
+    });
     if (phase === 2 || phase === 3) {
-      if (
-        phase === 2 &&
-        pointerStart &&
-        Math.hypot(
-          event.clientX - pointerStart[0],
-          event.clientY - pointerStart[1],
-        ) < 6
-      )
-        react();
-      if (canvas.hasPointerCapture(event.pointerId))
-        canvas.releasePointerCapture(event.pointerId);
+      if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
       pointerId = undefined;
+      pointerStart = undefined;
     }
-    dirty = true;
-    wake();
   }
   const cancel = () => {
-    if (pointerId != null)
-      character.pointer(3, pointerId, 0.5, 0.5, performance.now() / 1000);
+    const id = pointerId;
     pointerId = undefined;
     pointerStart = undefined;
+    if (id != null)
+      input(() => character.pointer(3, id, 0.5, 0.5, performance.now() / 1000));
   };
   const leave = () => {
-    if (pointerId == null) {
-      if (activityMode) character.clearReadyGaze(performance.now() / 1000);
-      else character.pointer(1, 0, 0.5, 0.5, performance.now() / 1000);
-    }
+    if (pointerId == null)
+      input(() => {
+        if (activityMode) character.clearReadyGaze(performance.now() / 1000);
+        else character.pointer(1, 0, 0.5, 0.5, performance.now() / 1000);
+      });
   };
   canvas.addEventListener('lostpointercapture', cancel);
   canvas.addEventListener('pointerleave', leave);
@@ -602,9 +1039,14 @@ async function createLiveCharacter(
     canvas.removeEventListener('lostpointercapture', cancel);
     canvas.removeEventListener('pointerleave', leave);
     window.removeEventListener('blur', cancel);
-    character.delete();
-    surface.remove();
-    lease?.release();
+    const release = () => {
+      character.delete();
+      finishPreparation(true);
+      surfaceLease.release();
+      lease?.release();
+    };
+    if (sharedRenderPending()) void waitForSharedRender().then(release);
+    else release();
     if (!instances.size) {
       document.removeEventListener('visibilitychange', visibility);
       cancelAnimationFrame(frame);
@@ -614,6 +1056,7 @@ async function createLiveCharacter(
   try {
     update(initial);
     resize();
+    bindController();
   } catch (error) {
     dispose();
     throw error;
@@ -628,18 +1071,21 @@ async function createLiveCharacter(
       lastReactionKind,
       lastActivityResult,
       activityMode,
+      stoppingWork,
+      queuedReaction,
       ready,
       pending:
         dirty ||
-        Boolean(character.preparationStats().pending) ||
-        character.hasPendingUpdate(),
+        acquiringPreparation ||
+        preparationQueue.length > 0 ||
+        !scenePrepared(),
     }),
   };
 }
 
 // A geometry cache must never serve a different silhouette under the same
-// appearance key. Keep the old painted image while switching contour modules.
-async function createLegacyCharacter(canvas, initial, callbacks) {
+// appearance key. Keep the old painted image while replacing the scoped character.
+async function createScopedCharacter(canvas, initial, callbacks) {
   let controller,
     shapeKey,
     revision = 0,
@@ -647,8 +1093,12 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
     latest = initial;
   const update = async (next, silent = false) => {
     if (disposed) return;
+    next = withCharacterGeometry(next);
     latest = next;
-    const key = JSON.stringify(next.legacy.points ?? null);
+    const key = JSON.stringify([
+      next.legacy?.points ?? null,
+      authoredPartsFor(next),
+    ]);
     if (shapeKey === key) {
       controller?.update(next, silent);
       return;
@@ -708,7 +1158,8 @@ async function createLegacyCharacter(canvas, initial, callbacks) {
     },
     react: () => controller?.react(),
     work: () => controller?.work(),
-    diagnostics: () => controller?.diagnostics(),
+    diagnostics: () =>
+      controller?.diagnostics() ?? { ready: false, pending: !disposed },
   };
 }
 
@@ -723,16 +1174,7 @@ function createPortrait(canvas, initial, callbacks) {
     cancel;
   const update = (props) => {
     if (disposed) return;
-    const pixels = Math.max(
-      64,
-      Math.min(
-        512,
-        Math.round(
-          Math.min(canvas.clientWidth, canvas.clientHeight) *
-            Math.min(devicePixelRatio || 1, 2),
-        ),
-      ),
-    );
+    const pixels = characterPixels(canvas);
     const key = JSON.stringify([
       props.config.character,
       props.legacy,
@@ -778,6 +1220,18 @@ function createPortrait(canvas, initial, callbacks) {
           canvas,
           { ...props, paused: true, interactive: false },
           {
+            onPreparationStart() {
+              if (finished || !current()) return;
+              // Waiting for another avatar's preparation is not engine work.
+              // Start the deadline only after this controller is constructed.
+              timer = setTimeout(() => {
+                if (current())
+                  callbacks.onError?.(
+                    new Error('Character preview preparation timed out'),
+                  );
+                finish();
+              }, 20000);
+            },
             onCapabilities(value) {
               capabilities = value;
               if (current()) callbacks.onCapabilities?.(value);
@@ -805,14 +1259,7 @@ function createPortrait(canvas, initial, callbacks) {
         if (finished || !current()) {
           controller.dispose();
           finish();
-        } else
-          timer = setTimeout(() => {
-            if (current())
-              callbacks.onError?.(
-                new Error('Character preview preparation timed out'),
-              );
-            finish();
-          }, 20000);
+        }
         await completion;
       } catch (error) {
         if (current()) callbacks.onError?.(error);
@@ -841,10 +1288,12 @@ const registryKey = Symbol.for('bloom.character.runtimes');
 export function runtimeStats() {
   return {
     renderMilliseconds: lastRenderMilliseconds,
+    renderWaitMilliseconds: lastRenderWaitMilliseconds,
     budget: managedAvatarStats(),
+    surface: sharedSurfaceStats(),
     instances: instances.size,
     active: clients.size,
-    scheduled: !!frame,
+    scheduled: !!frame || rendering,
     cachedPortraits: portraits.size,
     legacy: legacyEngineStats(),
   };

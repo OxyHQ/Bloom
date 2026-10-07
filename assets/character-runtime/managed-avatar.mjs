@@ -1,21 +1,10 @@
 import { renderBudget } from './render-budget.mjs';
+import { characterPixels } from './resolution.mjs';
 
 const snapshots = new Map();
 const waiting = new Map();
-const pixelsFor = (canvas) =>
-  Math.max(
-    64,
-    Math.min(
-      512,
-      Math.round(
-        Math.min(canvas.clientWidth, canvas.clientHeight) *
-          Math.min(devicePixelRatio || 1, 2),
-      ),
-    ),
-  );
-
-// Presentation lifetime is independent of the GPU lease. Overflow avatars keep
-// their real engine pixels and can reclaim a lease through pointer/command input.
+// Presentation lifetime is independent of the rendering lease. Offscreen and
+// paused avatars retain real engine pixels until they need rendering again.
 export function createManagedAvatar(canvas, initial, callbacks, factory) {
   let props = initial,
     controller,
@@ -42,7 +31,7 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
       props.config.character,
       props.legacy,
       props.config.lookAt,
-      pixelsFor(canvas),
+      characterPixels(canvas),
     ]);
   const priority = () =>
     pendingWork || pendingReaction || performance.now() < urgentUntil
@@ -68,7 +57,8 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
     refresh();
   }
   function commands() {
-    if (!controller?.diagnostics?.()?.ready) return;
+    const state = controller?.diagnostics?.();
+    if (disposed || still() || !ready || !state?.ready || state.pending) return;
     if (pendingWork)
       promote(
         2500 * Math.max(1, Math.min(10, props.workingCycles || 1)) + 1000,
@@ -119,9 +109,13 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
               for (const receive of waiting.get(cacheKey) ?? []) receive();
             }
             callbacks.onPaint?.();
+            // Scope replacements and in-place edits may settle without another
+            // onReady event. Deliver retained commands only after their paint.
+            if (pendingWork || pendingReaction) queueMicrotask(commands);
           },
         });
         controller = created;
+        if (!disposed) callbacks.onPreparationStart?.();
         created.update(props, true);
         return created;
       } finally {
@@ -179,7 +173,8 @@ export function createManagedAvatar(canvas, initial, callbacks, factory) {
       pendingReaction = false;
     }
     appearance();
-    const queueCommands = !controller?.diagnostics?.()?.ready;
+    const state = controller?.diagnostics?.();
+    const queueCommands = !ready || !state?.ready || !!state.pending;
     if (!still() && (work || reaction)) {
       if (queueCommands) {
         pendingWork ||= work;

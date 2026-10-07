@@ -75,6 +75,41 @@ it('announces selected avatar colors and profile fields through real react-nativ
   ).toBe('Designer');
 });
 
+it('offers eye styles without an eye-placement control, including saved spacing recipes', () => {
+  const character = { preset: 'lime_frog', eyeSpacing: 1.23 };
+  const key = JSON.stringify(character);
+  const agent = {
+    id: 'todd',
+    name: 'Todd',
+    label: '',
+    description: '',
+    avatar: { ...FOLD_CONFIG, character },
+  };
+  const onChange = jest.fn();
+  render(
+    <CharacterRuntimeFixture
+      value={{
+        runtimeUrl: '/runtime.mjs',
+        capabilitiesByKey: new Map([
+          [
+            key,
+            { key, available: {}, selected: { eyes: 'todd', shape: 'todd' } },
+          ],
+        ]),
+      }}
+    >
+      <AgentCreator agent={agent} onChange={onChange} />
+    </CharacterRuntimeFixture>,
+  );
+  expect(container.querySelector('[aria-label="Eye spacing"]')).toBeNull();
+  expect(
+    container
+      .querySelector('[aria-label="Todd"]')
+      ?.getAttribute('aria-pressed'),
+  ).toBe('true');
+  expect(onChange).not.toHaveBeenCalled();
+});
+
 it('announces the custom saturation/brightness and hue values', () => {
   render(<CustomColorPicker value="#ff0000" onChange={() => {}} />);
   const field = container.querySelector(
@@ -185,7 +220,7 @@ it('announces a custom beta body color and returns to a named color through the 
       ...agent.avatar,
       character: {
         preset: 'blue_beret',
-        selections: { eyes: 'oval', color: 'blue' },
+        selections: { eyes: 'oval', color: 'blue', accessory: 'felipe_beret' },
       },
     },
   });

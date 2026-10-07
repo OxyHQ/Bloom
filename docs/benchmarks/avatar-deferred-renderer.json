@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "hardware": {
+    "model": "Pixel 8a",
+    "soc": "Google Tensor G3",
+    "gpu": "ARM Mali-G715",
+    "gpuDriver": "54.1.11eac0",
+    "ramGiB": 8,
+    "android": "16 BP4A.251205.006",
+    "browser": "Jelly / Android WebView 148.0.7778.120",
+    "displayRefreshHzObserved": 120
+  },
+  "workload": {
+    "avatarCssPixels": 48,
+    "avatarBackingPixels": 64,
+    "viewportCssPixels": {
+      "width": 868,
+      "height": 295
+    },
+    "devicePixelRatio": 2.625,
+    "composition": "Alternating eight original presets and eight migrated contours, repeated as needed",
+    "warmupMilliseconds": 3000,
+    "measurementTargetMilliseconds": 5000,
+    "pixelHashSize": 32,
+    "pixelHashIntervalMilliseconds": 500,
+    "readiness": "All avatars ready, live instances=count, every controller ready and not pending"
+  },
+  "snapshotCapturedAt": "2026-10-03T00:46:22.590313+00:00",
+  "snapshotDescription": "Deferred GPU fence, preparation priority and exact contour preparation LRU; before eager dual-controller preparation and pose transitions",
+  "assetsSha256": {
+    "orbit-characters.wasm": "c15f3692305c1385a12524e877199ba279b8d53e6bd37a9e533d626f12fcb94b",
+    "resolution.mjs": "d87fcb44af86b1607a506128f0e73a9bdc75e6d30baa72926ac4dcae711349da",
+    "shared-programs.mjs": "41a92eccc0d79f5721da04c1f0d0df99cf96ecc72ef6b3c497f0cb28545dba86",
+    "render-budget.mjs": "097e6ada93dfdd3647ac8ac87131c83ba35fe077f896006a567e1efd8da5560b",
+    "preparation-cache.mjs": "4dd9a3deeef7fdf3d3399ca6ec31ac54f950ab0ba2cb8f4434afa4d4b082d188",
+    "preparation-worker.mjs": "3caeea63dc364a0dc852a16b704323874902eb0f2a02cc9a2ddf4dc414ae8368",
+    "orbit-characters.data": "ffefb69b44f815cccb5f07b4d951d479e527dbabdca68ad9986cf695f9b9c440",
+    "shared-textures.mjs": "4707a16e2bb7c81de35903fce2ef34d7867d15b13144d77f026822dc96189e29",
+    "appearance-codec.mjs": "eb919431de59e2bc19dc058809af817f413bb037a77a4a9dfb8517a3dd73fe60",
+    "legacy-engine.mjs": "46abeff555d9c264314cfff6ce41787bd5713e1f2c900ce89b24bac362b84f55",
+    "runtime.mjs": "22f262588522f3ffc8dac0867fdba704367c3fa668c94beb9f0909b967c8c85c",
+    "legacy-worker.mjs": "0ec89223ac789c5398dd1991805fc0ab984facdaefe98b0b368fb14b1e5866fd",
+    "managed-avatar.mjs": "672f1c27690b77b39ee780317f94fbaadfe679c13f3ef97440f87edf03dba251",
+    "orbit-characters.mjs": "f3ba670dadba954df1618af83fa314641a4cfddd3597aca93a191c264374eed7",
+    "render-errors.mjs": "a9ec884fe900f2d6e5517740c152b2ef9a4d6023a0c8bf87b088dce3256595ae",
+    "legacy-geometry.mjs": "a33d6874529f7551154c08596b12e7e0820c1ada249bf4a014ea68bfcaf6f3bc",
+    "shared-surface.mjs": "d9cfbfc07f8928bcfcaa5b106f3a0c5795424d89d2f171199a02072b24300fde"
+  },
+  "runs": [
+    {
+      "count": 24,
+      "visible": 24,
+      "pixelHashChanging": 24,
+      "allReadyMilliseconds": 12725.200000047684,
+      "paintHz": {
+        "min": 4.4395545005205435,
+        "mean": 4.600407924452447,
+        "max": 4.632578609238828
+      },
+      "frameIntervals": {
+        "count": 447,
+        "median": 8.399999999999636,
+        "p95": 25.099999999998545,
+        "max": 41.20000000000073
+      },
+      "renderCpuMilliseconds": {
+        "median": 6.599999904632568,
+        "p95": 9.600000143051147
+      },
+      "hashOverheadMilliseconds": [
+        10.799999952316284,
+        7.799999952316284,
+        2.3999998569488525,
+        2.299999952316284,
+        2.6000001430511475,
+        4.299999952316284,
+        2.4000000953674316,
+        3.8000001907348633,
+        2.4000000953674316,
+        2.9000000953674316
+      ],
+      "runtimeStats": {
+        "renderMilliseconds": 4.499999761581421,
+        "renderWaitMilliseconds": 12.600000143051147,
+        "budget": {
+          "limit": null,
+          "resident": 24,
+          "registered": 24,
+          "peak": 24,
+          "snapshots": 16
+        },
+        "surface": {
+          "contexts": 1,
+          "surfaces": 24,
+          "width": 512,
+          "height": 192,
+          "colorBytes": 393216,
+          "revision": 72,
+          "programs": {
+            "logicalPrograms": 216,
+            "logicalShaders": 0,
+            "programs": 9,
+            "shaders": 14,
+            "programLinks": 9,
+            "shaderCompiles": 14,
+            "uniformReplays": 556,
+            "uniformReplaySkips": 24561,
+            "blockReplays": 21,
+            "blockReplaySkips": 15970
+          },
+          "textures": {
+            "logicalTextures": 289,
+            "physicalTextures": 220,
+            "pooledTextures": 3,
+            "mipBytesSaved": 115184920,
+            "hits": 69,
+            "copies": 0
+          },
+          "resources": {
+            "Buffer": 404,
+            "Texture": 220,
+            "Framebuffer": 97,
+            "Renderbuffer": 48,
+            "VertexArray": 143
+          }
+        },
+        "instances": 24,
+        "active": 24,
+        "scheduled": true,
+        "cachedPortraits": 0,
+        "legacy": {
+          "modules": 8,
+          "sharedModules": 1,
+          "characters": 24,
+          "preparationWaiters": 0,
+          "preparationActive": false,
+          "dispatchTimers": 0,
+          "pending": 0,
+          "worker": true,
+          "preparationCache": {
+            "entries": 8,
+            "bytes": 7080654,
+            "maximumBytes": 8388608,
+            "hits": 4,
+            "misses": 8
+          }
+        }
+      },
+      "jsMemoryBefore": {
+        "usedJSHeapSize": 18200000,
+        "totalJSHeapSize": 21700000,
+        "jsHeapSizeLimit": 1130000000
+      },
+      "jsMemoryAfter": {
+        "usedJSHeapSize": 18200000,
+        "totalJSHeapSize": 21700000,
+        "jsHeapSizeLimit": 1130000000
+      },
+      "errors": []
+    },
+    {
+      "count": 48,
+      "visible": 48,
+      "pixelHashChanging": 48,
+      "allReadyMilliseconds": 20323.89999985695,
+      "paintHz": {
+        "min": 2.1105951878622817,
+        "mean": 2.1745526177975023,
+        "max": 2.302467477667944
+      },
+      "frameIntervals": {
+        "count": 411,
+        "median": 8.400000000001455,
+        "p95": 25.100000000002183,
+        "max": 33.60000000000218
+      },
+      "renderCpuMilliseconds": {
+        "median": 6.099999904632568,
+        "p95": 9.899999618530273
+      },
+      "hashOverheadMilliseconds": [
+        17.799999952316284,
+        6.599999904632568,
+        5.599999904632568,
+        4.6000001430511475,
+        6.8999998569488525,
+        7.599999904632568,
+        5,
+        4.799999952316284,
+        5.400000095367432,
+        7.299999952316284
+      ],
+      "runtimeStats": {
+        "renderMilliseconds": 5.1000001430511475,
+        "renderWaitMilliseconds": 14.5,
+        "budget": {
+          "limit": null,
+          "resident": 48,
+          "registered": 48,
+          "peak": 48,
+          "snapshots": 16
+        },
+        "surface": {
+          "contexts": 1,
+          "surfaces": 48,
+          "width": 512,
+          "height": 384,
+          "colorBytes": 786432,
+          "revision": 144,
+          "programs": {
+            "logicalPrograms": 432,
+            "logicalShaders": 0,
+            "programs": 9,
+            "shaders": 14,
+            "programLinks": 9,
+            "shaderCompiles": 14,
+            "uniformReplays": 1108,
+            "uniformReplaySkips": 25974,
+            "blockReplays": 21,
+            "blockReplaySkips": 17305
+          },
+          "textures": {
+            "logicalTextures": 577,
+            "physicalTextures": 436,
+            "pooledTextures": 3,
+            "mipBytesSaved": 235377880,
+            "hits": 141,
+            "copies": 0
+          },
+          "resources": {
+            "Buffer": 810,
+            "Texture": 436,
+            "Framebuffer": 193,
+            "Renderbuffer": 96,
+            "VertexArray": 288
+          }
+        },
+        "instances": 48,
+        "active": 48,
+        "scheduled": true,
+        "cachedPortraits": 0,
+        "legacy": {
+          "modules": 8,
+          "sharedModules": 1,
+          "characters": 48,
+          "preparationWaiters": 0,
+          "preparationActive": false,
+          "dispatchTimers": 0,
+          "pending": 0,
+          "worker": true,
+          "preparationCache": {
+            "entries": 8,
+            "bytes": 7080654,
+            "maximumBytes": 8388608,
+            "hits": 16,
+            "misses": 8
+          }
+        }
+      },
+      "jsMemoryBefore": {
+        "usedJSHeapSize": 18200000,
+        "totalJSHeapSize": 21700000,
+        "jsHeapSizeLimit": 1130000000
+      },
+      "jsMemoryAfter": {
+        "usedJSHeapSize": 18200000,
+        "totalJSHeapSize": 21700000,
+        "jsHeapSizeLimit": 1130000000
+      },
+      "errors": []
+    }
+  ],
+  "actions48": {
+    "react": {
+      "lastReaction": 0,
+      "lastReactionKind": 2,
+      "activityMode": false,
+      "ready": true,
+      "pending": true,
+      "suspended": false
+    },
+    "work": {
+      "lastReaction": null,
+      "lastReactionKind": null,
+      "lastActivityResult": 0,
+      "activityMode": true,
+      "ready": true,
+      "pending": false,
+      "suspended": false
+    },
+    "errors": []
+  },
+  "cleanup48": {
+    "stats": {
+      "renderMilliseconds": 2.5,
+      "renderWaitMilliseconds": 12.799999952316284,
+      "budget": {
+        "limit": null,
+        "resident": 0,
+        "registered": 0,
+        "peak": 48,
+        "snapshots": 16
+      },
+      "surface": {
+        "contexts": 0,
+        "surfaces": 0,
+        "width": 0,
+        "height": 0,
+        "colorBytes": 0,
+        "revision": 0
+      },
+      "instances": 0,
+      "active": 0,
+      "scheduled": false,
+      "cachedPortraits": 0,
+      "legacy": {
+        "modules": 0,
+        "sharedModules": 1,
+        "characters": 0,
+        "preparationWaiters": 0,
+        "preparationActive": false,
+        "dispatchTimers": 0,
+        "pending": 0,
+        "worker": false,
+        "preparationCache": {
+          "entries": 7,
+          "bytes": 7882959,
+          "maximumBytes": 8388608,
+          "hits": 17,
+          "misses": 9
+        }
+      }
+    },
+    "errors": []
+  },
+  "limitations": [
+    "Single physical runs; not a thermal endurance test or statistically controlled comparison.",
+    "JavaScript heap snapshots do not include total GPU memory.",
+    "renderCpuMilliseconds excludes asynchronous GPU wait, unlike the earlier baseline metric.",
+    "Programmatic React/Work requests accepted; Work settled at 2.5 seconds. Pointer input was not measured in this harness (interactive:false).",
+    "Startup uses a new document/engine with warm HTTP caches; original binary files were served from local host.",
+    "24-avatar paint rate improved over prior baseline but 48-avatar paint rate decreased (2.17 vs 2.59 Hz); GPU drawing cost still dominates.",
+    "This snapshot predates the same-instance dual-controller integration; do not claim these timings for that later implementation.",
+    "One document in Android WebView; native React Native multi-WebView sharing remains unimplemented."
+  ]
+}

@@ -12,6 +12,7 @@ import {
   type CharacterWebViewHandle,
 } from './character-webview';
 import { legacyRecipe } from './legacy-recipe';
+import { isMigratedCharacterShape } from './character-shapes';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 
@@ -203,7 +204,9 @@ export function CharacterAvatar(props: AgentAvatarProps) {
   useEffect(() => setFailed(false), [runtimeUrl, config.character]);
   const legacy = useMemo(
     () =>
-      !config.character || config.character.preset === 'bloom'
+      !config.character ||
+      config.character.preset === 'bloom' ||
+      isMigratedCharacterShape(config.character.selections?.shape)
         ? legacyRecipe(config)
         : undefined,
     [config],

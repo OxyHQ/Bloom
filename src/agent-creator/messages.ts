@@ -114,7 +114,8 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     betaEyes: 'Eye style',
     eyewear: 'Eyewear',
     accessory: 'Accessory',
-    characterOption: (_category, _id, title) => String(title),
+    characterOption: (category, id, title) =>
+      category === 'eyes' && id === 'cyclops' ? 'Single eye' : String(title),
     editor: 'Agent editor',
     newBot: 'New bot',
     closeEditor: 'Close agent editor',

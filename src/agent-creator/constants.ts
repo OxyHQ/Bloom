@@ -1,3 +1,4 @@
+import { NATIVE_CHARACTER_SHAPES } from '../agent-avatar/character-shapes';
 import type { AgentLanguage, AgentPreferences } from './types';
 export const AGENT_LANGUAGES = [
   { id: 'auto', label: 'Auto-detect' },
@@ -58,6 +59,7 @@ export const PREVIEW_TEXT: Record<AgentLanguage, string> = {
 
 // Recovered engine catalog metadata. IDs are renderer selections; titles retain the beta catalog's English defaults.
 export const CHARACTER_PRESETS = [
+  { id: 'clippo', title: 'Clippo' },
   { id: 'blue_beret', title: 'Felipe' },
   { id: 'alfred', title: 'Alfred' },
   { id: 'purple_heart', title: 'Jojo' },
@@ -68,20 +70,51 @@ export const CHARACTER_PRESETS = [
   { id: 'lime_headphones', title: 'Iggy' },
 ] as const;
 export const CHARACTER_OPTIONS = {
-  shape: [
-    ['circle', 'Circle'], ['rounded_triangle', 'Rounded triangle'], ['capsule', 'Capsule'],
-    ['rounded_head_two_ears', 'Rounded head with two ears'], ['six_lobed_flower', 'Six lobed flower'],
-    ['heart', 'Heart'], ['four_lobed_butterfly', 'Four lobed butterfly'], ['circle_two_ears', 'Circle with two ears'],
-    ['twelve_scalloped_rosette', 'Twelve scalloped rosette'], ['rounded_cube', 'Hexagon'], ['rounded_diamond', 'Rounded diamond'],
+  shape: NATIVE_CHARACTER_SHAPES,
+  color: [
+    ['pink', 'Pink'],
+    ['orchid', 'Orchid'],
+    ['violet', 'Violet'],
+    ['blue', 'Blue'],
+    ['cyan', 'Cyan'],
+    ['teal', 'Teal'],
+    ['lime', 'Lime'],
+    ['yellow', 'Yellow'],
+    ['coral', 'Coral'],
   ],
-  color: [['pink', 'Pink'], ['orchid', 'Orchid'], ['violet', 'Violet'], ['blue', 'Blue'], ['cyan', 'Cyan'], ['teal', 'Teal'], ['lime', 'Lime'], ['yellow', 'Yellow'], ['coral', 'Coral']],
-  eyes: [['swept_lids', 'Swept lids'], ['oval', 'Oval'], ['sparkle_capsules', 'Sparkle capsules'], ['highlight_capsules', 'Highlight capsules'], ['dots', 'Dots'], ['double_highlights', 'Round highlights'], ['round_inset', 'Round inset'], ['crescent_inset', 'Crescent inset'], ['sleepy_lids', 'Sleepy lids']],
-  eyewear: [['none', 'None'], ['monocle', 'Monocle'], ['tall_oval_frames', 'Tall oval frames'], ['separate_trapezoid_lenses', 'Separate trapezoid lenses'], ['classic_sunglasses', 'Classic sunglasses'], ['round_sunglasses', 'Round sunglasses']],
-  accessory: [['headphones', 'Headphones'], ['bow', 'Bow tie'], ['beanie', 'Beanie'], ['hat', 'Hat'], ['beret', 'Beret'], ['orb', 'Bulb'], ['three_lobe', 'Tuft'], ['crown', 'Crown']],
+  eyes: [
+    ['cyclops', 'Single eye'],
+    ['clippo', 'Clippo'],
+    ['todd', 'Todd'],
+    ['swept_lids', 'Swept lids'],
+    ['oval', 'Oval'],
+    ['sparkle_capsules', 'Sparkle capsules'],
+    ['highlight_capsules', 'Highlight capsules'],
+    ['dots', 'Dots'],
+    ['double_highlights', 'Round highlights'],
+    ['round_inset', 'Round inset'],
+    ['crescent_inset', 'Crescent inset'],
+    ['sleepy_lids', 'Sleepy lids'],
+  ],
+  eyewear: [
+    ['none', 'None'],
+    ['monocle', 'Monocle'],
+    ['tall_oval_frames', 'Tall oval frames'],
+    ['separate_trapezoid_lenses', 'Separate trapezoid lenses'],
+    ['classic_sunglasses', 'Classic sunglasses'],
+    ['round_sunglasses', 'Round sunglasses'],
+  ],
+  accessory: [
+    ['headphones', 'Headphones'],
+    ['bow', 'Bow tie'],
+    ['beanie', 'Beanie'],
+    ['hat', 'Hat'],
+    ['beret', 'Beret'],
+    ['felipe_beret', 'Felipe’s beret'],
+    ['orb', 'Bulb'],
+    ['three_lobe', 'Tuft'],
+    ['crown', 'Crown'],
+  ],
 } as const;
 
-/** RGB swatches returned by the recovered engine's Color catalog. */
-export const CHARACTER_COLORS = {
-  pink: '#fa70ab', orchid: '#dd6adc', violet: '#a25bff', blue: '#4778ff', cyan: '#00b1ff',
-  teal: '#04bb9f', lime: '#b6d80b', yellow: '#ffcc38', coral: '#ff8066',
-} as const;
+export { CHARACTER_COLORS } from '../agent-avatar/character-colors';
