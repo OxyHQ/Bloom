@@ -298,6 +298,20 @@ layout/content-size callbacks update initial, resized and changing content
 extents before another scroll is needed. Existing measurement callbacks can be
 passed through its options. Pass only a processed animated handler in `handler`.
 
+A normal RN `onScroll` observer can also be supplied, for example
+`useScrollRestoration().onScroll`:
+
+```tsx
+const binding = useAnimatedScrollMetricsBinding({
+  handler: minimizeHandler,
+  onScroll: restoration.onScroll,
+});
+```
+
+Bloom bridges this optional observer to JS internally, with the native-event
+shape expected by RN callbacks. Without `onScroll`, metrics and animated
+consumers stay entirely on the UI thread; there is no per-frame JS bridge.
+
 Composition also works in the other direction:
 
 ```tsx

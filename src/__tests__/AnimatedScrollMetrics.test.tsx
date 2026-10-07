@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import type { NativeScrollEvent } from 'react-native';
+import * as Reanimated from 'react-native-reanimated';
 import { useAnimatedScrollHandler, type ScrollHandlerProcessed } from 'react-native-reanimated';
 
 // Reanimated's real processed handlers are non-callable objects. The global
@@ -9,6 +10,7 @@ jest.mock('react-native-reanimated', () => {
   const base = jest.requireActual('../../__mocks__/react-native-reanimated');
   const React = jest.requireActual('react');
   return { ...base,
+    runOnJS: jest.fn(base.runOnJS),
     useAnimatedScrollHandler: (listeners: Record<string, Function>) => {
       const context = React.useRef({}).current;
       return { listeners, context };
@@ -104,4 +106,33 @@ it('reports incorrect processed-handler use in the ordinary binding before an ev
   const error = jest.spyOn(console, 'error').mockImplementation(() => {});
   try { expect(() => render(<Misuse />)).toThrow('useAnimatedScrollMetricsBinding({ handler })'); }
   finally { error.mockRestore(); }
+});
+
+
+it('bridges a normal RN observer only when supplied, preserving the animated path', () => {
+  let binding!: Binding, metrics!: ScrollMetrics;
+  const onScroll = jest.fn();
+  const bridge = jest.mocked(Reanimated.runOnJS);
+  bridge.mockClear();
+  function Probe({ observe }: { observe: boolean }) {
+    binding = useAnimatedScrollMetricsBinding({ onScroll: observe ? onScroll : undefined });
+    metrics = useScrollMetricsValue()!;
+    return null;
+  }
+  const tree = (observe: boolean) => <ScrollMetricsProvider><Probe observe={observe} /></ScrollMetricsProvider>;
+  try {
+    const view = render(tree(false));
+    dispatch(binding.onScroll, 'onScroll', 80);
+    expect(metrics.scrollY.value).toBe(80);
+    expect(bridge).not.toHaveBeenCalled();
+    view.rerender(tree(true));
+    dispatch(binding.onScroll, 'onScroll', 120);
+    expect(metrics.scrollY.value).toBe(120);
+    expect(bridge).toHaveBeenCalledTimes(1);
+    expect(onScroll).toHaveBeenCalledWith(expect.objectContaining({ nativeEvent: expect.objectContaining({ contentOffset: { x: 0, y: 120 } }) }));
+    view.rerender(tree(false));
+    dispatch(binding.onScroll, 'onScroll', 160);
+    expect(metrics.scrollY.value).toBe(160);
+    expect(bridge).toHaveBeenCalledTimes(1);
+  } finally { bridge.mockClear(); }
 });
