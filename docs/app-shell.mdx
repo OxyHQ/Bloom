@@ -227,6 +227,21 @@ With a content panel, the reserved clearance stays inside its painted surface.
 In the compact full-width layout, bottom chrome also inherits that panel fill,
 so its fading backdrop does not introduce a strip of the outer page color.
 
+
+### Native safe-area ownership
+
+Use `<AppShell safeArea scroll="fixed" ...>` when the shell owns the whole
+native screen. The frame protects its top and side edges, including landscape
+notches, and keeps reveal navigation inside the same safe frame. Portaled
+navigation drawers use the device's original insets. Web geometry is unchanged;
+`safeArea` defaults to `false` for existing embedded shells.
+
+When bottom chrome is visible, the bottom-bar slot or floating action retains
+ownership of the bottom inset. Otherwise the frame reserves it. There is no
+second bottom inset around a bar. Set `safeArea={false}` on descendant
+`PageHeader` components because the shell already protects their top edge.
+The real `SafeAreaInsetsContext` remains intact for fullscreen dialogs.
+
 `topBarVisibility` / `bottomBarVisibility` are `compact` (the default — only
 while the nav is a drawer, the phone case the slots exist for) or `always`, for
 a bar that is part of the app at every width.

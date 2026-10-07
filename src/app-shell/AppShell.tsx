@@ -151,7 +151,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
       || props.primaryAction !== undefined || props.scroll === 'auto' || props.scroll === 'external';
     if (!adaptive) return <AppShellEngine {...props as AppShellEngineProps} />;
     const scroll = props.scroll ?? (Platform.OS === 'web' ? 'document' : 'auto');
-    const usesLayout = props.panel !== undefined || props.panelColorPreset !== undefined || props.variant !== undefined || props.aside !== undefined || props.list !== undefined || props.info !== undefined
+    const usesLayout = props.safeArea !== undefined || props.panel !== undefined || props.panelColorPreset !== undefined || props.variant !== undefined || props.aside !== undefined || props.list !== undefined || props.info !== undefined
       || props.contentWidth !== undefined || props.navigationAlign !== undefined || props.navigationGap !== undefined || props.drawer !== undefined
       || props.navFrom !== undefined || props.navExpandedFrom !== undefined || props.topBar !== undefined
       || props.bottomBar !== undefined || props.floatingAction !== undefined;

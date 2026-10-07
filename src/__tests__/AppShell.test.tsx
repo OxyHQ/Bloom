@@ -1011,3 +1011,67 @@ describe('separated split panels', () => {
     expect(screen.queryByTestId('panes-divider')).toBeNull();
   });
 });
+
+describe('AppShell native safe-area frame', () => {
+  const originalOS = ReactNative.Platform.OS;
+  const insets = { top: 47, right: 7, bottom: 34, left: 20 };
+  beforeEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'ios', configurable: true, writable: true });
+    setWidth(390);
+  });
+  afterEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: originalOS, configurable: true, writable: true });
+  });
+  function withInsets(ui: React.ReactElement) {
+    return renderIn(<SafeAreaInsetsContext.Provider value={insets}>{ui}</SafeAreaInsetsContext.Provider>);
+  }
+  function ReadInsets() {
+    const value = React.useContext(SafeAreaInsetsContext);
+    return <ReactNative.Text testID="device-insets">{JSON.stringify(value)}</ReactNative.Text>;
+  }
+
+  it.each(['dashboard', 'feed'] as const)('%s reveal keeps pages and navigation safe without charging the bar twice', variant => {
+    const view = withInsets(<AppShell variant={variant} safeArea scroll="fixed" drawer="reveal" drawerOpen
+      sidebar={{ items: NAV }} header={null} bottomBar={<ReadInsets />} testID="safe"><ReactNative.Text>Page</ReactNative.Text></AppShell>);
+    expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style)).toMatchObject({
+      paddingTop: 47, paddingLeft: 20, paddingRight: 7, paddingBottom: 0,
+    });
+    expect(resolvedStyle(view.getByTestId('safe-bottom-bar').props.style).paddingBottom).toBe(34);
+    expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({ paddingTop: 12, paddingBottom: 46 });
+    expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
+    if (variant === 'dashboard') {
+      fireEvent(view.getByTestId('safe-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 100 } } });
+      expect(resolvedStyle(view.getByTestId('safe-page').props.style).paddingBottom).toBe(112);
+    }
+  });
+
+  it('without bottom chrome the frame owns bottom, and topBar does not charge top again', () => {
+    const view = withInsets(<AppShell safeArea scroll="fixed" topBar={<ReactNative.Text>Header</ReactNative.Text>}
+      topBarVisibility="always" testID="safe"><ReadInsets /></AppShell>);
+    expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style).paddingBottom).toBe(34);
+    expect(resolvedStyle(view.getByTestId('safe-top-bar').props.style).paddingTop).toBe(0);
+    expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
+  });
+
+  it('portaled overlay navigation uses original top, bottom and landscape insets', () => {
+    const view = withInsets(<AppShell safeArea scroll="fixed" drawer="overlay" drawerOpen
+      sidebar={{ items: NAV }} testID="safe" />);
+    expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({
+      paddingTop: 59, paddingBottom: 46, paddingLeft: 32, paddingRight: 19,
+    });
+  });
+
+  it('safeArea is opt-in and has no effect on the web frame', () => {
+    const off = withInsets(<AppShell scroll="fixed" testID="safe" />);
+    expect(off.queryByTestId('safe-safe-area')).toBeNull();
+    off.unmount();
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true });
+    const web = withInsets(<AppShell safeArea scroll="fixed" testID="safe" />);
+    expect(web.queryByTestId('safe-safe-area')).toBeNull();
+  });
+
+  it('adaptive navigation still selects the safe-area engine', () => {
+    const view = withInsets(<AppShell safeArea scroll="auto" navigation={[]} testID="safe" />);
+    expect(view.getByTestId('safe-safe-area')).toBeTruthy();
+  });
+});

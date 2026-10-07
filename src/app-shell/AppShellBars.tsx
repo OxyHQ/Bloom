@@ -36,13 +36,13 @@ import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { Z_INDEX } from '../styles/z-index';
 
 /** The safe-area insets, or zeros outside a `SafeAreaProvider`. */
-export function useShellInsets(): { top: number; bottom: number } {
+export function useShellInsets(): { top: number; right: number; bottom: number; left: number } {
   // `useContext(SafeAreaInsetsContext)` rather than `useSafeAreaInsets()`: the
   // hook THROWS outside a provider, and `AppShell` is mounted at an app's root,
   // where making a previously-optional provider mandatory would be a breaking
   // change for every consumer that never had a bar to inset.
   const insets = useContext(SafeAreaInsetsContext);
-  return { top: insets?.top ?? 0, bottom: insets?.bottom ?? 0 };
+  return { top: insets?.top ?? 0, right: insets?.right ?? 0, bottom: insets?.bottom ?? 0, left: insets?.left ?? 0 };
 }
 
 /** Pinned to the bottom of the viewport (document scroll) or of the frame. */
@@ -152,6 +152,8 @@ export const AppShellFloatingAction = memo(AppShellFloatingActionComponent);
 AppShellFloatingAction.displayName = 'AppShellFloatingAction';
 
 export interface AppShellTopBarProps {
+  /** The enclosing safe frame may already own the top inset. */
+  insetTop?: number;
   children: React.ReactNode;
   onHeightChange?: (height: number) => void;
   doc: boolean;
@@ -167,11 +169,11 @@ export interface AppShellTopBarProps {
  * only as far as `top: 0`); in `container`/`fixed` and on native it is simply
  * outside the scroller, which pins it by construction.
  */
-const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({ children, doc, testID, onHeightChange }) => {
+const AppShellTopBarComponent: React.FC<AppShellTopBarProps> = ({ children, doc, testID, onHeightChange, insetTop }) => {
   const insets = useShellInsets();
   const pinned: WebCssStyle = doc ? { position: WEB_POSITION_STICKY, top: 0 } : {};
   return (
-    <View testID={testID} onLayout={event => onHeightChange?.(event.nativeEvent.layout.height)} style={[{ zIndex: Z_INDEX.floating, paddingTop: insets.top }, pinned]}>
+    <View testID={testID} onLayout={event => onHeightChange?.(event.nativeEvent.layout.height)} style={[{ zIndex: Z_INDEX.floating, paddingTop: insetTop ?? insets.top }, pinned]}>
       {children}
     </View>
   );
