@@ -42,7 +42,7 @@ export function useShellInsets(): { top: number; right: number; bottom: number; 
   // where making a previously-optional provider mandatory would be a breaking
   // change for every consumer that never had a bar to inset.
   const insets = useContext(SafeAreaInsetsContext);
-  return { top: insets?.top ?? 0, right: insets?.right ?? 0, bottom: insets?.bottom ?? 0, left: insets?.left ?? 0 };
+  return insets ?? { top: 0, right: 0, bottom: 0, left: 0 };
 }
 
 /** Pinned to the bottom of the viewport (document scroll) or of the frame. */

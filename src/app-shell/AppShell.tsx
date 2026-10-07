@@ -84,7 +84,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
       ) : null}
       <Screen navigationScope="shared" active={active} documentScroll={scroll === 'external'} testID={testID ? `${testID}-screen` : undefined} style={{ minWidth: 0 }} header={header ?? (title ? <PageHeader title={title} subtitle={breadcrumb} actions={actions} sticky={false} /> : null)} bottomBar={bottom} primaryAction={placement !== 'bottom' && primaryAction ? <Fab {...primaryAction} /> : undefined}>
         {scroll === 'auto' ? <ScreenScrollView style={{ flex: 1 }}>
-          <View style={{ width: '100%', maxWidth: contentMaxWidth, alignSelf: 'center', padding: 16, gap: 16 }}>{children}</View>
+          <View testID={testID ? `${testID}-content` : undefined} style={{ width: '100%', maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth, alignSelf: 'center', padding: 16, gap: 16 }}>{children}</View>
         </ScreenScrollView> : children}
         {overlay}
       </Screen>

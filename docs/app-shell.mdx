@@ -219,8 +219,12 @@ phone, and a negative margin is wrong the moment the page's padding changes.
   know its own width. It has no `compact`/`always` switch: a compose button is
   not phone chrome, so it is drawn whenever it is given — pass `null` to drop it.
 
-Both bars are MEASURED, and the content column reserves exactly their height, so
-the last row of a feed is never hidden behind them. Measured in Chrome at 390,
+Both bars are MEASURED. By default the content column reserves their height, so
+the last row of a feed is never hidden behind them. A dashboard with
+`reserveBottomBarSpace={false}` keeps the bottom bar over the full-height content,
+including with `scroll="fixed"`. Its scrollers should apply
+`useBottomEdgeInset()` from `@oxy.so/bloom/layout` as bottom content padding, so
+the final item can scroll clear while the page background continues underneath. Measured in Chrome at 390,
 scrolled to the page end: last item bottom `768`, action top `784`, bar top `844`.
 
 With a content panel, the reserved clearance stays inside its painted surface.
@@ -228,7 +232,7 @@ In the compact full-width layout, bottom chrome also inherits that panel fill,
 so its fading backdrop does not introduce a strip of the outer page color.
 
 
-### Native safe-area ownership
+**Native safe-area ownership.**
 
 Use `<AppShell safeArea scroll="fixed" ...>` when the shell owns the whole
 native screen. The frame protects its top and side edges, including landscape
@@ -680,3 +684,8 @@ ProOfferCard retains its animated complementary host and decorative artwork, wit
 The detail remains mounted while `showList` changes; hiding a pane explicitly unmounts that pane. Defaults match AppShell's split layout: list width 360 (range 280–520), info width 320, scrolling and resizing enabled. `showDetail` defaults to true; list/info visibility follows the supplied content. Set `paneScroll={false}` when routes or virtualized lists own their scrolling. The surrounding Bloom container must provide a bounded height.
 
 Use `variant="separated"` when each pane supplies its own `AiChatContainer`. Bloom inserts 12px transparent gutters and centers the existing resize handle in the list gutter; there is no extra surface around the panels. A single visible pane has no gutter. The default `joined` variant retains hairline dividers for panes inside one shared surface.
+
+To fill wide displays without a reading-column cap, set
+`contentMaxWidth="none"`. The default remains 1300. Dashboard reveal layouts
+honor an explicit `gutter`, including `gutter={0}` for edge-to-edge compact
+content; omitting it preserves the existing 12px frame and wider-screen top gap.

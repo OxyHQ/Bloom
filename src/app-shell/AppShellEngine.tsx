@@ -177,6 +177,10 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   // for every other shape.
   const gutter = gutterProp ?? (variant === 'dashboard' ? D.dashboardGutter : D.gutter);
   const columnGap = variant === 'dashboard' ? D.dashboardColumnGap : gutter;
+  // Historical reveal geometry stays the default; an explicit gutter owns
+  // every frame edge, including the old extra top gap at wider breakpoints.
+  const revealGutter = gutterProp ?? 12;
+  const revealTopGutter = gutterProp ?? (small ? 24 : 12);
 
   // The nav: `navExpandedFrom` decides which sidebar variant is drawn, and the
   // variant decides how early it can sit in flow (a rail is narrow enough at
@@ -298,9 +302,11 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const frameBottomInset = ownsSafeArea && !bottomChrome ? insets.bottom : 0;
   const navigationBottomInset = ownsSafeArea && bottomChrome ? insets.bottom : 0;
   const safeFrame = (node: React.ReactElement) => ownsSafeArea ? (
-    <View testID={testID ? `${testID}-safe-area` : undefined} style={{
+    <View {...dirProps} testID={testID ? `${testID}-safe-area` : undefined} style={{
       flex: 1, minHeight: 0, minWidth: 0,
-      paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right,
+      paddingTop: insets.top,
+      paddingInlineStart: rtl ? insets.right : insets.left,
+      paddingInlineEnd: rtl ? insets.left : insets.right,
       paddingBottom: frameBottomInset, backgroundColor: background,
     }}>{node}</View>
   ) : node;
@@ -381,7 +387,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
 
   const fill = fixed ? { flex: 1, minHeight: 0 } : null;
   const column = (
-    <View style={[{ width: '100%', maxWidth: contentMaxWidth, alignSelf: 'center', gap: 10 }, fill]}>
+    <View testID={testID ? `${testID}-content` : undefined} style={[{ width: '100%', maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth, alignSelf: 'center', gap: 10 }, fill]}>
       {headerNode}
       <View
         style={[
@@ -463,7 +469,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               style={[
                 flowSidebar.surface === 'docked'
                   ? { flexShrink: 0 }
-                  : { paddingTop: 12, paddingBottom: 12, paddingInlineStart: 12, flexShrink: 0 },
+                  : { paddingTop: revealGutter, paddingBottom: revealGutter, paddingInlineStart: revealGutter, flexShrink: 0 },
                 doc ? stickyRail(0) : null,
               ]}
             >
@@ -477,7 +483,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               pointerEvents={isOpen ? 'auto' : 'none'}
               // Fixed on web in document mode: the rail waits beneath the VIEWPORT,
               // wherever the page is scrolled to.
-              style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: 12, paddingBottom: 12 + navigationBottomInset, paddingInlineStart: 6 }}
+              style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: revealGutter, paddingBottom: revealGutter + navigationBottomInset, paddingInlineStart: revealGutter / 2 }}
             >
               <Animated.View style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}>
                 <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />
@@ -506,13 +512,13 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               // layered over the shorthand, and only when there is one.
               contentStyle={
                 contentReserve
-                  ? { paddingLeft: 12, paddingRight: 12, paddingTop: small ? 24 : 12, paddingBottom: 12 + contentReserve }
-                  : { padding: 12, paddingTop: small ? 24 : 12 }
+                  ? { paddingLeft: revealGutter, paddingRight: revealGutter, paddingTop: revealTopGutter, paddingBottom: revealGutter + contentReserve }
+                  : { padding: revealGutter, paddingTop: revealTopGutter }
               }
             >
               {column}
             </Scroller>
-            {asideColumn({ paddingTop: small ? 24 : 12, paddingBottom: 12, paddingInlineEnd: 12 })}
+            {asideColumn({ paddingTop: revealTopGutter, paddingBottom: revealGutter, paddingInlineEnd: revealGutter })}
             {!wide ? (
               <Animated.View
                 pointerEvents={isOpen ? 'auto' : 'none'}
@@ -804,10 +810,12 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
             pointerEvents="box-none"
             testID={testID ? `${testID}-navigation-drawer` : undefined}
             style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: 0, flexDirection: 'row',
-              paddingTop: 12 + (ownsSafeArea ? insets.top : 0),
-              paddingBottom: 12 + (ownsSafeArea ? insets.bottom : 0),
-              paddingLeft: 12 + (ownsSafeArea ? insets.left : 0),
-              paddingRight: 12 + (ownsSafeArea ? insets.right : 0),
+              ...(ownsSafeArea ? {
+                paddingTop: 12 + insets.top,
+                paddingBottom: 12 + insets.bottom,
+                paddingInlineStart: 12 + (rtl ? insets.right : insets.left),
+                paddingInlineEnd: 12 + (rtl ? insets.left : insets.right),
+              } : { padding: 12 }),
             }}
           >
             <View pointerEvents="auto" style={{ height: '100%' }}>
@@ -840,7 +848,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
         <View {...dirProps} testID={testID} onLayout={onLayout}
           style={[frame, { overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden', backgroundColor: background }, style]}>
           <View testID={testID ? `${testID}-navigation-drawer` : undefined} aria-hidden={!isOpen} pointerEvents={isOpen ? 'auto' : 'none'}
-            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: 12, paddingBottom: 12 + navigationBottomInset, paddingInlineStart: 6 }}>
+            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: revealGutter, paddingBottom: revealGutter + navigationBottomInset, paddingInlineStart: revealGutter / 2 }}>
             <Animated.View style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}>
               {drawerSidebar && <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />}
             </Animated.View>

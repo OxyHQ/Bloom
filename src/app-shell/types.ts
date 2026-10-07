@@ -132,8 +132,8 @@ export interface AppShellEngineProps {
    */
   asideCollapse?: 'stack' | 'hidden';
   children?: ReactNode;
-  /** The content column's max width. Defaults to 1300. */
-  contentMaxWidth?: number;
+  /** The content column's max width. Defaults to 1300; `none` fills the available width. */
+  contentMaxWidth?: number | 'none';
   /** Floating extras rendered last, e.g. a `ProOfferCard`. */
   overlay?: ReactNode;
   /** Controlled drawer state (below `lg`). */
@@ -372,7 +372,7 @@ export interface AppShellNavigationProps {
   actions?: ReactNode;
   header?: ReactNode;
   children?: ReactNode;
-  contentMaxWidth?: number;
+  contentMaxWidth?: number | 'none';
   overlay?: ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;

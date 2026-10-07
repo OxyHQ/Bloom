@@ -1034,7 +1034,7 @@ describe('AppShell native safe-area frame', () => {
     const view = withInsets(<AppShell variant={variant} safeArea scroll="fixed" drawer="reveal" drawerOpen
       sidebar={{ items: NAV }} header={null} bottomBar={<ReadInsets />} testID="safe"><ReactNative.Text>Page</ReactNative.Text></AppShell>);
     expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style)).toMatchObject({
-      paddingTop: 47, paddingLeft: 20, paddingRight: 7, paddingBottom: 0,
+      paddingTop: 47, paddingInlineStart: 20, paddingInlineEnd: 7, paddingBottom: 0,
     });
     expect(resolvedStyle(view.getByTestId('safe-bottom-bar').props.style).paddingBottom).toBe(34);
     expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({ paddingTop: 12, paddingBottom: 46 });
@@ -1057,7 +1057,7 @@ describe('AppShell native safe-area frame', () => {
     const view = withInsets(<AppShell safeArea scroll="fixed" drawer="overlay" drawerOpen
       sidebar={{ items: NAV }} testID="safe" />);
     expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({
-      paddingTop: 59, paddingBottom: 46, paddingLeft: 32, paddingRight: 19,
+      paddingTop: 59, paddingBottom: 46, paddingInlineStart: 32, paddingInlineEnd: 19,
     });
   });
 
@@ -1074,4 +1074,50 @@ describe('AppShell native safe-area frame', () => {
     const view = withInsets(<AppShell safeArea scroll="auto" navigation={[]} testID="safe" />);
     expect(view.getByTestId('safe-safe-area')).toBeTruthy();
   });
+});
+
+describe('AppShell full-width and explicit reveal gutters', () => {
+  it.each([false, true])('1920px: contentMaxWidth none removes the cap (adaptive=%s)', adaptive => {
+    setWidth(1920);
+    const view = renderIn(<AppShell testID="fluid" contentMaxWidth="none"
+      {...(adaptive ? { scroll: 'auto' as const, navigation: [] } : { scroll: 'fixed' as const })}>
+      <ReactNative.Text>Wide content</ReactNative.Text>
+    </AppShell>);
+    const content = resolvedStyle(view.getByTestId('fluid-content').props.style);
+    expect(content.width).toBe('100%');
+    expect(content.maxWidth).toBeUndefined();
+  });
+
+  it.each([390, 1024, 1920])('explicit zero gutter removes every dashboard reveal frame edge at %spx', width => {
+    setWidth(width);
+    const view = renderIn(<AppShell testID="flush" drawer="reveal" scroll="fixed" gutter={0}
+      sidebar={{ items: NAV }} header={null} bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}>
+      <ReactNative.Text>Page</ReactNative.Text>
+    </AppShell>);
+    expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({ padding: 0, paddingTop: 0 });
+    if (width < 1024) {
+      fireEvent(view.getByTestId('flush-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 80 } } });
+      expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({
+        paddingLeft: 0, paddingRight: 0, paddingTop: 0, paddingBottom: 80,
+      });
+      expect(resolvedStyle(view.getByTestId('flush-navigation-drawer', { includeHiddenElements: true }).props.style)).toMatchObject({
+        paddingTop: 0, paddingBottom: 0, paddingInlineStart: 0,
+      });
+    }
+  });
+});
+
+
+it('overlay bottom navigation leaves a zero-gutter mobile page at full height', () => {
+  setWidth(390);
+  const view = renderIn(<AppShell testID="overlay-frame" drawer="reveal" scroll="fixed" gutter={0}
+    header={null} sidebar={{ items: NAV }} reserveBottomBarSpace={false}
+    bottomBar={<ReactNative.Text>Overlay navigation</ReactNative.Text>}>
+    <ReactNative.Text>Full height page</ReactNative.Text>
+  </AppShell>);
+  fireEvent(view.getByTestId('overlay-frame-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 140 } } });
+  const page = resolvedStyle(view.getByTestId('overlay-frame-page').props.style);
+  expect(page.padding).toBe(0);
+  expect(page.paddingBottom ?? 0).toBe(0);
+  expect(resolvedStyle(view.getByTestId('overlay-frame-bottom-bar').props.style)).toMatchObject({ position: 'absolute', bottom: 0 });
 });

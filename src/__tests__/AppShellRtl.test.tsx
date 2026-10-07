@@ -27,6 +27,7 @@
 import React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { AppShell, NotificationBell, ProOfferCard } from '../app-shell';
 import { BottomBarBase } from '../bottom-bar/BottomBarBase';
@@ -325,5 +326,21 @@ describe('react-native-web is handed the direction at every root', () => {
     platform.OS = 'web';
     const web = renderIn(<Sidebar testID="sb" items={NAV} />);
     expect(web.getByTestId('sb').props.dir).toBeUndefined();
+  });
+});
+
+
+it('native safe-area keeps a physical landscape notch on the same side in RTL', () => {
+  platform.OS = 'ios';
+  setRtl(true);
+  setWidth(390);
+  const view = renderIn(<SafeAreaInsetsContext.Provider value={{ top: 47, bottom: 34, left: 20, right: 7 }}>
+    <AppShell safeArea testID="notch" drawerOpen sidebar={{ items: NAV }} />
+  </SafeAreaInsetsContext.Provider>);
+  expect(resolvedStyle(view.getByTestId('notch-safe-area').props.style)).toMatchObject({
+    paddingInlineStart: 7, paddingInlineEnd: 20,
+  });
+  expect(resolvedStyle(view.getByTestId('notch-navigation-drawer').props.style)).toMatchObject({
+    paddingInlineStart: 19, paddingInlineEnd: 32,
   });
 });
