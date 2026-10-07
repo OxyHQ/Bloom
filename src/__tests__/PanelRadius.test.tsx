@@ -20,23 +20,26 @@ const PaintComponent = (SurfacePaint as unknown as { type: React.ComponentType<R
 const originalOS = Platform.OS;
 afterEach(() => Object.defineProperty(Platform, 'OS', { value: originalOS, configurable: true }));
 
-it.each([undefined, 0, 12.5, 40])('shares radius %s across card sidebar, native panel paint and clip, and web masks', panelRadius => {
+it.each([undefined, 0, 12.5, 40])('preserves circular panel corners with shared radius %s across card sidebar, native panel paint and clip, and web masks', panelRadius => {
   Object.defineProperty(Platform, 'OS', { value: 'ios', configurable: true });
   const expected = panelRadius ?? 28;
   const sidebar = render(<Provider><BloomScope panelRadius={panelRadius}><Sidebar testID="sidebar" items={[]} /></BloomScope></Provider>);
-  expect(resolvedStyle(sidebar.getByTestId('sidebar').props.style)).toMatchObject({ borderRadius: expected, borderCurve: 'continuous' });
-  expect(sidebar.UNSAFE_getByType(PaintComponent).props.radius).toBe(expected);
+  expect(resolvedStyle(sidebar.getByTestId('sidebar').props.style)).toMatchObject({ borderRadius: expected, borderCurve: 'circular' });
+  expect(sidebar.UNSAFE_getByType(PaintComponent).props).toMatchObject({ radius: expected, shape: { curve: 'round' } });
   sidebar.unmount();
   const native = render(<Provider><BloomScope panelRadius={panelRadius}><NativePanel framed><Text>Content</Text></NativePanel></BloomScope></Provider>);
   for (const id of ['content-panel-surface', 'content-panel-content']) {
-    expect(resolvedStyle(native.getByTestId(id).props.style)).toMatchObject({ borderRadius: expected, borderCurve: 'continuous' });
+    expect(resolvedStyle(native.getByTestId(id).props.style)).toMatchObject({ borderRadius: expected, borderCurve: 'circular' });
   }
-  expect(native.UNSAFE_getByType(PaintComponent).props).toMatchObject({ radius: expected, shape: { curve: 'smooth' } });
+  expect(native.UNSAFE_getByType(PaintComponent).props).toMatchObject({ radius: expected, shape: { curve: 'round' } });
   native.unmount();
   Object.defineProperty(Platform, 'OS', { value: 'web', configurable: true });
+  const webSidebar = render(<Provider><BloomScope panelRadius={panelRadius}><Sidebar testID="sidebar" items={[]} /></BloomScope></Provider>);
+  expect(resolvedStyle(webSidebar.getByTestId('sidebar').props.style)).toMatchObject({ borderRadius: expected, cornerShape: 'round' });
+  webSidebar.unmount();
   const web = render(<Provider><BloomScope panelRadius={panelRadius}><WebPanel framed><Text>Content</Text></WebPanel></BloomScope></Provider>);
   for (const id of ['content-panel-surface', 'content-panel-content', 'content-panel-bleed-mask', 'content-panel-border-frame']) {
-    expect(resolvedStyle(web.getByTestId(id).props.style)).toMatchObject({ borderRadius: expected, cornerShape: 'squircle' });
+    expect(resolvedStyle(web.getByTestId(id).props.style)).toMatchObject({ borderRadius: expected, cornerShape: 'round' });
     expect(classNamesOn(web.getByTestId(id).props.style).join(' ')).not.toContain('radius-28');
   }
 });

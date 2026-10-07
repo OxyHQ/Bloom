@@ -256,6 +256,6 @@ last content without nested vertical scroll containers.
 
 The painted host delegates its fill to Surface: a 90%-opacity body with a subtle refracted edge on web, plus the shared sheen and rim. The host itself stays transparent to avoid painting twice. Explicit alpha colours retain their alpha; descendants receive the corresponding composited fill. Plain or unframed content keeps its existing layout behavior.
 
-Panel corners inherit `BloomScope panelRadius` (28 by default), matching card sidebars.
+Panel corners inherit `BloomScope panelRadius` (28 by default), matching card sidebars. Both preserve the circular corner shape of the content panel on web and native.
 `chrome="none"` removes the border, shadow and material rim/sheen while retaining the
 framed radius and content clipping. Use it for a reader pane that should have a plain fill.
