@@ -8,6 +8,7 @@ import { MailLabelChips, MailStar } from '../mail-list/parts';
 import { mailStrings, resolveMailPaint, visibleLabels } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
+import { space } from '../styles/tokens';
 
 
 import { useTheme } from '../theme/use-theme';
@@ -55,6 +56,7 @@ export function MailThread({
   expandedIds,
   onExpandedIdsChange,
   collapseAfter = 4,
+  messageGap = space.md,
   quickReply,
   header,
   strings,
@@ -144,7 +146,7 @@ export function MailThread({
         </View>
       ) : null}
       <Divider />
-      <View style={{ paddingTop: 4, paddingBottom: 4 }}>
+      <View testID={testID ? `${testID}-messages` : undefined} style={{ paddingTop: space.xs, paddingBottom: space.xs, gap: messageGap }}>
         {entries.map((entry) =>
           entry.kind === 'message' ? (
             <MailMessage

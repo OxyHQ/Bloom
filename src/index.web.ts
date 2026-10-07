@@ -209,6 +209,7 @@ export * from './patient-info-card';
 export * from './sidebar';
 export * from './app-shell/index.web';
 export * from './page-header';
+export * from './page-footer';
 export * from './notification-center';
 export * from './theme-toggle';
 export * from './settings-modal';

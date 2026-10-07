@@ -84,7 +84,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
       ) : null}
       <Screen navigationScope="shared" active={active} documentScroll={scroll === 'external'} testID={testID ? `${testID}-screen` : undefined} style={{ minWidth: 0 }} header={header ?? (title ? <PageHeader title={title} subtitle={breadcrumb} actions={actions} sticky={false} /> : null)} bottomBar={bottom} primaryAction={placement !== 'bottom' && primaryAction ? <Fab {...primaryAction} /> : undefined}>
         {scroll === 'auto' ? <ScreenScrollView style={{ flex: 1 }}>
-          <View style={{ width: '100%', maxWidth: contentMaxWidth, alignSelf: 'center', padding: 16, gap: 16 }}>{children}</View>
+          <View testID={testID ? `${testID}-content` : undefined} style={{ width: '100%', maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth, alignSelf: 'center', padding: 16, gap: 16 }}>{children}</View>
         </ScreenScrollView> : children}
         {overlay}
       </Screen>
@@ -151,7 +151,7 @@ export function createAppShell(BottomBar: ComponentType<BottomBarProps>, Fab: Co
       || props.primaryAction !== undefined || props.scroll === 'auto' || props.scroll === 'external';
     if (!adaptive) return <AppShellEngine {...props as AppShellEngineProps} />;
     const scroll = props.scroll ?? (Platform.OS === 'web' ? 'document' : 'auto');
-    const usesLayout = props.panel !== undefined || props.panelColorPreset !== undefined || props.variant !== undefined || props.aside !== undefined || props.list !== undefined || props.info !== undefined
+    const usesLayout = props.safeArea !== undefined || props.panel !== undefined || props.panelColorPreset !== undefined || props.variant !== undefined || props.aside !== undefined || props.list !== undefined || props.info !== undefined
       || props.contentWidth !== undefined || props.navigationAlign !== undefined || props.navigationGap !== undefined || props.drawer !== undefined
       || props.navFrom !== undefined || props.navExpandedFrom !== undefined || props.topBar !== undefined
       || props.bottomBar !== undefined || props.floatingAction !== undefined;

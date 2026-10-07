@@ -1,0 +1,60 @@
+# PageFooter
+
+Page-local actions float over a bounded scroller, above the app's bottom
+navigation. The background uses the same surface color and gradient as
+`PageHeader`, mirrored upward. Content continues behind the footer; the measured
+clearance lets the last item scroll fully above its controls.
+
+```tsx
+import { ScrollView, View } from 'react-native';
+import { Button, PageFooter, PageFooterProvider, usePageFooterInset } from '@oxy.so/bloom';
+
+function Message() {
+  const bottom = usePageFooterInset();
+  return (
+    <View style={{ flex: 1, minHeight: 0 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: bottom }}>
+        <MessageBody />
+      </ScrollView>
+      <PageFooter
+        actions={<><Button onPress={reply}>Reply</Button><Button onPress={forward}>Forward</Button></>}
+      />
+    </View>
+  );
+}
+
+export function MessagePane() {
+  return <PageFooterProvider><Message /></PageFooterProvider>;
+}
+```
+
+The provider adds no layout and belongs around one pane. `usePageFooterInset()`
+returns the footer's measured row height, its safe-area padding, and its bottom
+offset. Use it **instead of** adding the bottom navigation inset again. It
+starts with a 56px row estimate and updates when controls wrap or text scales;
+the decorative gradient tail does not reserve layout. Removing the footer
+(for example while replying) releases its clearance. If navigation still
+overlaps the scroller then, retain its `useBottomEdgeInset()` as a fallback.
+
+`bottomInset` defaults to Bloom's occupied bottom edge. `AppShell bottomBar`
+publishes that measurement, including the safe area. Pass `bottomInset={0}`
+when the containing frame already ends above navigation, or in a desktop pane
+whose bottom edge differs from the app's. When the shell owns safe-area
+handling, pass `safeArea={false}`. Otherwise the footer adds the native bottom
+safe area only when its bottom offset is zero; web requires `safeArea` opt-in.
+
+The footer reads the global bottom-edge registry but publishes its footprint
+only in its local provider. It never increases the inset it uses to position
+itself. Two panes have independent providers and measurements.
+
+`actions` inherits the surrounding `BloomScope` size and supports wrapping.
+`children` is an optional flexible slot before the actions. Group related
+controls with `ButtonGroup` when desired. The scrim and the space between
+controls let pointer events pass through. The gradient has no motion, including
+when reduced motion is enabled. `scrim="none"` removes it; `scrimColor` overrides
+the inherited opaque surface color. `style` and `testID` address the outer host.
+
+This is page chrome, always absolutely positioned inside a bounded parent.
+Place it beside the scroller, never inside its scrolling content. A purchase
+summary with price and booking controls belongs to `ActionBar`, which has a
+different opaque, in-flow layout contract.

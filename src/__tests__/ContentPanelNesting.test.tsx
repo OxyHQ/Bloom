@@ -69,7 +69,7 @@ describe('ContentPanel nesting guard', () => {
 });
 
 // The responsive framing breakpoint is configurable via `framedFrom` and is
-// resolved entirely with literal NativeWind classes. These assert the native
+// uses literal NativeWind border classes. These assert the native
 // surface picks up the pre-shipped literal bundle for each breakpoint value.
 describe('ContentPanel framedFrom breakpoint', () => {
   it('defaults to the md (768) named-screen bundle when omitted', () => {
@@ -80,7 +80,7 @@ describe('ContentPanel framedFrom breakpoint', () => {
         </ContentPanel>,
       ),
     );
-    expect(className).toContain('md:rounded-radius-28');
+    expect(className).toContain('md:border-border');
     expect(className).toContain('md:border');
     expect(className).not.toContain('min-[500px]:');
   });
@@ -93,7 +93,7 @@ describe('ContentPanel framedFrom breakpoint', () => {
         </ContentPanel>,
       ),
     );
-    expect(className).toContain('min-[500px]:rounded-radius-28');
+    expect(className).toContain('min-[500px]:border-border');
     expect(className).toContain('min-[500px]:border');
     expect(className).not.toContain('md:');
   });
@@ -107,7 +107,7 @@ describe('ContentPanel framedFrom breakpoint', () => {
           </ContentPanel>,
         ),
       ),
-    ).toContain('sm:rounded-radius-28');
+    ).toContain('sm:border');
     expect(
       surfaceClassName(
         render(
@@ -116,7 +116,7 @@ describe('ContentPanel framedFrom breakpoint', () => {
           </ContentPanel>,
         ),
       ),
-    ).toContain('lg:rounded-radius-28');
+    ).toContain('lg:border');
   });
 
   it('ignores framedFrom when framed is explicitly true (always framed)', () => {
@@ -128,7 +128,7 @@ describe('ContentPanel framedFrom breakpoint', () => {
       ),
     );
     // Always-framed uses unconditional (non-breakpoint) rounding + border.
-    expect(className).toContain('rounded-radius-28');
+    expect(className).toContain('border');
     expect(className).not.toContain('min-[500px]:');
     expect(className).not.toContain('md:');
   });

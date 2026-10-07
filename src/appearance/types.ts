@@ -8,4 +8,7 @@ export interface BloomAppearanceProps {
   size?: BloomSize;
   tone?: BloomTone;
 }
-export type BloomScopeProps = PropsWithChildren<BloomAppearanceProps>;
+export type BloomScopeProps = PropsWithChildren<BloomAppearanceProps & {
+  /** Shared corner radius for framed content panels and card sidebars. Defaults to 28. */
+  panelRadius?: number;
+}>;

@@ -1011,3 +1011,113 @@ describe('separated split panels', () => {
     expect(screen.queryByTestId('panes-divider')).toBeNull();
   });
 });
+
+describe('AppShell native safe-area frame', () => {
+  const originalOS = ReactNative.Platform.OS;
+  const insets = { top: 47, right: 7, bottom: 34, left: 20 };
+  beforeEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'ios', configurable: true, writable: true });
+    setWidth(390);
+  });
+  afterEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: originalOS, configurable: true, writable: true });
+  });
+  function withInsets(ui: React.ReactElement) {
+    return renderIn(<SafeAreaInsetsContext.Provider value={insets}>{ui}</SafeAreaInsetsContext.Provider>);
+  }
+  function ReadInsets() {
+    const value = React.useContext(SafeAreaInsetsContext);
+    return <ReactNative.Text testID="device-insets">{JSON.stringify(value)}</ReactNative.Text>;
+  }
+
+  it.each(['dashboard', 'feed'] as const)('%s reveal keeps pages and navigation safe without charging the bar twice', variant => {
+    const view = withInsets(<AppShell variant={variant} safeArea scroll="fixed" drawer="reveal" drawerOpen
+      sidebar={{ items: NAV }} header={null} bottomBar={<ReadInsets />} testID="safe"><ReactNative.Text>Page</ReactNative.Text></AppShell>);
+    expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style)).toMatchObject({
+      paddingTop: 47, paddingInlineStart: 20, paddingInlineEnd: 7, paddingBottom: 0,
+    });
+    expect(resolvedStyle(view.getByTestId('safe-bottom-bar').props.style).paddingBottom).toBe(34);
+    expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({ paddingTop: 12, paddingBottom: 46 });
+    expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
+    if (variant === 'dashboard') {
+      fireEvent(view.getByTestId('safe-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 100 } } });
+      expect(resolvedStyle(view.getByTestId('safe-page').props.style).paddingBottom).toBe(112);
+    }
+  });
+
+  it('without bottom chrome the frame owns bottom, and topBar does not charge top again', () => {
+    const view = withInsets(<AppShell safeArea scroll="fixed" topBar={<ReactNative.Text>Header</ReactNative.Text>}
+      topBarVisibility="always" testID="safe"><ReadInsets /></AppShell>);
+    expect(resolvedStyle(view.getByTestId('safe-safe-area').props.style).paddingBottom).toBe(34);
+    expect(resolvedStyle(view.getByTestId('safe-top-bar').props.style).paddingTop).toBe(0);
+    expect(view.getByTestId('device-insets').props.children).toBe(JSON.stringify(insets));
+  });
+
+  it('portaled overlay navigation uses original top, bottom and landscape insets', () => {
+    const view = withInsets(<AppShell safeArea scroll="fixed" drawer="overlay" drawerOpen
+      sidebar={{ items: NAV }} testID="safe" />);
+    expect(resolvedStyle(view.getByTestId('safe-navigation-drawer').props.style)).toMatchObject({
+      paddingTop: 59, paddingBottom: 46, paddingInlineStart: 32, paddingInlineEnd: 19,
+    });
+  });
+
+  it('safeArea is opt-in and has no effect on the web frame', () => {
+    const off = withInsets(<AppShell scroll="fixed" testID="safe" />);
+    expect(off.queryByTestId('safe-safe-area')).toBeNull();
+    off.unmount();
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true });
+    const web = withInsets(<AppShell safeArea scroll="fixed" testID="safe" />);
+    expect(web.queryByTestId('safe-safe-area')).toBeNull();
+  });
+
+  it('adaptive navigation still selects the safe-area engine', () => {
+    const view = withInsets(<AppShell safeArea scroll="auto" navigation={[]} testID="safe" />);
+    expect(view.getByTestId('safe-safe-area')).toBeTruthy();
+  });
+});
+
+describe('AppShell full-width and explicit reveal gutters', () => {
+  it.each([false, true])('1920px: contentMaxWidth none removes the cap (adaptive=%s)', adaptive => {
+    setWidth(1920);
+    const view = renderIn(<AppShell testID="fluid" contentMaxWidth="none"
+      {...(adaptive ? { scroll: 'auto' as const, navigation: [] } : { scroll: 'fixed' as const })}>
+      <ReactNative.Text>Wide content</ReactNative.Text>
+    </AppShell>);
+    const content = resolvedStyle(view.getByTestId('fluid-content').props.style);
+    expect(content.width).toBe('100%');
+    expect(content.maxWidth).toBeUndefined();
+  });
+
+  it.each([390, 1024, 1920])('explicit zero gutter removes every dashboard reveal frame edge at %spx', width => {
+    setWidth(width);
+    const view = renderIn(<AppShell testID="flush" drawer="reveal" scroll="fixed" gutter={0}
+      sidebar={{ items: NAV }} header={null} bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}>
+      <ReactNative.Text>Page</ReactNative.Text>
+    </AppShell>);
+    expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({ padding: 0, paddingTop: 0 });
+    if (width < 1024) {
+      fireEvent(view.getByTestId('flush-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 80 } } });
+      expect(resolvedStyle(view.getByTestId('flush-page').props.style)).toMatchObject({
+        paddingLeft: 0, paddingRight: 0, paddingTop: 0, paddingBottom: 80,
+      });
+      expect(resolvedStyle(view.getByTestId('flush-navigation-drawer', { includeHiddenElements: true }).props.style)).toMatchObject({
+        paddingTop: 0, paddingBottom: 0, paddingInlineStart: 0,
+      });
+    }
+  });
+});
+
+
+it('overlay bottom navigation leaves a zero-gutter mobile page at full height', () => {
+  setWidth(390);
+  const view = renderIn(<AppShell testID="overlay-frame" drawer="reveal" scroll="fixed" gutter={0}
+    header={null} sidebar={{ items: NAV }} reserveBottomBarSpace={false}
+    bottomBar={<ReactNative.Text>Overlay navigation</ReactNative.Text>}>
+    <ReactNative.Text>Full height page</ReactNative.Text>
+  </AppShell>);
+  fireEvent(view.getByTestId('overlay-frame-bottom-bar'), 'layout', { nativeEvent: { layout: { height: 140 } } });
+  const page = resolvedStyle(view.getByTestId('overlay-frame-page').props.style);
+  expect(page.padding).toBe(0);
+  expect(page.paddingBottom ?? 0).toBe(0);
+  expect(resolvedStyle(view.getByTestId('overlay-frame-bottom-bar').props.style)).toMatchObject({ position: 'absolute', bottom: 0 });
+});

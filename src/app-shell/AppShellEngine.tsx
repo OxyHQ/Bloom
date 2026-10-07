@@ -106,6 +106,7 @@ export function createAppShellEngine(
 ) {
 const AppShellComponent: React.FC<AppShellEngineProps> = ({
   variant = 'dashboard',
+  safeArea = false,
   navigationAlign = 'edge',
   navigationGap,
   asideGap,
@@ -166,6 +167,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const [asideHeight, setAsideHeight] = useState(0);
   const { width, onLayout } = useShellWidth();
   const insets = useShellInsets();
+  const ownsSafeArea = safeArea && Platform.OS !== 'web';
   const mode = resolveScrollMode(variant, scroll);
   const doc = mode === 'document';
   const fixed = mode === 'fixed';
@@ -175,6 +177,10 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   // for every other shape.
   const gutter = gutterProp ?? (variant === 'dashboard' ? D.dashboardGutter : D.gutter);
   const columnGap = variant === 'dashboard' ? D.dashboardColumnGap : gutter;
+  // Historical reveal geometry stays the default; an explicit gutter owns
+  // every frame edge, including the old extra top gap at wider breakpoints.
+  const revealGutter = gutterProp ?? 12;
+  const revealTopGutter = gutterProp ?? (small ? 24 : 12);
 
   // The nav: `navExpandedFrom` decides which sidebar variant is drawn, and the
   // variant decides how early it can sit in flow (a rail is narrow enough at
@@ -290,6 +296,24 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const showTopBar = topBar != null && barActive(topBarVisibility);
   const showBottomBar = bottomBar != null && barActive(bottomBarVisibility);
   const showFloatingAction = floatingAction != null;
+  // Preserve the real device insets for fullscreen dialogs and portals. Only
+  // the bounded shell consumes these edges; bottom chrome keeps its own inset.
+  const bottomChrome = showBottomBar || showFloatingAction;
+  const frameBottomInset = ownsSafeArea && !bottomChrome ? insets.bottom : 0;
+  const navigationBottomInset = ownsSafeArea && bottomChrome ? insets.bottom : 0;
+  const safeFrame = (node: React.ReactElement) => ownsSafeArea ? (
+    <View {...dirProps} testID={testID ? `${testID}-safe-area` : undefined} style={{
+      flex: 1, minHeight: 0, minWidth: 0,
+      paddingTop: insets.top,
+      paddingInlineStart: rtl ? insets.right : insets.left,
+      paddingInlineEnd: rtl ? insets.left : insets.right,
+      paddingBottom: frameBottomInset, backgroundColor: background,
+    }}>{node}</View>
+  ) : node;
+
+  const safeNavigation = (node: React.ReactElement) => navigationBottomInset ? (
+    <View style={{ flexShrink: 0, paddingBottom: navigationBottomInset }}>{node}</View>
+  ) : node;
   const [topBarHeight, setTopBarHeight] = useState(0);
   const [bottomBarHeight, setBottomBarHeight] = useState(0);
   const [floatingActionHeight, setFloatingActionHeight] = useState(0);
@@ -328,7 +352,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   );
 
   const topBarNode = showTopBar ? (
-    <AppShellTopBar doc={doc} onHeightChange={setTopBarHeight} testID={testID ? `${testID}-top-bar` : undefined}>
+    <AppShellTopBar insetTop={ownsSafeArea ? 0 : undefined} doc={doc} onHeightChange={setTopBarHeight} testID={testID ? `${testID}-top-bar` : undefined}>
       {topBar}
     </AppShellTopBar>
   ) : null;
@@ -363,7 +387,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
 
   const fill = fixed ? { flex: 1, minHeight: 0 } : null;
   const column = (
-    <View style={[{ width: '100%', maxWidth: contentMaxWidth, alignSelf: 'center', gap: 10 }, fill]}>
+    <View testID={testID ? `${testID}-content` : undefined} style={[{ width: '100%', maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth, alignSelf: 'center', gap: 10 }, fill]}>
       {headerNode}
       <View
         style={[
@@ -432,7 +456,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const veilStyle = useAnimatedStyle(() => ({ opacity: reveal.value }), [reveal]);
 
   if (drawerStyle === 'reveal' && variant === 'dashboard') {
-    return (
+    return safeFrame(
       <AppShellProvider value={shell}>
         <View
           {...dirProps}
@@ -445,20 +469,21 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               style={[
                 flowSidebar.surface === 'docked'
                   ? { flexShrink: 0 }
-                  : { paddingTop: 12, paddingBottom: 12, paddingInlineStart: 12, flexShrink: 0 },
+                  : { paddingTop: revealGutter, paddingBottom: revealGutter, paddingInlineStart: revealGutter, flexShrink: 0 },
                 doc ? stickyRail(0) : null,
               ]}
             >
-              <Sidebar {...flowSidebar} />
+              {safeNavigation(<Sidebar {...flowSidebar} />)}
             </View>
           ) : null}
           {drawerAvailable && drawerSidebar ? (
             <View
+              testID={testID ? `${testID}-navigation-drawer` : undefined}
               aria-hidden={!isOpen}
               pointerEvents={isOpen ? 'auto' : 'none'}
               // Fixed on web in document mode: the rail waits beneath the VIEWPORT,
               // wherever the page is scrolled to.
-              style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingInlineStart: 6 }}
+              style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: revealGutter, paddingBottom: revealGutter + navigationBottomInset, paddingInlineStart: revealGutter / 2 }}
             >
               <Animated.View style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}>
                 <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />
@@ -487,13 +512,13 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               // layered over the shorthand, and only when there is one.
               contentStyle={
                 contentReserve
-                  ? { paddingLeft: 12, paddingRight: 12, paddingTop: small ? 24 : 12, paddingBottom: 12 + contentReserve }
-                  : { padding: 12, paddingTop: small ? 24 : 12 }
+                  ? { paddingLeft: revealGutter, paddingRight: revealGutter, paddingTop: revealTopGutter, paddingBottom: revealGutter + contentReserve }
+                  : { padding: revealGutter, paddingTop: revealTopGutter }
               }
             >
               {column}
             </Scroller>
-            {asideColumn({ paddingTop: small ? 24 : 12, paddingBottom: 12, paddingInlineEnd: 12 })}
+            {asideColumn({ paddingTop: revealTopGutter, paddingBottom: revealGutter, paddingInlineEnd: revealGutter })}
             {!wide ? (
               <Animated.View
                 pointerEvents={isOpen ? 'auto' : 'none'}
@@ -758,15 +783,15 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     navInFlow && flowSidebar ? (
       doc ? (
         <View testID={testID ? `${testID}-navigation` : undefined} style={stickyRail(dockedNav || plainFrame ? 0 : gutter)}>
-          <Sidebar {...flowSidebar} />
+          {safeNavigation(<Sidebar {...flowSidebar} />)}
         </View>
       ) : canvas && !dockedNav ? (
         // The canvas row has no padding of its own, so the nav states its.
         <View style={{ paddingTop: gutter, paddingBottom: gutter, paddingInlineStart: gutter, flexShrink: 0 }}>
-          <Sidebar {...flowSidebar} />
+          {safeNavigation(<Sidebar {...flowSidebar} />)}
         </View>
       ) : (
-        <Sidebar {...flowSidebar} />
+        safeNavigation(<Sidebar {...flowSidebar} />)
       )
     ) : null;
 
@@ -783,7 +808,15 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           <View
             {...dirProps}
             pointerEvents="box-none"
-            style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: 0, flexDirection: 'row', padding: 12 }}
+            testID={testID ? `${testID}-navigation-drawer` : undefined}
+            style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: 0, flexDirection: 'row',
+              ...(ownsSafeArea ? {
+                paddingTop: 12 + insets.top,
+                paddingBottom: 12 + insets.bottom,
+                paddingInlineStart: 12 + (rtl ? insets.right : insets.left),
+                paddingInlineEnd: 12 + (rtl ? insets.left : insets.right),
+              } : { padding: 12 }),
+            }}
           >
             <View pointerEvents="auto" style={{ height: '100%' }}>
               <Sidebar {...drawerSidebar} mobile onClose={() => setOpen(false)} />
@@ -810,12 +843,12 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   };
 
   if (variant === 'feed' && drawerStyle === 'reveal' && drawerAvailable) {
-    return (
+    return safeFrame(
       <AppShellProvider value={shell}>
         <View {...dirProps} testID={testID} onLayout={onLayout}
           style={[frame, { overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden', backgroundColor: background }, style]}>
-          <View aria-hidden={!isOpen} pointerEvents={isOpen ? 'auto' : 'none'}
-            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingInlineStart: 6 }}>
+          <View testID={testID ? `${testID}-navigation-drawer` : undefined} aria-hidden={!isOpen} pointerEvents={isOpen ? 'auto' : 'none'}
+            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, insetInlineStart: 0, width: 272, paddingTop: revealGutter, paddingBottom: revealGutter + navigationBottomInset, paddingInlineStart: revealGutter / 2 }}>
             <Animated.View style={[{ height: '100%', width: 260, transformOrigin: railOrigin }, railStyle]}>
               {drawerSidebar && <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />}
             </Animated.View>
@@ -850,7 +883,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   // edge without escaping the frame's padding. Without one the root stays the
   // row it has always been, so nothing about an existing shell moves.
   if (topBarNode) {
-    return (
+    return safeFrame(
       <AppShellProvider value={shell}>
         <View
           {...dirProps}
@@ -871,7 +904,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     );
   }
 
-  return (
+  return safeFrame(
     <AppShellProvider value={shell}>
       <View {...dirProps} testID={testID} onLayout={onLayout} style={[frame, rowStyle, style]}>
         {navRegion}

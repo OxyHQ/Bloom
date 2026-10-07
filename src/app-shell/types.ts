@@ -68,6 +68,14 @@ export type AppShellBarVisibility = 'compact' | 'always';
 
 export interface AppShellEngineProps {
   /**
+   * Native: keep the shell, navigation and pages inside the device's safe area.
+   * The bottom-bar slot still owns its bottom inset; without bottom chrome the
+   * frame reserves it. Use `safeArea={false}` on descendant PageHeaders because
+   * the frame already owns their top edge. Device insets remain available to
+   * dialogs and other portaled surfaces. Defaults to false; no effect on web.
+   */
+  safeArea?: boolean;
+  /**
    * The layout shape. Defaults to `dashboard` — the behaviour this component
    * had before variants existed, down to the pixel.
    */
@@ -124,8 +132,8 @@ export interface AppShellEngineProps {
    */
   asideCollapse?: 'stack' | 'hidden';
   children?: ReactNode;
-  /** The content column's max width. Defaults to 1300. */
-  contentMaxWidth?: number;
+  /** The content column's max width. Defaults to 1300; `none` fills the available width. */
+  contentMaxWidth?: number | 'none';
   /** Floating extras rendered last, e.g. a `ProOfferCard`. */
   overlay?: ReactNode;
   /** Controlled drawer state (below `lg`). */
@@ -364,7 +372,7 @@ export interface AppShellNavigationProps {
   actions?: ReactNode;
   header?: ReactNode;
   children?: ReactNode;
-  contentMaxWidth?: number;
+  contentMaxWidth?: number | 'none';
   overlay?: ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;
