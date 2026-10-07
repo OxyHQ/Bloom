@@ -144,3 +144,8 @@ All surfaces come from the theme ramps (`button/shared`): background/secondary i
 Use the imperative control for guarded flows. External changes to controlled `open` or `page`, and parent unmounts, remain the caller's authority and are not vetoed. Preserve the application's router leave guard as well when navigation can unmount the modal. The guard should read the application's completion state; the modal never stores recovery phrases or other sensitive content.
 
 The modal uses the shared Surface gradient and rim over its existing full backing. It publishes that backing to nested controls through the surface context and web CSS variable; the navigation rail publishes its own secondary backing. Neither replaces the modal’s layout, scrolling or overlay behavior.
+
+A `SettingsPageSection` can provide `emptyState: EmptyStateProps`. General and Profile
+pages render that EmptyState inside the section card only when `rows` is empty,
+retaining the section heading, description and action. The compact variant is the
+default; the section can override it and supply its own illustration and actions.

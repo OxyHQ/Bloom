@@ -2,6 +2,7 @@ import type { AppColorName } from '../theme/color-presets';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
 import type { ContentPanelFramedBreakpoint } from '../content-panel/types';
 import type { NotificationCenterItem, NotificationCenterTab } from '../notification-center/types';
 import type { SidebarProps } from '../sidebar/types';
@@ -387,6 +388,10 @@ export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> & AppShellNaviga
 
 /** A bounded list/detail/info layout, independent of navigation or surfaces. */
 export interface AppShellSplitPanesProps {
+  /** Each visible pane isolates render errors by default. false delegates to an outer boundary. */
+  listErrorBoundary?: false | PanelErrorBoundaryOptions;
+  detailErrorBoundary?: false | PanelErrorBoundaryOptions;
+  infoErrorBoundary?: false | PanelErrorBoundaryOptions;
   /** Joined uses hairline dividers (default); separated leaves a 12px gutter for independent panel surfaces. */
   variant?: 'joined' | 'separated';
   list?: ReactNode;

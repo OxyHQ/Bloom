@@ -84,6 +84,15 @@ const BLOOM_CHIP_CSS = interactiveWebCss({
   hover: { declarations: 'opacity: 0.9;' },
   outlineOffset: 2,
   extraRules: `
+/* The removable pill contains two sibling controls. Draw one exterior focus ring. */
+[data-bloom-chip-group]:has(:focus-visible) {
+  outline: 2px solid var(--bloom-chip-ring);
+  outline-offset: 2px;
+}
+[data-bloom-chip-group] [data-bloom-chip]:focus-visible {
+  outline: none;
+}
+
 /* The rung with a minWidth ("Any", "1", "8+" in a counts row) centres its
    label. The style prop cannot say so: the reset above is an adopted sheet and
    wins over react-native-web's atomic classes, so it has to be said here too. */
@@ -214,7 +223,9 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   const removeLabel = closeLabel ?? (typeof children === 'string' ? `Remove ${children}` : 'Remove');
   const closeButton = onClose ? (
     <Pressable
-      onPress={onClose}
+      onPress={(event) => { event.stopPropagation(); onClose(); }}
+      disabled={disabled}
+      aria-disabled={disabled || undefined}
       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
       accessibilityLabel={removeLabel}
       accessibilityRole="button"
@@ -235,7 +246,6 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
         children
       )}
       {endIcon != null ? <View style={iconSlotStyle}>{endIcon}</View> : null}
-      {closeButton}
     </>
   );
 
@@ -256,9 +266,9 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
           ? { accessibilityState: { selected, disabled }, 'aria-selected': selected }
           : { accessibilityState: { disabled, selected }, 'aria-pressed': selected };
 
-    return (
+    const button = (
       <StyledPressable
-        className={className}
+        className={onClose ? undefined : className}
         ref={ref}
         // The DOM hook the adopted sheet above hangs off.
         //
@@ -286,7 +296,7 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
               ...(onKeyDown ? { onKeyDown } : null),
             } as Record<string, unknown>)
           : {})}
-        style={[
+        style={onClose ? { flexGrow: 1, flexShrink: 1, alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', gap: geometry.iconGap, borderWidth: 0, backgroundColor: 'transparent', padding: 0, minWidth: 0 } : [
           containerStyle,
           disabled && { opacity: 0.5 },
           hovered && !disabled && paint.hoveredBorder ? { borderColor: paint.hoveredBorder } : null,
@@ -312,6 +322,16 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
         {content}
       </StyledPressable>
     );
+    if (!onClose) return button;
+    // Selection and removal are sibling controls, never nested buttons.
+    // The shared outer pill owns layout classes and paint; the ref still targets selection.
+    return <StyledView
+      className={className}
+      {...(IS_WEB ? { dataSet: { bloomChipGroup: '' } } : {})}
+      style={[containerStyle, disabled && { opacity: 0.5 },
+        hovered && !disabled && paint.hoveredBorder ? { borderColor: paint.hoveredBorder } : null,
+        pressed && !disabled && { backgroundColor: paint.pressedBackground }, style]}
+    >{button}{closeButton}</StyledView>;
   }
 
   return (
@@ -323,6 +343,7 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
       testID={testID}
     >
       {content}
+      {closeButton}
     </StyledView>
   );
 });

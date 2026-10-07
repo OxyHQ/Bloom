@@ -689,3 +689,25 @@ To fill wide displays without a reading-column cap, set
 `contentMaxWidth="none"`. The default remains 1300. Dashboard reveal layouts
 honor an explicit `gutter`, including `gutter={0}` for edge-to-edge compact
 content; omitting it preserves the existing 12px frame and wider-screen top gap.
+
+### Pane error recovery
+
+`AppShellSplitPanes` isolates list, detail and info rendering failures independently.
+The default localized, themed EmptyState offers retry while the other panes and
+shell navigation keep working. Pass options per pane to customize the presentation
+and clear a failed pane when navigation changes:
+
+```tsx
+<AppShellSplitPanes
+  list={<MessageList />}
+  detail={<MessageRoute />}
+  detailErrorBoundary={{
+    resetKey: pathname,
+    emptyState: { illustration: <BrandSticker />, title: 'Cannot open this message' },
+  }}
+/>
+```
+
+`listErrorBoundary`, `detailErrorBoundary` and `infoErrorBoundary` accept
+`PanelErrorBoundaryOptions` or `false` to disable local recovery. These boundaries
+catch render/lifecycle errors; expected request failures remain normal content state.

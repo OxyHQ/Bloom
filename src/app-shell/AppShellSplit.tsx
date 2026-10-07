@@ -18,6 +18,8 @@ import React, { memo, useCallback, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';
+import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
+import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
 import { Z_INDEX } from '../styles/z-index';
 import { space } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
@@ -31,29 +33,33 @@ import { APP_SHELL_DEFAULTS as D } from './constants';
 function Pane({
   children,
   scroll,
+  errorBoundary,
   style,
   testID,
 }: {
   children: React.ReactNode;
   scroll: boolean;
+  errorBoundary?: false | PanelErrorBoundaryOptions;
   style: React.ComponentProps<typeof View>['style'];
   testID?: string;
 }) {
+  const content = scroll ? (
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+      {children}
+    </ScrollView>
+  ) : <View style={{ flex: 1, minHeight: 0 }}>{children}</View>;
   return (
     <View testID={testID} style={[{ minWidth: 0, alignSelf: 'stretch' }, style]}>
-      {scroll ? (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-          {children}
-        </ScrollView>
-      ) : (
-        <View style={{ flex: 1, minHeight: 0 }}>{children}</View>
-      )}
+      {errorBoundary === false ? content : <PanelErrorBoundary {...errorBoundary}>{content}</PanelErrorBoundary>}
     </View>
   );
 }
 
 const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   variant = 'joined',
+  listErrorBoundary,
+  detailErrorBoundary,
+  infoErrorBoundary,
   list,
   detail,
   info,
@@ -120,6 +126,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
       {showList ? (
         <Pane
           testID={testID ? `${testID}-pane-list` : undefined}
+          errorBoundary={listErrorBoundary}
           scroll={paneScroll}
           style={solo ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 } : { width, flexShrink: 0 }}
         >
@@ -148,6 +155,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
       {showDetail ? (
         <Pane
           testID={testID ? `${testID}-pane-detail` : undefined}
+          errorBoundary={detailErrorBoundary}
           scroll={paneScroll}
           style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}
         >
@@ -158,6 +166,7 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
       {showInfo ? (
         <Pane
           testID={testID ? `${testID}-pane-info` : undefined}
+          errorBoundary={infoErrorBoundary}
           scroll={paneScroll}
           style={solo ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 } : { width: infoWidth, flexShrink: 0 }}
         >

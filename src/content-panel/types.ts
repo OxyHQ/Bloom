@@ -1,4 +1,5 @@
 import React from 'react';
+import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
 /**
@@ -17,6 +18,8 @@ export type ContentPanelChrome = 'elevated' | 'border' | 'none';
 
 export interface ContentPanelProps {
   children: React.ReactNode;
+  /** Opt in to local themed error recovery. Split panes already provide their own boundaries. */
+  errorBoundary?: boolean | PanelErrorBoundaryOptions;
   /**
    * Framing mode. Tri-state, managed by Bloom — no consumer
    * breakpoint hook needed:

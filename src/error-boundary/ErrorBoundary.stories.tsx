@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ErrorBoundary } from './index';
+import { ErrorBoundary, PanelErrorBoundary } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof ErrorBoundary> = {
@@ -102,4 +102,9 @@ export const CustomFallback: Story = {
       )}
     </Harness>
   ),
+};
+
+/** Themed local recovery; toggling the route clears errors without remounting healthy content. */
+export const PanelRecovery: Story = {
+  render: () => <Harness>{armed => <PanelErrorBoundary resetKey={String(armed)}><Bomb armed={armed} /></PanelErrorBoundary>}</Harness>,
 };

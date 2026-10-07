@@ -1,3 +1,4 @@
+import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
  * Native variant of `ContentPanel` — the framed app-content surface.
@@ -78,6 +79,7 @@ const RESPONSIVE_CONTENT: Record<ContentPanelFramedBreakpoint, string> = {
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   children,
+  errorBoundary = false,
   framed,
   framedFrom = 768,
   fill = false,
@@ -155,7 +157,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           {/* The panel is a surface: everything inside is sitting on rung 1,
               painted in the colour this panel actually paints. */}
           <SurfaceLevelProvider level={1} fill={publishedFill}>
-            {children}
+            {errorBoundary === false ? children : <PanelErrorBoundary {...(errorBoundary === true ? {} : errorBoundary)}>{children}</PanelErrorBoundary>}
           </SurfaceLevelProvider>
         </StyledView>
       </StyledView>

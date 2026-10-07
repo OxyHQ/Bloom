@@ -1,4 +1,5 @@
 import type { ReactNode, ErrorInfo } from 'react';
+import type { EmptyStateProps } from '../empty-state/types';
 
 /**
  * Context passed to a render-prop `fallback` when an ErrorBoundary catches an
@@ -38,6 +39,8 @@ export type ErrorBoundaryFallback =
 
 export interface ErrorBoundaryProps {
   children: ReactNode;
+  /** Changing this identity resets a failed boundary without remounting healthy children. */
+  resetKey?: string | number;
   /**
    * Custom fallback UI to render on error. Accepts either:
    *  - a ReactNode (static — same UI on every error), or
@@ -56,4 +59,19 @@ export interface ErrorBoundaryProps {
   /** Callback when an error is caught */
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   testID?: string;
+}
+
+/** Recovery UI for a panel inside a healthy Bloom provider. */
+export interface PanelErrorBoundaryOptions {
+  resetKey?: ErrorBoundaryProps['resetKey'];
+  onError?: ErrorBoundaryProps['onError'];
+  fallback?: ErrorBoundaryFallback;
+  /** Defaults to localized error wording and a retry action. A supplied action runs before retry. */
+  emptyState?: EmptyStateProps;
+  /** Override inherited bottom chrome clearance when the parent has already reserved it. */
+  bottomInset?: number;
+}
+
+export interface PanelErrorBoundaryProps extends PanelErrorBoundaryOptions {
+  children: ReactNode;
 }
