@@ -37,6 +37,12 @@ export interface MediaSurfaceImage {
   kind?: 'image';
   /** Source URI rendered as the image. */
   uri: string;
+  /**
+   * Already-visible thumbnail, shown immediately while `uri` loads. Use the
+   * same URL as the origin image so its decoded memory-cache entry is reused.
+   * It remains visible if the full image fails; sharing still uses `uri`.
+   */
+  previewUri?: string;
 }
 
 /**

@@ -864,7 +864,7 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     expect(hasFlight('a')).toBe(false);
   });
 
-  it('a destination IMAGE surface hands off on load, and its poster never does', () => {
+  it('a destination IMAGE surface hands off on display, and its poster never does', () => {
     // Both arms report the same fact, because a flight can land on either. But
     // on the VIDEO arm the poster is scenery — handing off on it would release
     // the flying copy while the destination still had no video.
@@ -874,9 +874,11 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
 
     const image = render(<MediaSurface content={IMAGE} flightId="a" />);
     const [imageNode] = hostNodes(image.toJSON()).filter((n) => n.type === 'ExpoImage');
-    expect(typeof imageNode?.props?.onLoad).toBe('function');
+    expect(imageNode?.props?.onLoad).toBeUndefined();
+    expect(typeof imageNode?.props?.onDisplay).toBe('function');
+    expect(hasFlight('a')).toBe(true);
     act(() => {
-      (imageNode?.props?.onLoad as () => void)();
+      (imageNode?.props?.onDisplay as () => void)();
     });
     expect(hasFlight('a')).toBe(false);
 
@@ -885,7 +887,7 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     notifySurfaceSettled('b');
     const video = render(<MediaSurface content={VIDEO} flightId="b" />);
     const [poster] = hostNodes(video.toJSON()).filter((n) => n.type === 'ExpoImage');
-    expect(poster?.props?.onLoad).toBeUndefined();
+    expect(poster?.props?.onDisplay).toBeUndefined();
     expect(hasFlight('b')).toBe(true);
   });
 });

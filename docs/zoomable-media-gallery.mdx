@@ -53,6 +53,22 @@ Give a video an `aspectRatio`. Unlike an image there is nothing to probe, so
 without one the page opens at the default ratio and resizes when the first
 frame arrives.
 
+For an image opened from a thumbnail, pass that exact URL as `previewUri`:
+
+```tsx
+gallery.current?.open([
+  { uri: fullImageUrl, previewUri: thumbnailUrl, aspectRatio: 1.5 },
+], 0, thumbnailRect);
+```
+
+The viewer reuses the thumbnail from the image cache immediately and loads the
+full image eagerly at high priority. Expo Image replaces the preview when the
+full image is ready, with a short crossfade; a failed full image keeps its
+preview. Both images use the same `contain` fit, so the upgrade does not crop or
+resize the picture. Supply the intrinsic aspect ratio to avoid a size probe.
+Inactive pages and strip tiles use the thumbnail; opening a gallery does not
+download every full image. Sharing still uses the full `uri`.
+
 ## Exactly one video view is mounted
 
 The ACTIVE page. Every other page, and every thumbnail-strip tile, renders the
