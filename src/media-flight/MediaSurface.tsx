@@ -208,12 +208,14 @@ export const MediaSurface = memo(function MediaSurface({
   // Both arms report the same fact — "there is a picture here now" — because the
   // destination of a flight can be either, and a caller should not have to know
   // which one it wired. expo-video raises `onFirstFrameRender` from `loadeddata`
-  // on web; expo-image raises `onLoad` once the source is decoded and displayed.
+  // on web; expo-image's `onDisplay` means the image has actually been painted
+  // (native `onLoad` can run before that first frame).
   const reportLive = useCallback(() => {
     if (flightId !== undefined) handOffFlight(flightId);
   }, [flightId]);
 
   const still = content.kind === 'video' ? content.poster : content.uri;
+  const preview = content.kind === 'video' ? undefined : content.previewUri;
   // Loaded for the video arm only, and only when Bloom is the one building the
   // element — an image surface must never make an app resolve an optional
   // native peer, and neither must a consumer that brought its own view.
@@ -237,15 +239,22 @@ export const MediaSurface = memo(function MediaSurface({
         // `poster` attribute and an Android TextureView runs with the ExoPlayer
         // shutter off, so neither draws anything opaque over this.
         <Image
+          key={still}
           source={{ uri: still }}
+          placeholder={preview && preview !== still ? { uri: preview } : undefined}
+          placeholderContentFit={contentFit}
+          recyclingKey={still}
           contentFit={contentFit}
           style={StyleSheet.absoluteFill}
-          transition={0}
+          cachePolicy="memory-disk"
+          priority="high"
+          loading="eager"
+          transition={preview && preview !== still ? 120 : 0}
           accessibilityLabel={accessibilityLabel}
           // Only the arm that IS the picture reports being live. On the video
           // arm the poster is scenery: handing off on it would release the
           // flying surface while the destination still had no video.
-          onLoad={content.kind === 'video' ? undefined : reportLive}
+          onDisplay={content.kind === 'video' ? undefined : reportLive}
           {...webDraggableProps}
         />
       )}
@@ -327,13 +336,16 @@ export function MediaPoster({
   contentFit?: 'contain' | 'cover';
   accessibilityLabel?: string;
 }) {
-  const uri = content.kind === 'video' ? content.poster : content.uri;
+  const uri = content.kind === 'video' ? content.poster : content.previewUri || content.uri;
   if (uri === undefined) return <EmptyMediaSurface style={style} />;
   return (
     <Image
+      key={uri}
       source={{ uri }}
+      recyclingKey={uri}
       contentFit={contentFit}
       style={style}
+      cachePolicy="memory-disk"
       transition={0}
       accessibilityLabel={accessibilityLabel}
       {...webDraggableProps}
