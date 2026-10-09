@@ -1,5 +1,5 @@
 import React, { memo, useEffect } from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, type View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { SEGMENTED_THUMB_EASE_BEZIER, SEGMENTED_THUMB_MS } from '../button/shared';
+import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -68,6 +69,7 @@ function ModeRow({
   testID?: string;
 }) {
   const palette = useSidebarPalette();
+  const tooltipRef = useBrowserTitle<View>(collapsed ? mode.label : undefined);
   const { state: hovered, onIn, onOut } = useInteractionState();
   const Icon = mode.icon;
   const foreground = selected ? palette.text : palette.textSecondary;
@@ -96,7 +98,7 @@ function ModeRow({
   return (
     <AnimatedPressable
       {...webHook('ring')}
-      {...(IS_WEB && collapsed ? { title: mode.label } : null)}
+      ref={tooltipRef}
       role="radio"
       aria-checked={selected}
       accessibilityState={{ checked: selected }}

@@ -150,6 +150,9 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
     onBlur,
     labels: labelOverrides,
     style,
+    barStyle,
+    inputStyle,
+    sendIcon: SendIcon = RiSendPlaneLine,
     testID,
     accessibilityLabel,
   }: ChatComposerProps) {
@@ -327,7 +330,7 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
         ) : null}
 
         {recorder ?? (
-          <View style={bar} testID={testID ? `${testID}-bar` : undefined}>
+          <View style={[bar, barStyle]} testID={testID ? `${testID}-bar` : undefined}>
             {notice !== undefined ? (
               <View
                 style={{
@@ -395,7 +398,7 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                     selectionColor={palette.accent}
                     cursorColor={palette.accent}
                     scrollEnabled={height >= maxHeight}
-                    style={{
+                    style={[{
                       width: '100%',
                       height,
                       maxHeight,
@@ -405,7 +408,7 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                       fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
                       color: disabled ? palette.textSecondary : palette.text,
                       backgroundColor: 'transparent',
-                    }}
+                    }, inputStyle]}
                     testID={testID ? `${testID}-input` : undefined}
                   />
                 </View>
@@ -434,7 +437,7 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                 <View style={{ width: CONTROL_SIZE, height: CONTROL_SIZE, marginLeft: 2 }}>
                   <SwapLayer shown={showSend}>
                     <ComposerIconButton
-                      icon={RiSendPlaneLine}
+                      icon={SendIcon}
                       tone="accent"
                       accessibilityLabel={labels.send}
                       onPress={submit}

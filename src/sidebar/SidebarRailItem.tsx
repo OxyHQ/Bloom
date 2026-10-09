@@ -2,6 +2,7 @@ import React, { memo, useEffect } from 'react';
 import Animated, { Easing, interpolateColor, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
+import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -34,6 +35,8 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   icon: Icon,
   activeIcon: ActiveIcon,
   label,
+  labelVisibility = 'visible',
+  selectedAppearance = 'pill',
   href,
   badge,
   selected = false,
@@ -46,12 +49,15 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   useSidebarWebCss();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const SelectedGlyph = ActiveIcon ?? Icon;
+  const iconOnly = labelVisibility === 'hidden';
+  const tooltipRef = useBrowserTitle<View>(iconOnly ? label : undefined);
+  const selectedFill = selectedAppearance === 'icon' ? (hovered ? palette.rowHover : 'transparent') : palette.selected;
   const reducedMotion = useReducedMotion();
   const selection = useSharedValue(selected ? 1 : 0);
   useEffect(() => {
     selection.value = reducedMotion ? (selected ? 1 : 0) : withTiming(selected ? 1 : 0, { duration: SELECTION_DURATION, easing: Easing.bezier(0.2, 0, 0, 1) });
   }, [selected, reducedMotion, selection]);
-  const indicatorStyle = useAnimatedStyle(() => ({ backgroundColor: interpolateColor(selection.value, [0, 1], [hovered ? palette.rowHover : 'transparent', palette.selected]) }), [selection, hovered, palette.rowHover, palette.selected]);
+  const indicatorStyle = useAnimatedStyle(() => ({ backgroundColor: interpolateColor(selection.value, [0, 1], [hovered ? palette.rowHover : 'transparent', selectedFill]) }), [selection, hovered, palette.rowHover, selectedFill]);
   const inactiveStyle = useAnimatedStyle(() => ({ opacity: 1 - selection.value }), [selection]);
   const activeStyle = useAnimatedStyle(() => ({ opacity: selection.value }), [selection]);
   const labelStyle = useAnimatedStyle(() => ({ color: interpolateColor(selection.value, [0, 1], [palette.textSecondary, palette.text]) }), [selection, palette.textSecondary, palette.text]);
@@ -66,6 +72,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
 
   return (
     <Pressable
+      ref={tooltipRef}
       {...webProps}
       role={href ? 'link' : 'button'}
       accessibilityLabel={label}
@@ -81,7 +88,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
       style={[
         {
           alignSelf: 'stretch',
-          minHeight: 64,
+          minHeight: iconOnly ? 48 : 64,
           alignItems: 'center',
           justifyContent: 'center',
           gap: 5,
@@ -108,7 +115,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
           <Icon width={ICON_SIZE} height={ICON_SIZE} fill={palette.textSecondary} />
         </Animated.View>
         <Animated.View testID={testID ? `${testID}-active-glyph` : undefined} pointerEvents="none" aria-hidden accessibilityElementsHidden style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, activeStyle]}>
-          <SelectedGlyph width={ICON_SIZE} height={ICON_SIZE} fill={palette.selectedForeground} />
+          <SelectedGlyph width={ICON_SIZE} height={ICON_SIZE} fill={selectedAppearance === 'icon' ? palette.text : palette.selectedForeground} />
         </Animated.View>
         {badge != null ? (
           <View pointerEvents="none" style={{ position: 'absolute', top: -6, insetInlineStart: INDICATOR_WIDTH - 16 }}>
@@ -116,7 +123,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
           </View>
         ) : null}
       </Animated.View>
-      <AnimatedText
+      {!iconOnly ? <AnimatedText
         variant="caption-2-regular"
         numberOfLines={1}
         style={[{
@@ -129,7 +136,7 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
         }, labelStyle]}
       >
         {label}
-      </AnimatedText>
+      </AnimatedText> : null}
     </Pressable>
   );
 };

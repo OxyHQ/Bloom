@@ -244,6 +244,19 @@ describe('turn actions', () => {
     expect(onEdit).toHaveBeenCalledTimes(1);
   });
 
+
+  it('styles the actual user bubble and recalculates its width after column layout', () => {
+    const bubbleStyle = jest.fn((width: number) => ({ maxWidth: Math.max(0, width - 112), borderRadius: 24,
+      paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12, marginInlineEnd: 0 }));
+    const screen = renderIn(<AiChatUserMessage testID="ask" animate={false} bubbleStyle={bubbleStyle}>hello</AiChatUserMessage>);
+    fireEvent(screen.getByTestId('ask'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 600, height: 60 } } });
+    expect(resolvedStyle(screen.getByTestId('ask-bubble').props.style)).toMatchObject({
+      maxWidth: 488, borderRadius: 24, paddingLeft: 16, paddingTop: 12, marginInlineEnd: 0,
+    });
+    fireEvent(screen.getByTestId('ask'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 60 } } });
+    expect(resolvedStyle(screen.getByTestId('ask-bubble').props.style).maxWidth).toBe(278);
+  });
+
   it('renders no actions row for a user turn without actions', () => {
     const { queryByTestId } = renderIn(<AiChatUserMessage testID="ask">hello</AiChatUserMessage>);
     expect(queryByTestId('ask-actions')).toBeNull();

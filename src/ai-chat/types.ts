@@ -81,6 +81,9 @@ export interface AiChatFeedbackRowProps {
 // ---------------------------------------------------------------------------
 
 export interface AiChatUserMessageProps {
+  /** Style the bubble itself; a callback receives its measured column width.
+   * The callback receives 0 before the initial layout. */
+  bubbleStyle?: StyleProp<ViewStyle> | ((columnWidth: number) => StyleProp<ViewStyle>);
   /** `AiChatMessageLine`s — or a string, wrapped in one. */
   children: ReactNode;
   /**
