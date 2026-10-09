@@ -63,6 +63,8 @@ function renderTextContent(node: React.ReactNode, wrap: (text: React.ReactNode) 
 export type {
   ButtonProps, LinkButtonProps,
   ButtonSize,
+  ButtonFocusEvent,
+  ButtonHoverEvent,
   ButtonIconComponent,
 } from './types';
 
@@ -157,6 +159,8 @@ type ButtonPressableProps = Pick<
   | 'className'
   | 'disabled'
   | 'hitSlop'
+  | 'onFocus'
+  | 'onBlur'
   | 'onHoverIn'
   | 'onHoverOut'
   | 'onPress'
@@ -230,6 +234,10 @@ const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<
 
 const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   onPress,
+  onFocus,
+  onBlur,
+  onHoverIn,
+  onHoverOut,
   onLayout,
   'aria-hidden': ariaHidden,
   accessibilityElementsHidden,
@@ -447,8 +455,10 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       } : undefined}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      onHoverIn={isInteractionBlocked ? undefined : onHoveredIn}
-      onHoverOut={isInteractionBlocked ? undefined : onHoveredOut}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onHoverIn={isInteractionBlocked ? undefined : event => { onHoveredIn(); onHoverIn?.(event); }}
+      onHoverOut={event => { onHoveredOut(); onHoverOut?.(event); }}
       disabled={isInteractionBlocked}
       hitSlop={hitSlop ?? defaultHitSlop}
       accessibilityLabel={accessibilityLabel}

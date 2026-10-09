@@ -77,6 +77,34 @@ Accent/status/brand colours keep their semantic foreground pairs. Neutral, seman
 
 Button forwards its ref to the interactive node (the native View handle or the actual web button/anchor), so menus can anchor to it without a layout wrapper. Optional `onLayout` reports React Native's layout shape on both platforms; web installs a resize observer only when that callback is supplied. Press-in/out, cancellation and long press share the base gesture lifecycle. String labels keep the typography defaults; custom content can supply icons, animated glyphs or a composed row. Accessibility visibility props support controls that fade out without leaving an invisible focus target.
 
+`onFocus` / `onBlur` receive the original platform focus event; `onHoverIn` /
+`onHoverOut` expose Pressable hover on native and non-touch pointer entry/exit on
+web. Hover entry is suppressed while disabled or loading; exit still clears a
+consumer's preview. `onKeyDown` / `onKeyUp` receive DOM keyboard events on web
+and are ignored on native. Focusing a choice can select its preview without
+activating it; activation remains `onPress`.
+
+```tsx
+<Button ref={choiceRef} onFocus={() => select(index)}
+  onHoverIn={() => preview(index)} onHoverOut={() => preview(null)}
+  onKeyDown={event => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      nextChoiceRef.current?.focus();
+    }
+  }}>
+  Choice
+</Button>
+```
+
+The same handlers work on `href` and `asChild` buttons. Slotted child handlers
+run first, followed by the Button caller and internal lifecycle. Preventing a
+keyboard default also prevents a new press preview; key-up and blur still end
+an active preview. Existing child handlers, refs and long-press cancellation
+remain composed. `ButtonFocusEvent` and `ButtonHoverEvent` expose the shared
+platform-event unions for reusable callback types.
+
+
 Native text children are wrapped individually when mixed with custom layout nodes or fragments, including icon-only buttons. Custom layout nodes retain their own layout.
 
 ### Loading and child state

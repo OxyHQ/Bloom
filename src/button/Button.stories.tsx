@@ -153,3 +153,37 @@ export const ClassNameAuthority: Story = {
     </View>;
   },
 };
+
+/** Public event composition on buttons, anchors and slotted anchors. */
+export const FocusKeyboardHover: Story = {
+  parameters: { controls: { disable: true } },
+  render: function EventComposition() {
+    const refs = React.useRef<Array<View | null>>([]);
+    const [selected, setSelected] = useState(-1);
+    const [preview, setPreview] = useState(-1);
+    const [presses, setPresses] = useState(0);
+    const [blurs, setBlurs] = useState(0);
+    const [keyUps, setKeyUps] = useState(0);
+    const [childFocus, setChildFocus] = useState(0);
+    return <View style={{ padding: 32, gap: 20 }}>
+      <TextForCounter testID="events-status">{JSON.stringify({ selected, preview, presses, blurs, keyUps, childFocus })}</TextForCounter>
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        {[0, 1, 2].map(index => <Button key={index} id={`events-choice-${index}`}
+          ref={node => { refs.current[index] = node; }}
+          href={index === 1 ? '#choice' : undefined} asChild={index === 2}
+          onFocus={() => setSelected(index)} onBlur={() => setBlurs(value => value + 1)}
+          onHoverIn={() => setPreview(index)} onHoverOut={() => setPreview(-1)}
+          onKeyDown={event => {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              refs.current[(index + (event.key === 'ArrowDown' ? 1 : 2)) % 3]?.focus();
+            }
+          }}
+          onKeyUp={() => setKeyUps(value => value + 1)}
+          onPress={() => setPresses(value => value + 1)}>
+          {index === 2 ? <a href="#choice" onFocus={() => setChildFocus(value => value + 1)}>Choice 3</a> : `Choice ${index + 1}`}
+        </Button>)}
+      </View>
+    </View>;
+  },
+};

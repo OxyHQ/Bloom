@@ -653,3 +653,21 @@ it.each([false, true])('retains native child state through loading with iconOnly
   expect(result.getByTestId('counter').props.children).toBe(2);
   expect(mounts).toBe(1);
 });
+
+it('forwards native focus and hover events while retaining its interaction palette', () => {
+  const focus = jest.fn(), blur = jest.fn(), enter = jest.fn(), leave = jest.fn();
+  const api = renderWithTheme(<Button testID="events" material="flat" onFocus={focus} onBlur={blur} onHoverIn={enter} onHoverOut={leave} onKeyDown={() => {}} onKeyUp={() => {}}>Preview</Button>);
+  const host = api.getByTestId('events');
+  expect(host.props.onKeyDown).toBeUndefined();
+  expect(host.props.onKeyUp).toBeUndefined();
+  const event = { nativeEvent: { target: 1 } };
+  fireEvent(host, 'focus', event); fireEvent(host, 'blur', event);
+  expect(focus).toHaveBeenCalledWith(event); expect(blur).toHaveBeenCalledWith(event);
+  const before = JSON.stringify(host.props.style);
+  fireEvent(host, 'hoverIn', event);
+  expect(enter).toHaveBeenCalledWith(event);
+  expect(JSON.stringify(host.props.style)).not.toBe(before);
+  fireEvent(host, 'hoverOut', event);
+  expect(leave).toHaveBeenCalledWith(event);
+  expect(JSON.stringify(host.props.style)).toBe(before);
+});
