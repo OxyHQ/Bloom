@@ -349,6 +349,6 @@ export const CustomPlaceholder: Story = {
   render: () => <View style={{ flexDirection: 'row', gap: 24 }}>
     {(['circle', 'squircle'] as const).map(shape => <Avatar key={shape}
       testID={`placeholder-${shape}`} size={96} shape={shape}
-      placeholderColor="#eeeeee" placeholderIcon={<RiUserLine size={40} fill="#111111" />} />)}
+      placeholderColor="#eeeeee" placeholderIcon={<RiUserLine width={40} height={40} fill="#111111" />} />)}
   </View>,
 };
