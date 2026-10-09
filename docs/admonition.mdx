@@ -40,15 +40,24 @@ import {
 </AdmonitionRoot>
 ```
 
-## `type` picks the icon and the border together
+## `type` picks the icon, tint and border together
 
 | `type`    | for                                                    |
 | --------- | ------------------------------------------------------- |
-| `info`    | a neutral note                                          |
-| `tip`     | a suggestion — painted in the brand colour               |
+| `info`    | an information note                                          |
+| `tip`     | a suggestion — success tint and a lightbulb               |
 | `warning` | something that could go wrong if they continue          |
 | `error`   | something that has gone wrong                           |
 | `apology` | a limitation on our side, not the reader's mistake      |
+
+The shared design uses 16px padding and corners, a 12px icon gap, a soft
+status surface and a subtle outline. The icon reads the matching text token;
+text remains the normal foreground. The outline alone has 30% opacity, so
+its token stays valid on native and web and never dims the content.
+
+`AdmonitionContent` accepts rich content directly. Use the compound API for
+a heading and Markdown blocks instead of putting block elements inside
+`AdmonitionText`.
 
 `AdmonitionIcon` reads the type from context, so the icon and the border cannot
 disagree — which is how an `error` callout ends up with a warning icon when the
