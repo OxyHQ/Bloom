@@ -1,9 +1,12 @@
+import { characterShapeGeometry } from '../agent-avatar/character-shapes';
 import { memo } from 'react';
 import Svg, { Path } from 'react-native-svg';
 import { legacyContours } from '../agent-avatar/legacy-contours';
 import { radialContour } from '../agent-avatar/legacy-recipe';
 import type { AvatarConfig } from '../agent-avatar/model';
 import { CHARACTER_COLORS } from './constants';
+import { ClippoArtwork } from './ClippoArtwork';
+import { ToddArtwork } from './ToddArtwork';
 
 const silhouettes = new Map<string, { path: string; viewBox: string }>();
 
@@ -49,7 +52,19 @@ export const ShapeSilhouette = memo(function ShapeSilhouette({
 }: {
   config: AvatarConfig;
 }) {
-  const { path, viewBox } = silhouette(config);
+  if (
+    config.character?.selections?.shape === 'todd' ||
+    (config.character?.preset === 'lime_frog' &&
+      !config.character.selections?.shape)
+  )
+    return <ToddArtwork />;
+  if (
+    config.character?.selections?.shape === 'clippo' ||
+    (config.character?.preset === 'clippo' &&
+      !config.character.selections?.shape)
+  )
+    return <ClippoArtwork kind="shape" />;
+  const { path, viewBox } = silhouette(characterShapeGeometry(config));
   return (
     <Svg
       width={56}

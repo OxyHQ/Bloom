@@ -1,3 +1,8 @@
+import { CHARACTER_COLORS } from './character-colors';
+import {
+  characterShapeGeometry,
+  isMigratedCharacterShape,
+} from './character-shapes';
 import { avatarHex } from './avatar-color';
 import { legacyContours } from './legacy-contours';
 import type { AvatarConfig } from './model';
@@ -9,6 +14,7 @@ export type LegacyRecipe = {
   points?: Point[];
   shape?: string;
   eyes: string;
+  eyeSpacing?: number;
   selections?: Pick<
     NonNullable<AvatarCharacterConfig['selections']>,
     'eyewear' | 'accessory'
@@ -18,6 +24,8 @@ export type LegacyRecipe = {
 
 /** Saved unsupported artwork stays readable without pretending it was migrated. */
 export function legacyRecipeUnsupported(config: AvatarConfig): boolean {
+  if (isMigratedCharacterShape(config.character?.selections?.shape))
+    return false;
   return (
     config.family === 'alien' || config.family === 'mascot' || !config.face
   );
@@ -74,6 +82,8 @@ export function radialContour(polygons: Point[][], samples = 256): Point[] {
 
 /** Shared capability identity for the editor and the legacy engine adapter. */
 export function legacyCharacterRecipe(config: AvatarConfig) {
+  if (config.character && config.character.preset !== 'bloom')
+    return config.character;
   const customization =
     config.character?.preset === 'bloom' ? config.character : undefined;
   return {
@@ -88,7 +98,15 @@ export function legacyCharacterRecipe(config: AvatarConfig) {
         ? { accessory: customization.selections.accessory }
         : {}),
     },
-    bodyColor: customization?.bodyColor ?? avatarHex(config),
+    bodyColor:
+      customization?.bodyColor ??
+      CHARACTER_COLORS[
+        customization?.selections?.color as keyof typeof CHARACTER_COLORS
+      ] ??
+      avatarHex(config),
+    ...(customization?.eyeSpacing !== undefined
+      ? { eyeSpacing: customization.eyeSpacing }
+      : {}),
   };
 }
 
@@ -102,14 +120,24 @@ export function legacyRecipe(
 ): LegacyRecipe {
   if (legacyRecipeUnsupported(config))
     throw new Error('Unsupported legacy 3D recipe');
-  const shape = legacyNativeShape(config);
+  const geometry = characterShapeGeometry(config);
+  const canonical = config.character && config.character.preset !== 'bloom';
+  const selectedShape = canonical
+    ? config.character?.selections?.shape
+    : undefined;
+  const shape = isMigratedCharacterShape(selectedShape)
+    ? undefined
+    : (selectedShape ?? legacyNativeShape(geometry));
   const recipe = legacyCharacterRecipe(config);
-  const { eyewear, accessory } = recipe.selections;
+  const { eyewear, accessory } = recipe.selections ?? {};
   return {
     ...(shape
       ? { shape }
-      : { points: radialContour(legacyContours(config), samples) }),
-    eyes: recipe.selections.eyes,
+      : { points: radialContour(legacyContours(geometry), samples) }),
+    eyes: recipe.selections?.eyes ?? 'oval',
+    ...(recipe.eyeSpacing !== undefined
+      ? { eyeSpacing: recipe.eyeSpacing }
+      : {}),
     ...(eyewear || accessory
       ? {
           selections: {
@@ -118,6 +146,6 @@ export function legacyRecipe(
           },
         }
       : {}),
-    patch: { bodyColor: recipe.bodyColor },
+    patch: { bodyColor: recipe.bodyColor ?? avatarHex(config) },
   };
 }

@@ -12,13 +12,26 @@ import Animated, {
 } from 'react-native-reanimated';
 import { EYES, type AvatarConfig } from '../agent-avatar';
 import { AgentFace } from '../agent-avatar/AgentFace';
-import { StyledImage, StyledPressable, StyledView } from '../styles/styled-primitives';
+import { ClippoArtwork } from './ClippoArtwork';
+import { CyclopsArtwork } from './CyclopsArtwork';
+import {
+  StyledImage,
+  StyledPressable,
+  StyledView,
+} from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { useTrackEvents } from './use-track-events';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
-export type EmotionChoice = { id: string; label: string; config: AvatarConfig; disabled?: boolean; thumbnail?: string };
+export type EmotionChoice = {
+  id: string;
+  label: string;
+  config: AvatarConfig;
+  disabled?: boolean;
+  thumbnail?: string;
+  artwork?: 'clippo' | 'cyclops';
+};
 function Emotion({
   config,
   choice,
@@ -71,21 +84,40 @@ function Emotion({
           pointerEvents="auto"
           className={`pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring ${active ? 'border-foreground-icon-secondary' : 'border-transparent'}`}
           style={{
-            backgroundColor: backgroundColor ?? `hsl(${config.hue}, ${config.saturation}%, ${config.lightness ?? 80}%)`,
+            backgroundColor:
+              backgroundColor ??
+              `hsl(${config.hue}, ${config.saturation}%, ${config.lightness ?? 80}%)`,
             borderColor: active ? colors.icon : 'transparent',
           }}
         >
-          {choice.thumbnail ? <StyledImage source={{ uri: choice.thumbnail }} resizeMode="contain" accessible={false} style={{ width: 27, height: 27, opacity: choice.disabled ? 0.35 : 1 }} /> : <AgentFace
-            config={{
-              ...choice.config,
-              eyeSize: 24,
-              eyeGap: 36,
-              lookAt: 'center',
-              motion: 0,
-              idle: false,
-            }}
-            size={34}
-          />}
+          {choice.artwork === 'cyclops' ? (
+            <CyclopsArtwork opacity={choice.disabled ? 0.35 : 1} />
+          ) : choice.artwork === 'clippo' ? (
+            <ClippoArtwork kind="eyes" opacity={choice.disabled ? 0.35 : 1} />
+          ) : choice.thumbnail ? (
+            <StyledImage
+              source={{ uri: choice.thumbnail }}
+              resizeMode="contain"
+              accessible={false}
+              style={{
+                width: 27,
+                height: 27,
+                opacity: choice.disabled ? 0.35 : 1,
+              }}
+            />
+          ) : (
+            <AgentFace
+              config={{
+                ...choice.config,
+                eyeSize: 24,
+                eyeGap: 36,
+                lookAt: 'center',
+                motion: 0,
+                idle: false,
+              }}
+              size={34}
+            />
+          )}
         </StyledPressable>
       </AnimatedView>
     </StyledView>
@@ -109,9 +141,16 @@ export function EmotionPicker({
   onChange: (eyes: AvatarConfig['eyes']) => void;
 }) {
   const messages = useAgentCreatorMessages();
-  const choices = choicesProp ?? EYES.map((eyes) => ({ id: eyes, label: messages.emotions[eyes], config: { ...config, eyes } }));
+  const choices =
+    choicesProp ??
+    EYES.map((eyes) => ({
+      id: eyes,
+      label: messages.emotions[eyes],
+      config: { ...config, eyes },
+    }));
   const value = valueProp ?? config.eyes;
-  const emit = (id: string) => onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']);
+  const emit = (id: string) =>
+    onSelect ? onSelect(id) : onChange(id as AvatarConfig['eyes']);
   const ref = useRef<View>(null);
   const visible = useSharedValue(true);
   const target = useSharedValue(0);

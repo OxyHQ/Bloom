@@ -24,7 +24,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   betaEyes: "目のスタイル",
   eyewear: "眼鏡",
   accessory: "アクセサリー",
-  characterOption: (_category, _id, title) => String(title),
+  characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "一つ目" : String(title),
   editor: "エージェント編集",
   newBot: "新しいボット",
   closeEditor: "エージェント編集を閉じる",

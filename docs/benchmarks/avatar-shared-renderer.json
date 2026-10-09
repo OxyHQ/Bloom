@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "snapshotCapturedAt": "2026-10-02T23:18:31.067791+00:00",
+  "hardware": {
+    "model": "Pixel 8a",
+    "soc": "Google Tensor G3",
+    "gpu": "ARM Mali-G715",
+    "gpuDriver": "54.1.11eac0",
+    "ramGiB": 8,
+    "android": "16 BP4A.251205.006",
+    "browser": "Jelly / Android WebView 148.0.7778.120",
+    "displayRefreshHzObserved": 120
+  },
+  "workload": {
+    "avatarCssPixels": 48,
+    "avatarBackingPixels": 64,
+    "viewportCssPixels": {
+      "width": 868,
+      "height": 295
+    },
+    "devicePixelRatio": 2.625,
+    "composition": "Alternating eight original presets and eight migrated contours, repeated as needed",
+    "warmupMilliseconds": 3000,
+    "measurementTargetMilliseconds": 5000,
+    "pixelHashSize": 32,
+    "pixelHashIntervalMilliseconds": 500,
+    "readiness": "All avatars ready, live instances=count, every controller ready and not pending"
+  },
+  "assetsSha256": {
+    "resolution.mjs": "d87fcb44af86b1607a506128f0e73a9bdc75e6d30baa72926ac4dcae711349da",
+    "shared-programs.mjs": "bc5fd16dd44eb39e7b5f241c907208aa2c9a4ecfb7adacfd82e9a7e575d0efc9",
+    "render-budget.mjs": "097e6ada93dfdd3647ac8ac87131c83ba35fe077f896006a567e1efd8da5560b",
+    "preparation-worker.mjs": "3caeea63dc364a0dc852a16b704323874902eb0f2a02cc9a2ddf4dc414ae8368",
+    "shared-textures.mjs": "91bd7f0af25d05051589f02470e5aeea516ff78b0df211cea0dca2936c512835",
+    "appearance-codec.mjs": "eb919431de59e2bc19dc058809af817f413bb037a77a4a9dfb8517a3dd73fe60",
+    "legacy-engine.mjs": "dd9a02b68d901c3b111d925a3a2e76da14d56aeaa7d0005b0ccde6874c55f12e",
+    "runtime.mjs": "bcbec099cc4a308bc6f0bc7c542eace4c1ad861385260ac93edfc8cc4a9d71ee",
+    "legacy-worker.mjs": "0ec89223ac789c5398dd1991805fc0ab984facdaefe98b0b368fb14b1e5866fd",
+    "managed-avatar.mjs": "672f1c27690b77b39ee780317f94fbaadfe679c13f3ef97440f87edf03dba251",
+    "orbit-characters.mjs": "f3ba670dadba954df1618af83fa314641a4cfddd3597aca93a191c264374eed7",
+    "render-errors.mjs": "c627f85271a50bd50518ad81c614ffc3557c4578ffeedecb5d5c68244057169a",
+    "legacy-geometry.mjs": "a33d6874529f7551154c08596b12e7e0820c1ada249bf4a014ea68bfcaf6f3bc",
+    "shared-surface.mjs": "37374868fc1181ea6c90fa46012d75530b98e4096687c26b74dafd1f486bd6d5",
+    "orbit-characters.data": "ffefb69b44f815cccb5f07b4d951d479e527dbabdca68ad9986cf695f9b9c440",
+    "orbit-characters.wasm": "c15f3692305c1385a12524e877199ba279b8d53e6bd37a9e533d626f12fcb94b"
+  },
+  "runs": [
+    {
+      "count": 24,
+      "visible": 24,
+      "pixelHashChanging": 24,
+      "paintHz": {
+        "min": 3.708,
+        "mean": 3.762,
+        "max": 3.893
+      },
+      "rafMilliseconds": {
+        "median": 25,
+        "p95": 25.2,
+        "max": 33.5
+      },
+      "renderBatchMilliseconds": {
+        "median": 10.6,
+        "p95": 14.4
+      },
+      "coldReadyMilliseconds": 24597,
+      "sampledMilliseconds": 5394.2,
+      "hashBatchMeanMilliseconds": 7.46,
+      "contexts": 1,
+      "surfaces": 24,
+      "liveInstances": 24,
+      "sharedWasmModules": 1,
+      "realPrograms": 9,
+      "shaderCompiles": 14,
+      "logicalTextures": 289,
+      "physicalTextures": 220,
+      "pooledTextures": 3,
+      "calculatedMipBytesSaved": 115184920,
+      "atlasColorBytes": 393216,
+      "errors": 0,
+      "interactions": {
+        "touchReactionResult": 0,
+        "workingResult": 0,
+        "workingActiveObserved": true,
+        "workingPendingAtObservation": false,
+        "neighborContinuedAfterRemoval": true,
+        "remainingInstancesAfterOneRemoval": 23,
+        "contextsAfterOneRemoval": 1
+      },
+      "cleanup": {
+        "contexts": 0,
+        "surfaces": 0,
+        "liveInstances": 0,
+        "activeInstances": 0,
+        "resident": 0,
+        "characters": 0,
+        "preparationActive": false,
+        "pending": 0,
+        "worker": false,
+        "errors": 0
+      }
+    },
+    {
+      "count": 48,
+      "visible": 48,
+      "pixelHashChanging": 48,
+      "paintHz": {
+        "min": 2.418,
+        "mean": 2.585,
+        "max": 2.604
+      },
+      "rafMilliseconds": {
+        "median": 16.8,
+        "p95": 25.2,
+        "max": 33.5
+      },
+      "renderBatchMilliseconds": {
+        "median": 8.1,
+        "p95": 12.5
+      },
+      "coldReadyMilliseconds": 74080.8,
+      "sampledMilliseconds": 5375.6,
+      "hashBatchMeanMilliseconds": 8.37,
+      "contexts": 1,
+      "surfaces": 48,
+      "liveInstances": 48,
+      "sharedWasmModules": 1,
+      "realPrograms": 9,
+      "shaderCompiles": 14,
+      "logicalTextures": 577,
+      "physicalTextures": 436,
+      "pooledTextures": 3,
+      "calculatedMipBytesSaved": 235377880,
+      "atlasColorBytes": 786432,
+      "errors": 0,
+      "interactions": {
+        "touchReactionResult": 0,
+        "workingResult": 0,
+        "workingActiveObserved": true,
+        "workingPendingAtObservation": true,
+        "neighborContinuedAfterRemoval": true,
+        "remainingInstancesAfterOneRemoval": 47,
+        "contextsAfterOneRemoval": 1
+      },
+      "cleanup": {
+        "contexts": 0,
+        "surfaces": 0,
+        "liveInstances": 0,
+        "activeInstances": 0,
+        "resident": 0,
+        "characters": 0,
+        "preparationActive": false,
+        "pending": 0,
+        "worker": false,
+        "errors": 0
+      }
+    }
+  ],
+  "final48CpuProfilePercentOfAllSamples": {
+    "getError": 22.9,
+    "clientWaitSync": 0.178,
+    "fenceSync": 0.235,
+    "drawImage": 1.607,
+    "(program)": 50.143
+  },
+  "limitations": [
+    "First-ready starts at fresh document script execution with a new renderer engine; HTTP caches were warm, so this is not a cold-network-cache benchmark.",
+    "Five-second smoke measurements do not establish sustained thermal performance or fluid 30 Hz avatar animation.",
+    "RAF is page cadence; per-avatar onPaint rates and real output-canvas pixel hashes are reported separately.",
+    "Pixel-hash readback occurs during RAF measurement; its batch overhead is reported for each run.",
+    "Mip storage savings are calculated from deduplicated RGBA8 requested storage, not measured total GPU memory.",
+    "Physical verification covers one DOM document in one Android WebView. Native multi-WebView renderer sharing is not validated.",
+    "The snapshot predates a later transactional allocation rollback guard; that failure-only change does not alter the normal benchmark path.",
+    "Working state was accepted and active at 48, but remained pending at its single 1.8-second observation; the final settled working state under 48 avatars was not measured."
+  ]
+}

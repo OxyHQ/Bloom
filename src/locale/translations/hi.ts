@@ -24,7 +24,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   betaEyes: "आँखों की शैली",
   eyewear: "चश्मा",
   accessory: "सहायक वस्तु",
-  characterOption: (_category, _id, title) => String(title),
+  characterOption: (category, id, title) => category === "eyes" && id === "cyclops" ? "एक आँख" : String(title),
   editor: "एजेंट संपादक",
   newBot: "नया बॉट",
   closeEditor: "एजेंट संपादक बंद करें",

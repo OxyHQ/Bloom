@@ -173,6 +173,24 @@ describe('legacy appearance migration', () => {
     expect(Object.keys(legacyRecipe(config).patch)).toEqual(['bodyColor']);
   });
 
+  it('retains historical eye-spacing metadata in both renderer payload and capability identity', () => {
+    const config = recipe({
+      eyeGap: 12,
+      character: {
+        preset: 'bloom',
+        eyeSpacing: 1.24,
+        selections: { eyes: 'todd' },
+      },
+    });
+    expect(legacyRecipe(config)).toMatchObject({
+      eyes: 'todd',
+      eyeSpacing: 1.24,
+    });
+    expect(legacyCharacterRecipe(config)).toMatchObject({ eyeSpacing: 1.24 });
+    expect(legacyRecipe(recipe())).not.toHaveProperty('eyeSpacing');
+    expect(legacyCharacterRecipe(recipe())).not.toHaveProperty('eyeSpacing');
+  });
+
   it.each(EYES)(
     'retires the old %s expression in favour of original 3D eyes',
     (eyes) => {
