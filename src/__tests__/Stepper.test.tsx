@@ -277,3 +277,28 @@ it('announces Field errors from the keyboard-focused value control', () => {
   expect(description).toBeTruthy();
   expect(document.getElementById(description!)?.textContent).toContain('Choose fewer guests');
 });
+
+describe.each(['separate', 'outline'] as const)('Stepper %s appearance', appearance => {
+  it('retains keyboard bounds and fractional arithmetic', () => {
+    const change = jest.fn();
+    mount(<Controlled appearance={appearance} initial={1} min={1} max={2} step={.25} onChange={change} />);
+    key('st-value', 'ArrowUp');
+    expect(byTestId('st-value').getAttribute('aria-valuenow')).toBe('1.25');
+    key('st-value', 'End');
+    expect(byTestId('st-value').getAttribute('aria-valuenow')).toBe('2');
+    press('st-increment');
+    expect(change).toHaveBeenCalledTimes(2);
+    key('st-value', 'Home');
+    expect(byTestId('st-value').getAttribute('aria-valuenow')).toBe('1');
+  });
+
+  it('removes only through the explicit action, never arithmetic at the floor', () => {
+    const remove = jest.fn();
+    mount(<Controlled appearance={appearance} initial={1} min={1} onRemove={remove} />);
+    key('st-value', 'ArrowDown');
+    expect(remove).not.toHaveBeenCalled();
+    expect(byTestId('st-decrement').getAttribute('aria-label')).toBe('Remove');
+    press('st-decrement');
+    expect(remove).toHaveBeenCalledTimes(1);
+  });
+});

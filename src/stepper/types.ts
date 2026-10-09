@@ -4,6 +4,8 @@ import type { StyleProp, ViewStyle } from 'react-native';
 /** `sm` pairs 32px buttons with body text; `md` (default) 36px buttons with headline text. */
 export type StepperSize = 'sm' | 'md';
 
+export type StepperAppearance = 'separate' | 'outline';
+
 export interface StepperProps {
   /** The current value. The stepper is fully controlled. */
   value: number;
@@ -19,6 +21,8 @@ export interface StepperProps {
   disabled?: boolean;
   /** Default `md`. */
   size?: StepperSize;
+  /** Separate circular actions (default), or a bordered capsule with plain glyph actions. */
+  appearance?: StepperAppearance;
   /** How the value is drawn and announced (`aria-valuetext`), e.g. `(n) => \`${n}+\``. */
   formatValue?: (value: number) => string;
   /**
