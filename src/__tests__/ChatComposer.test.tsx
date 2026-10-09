@@ -205,6 +205,41 @@ describe('ChatComposer', () => {
     expect(onSend).toHaveBeenCalledTimes(1);
   });
 
+  it('shows disabled send instead of a dead mic when recording is unavailable', () => {
+    const onSend = jest.fn();
+    mount(<ChatComposer testID="c" onSend={onSend} />);
+    expect(maybe('c-mic')).toBeNull();
+    expect(ariaHidden(byTestId('c-send'))).toBe(false);
+    expect((byTestId('c-send') as HTMLButtonElement).disabled).toBe(true);
+    press(byTestId('c-send'));
+    keyDown(byTestId('c-input'), 'Enter');
+    expect(onSend).not.toHaveBeenCalled();
+    mount(<ChatComposer testID="c" value="ready" canSend={false} onSend={onSend} />);
+    expect((byTestId('c-send') as HTMLButtonElement).disabled).toBe(true);
+    mount(<ChatComposer testID="c" canSend onSend={onSend} />);
+    press(byTestId('c-send'));
+    expect(onSend).toHaveBeenCalledWith('');
+  });
+
+  it('keeps press-and-hold recording available without a click handler', () => {
+    mount(<ChatComposer testID="c" onMicPressIn={() => {}} onMicPressOut={() => {}} />);
+    expect(ariaHidden(byTestId('c-mic'))).toBe(false);
+  });
+
+  it('prevents mouse focus transfer before a suggestion click without cancelling touch', () => {
+    const onSelect = jest.fn();
+    mount(<ChatComposer testID="c" suggestions={[{ id: 'one', label: 'One' }]} onSelectSuggestion={onSelect} />);
+    const row = byTestId('c-suggestions-row-one');
+    const mouse = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    act(() => { row.dispatchEvent(mouse); });
+    expect(mouse.defaultPrevented).toBe(true);
+    const touch = new Event('touchstart', { bubbles: true, cancelable: true });
+    act(() => { row.dispatchEvent(touch); });
+    expect(touch.defaultPrevented).toBe(false);
+    press(row);
+    expect(onSelect).toHaveBeenCalledWith({ id: 'one', label: 'One' }, 0);
+  });
+
   it('shows the mic when there is nothing to send, and hides SEND from assistive tech', () => {
     mount(<ChatComposer testID="c" onMicPress={() => {}} onSend={() => {}} />);
     expect(ariaHidden(byTestId('c-mic'))).toBe(false);

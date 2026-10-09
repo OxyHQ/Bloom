@@ -164,7 +164,8 @@ export interface ChatComposerProps extends PartProps {
   onEmojiPress?: () => void;
   /** Draws a camera button between the field and the emoji button. */
   onCameraPress?: () => void;
-  /** The mic, shown whenever the draft is empty and there are no attachments. */
+  /** The mic, shown for an empty draft only when a mic callback is provided.
+   * Without recording callbacks, the empty composer shows a disabled send button. */
   onMicPress?: () => void;
   /** Press-and-hold on the mic (native). Both fire on web too. */
   onMicPressIn?: () => void;
