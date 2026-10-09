@@ -394,6 +394,14 @@ export interface AppShellSplitPanesProps {
   infoErrorBoundary?: false | PanelErrorBoundaryOptions;
   /** Joined uses hairline dividers (default); separated leaves a 12px gutter for independent panel surfaces. */
   variant?: 'joined' | 'separated';
+  /**
+   * Animate list/detail visibility using live layout geometry. Defaults to none.
+   * Showing both panes reveals detail beside a shrinking list; hiding the list
+   * slides between full-width panes. Exiting content remains mounted until the
+   * expansion motion settles, but is immediately inactive/inaccessible.
+   * Info visibility is unchanged. Respects the system reduced-motion setting.
+   */
+  transition?: 'none' | 'slide';
   list?: ReactNode;
   detail?: ReactNode;
   info?: ReactNode;

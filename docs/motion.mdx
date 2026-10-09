@@ -121,3 +121,14 @@ spatial transitions under reduced motion. Native Screen initializes keyboard
 visibility before reserving bottom chrome, including inherited shell clearance.
 Portaled overlays isolate screen navigation state while preserving theme and
 locale; scrolling their content cannot collapse the navigation behind them.
+
+
+`AppShellSplitPanes transition="slide"` uses the expansion duration with a
+cubic ease-out timing animation for live pane geometry. Reanimated 3's
+**duration** spring integrates at most 64ms per frame, but compares its forced
+completion against the full elapsed wall time. Expensive layout frames can
+leave the spring far behind and then jump hundreds of pixels at the deadline.
+Timing evaluates elapsed time directly, avoiding that accumulated deficit.
+Retargeting still starts from the current pane position. Verify the last moving
+frame as well as intermediate frames in a browser; counting intermediate frames
+alone does not catch a large final snap.
