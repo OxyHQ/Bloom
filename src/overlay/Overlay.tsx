@@ -43,6 +43,8 @@ import { ScreenScope } from '../layout/screen-scope';
 import { createContext, memo, useContext, useMemo } from 'react';
 import { BlurView } from 'expo-blur';
 
+import { useIsRtl } from '../hooks/use-is-rtl';
+import { backdropDimStyle, clampBackdropNumber } from './backdrop-paint';
 import { useWindowedBlurTarget } from '../glass/blur-target';
 import {
   Platform,
@@ -247,7 +249,7 @@ interface BackdropLayerProps {
   blurTarget?: ReturnType<typeof useWindowedBlurTarget>;
   blurIntensity: number;
   blurTint: 'light' | 'dark' | 'default';
-  dimColor: string;
+  dimStyle: ViewStyle;
   dimOpacity: number;
   /** Opacity the caller asked for, already lifted off the press target. */
   staticOpacity: number;
@@ -264,7 +266,7 @@ function AnimatedBackdropLayers({
   progress,
   blurIntensity,
   blurTint,
-  dimColor,
+  dimStyle,
   dimOpacity,
   staticOpacity,
   layerStyle,
@@ -299,7 +301,7 @@ function AnimatedBackdropLayers({
       ) : null}
       <Animated.View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: dimColor }, layerStyle, dimFade]}
+        style={[StyleSheet.absoluteFill, dimStyle, layerStyle, dimFade]}
       />
     </>
   );
@@ -325,7 +327,7 @@ function StaticBackdropLayers({
   blurTarget,
   blurIntensity,
   blurTint,
-  dimColor,
+  dimStyle,
   dimOpacity,
   staticOpacity,
   layerStyle,
@@ -350,7 +352,7 @@ function StaticBackdropLayers({
         pointerEvents="none"
         style={[
           StyleSheet.absoluteFill,
-          { backgroundColor: dimColor },
+          dimStyle,
           layerStyle,
           { opacity: staticOpacity * dimOpacity },
         ]}
@@ -383,6 +385,7 @@ export const Backdrop = memo(function Backdrop({
   blurIntensity = BACKDROP_BLUR_INTENSITY,
   blurTint = 'dark',
   dimColor = '#000',
+  dimGradient,
   dimOpacity = BACKDROP_DIM_OPACITY,
   style,
   layerStyle,
@@ -390,6 +393,7 @@ export const Backdrop = memo(function Backdrop({
   accessibilityLabel: accessibilityLabelProp,
   testID,
 }: BackdropProps) {
+  const rtl = useIsRtl();
   const common = useCommonMessages();
   const accessibilityLabel = accessibilityLabelProp ?? common.dismiss;
   const inert = disabled || !onPress;
@@ -412,10 +416,10 @@ export const Backdrop = memo(function Backdrop({
 
   const layerProps: BackdropLayerProps = {
     blurTarget,
-    blurIntensity,
+    blurIntensity: clampBackdropNumber(blurIntensity, BACKDROP_BLUR_INTENSITY, 100),
     blurTint,
-    dimColor: resolvedDimColor,
-    dimOpacity,
+    dimStyle: backdropDimStyle(resolvedDimColor, dimGradient, rtl),
+    dimOpacity: clampBackdropNumber(dimOpacity, BACKDROP_DIM_OPACITY, 1),
     staticOpacity,
     layerStyle,
   };

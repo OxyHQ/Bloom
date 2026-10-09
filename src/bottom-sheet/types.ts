@@ -1,3 +1,5 @@
+import type { BackdropAppearance } from '../overlay/types';
+import type { SurfaceTransition } from '../motion/types';
 import type React from 'react';
 import { View, Platform, type LayoutChangeEvent, type ViewStyle, type StyleProp } from 'react-native';
 import Animated, { type AnimatedStyle, type SharedValue } from 'react-native-reanimated';
@@ -14,6 +16,10 @@ export interface BottomSheetRef {
 export interface BottomSheetProps {
     /** Standard optical surface, or the unmodified backing fill. Default surface. */
     material?: 'surface' | 'flat';
+  /** Backdrop paint; the surface continues to own dismissal and layering. */
+  backdrop?: BackdropAppearance;
+  /** Opt-in timing for panel and backdrop. Live reduced motion settles immediately. */
+  transition?: SurfaceTransition;
     children: React.ReactNode;
     /** Accessible name for the modal sheet panel on web. */
     accessibilityLabel?: string;

@@ -120,3 +120,18 @@ The sheet panel exposes `role="dialog"` and `aria-modal="true"` and contains bot
 its scrolling content and header overlay. Set `accessibilityLabel`, or associate
 an existing heading using `aria-labelledby`; `aria-describedby` associates
 supporting text. These attributes name the same panel that owns keyboard focus.
+
+### Paint and timed presentation
+
+`backdrop?: BackdropAppearance` forwards paint to the shared Backdrop, including
+logical gradients and optional zero blur. `backdrop.dimOpacity`, when supplied,
+takes precedence over the legacy `backdropOpacity`; omitting it preserves that
+prop. A custom `backdropComponent` still owns its rendering instead.
+
+`transition?: SurfaceTransition` (`duration` in milliseconds, optional
+`easing: [x1,y1,x2,y2]`) replaces the panel's presentation/dismissal spring and
+backdrop fade with the same timed curve. Drag tracking and cancelled-drag
+springs remain unchanged. Reduced motion, including live OS changes, settles
+presentation or dismissal immediately. Omitting `transition` retains existing
+spring/timing defaults. See [Dialog](./dialog.mdx#backdrop-paint-and-timed-presentation)
+for normalization rules and a full example.

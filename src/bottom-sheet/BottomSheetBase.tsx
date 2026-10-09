@@ -1,3 +1,4 @@
+import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
@@ -56,6 +57,8 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         backgroundComponent,
         backgroundFill,
         backdropComponent,
+        backdrop,
+        transition,
         style,
         enableHandlePanningGesture = true,
         onDismissAttempt,
@@ -72,6 +75,9 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         onLayout,
     } = props;
 
+    const motion = useSurfaceTransition(transition);
+    const timed = transition !== undefined;
+    const timedConfig = useMemo(() => ({ ...MOTION_RECIPES.present, duration: motion.duration ?? 250, easing: motion.easing }), [motion.duration, motion.easing]);
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const { colors } = theme;
@@ -192,19 +198,19 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             // it eventually fires, because its captured generation is stale.
             closeGenerationRef.current += 1;
             closeGeneration.value = closeGenerationRef.current;
-            opacity.value = withTiming(1, { ...MOTION_RECIPES.present, duration: 250 });
-            translateY.value = withSpring(0, SPRING_CONFIG);
+            opacity.value = withTiming(1, timed ? timedConfig : { ...MOTION_RECIPES.present, duration: motion.duration ?? 250 });
+            translateY.value = motion.reducedMotion ? 0 : timed ? withTiming(0, timedConfig) : withSpring(0, SPRING_CONFIG);
         } else if (rendered) {
             // Capture the generation for THIS close cycle so the animation
             // callback (running on the UI thread, scheduled back to JS) and
             // the fallback timer agree on which cycle they belong to.
             const generation = closeGenerationRef.current;
-            opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
+            opacity.value = withTiming(0, timed ? timedConfig : { ...MOTION_RECIPES.dismiss, duration: motion.duration ?? 250 }, (finished) => {
                 if (finished) {
                     runOnJS(finishClose)(generation);
                 }
             });
-            translateY.value = withSpring(screenHeight, { ...SPRING_CONFIG, stiffness: 250 });
+            translateY.value = motion.reducedMotion ? screenHeight : timed ? withTiming(screenHeight, timedConfig) : withSpring(screenHeight, { ...SPRING_CONFIG, stiffness: 250 });
 
             // Fallback timer to ensure close completes (especially on web
             // where reanimated callbacks occasionally drop on tab blur).
@@ -214,9 +220,9 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             closeTimeoutRef.current = setTimeout(() => {
                 finishClose(generation);
                 closeTimeoutRef.current = null;
-            }, 300);
+            }, motion.reducedMotion ? 0 : timed ? timedConfig.duration + 50 : 300);
         }
-    }, [visible, rendered, finishClose, screenHeight, closeGeneration, opacity, translateY]);
+    }, [visible, rendered, finishClose, screenHeight, closeGeneration, opacity, translateY, timed, timedConfig, motion.duration, motion.reducedMotion]);
 
     // On unmount: ensure pending close callbacks (e.g. consumer's `onDismiss`)
     // still fire if the BS is yanked mid-animation by a parent re-render while a
@@ -260,11 +266,14 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
             return;
         }
+        // The timed presentation shares the imperative close lifecycle, so a live
+        // reduced-motion change can also settle a gesture-initiated dismissal.
+        if (timed || motion.reducedMotion) { setVisible(false); return; }
         translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
         opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
             if (finished) runOnJS(finishClose)(generation);
         });
-    }, [onDismissAttempt, translateY, screenHeightSV, opacity, finishClose]);
+    }, [onDismissAttempt, translateY, screenHeightSV, opacity, finishClose, timed, timedConfig, motion.duration, motion.reducedMotion]);
 
     const present = useCallback(() => {
         setRendered(true);
@@ -709,6 +718,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                     // `backdropOpacity`, so the shared component's own dim is
                     // switched off here to keep a single source of dimming.
                     <Backdrop
+                        {...backdrop}
                         onPress={handleBackdropPress}
                         // `progress` is the FADE (0 → 1, folding the drag);
                         // how dark the backdrop gets is `backdropOpacity`,
@@ -717,7 +727,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         // `progress` rather than an animated style because an
                         // opacity on the root would sit above the blur layer
                         // and neutralise it.
-                        dimOpacity={backdropOpacity}
+                        dimOpacity={backdrop?.dimOpacity ?? backdropOpacity}
                         progress={backdropProgress}
                         style={styles.backdrop}
                     />

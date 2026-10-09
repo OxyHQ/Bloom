@@ -59,6 +59,8 @@ import type { DialogControlProps, DialogProps } from './types';
  *   - `title` / `description` / `actions` / `children` → declarative body
  */
 export function DialogBottomSheet({
+  backdrop,
+  transition,
   control,
   open: controlledOpen,
   startOpen,
@@ -255,6 +257,8 @@ export function DialogBottomSheet({
 
   return (
     <BottomSheet
+      backdrop={backdrop}
+      transition={transition}
       material={surfaceMaterial}
       accessibilityLabel={label ?? header?.title}
       aria-labelledby={!header && title ? titleId : undefined}
@@ -386,6 +390,8 @@ const FILL_BOUNDED = { flex: 1, minHeight: 0 } as const;
  */
 export type DialogBottomSheetProps = Pick<
   DialogProps,
+  | 'backdrop'
+  | 'transition'
   | 'control'
   | 'open'
   | 'startOpen'

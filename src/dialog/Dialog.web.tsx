@@ -1,3 +1,4 @@
+import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
@@ -176,6 +177,8 @@ export function Dialog({ placement, ...rest }: DialogProps) {
  */
 function CenterOrSideDialog({
   material: surfaceMaterial = 'surface',
+  backdrop,
+  transition,
   control,
   open: controlledOpen,
   startOpen,
@@ -213,6 +216,7 @@ function CenterOrSideDialog({
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
+  const motion = useSurfaceTransition(transition);
   const isControlled = controlledOpen !== undefined;
   const resolvedPlacement = placement;
 
@@ -271,7 +275,7 @@ function CenterOrSideDialog({
   }, [isControlled, controlledOpen]);
 
   const exitDuration =
-    presentation === 'custom' ? customExitDuration ?? 0 : resolvedPlacement === 'center' ? FADE_OUT_DURATION : ANIMATION_DURATION;
+    presentation === 'custom' ? customExitDuration ?? 0 : motion.duration ?? (resolvedPlacement === 'center' ? FADE_OUT_DURATION : ANIMATION_DURATION);
 
   useEffect(() => {
     if (!isClosing) return;
@@ -316,9 +320,9 @@ function CenterOrSideDialog({
       return;
     }
     backdropFade.value = isClosing
-      ? withTiming(0, { ...MOTION_RECIPES.dismiss, duration: FADE_OUT_DURATION, easing: Easing.in(Easing.ease) })
-      : withTiming(1, { ...MOTION_RECIPES.present, duration: BACKDROP_FADE_IN_DURATION, easing: Easing.out(Easing.ease) });
-  }, [backdropFade, isOpen, isClosing]);
+      ? withTiming(0, { ...MOTION_RECIPES.dismiss, duration: motion.duration ?? FADE_OUT_DURATION, easing: transition ? motion.easing : Easing.in(Easing.ease) })
+      : withTiming(1, { ...MOTION_RECIPES.present, duration: motion.duration ?? BACKDROP_FADE_IN_DURATION, easing: transition ? motion.easing : Easing.out(Easing.ease) });
+  }, [backdropFade, isOpen, isClosing, motion.duration, motion.easing, !!transition]);
 
   useImperativeHandle(
     control?.ref,
@@ -366,8 +370,9 @@ function CenterOrSideDialog({
                 // opacity animation on the blur's ancestor composites the group in
                 // isolation and leaves `backdrop-filter` nothing to sample.
                 progress={backdropFade}
-                dimOpacity={presentation === 'custom' ? 0 : undefined}
-                blurIntensity={presentation === 'custom' ? 0 : undefined}
+                {...backdrop}
+                dimOpacity={presentation === 'custom' ? 0 : backdrop?.dimOpacity}
+                blurIntensity={presentation === 'custom' ? 0 : backdrop?.blurIntensity}
                 style={[{
                   position: WEB_POSITION_FIXED,
                   alignItems: 'center',
@@ -376,6 +381,7 @@ function CenterOrSideDialog({
                 }, containerStyle]}
               >
                 <DialogPanel
+                  transition={transition}
                   material={surfaceMaterial}
                   presentation={presentation}
                   panelRef={panelRef}
@@ -409,6 +415,8 @@ function CenterOrSideDialog({
         <ClosingContext.Provider value={isClosing}>
           <RemoveScrollBar />
           <SheetSurface
+            backdrop={backdrop}
+            transition={transition}
             material={surfaceMaterial}
             panelRef={panelRef}
             testID={testID}
@@ -442,6 +450,7 @@ function CenterOrSideDialog({
 
 function DialogPanel({
   material: surfaceMaterial = 'surface',
+  transition,
   presentation,
   panelRef,
   testID,
@@ -460,6 +469,7 @@ function DialogPanel({
   children,
 }: {
   material?: DialogProps['material'];
+  transition?: DialogProps['transition'];
   presentation?: DialogProps['presentation'];
   panelRef: React.RefObject<View | null>;
   testID?: string;
@@ -477,6 +487,10 @@ function DialogPanel({
   isClosing: boolean;
   children?: React.ReactNode;
 }) {
+  const motion = useSurfaceTransition(transition);
+  const panelMotion: WebCssStyle | undefined = motion.duration === undefined ? undefined : {
+    animation: `${isClosing ? 'bloomDialogZoomFadeOut' : 'bloomDialogZoomFadeIn'} ${motion.cssEasing} ${motion.duration}ms${isClosing ? ' forwards' : ''}`,
+  };
   const theme = useTheme();
   const { close } = useDialogContext();
   const titleId = useId();
@@ -560,6 +574,7 @@ function DialogPanel({
           zIndex: Z_INDEX.raised,
         },
         presentation === 'custom' ? undefined : isClosing ? ZOOM_FADE_OUT : ZOOM_FADE_IN,
+        presentation === 'custom' ? undefined : panelMotion,
         // Drives `height` (and `maxWidth`) only while a morph is in flight; at
         // rest it resolves to `height: 'auto'` — the natural sizing above. Placed
         // before `style` so a consumer's explicit size still wins.
@@ -643,6 +658,8 @@ function DialogPanel({
  */
 function SheetSurface({
   material: surfaceMaterial = 'surface',
+  backdrop,
+  transition,
   panelRef,
   testID,
   label,
@@ -667,6 +684,8 @@ function SheetSurface({
   children,
 }: {
   material?: DialogProps['material'];
+  backdrop?: DialogProps['backdrop'];
+  transition?: DialogProps['transition'];
   panelRef: React.RefObject<View | null>;
   testID?: string;
   label?: string;
@@ -690,6 +709,7 @@ function SheetSurface({
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }) {
+  const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
   const titleId = useId();
@@ -718,19 +738,19 @@ function SheetSurface({
   const panelTransition = useMemo<WebCssStyle>(
     () => ({
       transitionProperty: 'transform, opacity',
-      transitionDuration: `${ANIMATION_DURATION}ms`,
-      transitionTimingFunction: EASE_OUT,
+      transitionDuration: `${motion.duration ?? ANIMATION_DURATION}ms`,
+      transitionTimingFunction: transition ? motion.cssEasing : EASE_OUT,
     }),
-    [],
+    [motion.duration, motion.cssEasing, !!transition],
   );
 
   const backdropTransition = useMemo<WebCssStyle>(
     () => ({
       transitionProperty: 'opacity',
-      transitionDuration: `${ANIMATION_DURATION}ms`,
-      transitionTimingFunction: EASE_OUT,
+      transitionDuration: `${motion.duration ?? ANIMATION_DURATION}ms`,
+      transitionTimingFunction: transition ? motion.cssEasing : EASE_OUT,
     }),
-    [],
+    [motion.duration, motion.cssEasing, !!transition],
   );
 
   const panelGeometry = useMemo<ViewStyle>(() => {
@@ -776,6 +796,7 @@ function SheetSurface({
     <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName} modal>
       <ModalKeyboard panelRef={panelRef} closing={!shown} dismissible={dismissOnBackdrop} dismiss={onDismiss} />
       <Backdrop
+        {...backdrop}
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
         onPress={handleBackdropPress}
