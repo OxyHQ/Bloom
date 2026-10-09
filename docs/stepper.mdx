@@ -32,6 +32,7 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
 | `min` / `max`                       | bounds (default `0` / unbounded); the matching button disables at each   |
 | `step`                              | the change per press or key (default `1`); fractional steps do not drift |
 | `disabled`                          | disables both buttons and the keyboard                                   |
+| `appearance`                       | `separate` (default) or `outline` (one bordered capsule with plain glyph actions) |
 | `size`                              | `'sm'` (32px buttons, body text) or `'md'` (default, 36px, headline text) |
 | `formatValue`                       | the drawn and announced text, e.g. `(n) => (n === 8 ? '8+' : String(n))` |
 | `accessibilityLabel`                | **required** — what is being counted                                     |
@@ -47,7 +48,7 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
 
 - **Buttons** Bloom `Button`s — `secondary`, icon-only, full pill — drawing
   `RiSubtractLine` and `RiAddLine`. They change colour on hover and press and
-  never scale.
+  never scale in the default separate appearance.
 - **Value** `headline-semibold` (`body-semibold` at `sm`), tabular figures,
   centred in a fixed minimum width (32, or 24 at `sm`), so going from 9 to 10
   does not move the buttons.
@@ -108,3 +109,20 @@ press scale. Its ring gap takes the surface colour rather than the white it used
 to hardcode.
 
 Control sizes use `sm` and `md`. When omitted, they inherit `BloomScope`; `xs` maps to the compact rung and `lg` to the regular rung. An explicit size overrides the scope.
+
+## Outlined quantity capsule
+
+```tsx
+<Stepper appearance="outline" value={quantity} onValueChange={setQuantity}
+  min={1} max={available} accessibilityLabel="Quantity" />
+```
+
+The outline appearance joins the controls in a flat, theme-colored capsule with
+a 1px border and full rounding. The default `md` capsule is 40px tall with 20px
+glyphs and 14px semibold value text; `sm` is 36px tall with 18px glyphs and 13px
+text. The value keeps a minimum width of 2.8 times its font size and can grow for
+formatted values. Actions have expanded hit areas without separate disc fills.
+Fine pointers scale an enabled glyph action to 1.1 on hover and .95 on press;
+native uses the same press feedback. Reduced motion disables that scaling.
+Keyboard behavior, limits, disabled state, `Field` membership and `onRemove`
+are identical to the separate appearance. `StepperRow` forwards `appearance`.

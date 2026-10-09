@@ -325,7 +325,7 @@ export type { InputGroupProps, InputGroupAddonProps } from './input-group';
 export { RangeSlider, Slider } from './slider';
 export type { RangeSliderProps, SliderProps } from './slider';
 export { Stepper, StepperRow } from './stepper';
-export type { StepperProps, StepperRowProps, StepperSize } from './stepper';
+export type { StepperProps, StepperRowProps, StepperSize, StepperAppearance } from './stepper';
 
 // Bottom sheet
 export { BottomSheet } from './bottom-sheet';

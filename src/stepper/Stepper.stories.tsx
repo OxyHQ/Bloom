@@ -101,3 +101,19 @@ export const NarrowAndWide: Story = {
     );
   },
 };
+
+/** Capsule and default side by side, including every boundary action. */
+export const Outline: Story = {
+  render: function OutlineStepper() {
+    const [value, setValue] = useState(2);
+    const [removed, setRemoved] = useState(0);
+    return <View style={{ gap: 32, padding: 32, alignItems: 'flex-start' }}>
+      <Stepper appearance="outline" value={value} onValueChange={setValue} min={1} max={10} accessibilityLabel="Quantity" testID="outline-stepper" />
+      <Stepper appearance="outline" size="sm" value={value} onValueChange={setValue} min={1} max={10} accessibilityLabel="Compact quantity" testID="compact-stepper" />
+      <Stepper appearance="outline" value={1} onValueChange={() => {}} min={1} onRemove={() => setRemoved(n => n + 1)} accessibilityLabel="Removable quantity" testID="remove-stepper" />
+      <Stepper appearance="outline" value={2} onValueChange={setValue} disabled accessibilityLabel="Disabled quantity" testID="disabled-stepper" />
+      <Stepper value={value} onValueChange={setValue} min={1} max={10} accessibilityLabel="Separate quantity" testID="separate-stepper" />
+      <Text testID="remove-count">{removed}</Text>
+    </View>;
+  },
+};

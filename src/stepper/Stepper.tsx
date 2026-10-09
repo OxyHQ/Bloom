@@ -2,7 +2,9 @@ import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback } from 'react';
 import { Platform, View, type AccessibilityActionEvent } from 'react-native';
 
-import { Button } from '../button';
+import { Button, type ButtonProps } from '../button';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { webDataSet } from '../styles/web-data';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { RiAddLine } from '../icons/remix/RiAddLine';
@@ -71,6 +73,7 @@ function stepperClamp(raw: number, min: number, max: number | undefined, step: n
 }
 
 const STYLE_ID = 'bloom-stepper-web-css';
+const OUTLINE_ACTION = '.bloom-stepper-outline-action';
 const VALUE = '[data-bloom-stepper-value]';
 const BLOOM_STEPPER_CSS = interactiveWebCss({
   selector: VALUE,
@@ -82,7 +85,54 @@ const BLOOM_STEPPER_CSS = interactiveWebCss({
   transition: 'box-shadow 120ms ease',
   focus: { mode: 'ring' },
   disabled: { opacity: null },
+}) + interactiveWebCss({
+  selector: OUTLINE_ACTION,
+  varPrefix: 'bloom-stepper-action',
+  reset: 'none',
+  transition: 'transform 150ms ease, color 150ms ease',
+  pressScale: true,
+  disabled: { opacity: null },
+  extraRules: `
+    ${OUTLINE_ACTION}::after { content: ''; position: absolute; inset: -12px; }
+    @media (hover: hover) and (pointer: fine) {
+      ${OUTLINE_ACTION}:not(:disabled):not([aria-disabled="true"]):hover { transform: scale(1.1); }
+      ${OUTLINE_ACTION}:not(:disabled):not([aria-disabled="true"]):active { transform: scale(.95); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      ${OUTLINE_ACTION} { transition: none; }
+      ${OUTLINE_ACTION}:not(:disabled):not([aria-disabled="true"]):hover,
+      ${OUTLINE_ACTION}:not(:disabled):not([aria-disabled="true"]):active { transform: none; }
+    }
+  `,
 });
+
+const AnimatedButton = Animated.createAnimatedComponent(Button);
+
+/** Plain actions retain Button's disabled, label and activation contracts. */
+function OutlineAction({ size, ...props }: ButtonProps) {
+  const { colors } = useTheme();
+  const reduced = usePrefersReducedMotion();
+  const scale = useSharedValue(1);
+  const animated = useAnimatedStyle(() => ({ transform: [{ scale: reduced ? 1 : scale.value }] }), [scale, reduced]);
+  const setPressed = (pressed: boolean) => {
+    if (IS_WEB) return;
+    scale.value = reduced ? 1 : withTiming(pressed ? .95 : 1, { duration: 150 });
+  };
+  const Action = IS_WEB ? Button : AnimatedButton;
+  const side = size === 'sm' ? 18 : 20;
+  const actionStyle: WebCssStyle = {
+    width: side, height: side, paddingLeft: 0, paddingRight: 0,
+    backgroundColor: 'transparent', overflow: 'visible',
+    '--bloom-stepper-action-ring': colors.primary,
+    '--bloom-stepper-action-press-scale': '.95',
+  };
+  return <Action {...props} size={size} appearance="plain" material="flat"
+    colors={{ background: 'transparent', foreground: colors.text }}
+    iconSize={side} hitSlop={12}
+    className={IS_WEB ? 'bloom-stepper-outline-action' : undefined}
+    onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)}
+    style={[actionStyle, !IS_WEB && animated]} />;
+}
 
 function StepperComponent({
   value,
@@ -92,6 +142,7 @@ function StepperComponent({
   step = 1,
   disabled: disabledProp = false,
   size: sizeProp,
+  appearance = 'separate',
   formatValue,
   accessibilityLabel,
   decrementLabel: decrementLabelProp,
@@ -118,6 +169,9 @@ function StepperComponent({
   useAccessibleNameWarning('Stepper', field.accessibilityLabel);
   useInteractiveWebCss(STYLE_ID, BLOOM_STEPPER_CSS);
   const config = SIZE_CONFIG[size];
+  const outlined = appearance === 'outline';
+  const Action = outlined ? OutlineAction : Button;
+  const outlineFontSize = size === 'sm' ? 13 : 14;
 
   const canDecrement = !disabled && value > min;
   const canIncrement = !disabled && (max === undefined || value < max);
@@ -179,8 +233,8 @@ function StepperComponent({
     : {};
 
   const valueStyle: WebCssStyle = {
-    minWidth: config.valueWidth,
-    height: config.height,
+    minWidth: outlined ? outlineFontSize * 2.8 : config.valueWidth,
+    height: outlined ? 22 : config.height,
     paddingLeft: 2,
     paddingRight: 2,
     borderRadius: 8,
@@ -198,9 +252,13 @@ function StepperComponent({
       accessibilityLabel={field.accessibilityLabel}
       aria-describedby={field.describedBy}
       aria-disabled={disabled || undefined}
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: config.gap }, style]}
+      style={[{ flexDirection: 'row', alignItems: 'center', gap: outlined ? 0 : config.gap }, outlined && {
+        alignSelf: 'flex-start', height: size === 'sm' ? 36 : 40,
+        paddingLeft: 8, paddingRight: 8, borderWidth: 1, borderRadius: 9999,
+        borderColor: theme.colors.border, backgroundColor: theme.colors.background,
+      }, style]}
     >
-      <Button
+      <Action
 
         size={config.button}
         iconOnly
@@ -229,9 +287,10 @@ function StepperComponent({
         style={valueStyle}
       >
         <Text
-          variant={config.type}
+          variant={outlined ? 'body-semibold' : config.type}
           numberOfLines={1}
           style={{
+            ...(outlined ? { fontSize: outlineFontSize, lineHeight: 18 } : null),
             color: disabled ? theme.colors.textTertiary : theme.colors.text,
             fontVariant: ['tabular-nums'],
             textAlign: 'center',
@@ -240,7 +299,7 @@ function StepperComponent({
           {label}
         </Text>
       </View>
-      <Button
+      <Action
 
         size={config.button}
         iconOnly
