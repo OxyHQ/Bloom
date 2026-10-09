@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { View } from 'react-native';
+import { styled } from 'react-native-css';
+import { View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Meter } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
@@ -28,7 +29,9 @@ import type { RatingBarProps } from './types';
 
 const BAR_WIDTH = 96;
 
-function RatingBarComponent({ label, value, max = 5, display, labelWidth, style, testID }: RatingBarProps) {
+function RatingBarComponent({ label, value, max = 5, display, labelWidth, style, testID, labelStyle, displayStyle, trackStyle, fillClassName }: RatingBarProps & {
+  labelStyle?: StyleProp<TextStyle>; displayStyle?: StyleProp<TextStyle>; trackStyle?: StyleProp<ViewStyle>;
+}) {
   const theme = useTheme();
   const safeMax = max > 0 ? max : 1;
 
@@ -45,6 +48,7 @@ function RatingBarComponent({ label, value, max = 5, display, labelWidth, style,
         style={[
           { color: theme.colors.text },
           labelWidth === undefined ? { flex: 1, minWidth: 0 } : { width: labelWidth },
+          labelStyle,
         ]}
       >
         {label}
@@ -57,14 +61,15 @@ function RatingBarComponent({ label, value, max = 5, display, labelWidth, style,
         valueText={display}
         testID={testID ? `${testID}-bar` : undefined}
         fillTestID={testID ? `${testID}-fill` : undefined}
-        style={labelWidth === undefined ? { width: BAR_WIDTH } : { flex: 1, minWidth: 0 }}
+        fillClassName={fillClassName}
+        style={[labelWidth === undefined ? { width: BAR_WIDTH } : { flex: 1, minWidth: 0 }, trackStyle]}
       />
       {display != null && (
         <Text
           variant="body-semibold"
           importantForAccessibility="no"
           accessibilityElementsHidden
-          style={{ color: theme.colors.text, minWidth: 28, textAlign: 'right', fontVariant: ['tabular-nums'] }}
+          style={[{ color: theme.colors.text, minWidth: 28, textAlign: 'right', fontVariant: ['tabular-nums'] }, displayStyle]}
         >
           {display}
         </Text>
@@ -73,5 +78,5 @@ function RatingBarComponent({ label, value, max = 5, display, labelWidth, style,
   );
 }
 
-export const RatingBar = memo(RatingBarComponent);
+export const RatingBar = memo(styled(RatingBarComponent, { className: 'style', labelClassName: 'labelStyle', displayClassName: 'displayStyle', trackClassName: 'trackStyle' }));
 RatingBar.displayName = 'RatingBar';

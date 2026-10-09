@@ -148,3 +148,32 @@ export const LongContent: Story = {
     );
   },
 };
+
+export const AuthoredSurface: Story = {
+  render: function AuthoredSurface() {
+    const [value, setValue] = useState<string | string[] | undefined>();
+    return <View style={{ padding: 24, gap: 16 }}>
+      <button data-testid="collapse-external" onClick={() => setValue(undefined)}>Collapse externally</button>
+      <Accordion value={value} onValueChange={setValue} className="bloom-demo-accordion" testID="authored-accordion"
+        transition={{ duration: 250, easing: [.23, 1, .32, 1] }}>
+        <AccordionItem value="details" className="bloom-demo-accordion-item">
+          <AccordionTrigger className="bloom-demo-accordion-trigger">Details</AccordionTrigger>
+          <AccordionContent className="bloom-demo-accordion-panel" contentClassName="bloom-demo-accordion-body">
+            <input aria-label="Expanded input" defaultValue="Retained content" />
+            <div style={{ height: 900 }}>Tall content remains measurable while collapsed.</div>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="more"><AccordionTrigger>More</AccordionTrigger><AccordionContent>Another panel</AccordionContent></AccordionItem>
+      </Accordion>
+      <button data-testid="after-accordion">After accordion</button>
+    </View>;
+  },
+};
+
+export const StyleOverrides: Story = {
+  render: () => <Accordion value="a" onValueChange={() => {}} style={[{ paddingHorizontal: 12 }, { width: 360 }]}>
+    <AccordionItem value="a"><AccordionTrigger style={{ paddingVertical: 16, paddingHorizontal: 0 }} textStyle={{ fontSize: 18, lineHeight: 20 }}>Style overrides</AccordionTrigger>
+      <AccordionContent><Text>Measured body</Text></AccordionContent>
+    </AccordionItem>
+  </Accordion>,
+};

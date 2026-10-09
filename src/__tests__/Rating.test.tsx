@@ -475,3 +475,11 @@ it('exposes required and invalid Field state on the rating radiogroup', () => {
   expect(group.getAttribute('aria-invalid')).toBe('true');
   expect(document.getElementById(group.getAttribute('aria-describedby')!)?.textContent).toContain('Choose a rating');
 });
+
+it('can render only the five glyphs at a custom size while preserving the complete accessible name', () => {
+  mount(<Rating value={4.5} count={12} variant="stars" showValue={false} starSize={20} testID="rating" />);
+  const rating = byTestId('rating');
+  expect(rating.textContent).not.toContain('4.5');
+  expect(rating.getAttribute('aria-label')).toContain('4.5');
+  expect(Array.from(rating.querySelectorAll('svg')).every(svg => svg.getAttribute('width') === '20')).toBe(true);
+});

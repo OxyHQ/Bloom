@@ -35,7 +35,10 @@ const [open, setOpen] = useState<string | string[] | undefined>('shipping');
 | `value`         | which section(s) are open: a string for `single`, an array for `multiple` |
 | `onValueChange` | receives the next value, or `undefined` when everything closes         |
 | `disabled`      | per `AccordionItem`, a section that cannot be opened                   |
-| `icon`          | per `AccordionTrigger`, replaces the default chevron                   |
+| `icon`          | per `AccordionTrigger`, appears before the label                   |
+| `className` | on Root, Item, Trigger and Content: styles that component’s actual host |
+| `contentClassName` | on Content: styles its measured inner body, including padding |
+| `transition` | default `"spring"`, or `{ duration, easing? }` for a timed reveal and chevron |
 
 **It is fully controlled — `value` and `onValueChange` are required.** There is
 no uncontrolled mode and no `collapsible` flag: closing the last open section
@@ -67,3 +70,37 @@ rather than by a layout animation. On web that distinction is load-bearing:
 an animation started from a Reanimated mapper never ticks, so the obvious
 "animate the content in" silently does nothing. If you nest something that
 animates its own height, let one of the two own the measurement.
+
+
+### Authored surfaces and motion
+
+Defaults remain in the base CSS layer on web; component and utility classes
+can override geometry, typography and paint. On native the same class props
+resolve after default styles. `contentClassName` belongs to the measured inner
+body, so changing its padding also changes the reveal's measured height.
+`style` remains available; a string trigger label inherits trigger typography,
+and `textStyle` overrides the label explicitly.
+
+```tsx
+<Accordion value={open} onValueChange={setOpen}
+  transition={{ duration: 250, easing: [0.23, 1, 0.32, 1] }}>
+  <AccordionItem value="details" className="border-border">
+    <AccordionTrigger className="px-0 py-4">Details</AccordionTrigger>
+    <AccordionContent contentClassName="px-0 pb-4">
+      <Text>Details stay mounted while the section is closed.</Text>
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+```
+
+`duration` is milliseconds; zero settles immediately. `easing` is a cubic Bézier
+with x control points in `0..1`, defaulting to CSS ease. Omitting `transition`
+keeps the existing spring recipes. The operating system's reduced-motion
+preference takes priority, including changes while an animation is running.
+
+Each trigger controls a uniquely identified, labelled region on web. A closed
+region is inert and hidden from accessibility, while remaining mounted and
+measurable. If a controlled collapse hides the focused field, focus returns to
+its trigger. Native uses the corresponding hidden-descendant accessibility
+properties. Input values therefore survive a close/open cycle without leaving
+closed fields in keyboard navigation.

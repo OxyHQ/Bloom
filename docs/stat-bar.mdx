@@ -34,6 +34,7 @@ with a label is `StatBar`; a bar inside a card is that card's business.
 | `accessibilityLabel`  | what the bar measures — REQUIRED                               |
 | `valueText`           | `aria-valuetext`, the reading ("4 of 5" rather than "80%")     |
 | `decorative`          | no role at all, for one segment of a larger progressbar        |
+| `className` / `fillClassName` | actual track and fill hosts; classes override default geometry and paint, while fill width remains data-owned |
 | `fillTestID`          | the fill's own `testID`; defaults to `` `${testID}-fill` ``    |
 
 `MeterRing` takes `size` (56) and `thickness` (5) instead of `height`/`width`,

@@ -1,11 +1,7 @@
 import React, {
-  createContext,
   memo,
   useCallback,
   useContext,
-  useEffect,
-  useMemo,
-  useRef,
   useState,
 } from 'react';
 import {
@@ -14,47 +10,24 @@ import {
   Pressable,
   Animated,
   type LayoutChangeEvent,
-  type ViewStyle,
+  StyleSheet,
+  type TextStyle,
 } from 'react-native';
 
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { DISABLED_OPACITY, animation, borderRadius, space } from '../styles/tokens';
+import { DISABLED_OPACITY, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
+import { styled } from 'react-native-css';
+import { AccordionContext, AccordionItemContext } from './context';
+import { useAccordionState, useAccordionItem, useAccordionMotion } from './use-accordion';
 import type {
   AccordionProps,
   AccordionItemProps,
   AccordionTriggerProps,
   AccordionContentProps,
-  AccordionType,
 } from './types';
-
-// ---- Context ----
-
-interface AccordionContextValue {
-  expandedValues: Set<string>;
-  toggle: (value: string) => void;
-  type: AccordionType;
-}
-
-const AccordionContext = createContext<AccordionContextValue>({
-  expandedValues: new Set(),
-  toggle: () => {},
-  type: 'single',
-});
-
-interface AccordionItemContextValue {
-  value: string;
-  isExpanded: boolean;
-  disabled: boolean;
-}
-
-const AccordionItemContext = createContext<AccordionItemContextValue>({
-  value: '',
-  isExpanded: false,
-  disabled: false,
-});
 
 // ---- Accordion Root ----
 
@@ -62,38 +35,12 @@ const AccordionComponent: React.FC<AccordionProps> = ({
   value,
   onValueChange,
   type = 'single',
+  transition,
   children,
   style,
   testID,
 }) => {
-  const expandedValues = useMemo(() => {
-    if (value == null) return new Set<string>();
-    if (Array.isArray(value)) return new Set(value);
-    return new Set([value]);
-  }, [value]);
-
-  const toggle = useCallback(
-    (itemValue: string) => {
-      if (type === 'single') {
-        const next = expandedValues.has(itemValue) ? undefined : itemValue;
-        onValueChange(next);
-      } else {
-        const next = new Set(expandedValues);
-        if (next.has(itemValue)) {
-          next.delete(itemValue);
-        } else {
-          next.add(itemValue);
-        }
-        onValueChange(Array.from(next));
-      }
-    },
-    [type, expandedValues, onValueChange],
-  );
-
-  const contextValue = useMemo(
-    () => ({ expandedValues, toggle, type }),
-    [expandedValues, toggle, type],
-  );
+  const contextValue = useAccordionState({ value, onValueChange, type, transition, children });
 
   return (
     <AccordionContext.Provider value={contextValue}>
@@ -112,14 +59,8 @@ const AccordionItemComponent: React.FC<AccordionItemProps> = ({
   disabled = false,
   style,
 }) => {
-  const { expandedValues } = useContext(AccordionContext);
-  const isExpanded = expandedValues.has(value);
+  const itemContext = useAccordionItem(value, disabled);
   const theme = useTheme();
-
-  const itemContext = useMemo(
-    () => ({ value, isExpanded, disabled }),
-    [value, isExpanded, disabled],
-  );
 
   return (
     <AccordionItemContext.Provider value={itemContext}>
@@ -151,21 +92,18 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 }) => {
   const theme = useTheme();
   const { toggle } = useContext(AccordionContext);
-  const { value, isExpanded, disabled } = useContext(AccordionItemContext);
-  const rotateAnim = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
+  const { value, isExpanded, disabled, triggerId, contentId } = useContext(AccordionItemContext);
+  const rotateAnim = useAccordionMotion(isExpanded, 'trigger', SUPPORTS_NATIVE_DRIVER);
+  const resolved = StyleSheet.flatten(style) as TextStyle | undefined;
+  const callerText: TextStyle = {};
+  for (const key of ['color', 'fontSize', 'fontWeight', 'fontFamily', 'lineHeight', 'letterSpacing'] as const) {
+    if (resolved?.[key] !== undefined) Object.assign(callerText, { [key]: resolved[key] });
+  }
   // Drive press-opacity via state, not Pressable's function-form `style`,
   // which NativeWind v4's css-interop swallows (dropping the trigger's base
   // layout: flexDirection, padding, gap).
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
     useInteractionState();
-
-  useEffect(() => {
-    Animated.spring(rotateAnim, {
-      toValue: isExpanded ? 1 : 0,
-      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
-      ...animation.spring.snappy,
-    }).start();
-  }, [isExpanded, rotateAnim]);
 
   const handlePress = useCallback(() => {
     if (!disabled) {
@@ -180,6 +118,8 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 
   return (
     <Pressable
+      nativeID={triggerId}
+      {...{ 'aria-controls': contentId }}
       style={[
         {
           flexDirection: 'row',
@@ -217,6 +157,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
                 fontWeight: '600',
                 color: theme.colors.text,
               },
+              callerText,
               textStyle,
             ]}
           >
@@ -235,12 +176,13 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 
 // ---- Accordion Content ----
 
-const AccordionContentComponent: React.FC<AccordionContentProps> = ({
+const AccordionContentComponent: React.FC<AccordionContentProps & { contentStyle?: AccordionContentProps['style'] }> = ({
   children,
   style,
+  contentStyle,
 }) => {
-  const { isExpanded } = useContext(AccordionItemContext);
-  const heightAnim = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
+  const { isExpanded, contentId, triggerId } = useContext(AccordionItemContext);
+  const heightAnim = useAccordionMotion(isExpanded, 'content', false);
   // The content's own height, measured. The reveal used to interpolate to a
   // hardcoded 500 ("reasonable max"), which is not a max at all: `overflow:
   // hidden` above it meant anything taller was CLIPPED, silently, with no error
@@ -254,14 +196,6 @@ const AccordionContentComponent: React.FC<AccordionContentProps> = ({
     setContentHeight((prev) => (Math.abs(prev - next) > 0.5 ? next : prev));
   }, []);
 
-  useEffect(() => {
-    Animated.spring(heightAnim, {
-      toValue: isExpanded ? 1 : 0,
-      useNativeDriver: false,
-      ...animation.spring.gentle,
-    }).start();
-  }, [isExpanded, heightAnim]);
-
   const opacity = heightAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 1],
@@ -274,6 +208,12 @@ const AccordionContentComponent: React.FC<AccordionContentProps> = ({
 
   return (
     <Animated.View
+      nativeID={contentId}
+      {...{ 'aria-labelledby': triggerId }}
+      aria-hidden={!isExpanded}
+      pointerEvents={isExpanded ? 'auto' : 'none'}
+      accessibilityElementsHidden={!isExpanded}
+      importantForAccessibility={isExpanded ? 'auto' : 'no-hide-descendants'}
       style={[
         {
           overflow: 'hidden',
@@ -289,7 +229,7 @@ const AccordionContentComponent: React.FC<AccordionContentProps> = ({
     >
       <View
         onLayout={handleContentLayout}
-        style={{ paddingBottom: space.md, paddingHorizontal: space.xs }}
+        style={[{ paddingBottom: space.md, paddingLeft: space.xs, paddingRight: space.xs }, contentStyle]}
       >
         {children}
       </View>
@@ -297,14 +237,14 @@ const AccordionContentComponent: React.FC<AccordionContentProps> = ({
   );
 };
 
-export const Accordion = memo(AccordionComponent);
+export const Accordion = memo(styled(AccordionComponent, { className: 'style' }));
 Accordion.displayName = 'Accordion';
 
-export const AccordionItem = memo(AccordionItemComponent);
+export const AccordionItem = memo(styled(AccordionItemComponent, { className: 'style' }));
 AccordionItem.displayName = 'AccordionItem';
 
-export const AccordionTrigger = memo(AccordionTriggerComponent);
+export const AccordionTrigger = memo(styled(AccordionTriggerComponent, { className: 'style' }));
 AccordionTrigger.displayName = 'AccordionTrigger';
 
-export const AccordionContent = memo(AccordionContentComponent);
+export const AccordionContent = memo(styled(AccordionContentComponent, { className: 'style', contentClassName: 'contentStyle' }));
 AccordionContent.displayName = 'AccordionContent';

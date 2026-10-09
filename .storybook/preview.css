@@ -25,3 +25,17 @@ body { margin: 0; }
   .bloom-demo-purchase-disabled { background: #eef0f1; color: #888; border-color: transparent; box-shadow: none; }
   @media (prefers-reduced-motion: reduce) { .bloom-demo-purchase { transition: none; } }
 }
+
+@layer components {
+  .bloom-demo-accordion { gap:8px; width:360px; }
+  .bloom-demo-accordion-item { border-bottom-color:#5433eb; }
+  .bloom-demo-accordion-trigger { padding:16px 0; font-size:18px; line-height:20px; }
+  .bloom-demo-accordion-panel { background:#eef0f1; }
+  .bloom-demo-accordion-body { padding:0 0 16px; }
+  .bloom-demo-rating-row { gap:8px; }
+  .bloom-demo-rating-label { font-size:10px; line-height:13px; font-weight:600; }
+  .bloom-demo-rating-track { height:8px; border-radius:9999px; background:#eef0f1; }
+  .bloom-demo-rating-fill { border-radius:9999px; background:#121212; }
+  .dark .bloom-demo-rating-track { background:#404040; }
+  .dark .bloom-demo-rating-fill { background:#fff; }
+}
