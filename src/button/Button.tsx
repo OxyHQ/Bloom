@@ -1,6 +1,6 @@
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import type { LinkButtonProps } from './types';
-import React, { forwardRef, useMemo, useRef, useEffect, memo, type ComponentType } from 'react';
+import React, { forwardRef, useMemo, useRef, useEffect, memo, type ComponentType, createContext, useContext } from 'react';
 import { resolveIconSlot } from '../icons/render-icon';
 import {
   ActivityIndicator,
@@ -154,7 +154,6 @@ type ButtonPressableProps = Pick<
   | 'accessibilityLabel'
   | 'accessibilityRole'
   | 'accessibilityState'
-  | 'children'
   | 'className'
   | 'disabled'
   | 'hitSlop'
@@ -168,12 +167,67 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { style?: StyleProp<ViewStyle>; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
+> & { children?: React.ReactNode; style?: StyleProp<TextStyle>; baseStyle?: StyleProp<ViewStyle>; resolvedTextStyle?: TextStyle; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
 
-const ButtonPressable: ComponentType<ButtonPressableProps> = Pressable;
+const ContentStyleContext = createContext<{ text?: TextStyle; layout?: ViewStyle }>({});
 
-const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<View>> = styled(ButtonPressable, {
-  className: 'style',
+// Resolve utilities without mixing Bloom's defaults into their input. The
+// defaults are merged only after interop, so caller classes have final say.
+const ButtonPressable = forwardRef<View, ButtonPressableProps>(function ButtonPressable({
+  baseStyle, style, resolvedTextStyle, children, ...props
+}, ref) {
+  const layout = StyleSheet.flatten(style);
+  return <Pressable {...props} ref={ref} style={[baseStyle, style]}>
+    <ContentStyleContext.Provider value={{ text: resolvedTextStyle, layout }}>
+      {children}
+    </ContentStyleContext.Provider>
+  </Pressable>;
+});
+
+function ButtonContent({ loading, gap, children }: {
+  loading: boolean; gap: number; children: (style: TextStyle) => React.ReactNode;
+}) {
+  const { text, layout } = useContext(ContentStyleContext);
+  const contentLayout = layout && {
+    ...(layout.flexDirection !== undefined && { flexDirection: layout.flexDirection }),
+    ...(layout.flexWrap !== undefined && { flexWrap: layout.flexWrap }),
+    ...(layout.alignItems !== undefined && { alignItems: layout.alignItems }),
+    ...(layout.justifyContent !== undefined && { justifyContent: layout.justifyContent }),
+    ...(layout.gap !== undefined && { gap: layout.gap }),
+    ...(layout.rowGap !== undefined && { rowGap: layout.rowGap }),
+    ...(layout.columnGap !== undefined && { columnGap: layout.columnGap }),
+  };
+  return <View pointerEvents={loading ? 'none' : undefined}
+    style={[styles.content, { gap }, contentLayout, loading && { opacity: 0 }]}
+    importantForAccessibility={loading ? 'no-hide-descendants' : undefined}
+    accessibilityElementsHidden={loading || undefined}>
+    {children(text ?? {})}
+  </View>;
+}
+
+function ButtonLoading({ color, fallback }: { color?: string; fallback: string }) {
+  const { text } = useContext(ContentStyleContext);
+  return <View pointerEvents="none" style={styles.loadingOverlay}>
+    <ActivityIndicator size="small" color={color ?? text?.color ?? fallback} />
+  </View>;
+}
+
+const ButtonInterop: ComponentType<ButtonPressableProps> = ButtonPressable;
+const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<View>> = styled(ButtonInterop, {
+  className: {
+    target: 'style',
+    nativeStyleMapping: {
+      color: 'resolvedTextStyle.color',
+      fontFamily: 'resolvedTextStyle.fontFamily',
+      fontSize: 'resolvedTextStyle.fontSize',
+      fontWeight: 'resolvedTextStyle.fontWeight',
+      fontStyle: 'resolvedTextStyle.fontStyle',
+      lineHeight: 'resolvedTextStyle.lineHeight',
+      letterSpacing: 'resolvedTextStyle.letterSpacing',
+      textAlign: 'resolvedTextStyle.textAlign',
+      textDecorationLine: 'resolvedTextStyle.textDecorationLine',
+    },
+  },
 });
 
 const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
@@ -339,54 +393,44 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       : (android ? ANDROID_SIZE_HIT_SLOP : SIZE_HIT_SLOP)[size];
 
   const IconFromProp = icon != null && isIconComponent(icon) ? icon : null;
-  const iconNode = IconFromProp ? (
-    <IconFromProp width={iconSize} height={iconSize} fill={paint.foreground} />
-  ) : (
-    (icon as React.ReactNode) ?? null
-  );
+  const content = (classText: TextStyle) => {
+    const foreground = typeof classText.color === 'string' ? classText.color : paint.foreground;
+    const iconNode = IconFromProp ? (
+      <IconFromProp width={iconSize} height={iconSize} fill={foreground} />
+    ) : (
+      (icon as React.ReactNode) ?? null
+    );
 
-  const content = (
-    <>
-      {resolveIconSlot(renderLeadingIcon, iconSize, paint.foreground, () =>
-        LeadingIcon ? (
-          <LeadingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
-        ) : null,
-      )}
-      {leading}
-      {iconNode}
-      {children != null && (!isSquare || (!renderLeadingIcon && !LeadingIcon && !iconNode))
-        ? renderTextContent(children, text => (
-          <Text variant={textVariant ?? geometry.type} numberOfLines={numberOfLines} style={[computedTextStyle, textStyle]}>
-            {text}
-          </Text>
-        )) : null}
-      {trailing}
-      {!isSquare
-        ? resolveIconSlot(renderTrailingIcon, iconSize, paint.foreground, () =>
-            TrailingIcon ? (
-              <TrailingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
-            ) : null,
-          )
-        : null}
-    </>
-  );
+    return (
+      <>
+        {resolveIconSlot(renderLeadingIcon, iconSize, foreground, () =>
+          LeadingIcon ? (
+            <LeadingIcon width={iconSize} height={iconSize} fill={foreground} />
+          ) : null,
+        )}
+        {leading}
+        {iconNode}
+        {children != null && (!isSquare || (!renderLeadingIcon && !LeadingIcon && !iconNode))
+          ? renderTextContent(children, text => (
+            <Text variant={textVariant ?? geometry.type} numberOfLines={numberOfLines} style={[computedTextStyle, classText, textStyle]}>
+              {text}
+            </Text>
+          )) : null}
+        {trailing}
+        {!isSquare
+          ? resolveIconSlot(renderTrailingIcon, iconSize, foreground, () =>
+              TrailingIcon ? (
+                <TrailingIcon width={iconSize} height={iconSize} fill={foreground} />
+              ) : null,
+            )
+          : null}
+      </>
+    );
+  };
 
   const handlePress = isInteractionBlocked
     ? undefined
     : onPress ?? (href != null ? () => void Linking.openURL(href) : undefined);
-
-  // Retain one content host for its entire lifetime. Match caller layout
-  // overrides inside it, while padding and the outer button box stay put.
-  const callerStyle = StyleSheet.flatten(style);
-  const contentLayout = callerStyle && {
-    ...(callerStyle.flexDirection !== undefined && { flexDirection: callerStyle.flexDirection }),
-    ...(callerStyle.flexWrap !== undefined && { flexWrap: callerStyle.flexWrap }),
-    ...(callerStyle.alignItems !== undefined && { alignItems: callerStyle.alignItems }),
-    ...(callerStyle.justifyContent !== undefined && { justifyContent: callerStyle.justifyContent }),
-    ...(callerStyle.gap !== undefined && { gap: callerStyle.gap }),
-    ...(callerStyle.rowGap !== undefined && { rowGap: callerStyle.rowGap }),
-    ...(callerStyle.columnGap !== undefined && { columnGap: callerStyle.columnGap }),
-  };
 
   return (
     <StyledPressable
@@ -396,10 +440,8 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       accessibilityElementsHidden={accessibilityElementsHidden}
       importantForAccessibility={importantForAccessibility}
       className={className}
-      style={[
-        baseStyles,
-        style,
-      ]}
+      baseStyle={baseStyles}
+      style={style}
       onLongPress={isInteractionBlocked ? undefined : onLongPress}
       onPress={handlePress ? event => {
         if (stopPropagation) event.stopPropagation();
@@ -428,24 +470,8 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       {paint.surface ? (
         <SurfacePaint fill={paint.background} radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS} />
       ) : null}
-      <View
-        pointerEvents={loading ? 'none' : undefined}
-        style={[
-          styles.content,
-          { gap: geometry.gap },
-          contentLayout,
-          loading && { opacity: 0 },
-        ]}
-        importantForAccessibility={loading ? 'no-hide-descendants' : undefined}
-        accessibilityElementsHidden={loading || undefined}
-      >
-        {content}
-      </View>
-      {loading ? (
-        <View pointerEvents="none" style={styles.loadingOverlay}>
-          <ActivityIndicator size="small" color={loadingColor ?? paint.foreground} />
-        </View>
-      ) : null}
+      <ButtonContent loading={loading} gap={geometry.gap}>{content}</ButtonContent>
+      {loading ? <ButtonLoading color={loadingColor} fallback={paint.foreground} /> : null}
     </StyledPressable>
   );
 });

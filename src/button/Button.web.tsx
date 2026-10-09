@@ -62,10 +62,18 @@ const DISABLED = '.bloom-btn:disabled:not([aria-busy="true"]),\n.bloom-btn[aria-
  * applies none of them, so a modifier class alone proves nothing about whether
  * an underline is drawn.
  */
-export const BLOOM_BUTTON_CSS = interactiveWebCss({
+export const BLOOM_BUTTON_CSS = `@layer base {\n${interactiveWebCss({
   selector: '.bloom-btn',
   varPrefix: 'bloom-btn',
   base: `
+    height: var(--bloom-btn-height);
+    width: var(--bloom-btn-width, auto);
+    padding-inline: var(--bloom-btn-padding);
+    border-radius: var(--bloom-btn-radius);
+    font-size: var(--bloom-btn-font-size);
+    line-height: var(--bloom-btn-line-height);
+    font-weight: var(--bloom-btn-font-weight);
+    letter-spacing: var(--bloom-btn-letter-spacing, normal);
     flex-direction: row;
     gap: var(--bloom-btn-gap, 2px);
     position: relative;
@@ -134,7 +142,7 @@ ${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-c
   transition: none;
 }
 }`,
-});
+})}\n}`;
 
 // ---------------------------------------------------------------------------
 //  Component
@@ -223,14 +231,13 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   const containerStyle = useMemo((): CSSProperties => {
     const shadow = palette.shadow ? BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] : 'none';
     const base: CSSProperties = {
-      height: geometry.height,
-      paddingLeft: geometry.paddingHorizontal,
-      paddingRight: geometry.paddingHorizontal,
-      borderRadius: BUTTON_RADIUS,
-      fontSize: geometry.fontSize,
-      lineHeight: `${geometry.lineHeight}px`,
-      fontWeight: Number(geometry.fontWeight),
-      letterSpacing: geometry.letterSpacing || undefined,
+      ['--bloom-btn-height' as string]: `${geometry.height}px`,
+      ['--bloom-btn-padding' as string]: `${geometry.paddingHorizontal}px`,
+      ['--bloom-btn-radius' as string]: `${BUTTON_RADIUS}px`,
+      ['--bloom-btn-font-size' as string]: `${geometry.fontSize}px`,
+      ['--bloom-btn-line-height' as string]: `${geometry.lineHeight}px`,
+      ['--bloom-btn-font-weight' as string]: geometry.fontWeight,
+      ['--bloom-btn-letter-spacing' as string]: geometry.letterSpacing ? `${geometry.letterSpacing}px` : 'normal',
       // CSS custom props consumed by the static stylesheet — see its header.
       ['--bloom-surface-rim' as string]: resolveSurfaceOptics(theme.isDark).rim,
       ['--bloom-surface-sheen' as string]: resolveSurfaceOptics(theme.isDark).sheenCss,
@@ -254,22 +261,30 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       ['--bloom-btn-border-active' as string]: palette.active.border,
       ['--bloom-btn-border-disabled' as string]: palette.disabled.border,
     };
+    // Keep the existing inline defaults for callers without utilities. When
+    // classes are present, the same defaults come from the base layer.
+    if (!className) Object.assign(base, {
+      height: geometry.height, paddingLeft: geometry.paddingHorizontal,
+      paddingRight: geometry.paddingHorizontal, borderRadius: BUTTON_RADIUS,
+      fontSize: geometry.fontSize, lineHeight: `${geometry.lineHeight}px`,
+      fontWeight: Number(geometry.fontWeight), letterSpacing: geometry.letterSpacing || undefined,
+    });
     if (isSquare) {
-      base.width = geometry.height;
-      base.paddingLeft = 0;
-      base.paddingRight = 0;
+      if (!className) Object.assign(base, { width: geometry.height, paddingLeft: 0, paddingRight: 0 });
+      (base as Record<string, unknown>)['--bloom-btn-width'] = `${geometry.height}px`;
+      (base as Record<string, unknown>)['--bloom-btn-padding'] = '0px';
     }
     if (isLink && !isSquare) {
       // LinkButton: no container at all — the label's own line box,
       // a 4px gap, and a 4px corner that only the focus ring shows.
-      base.height = undefined;
-      base.paddingLeft = 0;
-      base.paddingRight = 0;
-      base.borderRadius = 4;
+      if (!className) Object.assign(base, { height: undefined, paddingLeft: 0, paddingRight: 0, borderRadius: 4 });
+      (base as Record<string, unknown>)['--bloom-btn-height'] = 'auto';
+      (base as Record<string, unknown>)['--bloom-btn-padding'] = '0px';
+      (base as Record<string, unknown>)['--bloom-btn-radius'] = '4px';
       (base as Record<string, unknown>)['--bloom-btn-gap'] = `${LINK_BUTTON_GAP}px`;
     }
     return base;
-  }, [geometry, palette, theme.isDark, isSquare, isIconVariant, isLink, togglePressed, loading]);
+  }, [geometry, palette, theme.isDark, isSquare, isIconVariant, isLink, togglePressed, loading, className]);
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
@@ -293,7 +308,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     .join(' ');
 
   const spinnerColor =
-    loadingColor ?? (disabled ? palette.disabled.foreground : palette.rest.foreground);
+    loadingColor ?? 'currentColor';
 
   // Normalize the caller's `style` (single object, StyleProp array, or falsy)
   // into ONE flat plain object here, once, so neither raw-DOM merge site below

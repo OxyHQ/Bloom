@@ -85,3 +85,49 @@ Changing `loading` preserves the mounted content and its component state. The
 content remains in layout while hidden and a spinner covers the button. This
 also preserves icon-only content; `asChild` retains the identity and state of
 the supplied element while applying the disabled/busy contract.
+
+## Consumer classes
+
+`className` owns the properties it supplies, including height, padding, radius,
+font, fill, border, shadow and state styles. Unclaimed properties keep Bloom's
+defaults. Use `material="flat"` when classes paint the complete control;
+`surface` retains Bloom's optical layers. Explicit `style` and `textStyle`
+overrides still take precedence over ordinary classes.
+
+Web defaults live in the CSS `base` layer so a consumer's `components` or
+utility recipes can override them. Native resolves utilities separately and applies them after
+Bloom's defaults, and forwards resolved text styles to the built-in label and
+foreground color to icon renderers and the loading spinner. Custom child
+components remain responsible for their own explicit styles. Loading retains
+mounted content and uses the resolved foreground unless `loadingColor` is set.
+
+```tsx
+import { useReducedMotion } from 'react-native-reanimated';
+
+const reducedMotion = useReducedMotion();
+const interactive = !disabled && !loading;
+<Button material="flat" disabled={disabled} loading={loading}
+  className={[
+    'purchase-action',
+    disabled ? 'purchase-action-disabled' : '',
+    interactive ? 'purchase-action-interactive' : '',
+    interactive && !reducedMotion ? 'purchase-action-motion' : '',
+  ].join(' ')}>
+  Continue
+</Button>
+```
+
+`purchase-action` is a consumer-owned class, not a Bloom token. Its interaction
+class can define `:hover` and `:active`; the optional motion class can define
+`transform: scale(.99)` on `:active`. Removing interaction classes during loading
+keeps the rest paint stable. With react-native-css 3.0.7, native `:enabled` and
+`:not(...)` rules are discarded, and its runtime does not evaluate
+`prefers-reduced-motion`; use conditional classes with the `useReducedMotion` hook from
+`react-native-reanimated` for shared recipes.
+Web recipes can additionally use the reduced-motion media query.
+
+The same native resolver version has a separate upstream defect when one rule
+combines deferred `line-height` and compound `box-shadow`: the line height can
+remain unresolved. Composing typography utilities separately from the shadow
+recipe avoids that affected declaration combination. Bloom does not rewrite
+consumer CSS or patch the resolver.
