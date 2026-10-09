@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ChatComposer } from '../chat-composer/ChatComposer.web';
 import { BottomBar } from '../bottom-bar/index.web';
 import { Button } from '../button/index.web';
 import { RiInbox2Line, RiSearchLine } from '../icons/remix';
@@ -85,3 +86,35 @@ function Preview({ footer, width = 600, navigation = false, longLabels = false }
 export const FloatingOverMessage: Story = { render: args => <Preview footer={args} /> };
 export const AboveNavigation: Story = { render: args => <Preview footer={args} width={390} navigation /> };
 export const WrappedActions: Story = { render: args => <Preview footer={args} width={320} longLabels navigation /> };
+
+/** Document scrolling and a focus-controlled composer in a resizable column. */
+function DocumentComposerPage() {
+  const [wideRail, setWideRail] = useState(false);
+  const [rtl, setRtl] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [picked, setPicked] = useState('');
+  const clearance = usePageFooterInset();
+  return <View style={{ flexDirection: rtl ? 'row-reverse' : 'row', minHeight: 1800 }}>
+    <View style={{ width: wideRail ? 160 : 56, flexShrink: 0 }} testID="document-rail">
+      <Button onPress={() => setWideRail(value => !value)}>Resize rail</Button>
+      <Button onPress={() => setRtl(value => !value)}>Mirror layout</Button>
+    </View>
+    <View style={{ flex: 1, minWidth: 0 }} testID="document-column">
+      <View style={{ minHeight: 1800, paddingBottom: clearance }}>
+        <Text>Selected: {picked}</Text>
+        <Text testID="document-clearance">{clearance}</Text>
+      </View>
+      <PageFooter position="document" scrim="none" testID="document-footer">
+        <ChatComposer testID="document-composer" value={draft} onValueChange={setDraft}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          onSend={setPicked} suggestions={focused ? [{ id: 'one', label: 'First choice' }] : []}
+          onSelectSuggestion={suggestion => { setPicked(suggestion.label); setDraft(suggestion.label); }} />
+      </PageFooter>
+    </View>
+  </View>;
+}
+export const DocumentComposer: Story = {
+  parameters: { layout: 'fullscreen', bloomScroll: 'document' },
+  render: () => <BottomEdgeProvider><PageFooterProvider><DocumentComposerPage /></PageFooterProvider></BottomEdgeProvider>,
+};

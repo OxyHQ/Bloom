@@ -43,6 +43,13 @@ describe('PageFooter', () => {
     expect(screen.getByTestId('global').props.children).toBe(110);
   });
 
+  it('keeps document positioning inside the native bounded frame', () => {
+    (Platform as { OS: string }).OS = 'ios';
+    const screen = render(<Providers><PageFooter position="document" testID="footer" /></Providers>);
+    expect(resolvedStyle(screen.getByTestId('footer').props.style).position).toBe('absolute');
+    expect(screen.queryByTestId('footer-anchor')).toBeNull();
+  });
+
   it('uses safe bottom once on native and allows the shell to own it', () => {
     (Platform as { OS: string }).OS = 'ios';
     const screen = render(<Providers><Clearance /><PageFooter testID="footer" /></Providers>);

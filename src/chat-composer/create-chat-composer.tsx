@@ -210,13 +210,15 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
 
     const trimmed = text.trim();
     const hasAttachments = !!attachments && attachments.length > 0;
-    const showSend = canSend ?? (trimmed.length > 0 || hasAttachments);
+    const sendEnabled = canSend ?? (trimmed.length > 0 || hasAttachments);
+    const hasMic = !!(onMicPress || onMicPressIn || onMicPressOut);
+    const showSend = sendEnabled || !hasMic;
 
     const submit = useCallback(() => {
-      if (disabled || !showSend) return;
+      if (disabled || !sendEnabled) return;
       onSend?.(text);
       if (value === undefined) setText('');
-    }, [disabled, showSend, onSend, text, value, setText]);
+    }, [disabled, sendEnabled, onSend, text, value, setText]);
 
     const openSuggestions = !!suggestions && suggestions.length > 0;
 
@@ -436,12 +438,12 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                       tone="accent"
                       accessibilityLabel={labels.send}
                       onPress={submit}
-                      disabled={disabled}
+                      disabled={disabled || !sendEnabled}
                       iconSize={18}
                       testID={testID ? `${testID}-send` : undefined}
                     />
                   </SwapLayer>
-                  <SwapLayer shown={!showSend}>
+                  {hasMic ? <SwapLayer shown={!showSend}>
                     <ComposerIconButton
                       icon={RiMic2Line}
                       accessibilityLabel={labels.mic}
@@ -451,7 +453,7 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                       disabled={disabled}
                       testID={testID ? `${testID}-mic` : undefined}
                     />
-                  </SwapLayer>
+                  </SwapLayer> : null}
                 </View>
               </>
             )}

@@ -244,3 +244,15 @@ All of them take `style` and `testID`.
 The composer controls compose Bloom Button, including its press-in/out recording lifecycle. Each public component has a thin platform binding; shared factories receive Button, Surface, and overlay components explicitly. Web bindings name their `.web` dependencies, so built browser packages work without Metro-style extension resolution. No additional layout wrappers are introduced.
 
 Interactive controls use canonical `sm`/`md`/`lg` sizes and inherit `BloomScope` when omitted. Their geometry remains family-specific; unsupported `xs` uses the compact rung. ReactionPicker has only `sm`/`md`, mapping scoped `lg` to `md`. Display badges and read-only rating sizes retain their existing vocabulary.
+
+## Optional recording and suggestion focus
+
+Recording controls appear only when at least one mic callback is supplied.
+Without recording support, an empty draft shows a disabled send button;
+`canSend` controls whether submission is permitted, independently of the visible
+control. It is not necessary to enable empty sends to hide recording.
+
+Mouse selection in `SuggestionList` preserves input focus until the option's
+click is delivered, so callers may hide suggestions directly in `onBlur`.
+Native suggestion scrolling uses `keyboardShouldPersistTaps="handled"`, allowing
+the first tap to choose an option while the keyboard is open.

@@ -54,8 +54,22 @@ controls let pointer events pass through. The gradient has no motion, including
 when reduced motion is enabled. `scrim="none"` removes it; `scrimColor` overrides
 the inherited opaque surface color. `style` and `testID` address the outer host.
 
-This is page chrome, always absolutely positioned inside a bounded parent.
-Place it beside the scroller, never inside its scrolling content. A purchase
+The default `position="absolute"` anchors this page chrome inside a bounded parent.
+Place it beside the scroller, never inside its scrolling content.
+
+For web pages that scroll the document, use `position="document"`. Bloom pins
+its controls to the viewport bottom while an invisible, zero-height anchor
+tracks the actual content column. Sidebar widths, responsive layout and RTL
+remain owned by the page layout; consumers need no fixed styles or measured
+coordinates. Mount it in the column, outside transformed/animated containers
+(which establish a different fixed-position containing block). Resize observers
+follow its ancestor frames, and horizontal scrolling updates the viewport
+coordinate without rendering again for unchanged bounds. Native keeps the
+existing absolute positioning within its bounded screen.
+
+Both positions publish the same measured `usePageFooterInset()` clearance.
+Wrap the page and footer in `PageFooterProvider` and use that value as bottom
+padding, instead of a guessed spacer. A purchase
 summary with price and booking controls belongs to `ActionBar`, which has a
 different opaque, in-flow layout contract.
 

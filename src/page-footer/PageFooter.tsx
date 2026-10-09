@@ -12,14 +12,16 @@ import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { PageFooterContext } from './context';
 import type { PageFooterProps } from './types';
+import { useDocumentAnchor } from './use-document-anchor';
 
 const BAR_HEIGHT = 56;
 
 /** Page-local controls floating over a bounded scroller, above app navigation. */
 function PageFooterComponent({
-  children, actions, bottomInset, safeArea, scrim = 'always', scrimColor, scrollThreshold = 20, style, testID,
+  children, actions, bottomInset, safeArea, position = 'absolute', scrim = 'always', scrimColor, scrollThreshold = 20, style, testID,
 }: PageFooterProps) {
   const theme = useTheme();
+  const documentAnchor = useDocumentAnchor(position === 'document');
   const metrics = useScrollMetricsValue();
   const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : 20);
   const scrimStyle = useAnimatedStyle(() => ({
@@ -52,10 +54,18 @@ function PageFooterComponent({
   };
 
   return (
+    <>
+    {documentAnchor.enabled ? <View
+      ref={documentAnchor.ref}
+      onLayout={documentAnchor.measure}
+      pointerEvents="none"
+      style={{ height: 0, width: '100%' }}
+      testID={testID ? `${testID}-anchor` : undefined}
+    /> : null}
     <View
       testID={testID}
       pointerEvents="box-none"
-      style={[styles.container, { bottom, paddingBottom: padBottom }, style]}
+      style={[styles.container, { bottom, paddingBottom: padBottom }, documentAnchor.style, style]}
     >
       {scrim !== 'none' ? (
         <Animated.View
@@ -82,6 +92,7 @@ function PageFooterComponent({
         </BloomScope>
       </View>
     </View>
+    </>
   );
 }
 

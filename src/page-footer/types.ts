@@ -2,6 +2,10 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 export interface PageFooterProps {
+  /** Absolute inside a bounded frame (default), or pinned to the document
+   * viewport while aligned to this footer's in-flow column on web. Native
+   * always uses absolute positioning inside its bounded frame. */
+  position?: 'absolute' | 'document';
   /** Optional content before the actions, for example a selection summary. */
   children?: ReactNode;
   /** Controls grouped by the caller; inherits the surrounding Bloom size. */

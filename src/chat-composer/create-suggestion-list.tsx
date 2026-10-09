@@ -184,7 +184,14 @@ export function createSuggestionList({ Surface, Loading }: {
           {...listRole}
           accessibilityLabel={accessibilityLabel ?? messages.suggestions[kind]}
           style={{ maxHeight }}
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          {...(IS_WEB ? {
+            // Options belong to the input: mouse selection must not blur it
+            // before the ensuing click can choose a row. Touch scrolling is
+            // unaffected because its pointer default is not cancelled.
+            onMouseDown: (event: React.MouseEvent) => event.preventDefault(),
+          } : {})}>
           {suggestions.map((suggestion, index) => {
             const active = index === activeIndex;
             const row: WebCssStyle = {
