@@ -491,6 +491,35 @@ const CarouselComponent = function Carousel({
     ? stops.map(stop => Math.max(0, scroll.current.contentWidth - trackWidth) - stop.offset).reverse()
     : stops.map(stop => stop.offset);
 
+  const track = (
+    <CarouselContext.Provider value={contextValue}>
+      <ScrollView
+        ref={scrollRef}
+        {...webDataSet({ bloomCarouselTrack: align })}
+        // Focusable so the arrow keys scroll it once it has focus, the
+        // browser's own behaviour (`tabIndex={0}`).
+        {...(IS_WEB ? { tabIndex: 0 } : {})}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={onScroll}
+        onContentSizeChange={onContentSizeChange}
+        onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
+        snapToOffsets={IS_WEB ? undefined : snapOffsets}
+        decelerationRate={IS_WEB ? undefined : 'fast'}
+        disableIntervalMomentum
+        style={trackStyle}
+        contentContainerStyle={{ gap, paddingHorizontal: inset }}
+      >
+        {slides.map((child, index) => (
+          <CarouselItemIndexContext.Provider key={child.key ?? index} value={index}>
+            {child}
+          </CarouselItemIndexContext.Provider>
+        ))}
+      </ScrollView>
+    </CarouselContext.Provider>
+  );
+
   return (
     <View
       role="group"
@@ -507,40 +536,15 @@ const CarouselComponent = function Carousel({
         </View>
       ) : null}
 
-      <View style={{ position: 'relative', width: '100%' }} testID={testID ? `${testID}-track-frame` : undefined}>
-        <CarouselContext.Provider value={contextValue}>
-          <ScrollView
-            ref={scrollRef}
-            {...webDataSet({ bloomCarouselTrack: align })}
-            // Focusable so the arrow keys scroll it once it has focus, the
-            // browser's own behaviour (`tabIndex={0}`).
-            {...(IS_WEB ? { tabIndex: 0 } : {})}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onScroll={onScroll}
-            onContentSizeChange={onContentSizeChange}
-            onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
-            snapToOffsets={IS_WEB ? undefined : snapOffsets}
-            decelerationRate={IS_WEB ? undefined : 'fast'}
-            disableIntervalMomentum
-            style={trackStyle}
-            contentContainerStyle={{ gap, paddingHorizontal: inset }}
-          >
-            {slides.map((child, index) => (
-              <CarouselItemIndexContext.Provider key={child.key ?? index} value={index}>
-                {child}
-              </CarouselItemIndexContext.Provider>
-            ))}
-          </ScrollView>
-        </CarouselContext.Provider>
+      {overlay ? <View style={{ position: 'relative', width: '100%' }} testID={testID ? `${testID}-track-frame` : undefined}>
+        {track}
         {arrowsVisible && overlay ? <View pointerEvents="box-none"
           testID={testID ? `${testID}-overlay-arrows` : undefined}
           style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: 8, insetInlineEnd: 8,
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           {arrowButtons}
         </View> : null}
-      </View>
+      </View> : track}
 
       {showDots && dotCount > 1 ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: inset }}>
