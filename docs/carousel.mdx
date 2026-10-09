@@ -112,3 +112,16 @@ replacement, while the selected position remains a child index. Initial layout,
 resize and list changes reposition immediately; a changed selection animates
 unless reduced motion is enabled. Omit `index` to retain the existing carousel
 behavior and its live `onIndexChange` notifications.
+
+
+## Reveal arrows on interaction
+
+`arrowsVisibility="hover"` fades rendered arrows in when a fine-pointer web user hovers over the carousel or focuses any of its controls. Keyboard focus reveals both arrows, including when the pointer is elsewhere. Reduced motion removes the fade. Native and touch/coarse-pointer browsers keep arrows visible; `showArrows` still lets the caller hide them at its mobile breakpoint.
+
+The default `arrowsVisibility="always"` keeps existing behavior. This option works with either `arrowsPlacement` and with controlled `index`.
+
+```tsx
+<Carousel accessibilityLabel="Product photos" arrowsPlacement="overlay" arrowsVisibility="hover" index={index} onIndexChange={setIndex}>
+  {photos.map(photo => <CarouselItem key={photo.id}>{photo.content}</CarouselItem>)}
+</Carousel>
+```

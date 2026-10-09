@@ -104,10 +104,22 @@ export function resolveCarouselPaint(theme: Theme): CarouselPaint {
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-carousel-web-css';
+const ROOT = '[data-bloom-carousel]';
+const HOVER_ROOT = '[data-bloom-carousel="hover"]';
+const ARROW = '[data-bloom-carousel-arrow]';
 const TRACK = '[data-bloom-carousel-track]';
 const DOT = '[data-bloom-carousel-dot]';
 
 const BLOOM_CAROUSEL_CSS = `
+${ROOT} { --bloom-carousel-arrow-opacity: 1; }
+${ARROW} {
+  opacity: var(--bloom-carousel-arrow-opacity, 1);
+  transition: opacity 150ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) {
+  ${HOVER_ROOT} { --bloom-carousel-arrow-opacity: 0; }
+  ${HOVER_ROOT}:hover, ${HOVER_ROOT}:focus-within { --bloom-carousel-arrow-opacity: 1; }
+}
 ${TRACK} {
   scroll-snap-type: x mandatory;
   scroll-padding-inline: var(--bloom-carousel-inset, 0px);
@@ -138,7 +150,7 @@ ${DOT}:focus-visible {
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
-${DOT} {
+${DOT}, ${ARROW} {
   transition: none;
 }
 }
@@ -317,6 +329,7 @@ const CarouselComponent = function Carousel({
   header,
   showArrows = true,
   arrowsPlacement = 'header',
+  arrowsVisibility = 'always',
   showDots = true,
   align = 'start',
   gap = 16,
@@ -619,13 +632,19 @@ const CarouselComponent = function Carousel({
 
   const overlay = arrowsPlacement === 'overlay';
   const arrowsVisible = showArrows && count > 0;
+  // Only the opt-in web presentation needs a fade wrapper. It never removes
+  // the button from the tab order or changes native controls. Each root owns
+  // the inherited opacity, so nested carousels reveal independently.
+  const arrow = (button: React.ReactElement) => IS_WEB && arrowsVisibility === 'hover'
+    ? <View {...webDataSet({ bloomCarouselArrow: '' })} style={{ flexShrink: 0 }}>{button}</View>
+    : button;
   const arrowButtons = <>
-    <Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
+    {arrow(<Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
       accessibilityLabel={previousLabel} disabled={atStart} onPress={() => step(-1)}
-      appearance="subtle" tone="neutral" />
-    <Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
+      appearance="subtle" tone="neutral" />)}
+    {arrow(<Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
       accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => step(1)}
-      appearance="subtle" tone="neutral" />
+      appearance="subtle" tone="neutral" />)}
   </>;
   // iOS snapping reads physical offsets even though its imperative command and
   // scroll events use logical offsets. Android converts snap offsets internally.
@@ -667,6 +686,7 @@ const CarouselComponent = function Carousel({
   return (
     <View
       role="group"
+      {...webDataSet({ bloomCarousel: arrowsVisibility })}
       {...directionProps}
       {...(IS_WEB ? { 'aria-roledescription': messages.carouselRole } : {})}
       accessibilityLabel={accessibilityLabel}

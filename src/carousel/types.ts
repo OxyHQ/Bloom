@@ -19,6 +19,12 @@ export interface CarouselProps {
   showArrows?: boolean;
   /** Arrows share the header row or overlay the track's edges. Defaults to `'header'`. */
   arrowsPlacement?: 'header' | 'overlay';
+  /**
+   * Defaults to 'always'. 'hover' reveals arrows on hover or focus within the
+   * carousel on web with a fine, hover-capable pointer. Touch and native keep
+   * them visible. showArrows still controls whether they are rendered.
+   */
+  arrowsVisibility?: 'always' | 'hover';
   /** Position indicator below the track. Defaults to `true`. */
   showDots?: boolean;
   /** Where a slide comes to rest when it snaps. Defaults to `'start'`. */
