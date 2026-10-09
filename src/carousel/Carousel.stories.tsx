@@ -3,6 +3,7 @@ import { Pressable, useWindowDimensions, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
+import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { Carousel, CarouselItem } from './index';
 
@@ -170,6 +171,38 @@ export const OverlayArrows: Story = {
         </CarouselItem>)}
       </Carousel>
       <Text testID="overlay-selected">{picked}</Text>
+    </Frame>;
+  },
+};
+
+/** A gallery's thumbnails own the same index its swipe reports. */
+export const Controlled: Story = {
+  render: function ControlledStory() {
+    const [index, setIndex] = useState(1);
+    const [width, setWidth] = useState(440);
+    const [count, setCount] = useState(4);
+    const [revision, setRevision] = useState(0);
+    const [reversed, setReversed] = useState(false);
+    const [accept, setAccept] = useState(true);
+    const [events, setEvents] = useState<number[]>([]);
+    return <Frame width={width}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {Array.from({ length: count }, (_, i) => <Button key={i} onPress={() => setIndex(i)}>Thumbnail {i + 1}</Button>)}
+      </View>
+      <Carousel testID="controlled-carousel" accessibilityLabel="Product gallery" index={index}
+        onIndexChange={next => { setEvents(previous => [...previous, next]); if (accept) setIndex(next); }}>
+        {Array.from({ length: count }, (_, i) => reversed ? count - i - 1 : i).map((id, position) =>
+          <CarouselItem key={`${revision}-${id}`} testID={`controlled-slide-${position}`}>
+            <Slide label={`Photo ${id + 1}`} />
+          </CarouselItem>)}
+      </Carousel>
+      <Text testID="controlled-index">{index}</Text>
+      <Text testID="controlled-events">{JSON.stringify(events)}</Text>
+      <Button onPress={() => setWidth(value => value === 440 ? 280 : 440)}>Resize gallery</Button>
+      <Button onPress={() => setReversed(value => !value)}>Reverse images</Button>
+      <Button onPress={() => setCount(value => Math.max(0, value - 1))}>Remove last image</Button>
+      <Button onPress={() => { setRevision(value => value + 1); setCount(4); setIndex(0); setReversed(false); }}>Replace gallery</Button>
+      <Button onPress={() => setAccept(value => !value)}>Toggle accepting requests</Button>
     </Frame>;
   },
 };
