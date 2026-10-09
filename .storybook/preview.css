@@ -51,3 +51,10 @@ body { margin: 0; }
   .bloom-demo-search-chrome { border-width:1px; border-color:#abcdef; border-radius:14px; background:#eef0f1; }
   .dark .bloom-demo-search-chrome { background:#404040; }
 }
+
+@layer components {
+  .bloom-demo-follow { height:40px; border-radius:999px; background:#eef0f1; border:1px solid #abcdef; padding-inline:16px; }
+  .bloom-demo-follow-label { font-size:16px; line-height:20px; font-weight:600; color:#123456; }
+  .dark .bloom-demo-follow { background:#404040; }
+  .dark .bloom-demo-follow-label { color:#abcdef; }
+}

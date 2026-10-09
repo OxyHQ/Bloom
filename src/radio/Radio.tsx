@@ -1,3 +1,4 @@
+import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
@@ -94,6 +95,7 @@ const RadioComponent = function Radio<Value extends string = string>({
   checked: checkedProp,
   onValueChange,
   label,
+  labelContent,
   description,
   size: sizeProp,
   disabled = false,
@@ -123,7 +125,8 @@ const RadioComponent = function Radio<Value extends string = string>({
   useInteractiveWebCss(STYLE_ID, BLOOM_RADIO_CSS);
   const sizeConfig = SIZE_CONFIG[size];
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
-  const hasText = Boolean(label || description);
+  const hasLabel = labelContent != null || Boolean(label);
+  const hasText = hasLabel || Boolean(description);
 
   const handlePress = useCallback(() => {
     // Re-choosing the chosen option is a no-op. A radio, unlike a checkbox, has
@@ -144,8 +147,11 @@ const RadioComponent = function Radio<Value extends string = string>({
     ...ringOffset,
   };
 
+  const spaceKey = useChoiceSpaceKey(isDisabled, handlePress);
+
   return (
     <Pressable
+      {...spaceKey}
       {...(IS_WEB ? ({ dataSet: { bloomRadio: '' } } as Record<string, unknown>) : {})}
       style={[rowStyle, style]}
       onPress={handlePress}
@@ -176,7 +182,11 @@ const RadioComponent = function Radio<Value extends string = string>({
 
       {hasText && (
         <View style={{ flex: 1 }}>
-          {label && (
+          {labelContent != null ? (
+            <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              {labelContent}
+            </View>
+          ) : label && (
             <Text variant={sizeConfig.label} style={[{ color: theme.colors.text }, labelStyle]}>
               {label}
             </Text>
@@ -184,7 +194,7 @@ const RadioComponent = function Radio<Value extends string = string>({
           {description && (
             <Text
               variant={sizeConfig.description}
-              style={{ color: theme.colors.textSecondary, marginTop: label ? DESCRIPTION_GAP : 0 }}
+              style={{ color: theme.colors.textSecondary, marginTop: hasLabel ? DESCRIPTION_GAP : 0 }}
             >
               {description}
             </Text>

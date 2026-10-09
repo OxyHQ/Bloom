@@ -121,3 +121,23 @@ was a hardcoded `#FFFFFF` — a white halo in dark mode. See
 `Radio` and `RadioCard` use `checked` and `onValueChange`: choosing an option reports its value, never a false toggle. `RadioGroup` accepts controlled `value` or uncontrolled `defaultValue`. The duplicate `selected` and `onSelect` props have been removed.
 
 An explicitly supplied `value={undefined}` is a controlled empty selection. Omit `value` to opt into uncontrolled state with `defaultValue`; callbacks do not commit a controlled selection until its parent updates the prop.
+
+## Composed row labels
+
+A standalone `Radio` accepts `labelContent?: ReactNode` for a decorative layout
+inside a View. It replaces the visible `label`; pass `label` or
+`accessibilityLabel` as the explicit accessible name. Do not put controls inside
+this slot. The existing radio row owns the press target and selected state.
+`labelStyle` still styles the built-in string label; custom content owns its own
+styles. `RadioGroup`'s data-driven options and `RadioCard` keep their string label
+and title contracts.
+
+```tsx
+<Radio value="helpful" checked={order === 'helpful'} onValueChange={setOrder}
+  accessibilityLabel="Most helpful"
+  labelContent={<View><Text>Helpful</Text><Text>By votes</Text></View>} />
+```
+
+A collection of composed rows belongs inside a named `radiogroup`. Space selects
+a focused row on web; choosing an already-selected row remains a no-op. This
+slot does not add arrow-key or roving-focus behavior to a custom collection.

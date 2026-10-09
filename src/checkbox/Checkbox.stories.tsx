@@ -4,6 +4,8 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
+import { Radio } from '../radio';
+import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useTheme } from '../theme/use-theme';
 import { Checkbox, CheckboxCard } from './index';
 
@@ -227,4 +229,26 @@ export const Cards: Story = {
 export const Playground: Story = {
   args: { label: 'Send me updates', checked: false, disabled: false, indeterminate: false, size: 'md', tone: 'accent' },
   render: function PlaygroundCheckbox(args) { const [, updateArgs] = useArgs(); return <Checkbox {...args} onCheckedChange={(checked) => updateArgs({ checked })} />; },
+};
+
+/** Custom layouts stay inside the control's full-row press target. */
+export const LabelContent: Story = {
+  render: function LabelContentStory() {
+    const [checked, setChecked] = useState(false);
+    const [value, setValue] = useState('recent');
+    const theme = useTheme();
+    const stars = <View style={{ flexDirection:'row', alignItems:'center', gap:8 }}>
+      <RiStarFill width={20} height={20} fill={theme.colors.text} /><Text>4 and up</Text><Text>12</Text>
+    </View>;
+    return <View style={{ width:320, gap:20 }}>
+      <Checkbox label="Four stars and up" labelContent={stars} checked={checked} onCheckedChange={setChecked} style={{ minHeight:44, justifyContent:'center' }} />
+      <Checkbox label="Unavailable rating" labelContent={stars} disabled />
+      <View accessibilityRole="radiogroup" accessibilityLabel="Order">
+        <Radio value="recent" label="Newest first" labelContent={<View><Text>Recent</Text><Text>By date</Text></View>}
+          checked={value==='recent'} onValueChange={setValue} style={{ minHeight:44 }} />
+        <Radio value="helpful" accessibilityLabel="Most helpful" labelContent={<View><Text>Helpful</Text><Text>By votes</Text></View>}
+          checked={value==='helpful'} onValueChange={setValue} style={{ minHeight:44 }} />
+      </View>
+    </View>;
+  },
 };
