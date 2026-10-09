@@ -1,7 +1,7 @@
 import React from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { Stop } from 'react-native-svg';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
@@ -632,4 +632,24 @@ it.each([false, true])('keeps adjacent primitive label parts in one Text host wi
   );
   expect(getByText('Save 3')).toBeTruthy();
   expect(getByTestId('run-badge').type).toBe('View');
+});
+
+it.each([false, true])('retains native child state through loading with iconOnly=%s', iconOnly => {
+  let mounts = 0;
+  let increment: () => void = () => {};
+  function Counter() {
+    const [count, setCount] = React.useState(0);
+    React.useEffect(() => { mounts += 1; }, []);
+    increment = () => setCount(n => n + 1);
+    return <Text testID="counter">{count}</Text>;
+  }
+  const tree = (loading: boolean) => <BloomThemeProvider mode="light" colorPreset="teal"><Button loading={loading} iconOnly={iconOnly} accessibilityLabel="Save"><Counter /></Button></BloomThemeProvider>;
+  const result = render(tree(false));
+  act(() => increment());
+  result.rerender(tree(true));
+  expect(result.getByTestId('counter', { includeHiddenElements: true }).props.children).toBe(1);
+  act(() => increment());
+  result.rerender(tree(false));
+  expect(result.getByTestId('counter').props.children).toBe(2);
+  expect(mounts).toBe(1);
 });

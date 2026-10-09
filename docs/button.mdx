@@ -78,3 +78,10 @@ Accent/status/brand colours keep their semantic foreground pairs. Neutral, seman
 Button forwards its ref to the interactive node (the native View handle or the actual web button/anchor), so menus can anchor to it without a layout wrapper. Optional `onLayout` reports React Native's layout shape on both platforms; web installs a resize observer only when that callback is supplied. Press-in/out, cancellation and long press share the base gesture lifecycle. String labels keep the typography defaults; custom content can supply icons, animated glyphs or a composed row. Accessibility visibility props support controls that fade out without leaving an invisible focus target.
 
 Native text children are wrapped individually when mixed with custom layout nodes or fragments, including icon-only buttons. Custom layout nodes retain their own layout.
+
+### Loading and child state
+
+Changing `loading` preserves the mounted content and its component state. The
+content remains in layout while hidden and a spinner covers the button. This
+also preserves icon-only content; `asChild` retains the identity and state of
+the supplied element while applying the disabled/busy contract.
