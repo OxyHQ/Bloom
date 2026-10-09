@@ -20,10 +20,16 @@ export interface CarouselProps {
    * start, arrows at the end). With overlay arrows this row contains only the header.
    */
   header?: ReactNode;
+  /** Leading content in an optional row below the track and dots. */
+  footer?: ReactNode;
+  /** Controls and track arrow keys wrap to the other end; no cloned slides. Default false. */
+  loop?: boolean;
   /** Previous / next buttons. Defaults to `true`; callers may hide them at their mobile breakpoint. */
   showArrows?: boolean;
-  /** Arrows share the header row or overlay the track's edges. Defaults to `'header'`. */
-  arrowsPlacement?: 'header' | 'overlay';
+  /** Overlay control offsets from logical track edges. Negative values extend outside. Default 8. */
+  arrowsInset?: number | { start?: number; end?: number };
+  /** Controls share a header/footer row or overlay the track. Default header. */
+  arrowsPlacement?: 'header' | 'overlay' | 'footer';
   /**
    * Defaults to 'always'. 'hover' reveals arrows on hover or focus within the
    * carousel on web with a fine, hover-capable pointer. Touch and native keep

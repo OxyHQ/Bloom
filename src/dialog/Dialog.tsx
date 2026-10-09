@@ -112,6 +112,7 @@ export function Dialog({
  * placement is handled separately by `DialogBottomSheet`.
  */
 function CenteredOrSideDialog({
+  material: surfaceMaterial = 'surface',
   control,
   open: controlledOpen,
   startOpen,
@@ -302,6 +303,7 @@ function CenteredOrSideDialog({
     return (
       <Context.Provider value={context}>
         <SideSheet
+          material={surfaceMaterial}
           presentation={presentation}
           exitDuration={exitDuration}
           scrollable={scrollableResolved}
@@ -335,6 +337,8 @@ function CenteredOrSideDialog({
 
   return (
     <BottomSheet
+      material={surfaceMaterial}
+      backgroundFill={surfaceMaterial === 'flat' ? String(StyleSheet.flatten([style, panelStyle])?.backgroundColor ?? theme.colors.background) : undefined}
       ref={ref}
       onDismiss={handleDismiss}
       enablePanDownToClose
@@ -348,6 +352,7 @@ function CenteredOrSideDialog({
       headerOverlay={
         header ? (
           <DialogNavHeader
+            flatSurface={surfaceMaterial === 'flat'}
             controller={headerController}
             header={header}
             onDismiss={close}
@@ -402,6 +407,7 @@ function CenteredOrSideDialog({
  * exit animations are safe (the web `removeChild` crash does not apply).
  */
 function SideSheet({
+  material: surfaceMaterial = 'surface',
   scrollable,
   presentation,
   exitDuration,
@@ -428,6 +434,7 @@ function SideSheet({
   style,
   children,
 }: {
+  material?: DialogProps['material'];
   scrollable: boolean;
   presentation?: DialogProps['presentation'];
   exitDuration?: number;
@@ -541,7 +548,7 @@ function SideSheet({
   );
 
   const panelRadius = StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius;
-  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0, paint: surfaceMaterial !== 'flat' });
   const { paintFill, publishedFill: surfaceFill } = material;
   if (!mounted) return null;
 
@@ -593,10 +600,10 @@ function SideSheet({
           panelAnimatedStyle,
           panelStyle,
           style,
-          { backgroundColor: 'transparent' },
+          { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
         ]}
       >
-        {presentation !== 'custom' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />}
+        {presentation !== 'custom' && surfaceMaterial !== 'flat' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={panelRadius} />}
         <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer body
@@ -604,6 +611,7 @@ function SideSheet({
           // below the bar.
           <View style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}>
             <DialogNavHeader
+              flatSurface={surfaceMaterial === 'flat'}
               controller={headerController}
               header={header}
               onDismiss={onHeaderDismiss}

@@ -175,6 +175,7 @@ export function Dialog({ placement, ...rest }: DialogProps) {
  * `BottomSheet`).
  */
 function CenterOrSideDialog({
+  material: surfaceMaterial = 'surface',
   control,
   open: controlledOpen,
   startOpen,
@@ -374,6 +375,7 @@ function CenterOrSideDialog({
                 }, containerStyle]}
               >
                 <DialogPanel
+                  material={surfaceMaterial}
                   presentation={presentation}
                   panelRef={panelRef}
                   testID={testID}
@@ -406,6 +408,7 @@ function CenterOrSideDialog({
         <ClosingContext.Provider value={isClosing}>
           <RemoveScrollBar />
           <SheetSurface
+            material={surfaceMaterial}
             panelRef={panelRef}
             testID={testID}
             label={label}
@@ -436,6 +439,7 @@ function CenterOrSideDialog({
 }
 
 function DialogPanel({
+  material: surfaceMaterial = 'surface',
   presentation,
   panelRef,
   testID,
@@ -453,6 +457,7 @@ function DialogPanel({
   isClosing,
   children,
 }: {
+  material?: DialogProps['material'];
   presentation?: DialogProps['presentation'];
   panelRef: React.RefObject<View | null>;
   testID?: string;
@@ -477,7 +482,7 @@ function DialogPanel({
   const headerController = useDialogHeaderController();
   const { height: viewportHeight } = useWindowDimensions();
   const heightRatio = maxHeightRatio ?? DEFAULT_MAX_HEIGHT_RATIO;
-  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten(style)?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten(style)?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0, paint: surfaceMaterial !== 'flat' });
   const { paintFill, publishedFill: surfaceFill } = material;
 
   // Size morphing across an in-place content swap. The centered card is the one
@@ -558,10 +563,10 @@ function DialogPanel({
         // before `style` so a consumer's explicit size still wins.
         morphState.panelStyle,
         style,
-        { backgroundColor: 'transparent' },
+        { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
       ]}
     >
-      {presentation !== 'custom' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />}
+      {presentation !== 'custom' && surfaceMaterial !== 'flat' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten(style)?.borderRadius ?? 20} />}
       <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
       {header ? (
         // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
@@ -570,6 +575,7 @@ function DialogPanel({
         // the shared scroll offset that drives the small-title cross-fade.
         <>
           <DialogNavHeader
+            flatSurface={surfaceMaterial === 'flat'}
             controller={headerController}
             header={header}
             onDismiss={close}
@@ -634,6 +640,7 @@ function DialogPanel({
  * implementation with native and supports drag-to-dismiss on web.
  */
 function SheetSurface({
+  material: surfaceMaterial = 'surface',
   panelRef,
   testID,
   label,
@@ -656,6 +663,7 @@ function SheetSurface({
   style,
   children,
 }: {
+  material?: DialogProps['material'];
   panelRef: React.RefObject<View | null>;
   testID?: string;
   label?: string;
@@ -751,7 +759,7 @@ function SheetSurface({
     if (dismissOnBackdrop) onDismiss();
   }, [dismissOnBackdrop, onDismiss]);
 
-  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0 });
+  const material = resolveSurfaceMaterial({ fill: String(StyleSheet.flatten([panelStyle, style])?.backgroundColor ?? theme.colors.background), parentFill: theme.colors.background, level: 0, paint: surfaceMaterial !== 'flat' });
   const { paintFill, publishedFill: surfaceFill } = material;
 
   // The drawer uses the PAGE token as its tint and nominal surface for its
@@ -809,10 +817,10 @@ function SheetSurface({
           panelTransition,
           panelStyle,
           style,
-          { backgroundColor: 'transparent' },
+          { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
         ]}
       >
-        <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius} />
+        {surfaceMaterial !== 'flat' && <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={StyleSheet.flatten([panelStyle, style])?.borderRadius ?? SURFACE_SHAPES.panel.radius} />}
         <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer
@@ -820,6 +828,7 @@ function SheetSurface({
           // the content, which is inset below the bar.
           <View style={{ flex: 1, minHeight: 0 }}>
             <DialogNavHeader
+              flatSurface={surfaceMaterial === 'flat'}
               controller={headerController}
               header={header}
               onDismiss={onDismiss}

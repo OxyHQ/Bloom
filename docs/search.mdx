@@ -82,3 +82,22 @@ the same failure as a [`Slider`](/docs/bloom/main/slider) that saves in
 - **Search** — filters something already on the page.
 - **[Select](/docs/bloom/main/select)** — picks a value into a form, and the
   picked value stays.
+
+## Icon and clear geometry
+
+`iconSize` changes the leading icon's edge (default20).
+`clearButtonProps` accepts `icon`, `size` (the target edge, default28) and
+`glyphSize` (default16). Search retains the clear name, callback and disabled
+state; a disabled Field or TextFieldGroup disables both the input and clear.
+The clear control participates in the field row, separated from the input by
+8px. Input typography or padding in `style` cannot overwrite that separation.
+Use `fieldClassName` for height and horizontal padding: it positions both icons
+against the logical edges. Use `fieldChromeClassName` for background/border/ring.
+
+```tsx
+<Search value={query} onValueChange={setQuery} onClearText={() => setQuery('')}
+  iconSize={24} clearButtonProps={{ icon: ClearCircleIcon, size: 24, glyphSize: 24 }}
+  fieldClassName="h-11 px-4" style={{ fontSize: 16, lineHeight: 20 }} />
+```
+
+`TextFieldIcon` also accepts `size` when composing a field directly.

@@ -8,6 +8,8 @@ jest.mock('../icons/remix/RiSearchLine', () => ({ RiSearchLine: () => null }));
 jest.mock('../icons/remix/RiCloseLine', () => ({ RiCloseLine: () => null }));
 
 import { Search } from '../search';
+import { Field } from '../field';
+import { InputGroup } from '../input-group';
 import { TextField, TextFieldInput } from '../text-field';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
@@ -30,25 +32,24 @@ afterEach(() => {
 });
 
 it.each(['ltr', 'rtl'])(
-  'reserves clear space on the trailing edge in %s, even for a Latin query',
+  'keeps clear and input in the same flow in %s, preserving caller typography',
   (dir) => {
     document.documentElement.dir = dir;
     act(() =>
       root.render(
         <BloomThemeProvider fonts={false}>
-          <Search value="Security" onClearText={jest.fn()} />
+          <Search value="Security" onClearText={jest.fn()} style={{ fontSize: 17 }} />
         </BloomThemeProvider>,
       ),
     );
     const input = container.querySelector('input')!;
     const style = getComputedStyle(input);
-    expect(style.paddingLeft).toBe(dir === 'rtl' ? '24px' : '4px');
-    expect(style.paddingRight).toBe(dir === 'rtl' ? '4px' : '24px');
-    const clear = container.querySelector(
-      '[data-testid="searchTextInputClearBtn"]',
-    )!;
-    const position = getComputedStyle(clear.parentElement!);
-    expect(dir === 'rtl' ? position.left : position.right).toBe('0px');
+    expect(style.fontSize).toBe('17px');
+    const clear = container.querySelector('[data-testid="searchTextInputClearBtn"]')!;
+    expect(clear.parentElement).toBe(input.parentElement);
+    expect(getComputedStyle(clear).position).not.toBe('absolute');
+    expect(clear.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+
   },
 );
 
@@ -94,3 +95,13 @@ it.each(['ltr', 'rtl'])(
     );
   },
 );
+
+it.each(['field', 'group'])('disables both input and clear inside a disabled %s', kind => {
+  const change = jest.fn();
+  const search = <Search value="Query" disabled={false} onClearText={change} />;
+  act(() => root.render(<BloomThemeProvider>{kind === 'field' ? <Field disabled label="Find">{search}</Field> : <InputGroup disabled>{search}</InputGroup>}</BloomThemeProvider>));
+  expect(container.querySelector('input')!.disabled).toBe(true);
+  const clear = container.querySelector<HTMLButtonElement>('[data-testid="searchTextInputClearBtn"]')!;
+  expect(clear.disabled).toBe(true);
+  act(() => clear.click()); expect(change).not.toHaveBeenCalled();
+});

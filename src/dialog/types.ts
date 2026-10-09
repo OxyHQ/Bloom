@@ -231,6 +231,8 @@ export type DialogAction = {
  * be a responsive map that collapses to a bottom-sheet on narrow viewports.
  */
 export type DialogProps = React.PropsWithChildren<{
+  /** Standard optical surface, or a plain fill without refraction/sheen. Default surface. */
+  material?: 'surface' | 'flat';
   /** Content owns paint and motion; shared overlay, focus and dismissal remain. */
   presentation?: 'default' | 'custom';
   /** Custom presentation exit lifetime, in milliseconds. */

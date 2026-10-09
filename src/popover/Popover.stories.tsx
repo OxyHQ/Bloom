@@ -410,3 +410,12 @@ export const Playground: StoryObj<typeof Popover> = {
     return <View style={{ width: 520, maxWidth: '100%' }}><Popover {...args} onOpenChange={open => updateArgs({ open })}><PopoverTrigger asChild><Button>Open details</Button></PopoverTrigger><PopoverContent><PopoverHeader><PopoverTitle>Shared controls</PopoverTitle><PopoverDescription>Change the open control or use the trigger.</PopoverDescription></PopoverHeader></PopoverContent></Popover></View>;
   },
 };
+
+export const FlatMaterial: Story = {
+  render: () => <Popover>
+    <PopoverTrigger asChild><Button>Open flat popover</Button></PopoverTrigger>
+    <PopoverContent material="flat" label="Flat content" style={{ backgroundColor: '#f3d7b6', width: 280 }} testID="flat-popover">
+      <Text>Opaque floating content</Text>
+    </PopoverContent>
+  </Popover>,
+};

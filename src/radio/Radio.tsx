@@ -1,8 +1,10 @@
-import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
+import { useRadioGroupItem } from './use-radio-group-item';
+import { RadioGroupContext } from './context';
+import { useIsRtl } from '../hooks/use-is-rtl';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useRef, type KeyboardEvent } from 'react';
 import { View, Platform, Pressable } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -147,7 +149,7 @@ const RadioComponent = function Radio<Value extends string = string>({
     ...ringOffset,
   };
 
-  const spaceKey = useChoiceSpaceKey(isDisabled, handlePress);
+  const spaceKey = useRadioGroupItem(value, isDisabled, handlePress);
 
   return (
     <Pressable
@@ -227,6 +229,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
     tone: toneProp,
     style,
     labelStyle,
+    optionStyle,
     variant = 'default',
     testID,
   } = props;
@@ -241,46 +244,76 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
   const isDisabled = field.disabled;
   const { size: scopedSize, tone } = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const size = scopedSize;
+  const rtl = useIsRtl();
+  const nodes = useRef(new Map<string, View>());
+  const enabledValues = options.filter(option => !isDisabled && !option.disabled).map(option => option.value);
+  const tabValue = value !== undefined && enabledValues.includes(value) ? value : enabledValues[0];
+  const register = useCallback((option: string, node: View | null) => {
+    if (node) nodes.current.set(option, node); else nodes.current.delete(option);
+  }, []);
+  const onKeyDown = (current: string, event: KeyboardEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || !enabledValues.length) return;
+    const position = enabledValues.findIndex(option => option === current);
+    if (position < 0) return;
+    let target: Value | undefined;
+    if (event.key === 'Home') target = enabledValues[0];
+    else if (event.key === 'End') target = enabledValues[enabledValues.length - 1];
+    else {
+      const delta = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1
+        : event.key === 'ArrowRight' ? (rtl ? -1 : 1) : event.key === 'ArrowLeft' ? (rtl ? 1 : -1) : 0;
+      if (!delta) return;
+      target = enabledValues[(position + delta + enabledValues.length) % enabledValues.length];
+    }
+    if (target === undefined) return;
+    event.preventDefault(); event.stopPropagation();
+    const node: unknown = nodes.current.get(target);
+    if (typeof HTMLElement !== 'undefined' && node instanceof HTMLElement) node.focus({ preventScroll: true });
+    if (target !== value) onValueChange(target);
+  };
   return (
-    <View
-      style={[{ gap: space.sm }, style]}
-      accessibilityRole="radiogroup"
-      accessibilityLabel={field.accessibilityLabel}
-      aria-label={field.accessibilityLabel}
-      aria-describedby={field.describedBy}
-      aria-invalid={field.invalid || undefined}
-      testID={testID}
-    >
-      {options.map((option) =>
-        variant === 'card' ? (
-          <RadioCard
+    <RadioGroupContext.Provider value={{ tabValue, register, onKeyDown }}>
+      <View
+        style={[{ gap: space.sm }, style]}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={field.accessibilityLabel}
+        aria-label={field.accessibilityLabel}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
+        testID={testID}
+      >
+        {options.map((option) =>
+          variant === 'card' ? (
+            <RadioCard
+              key={option.value}
+              value={option.value}
+              checked={option.value === value}
+              onValueChange={onValueChange}
+              title={option.label ?? option.value}
+              description={option.description}
+              disabled={isDisabled || option.disabled === true}
+              tone={tone}
+              style={optionStyle}
+              testID={option.testID}
+            />
+          ) : (
+          <Radio
             key={option.value}
             value={option.value}
             checked={option.value === value}
             onValueChange={onValueChange}
-            title={option.label ?? option.value}
+            label={option.label}
             description={option.description}
+            size={size}
             disabled={isDisabled || option.disabled === true}
             tone={tone}
+            labelStyle={labelStyle}
+            style={optionStyle}
             testID={option.testID}
           />
-        ) : (
-        <Radio
-          key={option.value}
-          value={option.value}
-          checked={option.value === value}
-          onValueChange={onValueChange}
-          label={option.label}
-          description={option.description}
-          size={size}
-          disabled={isDisabled || option.disabled === true}
-          tone={tone}
-          labelStyle={labelStyle}
-          testID={option.testID}
-        />
-        ),
-      )}
-    </View>
+          ),
+        )}
+      </View>
+    </RadioGroupContext.Provider>
   );
 };
 

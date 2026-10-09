@@ -8,7 +8,10 @@ import type {
 
 export type PopoverProps = React.PropsWithChildren<OverlayOpenProps>;
 export type PopoverTriggerProps = OverlayTriggerProps;
-export type PopoverContentProps = OverlaySurfaceProps;
+export type PopoverContentProps = OverlaySurfaceProps & {
+  /** Standard optical surface or plain fill. Default surface. */
+  material?: 'surface' | 'flat';
+};
 
 /** Shared by the panel's layout parts. */
 interface PopoverPartProps {

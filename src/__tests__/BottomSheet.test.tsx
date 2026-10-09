@@ -40,6 +40,19 @@ describe('BottomSheet', () => {
     expect(materials()).toHaveLength(0);
   });
 
+  it('publishes and paints the exact flat fill without an optical layer', () => {
+    const ref = createRef<BottomSheetRef>();
+    let published: string | undefined;
+    function Probe() { published = useSurfaceFill(); return <Text>Flat content</Text>; }
+    const screen = renderWithTheme(<BottomSheet ref={ref} material="flat" backgroundFill="#f3d7b6"><Probe /></BottomSheet>);
+    act(() => ref.current?.present());
+    const nodes = hostNodes(screen.toJSON());
+    expect(nodes.filter(n => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)))).toHaveLength(0);
+    const panel = nodes.find(n => resolvedStyle(n.props.style).maxWidth === 800);
+    expect(resolvedStyle(panel?.props.style).backgroundColor).toBe('#f3d7b6');
+    expect(published).toBe('#f3d7b6');
+  });
+
   it('does not render content when not presented', () => {
     const ref = createRef<BottomSheetRef>();
     const { queryByText } = renderWithTheme(

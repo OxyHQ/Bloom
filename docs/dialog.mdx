@@ -350,3 +350,19 @@ the panel itself when all controls are below its viewport. Focusing the surface
 and restoring its opener preserve scroll position, so a pagination action at
 the end of a long list does not pull a newly opened dialog to the bottom.
 Content that explicitly focuses itself retains that focus.
+
+## Flat panel material
+
+`material="flat"` paints the authored panel fill directly, omitting the shared
+surface tint, sheen, rim and web refraction. It applies to center, side and
+bottom placements on both platforms, including responsive placement changes.
+`panelStyle.backgroundColor` remains the authored fill; without it the panel
+uses its theme background. Descendants receive that exact backing through the
+surface context. The navigation header uses the same solid backing rather than
+a fading scrim (an explicit image-tone header keeps its image treatment).
+Geometry, shadow, focus, dismissal and motion contracts are unchanged.
+
+The default `material="surface"` keeps the existing optical treatment. Buttons
+and other controls inside the panel retain their own material choices.
+Standalone `BottomSheet` exposes the same material option with `backgroundFill`;
+an explicit `backgroundComponent` remains authoritative.

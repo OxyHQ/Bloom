@@ -1,10 +1,12 @@
-import { forwardRef, useCallback, useMemo, useRef } from 'react';
-import { Platform, type TextInput, View } from 'react-native';
+import { forwardRef, useCallback, useContext, useMemo, useRef } from 'react';
+import { Platform, type TextInput } from 'react-native';
 
+import { useFieldMembership } from '../field/membership';
+import { TextFieldGroupContext } from '../text-field/TextField';
 import { mergeRefs } from '../hooks/merge-refs';
 import { FieldBox } from '../text-field/FieldBox';
 import type { SearchProps } from './types';
-import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
+import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { SEARCH_MESSAGES } from './messages';
@@ -18,10 +20,12 @@ import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine
 import { RiCloseLine as X } from '../icons/remix/RiCloseLine';
 
 export const Search = forwardRef<TextInput, SearchProps>(
-  function Search({ value, label: labelProp, onClearText, onFocus, onPressIn, fieldClassName, fieldChromeClassName, containerClassName, containerStyle, ...rest }, ref) {
+  function Search({ value, label: labelProp, onClearText, onFocus, onPressIn, iconSize, clearButtonProps, disabled, style, fieldClassName, fieldChromeClassName, containerClassName, containerStyle, ...rest }, ref) {
     const theme = useTheme();
     const direction = useDirectionProps();
-    const rtl = useIsRtl();
+    const field = useFieldMembership({ disabled });
+    const group = useContext(TextFieldGroupContext);
+    const isDisabled = field.disabled || group?.disabled === true;
     const common = useCommonMessages();
     const { messages } = useMessages(SEARCH_MESSAGES);
     const label = labelProp ?? common.search;
@@ -64,8 +68,8 @@ export const Search = forwardRef<TextInput, SearchProps>(
 
     return (
       <FieldBox {...direction} className={containerClassName} style={containerStyle} baseStyle={[a.w_full, a.relative]}>
-        <TextField radius={borderRadius.full} className={fieldClassName} chromeClassName={fieldChromeClassName}>
-          <TextFieldIcon icon={MagnifyingGlassIcon} />
+        <TextField disabled={isDisabled} radius={borderRadius.full} className={fieldClassName} chromeClassName={fieldChromeClassName}>
+          <TextFieldIcon icon={MagnifyingGlassIcon} size={iconSize} />
           <TextFieldInput
             inputRef={refs}
             label={label}
@@ -78,35 +82,24 @@ export const Search = forwardRef<TextInput, SearchProps>(
             autoCorrect={false}
             autoComplete="off"
             autoCapitalize="none"
-            style={showClear ? (rtl ? { paddingLeft: 24 } : { paddingRight: 24 }) : undefined}
             {...rest}
+            disabled={isDisabled}
+            style={style}
             onPressIn={handlePressIn}
             onFocus={handleFocus}
           />
+          {showClear && <GlyphButton
+            size={28}
+            icon={X}
+            glyphSize={16}
+            {...clearButtonProps}
+            testID="searchTextInputClearBtn"
+            onPress={onClearText}
+            accessibilityLabel={messages.clearQuery}
+            disabled={isDisabled}
+            style={{ marginInlineStart: 8 }}
+          />}
         </TextField>
-
-        {showClear && (
-          <View
-            style={[
-              a.absolute,
-              a.z_20,
-              a.my_auto,
-              a.justify_center,
-              { top: 0, bottom: 0, insetInlineEnd: 0, paddingInlineEnd: 8 },
-            ]}>
-            {/* Neutral and transparent. `variant="ghost"` painted an accent
-                wash inside the field, which read as a state the field was not
-                in. */}
-            <GlyphButton
-              testID="searchTextInputClearBtn"
-              onPress={onClearText}
-              accessibilityLabel={messages.clearQuery}
-              size={28}
-              icon={X}
-              glyphSize={16}
-            />
-          </View>
-        )}
       </FieldBox>
     );
   },
