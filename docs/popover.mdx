@@ -150,3 +150,5 @@ rim and refraction. Its authored `style.backgroundColor` paints directly and is
 published as the descendant surface backing. On native the owning bottom sheet
 uses the same flat fill. Padding, radius, shadow and keyboard/placement behavior
 are unchanged; the default `material="surface"` preserves the standard treatment.
+
+On web, closing with Escape or an action inside the panel returns focus to its trigger without scrolling. Focus deliberately moved to another control is preserved. This also applies when the caller conditionally unmounts `PopoverContent` on close; the native sheet retains its existing focus lifecycle.

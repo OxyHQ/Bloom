@@ -14,6 +14,8 @@ import {
   PopoverTrigger,
 } from './index';
 import { Avatar } from '../avatar';
+import { Dialog } from '../dialog';
+import { useDialogControl } from '../dialog/context';
 import type { BloomIconComponent } from '../icons/icon-component';
 import { Button } from '../button';
 import { useMenuPalette } from '../floating/menu-palette';
@@ -418,4 +420,35 @@ export const FlatMaterial: Story = {
       <Text>Opaque floating content</Text>
     </PopoverContent>
   </Popover>,
+};
+
+/** Focus ownership across an anchored form and its parent dialog. */
+export const NestedFocusReturn: Story = {
+  render: function NestedFocusReturn() {
+    const control = useDialogControl();
+    const [open, setOpen] = useState(false);
+    const [conditional, setConditional] = useState(false);
+    const outside = React.useRef<React.ElementRef<typeof Button>>(null);
+    return <>
+      <Button onPress={() => control.open()}>Open parent</Button>
+      <Dialog control={control} title="Parent dialog">
+        <View style={{ gap: 24 }}>
+          <Button pressed={conditional} onPress={() => setConditional(!conditional)}>Conditional content</Button>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild><Button>Filter</Button></PopoverTrigger>
+            {(!conditional || open) && <PopoverContent label="Filter options" side="bottom" align="start">
+              <View style={{ gap: 12 }}>
+                <Button onPress={() => setOpen(false)}>Apply</Button>
+                <Button onPress={() => {
+                  outside.current?.focus();
+                  setOpen(false);
+                }}>Move focus outside</Button>
+              </View>
+            </PopoverContent>}
+          </Popover>
+          <Button ref={outside} onPress={() => setOpen(false)}>Outside control</Button>
+        </View>
+      </Dialog>
+    </>;
+  },
 };
