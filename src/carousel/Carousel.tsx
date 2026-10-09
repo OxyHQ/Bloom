@@ -25,6 +25,7 @@ import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useMessages } from '../locale/messages';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -302,6 +303,7 @@ const CarouselComponent = function Carousel({
   accessibilityLabel,
   header,
   showArrows = true,
+  arrowsPlacement = 'header',
   showDots = true,
   align = 'start',
   gap = 16,
@@ -317,6 +319,8 @@ const CarouselComponent = function Carousel({
   const previousLabel = previousLabelProp ?? messages.previousSlide;
   const nextLabel = nextLabelProp ?? messages.nextSlide;
   const theme = useTheme();
+  const rtl = useIsRtl();
+  const directionProps = useDirectionProps();
   useInteractiveWebCss(STYLE_ID, BLOOM_CAROUSEL_CSS);
   const reducedMotion = useReducedMotion();
   const paint = useMemo(() => resolveCarouselPaint(theme), [theme]);
@@ -339,11 +343,12 @@ const CarouselComponent = function Carousel({
 
   const targetFor = useCallback(
     (item: SlideOffset) => {
-      const raw = align === 'center' ? item.x - (trackWidth - item.width) / 2 : item.x - inset;
+      const start = rtl ? scroll.current.contentWidth - item.x - item.width : item.x;
+      const raw = align === 'center' ? start - (trackWidth - item.width) / 2 : start - inset;
       const max = Math.max(0, scroll.current.contentWidth - trackWidth);
       return Math.min(Math.max(0, raw), max);
     },
-    [align, inset, trackWidth],
+    [align, inset, trackWidth, rtl],
   );
 
   /**
@@ -416,7 +421,12 @@ const CarouselComponent = function Carousel({
 
   const scrollToStop = (stop: Stop | undefined) => {
     if (!stop) return;
-    scrollRef.current?.scrollTo({ x: stop.offset, animated: !reducedMotion });
+    // Web exposes negative scrollLeft in RTL; Android uses physical x, while
+    // iOS's ScrollView command already converts a logical offset internally.
+    const max = Math.max(0, scroll.current.contentWidth - trackWidth);
+    const x = !rtl ? stop.offset : IS_WEB ? -stop.offset
+      : Platform.OS === 'android' ? max - stop.offset : stop.offset;
+    scrollRef.current?.scrollTo({ x, animated: !reducedMotion });
   };
 
   /**
@@ -437,7 +447,10 @@ const CarouselComponent = function Carousel({
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentSize } = event.nativeEvent;
-    scroll.current = { x: contentOffset.x, contentWidth: contentSize.width };
+    const max = Math.max(0, contentSize.width - trackWidth);
+    const x = !rtl ? contentOffset.x : IS_WEB ? -contentOffset.x
+      : Platform.OS === 'android' ? max - contentOffset.x : contentOffset.x;
+    scroll.current = { x, contentWidth: contentSize.width };
     measure();
   };
 
@@ -462,52 +475,72 @@ const CarouselComponent = function Carousel({
     '--bloom-carousel-inset': `${inset}px`,
   };
 
+  const overlay = arrowsPlacement === 'overlay';
+  const arrowsVisible = showArrows && count > 0;
+  const arrowButtons = <>
+    <Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
+      accessibilityLabel={previousLabel} disabled={atStart} onPress={() => step(-1)}
+      appearance="subtle" tone="neutral" />
+    <Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
+      accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => step(1)}
+      appearance="subtle" tone="neutral" />
+  </>;
+  // iOS snapping reads physical offsets even though its imperative command and
+  // scroll events use logical offsets. Android converts snap offsets internally.
+  const snapOffsets = rtl && Platform.OS === 'ios'
+    ? stops.map(stop => Math.max(0, scroll.current.contentWidth - trackWidth) - stop.offset).reverse()
+    : stops.map(stop => stop.offset);
+
   return (
     <View
       role="group"
+      {...directionProps}
       {...(IS_WEB ? { 'aria-roledescription': messages.carouselRole } : {})}
       accessibilityLabel={accessibilityLabel}
       style={[{ width: '100%', flexDirection: 'column', gap: 16 }, style]}
       testID={testID}
     >
-      {header != null || (showArrows && count > 0) ? (
+      {header != null || (arrowsVisible && !overlay) ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: inset }}>
           <View style={{ flex: 1, minWidth: 0 }}>{header}</View>
-          {showArrows && count > 0 ? (
-            <>
-              <Button size="sm" icon={RiArrowLeftSLine} accessibilityLabel={previousLabel} disabled={atStart} onPress={() => step(-1)} appearance="subtle" tone="neutral" />
-              <Button size="sm" icon={RiArrowRightSLine} accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => step(1)} appearance="subtle" tone="neutral" />
-            </>
-          ) : null}
+          {arrowsVisible && !overlay ? arrowButtons : null}
         </View>
       ) : null}
 
-      <CarouselContext.Provider value={contextValue}>
-        <ScrollView
-          ref={scrollRef}
-          {...webDataSet({ bloomCarouselTrack: align })}
-          // Focusable so the arrow keys scroll it once it has focus, the
-          // browser's own behaviour (`tabIndex={0}`).
-          {...(IS_WEB ? { tabIndex: 0 } : {})}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          scrollEventThrottle={16}
-          onScroll={onScroll}
-          onContentSizeChange={onContentSizeChange}
-          onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
-          snapToOffsets={IS_WEB ? undefined : stops.map((stop) => stop.offset)}
-          decelerationRate={IS_WEB ? undefined : 'fast'}
-          disableIntervalMomentum
-          style={trackStyle}
-          contentContainerStyle={{ gap, paddingHorizontal: inset }}
-        >
-          {slides.map((child, index) => (
-            <CarouselItemIndexContext.Provider key={child.key ?? index} value={index}>
-              {child}
-            </CarouselItemIndexContext.Provider>
-          ))}
-        </ScrollView>
-      </CarouselContext.Provider>
+      <View style={{ position: 'relative', width: '100%' }} testID={testID ? `${testID}-track-frame` : undefined}>
+        <CarouselContext.Provider value={contextValue}>
+          <ScrollView
+            ref={scrollRef}
+            {...webDataSet({ bloomCarouselTrack: align })}
+            // Focusable so the arrow keys scroll it once it has focus, the
+            // browser's own behaviour (`tabIndex={0}`).
+            {...(IS_WEB ? { tabIndex: 0 } : {})}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onScroll={onScroll}
+            onContentSizeChange={onContentSizeChange}
+            onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
+            snapToOffsets={IS_WEB ? undefined : snapOffsets}
+            decelerationRate={IS_WEB ? undefined : 'fast'}
+            disableIntervalMomentum
+            style={trackStyle}
+            contentContainerStyle={{ gap, paddingHorizontal: inset }}
+          >
+            {slides.map((child, index) => (
+              <CarouselItemIndexContext.Provider key={child.key ?? index} value={index}>
+                {child}
+              </CarouselItemIndexContext.Provider>
+            ))}
+          </ScrollView>
+        </CarouselContext.Provider>
+        {arrowsVisible && overlay ? <View pointerEvents="box-none"
+          testID={testID ? `${testID}-overlay-arrows` : undefined}
+          style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: 8, insetInlineEnd: 8,
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          {arrowButtons}
+        </View> : null}
+      </View>
 
       {showDots && dotCount > 1 ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: inset }}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
@@ -154,4 +154,22 @@ export const WithHeader: Story = {
       </Carousel>
     </Frame>
   ),
+};
+
+/** Overlay controls stay with the track; the consumer owns its responsive breakpoint. */
+export const OverlayArrows: Story = {
+  render: function OverlayArrowsStory() {
+    const { width } = useWindowDimensions();
+    const [picked, setPicked] = useState(0);
+    return <Frame width={640}>
+      <Carousel testID="overlay-carousel" accessibilityLabel="Featured categories"
+        arrowsPlacement="overlay" showArrows={width >= 640} showDots={false} gap={12}>
+        {[1, 2, 3, 4, 5].map(index => <CarouselItem key={index} width={172} testID={`overlay-slide-${index}`}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`Choose category ${index}`}
+            onPress={() => setPicked(index)}><Slide label={`Category ${index}`} /></Pressable>
+        </CarouselItem>)}
+      </Carousel>
+      <Text testID="overlay-selected">{picked}</Text>
+    </Frame>;
+  },
 };
