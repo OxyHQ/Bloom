@@ -375,6 +375,19 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
     ? undefined
     : onPress ?? (href != null ? () => void Linking.openURL(href) : undefined);
 
+  // Retain one content host for its entire lifetime. Match caller layout
+  // overrides inside it, while padding and the outer button box stay put.
+  const callerStyle = StyleSheet.flatten(style);
+  const contentLayout = callerStyle && {
+    ...(callerStyle.flexDirection !== undefined && { flexDirection: callerStyle.flexDirection }),
+    ...(callerStyle.flexWrap !== undefined && { flexWrap: callerStyle.flexWrap }),
+    ...(callerStyle.alignItems !== undefined && { alignItems: callerStyle.alignItems }),
+    ...(callerStyle.justifyContent !== undefined && { justifyContent: callerStyle.justifyContent }),
+    ...(callerStyle.gap !== undefined && { gap: callerStyle.gap }),
+    ...(callerStyle.rowGap !== undefined && { rowGap: callerStyle.rowGap }),
+    ...(callerStyle.columnGap !== undefined && { columnGap: callerStyle.columnGap }),
+  };
+
   return (
     <StyledPressable
       ref={ref}
@@ -415,33 +428,37 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       {paint.surface ? (
         <SurfacePaint fill={paint.background} radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS} />
       ) : null}
+      <View
+        pointerEvents={loading ? 'none' : undefined}
+        style={[
+          styles.content,
+          { gap: geometry.gap },
+          contentLayout,
+          loading && { opacity: 0 },
+        ]}
+        importantForAccessibility={loading ? 'no-hide-descendants' : undefined}
+        accessibilityElementsHidden={loading || undefined}
+      >
+        {content}
+      </View>
       {loading ? (
-        <>
-          <View
-            pointerEvents="none"
-            style={styles.loadingHiddenContent}
-            importantForAccessibility="no-hide-descendants"
-            accessibilityElementsHidden
-          >
-            {content}
-          </View>
-          <View pointerEvents="none" style={styles.loadingOverlay}>
-            <ActivityIndicator size="small" color={loadingColor ?? paint.foreground} />
-          </View>
-        </>
-      ) : (
-        content
-      )}
+        <View pointerEvents="none" style={styles.loadingOverlay}>
+          <ActivityIndicator size="small" color={loadingColor ?? paint.foreground} />
+        </View>
+      ) : null}
     </StyledPressable>
   );
 });
 
 const styles = StyleSheet.create({
-  loadingHiddenContent: {
+  content: {
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
+    alignSelf: 'stretch',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: 0,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFill,

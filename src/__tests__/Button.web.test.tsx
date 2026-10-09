@@ -490,3 +490,32 @@ it('lets explicit axes and colours override named button defaults', () => {
   expect(inverse).not.toHaveClass('bloom-btn--surface');
   expect(inverse.style.getPropertyValue('--bloom-btn-fg')).toBe('#abcdef');
 });
+
+describe.each(['label', 'icon', 'asChild'] as const)('loading preserves %s identity', mode => {
+  it('retains a stateful child through loading and back', () => {
+    let mounts = 0;
+    let increment: () => void = () => {};
+    function Counter() {
+      const [count, setCount] = React.useState(0);
+      React.useEffect(() => { mounts += 1; }, []);
+      increment = () => setCount(n => n + 1);
+      return <span data-testid="counter">{count}</span>;
+    }
+    const renderButton = (loading: boolean) => mount(
+      <Button loading={loading} iconOnly={mode === 'icon'} asChild={mode === 'asChild'} accessibilityLabel="Save">
+        {mode === 'asChild' ? <a href="#save"><Counter /></a> : <Counter />}
+      </Button>,
+    );
+    renderButton(false);
+    const initialNode = container.querySelector('[data-testid="counter"]');
+    act(() => increment());
+    renderButton(true);
+    expect(container.querySelector('[data-testid="counter"]')).toBe(initialNode);
+    expect(initialNode?.textContent).toBe('1');
+    act(() => increment());
+    renderButton(false);
+    expect(container.querySelector('[data-testid="counter"]')).toBe(initialNode);
+    expect(initialNode?.textContent).toBe('2');
+    expect(mounts).toBe(1);
+  });
+});

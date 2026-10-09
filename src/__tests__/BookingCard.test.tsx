@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { getByText } from '@testing-library/dom';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -302,7 +303,7 @@ describe('PriceBreakdown', () => {
     expect(link.getAttribute('role')).toBe('button');
     click(link);
     expect(onPress).toHaveBeenCalledTimes(1);
-    const label = [...link.querySelectorAll('div')].find((d) => d.textContent === 'Service fee') ?? link;
+    const label = getByText(link, 'Service fee');
     expect(getComputedStyle(label).textDecorationLine || getComputedStyle(label).textDecoration).toContain('underline');
   });
 

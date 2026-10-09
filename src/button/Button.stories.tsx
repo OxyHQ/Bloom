@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, Text as TextForCounter } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
 import { CloseButton } from './CloseButton';
@@ -105,3 +105,29 @@ export const Flat: Story = {
     <Button material="flat" disabled testID="flat-disabled">Unavailable</Button>
   </View>,
 };
+
+/** Loading may hide content, but must not reset its state or alter geometry. */
+export const LoadingIdentity: Story = {
+  render: function LoadingIdentityDemo() {
+    const [loading, setLoading] = useState(false);
+    return <View style={{ gap: 24, padding: 24, alignItems: 'flex-start' }}>
+      <Button testID="toggle-loading" onPress={() => setLoading(value => !value)}>Toggle loading</Button>
+      <Button testID="loading-content" loading={loading} leadingIcon={RiAddLine} trailingIcon={RiArrowRightLine}>
+        <LoadingCounter />
+      </Button>
+      <View style={{ width: 360, maxWidth: '100%' }}>
+        <Button testID="loading-wide" loading={loading} style={{ width: '100%', height: 52 }}>
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}><LoadingCounter /><LoadingCounter /></View>
+        </Button>
+      </View>
+      <Button testID="loading-icon" iconOnly accessibilityLabel="Count" loading={loading}><LoadingCounter /></Button>
+      <Button asChild loading={loading}><a data-testid="loading-link" href="#loading"><LoadingCounter /></a></Button>
+    </View>;
+  },
+};
+
+let nextCounterId = 0;
+function LoadingCounter() {
+  const [id] = useState(() => ++nextCounterId);
+  return <View testID={`loading-counter-${id}`}><TextForCounter>{id}</TextForCounter></View>;
+}

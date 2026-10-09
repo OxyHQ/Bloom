@@ -378,38 +378,28 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     </>
   );
 
-  const body = loading ? (
+  // A stable, layout-transparent parent preserves child state across loading.
+  // visibility hides its descendants without removing their measured geometry.
+  const body = (
     <>
-      {/* Keep children mounted (hidden) so the button preserves its width. */}
       <span
-        aria-hidden="true"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: geometry.gap,
-          opacity: 0,
-          pointerEvents: 'none',
-        }}
+        aria-hidden={loading || undefined}
+        style={{ display: 'contents', visibility: loading ? 'hidden' : undefined }}
       >
         {content}
       </span>
-      <span
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        <SpinnerIcon size={iconSize} color={spinnerColor} />
-      </span>
+      {loading ? (
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute', inset: 0, display: 'inline-flex',
+            alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
+          }}
+        >
+          <SpinnerIcon size={iconSize} color={spinnerColor} />
+        </span>
+      ) : null}
     </>
-  ) : (
-    content
   );
 
   // asChild: render the provided child element (e.g. <a> / router <Link>) with
