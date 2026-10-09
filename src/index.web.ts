@@ -339,7 +339,7 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet/index.web'
 // Data display
 export * from './card';
 export * from './badge';
-export { Rating, RatingBar, RatingInput } from './rating';
+export { Rating, RatingBar, RatingInput } from './rating/index.web';
 export type {
   RatingBarProps,
   RatingCountStyle,
@@ -347,7 +347,7 @@ export type {
   RatingInputSize,
   RatingProps,
   RatingSize,
-} from './rating';
+} from './rating/index.web';
 export {
   ExplicitBadge,
   formatDuration,
@@ -1974,14 +1974,14 @@ export * from './aspect-ratio';
 export * from './tabs';
 export * from './checkbox';
 export * from './radio';
-export * from './accordion';
+export * from './accordion/index.web';
 export { LinkPreviewCard } from './link-preview';
 export type { LinkPreviewCardProps } from './link-preview';
 
 // Stat / profile widgets
 export { CompositionBar } from './composition-bar';
 export type { CompositionBarProps, CompositionCategory } from './composition-bar';
-export { Meter, MeterRing, StatBar, meterFraction, meterValue, resolveMeterColors } from './stat-bar';
+export { Meter, MeterRing, StatBar, meterFraction, meterValue, resolveMeterColors } from './stat-bar/index.web';
 export type {
   AnyMeterProps,
   MeterColors,
@@ -1992,7 +1992,7 @@ export type {
   StatBarProgressProps,
   StatBarSplitProps,
   StatBarVariant,
-} from './stat-bar';
+} from './stat-bar/index.web';
 export { ActivityHeatmap, bucketByDay } from './activity-heatmap';
 export type { ActivityHeatmapProps, ActivityHeatmapDay } from './activity-heatmap';
 

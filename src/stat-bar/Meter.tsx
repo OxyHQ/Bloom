@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { Platform, View } from 'react-native';
+import { styled } from 'react-native-css';
+import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -35,7 +36,7 @@ import type { AnyMeterProps } from './types';
  * A bar that is one SEGMENT of a larger progressbar passes `decorative` and
  * gets no role at all — two nested progressbars announce the measurement twice.
  */
-function MeterComponent(props: AnyMeterProps) {
+function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle> }) {
   const theme = useTheme();
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
   const {
@@ -49,6 +50,7 @@ function MeterComponent(props: AnyMeterProps) {
     transitionMs = 0,
     style,
     testID,
+    fillStyle: callerFillStyle,
     fillTestID = testID ? `${testID}-fill` : undefined,
   } = props;
 
@@ -70,7 +72,7 @@ function MeterComponent(props: AnyMeterProps) {
     <View
       {...(transitionMs > 0 ? webDataSet({ bloomMeterFill: '' }) : null)}
       testID={fillTestID}
-      style={fillStyle}
+      style={[fillStyle, callerFillStyle, { width: fillStyle.width }]}
     />
   );
 
@@ -112,5 +114,5 @@ function MeterComponent(props: AnyMeterProps) {
   );
 }
 
-export const Meter = memo(MeterComponent);
+export const Meter = memo(styled(MeterComponent, { className: 'style', fillClassName: 'fillStyle' }));
 Meter.displayName = 'Meter';

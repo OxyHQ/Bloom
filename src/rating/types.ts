@@ -32,6 +32,10 @@ export interface RatingProps {
   size?: RatingSize;
   /** Default `compact` — one star. `stars` draws a row of five, filled fractionally. */
   variant?: RatingVariant;
+  /** Hide the visible numeric value while retaining its accessible name. Default true. */
+  showValue?: boolean;
+  /** Star dimensions, independent of the label type size. Defaults to the size scale. */
+  starSize?: number;
   /**
    * Paints the star(s) and the value — and the count, unless `countColor` is
    * given — e.g. white over a brand-coloured hero, where text-primary and
@@ -99,6 +103,13 @@ export interface RatingInputProps {
 }
 
 export interface RatingBarProps {
+  className?: string;
+  labelClassName?: string;
+  displayClassName?: string;
+  /** Classes on the underlying Meter track (geometry and paint). */
+  trackClassName?: string;
+  /** Classes on the underlying Meter fill; its measured fraction stays data-owned. */
+  fillClassName?: string;
   /** What the row measures ("Cleanliness", "5 stars"). Also the bar's accessible name. */
   label: string;
   /** Position on the scale, `0..max`; clamped. */

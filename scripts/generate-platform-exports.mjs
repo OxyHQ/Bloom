@@ -344,6 +344,9 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './accordion',
+  './rating',
+  './stat-bar',
   './agent-creator',
   './project-board',
   './multi-agent-chat',

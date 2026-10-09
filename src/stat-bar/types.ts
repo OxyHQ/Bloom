@@ -69,6 +69,10 @@ export type StatBarProps = StatBarProgressProps | StatBarSplitProps;
 // ---------------------------------------------------------------------------
 
 interface MeterGeometryProps {
+  /** Classes on the track. Unclaimed properties retain the normal Meter defaults. */
+  className?: string;
+  /** Classes on the fill. Width continues to represent value/max. */
+  fillClassName?: string;
   /** Current value. Clamped into `[0, max]`; `NaN` reads as empty. */
   value: number;
   /**

@@ -32,6 +32,8 @@ const [stars, setStars] = useState<number | null>(null);
 | `reviewsLabel`       | the word after the count, English `"reviews"`, pluralised and localised via `BloomProvider locale` |
 | `newLabel`           | drawn instead of the value when there is no rating yet, English `"New"`, localised via `BloomProvider locale` |
 | `size`               | `'small'` (14px star, body-2 text) or `'medium'` (default, 16px star, body text)        |
+| `showValue` | default `true`; `false` hides the numeric label while retaining its accessible name; the unrated fallback remains visible |
+| `starSize` | positive glyph size independent of text size; defaults to the selected size scale |
 | `variant`            | `'compact'` (default, one star) or `'stars'` (five stars, filled fractionally, before the value) |
 | `color`              | paints the star(s), the value and the count — e.g. white over a brand-coloured hero      |
 | `starColor`          | the filled star(s) only (a gold star beside neutral text); default `color`               |
@@ -97,6 +99,22 @@ measurement — and a rating breakdown is not a chart: the rows do not encode
 different categories by colour, they all say "how good is this, out of 5". It is
 a `progressbar` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
 `aria-valuetext` (from `display`).
+
+### Authored summary and bar slots
+
+```tsx
+<Rating value={4.5} variant="stars" showValue={false} starSize={20} />
+<RatingBar label="5" value={0.75} max={1} display="75%" labelWidth={16}
+  className="gap-2" labelClassName="text-xs font-semibold"
+  displayClassName="text-xs" trackClassName="h-2 rounded-full"
+  fillClassName="bg-foreground" />
+```
+
+`className` styles the row; `labelClassName` and `displayClassName` style the two
+labels. `trackClassName` and `fillClassName` are owned and resolved by `Meter`.
+Their defaults remain unchanged when classes are absent. Classes may customize
+paint and geometry, but the filled fraction stays derived from `value / max`.
+The bar remains one named progressbar; its visual labels are not announced twice.
 
 ## `RatingInput`
 
