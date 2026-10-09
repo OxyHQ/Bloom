@@ -255,8 +255,8 @@ export function DialogBottomSheet({
   return (
     <BottomSheet
       accessibilityLabel={label ?? header?.title}
-      aria-labelledby={title ? titleId : undefined}
-      aria-describedby={description ? descriptionId : undefined}
+      aria-labelledby={!header && title ? titleId : undefined}
+      aria-describedby={!header && description ? descriptionId : undefined}
       ref={ref}
       // Seed the sheet's open state so a fresh mount that should be open renders
       // visible on its FIRST commit instead of relying on a present()-in-effect

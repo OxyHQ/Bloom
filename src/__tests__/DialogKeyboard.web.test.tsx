@@ -312,10 +312,12 @@ describe('bottom dialog panel semantics', () => {
   });
 
   it('includes navigation header controls within the named dialog', () => {
-    mount(<Dialog open placement="bottom" header={{ title: 'Account preferences' }}><Pressable accessibilityRole="button"><Text>Save</Text></Pressable></Dialog>);
+    mount(<Dialog open placement="bottom" title="Unused title" description="Unused description" header={{ title: 'Account preferences' }}><Pressable accessibilityRole="button"><Text>Save</Text></Pressable></Dialog>);
     const panel = dialogNamed('Account preferences');
     expect(panel.getAttribute('aria-modal')).toBe('true');
     expect(panel.querySelectorAll('button').length).toBeGreaterThanOrEqual(2);
+    expect(panel.hasAttribute('aria-labelledby')).toBe(false);
+    expect(panel.hasAttribute('aria-describedby')).toBe(false);
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
   });
 
