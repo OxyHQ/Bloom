@@ -4,6 +4,7 @@ import Animated, { cancelAnimation, Easing, ReduceMotion, runOnJS, useAnimatedSt
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { MOTION_RECIPES } from '../motion/recipes';
+import { WEB_OVERFLOW_CLIP } from '../styles/web-view-style';
 import { AppShellPaneActiveContext } from './context';
 import { SplitPane } from './SplitPane';
 import type { AppShellSplitPanesProps } from './types';
@@ -20,7 +21,7 @@ type Props = Pick<AppShellSplitPanesProps, 'list' | 'detail' | 'listErrorBoundar
 
 // `clip` prevents horizontal overflow without creating a nested scroll owner.
 // Native has no document scroll and uses its ordinary clipping primitive.
-const clipStyle = { overflow: Platform.OS === 'web' ? 'clip' : 'hidden' } as ViewStyle;
+const clipStyle: ViewStyle = { overflow: Platform.OS === 'web' ? WEB_OVERFLOW_CLIP : 'hidden' };
 
 /** One progress value owns both live pane positions; no clones, opacity or layout snapshots. */
 export function AppShellSplitMotion({ list, detail, showList, showDetail, width, gap,
