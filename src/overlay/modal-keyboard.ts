@@ -59,6 +59,15 @@ export function tabbablesWithin(node: HTMLElement | null): HTMLElement[] {
   );
 }
 
+/** Initial focus must not scroll long content to an offscreen action. Tab still reaches every control. */
+export function initialFocusWithin(node: HTMLElement): HTMLElement {
+  const panel = node.getBoundingClientRect();
+  return tabbablesWithin(node).find(element => {
+    const rect = element.getBoundingClientRect();
+    return rect.top >= panel.top && rect.bottom <= panel.bottom && rect.left >= panel.left && rect.right <= panel.right;
+  }) ?? node;
+}
+
 /**
  * Keep Tab inside `node`: from the last tabbable (or from outside) forward to
  * the first, from the first (or from outside) backward to the last. Returns

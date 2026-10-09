@@ -377,3 +377,14 @@ it('the explicit close icon completes a protected native dialog once and allows 
   jest.runOnlyPendingTimers();
   jest.useRealTimers();
 });
+
+describe('native centered owned scrolling', () => {
+  it('does not add its own ScrollView when scrollable is false', () => {
+    const normal = renderWithTheme(<Dialog open placement="center"><Text>Normal body</Text></Dialog>);
+    expect(countNodesByType(normal.toJSON() as RenderedNode | RenderedNode[] | null, 'Animated.ScrollView')).toBe(1);
+    normal.unmount();
+    const result = renderWithTheme(<Dialog open placement="center" scrollable={false} testID="owned-center"><Text>Owned body</Text></Dialog>);
+    expect(countNodesByType(result.toJSON() as RenderedNode | RenderedNode[] | null, 'Animated.ScrollView')).toBe(0);
+    expect(result.getByTestId('owned-center').props.style).toEqual(expect.arrayContaining([expect.objectContaining({ flex: 1, minHeight: 0 })]));
+  });
+});

@@ -335,3 +335,18 @@ and scrolling body, so header actions stay inside the dialog's keyboard and
 accessibility boundary. `description` is associated with that same panel.
 Wrap application content (not the surface outlet) in `OverlayInertBoundary` to
 exclude the underlying page while a modal is open.
+
+
+### Content that owns scrolling
+
+With `scrollable={false}`, each placement passes a bounded flex height to the
+child instead of nesting it in a disabled ScrollView. This includes side drawers
+with a header and native centered cards. Give the child scroller `flex: 1` and
+`minHeight: 0`; the dialog supplies the viewport bound and header spacing. A
+footer after the child stays inside the surface.
+
+Initial keyboard focus chooses the first control visible inside the panel, or
+the panel itself when all controls are below its viewport. Focusing the surface
+and restoring its opener preserve scroll position, so a pagination action at
+the end of a long list does not pull a newly opened dialog to the bottom.
+Content that explicitly focuses itself retains that focus.

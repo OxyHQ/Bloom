@@ -825,31 +825,47 @@ function SheetSurface({
               onDismiss={onDismiss}
               collapse={false}
             />
-            <ScrollView
-              style={{ flexShrink: 1 }}
-              contentContainerStyle={{ paddingTop: DIALOG_NAV_BAR_HEIGHT, paddingBottom: contentPadding }}
-              showsVerticalScrollIndicator={false}
-              scrollEventThrottle={16}
-              scrollEnabled={scrollable !== false}
-              onScroll={(e) => {
-                headerController.scrollY.value = e.nativeEvent.contentOffset.y;
-              }}
-            >
-              <DialogHeaderProvider controller={headerController}>
-                <DialogBody
-                  titleId={titleId}
-                  descriptionId={descriptionId}
-                  title={title}
-                  description={description}
-                  actions={actions}
-                >
-                  {surfaceChildren}
-                </DialogBody>
-              </DialogHeaderProvider>
-            </ScrollView>
+            {scrollable === false ? (
+              <View style={{ flex: 1, minHeight: 0, paddingBottom: contentPadding }}>
+                <DialogNavBarSpacer controller={headerController} header={header} />
+                <DialogHeaderProvider controller={headerController}>
+                  <DialogBody
+                    titleId={titleId}
+                    descriptionId={descriptionId}
+                    title={title}
+                    description={description}
+                    actions={actions}
+                  >
+                    {surfaceChildren}
+                  </DialogBody>
+                </DialogHeaderProvider>
+              </View>
+            ) : (
+              <ScrollView
+                style={{ flexShrink: 1 }}
+                contentContainerStyle={{ paddingTop: DIALOG_NAV_BAR_HEIGHT, paddingBottom: contentPadding }}
+                showsVerticalScrollIndicator={false}
+                scrollEventThrottle={16}
+                onScroll={(e) => {
+                  headerController.scrollY.value = e.nativeEvent.contentOffset.y;
+                }}
+              >
+                <DialogHeaderProvider controller={headerController}>
+                  <DialogBody
+                    titleId={titleId}
+                    descriptionId={descriptionId}
+                    title={title}
+                    description={description}
+                    actions={actions}
+                  >
+                    {surfaceChildren}
+                  </DialogBody>
+                </DialogHeaderProvider>
+              </ScrollView>
+            )}
           </View>
         ) : (
-          <View style={{ padding: contentPadding }}>
+          <View style={[{ padding: contentPadding }, scrollable === false && { flex: 1, minHeight: 0 }]}>
             <DialogBody
               titleId={titleId}
               descriptionId={descriptionId}
