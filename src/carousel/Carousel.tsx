@@ -406,10 +406,11 @@ const CarouselComponent = function Carousel({
    * ONE list, so they cannot disagree about where the track can go.
    */
   const computeStops = useCallback((): Stop[] | null => {
+    if (trackWidth <= 0 || scroll.current.contentWidth <= 0) return null;
     const all = slideKeys.map(key => offsets.current.get(key));
-    if (all.some(item => !item)) return null;
+    if (all.some(item => !item || item.width <= 0)) return null;
     return toStops((all as SlideOffset[]).map(targetFor));
-  }, [slideKeys, targetFor]);
+  }, [slideKeys, targetFor, trackWidth]);
 
   const measure = useCallback(() => {
     const { x, contentWidth } = scroll.current;
