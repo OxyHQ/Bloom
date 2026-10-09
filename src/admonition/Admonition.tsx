@@ -183,7 +183,11 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   border: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     borderRadius: 16,
     borderWidth: 1,
     opacity: 0.3,

@@ -24,7 +24,7 @@ describe.each(['light', 'dark'] as const)('Admonition in %s mode', mode => {
     expect(resolvedStyle(surface!.props.style)).toMatchObject({ padding: 16, borderRadius: 16 });
     expect(resolvedStyle(surface!.props.style).opacity).toBeUndefined();
     const border = nodes.find(node => resolvedStyle(node.props.style).borderColor === colors[tone]);
-    expect(resolvedStyle(border!.props.style)).toMatchObject({ borderWidth: 1, opacity: 0.3 });
+    expect(resolvedStyle(border!.props.style)).toMatchObject({ borderWidth: 1, opacity: 0.3, position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 });
     expect(border!.props.pointerEvents).toBe('none');
     expect(nodes.some(node => node.props.fill === colors[`${tone}SubtleForeground`])).toBe(true);
     expect(view.getByText('Read this carefully.')).toBeTruthy();
