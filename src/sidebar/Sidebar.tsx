@@ -25,6 +25,7 @@ import Animated, {
 import { Badge } from '../badge';
 import { CloseButton } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
+import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -251,6 +252,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const [suppressUserHover, setSuppressUserHover] = useState(false);
   const searchFieldRef = useRef<View>(null);
   const searchTriggerRef = useRef<View>(null);
+  const searchTooltipRef = useBrowserTitle<View>(collapsed ? searchLabel : undefined, searchTriggerRef);
   const searchInputRef = useRef<TextInput>(null);
   const normalized = query.trim().toLocaleLowerCase();
   const searchHover = useInteractionState();
@@ -484,7 +486,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       }}
     >
       <Pressable
-        ref={searchTriggerRef}
+        ref={searchTooltipRef}
         {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
         role="button"
         accessibilityLabel={searchButtonLabel}
@@ -566,8 +568,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     </View>
   ) : (
     <AnimatedPressable
-      ref={searchTriggerRef}
-      {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' }, ...(collapsed ? { title: searchLabel } : null) } : {})}
+      ref={searchTooltipRef}
+      {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
       role="button"
       accessibilityLabel={searchLabel}
       onPress={activateSearch}

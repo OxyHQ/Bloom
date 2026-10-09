@@ -3,6 +3,7 @@ import { View, type GestureResponderEvent } from 'react-native';
 import { StyledPressable } from '../styles/styled-primitives';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
+import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
@@ -59,6 +60,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   testID,
 }) => {
   const palette = useSidebarPalette();
+  const tooltipRef = useBrowserTitle<View>(collapsed ? label : undefined, ref);
   const metrics = useSidebarMetrics(size);
   useSidebarWebCss();
   const { state: hovered, onIn, onOut } = useInteractionState();
@@ -106,14 +108,13 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
         dataSet: { bloomSidebar: 'ring' },
         ...(href ? { href } : null),
         ...(selected ? { 'aria-current': 'page' } : null),
-        ...(collapsed ? { title: label } : null),
       }
     : {};
 
   return (
     <AnimatedPressable
       {...webProps}
-      ref={ref}
+      ref={tooltipRef}
       className={className}
       disabled={disabled}
       nativeID={nativeID}

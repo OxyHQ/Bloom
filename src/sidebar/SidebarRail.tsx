@@ -30,6 +30,9 @@ export const SIDEBAR_RAIL_WIDTH = 80;
  */
 export function SidebarRail({
   logo,
+  railLabels = 'visible',
+  railSelection = 'pill',
+  railWidth = SIDEBAR_RAIL_WIDTH,
   items = [],
   primaryAction,
   contentAlignment = 'start',
@@ -57,6 +60,8 @@ export function SidebarRail({
         icon={item.icon}
         activeIcon={item.activeIcon}
         label={item.label}
+        labelVisibility={railLabels}
+        selectedAppearance={railSelection}
         href={item.href}
         selected={isSelected}
         onPress={onPress}
@@ -83,7 +88,7 @@ export function SidebarRail({
       testID={testID}
       style={[
         {
-          width: SIDEBAR_RAIL_WIDTH,
+          width: Number.isFinite(railWidth) ? Math.max(64, railWidth) : SIDEBAR_RAIL_WIDTH,
           height: '100%',
           flexShrink: 0,
           flexDirection: 'column',

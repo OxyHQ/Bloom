@@ -368,6 +368,24 @@ describe('Sidebar tree and plan', () => {
 });
 
 describe('Sidebar variant="rail"', () => {
+  it('supports a named icon-only rail without a selected pill', () => {
+    const onNavigate = jest.fn();
+    const screen = renderIn(<Sidebar testID="compact" variant="rail" railWidth={68}
+      railLabels="hidden" railSelection="icon" items={ITEMS} selected="home" onNavigate={onNavigate} />);
+    expect(resolvedStyle(screen.getByTestId('compact').props.style).width).toBe(68);
+    expect(screen.queryByText('Home')).toBeNull();
+    expect(screen.getByLabelText('Home')).toBeTruthy();
+    expect(resolvedStyle(screen.getByTestId('sidebar-item-home').props.style).minHeight).toBe(48);
+    expect(resolvedStyle(screen.getByTestId('sidebar-item-home-indicator').props.style).backgroundColor).toBe('transparent');
+    fireEvent.press(screen.getByLabelText('Home'));
+    expect(onNavigate).toHaveBeenCalledWith(ITEMS[0]);
+  });
+
+  it.each([0, -20, 40])('bounds a requested rail width of %s to its hit area', railWidth => {
+    const screen = renderIn(<Sidebar testID="compact" variant="rail" railWidth={railWidth} />);
+    expect(resolvedStyle(screen.getByTestId('compact').props.style).width).toBe(64);
+  });
+
   const RAIL: SidebarNavItem[] = [
     { key: 'home', label: 'Home', icon: RiHomeLine, activeIcon: RiHomeFill, href: '/home', badge: 3 },
     { key: 'board', label: 'Project board', icon: RiKanbanView2, href: '/board' },

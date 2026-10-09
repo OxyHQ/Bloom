@@ -15,7 +15,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { RiHomeLine } from '../icons/remix';
-import { Sidebar } from '../sidebar';
+import { Sidebar, SidebarItem, SidebarModeSwitcher } from '../sidebar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -60,6 +60,33 @@ function hooked(): HTMLElement[] {
 }
 
 describe('Sidebar focus ring (web)', () => {
+  it('retains the accessible name, tooltip and current-page state without a caption', () => {
+    render(<Sidebar variant="rail" railLabels="hidden" railSelection="icon" selected="home" items={ITEMS} />);
+    const item = container.querySelector('[data-testid="sidebar-item-home"]');
+    expect(item?.getAttribute('aria-label')).toBe('Home');
+    expect(item?.getAttribute('title')).toBe('Home');
+    expect(item?.getAttribute('aria-current')).toBe('page');
+    expect(item?.textContent).toBe('');
+    expect(ringOf(item!)).not.toBe('');
+  });
+
+  it('updates and removes browser tooltips when a destination expands', () => {
+    render(<SidebarItem icon={RiHomeLine} label="Home" collapsed testID="tip" />);
+    const item = container.querySelector('[data-testid="tip"]');
+    expect(item?.getAttribute('title')).toBe('Home');
+    render(<SidebarItem icon={RiHomeLine} label="Start" collapsed testID="tip" />);
+    expect(item?.getAttribute('title')).toBe('Start');
+    render(<SidebarItem icon={RiHomeLine} label="Start" testID="tip" />);
+    expect(item?.getAttribute('title')).toBeNull();
+  });
+
+  it('gives collapsed search and mode controls working browser tooltips', () => {
+    render(<Sidebar items={ITEMS} collapsed showSearch />);
+    expect(container.querySelector('[data-testid="sidebar-search"]')?.getAttribute('title')).toBe('Quick Search');
+    render(<SidebarModeSwitcher collapsed modes={[{ key: 'home', label: 'Home', icon: RiHomeLine }]} value="home" onValueChange={() => {}} />);
+    expect(container.querySelector('[role="radio"]')?.getAttribute('title')).toBe('Home');
+  });
+
   it('gives the collapse button a ring colour', () => {
     render(<Sidebar items={ITEMS} />);
     const collapse = container.querySelector('[data-testid="sidebar-collapse"]');

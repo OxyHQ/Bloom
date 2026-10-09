@@ -16,7 +16,7 @@ import {
   DEMO_TEAM,
 } from '../sidebar/Sidebar.stories';
 import { useTheme } from '../theme/use-theme';
-import { AiChatContainer } from '../ai-chat';
+import { AiChatContainer, AiChatUserMessage } from '../ai-chat';
 import { AppShell, AppShellSplitPanes, AppShellHeader, NotificationBell, ProOfferCard } from './index';
 
 const meta: Meta<typeof AppShell> = {
@@ -218,4 +218,20 @@ function AnimatedPanesExample() {
 export const AnimatedPanes: Story = {
   parameters: { controls: { disable: true } },
   render: () => <AnimatedPanesExample />,
+};
+
+export const IconOnlyRail: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => <AppShell testID="icon-rail-shell" scroll="document" header={null}
+    gutter={8} navFrom={0} contentMaxWidth="none"
+    sidebar={{ variant: 'rail', railLabels: 'hidden', railSelection: 'icon', railWidth: 68,
+      surface: 'plain', items: DEMO_RAIL_NAV, selected: 'home' }}>
+    <AiChatUserMessage testID="wide-bubble" animate={false}
+      bubbleStyle={width => ({ maxWidth: width > 0 ? Math.max(0, width - 112) : '100%',
+        marginInlineEnd: 0, borderRadius: 24, paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 })}>
+      A longer message demonstrates how the bubble wraps while leaving space at the start of its column.
+      The navigation beside it owns its width and retains accessible destination names.
+    </AiChatUserMessage>
+    <Placeholder height={1200} />
+  </AppShell>,
 };

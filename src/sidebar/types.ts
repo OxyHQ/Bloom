@@ -123,6 +123,10 @@ export interface SidebarToolbarProps {
 }
 
 export interface SidebarRailItemProps {
+  /** Keep the accessible name while hiding the visual caption. Default visible. */
+  labelVisibility?: 'visible' | 'hidden';
+  /** Selected pill, or emphasis on the glyph alone. Default pill. */
+  selectedAppearance?: 'pill' | 'icon';
   icon: SidebarIcon;
   /** The glyph while selected (e.g. the filled icon); defaults to `icon`. */
   activeIcon?: SidebarIcon;
@@ -311,6 +315,12 @@ export interface SidebarProps {
   };
   /** Defaults to `panel`. */
   variant?: SidebarVariant;
+  /** Rail captions; hidden retains accessible names and native browser tooltips. */
+  railLabels?: 'visible' | 'hidden';
+  /** Rail selection uses an accent pill by default, or only an emphasized icon. */
+  railSelection?: 'pill' | 'icon';
+  /** Rail width, owned by the navigation layout. Default 80, minimum 64. */
+  railWidth?: number;
   /** Primary navigation rows. */
   items?: SidebarNavItem[];
   /**

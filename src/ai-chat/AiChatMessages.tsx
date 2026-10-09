@@ -3,6 +3,7 @@ import { View, type LayoutChangeEvent } from 'react-native';
 
 import { RiLinkM } from '../icons/remix/RiLinkM';
 import { Text } from '../typography';
+import { useDirectionProps } from '../hooks/use-is-rtl';
 import { TurnActionButton } from './AiChatControls';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';
 import { RevealFade, RevealLine, RevealSequence, useRevealSlot } from './AiChatReveal';
@@ -60,20 +61,23 @@ function asBlocks(children: React.ReactNode): React.ReactNode {
   });
 }
 
-export function AiChatUserMessageBase({ children, actions, animate = true, style, testID }: AiChatUserMessageProps) {
+export function AiChatUserMessageBase({ children, actions, animate = true, style, bubbleStyle, testID }: AiChatUserMessageProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const [column, setColumn] = useState(0);
+  const direction = useDirectionProps();
   return (
     <View
       {...dataHook('bloomAiChatTurn')}
+      {...direction}
       testID={testID}
       onLayout={(event: LayoutChangeEvent) => setColumn(event.nativeEvent.layout.width)}
       style={[{ width: '100%', alignItems: 'flex-end' }, style]}>
       <RevealFade
         animate={animate}
-        style={{
-          marginRight: -6,
+        testID={testID ? `${testID}-bubble` : undefined}
+        style={[{
+          marginInlineEnd: -6,
           maxWidth: column > 0 ? column / 2 + 6 : '50%',
           flexDirection: 'column',
           borderRadius: CARD_RADIUS,
@@ -83,7 +87,7 @@ export function AiChatUserMessageBase({ children, actions, animate = true, style
           paddingTop: 11,
           paddingBottom: 11,
           boxShadow: palette.shadowCard,
-        }}>
+        }, typeof bubbleStyle === 'function' ? bubbleStyle(column) : bubbleStyle]}>
         <RevealSequence animate={animate}>{asBlocks(children)}</RevealSequence>
       </RevealFade>
       {actions && actions.length > 0 ? (
