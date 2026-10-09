@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import type { View } from 'react-native';
 
-import { initialFocusWithin, listenForEscape, wrapTab } from './modal-keyboard';
+import { initialFocusWithin, listenForEscape, restoreFocusWhenAvailable, wrapTab } from './modal-keyboard';
 import { useOverlayLayerContext } from './Overlay';
 import { isTopmostOverlayLayer } from './stack';
 
@@ -39,20 +39,20 @@ export function ModalKeyboard({ panelRef, closing = false, dismissible, dismiss 
   const state = useRef({ closing, dismissible, dismiss });
   state.current = { closing, dismissible, dismiss };
   const opener = useRef<HTMLElement | null>(null);
+  const cancelRestore = useRef<(() => void) | undefined>(undefined);
 
   const restoreFocus = useCallback(() => {
     const target = opener.current;
     opener.current = null;
     if (!target?.isConnected || typeof document === 'undefined') return;
     const panel = panelRef.current as unknown as HTMLElement | null;
-    const active = document.activeElement;
-    // Only focus the surface still holds (or lost with its nodes): a host that
-    // moved focus on purpose while closing keeps its choice.
-    if (!active || active === document.body || panel?.contains(active)) target.focus({ preventScroll: true });
+    cancelRestore.current?.();
+    cancelRestore.current = restoreFocusWhenAvailable(target, panel);
   }, [panelRef]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    cancelRestore.current?.();
     const active = document.activeElement;
     opener.current = active instanceof HTMLElement && active !== document.body ? active : null;
     const panel = () => panelRef.current as unknown as HTMLElement | null;

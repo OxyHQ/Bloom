@@ -248,3 +248,22 @@ export const OwnedScrollerPagination: Story = {
     </>;
   },
 };
+
+function MountedFocusDialog({ placement, onClose }: { placement: 'center' | 'end' | 'bottom'; onClose: () => void }) {
+  const control = useDialogControl();
+  React.useEffect(() => { control.open(); }, [control]);
+  return <Dialog control={control} placement={placement} label="Focus restoration" header={{ title: 'Focus restoration', largeTitle:false }} onClose={onClose}>
+    <Button onPress={() => control.close()}>Finish</Button>
+  </Dialog>;
+}
+/** The opener is inert during exit; the host removes the dialog after closing. */
+export const FocusRestoration: Story = {
+  args:{ placement:'end' },
+  render:function FocusRestorationDemo(args) {
+    const [mounted,setMounted]=React.useState(false);
+    return <>
+      <OverlayInertBoundary testID="focus-boundary"><Button onPress={()=>setMounted(true)}>Open focus dialog</Button></OverlayInertBoundary>
+      {mounted?<MountedFocusDialog placement={args.placement as 'center'|'end'|'bottom'} onClose={()=>setMounted(false)} />:null}
+    </>;
+  },
+};

@@ -39,3 +39,15 @@ body { margin: 0; }
   .dark .bloom-demo-rating-track { background:#404040; }
   .dark .bloom-demo-rating-fill { background:#fff; }
 }
+
+@layer components {
+  .bloom-demo-carousel-arrow { width:40px; height:40px; min-width:40px; padding:0; border-radius:9999px; border:.5px solid #183b4e0f; background:#fff; color:#121212; box-shadow:0 2px 8px #0000000f; }
+  .dark .bloom-demo-carousel-arrow { background:#121212; color:#fff; border-color:#ffffff1a; }
+}
+
+@layer components {
+  .bloom-demo-search-container { width:360px; margin-top:8px; }
+  .bloom-demo-search-field { height:44px; padding-left:12px; padding-right:12px; }
+  .bloom-demo-search-chrome { border-width:1px; border-color:#abcdef; border-radius:14px; background:#eef0f1; }
+  .dark .bloom-demo-search-chrome { background:#404040; }
+}

@@ -8,6 +8,10 @@ export type { TextFieldSize } from './shared';
 
 export type TextFieldProps = React.PropsWithChildren<
   {
+    /** Classes on the layout host: width, height and padding. */
+    className?: string;
+    /** Classes on the inset surface: background, border/ring and radius. State paint remains authoritative. */
+    chromeClassName?: string;
     invalid?: boolean;
   isInvalid?: boolean;
     /**

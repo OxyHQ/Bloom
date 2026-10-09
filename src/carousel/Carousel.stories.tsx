@@ -226,3 +226,24 @@ function HoverArrowsDemo({ mode, placement }: { mode: 'light' | 'dark'; placemen
 }
 export const HoverArrowsLight: Story = { render: args => <HoverArrowsDemo mode="light" placement={args.arrowsPlacement ?? 'overlay'} /> };
 export const HoverArrowsDark: Story = { render: args => <HoverArrowsDemo mode="dark" placement={args.arrowsPlacement ?? 'overlay'} /> };
+
+function ArrowRecipeDemo({ mode, placement }: { mode: 'light' | 'dark'; placement: 'header' | 'overlay' }) {
+  const [index, setIndex] = useState(0);
+  const [width, setWidth] = useState(440);
+  const [count, setCount] = useState(3);
+  return <BloomThemeProvider mode={mode} colorPreset="oxy"><Frame width={width}>
+    <Button testID="recipe-before" onPress={() => {}}>Before gallery</Button>
+    <Carousel testID="recipe-carousel" accessibilityLabel="Styled gallery" index={index} onIndexChange={setIndex}
+      arrowsPlacement={placement} arrowsVisibility="hover" hideUnavailableArrows showDots={false}
+      arrowButtonProps={{ material: 'flat', className: 'bloom-demo-carousel-arrow', iconSize: 20 }}>
+      {Array.from({ length: count }, (_, value) => <CarouselItem key={value}><Slide label={`Photo ${value + 1}`} /></CarouselItem>)}
+    </Carousel>
+    <Text testID="recipe-index">{index}</Text>
+    <Button testID="recipe-after" onPress={() => setIndex(0)}>First photo</Button>
+    <Button onPress={() => setIndex(count - 1)}>Last photo</Button>
+    <Button onPress={() => setWidth(value => value === 440 ? 280 : 440)}>Resize gallery</Button>
+    <Button onPress={() => setCount(1)}>Single photo</Button>
+  </Frame></BloomThemeProvider>;
+}
+export const ArrowRecipeLight: Story = { render: args => <ArrowRecipeDemo mode="light" placement={args.arrowsPlacement ?? 'overlay'} /> };
+export const ArrowRecipeDark: Story = { render: args => <ArrowRecipeDemo mode="dark" placement={args.arrowsPlacement ?? 'overlay'} /> };

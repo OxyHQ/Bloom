@@ -2,6 +2,8 @@ import { forwardRef, useCallback, useMemo, useRef } from 'react';
 import { Platform, type TextInput, View } from 'react-native';
 
 import { mergeRefs } from '../hooks/merge-refs';
+import { FieldBox } from '../text-field/FieldBox';
+import type { SearchProps } from './types';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
@@ -11,20 +13,12 @@ import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
 import { borderRadius } from '../styles/tokens';
 import { GlyphButton } from '../button';
-import { TextField, TextFieldIcon, TextFieldInput, type TextFieldInputProps } from '../text-field';
+import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine';
 import { RiCloseLine as X } from '../icons/remix/RiCloseLine';
 
-type SearchProps = Omit<TextFieldInputProps, 'label'> & {
-  label?: TextFieldInputProps['label'];
-  /**
-   * Called when the user presses the clear (X) button.
-   */
-  onClearText?: () => void;
-};
-
 export const Search = forwardRef<TextInput, SearchProps>(
-  function Search({ value, label: labelProp, onClearText, onFocus, onPressIn, ...rest }, ref) {
+  function Search({ value, label: labelProp, onClearText, onFocus, onPressIn, fieldClassName, fieldChromeClassName, containerClassName, containerStyle, ...rest }, ref) {
     const theme = useTheme();
     const direction = useDirectionProps();
     const rtl = useIsRtl();
@@ -69,8 +63,8 @@ export const Search = forwardRef<TextInput, SearchProps>(
     );
 
     return (
-      <View {...direction} style={[a.w_full, a.relative]}>
-        <TextField radius={borderRadius.full}>
+      <FieldBox {...direction} className={containerClassName} style={containerStyle} baseStyle={[a.w_full, a.relative]}>
+        <TextField radius={borderRadius.full} className={fieldClassName} chromeClassName={fieldChromeClassName}>
           <TextFieldIcon icon={MagnifyingGlassIcon} />
           <TextFieldInput
             inputRef={refs}
@@ -113,7 +107,7 @@ export const Search = forwardRef<TextInput, SearchProps>(
             />
           </View>
         )}
-      </View>
+      </FieldBox>
     );
   },
 );

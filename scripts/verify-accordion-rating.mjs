@@ -9,6 +9,7 @@ try {
   for (const mode of ['light', 'dark']) for (const reducedMotion of ['reduce', 'no-preference']) {
     const page = await browser.newPage({ viewport: { width: 800, height: 1200 }, reducedMotion });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
+    page.on('console', message => { if (message.type() === 'error' && /collapsable|non-boolean/.test(message.text())) errors.push(message.text()); });
     const goto = async id => {
       await page.goto(`${base}/iframe.html?id=${id}&viewMode=story&globals=theme:${mode}`);
       await page.locator('#storybook-root > *').first().waitFor({ timeout: 120000 });
@@ -29,6 +30,7 @@ try {
     await expect(input).toHaveCount(0);
     assert.equal(await panel.locator('input').count(), 1, 'collapsed children remain mounted');
     await expect(panel).toHaveAttribute('inert', '');
+    assert.equal(await panel.getAttribute('collapsable'), null, 'RN Animated props do not leak onto the DOM');
     await trigger.focus(); await page.keyboard.press('Tab');
     await expect(page.getByRole('button', { name: 'More', exact: true })).toBeFocused();
     await expect(root).toHaveCSS('gap', '8px'); await expect(root).toHaveCSS('width', '360px');

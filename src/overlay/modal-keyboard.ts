@@ -140,3 +140,33 @@ export function listenForEscape(claim: () => boolean, dismiss: () => void): () =
     pending = null;
   };
 }
+
+/** A modal may begin closing before its opener stops being inert. */
+export function restoreFocusWhenAvailable(target: HTMLElement, panel: HTMLElement | null): () => void {
+  if (!hasDom()) return () => {};
+  let observer: MutationObserver | undefined;
+  let done = false;
+  const cancel = () => {
+    done = true;
+    observer?.disconnect();
+    document.removeEventListener('focusin', attempt);
+  };
+  function attempt() {
+    if (done) return;
+    if (!target.isConnected) { cancel(); return; }
+    const active = document.activeElement;
+    // Closing must not steal a host's deliberate destination, or focus from a
+    // subsequently opened modal. A removed focused panel leaves body active.
+    if (active && active !== document.body && !panel?.contains(active)) { cancel(); return; }
+    if (target.closest('[inert]')) return;
+    cancel();
+    target.focus({ preventScroll: true });
+  }
+  observer = new MutationObserver(attempt);
+  // Watch the actual inert boundary lifecycle, never an assumed exit duration.
+  // Child changes also terminate the observer when its opener is removed.
+  observer.observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['inert'] });
+  document.addEventListener('focusin', attempt);
+  attempt();
+  return cancel;
+}

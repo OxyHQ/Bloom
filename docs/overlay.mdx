@@ -142,3 +142,12 @@ Check for a `Portal` before assuming a surface participates.
 
 On native there is a second mechanism z-index cannot reach: each of these
 surfaces is its own RN `<Modal>` window.
+
+### Focus restoration and inert app content
+
+On web, modal keyboard focus returns after the opener's actual `inert` boundary
+becomes available. Exit animations can keep that boundary inert after closing
+begins; an attempted focus before removal is ignored by the browser. Restoration
+observes the boundary lifecycle rather than assuming an animation duration,
+works when the host unmounts the dialog, uses `preventScroll`, and yields to a
+destination the host deliberately focused while closing.
