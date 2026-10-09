@@ -210,6 +210,16 @@ describe('ChatComposer autosize (web)', () => {
     expect(height(el)).toBe(LINE);
   });
 
+  it('uses a custom input line height for both the floor and the line cap', () => {
+    mount(<ChatComposer minLines={2} maxLines={4} inputStyle={[{ fontSize: 16 }, { lineHeight: 24 }]} />);
+    const el = field();
+    expect(height(el)).toBe(48);
+    type(el, lines(20));
+    expect(height(el)).toBe(96);
+    mount(<ChatComposer value="" minLines={1} maxLines={4} inputStyle={{ lineHeight: 28 }} />);
+    expect(height(el)).toBe(28);
+  });
+
   it('keeps minLines as the floor, and does not collapse a field already on it', () => {
     mount(<ChatComposer testID="c" minLines={2} />);
     const el = field();
@@ -219,6 +229,53 @@ describe('ChatComposer autosize (web)', () => {
     type(el, '');
     expect(height(el)).toBe(2 * LINE);
     expect(collapses.count).toBe(0);
+  });
+});
+
+describe('composer width changes (web)', () => {
+  let originalObserver: typeof ResizeObserver;
+  let notify: (width: number) => void;
+  let disconnect: jest.Mock;
+
+  beforeEach(() => {
+    originalObserver = globalThis.ResizeObserver;
+    disconnect = jest.fn();
+    globalThis.ResizeObserver = class {
+      constructor(callback: ResizeObserverCallback) {
+        notify = width => act(() => callback([{ contentRect: { width } } as ResizeObserverEntry], this));
+      }
+      observe() {}
+      unobserve() {}
+      disconnect = disconnect;
+    } as typeof ResizeObserver;
+  });
+  afterEach(() => { globalThis.ResizeObserver = originalObserver; });
+
+  it.each([
+    ['chat', <ChatComposer key="chat" />],
+    ['panel', <ComposerPanel key="panel" />],
+    ['pill', <ComposerPill key="pill" />],
+  ])('%s remeasures when width changes, ignores height-only deliveries and disconnects', (_name, composer) => {
+    mount(composer);
+    const el = field();
+    let wrappedHeight = 80;
+    Object.defineProperty(el, 'scrollHeight', {
+      configurable: true,
+      get: () => Math.max(parseFloat(el.style.height) || 0, wrappedHeight),
+    });
+    notify(48);
+    expect(height(el)).toBe(80);
+    const collapses = countCollapses(el);
+    notify(48);
+    expect(collapses.count).toBe(0);
+    wrappedHeight = LINE;
+    notify(800);
+    expect(height(el)).toBe(LINE);
+    expect(collapses.count).toBe(1);
+    notify(800);
+    expect(collapses.count).toBe(1);
+    act(() => root.render(null));
+    expect(disconnect).toHaveBeenCalledTimes(1);
   });
 });
 

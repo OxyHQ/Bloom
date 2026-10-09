@@ -108,7 +108,7 @@ function DocumentComposerPage() {
       <PageFooter position="document" scrim="none" testID="document-footer">
         <ChatComposer testID="document-composer" value={draft} onValueChange={setDraft}
           barStyle={{ borderRadius: 32, minHeight: 64, paddingLeft: 16, paddingRight: 16 }}
-          inputStyle={{ fontSize: 16 }} sendIcon={RiSearchLine}
+          inputStyle={{ fontSize: 16, lineHeight: 24 }} maxLines={4} sendIcon={RiSearchLine}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           onSend={setPicked} suggestions={focused ? [{ id: 'one', label: 'First choice' }] : []}
           onSelectSuggestion={suggestion => { setPicked(suggestion.label); setDraft(suggestion.label); }} />

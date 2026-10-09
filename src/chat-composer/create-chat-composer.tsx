@@ -10,6 +10,7 @@
  */
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  StyleSheet,
   TextInput,
   View,
   type NativeSyntheticEvent,
@@ -182,8 +183,11 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
       [inputRef],
     );
 
-    const minHeight = Math.max(1, minLines) * LINE_HEIGHT;
-    const maxHeight = Math.max(minLines, maxLines) * LINE_HEIGHT;
+    const requestedLineHeight = StyleSheet.flatten(inputStyle)?.lineHeight;
+    const lineHeight = typeof requestedLineHeight === 'number' && Number.isFinite(requestedLineHeight) && requestedLineHeight > 0
+      ? requestedLineHeight : LINE_HEIGHT;
+    const minHeight = Math.max(1, minLines) * lineHeight;
+    const maxHeight = Math.max(1, minLines, maxLines) * lineHeight;
     const [contentHeight, setContentHeight] = useState(minHeight);
     const height = Math.min(maxHeight, Math.max(minHeight, contentHeight));
 
