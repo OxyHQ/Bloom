@@ -14,6 +14,8 @@ try {
     expect(await ratio(page)).toBe(0);
     if (mode === 'clipped') {
       await page.getByTestId('reveal-scroll').evaluate((node) => { node.scrollTop = 340; });
+      // Let the scroll's observer delivery run before asserting non-entry.
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       // Only 40 of the target's 80px are visible; threshold 1 must not trigger.
       await expect(page.getByTestId('histogram-visible')).toHaveText('false');
       expect(await ratio(page)).toBe(0);
