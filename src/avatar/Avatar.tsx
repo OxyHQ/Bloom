@@ -82,19 +82,23 @@ function ShapeFallback({
       <View pointerEvents="none" style={StyleSheet.absoluteFill}>
         <ShapeFill shape={shape} size={size} color={fallbackColor} />
       </View>
-      {icon ??
-        (text ? (
-          <Text allowFontScaling={false} numberOfLines={1} style={initialStyle}>
-            {text}
-          </Text>
-        ) : (
-          <ShapeImage
-            source={DEFAULT_AVATAR_IMAGE}
-            shape={shape}
-            size={size}
-            alt={alt}
-          />
-        ))}
+      {/* Positioned foreground paints after the absolute background on web,
+          including caller SVGs whose own default position is static. */}
+      <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+        {icon ??
+          (text ? (
+            <Text allowFontScaling={false} numberOfLines={1} style={initialStyle}>
+              {text}
+            </Text>
+          ) : (
+            <ShapeImage
+              source={DEFAULT_AVATAR_IMAGE}
+              shape={shape}
+              size={size}
+              alt={alt}
+            />
+          ))}
+      </View>
     </View>
   );
 }

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from './Avatar';
+import { RiUserLine } from '../icons/remix/RiUserLine';
 import { RiVerifiedBadgeLine } from '../icons/remix/RiVerifiedBadgeLine';
 
 const meta: Meta<typeof Avatar> = {
@@ -341,4 +342,13 @@ export const Playground: Story = {
     verified: false,
     live: false,
   },
+};
+
+/** Caller-provided SVGs must paint above the positioned shape background. */
+export const CustomPlaceholder: Story = {
+  render: () => <View style={{ flexDirection: 'row', gap: 24 }}>
+    {(['circle', 'squircle'] as const).map(shape => <Avatar key={shape}
+      testID={`placeholder-${shape}`} size={96} shape={shape}
+      placeholderColor="#eeeeee" placeholderIcon={<RiUserLine width={40} height={40} fill="#111111" />} />)}
+  </View>,
 };
