@@ -1,7 +1,8 @@
 import React from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Image, Pressable, View, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ZoomableMediaGallery } from './ZoomableMediaGallery';
 import type {
   GalleryImage,
@@ -125,6 +126,7 @@ function GalleryDemo({
               ref={(node) => {
                 thumbRefs.current[index] = node;
               }}
+              testID={`gallery-open-${index}`}
               onPress={() => {
                 void openAt(index);
               }}
@@ -185,3 +187,15 @@ export const Playground: StoryObj<typeof ZoomableMediaGallery> = {
     return <View style={{ width: 520, maxWidth: '100%' }}><GalleryDemo {...args} items={IMAGES} /></View>;
   },
 };
+
+function PageGalleryDemo({ mode }: { mode: 'light' | 'dark' }) {
+  const [index, setIndex] = React.useState(-1);
+  const [events, setEvents] = React.useState<number[]>([]);
+  return <BloomThemeProvider mode={mode} colorPreset="oxy">
+    <Text testID="gallery-index">{index}</Text>
+    <Text testID="gallery-events">{JSON.stringify(events)}</Text>
+    <GalleryDemo items={IMAGES} appearance="page" indicatorVariant="thumbnails" onIndexChange={next => { setIndex(next); setEvents(old => [...old, next]); }} />
+  </BloomThemeProvider>;
+}
+export const PageLight: Story = { render: () => <PageGalleryDemo mode="light" /> };
+export const PageDark: Story = { render: () => <PageGalleryDemo mode="dark" /> };

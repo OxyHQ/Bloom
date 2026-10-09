@@ -48,3 +48,26 @@ it('preserves explicit caller alpha through interaction states', () => {
   expect(button.style.getPropertyValue('--bloom-btn-bg-hover')).toMatch(/, 0.5\)$/);
   expect(button.style.getPropertyValue('--bloom-btn-bg-active')).toMatch(/, 0.5\)$/);
 });
+
+
+it('paints an exact flat brand fill without surface layers, keeping disabled and loading behavior', () => {
+  const onPress = jest.fn();
+  act(() => root.render(<Button material="flat" colors={{ background: '#123456', foreground: '#ffffff' }} onPress={onPress}>Flat</Button>));
+  let button = container.querySelector('button')!;
+  expect(button.className).not.toContain('bloom-btn--surface');
+  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('#123456');
+  expect(button.style.getPropertyValue('--bloom-btn-fg')).toBe('#ffffff');
+  expect(button.style.getPropertyValue('--bloom-btn-shadow')).toBe('none');
+  act(() => button.click());
+  expect(onPress).toHaveBeenCalledTimes(1);
+  act(() => root.render(<Button material="flat" disabled onPress={onPress}>Flat</Button>));
+  button = container.querySelector('button')!;
+  expect(button.disabled).toBe(true);
+  expect(button.className).not.toContain('bloom-btn--surface');
+  act(() => button.click());
+  expect(onPress).toHaveBeenCalledTimes(1);
+  act(() => root.render(<Button material="flat" loading colors={{ background: '#123456', foreground: '#ffffff' }}>Flat</Button>));
+  button = container.querySelector('button')!;
+  expect(button.getAttribute('aria-busy')).toBe('true');
+  expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('#123456');
+});

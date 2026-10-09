@@ -1,3 +1,4 @@
+import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { ZOOMABLE_MEDIA_GALLERY_MESSAGES } from './messages';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -129,11 +130,11 @@ const webUserSelectNoneStyle = Platform.select({
 });
 
 export function createZoomableMediaGallery(Button: React.ComponentType<ButtonProps>) {
-function NavArrow({ direction, onPress, label }: { direction: 'left' | 'right'; onPress: () => void; label: string }) {
+function NavArrow({ direction, onPress, label, pageColors }: { direction: 'left' | 'right'; onPress: () => void; label: string; pageColors?: { background: string; foreground: string } }) {
   const isLeft = direction === 'left';
   return <Button onPress={onPress} appearance="outline" tone="neutral" size="lg" iconOnly hitSlop={8}
-    accessibilityLabel={label}
-    icon={isLeft ? <RiArrowLeftLine fill="#fff" size="lg" /> : <RiArrowRightLine fill="#fff" size="lg" />}
+    accessibilityLabel={label} material={pageColors ? 'flat' : 'surface'} colors={pageColors}
+    icon={isLeft ? <RiArrowLeftLine fill={pageColors?.foreground ?? "#fff"} size="lg" /> : <RiArrowRightLine fill={pageColors?.foreground ?? "#fff"} size="lg" />}
     style={[styles.navArrow, isLeft ? styles.navArrowLeft : styles.navArrowRight]} />;
 }
 
@@ -183,8 +184,13 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
  * Without it a video page degrades to its poster, once, with a dev warning.
  */
-const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
+const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ appearance = 'overlay', onIndexChange, measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
   const { messages } = useMessages(ZOOMABLE_MEDIA_GALLERY_MESSAGES);
+  const theme = useTheme();
+  const page = appearance === 'page';
+  const pageColors = page ? { background: theme.colors.backgroundSecondary, foreground: theme.colors.text } : undefined;
+  const onIndexChangeRef = useRef(onIndexChange);
+  onIndexChangeRef.current = onIndexChange;
   const labels = useMemo(() => ({ ...messages, ...labelsProp }), [messages, labelsProp]);
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   // The viewer is full-bleed, so its chrome must clear the status bar, the
@@ -295,9 +301,11 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
 
   // Single writer for the current index: updates state (drives indicator + open
   // image) and the synchronous mirror together, and only when it changes.
-  const setActiveIndexBoth = useCallback((next: number) => {
+  const setActiveIndexBoth = useCallback((next: number, opening = false) => {
+    const changed = activeIndexRef.current !== next;
     activeIndexRef.current = next;
     setActiveIndex((prev) => (prev === next ? prev : next));
+    if (changed || opening) onIndexChangeRef.current?.(next);
   }, []);
 
   // Snap the active media back to its un-zoomed baseline (no animation) and
@@ -487,7 +495,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
       const ratio = knownRatio ?? DEFAULT_ASPECT_RATIO;
 
       setItems(nextItems);
-      setActiveIndexBoth(safeIndex);
+      setActiveIndexBoth(safeIndex, true);
       setOpenRatio(ratio);
       // Seed every page whose ratio is already known (consumer-provided metadata
       // or a previously-cached probe) so swiping never hits the same snap — only
@@ -931,6 +939,9 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
           onPress={handleDismiss}
           accessibilityLabel={labels.close}
           progress={opacity}
+          blurIntensity={page ? 0 : undefined}
+          dimColor={page ? theme.colors.background : undefined}
+          dimOpacity={page ? 1 : undefined}
         />
 
       <GestureDetector gesture={panGesture}>
@@ -1053,8 +1064,8 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
               style={[styles.indicatorWrap, { bottom: INDICATOR_BOTTOM + insets.bottom }, backdropStyle]}
               pointerEvents="box-none"
             >
-              <View style={styles.counterPill} pointerEvents="none">
-                <Text style={styles.counterText}>{`${activeIndex + 1} / ${items.length}`}</Text>
+              <View style={[styles.counterPill, page && { backgroundColor: theme.colors.backgroundSecondary }]} pointerEvents="none">
+                <Text style={[styles.counterText, page && { color: theme.colors.text }]}>{`${activeIndex + 1} / ${items.length}`}</Text>
               </View>
               {indicatorVariant === 'thumbnails' ? (
                 <ScrollView
@@ -1072,6 +1083,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
                       style={[
                         styles.thumbTile,
                         idx === activeIndex ? styles.thumbTileActive : styles.thumbTileInactive,
+                        page && { borderColor: idx === activeIndex ? theme.colors.text : theme.colors.border },
                         webPointerStyle,
                       ]}
                     >
@@ -1087,7 +1099,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
                   {items.map((item, idx) => (
                     <View
                       key={`dot-${mediaKey(item, idx)}`}
-                      style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive]}
+                      style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive, page && { backgroundColor: idx === activeIndex ? theme.colors.text : theme.colors.textSecondary }]}
                     />
                   ))}
                 </View>
@@ -1096,11 +1108,11 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
           )}
 
           {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex > 0 && (
-            <NavArrow direction="left" label={labels.previous} onPress={() => pageTo(activeIndex - 1)} />
+            <NavArrow pageColors={pageColors} direction="left" label={labels.previous} onPress={() => pageTo(activeIndex - 1)} />
           )}
 
           {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex < items.length - 1 && (
-            <NavArrow direction="right" label={labels.next} onPress={() => pageTo(activeIndex + 1)} />
+            <NavArrow pageColors={pageColors} direction="right" label={labels.next} onPress={() => pageTo(activeIndex + 1)} />
           )}
 
           {canShare && pagerReady && (
@@ -1110,7 +1122,8 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
               tone="neutral"
               iconOnly
               accessibilityLabel={labels.share}
-              icon={<RiUpload2Line fill="#fff" size="md" />}
+              material={page ? 'flat' : 'surface'} colors={pageColors}
+              icon={<RiUpload2Line fill={pageColors?.foreground ?? "#fff"} size="md" />}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={[styles.shareButton, { top: CHROME_EDGE + insets.top, right: CHROME_EDGE + insets.right }]}
             />
@@ -1129,8 +1142,8 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
               ]}
               pointerEvents="none"
             >
-              <View style={styles.altCaptionPill}>
-                <Text style={styles.altCaptionText} numberOfLines={4}>{activeAlt}</Text>
+              <View style={[styles.altCaptionPill, page && { backgroundColor: theme.colors.backgroundSecondary }]}>
+                <Text style={[styles.altCaptionText, page && { color: theme.colors.text }]} numberOfLines={4}>{activeAlt}</Text>
               </View>
             </Animated.View>
           ) : null}

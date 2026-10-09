@@ -61,9 +61,17 @@ why this is a separate prop rather than a wider `leadingIcon`: [Icons](/docs/ico
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
 
 
+## Flat controls
+
+`material="flat"` bypasses Surface paint while keeping the Button's geometry, semantic tone, interaction states, loading and accessibility. Solid fills use their exact semantic pair (or the explicit `colors` pair); subtle fills preserve their alpha, and outlines use the semantic border. There is no sheen, rim, blur, refraction or material shadow. `appearance="plain"` remains unfilled with either material.
+
+```tsx
+<Button material="flat" colors={{ background: '#5433eb', foreground: '#ffffff' }} onPress={buy}>Buy</Button>
+```
+
 ## Shared glass material
 
-Surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's 90%-opaque body, gradient and specular rim, with subtle backdrop refraction on web. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
+With the default `material="surface"`, surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's 90%-opaque body, gradient and specular rim, with subtle backdrop refraction on web. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
 
 Accent/status/brand colours keep their semantic foreground pairs. Neutral, semantic and disabled defaults use the same 90%-opaque fills. Explicit caller transparency is preserved. Loading retains its rest paint. The optional `colors={{ background, foreground }}` pair supports branded controls without changing geometry. Native uses one SVG; web uses a decorative pseudo-element. Geometry has no optical offsets.
 
