@@ -195,6 +195,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   loading = false,
   loadingColor,
   accessibilityLabel,
+  'aria-current': ariaCurrent,
   'aria-expanded': ariaExpanded,
   'aria-haspopup': ariaHasPopup,
   accessibilityHint,
@@ -466,6 +467,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       'aria-busy'?: boolean;
       'aria-pressed'?: boolean;
       'aria-label'?: string;
+      'aria-current'?: ButtonProps['aria-current'];
       title?: string;
       id?: string;
       tabIndex?: number;
@@ -498,6 +500,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       'aria-busy': loading || undefined,
       'aria-pressed': togglePressed,
       'aria-label': ariaLabel ?? childProps['aria-label'],
+      'aria-current': ariaCurrent ?? childProps['aria-current'],
       title: title ?? childProps.title,
       id: childProps.id ?? resolvedId,
       tabIndex: isInteractionBlocked ? -1 : childProps.tabIndex,
@@ -530,6 +533,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
         aria-busy={loading || undefined}
         aria-pressed={togglePressed}
         aria-label={ariaLabel}
+        aria-current={ariaCurrent}
         title={title ?? accessibilityHint}
         tabIndex={tabIndex}
         data-testid={testID}
@@ -564,6 +568,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       aria-busy={loading || undefined}
       aria-pressed={togglePressed}
       aria-label={ariaLabel}
+      aria-current={ariaCurrent}
       // Forwarded from an anchored family's `asChild` trigger — see
       // `ButtonProps['aria-expanded']`.
       aria-expanded={ariaExpanded}
