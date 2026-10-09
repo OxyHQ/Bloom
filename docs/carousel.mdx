@@ -27,7 +27,8 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | Prop | Default | |
 | --- | --- | --- |
 | `header` | | Leading content of the arrows row, e.g. a section title. Header at the start, arrows at the end — one row, not two. |
-| `showArrows` | `true` | Prev/next buttons, right-aligned above the track. They disable at each end. |
+| `showArrows` | `true` | Prev/next buttons. They disable at each end; use your app's breakpoint to hide them on small screens. |
+| `arrowsPlacement` | `'header'` | `'header'` shares the title row; `'overlay'` centers controls vertically on the track's start/end edges without reserving a controls row. |
 | `showDots` | `true` | Position indicator, one dot per stop (see below); never shown for a single stop. Each dot is a button. |
 | `align` | `'start'` | Where a slide rests when it snaps: `'start'` or `'center'`. |
 | `gap` | `16` | Space between slides, px. |
@@ -56,3 +57,22 @@ The track is a real horizontal `ScrollView` — a native scroller rather than a 
 - Programmatic scrolls animate unless the user prefers reduced motion.
 
 Web CSS (snap, hidden scrollbar, the track's `:focus-visible` ring, dot transitions) is self-injected through `adoptStyleSheet` on `dataSet` hooks — nothing to copy into a consumer stylesheet.
+
+## Overlay controls
+
+```tsx
+const { width } = useWindowDimensions();
+<Carousel accessibilityLabel="Featured categories" arrowsPlacement="overlay"
+  showArrows={width >= 640} showDots={false}>
+  {categories.map(category => <CarouselItem key={category.id} width={172}>
+    <CategoryTile category={category} />
+  </CarouselItem>)}
+</Carousel>
+```
+
+Overlay buttons are 44px, inset 8px from each track edge. A supplied `header`
+remains above the track; an omitted header reserves no row. The space between
+controls permits pointer interaction with slides. Their logical placement and
+chevrons mirror in RTL; scroll events, imperative navigation and native snap
+positions normalize each platform's offset convention. Reduced motion disables
+programmatic scroll animation in either placement.

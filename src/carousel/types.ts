@@ -12,11 +12,13 @@ export interface CarouselProps {
   /**
    * Leading content of the row above the track — typically the section title
    * and a "See all" link. It shares the row with the arrows (header at the
-   * start, arrows at the end), so a titled carousel costs one row, not two.
+   * start, arrows at the end). With overlay arrows this row contains only the header.
    */
   header?: ReactNode;
-  /** Previous / next buttons above the track. Defaults to `true`. */
+  /** Previous / next buttons. Defaults to `true`; callers may hide them at their mobile breakpoint. */
   showArrows?: boolean;
+  /** Arrows share the header row or overlay the track's edges. Defaults to `'header'`. */
+  arrowsPlacement?: 'header' | 'overlay';
   /** Position indicator below the track. Defaults to `true`. */
   showDots?: boolean;
   /** Where a slide comes to rest when it snaps. Defaults to `'start'`. */

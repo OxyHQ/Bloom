@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -8,6 +9,11 @@ import { resolveCarouselPaint } from '../carousel/Carousel';
 import type { Theme } from '../theme/types';
 
 const scrollTo = jest.fn();
+let mockRtl = false;
+jest.mock('../hooks/use-is-rtl', () => ({
+  useIsRtl: () => mockRtl,
+  useDirectionProps: () => ({}),
+}));
 
 // The shared mock's ScrollView is a bare host element with no imperative
 // handle; the carousel scrolls through `ref.scrollTo`.
@@ -298,6 +304,44 @@ describe('Carousel', () => {
       expect(onIndexChange).toHaveBeenLastCalledWith(4);
       expect(api.getByLabelText('Go to slide 5').props['aria-current']).toBe(true);
     });
+  });
+});
+
+describe('Carousel RTL scrolling', () => {
+  const originalOS = Platform.OS;
+  afterEach(() => { mockRtl = false; Platform.OS = originalOS; });
+
+  it.each(['ios', 'android'] as const)('normalizes %s offsets for arrows, shared end stops and snapping', os => {
+    mockRtl = true;
+    Platform.OS = os;
+    const onIndexChange = jest.fn();
+    const api = renderWithTheme(<Carousel accessibilityLabel="RTL gallery" arrowsPlacement="overlay" gap={12} onIndexChange={onIndexChange}>
+      {[0, 1, 2, 3, 4].map(i => <CarouselItem key={i} testID={`slide-${i}`} width={172}><></></CarouselItem>)}
+    </Carousel>);
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    const contentWidth = 5 * 172 + 4 * 12;
+    const max = contentWidth - 400;
+    act(() => {
+      fireEvent(track, 'layout', layout(0, 400));
+      fireEvent(track, 'contentSizeChange', contentWidth, 100);
+    });
+    for (let i = 0; i < 5; i++) {
+      act(() => { fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(contentWidth - i * 184 - 172, 172)); });
+    }
+    const scroll = (logical: number) => act(() => fireEvent.scroll(track, { nativeEvent: {
+      contentOffset: { x: os === 'android' ? max - logical : logical, y: 0 },
+      contentSize: { width: contentWidth, height: 100 },
+    } }));
+    scroll(0);
+    expect(api.getByLabelText('Previous slide').props.disabled).toBe(true);
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: os === 'android' ? max - 184 : 184, animated: true });
+    scroll(max);
+    expect(api.getByLabelText('Next slide').props.disabled).toBe(true);
+    expect(onIndexChange).toHaveBeenLastCalledWith(4);
+    fireEvent.press(api.getByLabelText('Previous slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: os === 'android' ? max - 368 : 368, animated: true });
+    expect(track.props.snapToOffsets).toEqual(os === 'ios' ? [0, 140, 324, 508] : [0, 184, 368, 508]);
   });
 });
 
