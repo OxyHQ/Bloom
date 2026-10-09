@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Text } from '../typography';
 import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Carousel, CarouselItem } from './index';
 
 const meta: Meta<typeof Carousel> = {
@@ -206,3 +207,22 @@ export const Controlled: Story = {
     </Frame>;
   },
 };
+
+function HoverArrowsDemo({ mode, placement }: { mode: 'light' | 'dark'; placement: 'header' | 'overlay' }) {
+  const [index, setIndex] = useState(0);
+  const [show, setShow] = useState(true);
+  return <BloomThemeProvider mode={mode} colorPreset="oxy"><Frame width={440}>
+    <Button testID="before-carousel" onPress={() => {}}>Before gallery</Button>
+    <Carousel testID="hover-carousel" accessibilityLabel="Interactive photo gallery" index={index} onIndexChange={setIndex}
+      arrowsPlacement={placement} arrowsVisibility="hover" showArrows={show} showDots={false}>
+      {[0, 1, 2].map(value => <CarouselItem key={value}><Slide label={`Photo ${value + 1}`} /></CarouselItem>)}
+    </Carousel>
+    <Text testID="hover-index">{index}</Text>
+    <Button testID="after-carousel" onPress={() => setShow(value => !value)}>Toggle arrows</Button>
+    <Carousel testID="always-carousel" accessibilityLabel="Always visible controls" arrowsPlacement="overlay" showDots={false}>
+      {[0, 1].map(value => <CarouselItem key={value}><Slide label={`Other photo ${value + 1}`} /></CarouselItem>)}
+    </Carousel>
+  </Frame></BloomThemeProvider>;
+}
+export const HoverArrowsLight: Story = { render: args => <HoverArrowsDemo mode="light" placement={args.arrowsPlacement ?? 'overlay'} /> };
+export const HoverArrowsDark: Story = { render: args => <HoverArrowsDemo mode="dark" placement={args.arrowsPlacement ?? 'overlay'} /> };

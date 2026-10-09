@@ -88,6 +88,15 @@ describe('Carousel', () => {
     expect(onIndexChange).toHaveBeenCalledWith(1);
   });
 
+  it('keeps hover-requested arrows operable on native and honors explicit hiding', () => {
+    const api = renderWithTheme(gallery({ arrowsVisibility: 'hover', arrowsPlacement: 'overlay' }));
+    layOut(api);
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ x: 416 }));
+    const hidden = renderWithTheme(gallery({ arrowsVisibility: 'hover', showArrows: false }));
+    expect(hidden.queryByLabelText('Next slide')).toBeNull();
+  });
+
   it('names the region and numbers every slide', () => {
     const api = renderWithTheme(gallery());
     expect(api.getByTestId('carousel').props.accessibilityLabel).toBe('Gallery');
