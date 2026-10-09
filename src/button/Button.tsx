@@ -183,6 +183,7 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   accessibilityElementsHidden,
   importantForAccessibility,
   colors,
+  material = 'surface',
   onLongPress,
   onPressIn,
   onPressOut,
@@ -231,8 +232,8 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   const isInteractionBlocked = disabled || loading;
   const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
   const palette = useMemo(
-    () => isLink && linkTone != null && toneProp == null ? resolveLinkButtonPalette(theme, linkTone) : resolveButtonPalette(appearance, theme, tone, colors, layer.fill),
-    [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill],
+    () => isLink && linkTone != null && toneProp == null ? resolveLinkButtonPalette(theme, linkTone) : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
+    [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill, material],
   );
   const underlineMode = resolveButtonUnderline(isLink, underline);
 

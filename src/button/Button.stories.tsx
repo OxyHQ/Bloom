@@ -97,3 +97,11 @@ export const GlassPlayground: Story = {
     </div>
   ),
 };
+
+export const Flat: Story = {
+  render: () => <View style={{ gap: 16, alignItems: 'flex-start' }}>
+    <Button material="flat" colors={{ background: '#5433eb', foreground: '#ffffff' }} testID="flat-button">Flat action</Button>
+    <Button colors={{ background: '#5433eb', foreground: '#ffffff' }} testID="surface-button">Surface action</Button>
+    <Button material="flat" disabled testID="flat-disabled">Unavailable</Button>
+  </View>,
+};

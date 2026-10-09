@@ -11,33 +11,83 @@
  * measured thumb rect) are not testable here and belong to a device build.
  */
 import React, { createRef } from 'react';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalProvider, PortalOutlet } from '../portal';
 import { ZoomableMediaGallery } from '../zoomable-media-gallery';
 import type { ZoomableMediaGalleryHandle, GalleryImage } from '../zoomable-media-gallery';
+import { Backdrop } from '../overlay';
+import { ScrollView, Dimensions } from 'react-native';
+import { useTheme } from '../theme/use-theme';
+import type { Theme } from '../theme/types';
+import type { ZoomableMediaGalleryProps } from '../zoomable-media-gallery';
 import { hostNodes } from './support/rendered-style';
+
+const BackdropComponent = (Backdrop as unknown as { type: React.ComponentType<React.ComponentProps<typeof Backdrop>> }).type;
 
 const IMAGES: GalleryImage[] = [
   { uri: 'https://cloud.oxy.so/a.jpg', alt: 'First' },
   { uri: 'https://cloud.oxy.so/b.jpg', alt: 'Second' },
 ];
 
-function renderGallery() {
+function renderGallery(props: ZoomableMediaGalleryProps = {}, mode: 'light' | 'dark' = 'light') {
+  let theme!: Theme;
+  function Probe() { theme = useTheme(); return null; }
   const ref = createRef<ZoomableMediaGalleryHandle>();
   const utils = render(
-    <BloomThemeProvider mode="light" colorPreset="oxy">
+    <BloomThemeProvider mode={mode} colorPreset="oxy">
+      <Probe />
       <PortalProvider>
-        <ZoomableMediaGallery ref={ref} />
+        <ZoomableMediaGallery ref={ref} {...props} />
         <PortalOutlet />
       </PortalProvider>
     </BloomThemeProvider>,
   );
-  return { ...utils, ref };
+  return { ...utils, ref, theme };
 }
 
 describe('ZoomableMediaGallery', () => {
+  it.each(['light', 'dark'] as const)('uses the %s page theme without changing the overlay default', mode => {
+    const page = renderGallery({ appearance: 'page' }, mode);
+    act(() => page.ref.current?.open(IMAGES, 0));
+    const backdrop = page.UNSAFE_getByType(BackdropComponent);
+    expect(backdrop.props.blurIntensity).toBe(0);
+    expect(backdrop.props.dimOpacity).toBe(1);
+    expect(backdrop.props.dimColor).toBe(page.theme.colors.background);
+    const caption = page.getByText('First');
+    expect(caption.props.style).toEqual(expect.arrayContaining([{ color: page.theme.colors.text }]));
+    page.unmount();
+    const overlay = renderGallery();
+    act(() => overlay.ref.current?.open(IMAGES, 0));
+    expect(overlay.UNSAFE_getByType(BackdropComponent).props.dimColor).toBeUndefined();
+  });
+
+  it('reports opening and changed pages once, preserving the current index on close', () => {
+    jest.useFakeTimers();
+    try {
+      const onIndexChange = jest.fn();
+      const api = renderGallery({ onIndexChange });
+      act(() => api.ref.current?.open([], 0));
+      expect(onIndexChange).not.toHaveBeenCalled();
+      act(() => api.ref.current?.open(IMAGES, 0));
+      expect(onIndexChange.mock.calls).toEqual([[0]]);
+      act(() => jest.advanceTimersByTime(1));
+      act(() => jest.advanceTimersByTime(1000));
+      const pager = api.UNSAFE_getAllByType(ScrollView).find(node => node.props.pagingEnabled)!;
+      const width = Dimensions.get('window').width;
+      fireEvent(pager, 'momentumScrollEnd', { nativeEvent: { contentOffset: { x: width, y: 0 } } });
+      fireEvent(pager, 'momentumScrollEnd', { nativeEvent: { contentOffset: { x: width, y: 0 } } });
+      expect(onIndexChange.mock.calls).toEqual([[0], [1]]);
+      const queuedScroll = pager.props.onMomentumScrollEnd;
+      fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
+      act(() => queuedScroll({ nativeEvent: { contentOffset: { x: 0, y: 0 } } }));
+      act(() => jest.advanceTimersByTime(1000));
+      act(() => queuedScroll({ nativeEvent: { contentOffset: { x: 0, y: 0 } } }));
+      expect(onIndexChange.mock.calls).toEqual([[0], [1]]);
+    } finally { jest.useRealTimers(); }
+  });
+
   it('renders nothing while closed', () => {
     const { toJSON } = renderGallery();
     const images = hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage');

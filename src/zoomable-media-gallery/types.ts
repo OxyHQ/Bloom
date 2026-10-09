@@ -89,6 +89,10 @@ export interface ZoomableMediaGalleryLabels {
 }
 
 export interface ZoomableMediaGalleryProps {
+  /** Existing dimmed overlay (default), or an opaque page using the current theme. */
+  appearance?: 'overlay' | 'page';
+  /** Zero-based media index, emitted on opening and once per actual page change. */
+  onIndexChange?: (index: number) => void;
   /** Overrides any of the viewer's names. */
   labels?: Partial<ZoomableMediaGalleryLabels>;
   /** Measures any thumbnail by its media subset index, used on dismiss. */

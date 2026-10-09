@@ -136,3 +136,19 @@ index it was given. The gestures — pinch, pan-to-dismiss, the shared-element
 transition — belong to a device build.
 
 Paging arrows and sharing use Bloom `Button` with neutral outline appearance, translucent Surface paint and white icons. Their positions retain safe-area offsets. Thumbnails and gesture targets keep their own hit areas.
+
+
+## Page appearance and selection synchronization
+
+`appearance="page"` requires `BloomThemeProvider` and uses an opaque theme background and matching control, caption and indicator colours in both light and dark mode. The default `appearance="overlay"` retains the dimmed, blurred viewer. Both keep the same gestures, keyboard navigation and measured media transitions.
+
+`onIndexChange(index)` reports the zero-based index when the viewer opens and once whenever its current page changes. Closing preserves the last reported index, so the underlying gallery can follow it without managing the viewer's internal paging.
+
+```tsx
+<ZoomableMediaGallery
+  ref={gallery}
+  appearance="page"
+  indicatorVariant="thumbnails"
+  onIndexChange={setSelectedIndex}
+/>
+```

@@ -323,9 +323,29 @@ export function resolveCanonicalButtonPalette(
   tone: BloomTone = 'accent',
   colors?: { background: string; foreground: string },
   neutralFill?: string,
+  material: 'surface' | 'flat' = 'surface',
 ): ButtonPalette {
   const c = theme.colors;
   const pair = colors ?? resolveBloomColors(c, tone, appearance);
+  if (material === 'flat' && appearance !== 'plain') {
+    const semantic = resolveBloomColors(c, tone, appearance);
+    const alpha = parseRgba(pair.background)?.a ?? 1;
+    const state = (amount: number): ButtonStatePaint => ({
+      background: amount === 0 || pair.background === 'transparent' ? pair.background
+        : withAlpha(mixColor(pair.background, '#000000', amount), alpha),
+      foreground: pair.foreground,
+      border: appearance === 'outline' ? semantic.border : TRANSPARENT,
+      gradient: null, surface: false,
+    });
+    return {
+      rest: state(0), hover: state(0.04), active: state(0.08),
+      disabled: { background: appearance === 'outline' ? TRANSPARENT : c.backgroundSecondary,
+        foreground: c.textTertiary, border: appearance === 'outline' ? c.border : TRANSPARENT,
+        gradient: null, surface: false },
+      disabledOpacity: 1, borderWidth: appearance === 'outline' ? 1 : 0,
+      shadow: false, ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
+    };
+  }
   const surface = appearance !== 'plain';
   const neutral = tone === 'neutral' && !colors;
   const tint = appearance === 'outline' && !colors

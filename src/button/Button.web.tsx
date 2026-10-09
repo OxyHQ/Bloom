@@ -150,6 +150,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   onPressIn,
   onPressOut,
   colors,
+  material = 'surface',
   children,
   disabled = false,
   pressed: togglePressed,
@@ -203,7 +204,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   const resolvedId = id ?? `bloom-btn-${reactId}`;
 
   const appearance = appearanceProp ?? 'solid';
-  useSurfaceRefraction(appearance !== 'plain');
+  useSurfaceRefraction(material === 'surface' && appearance !== 'plain');
   const { size, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
   const geometry = resolveButtonGeometry(size, textVariant);
   const isSquare = iconOnly || (icon != null && children == null);
@@ -214,8 +215,8 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
 
   const palette = useMemo(
-    () => isLink && linkTone != null && toneProp == null ? resolveLinkButtonPalette(theme, linkTone) : resolveButtonPalette(appearance, theme, tone, colors, layer.fill),
-    [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill],
+    () => isLink && linkTone != null && toneProp == null ? resolveLinkButtonPalette(theme, linkTone) : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
+    [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill, material],
   );
   const underlineMode = resolveButtonUnderline(isLink, underline);
 

@@ -37,6 +37,17 @@ function captureTheme(): Theme {
 }
 
 describe('Button', () => {
+  it('uses an exact flat fill in the native control and retains a paired label', () => {
+    const api = renderWithTheme(<Button material="flat" colors={{ background: '#123456', foreground: '#ffffff' }} testID="flat">Flat</Button>);
+    expect(resolvedStyle(api.getByTestId('flat').props.style).backgroundColor).toBe('#123456');
+    expect(api.UNSAFE_queryAllByType(Stop)).toHaveLength(0);
+    const palette = resolveButtonPalette('solid', captureTheme(), 'accent', { background: 'rgba(18,52,86,.5)', foreground: '#ffffff' }, undefined, 'flat');
+    expect(palette.rest.background).toBe('rgba(18,52,86,.5)');
+    expect(palette.hover.background).toMatch(/, 0.5\)$/);
+    expect(palette.active.foreground).toBe('#ffffff');
+    expect(palette.shadow).toBe(false);
+  });
+
   it('renders children as text', () => {
     const { getByText } = renderWithTheme(<Button>Click me</Button>);
     expect(getByText('Click me')).toBeTruthy();
