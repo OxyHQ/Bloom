@@ -211,6 +211,7 @@ const AccordionContentComponent: React.FC<AccordionContentProps & { contentStyle
       nativeID={contentId}
       {...{ 'aria-labelledby': triggerId }}
       aria-hidden={!isExpanded}
+      pointerEvents={isExpanded ? 'auto' : 'none'}
       accessibilityElementsHidden={!isExpanded}
       importantForAccessibility={isExpanded ? 'auto' : 'no-hide-descendants'}
       style={[

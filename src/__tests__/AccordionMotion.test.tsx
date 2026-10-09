@@ -20,6 +20,7 @@ it('links native trigger and panel and hides mounted collapsed content from acce
   const panel = api.UNSAFE_root.findAll(node => node.props.nativeID === trigger.props['aria-controls'] && node.props['aria-hidden'] === true)[0]!;
   expect(panel.props['aria-labelledby']).toBe(trigger.props.nativeID);
   expect(panel.props.accessibilityElementsHidden).toBe(true);
+  expect(panel.props.pointerEvents).toBe('none');
   expect(panel.props.importantForAccessibility).toBe('no-hide-descendants');
   expect(api.queryByText('Inside')).toBeNull();
   expect(api.getByText('Inside', { includeHiddenElements: true })).toBeTruthy();
