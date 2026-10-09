@@ -46,6 +46,9 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     const {
         Shell,
         children,
+        accessibilityLabel,
+        'aria-labelledby': labelledBy,
+        'aria-describedby': describedBy,
         open,
         onDismiss,
         enablePanDownToClose = true,
@@ -722,6 +725,14 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 <GestureDetector gesture={panGesture}>
                     <Animated.View
                         ref={sheetRef}
+                        // The semantic modal and keyboard boundary must include
+                        // the sticky header as well as the scrolling body.
+                        role={Platform.OS === 'web' ? 'dialog' : undefined}
+                        aria-modal={Platform.OS === 'web' ? true : undefined}
+                        aria-label={Platform.OS === 'web' ? accessibilityLabel : undefined}
+                        aria-labelledby={Platform.OS === 'web' ? labelledBy : undefined}
+                        aria-describedby={Platform.OS === 'web' ? describedBy : undefined}
+                        tabIndex={Platform.OS === 'web' ? -1 : undefined}
                         onLayout={onLayout}
                         style={[
                             dynamicStyles.sheet,

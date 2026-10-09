@@ -13,6 +13,11 @@ export interface BottomSheetRef {
 
 export interface BottomSheetProps {
     children: React.ReactNode;
+    /** Accessible name for the modal sheet panel on web. */
+    accessibilityLabel?: string;
+    /** IDs of the elements naming/describing the modal sheet panel on web. */
+    'aria-labelledby'?: string;
+    'aria-describedby'?: string;
     /**
      * Controlled open state. When provided, the sheet mounts already-open if
      * `true` (seeding its internal visible/rendered state) instead of relying on

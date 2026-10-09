@@ -325,3 +325,13 @@ The painted host delegates its fill to Surface: a 90%-opacity body with a subtle
 `presentation="custom"` on a centered card lets its content own panel paint and entry/exit motion. Its backdrop is transparent; Bloom retains the portal, overlay ordering, inertness, keyboard/focus behavior, screen scope and imperative close lifecycle. Set `exitDuration` in milliseconds to retain content through its exit. `useDialogContext().isClosing` becomes true when any dismissal starts, including Escape and the backdrop. The default presentation and its material/timings are unchanged. Bottom placement retains the BottomSheet presentation.
 
 Project Board composes its original 480ms create Genie and 560ms detail exit lifetime through this opt-in. On native, this custom centered presentation uses the existing side-sheet overlay infrastructure while its content supplies the panel layout.
+
+### Modal semantics
+
+On web, every placement exposes a modal `dialog` panel. Its accessible name
+comes from `title` or `label`; bottom sheets with navigation chrome also use
+`header.title` when no label is supplied. The panel includes the sticky header
+and scrolling body, so header actions stay inside the dialog's keyboard and
+accessibility boundary. `description` is associated with that same panel.
+Wrap application content (not the surface outlet) in `OverlayInertBoundary` to
+exclude the underlying page while a modal is open.

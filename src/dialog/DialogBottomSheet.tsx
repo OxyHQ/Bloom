@@ -9,6 +9,7 @@ import React, {
   useRef,
 } from 'react';
 import {
+  Platform,
   useWindowDimensions,
   View,
   type StyleProp,
@@ -253,6 +254,9 @@ export function DialogBottomSheet({
 
   return (
     <BottomSheet
+      accessibilityLabel={label ?? header?.title}
+      aria-labelledby={!header && title ? titleId : undefined}
+      aria-describedby={!header && description ? descriptionId : undefined}
       ref={ref}
       // Seed the sheet's open state so a fresh mount that should be open renders
       // visible on its FIRST commit instead of relying on a present()-in-effect
@@ -305,9 +309,9 @@ export function DialogBottomSheet({
       <Context.Provider value={context}>
         <StyledView
           testID={testID}
-          accessibilityLabel={label}
-          aria-labelledby={title ? titleId : undefined}
-          aria-describedby={description ? descriptionId : undefined}
+          accessibilityLabel={Platform.OS === 'web' ? undefined : label}
+          aria-labelledby={Platform.OS === 'web' ? undefined : title ? titleId : undefined}
+          aria-describedby={Platform.OS === 'web' ? undefined : description ? descriptionId : undefined}
           // Bottom placement renders ONE node for both, so the two classes are
           // joined rather than spread twice — the second spread used to
           // overwrite the first, so `containerClassName` was silently dropped on
