@@ -44,7 +44,7 @@ function FieldBoxComponent({ children, className, style, baseStyle, stateStyle, 
     style={{ ...variables, ...resolveNativeWebStyle(style), ...resolveNativeWebStyle(stateStyle), pointerEvents }}>
     {/* RNW resolves logical styles from its own direction context. This
         context carrier has no CSS box; the div remains the sole layout host. */}
-    {dir ? <View {...{ dir }} style={{ display: 'contents' } as unknown as ViewStyle}>{children}</View> : children}
+    {dir ? <View {...{ dir }} style={{ display: 'contents' }}>{children}</View> : children}
   </div>;
 }
 const NativeFieldBox = styled(FieldBoxComponent, { className: 'style' });
