@@ -5,3 +5,23 @@ body { margin: 0; }
 [data-bloom-story-layout] { box-sizing: border-box; }
 /* Layout wrappers can shrink with the canvas without constraining portals. */
 [data-bloom-story-layout] > * { min-width: 0; max-width: 100%; }
+
+/* Consumer component-layer fixture: Button must not outrank these classes. */
+@layer components {
+  .bloom-demo-purchase {
+    height: 52px; padding: 0 16px; border-radius: 24px; border: .5px solid #5433eb;
+    background: #5433eb; color: #fff; font-size: 16px; line-height: 20px;
+    font-weight: 600; opacity: 1;
+    box-shadow: -.5px -.5px 1px #ffffff52 inset, 1px 1px .5px #ffffff52 inset, 0 4px 24px #5433eb3d;
+    transition: background-color 100ms, transform 100ms;
+  }
+  .bloom-demo-purchase-interactive:hover { background-color: #4524db; }
+  .bloom-demo-purchase-interactive:active { background-color: #321abc; }
+  .bloom-demo-purchase-motion:active { transform: scale(.99); }
+  .bloom-demo-secondary { background: #121212; border-color: #121212; }
+  .dark .bloom-demo-secondary { background: #fff; border-color: #fff; color: #121212; }
+  .bloom-demo-outline { height: 44px; background: #fff; color: #121212; border-color: #183b4e0f; backdrop-filter: blur(10px); box-shadow: 0 2px 8px #0000000f; }
+  .dark .bloom-demo-outline { background: #121212; color: #fff; border-color: #ffffff1a; }
+  .bloom-demo-purchase-disabled { background: #eef0f1; color: #888; border-color: transparent; box-shadow: none; }
+  @media (prefers-reduced-motion: reduce) { .bloom-demo-purchase { transition: none; } }
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { View, Text as TextForCounter } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
@@ -131,3 +132,24 @@ function LoadingCounter() {
   const [id] = useState(() => ++nextCounterId);
   return <View testID={`loading-counter-${id}`}><TextForCounter>{id}</TextForCounter></View>;
 }
+
+export const ClassNameAuthority: Story = {
+  render: function ClassNameAuthorityDemo() {
+    const [loading, setLoading] = useState(false);
+    const [disabled, setDisabled] = useState(false);
+    const reduce = usePrefersReducedMotion();
+    const className = ['bloom-demo-purchase', disabled ? 'bloom-demo-purchase-disabled' : '',
+      !loading && !disabled ? 'bloom-demo-purchase-interactive' : '',
+      !loading && !disabled && !reduce ? 'bloom-demo-purchase-motion' : ''].join(' ');
+    return <View style={{ gap: 20, padding: 32, alignItems: 'flex-start' }}>
+      <Button testID="class-toggle-loading" onPress={() => setLoading(value => !value)}>Toggle loading</Button>
+      <Button testID="class-toggle-disabled" onPress={() => setDisabled(value => !value)}>Toggle disabled</Button>
+      <Button material="flat" className={className} testID="class-purchase" loading={loading} disabled={disabled} leadingIcon={RiAddLine}>Purchase</Button>
+      <Button material="flat" className={className} testID="class-stateful" loading={loading} disabled={disabled}><LoadingCounter /></Button>
+      <Button material="flat" className="bloom-demo-purchase bloom-demo-secondary" testID="class-secondary">Secondary</Button>
+      <Button material="flat" className="bloom-demo-purchase bloom-demo-outline" testID="class-outline">Outline</Button>
+      <Button className="ms-0" testID="class-default">Default</Button>
+      <Button testID="no-class-default">Default</Button>
+    </View>;
+  },
+};
