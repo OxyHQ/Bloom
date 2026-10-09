@@ -264,3 +264,8 @@ the first tap to choose an option while the keyboard is open.
 editable text. Use paddingLeft/Right/Top/Bottom to override the bar's matching
 longhands. `sendIcon` accepts a Bloom icon component and changes only the glyph;
 send labels, disabled state, focus and submission behavior remain shared.
+
+The line floor and cap follow a numeric `inputStyle.lineHeight` (20px by default).
+On web, all composers remeasure when the editable field changes width, including
+an initially narrow document footer, so a wrapped placeholder or draft can
+shrink without another edit. Height-only changes do not trigger remeasurement.

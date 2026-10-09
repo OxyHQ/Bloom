@@ -23,6 +23,19 @@ try {
   assert.equal(await page.getByTestId('document-composer-bar').evaluate(el => getComputedStyle(el).borderRadius), '32px');
   assert.equal(await page.getByTestId('document-composer-bar').evaluate(el => getComputedStyle(el).minHeight), '64px');
   assert.equal(await input.evaluate(el => getComputedStyle(el).fontSize), '16px');
+  // A document footer first mounts before its column's final width is known.
+  // Measure the placeholder at a narrow width, then widen WITHOUT an input event.
+  await input.evaluate(el => { el.style.width = '48px'; el.placeholder = 'What are you looking for today?'; });
+  await input.fill('x');
+  await input.fill('');
+  const narrowHeight = await input.evaluate(el => el.getBoundingClientRect().height);
+  assert.ok(narrowHeight > 24, 'Narrow placeholder wraps');
+  await input.evaluate(el => { el.style.width = '100%'; });
+  await page.waitForTimeout(100);
+  assert.equal(await input.evaluate(el => el.getBoundingClientRect().height), 24, 'Empty field shrinks after its column widens');
+  await input.fill('one\ntwo\nthree\nfour\nfive');
+  assert.equal(await input.evaluate(el => el.getBoundingClientRect().height), 96, 'Four-line cap follows custom line height');
+  await input.fill('');
   assert.equal(await page.getByTestId('document-composer-mic').count(), 0);
   assert.equal(await page.getByTestId('document-composer-send').isDisabled(), true);
   await input.click();

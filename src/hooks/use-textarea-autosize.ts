@@ -20,8 +20,8 @@ import type { TextInput } from 'react-native';
  *     stands: one layout, the same one the frame was going to do anyway.
  *   - a field already at its floor cannot shrink, so it is never collapsed.
  *   - anything else — a deletion, a replacement, a programmatic `value` such as
- *     the clear after send, a change of floor — collapses, reads and restores
- *     in the same task, so nothing is painted in between.
+ *     the clear after send, a change of floor or available width — collapses,
+ *     reads and restores in the same task, so nothing is painted in between.
  *
  * The one thing insertion cannot promise is soft-wrap: inserting a character
  * could in principle reflow a wrapped word onto fewer lines. The field then
@@ -88,8 +88,8 @@ export function useTextareaAutosize(
 ): void {
   // What the field held at the last measurement, and the floor it was held to.
   const last = useRef<{ text: string; minHeight: number } | null>(null);
-  const latest = useRef({ height, onMeasure });
-  latest.current = { height, onMeasure };
+  const latest = useRef({ height, minHeight, onMeasure });
+  latest.current = { height, minHeight, onMeasure };
 
   useLayoutEffect(() => {
     if (!enabled) return;
@@ -103,4 +103,24 @@ export function useTextareaAutosize(
     const measured = measureTextarea(node, collapse);
     if (measured > 0) latest.current.onMeasure(measured);
   }, [enabled, ref, text, minHeight]);
+
+  useLayoutEffect(() => {
+    if (!enabled || typeof ResizeObserver === 'undefined') return;
+    const node = ref.current as unknown as HTMLTextAreaElement | null;
+    if (!node) return;
+    let previousWidth: number | undefined;
+    const observer = new ResizeObserver(entries => {
+      const width = entries[0]?.contentRect.width;
+      // Height changes are our own output. Never feed those back into measurement.
+      if (!width || width === previousWidth) return;
+      previousWidth = width;
+      const current = latest.current;
+      const measured = measureTextarea(node, current.height > current.minHeight);
+      if (measured > 0) current.onMeasure(measured);
+    });
+    // The first delivery also repairs a measurement made before initial layout
+    // (for example a fixed footer whose column bounds arrive after mount).
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [enabled, ref]);
 }
