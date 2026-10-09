@@ -114,20 +114,23 @@ describe('Admonition', () => {
       const colors = themeColors();
       const expected = type === 'warning' ? colors.warning : colors.error;
       const outer = subjectRoot(<Admonition type={type}>x</Admonition>);
-      expect(resolvedStyle(outer?.props.style).borderColor).toBe(expected);
-      expect(resolvedStyle(outer?.props.style).borderColor).not.toBe(colors.border);
+      const border = hostNodes(outer).find(node => resolvedStyle(node.props.style).borderWidth === 1);
+      expect(resolvedStyle(border?.props.style).borderColor).toBe(expected);
+      expect(resolvedStyle(border?.props.style).borderColor).not.toBe(colors.border);
+      expect(resolvedStyle(border?.props.style).opacity).toBe(0.3);
     },
   );
 
-  it('falls back to the neutral border for info, which has no status colour', () => {
+  it('uses the information palette for info rather than a neutral fallback', () => {
     const colors = themeColors();
     const outer = subjectRoot(<Admonition type="info">x</Admonition>);
-    expect(resolvedStyle(outer.props.style).borderColor).toBe(colors.border);
+    expect(resolvedStyle(outer.props.style).backgroundColor).toBe(colors.infoSubtle);
+    const border = hostNodes(outer).find(node => resolvedStyle(node.props.style).borderWidth === 1);
+    expect(resolvedStyle(border?.props.style).borderColor).toBe(colors.info);
   });
 
   it('gives every type a distinct icon or says so by sharing one deliberately', () => {
-    // `info` and `apology` intentionally share a glyph with `tip` / `info`
-    // respectively; what must never happen is a type falling through to no icon.
+    // Every supported type must keep an icon alongside its semantic surface.
     const types = ['info', 'tip', 'warning', 'error', 'apology'] as const;
     for (const type of types) {
       const tree = renderWithTheme(<Admonition type={type}>x</Admonition>).toJSON();
