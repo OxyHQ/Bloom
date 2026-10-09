@@ -2147,3 +2147,5 @@ export * from './agent-avatar';
 export * from './agent-creator/index.web';
 export * from './project-board/index.web';
 export * from './multi-agent-chat/index.web';
+
+export * from './viewport/index.web';

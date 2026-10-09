@@ -1,3 +1,4 @@
+import type { MeterReveal } from '../stat-bar/types';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 /** `small` is body-2 text with a 14px star; `medium` (default) body text with a 16px star. */
@@ -103,6 +104,8 @@ export interface RatingInputProps {
 }
 
 export interface RatingBarProps {
+  /** Forwarded to Meter; never changes the accessible measurement. */
+  reveal?: MeterReveal;
   className?: string;
   labelClassName?: string;
   displayClassName?: string;

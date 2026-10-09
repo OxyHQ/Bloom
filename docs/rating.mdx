@@ -176,3 +176,5 @@ prop is optional:
 The field's `disabled` freezes the whole row, including the hover preview.
 
 Control sizes inherit `BloomScope` when omitted; explicit sizes override it. Controls with `sm`/`md`/`lg` geometry map scoped `xs` to `sm`.
+
+`RatingBar.reveal` forwards Meter's opt-in visual entrance policy. The label, displayed count and accessible measurement always use the actual value; an empty entrance frame is never reported as zero. See [Meter visual reveal](./stat-bar.mdx) and [Viewport observation](./viewport.mdx).

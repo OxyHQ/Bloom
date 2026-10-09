@@ -280,3 +280,21 @@ export const FlatMaterial: Story = {
     </>;
   },
 };
+
+
+export const SideGutter: Story = {
+  render: function SideGutter() {
+    const full = useDialogControl();
+    const inset = useDialogControl();
+    return <>
+      <Button onPress={() => full.open()}>Open full side sheet</Button>
+      <Button onPress={() => inset.open()}>Open default side sheet</Button>
+      <Dialog control={full} placement="end" width={10000} minSideGutter={0} title="Full side sheet" testID="full-side-panel">
+        <Button onPress={() => full.close()}>Close full sheet</Button>
+      </Dialog>
+      <Dialog control={inset} placement="end" width={10000} title="Default side sheet" testID="default-side-panel">
+        <Button onPress={() => inset.close()}>Close default sheet</Button>
+      </Dialog>
+    </>;
+  },
+};

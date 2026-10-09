@@ -272,6 +272,8 @@ export type DialogProps = React.PropsWithChildren<{
   placement?: ResponsiveDialogPlacement;
   /** Side-sheet width (px) on wide screens. Defaults to `460`. */
   width?: number;
+  /** Minimum space beyond a side sheet and its insets. Defaults to 24; zero permits full viewport width. */
+  minSideGutter?: number;
   /** Centered-card max width (px). Defaults to `480`. */
   maxWidth?: number;
   /** Bottom-sheet max height as a fraction of the viewport height. Defaults to `0.9`. */
