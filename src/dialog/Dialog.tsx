@@ -1,3 +1,4 @@
+import { useSurfaceTransition } from '../motion/use-surface-transition';
 import { MOTION_RECIPES } from '../motion/recipes';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
@@ -113,6 +114,8 @@ export function Dialog({
  */
 function CenteredOrSideDialog({
   material: surfaceMaterial = 'surface',
+  backdrop,
+  transition,
   control,
   open: controlledOpen,
   startOpen,
@@ -304,6 +307,8 @@ function CenteredOrSideDialog({
     return (
       <Context.Provider value={context}>
         <SideSheet
+          backdrop={backdrop}
+          transition={transition}
           material={surfaceMaterial}
           presentation={presentation}
           exitDuration={exitDuration}
@@ -339,6 +344,8 @@ function CenteredOrSideDialog({
 
   return (
     <BottomSheet
+      backdrop={backdrop}
+      transition={transition}
       material={surfaceMaterial}
       backgroundFill={surfaceMaterial === 'flat' ? String(StyleSheet.flatten([style, panelStyle])?.backgroundColor ?? theme.colors.background) : undefined}
       ref={ref}
@@ -410,6 +417,8 @@ function CenteredOrSideDialog({
  */
 function SideSheet({
   material: surfaceMaterial = 'surface',
+  backdrop,
+  transition,
   scrollable,
   presentation,
   exitDuration,
@@ -438,6 +447,8 @@ function SideSheet({
   children,
 }: {
   material?: DialogProps['material'];
+  backdrop?: DialogProps['backdrop'];
+  transition?: DialogProps['transition'];
   scrollable: boolean;
   presentation?: DialogProps['presentation'];
   exitDuration?: number;
@@ -465,6 +476,7 @@ function SideSheet({
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }) {
+  const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
   const theme = useTheme();
   const { width: viewportWidth } = useWindowDimensions();
@@ -505,7 +517,7 @@ function SideSheet({
 
   useEffect(() => {
     cancelAnimation(progress);
-    const timing = { ...MOTION_RECIPES[open ? 'present' : 'dismiss'], duration: presentation === 'custom' ? exitDuration ?? 0 : ANIMATION_DURATION, easing: Easing.out(Easing.cubic) };
+    const timing = { ...MOTION_RECIPES[open ? 'present' : 'dismiss'], duration: presentation === 'custom' ? exitDuration ?? 0 : motion.duration ?? ANIMATION_DURATION, easing: transition ? motion.easing : Easing.out(Easing.cubic) };
     if (open) {
       setMounted(true);
       progress.value = withTiming(1, timing);
@@ -515,7 +527,7 @@ function SideSheet({
     progress.value = withTiming(0, timing, (finished) => {
       if (finished) runOnJS(finishClose)();
     });
-  }, [open, mounted, progress, finishClose, presentation, exitDuration]);
+  }, [open, mounted, progress, finishClose, presentation, exitDuration, motion.duration, motion.easing, !!transition]);
 
   const handleBackdropPress = useCallback(() => {
     if (dismissOnBackdrop) onHeaderDismiss();
@@ -576,13 +588,14 @@ function SideSheet({
       modal
     >
       <Backdrop
+        {...backdrop}
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
         progress={progress}
-        dimOpacity={presentation === 'custom' ? 0 : undefined}
-        blurIntensity={presentation === 'custom' ? 0 : undefined}
+        dimOpacity={presentation === 'custom' ? 0 : backdrop?.dimOpacity}
+        blurIntensity={presentation === 'custom' ? 0 : backdrop?.blurIntensity}
         style={sideStyles.backdrop}
       />
 

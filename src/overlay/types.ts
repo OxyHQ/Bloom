@@ -62,7 +62,28 @@ export interface OverlayInertBoundaryProps {
   testID?: string;
 }
 
-export interface BackdropProps {
+/** A logical linear gradient replacing the uniform dim fill. */
+export interface BackdropGradient {
+  direction: 'start-to-end' | 'end-to-start' | 'top-to-bottom' | 'bottom-to-top';
+  /** At least two stops. Offsets clamp to 0..1 and cannot precede the previous stop. */
+  stops: readonly { offset: number; color: string }[];
+}
+
+/** Paint only; the owning surface retains hit testing, layering and animation. */
+export interface BackdropAppearance {
+  /** Blur radius behind the dim. `0` renders the dim alone. */
+  blurIntensity?: number;
+  /** Blur tint. Backdrops dim the app, so `dark` is the default on every theme. */
+  blurTint?: 'light' | 'dark' | 'default';
+  /** Dim colour over the blur. */
+  dimColor?: string;
+  /** Dim opacity, 0–1. */
+  dimOpacity?: number;
+  /** Replaces dimColor; dimOpacity still multiplies the gradient. Invalid stops fall back to dimColor. */
+  dimGradient?: BackdropGradient;
+}
+
+export interface BackdropProps extends BackdropAppearance {
   /** Dismiss handler. Omit (or pass `disabled`) for a backdrop that only dims. */
   onPress?: () => void;
   /**
@@ -73,14 +94,6 @@ export interface BackdropProps {
   progress?: SharedValue<number>;
   /** `true` keeps the dim but makes it inert — a blocking dialog, a busy state. */
   disabled?: boolean;
-  /** Blur radius behind the dim. `0` renders the dim alone. */
-  blurIntensity?: number;
-  /** Blur tint. Backdrops dim the app, so `dark` is the default on every theme. */
-  blurTint?: 'light' | 'dark' | 'default';
-  /** Dim colour over the blur. */
-  dimColor?: string;
-  /** Dim opacity, 0–1. */
-  dimOpacity?: number;
   /**
    * Geometry for the press target: insets, layout. NOT a z-index — where this
    * surface sits relative to others is `OverlayRoot`'s call (see `./stack.ts`),

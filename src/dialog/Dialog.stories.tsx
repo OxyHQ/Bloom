@@ -10,6 +10,7 @@ import { OverlayInertBoundary } from '../overlay';
 
 const meta: Meta<typeof Dialog> = {
   argTypes: {
+    placement: { control: 'select', options: ['center', 'start', 'end', 'left', 'right', 'bottom'] },
     "open": { control: 'boolean' },
     "title": { control: 'text' },
     "description": { control: 'text' },
@@ -298,3 +299,22 @@ export const SideGutter: Story = {
     </>;
   },
 };
+
+export const BackdropTransition: Story = {
+  args: { placement: 'end' },
+  render: function BackdropTransitionStory(args) {
+    const control = useDialogControl();
+    return <>
+      <OverlayInertBoundary><Button onPress={() => control.open()}>Open timed surface</Button></OverlayInertBoundary>
+      <Dialog control={control} placement={args.placement} label="Timed surface" title="Timed surface" testID="timed-panel"
+        backdrop={{ blurIntensity: 0, dimOpacity: 1, dimGradient: { direction: 'start-to-end', stops: [
+          { offset: 0, color: 'rgba(0,0,0,0)' }, { offset: .6975, color: 'rgba(0,0,0,.36)' }, { offset: 1, color: 'rgba(0,0,0,.36)' },
+        ] } }} transition={{ duration: 300, easing: [0, 0, .58, 1] }}>
+        <Text>The paint and transition share the surface lifecycle.</Text>
+        <Button onPress={() => control.close()}>Close timed surface</Button>
+      </Dialog>
+    </>;
+  },
+};
+export const BackdropTransitionCenter: Story = { ...BackdropTransition, args: { placement: 'center' } };
+export const BackdropTransitionBottom: Story = { ...BackdropTransition, args: { placement: 'bottom' } };

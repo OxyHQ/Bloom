@@ -151,3 +151,21 @@ begins; an attempted focus before removal is ignored by the browser. Restoration
 observes the boundary lifecycle rather than assuming an animation duration,
 works when the host unmounts the dialog, uses `preventScroll`, and yields to a
 destination the host deliberately focused while closing.
+
+## Backdrop appearance
+
+`BackdropAppearance` is the paint-only contract shared by `Backdrop` and the
+`backdrop` prop on `Dialog` / `BottomSheet`. It contains `blurIntensity`,
+`blurTint`, `dimColor`, `dimOpacity` and optional `dimGradient`.
+
+A `BackdropGradient` uses `direction` (`start-to-end`, `end-to-start`,
+`top-to-bottom`, `bottom-to-top`) and at least two `{ offset, color }` stops.
+Horizontal directions mirror with RTL. Stops are normalized into ordered 0..1
+positions; invalid stop lists fall back to the uniform dim. The gradient
+replaces the solid dim fill, rather than painting over it. `dimOpacity` still
+multiplies its alpha. Both animated and static paths paint on the dim layer,
+leaving the press target, accessibility and surface stack unchanged. Web uses a
+CSS background image; native uses React Native's gradient background support.
+
+Blur clamps to 0..100, opacity to 0..1, and non-finite values use the shared
+backdrop defaults. `blurIntensity={0}` mounts no blur layer.

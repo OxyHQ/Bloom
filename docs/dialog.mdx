@@ -368,3 +368,52 @@ Standalone `BottomSheet` exposes the same material option with `backgroundFill`;
 an explicit `backgroundComponent` remains authoritative.
 
 `minSideGutter` controls the minimum opposite-edge space when capping a side sheet’s width (default 24px). Pass `0` with a viewport-sized `width` for a full-width side sheet. Insets are still subtracted; negative gutters clamp to zero and non-finite gutters use the default. This applies to both physical and logical side placements on web and native; center/bottom geometry is unchanged.
+
+## Backdrop paint and timed presentation
+
+`backdrop?: BackdropAppearance` configures only the shared backdrop's paint. It
+accepts `blurIntensity` (zero disables blur), `blurTint`, `dimColor`, `dimOpacity`
+and `dimGradient`. A gradient replaces the uniform dim color; opacity still
+multiplies it. Geometry, layering, dismissal and focus remain Dialog-owned.
+
+```tsx
+<Dialog
+  control={control}
+  placement="end"
+  backdrop={{
+    blurIntensity: 0,
+    dimOpacity: 1,
+    dimGradient: {
+      direction: 'start-to-end',
+      stops: [
+        { offset: 0, color: 'transparent' },
+        { offset: 0.7, color: 'rgba(0,0,0,0.35)' },
+        { offset: 1, color: 'rgba(0,0,0,0.35)' },
+      ],
+    },
+  }}
+  transition={{ duration: 300, easing: [0, 0, 0.58, 1] }}
+>
+  {children}
+</Dialog>
+```
+
+`transition?: SurfaceTransition` opts into one duration/easing for panel and
+backdrop entry/exit on web and native, including centered and bottom placements.
+The exit lifecycle waits for that duration before dismissing; live OS reduced
+motion settles immediately. Drag-following remains direct and a cancelled drag
+keeps the default spring; a completed dismissal uses the requested timing.
+Omitting the prop preserves each renderer's existing timings/springs.
+`presentation="custom"` continues to own its motion via `exitDuration`; these
+options do not replace that separate contract. Content morphing retains its own
+configuration.
+
+Durations clamp to zero; non-finite durations use 300ms. Easing is a CSS
+cubic-bezier tuple, with finite coordinates and x coordinates in 0..1; invalid
+curves use CSS `ease`. Gradient directions are logical horizontally
+(`start-to-end` / `end-to-start`) and physical vertically (`top-to-bottom` /
+`bottom-to-top`). RTL reverses horizontal direction. Stops clamp to 0..1 and
+cannot move backwards relative to the preceding stop; fewer than two stops,
+non-finite offsets, empty colors or invalid directions fall back to `dimColor`.
+Blur intensity clamps to 0..100 and dim opacity to 0..1; non-finite values retain
+the default. Both options also exist on the underlying `BottomSheet`.
