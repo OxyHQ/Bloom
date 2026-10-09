@@ -161,3 +161,11 @@ unresolved placeholder. Separate typography and shadow rules avoid the
 placeholder, but do not restore the missing native line height. Web line height
 works normally. Bloom forwards resolved styles; it does not rewrite consumer CSS
 or patch the upstream resolver.
+
+`aria-current` marks the current destination or item, independently of the
+`pressed` toggle state. It accepts the standard ARIA values (`page`, `step`,
+`location`, `date`, `time`, or boolean) and reaches the web button, link or
+`asChild` host. Omit it on ordinary links. An `asChild` child's own current value
+is preserved unless Button explicitly supplies one. Native represents current
+through `accessibilityState.selected`, since it has no separate current trait;
+an explicit `pressed` state retains precedence for a native toggle.

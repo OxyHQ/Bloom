@@ -187,3 +187,17 @@ export const FocusKeyboardHover: Story = {
     </View>;
   },
 };
+
+export const CurrentDestination: Story = {
+  render: function CurrentDestinationStory() {
+    const [current, setCurrent] = useState('active');
+    return <View style={{ flexDirection: 'row', gap: 12 }}>
+      <Button href="#active" aria-current={current === 'active' ? 'page' : undefined}
+        onPress={event => { event.preventDefault(); setCurrent('active'); }}>Active orders</Button>
+      <Button asChild aria-current={current === 'archived' ? 'page' : undefined}
+        onPress={event => { event.preventDefault(); setCurrent('archived'); }}>
+        <a href="#archived">Archived orders</a>
+      </Button>
+    </View>;
+  },
+};

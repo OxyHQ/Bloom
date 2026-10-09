@@ -1,6 +1,6 @@
 import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
-import type { ReactNode } from 'react';
+import type { AriaAttributes, ReactNode } from 'react';
 import type { GestureResponderEvent, FocusEvent as NativeFocusEvent, MouseEvent as NativeMouseEvent, LayoutChangeEvent, ViewProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -209,6 +209,12 @@ export interface ButtonProps {
    * `aria-label` (web only). Falls back to `accessibilityLabel`.
    */
   'aria-label'?: string;
+  /**
+   * Current destination or item in a set. Forwarded to the web host, including
+   * links and asChild. Native announces selected when current is truthy;
+   * an explicit pressed toggle state remains authoritative on native.
+   */
+  'aria-current'?: AriaAttributes['aria-current'];
   /**
    * Whether the surface this button controls is open.
    *

@@ -171,7 +171,7 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { children?: React.ReactNode; style?: StyleProp<ViewStyle>; baseStyle?: StyleProp<ViewStyle>; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
+> & { children?: React.ReactNode; style?: StyleProp<ViewStyle>; baseStyle?: StyleProp<ViewStyle>; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean; 'aria-current'?: ButtonProps['aria-current'] };
 
 const CONTENT_TEXT_KEYS = ['color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
   'lineHeight', 'letterSpacing', 'textAlign', 'textDecorationLine'] as const;
@@ -278,6 +278,7 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   hitSlop,
   testID,
   className,
+  'aria-current': ariaCurrent,
   'aria-expanded': ariaExpanded,
   'aria-haspopup': ariaHasPopup,
 }, ref) {
@@ -434,6 +435,8 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
     );
   };
 
+  // Native has no current-destination trait; selected is its equivalent.
+  const selected = togglePressed ?? (ariaCurrent === undefined ? undefined : ariaCurrent !== false && ariaCurrent !== 'false');
   const handlePress = isInteractionBlocked
     ? undefined
     : onPress ?? (href != null ? () => void Linking.openURL(href) : undefined);
@@ -468,7 +471,8 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       // reads `accessibilityState`, React Native folds `aria-busy` back into it.
       aria-busy={loading || undefined}
       aria-pressed={togglePressed}
-      accessibilityState={{ disabled: isInteractionBlocked, busy: loading, ...(togglePressed === undefined ? {} : { selected: togglePressed }) }}
+      aria-current={Platform.OS === 'web' ? ariaCurrent : undefined}
+      accessibilityState={{ disabled: isInteractionBlocked, busy: loading, ...(selected === undefined ? {} : { selected }) }}
       // Forwarded from an anchored family's `asChild` trigger — see
       // `ButtonProps['aria-expanded']`.
       aria-expanded={ariaExpanded}

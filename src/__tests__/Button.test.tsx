@@ -37,6 +37,19 @@ function captureTheme(): Theme {
 }
 
 describe('Button', () => {
+  it.each([undefined, false, 'false', true, 'page', 'step', 'location', 'date', 'time'] as const)('announces current=%s through the native selected trait without inventing a toggle', current => {
+    const api = renderWithTheme(<Button href="/orders" testID="current" aria-current={current}>Orders</Button>);
+    const host = api.getByTestId('current');
+    expect(host.props.accessibilityRole).toBe('link');
+    expect(host.props['aria-pressed']).toBeUndefined();
+    expect(host.props.accessibilityState.selected).toBe(current === undefined ? undefined : current !== false && current !== 'false');
+  });
+
+  it('keeps an explicit native toggle state authoritative when current is also supplied', () => {
+    const api = renderWithTheme(<Button testID="current" aria-current="page" pressed={false}>Orders</Button>);
+    expect(api.getByTestId('current').props.accessibilityState.selected).toBe(false);
+  });
+
   it('uses an exact flat fill in the native control and retains a paired label', () => {
     const api = renderWithTheme(<Button material="flat" colors={{ background: '#123456', foreground: '#ffffff' }} testID="flat">Flat</Button>);
     expect(resolvedStyle(api.getByTestId('flat').props.style).backgroundColor).toBe('#123456');

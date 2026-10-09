@@ -42,6 +42,25 @@ afterEach(() => {
 });
 
 describe('Button.web', () => {
+  it.each(['link', 'button', 'asChild'] as const)('forwards the current item to its %s host and removes it when omitted', kind => {
+    const draw = (current: React.AriaAttributes['aria-current']) => mount(kind === 'asChild'
+      ? <Button asChild aria-current={current}><a href="/orders">Orders</a></Button>
+      : <Button href={kind === 'link' ? '/orders' : undefined} aria-current={current}>Orders</Button>);
+    const c = draw('page');
+    const host = getByRole(c, kind === 'button' ? 'button' : 'link', { name: 'Orders' });
+    expect(host).toHaveAttribute('aria-current', 'page');
+    expect(host).not.toHaveAttribute('aria-pressed');
+    draw(undefined); expect(host).not.toHaveAttribute('aria-current');
+    draw(false); expect(host).toHaveAttribute('aria-current', 'false');
+  });
+
+  it('preserves an asChild current value unless Button explicitly overrides it', () => {
+    const c = mount(<Button asChild><a href="/orders" aria-current="step">Orders</a></Button>);
+    const link = getByRole(c, 'link'); expect(link).toHaveAttribute('aria-current', 'step');
+    mount(<Button asChild aria-current={false}><a href="/orders" aria-current="step">Orders</a></Button>);
+    expect(link).toHaveAttribute('aria-current', 'false');
+  });
+
   it('announces toggle state and isolates an embedded action when requested', () => {
     const parent = jest.fn();
     const onPress = jest.fn();
