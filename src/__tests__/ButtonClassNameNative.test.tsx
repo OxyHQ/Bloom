@@ -1,8 +1,8 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text as RNText, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { compile } from 'react-native-css/compiler';
-import { StyleCollection } from 'react-native-css/native';
+import { StyleCollection, styled } from 'react-native-css/native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Button } from '../button/Button';
 import { resolvedStyle } from './support/rendered-style';
@@ -32,7 +32,7 @@ it('lets native classes own geometry, state paint, label, glyph and loading colo
   const api = render(ui());
   const host = () => api.getByTestId('button');
   expect(resolvedStyle(host().props.style)).toMatchObject({ height: 52, borderRadius: 24, backgroundColor: '#5433eb' });
-  expect(resolvedStyle(api.getByText('Purchase').props.style)).toMatchObject({ color: '#fff', fontSize: 16, lineHeight: 20, fontWeight: 600 });
+  expect(resolvedStyle(api.getByText('Purchase').props.style)).toMatchObject({ color: '#fff', fontSize: 16, fontWeight: 600 });
   const shadows = resolvedStyle(host().props.style).boxShadow as Array<{ inset?: boolean }>;
   expect(shadows).toHaveLength(3);
   expect(shadows.filter(shadow => shadow.inset)).toHaveLength(2);
@@ -78,4 +78,15 @@ it('retains native stateful content while class-driven loading changes', () => {
   api.rerender(ui(false));
   expect(api.getByTestId('stateful')).toBeTruthy();
   expect(mounts).toBe(1);
+});
+
+
+it('does not consume typography styles shared with another native primitive', () => {
+  const Label = styled(RNText, { className: 'style' });
+  const classes = 'purchase purchase-type purchase-interactive';
+  const api = render(<BloomThemeProvider>
+    <Button material="flat" className={classes}>Button</Button>
+    <Label className={classes} testID="sibling">Sibling</Label>
+  </BloomThemeProvider>);
+  expect(resolvedStyle(api.getByTestId('sibling').props.style)).toMatchObject({ color: '#fff', fontSize: 16, fontWeight: 600 });
 });

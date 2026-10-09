@@ -167,18 +167,29 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { children?: React.ReactNode; style?: StyleProp<TextStyle>; baseStyle?: StyleProp<ViewStyle>; resolvedTextStyle?: TextStyle; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
+> & { children?: React.ReactNode; style?: StyleProp<ViewStyle>; baseStyle?: StyleProp<ViewStyle>; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
+
+const CONTENT_TEXT_KEYS = ['color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
+  'lineHeight', 'letterSpacing', 'textAlign', 'textDecorationLine'] as const;
 
 const ContentStyleContext = createContext<{ text?: TextStyle; layout?: ViewStyle }>({});
 
 // Resolve utilities without mixing Bloom's defaults into their input. The
 // defaults are merged only after interop, so caller classes have final say.
 const ButtonPressable = forwardRef<View, ButtonPressableProps>(function ButtonPressable({
-  baseStyle, style, resolvedTextStyle, children, ...props
+  baseStyle, style, children, ...props
 }, ref) {
-  const layout = StyleSheet.flatten(style);
-  return <Pressable {...props} ref={ref} style={[baseStyle, style]}>
-    <ContentStyleContext.Provider value={{ text: resolvedTextStyle, layout }}>
+  const resolved = StyleSheet.flatten(style) as TextStyle | undefined;
+  const layout: TextStyle = { ...resolved };
+  const text: TextStyle = {};
+  // Read a copy: the CSS resolver can share its cached style objects with
+  // other controls. Moving properties out of that cache changes their styles.
+  for (const key of CONTENT_TEXT_KEYS) {
+    if (resolved?.[key] !== undefined) Object.assign(text, { [key]: resolved[key] });
+    delete layout[key];
+  }
+  return <Pressable {...props} ref={ref} style={[baseStyle, layout]}>
+    <ContentStyleContext.Provider value={{ text, layout }}>
       {children}
     </ContentStyleContext.Provider>
   </Pressable>;
@@ -214,20 +225,7 @@ function ButtonLoading({ color, fallback }: { color?: string; fallback: string }
 
 const ButtonInterop: ComponentType<ButtonPressableProps> = ButtonPressable;
 const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<View>> = styled(ButtonInterop, {
-  className: {
-    target: 'style',
-    nativeStyleMapping: {
-      color: 'resolvedTextStyle.color',
-      fontFamily: 'resolvedTextStyle.fontFamily',
-      fontSize: 'resolvedTextStyle.fontSize',
-      fontWeight: 'resolvedTextStyle.fontWeight',
-      fontStyle: 'resolvedTextStyle.fontStyle',
-      lineHeight: 'resolvedTextStyle.lineHeight',
-      letterSpacing: 'resolvedTextStyle.letterSpacing',
-      textAlign: 'resolvedTextStyle.textAlign',
-      textDecorationLine: 'resolvedTextStyle.textDecorationLine',
-    },
-  },
+  className: 'style',
 });
 
 const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({

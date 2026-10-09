@@ -126,8 +126,10 @@ keeps the rest paint stable. With react-native-css 3.0.7, native `:enabled` and
 `react-native-reanimated` for shared recipes.
 Web recipes can additionally use the reduced-motion media query.
 
-The same native resolver version has a separate upstream defect when one rule
-combines deferred `line-height` and compound `box-shadow`: the line height can
-remain unresolved. Composing typography utilities separately from the shadow
-recipe avoids that affected declaration combination. Bloom does not rewrite
-consumer CSS or patch the resolver.
+The same native resolver version drops deferred `line-height` values even on a
+bare styled Text, for both pixel and unitless declarations. Combining that
+declaration with compound `box-shadow` in one rule can additionally leave an
+unresolved placeholder. Separate typography and shadow rules avoid the
+placeholder, but do not restore the missing native line height. Web line height
+works normally. Bloom forwards resolved styles; it does not rewrite consumer CSS
+or patch the upstream resolver.
