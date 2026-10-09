@@ -58,6 +58,10 @@ describe('what a missing BloomThemeProvider costs', () => {
     expectThrows(<Probe />, /BloomThemeProvider/);
   });
 
+  it('the opt-in page appearance explicitly requires a theme provider', () => {
+    expectThrows(<PortalProvider><ZoomableMediaGallery appearance="page" /><PortalOutlet /></PortalProvider>, /BloomThemeProvider/);
+  });
+
   it('the gallery mounts closed with no provider', () => {
     expect(() => renderGallery()).not.toThrow();
   });

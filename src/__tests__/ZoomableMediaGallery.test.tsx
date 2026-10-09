@@ -79,8 +79,11 @@ describe('ZoomableMediaGallery', () => {
       fireEvent(pager, 'momentumScrollEnd', { nativeEvent: { contentOffset: { x: width, y: 0 } } });
       fireEvent(pager, 'momentumScrollEnd', { nativeEvent: { contentOffset: { x: width, y: 0 } } });
       expect(onIndexChange.mock.calls).toEqual([[0], [1]]);
+      const queuedScroll = pager.props.onMomentumScrollEnd;
       fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
+      act(() => queuedScroll({ nativeEvent: { contentOffset: { x: 0, y: 0 } } }));
       act(() => jest.advanceTimersByTime(1000));
+      act(() => queuedScroll({ nativeEvent: { contentOffset: { x: 0, y: 0 } } }));
       expect(onIndexChange.mock.calls).toEqual([[0], [1]]);
     } finally { jest.useRealTimers(); }
   });

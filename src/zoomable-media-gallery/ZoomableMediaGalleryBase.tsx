@@ -1,4 +1,4 @@
-import { useTheme } from '../theme/use-theme';
+import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { useMessages } from '../locale/messages';
 import { ZOOMABLE_MEDIA_GALLERY_MESSAGES } from './messages';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -186,9 +186,16 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  */
 const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ appearance = 'overlay', onIndexChange, measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
   const { messages } = useMessages(ZOOMABLE_MEDIA_GALLERY_MESSAGES);
-  const theme = useTheme();
-  const page = appearance === 'page';
-  const pageColors = page ? { background: theme.colors.backgroundSecondary, foreground: theme.colors.text } : undefined;
+  const themeContext = React.useContext(BloomThemeContext);
+  if (appearance === 'page' && !themeContext) {
+    throw new Error('ZoomableMediaGallery appearance="page" requires a <BloomThemeProvider>');
+  }
+  // The default overlay can mount closed without a theme provider. Only the
+  // opt-in page reads its palette; the default pager's controls keep their own
+  // existing provider requirements.
+  const pagePalette = appearance === 'page' ? themeContext?.theme.colors : undefined;
+  const page = pagePalette != null;
+  const pageColors = pagePalette ? { background: pagePalette.backgroundSecondary, foreground: pagePalette.text } : undefined;
   const onIndexChangeRef = useRef(onIndexChange);
   onIndexChangeRef.current = onIndexChange;
   const labels = useMemo(() => ({ ...messages, ...labelsProp }), [messages, labelsProp]);
@@ -383,7 +390,8 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
   // every dismiss path (fly-back and fade-out fallback).
   const finalizeDismiss = useCallback(() => {
     setIsOpen(false);
-    dismissingRef.current = false;
+    // Keep the dismissal latch until the next open. Throttled web scroll
+    // events can arrive after the pager unmounts and must not reset selection.
     scale.value = 1;
     translateX.value = 0;
     translateY.value = 0;
@@ -679,6 +687,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
   // (web, where paging may not fire a reliable momentum-end).
   const updateIndexFromOffset = useCallback(
     (offsetX: number) => {
+      if (dismissingRef.current || !pagerReady) return;
       const lastIndex = items.length - 1;
       if (lastIndex < 0) return;
       const next = Math.min(Math.max(Math.round(offsetX / SCREEN_WIDTH), 0), lastIndex);
@@ -690,7 +699,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
       const item = items[next];
       if (item) ensureRatio(next, posterUri(item));
     },
-    [ensureRatio, items, resetZoom, setActiveIndexBoth, SCREEN_WIDTH]
+    [ensureRatio, items, pagerReady, resetZoom, setActiveIndexBoth, SCREEN_WIDTH]
   );
 
   // Programmatically page to `index` (arrow buttons, keyboard, thumbnail taps).
@@ -940,7 +949,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
           accessibilityLabel={labels.close}
           progress={opacity}
           blurIntensity={page ? 0 : undefined}
-          dimColor={page ? theme.colors.background : undefined}
+          dimColor={pagePalette?.background}
           dimOpacity={page ? 1 : undefined}
         />
 
@@ -1064,8 +1073,8 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
               style={[styles.indicatorWrap, { bottom: INDICATOR_BOTTOM + insets.bottom }, backdropStyle]}
               pointerEvents="box-none"
             >
-              <View style={[styles.counterPill, page && { backgroundColor: theme.colors.backgroundSecondary }]} pointerEvents="none">
-                <Text style={[styles.counterText, page && { color: theme.colors.text }]}>{`${activeIndex + 1} / ${items.length}`}</Text>
+              <View style={[styles.counterPill, pagePalette && { backgroundColor: pagePalette.backgroundSecondary }]} pointerEvents="none">
+                <Text style={[styles.counterText, pagePalette && { color: pagePalette.text }]}>{`${activeIndex + 1} / ${items.length}`}</Text>
               </View>
               {indicatorVariant === 'thumbnails' ? (
                 <ScrollView
@@ -1083,7 +1092,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
                       style={[
                         styles.thumbTile,
                         idx === activeIndex ? styles.thumbTileActive : styles.thumbTileInactive,
-                        page && { borderColor: idx === activeIndex ? theme.colors.text : theme.colors.border },
+                        pagePalette && { borderColor: idx === activeIndex ? pagePalette.text : pagePalette.border },
                         webPointerStyle,
                       ]}
                     >
@@ -1099,7 +1108,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
                   {items.map((item, idx) => (
                     <View
                       key={`dot-${mediaKey(item, idx)}`}
-                      style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive, page && { backgroundColor: idx === activeIndex ? theme.colors.text : theme.colors.textSecondary }]}
+                      style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive, pagePalette && { backgroundColor: idx === activeIndex ? pagePalette.text : pagePalette.textSecondary }]}
                     />
                   ))}
                 </View>
@@ -1142,8 +1151,8 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
               ]}
               pointerEvents="none"
             >
-              <View style={[styles.altCaptionPill, page && { backgroundColor: theme.colors.backgroundSecondary }]}>
-                <Text style={[styles.altCaptionText, page && { color: theme.colors.text }]} numberOfLines={4}>{activeAlt}</Text>
+              <View style={[styles.altCaptionPill, pagePalette && { backgroundColor: pagePalette.backgroundSecondary }]}>
+                <Text style={[styles.altCaptionText, pagePalette && { color: pagePalette.text }]} numberOfLines={4}>{activeAlt}</Text>
               </View>
             </Animated.View>
           ) : null}
