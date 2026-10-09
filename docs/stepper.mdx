@@ -120,8 +120,9 @@ Control sizes use `sm` and `md`. When omitted, they inherit `BloomScope`; `xs` m
 The outline appearance joins the controls in a flat, theme-colored capsule with
 a 1px border and full rounding. The default `md` capsule is 40px tall with 20px
 glyphs and 14px semibold value text; `sm` is 36px tall with 18px glyphs and 13px
-text. The value keeps a minimum width of 2.8 times its font size and can grow for
-formatted values. Actions have expanded hit areas without separate disc fills.
+text. The value reserves 44.8px (`md`) or 39.2px (`sm`), independently of its
+digit typography, and can grow for formatted values. Actions have expanded hit
+areas without separate disc fills.
 Fine pointers scale an enabled glyph action to 1.1 on hover and .95 on press;
 native uses the same press feedback. Reduced motion disables that scaling.
 Keyboard behavior, limits, disabled state, `Field` membership and `onRemove`
