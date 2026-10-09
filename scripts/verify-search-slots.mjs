@@ -12,7 +12,9 @@ try {
   await page.goto(`${base}/iframe.html?id=base-search--styled-slots&viewMode=story&globals=theme:${mode}`);
   const input=page.getByRole('search',{name:'Styled search'});
   await input.waitFor({timeout:120000});
-  if(rtl) await page.evaluate(()=>{document.documentElement.dir='rtl';});
+  const originalInput=await input.elementHandle();
+  if(rtl) { await page.evaluate(()=>{document.documentElement.dir='rtl';}); await expect(page.locator('.bloom-demo-search-container')).toHaveAttribute('dir','rtl'); }
+  assert.equal(await input.evaluate((el, original)=>el===original,originalInput),true,'direction changes preserve the input host');
   const field=page.locator('.bloom-demo-search-field');
   const chrome=page.locator('.bloom-demo-search-chrome');
   const container=page.locator('.bloom-demo-search-container');

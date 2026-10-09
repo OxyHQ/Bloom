@@ -39,12 +39,12 @@ function FieldBoxComponent({ children, className, style, baseStyle, stateStyle, 
     const unit = typeof value === 'number' && !['flex', 'zIndex'].includes(name) ? 'px' : '';
     variables[`--bloom-field-${cssName(name)}`] = `${value}${unit}`;
   }
-  return <div data-bloom-field-box="" data-testid={testID} className={className} dir={dir}
+  return <div data-bloom-field-box="" data-testid={testID} className={className} dir={dir ?? 'ltr'}
     onClick={onClick} onMouseOver={onMouseOver} onMouseOut={onMouseOut}
     style={{ ...variables, ...resolveNativeWebStyle(style), ...resolveNativeWebStyle(stateStyle), pointerEvents }}>
     {/* RNW resolves logical styles from its own direction context. This
         context carrier has no CSS box; the div remains the sole layout host. */}
-    {dir ? <View {...{ dir }} style={{ display: 'contents' }}>{children}</View> : children}
+    <View {...{ dir: dir ?? 'ltr' }} style={{ display: 'contents' }}>{children}</View>
   </div>;
 }
 const NativeFieldBox = styled(FieldBoxComponent, { className: 'style' });
