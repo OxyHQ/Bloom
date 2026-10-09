@@ -6,6 +6,7 @@ import { Button } from '../button';
 import { Dialog } from './Dialog';
 import { useDialogControl } from './context';
 import { alert } from '../surfaces';
+import { OverlayInertBoundary } from '../overlay';
 
 const meta: Meta<typeof Dialog> = {
   argTypes: {
@@ -177,5 +178,35 @@ export const Playground: Story = {
   render: function PlaygroundDialog(args) {
     const control = useDialogControl();
     return <><Button onPress={() => control.open()}>Open dialog</Button><Dialog {...args} control={control} actions={[{ label: 'Done', color: 'default' }, { label: 'Cancel', color: 'cancel' }]} /></>;
+  },
+};
+
+/** Exercises the semantic panel across a responsive placement change. */
+export const ResponsiveAccessibility: Story = {
+  args: { title: 'Account settings', description: 'Review your account preferences.' },
+  render: function ResponsiveAccessibilityDemo(args) {
+    const [open, setOpen] = React.useState(false);
+    return (
+      <OverlayInertBoundary>
+        <Button onPress={() => setOpen(true)}>Open account settings</Button>
+        <Dialog {...args} open={open} onClose={() => setOpen(false)} placement={{ base: 'bottom', md: 'center' }}>
+          <Button onPress={() => setOpen(false)}>Save preferences</Button>
+        </Dialog>
+      </OverlayInertBoundary>
+    );
+  },
+};
+
+export const HeaderAccessibility: Story = {
+  render: function HeaderAccessibilityDemo() {
+    const control = useDialogControl();
+    return (
+      <OverlayInertBoundary>
+        <Button onPress={() => control.open()}>Open account settings</Button>
+        <Dialog control={control} placement="bottom" header={{ title: 'Account settings' }}>
+          <Button onPress={() => control.close()}>Save preferences</Button>
+        </Dialog>
+      </OverlayInertBoundary>
+    );
   },
 };

@@ -113,3 +113,10 @@ If you just need a confirmation flow or a small custom panel, prefer [Dialog](/d
 The default panel uses Bloom’s shared `SurfacePaint` with its gradient and rim. The paint is absolute inside the existing measured panel, so gestures, focus, imperative controls and layout retain their hosts. Explicit caller backgrounds and BottomSheet’s `backgroundComponent` remain overrides. The actual resolved surface color supplies descendant tokens; the default body has 90% opacity and only its edge refracts the backdrop on web.
 
 The sheet publishes level 0 using the composited tint estimate of its material and web variables. A custom `backgroundComponent` must declare its backing with `backgroundFill`; omitted, the backing defaults to `style.backgroundColor` or the page token. The custom renderer remains responsible for matching that declared color.
+
+### Web accessibility
+
+The sheet panel exposes `role="dialog"` and `aria-modal="true"` and contains both
+its scrolling content and header overlay. Set `accessibilityLabel`, or associate
+an existing heading using `aria-labelledby`; `aria-describedby` associates
+supporting text. These attributes name the same panel that owns keyboard focus.

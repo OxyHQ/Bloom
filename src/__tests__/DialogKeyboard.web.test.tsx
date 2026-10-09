@@ -297,3 +297,33 @@ describe('Dialog.web keyboard and focus', () => {
     });
   });
 });
+
+describe('bottom dialog panel semantics', () => {
+  it('names and describes the modal panel from its declarative content', () => {
+    mount(<Dialog open placement="bottom" title="Account preferences" description="Manage your account."><TextInput accessibilityLabel="Display name" /></Dialog>);
+    const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"]');
+    expect(dialogs).toHaveLength(1);
+    const panel = dialogs[0]!;
+    expect(panel.getAttribute('aria-modal')).toBe('true');
+    expect(document.getElementById(panel.getAttribute('aria-labelledby')!)?.textContent).toBe('Account preferences');
+    expect(document.getElementById(panel.getAttribute('aria-describedby')!)?.textContent).toBe('Manage your account.');
+    expect(panel.querySelector('[aria-label="Display name"]')).not.toBeNull();
+    expect(panel.tabIndex).toBe(-1);
+  });
+
+  it('includes navigation header controls within the named dialog', () => {
+    mount(<Dialog open placement="bottom" header={{ title: 'Account preferences' }}><Pressable accessibilityRole="button"><Text>Save</Text></Pressable></Dialog>);
+    const panel = dialogNamed('Account preferences');
+    expect(panel.getAttribute('aria-modal')).toBe('true');
+    expect(panel.querySelectorAll('button').length).toBeGreaterThanOrEqual(2);
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+  });
+
+  it('uses an explicit label for custom content without dangling text associations', () => {
+    mount(<Dialog open placement="bottom" label="Sign in"><TextInput accessibilityLabel="Email" /></Dialog>);
+    const panel = dialogNamed('Sign in');
+    expect(panel.hasAttribute('aria-labelledby')).toBe(false);
+    expect(panel.hasAttribute('aria-describedby')).toBe(false);
+    expect(panel.querySelector('[aria-label="Email"]')).not.toBeNull();
+  });
+});
