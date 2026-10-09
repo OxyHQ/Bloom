@@ -33,6 +33,8 @@ import type { ButtonIconComponent, ButtonProps } from './types';
 export type {
   ButtonProps, LinkButtonProps,
   ButtonSize,
+  ButtonFocusEvent,
+  ButtonHoverEvent,
   ButtonIconComponent,
 } from './types';
 
@@ -150,6 +152,12 @@ ${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-c
 
 const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebComponent({
   onPress,
+  onFocus,
+  onBlur,
+  onHoverIn,
+  onHoverOut,
+  onKeyDown,
+  onKeyUp,
   onLayout,
   'aria-hidden': ariaHidden,
   accessibilityElementsHidden,
@@ -220,6 +228,26 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   const isLink = appearance === 'plain' && (href != null || linkTone != null);
   const isInteractionBlocked = disabled || loading;
   const longPress = useLongPress(onLongPress, isInteractionBlocked, onPressIn, onPressOut);
+  const handleBlur: React.FocusEventHandler<HTMLElement> = event => {
+    onBlur?.(event);
+    longPress.onBlur();
+  };
+  const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = event => {
+    onKeyDown?.(event);
+    longPress.onKeyDown(event);
+  };
+  const handleKeyUp: React.KeyboardEventHandler<HTMLElement> = event => {
+    onKeyUp?.(event);
+    // Cleanup remains unconditional even when a caller cancels default behavior.
+    longPress.onKeyUp(event);
+  };
+  const handlePointerEnter: React.PointerEventHandler<HTMLElement> = event => {
+    if (!isInteractionBlocked && event.pointerType !== 'touch') onHoverIn?.(event);
+  };
+  const handlePointerLeave: React.PointerEventHandler<HTMLElement> = event => {
+    if (event.pointerType !== 'touch') onHoverOut?.(event);
+    longPress.onPointerLeave();
+  };
   const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
 
   const palette = useMemo(
@@ -427,7 +455,9 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       style?: CSSProperties;
       onClick?: (event: MouseEvent<HTMLElement>) => void;
       onPointerDown?: React.PointerEventHandler<HTMLElement>;
+      onPointerEnter?: React.PointerEventHandler<HTMLElement>;
       onPointerLeave?: React.PointerEventHandler<HTMLElement>;
+      onFocus?: React.FocusEventHandler<HTMLElement>;
       onBlur?: React.FocusEventHandler<HTMLElement>;
       onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
       onKeyUp?: React.KeyboardEventHandler<HTMLElement>;
@@ -447,10 +477,12 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       className: [composedClassName, childProps.className].filter(Boolean).join(' '),
       style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
       onPointerDown: event => { childProps.onPointerDown?.(event); longPress.onPointerDown(event); },
-      onPointerLeave: event => { childProps.onPointerLeave?.(event); longPress.onPointerLeave(); },
-      onBlur: event => { childProps.onBlur?.(event); longPress.onBlur(); },
-      onKeyDown: event => { childProps.onKeyDown?.(event); longPress.onKeyDown(event); },
-      onKeyUp: event => { childProps.onKeyUp?.(event); longPress.onKeyUp(event); },
+      onPointerEnter: event => { childProps.onPointerEnter?.(event); handlePointerEnter(event); },
+      onPointerLeave: event => { childProps.onPointerLeave?.(event); handlePointerLeave(event); },
+      onFocus: event => { childProps.onFocus?.(event); onFocus?.(event); },
+      onBlur: event => { childProps.onBlur?.(event); handleBlur(event); },
+      onKeyDown: event => { childProps.onKeyDown?.(event); handleKeyDown(event); },
+      onKeyUp: event => { childProps.onKeyUp?.(event); handleKeyUp(event); },
       onContextMenu: event => { childProps.onContextMenu?.(event); longPress.onContextMenu(event); },
       onClick: (event: MouseEvent<HTMLElement>) => {
         if (longPress.suppressClick(event)) return;
@@ -486,10 +518,12 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
         className={composedClassName}
         style={{ ...containerStyle, ...resolvedStyle }}
         onPointerDown={longPress.onPointerDown}
-        onPointerLeave={longPress.onPointerLeave}
-        onBlur={longPress.onBlur}
-        onKeyDown={longPress.onKeyDown}
-        onKeyUp={longPress.onKeyUp}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        onFocus={onFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
         onContextMenu={longPress.onContextMenu}
         onClick={handleClick}
         aria-disabled={isInteractionBlocked || undefined}
@@ -516,10 +550,12 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
       className={composedClassName}
       style={{ ...containerStyle, ...resolvedStyle }}
       onPointerDown={longPress.onPointerDown}
-      onPointerLeave={longPress.onPointerLeave}
-      onBlur={longPress.onBlur}
-      onKeyDown={longPress.onKeyDown}
-      onKeyUp={longPress.onKeyUp}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onFocus={onFocus}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
       onContextMenu={longPress.onContextMenu}
       onClick={handleClick}
       role={accessibilityRole}

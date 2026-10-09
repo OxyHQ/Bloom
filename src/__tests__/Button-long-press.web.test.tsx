@@ -84,3 +84,69 @@ it('does not end a preview when its long-press timer fires', () => {
   expect(hold).toHaveBeenCalledTimes(1); expect(pressOut).not.toHaveBeenCalled();
   pointer(document, 'pointerup'); expect(pressOut).toHaveBeenCalledTimes(1);
 });
+
+it.each(['button', 'href', 'asChild'] as const)('forwards %s focus and keyboard events without replacing preview cleanup', mode => {
+  const focus = jest.fn(), blur = jest.fn(), down = jest.fn(), up = jest.fn();
+  const childFocus = jest.fn(), childBlur = jest.fn(), childDown = jest.fn(), childUp = jest.fn();
+  const pressIn = jest.fn(), pressOut = jest.fn();
+  act(() => root.render(<Button href={mode === 'href' ? '#destination' : undefined} asChild={mode === 'asChild'}
+    onFocus={focus} onBlur={blur} onKeyDown={down} onKeyUp={up} onPressIn={pressIn} onPressOut={pressOut}>
+    {mode === 'asChild' ? <a href="#destination" onFocus={childFocus} onBlur={childBlur} onKeyDown={childDown} onKeyUp={childUp}>Choice</a> : 'Choice'}
+  </Button>));
+  const host = container.querySelector('button, a') as HTMLElement;
+  act(() => host.focus());
+  expect(focus).toHaveBeenCalledTimes(1);
+  act(() => host.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true })));
+  expect(down).toHaveBeenCalledTimes(1); expect(pressIn).toHaveBeenCalledTimes(1);
+  act(() => host.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true })));
+  expect(up).toHaveBeenCalledTimes(1); expect(pressOut).toHaveBeenCalledTimes(1);
+  act(() => host.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+  act(() => host.blur());
+  expect(blur).toHaveBeenCalledTimes(1); expect(pressOut).toHaveBeenCalledTimes(2);
+  if (mode === 'asChild') {
+    expect(childFocus).toHaveBeenCalledTimes(1); expect(childBlur).toHaveBeenCalledTimes(1);
+    expect(childDown).toHaveBeenCalledTimes(2); expect(childUp).toHaveBeenCalledTimes(1);
+  }
+});
+
+it.each(['button', 'child'] as const)('honors keyboard cancellation from the %s and still completes an active preview', source => {
+  const pressIn = jest.fn(), pressOut = jest.fn();
+  const cancel: React.KeyboardEventHandler<HTMLElement> = event => event.preventDefault();
+  const ui = (cancelDown: boolean) => <Button asChild={source === 'child'} onPressIn={pressIn} onPressOut={pressOut}
+    onKeyDown={source === 'button' && cancelDown ? cancel : undefined} onKeyUp={cancel}>
+    {source === 'child' ? <a href="#destination" onKeyDown={cancelDown ? cancel : undefined}>Choice</a> : 'Choice'}
+  </Button>;
+  act(() => root.render(ui(true)));
+  const host = container.querySelector('button, a')!;
+  act(() => host.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true })));
+  expect(pressIn).not.toHaveBeenCalled();
+  act(() => root.render(ui(false)));
+  act(() => host.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true })));
+  expect(pressIn).toHaveBeenCalledTimes(1);
+  act(() => host.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true, cancelable: true })));
+  expect(pressOut).toHaveBeenCalledTimes(1);
+});
+
+it.each(['button', 'href', 'asChild'] as const)('composes %s non-touch hover with pointer cancellation and clears after disabling', mode => {
+  const enter = jest.fn(), leave = jest.fn(), childEnter = jest.fn(), childLeave = jest.fn(), hold = jest.fn();
+  const ui = (disabled = false) => <Button disabled={disabled} href={mode === 'href' ? '#destination' : undefined}
+    asChild={mode === 'asChild'} onHoverIn={enter} onHoverOut={leave} onLongPress={hold}>
+    {mode === 'asChild' ? <a href="#destination" onPointerEnter={childEnter} onPointerLeave={childLeave}>Choice</a> : 'Choice'}
+  </Button>;
+  act(() => root.render(ui()));
+  const host = container.querySelector('button, a')!;
+  pointer(host, 'pointerover', { pointerType: 'touch', relatedTarget: null });
+  pointer(host, 'pointerout', { pointerType: 'touch', relatedTarget: document.body });
+  expect(enter).not.toHaveBeenCalled(); expect(leave).not.toHaveBeenCalled();
+  pointer(host, 'pointerover', { pointerType: 'mouse', relatedTarget: null });
+  expect(enter).toHaveBeenCalledTimes(1);
+  pointer(host, 'pointerdown', { pointerType: 'mouse' });
+  pointer(host, 'pointerout', { pointerType: 'mouse', relatedTarget: document.body });
+  expect(leave).toHaveBeenCalledTimes(1);
+  act(() => jest.advanceTimersByTime(500)); expect(hold).not.toHaveBeenCalled();
+  act(() => root.render(ui(true)));
+  pointer(host, 'pointerover', { pointerType: 'mouse', relatedTarget: null });
+  pointer(host, 'pointerout', { pointerType: 'mouse', relatedTarget: document.body });
+  expect(enter).toHaveBeenCalledTimes(1); expect(leave).toHaveBeenCalledTimes(2);
+  if (mode === 'asChild') { expect(childEnter).toHaveBeenCalledTimes(3); expect(childLeave).toHaveBeenCalledTimes(3); }
+});
