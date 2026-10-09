@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 import { FollowButton } from './MediaActionBar';
 import { ContactRow } from '../chat-people';
+import { Button } from '../button';
 import { Text } from '../typography';
 import { defaultAvatarSource } from '../avatar/default-avatar';
 import type { FollowButtonProps } from './types';
@@ -53,4 +54,21 @@ export const ColorComparison: Story = {
 export const ColorComparisonDark: Story = {
   ...ColorComparison,
   globals: { theme: 'dark', colorPreset: 'olive' },
+};
+
+/** Public surface and label slots preserve measurement and toggle motion. */
+export const Styled: Story = {
+  render: function StyledFollowStory(args) {
+    const [following,setFollowing] = useState(false);
+    const [loading,setLoading] = useState(false);
+    const [disabled,setDisabled] = useState(false);
+    return <View style={{ alignItems:'flex-start', gap:16 }}>
+      <FollowButton {...args} following={following} onFollowChange={setFollowing} loading={loading} disabled={disabled}
+        appearance="outline" material="flat" className="bloom-demo-follow" labelClassName="bloom-demo-follow-label"
+        testID="styled-follow" />
+      <FollowButton {...args} following={false} onFollowChange={() => {}} testID="default-follow" />
+      <Button onPress={() => setLoading(value=>!value)}>Toggle loading</Button>
+      <Button onPress={() => setDisabled(value=>!value)}>Toggle disabled</Button>
+    </View>;
+  },
 };

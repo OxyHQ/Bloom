@@ -22,6 +22,7 @@ import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
+import { FollowLabel } from './FollowLabel';
 import { useMediaHeaderPaint } from './parts';
 import { IS_WEB } from './shared';
 import { clamp01 } from '../styles/clamp';
@@ -293,6 +294,10 @@ function FollowButtonComponent({
   accessibilityLabel,
   accessibilityHint,
   color,
+  appearance = 'subtle',
+  material,
+  className,
+  labelClassName,
   tone = 'support',
   iconOnly = false,
   size: sizeProp,
@@ -326,28 +331,28 @@ function FollowButtonComponent({
   }, [disabled, following, loading, pressOffset, reducedMotion]);
   const idleLabelStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value, transform: [{ translateY: -8 * progress.value + pressOffset.value }] }), [progress, pressOffset]);
   const followedLabelStyle = useAnimatedStyle(() => ({ opacity: progress.value, transform: [{ translateY: 8 * (1 - progress.value) + pressOffset.value }] }), [progress, pressOffset]);
-  const labelColor = color ?? resolveButtonPalette('subtle', theme, tone).rest.foreground;
+  const labelColor = color ?? resolveButtonPalette(appearance, theme, tone).rest.foreground;
   const visual = (
     <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
       style={{ height: 24, overflow: 'hidden', ...(iconOnly ? { width: 20 } : {}), justifyContent: 'center' }}>
       {!iconOnly && <View style={{ height: 0, overflow: 'hidden' }}>
-        <Text variant="body-semibold" style={textStyle}>{label}</Text>
-        <Text variant="body-semibold" style={textStyle}>{followingLabel}</Text>
+        <FollowLabel className={labelClassName} style={textStyle}>{label}</FollowLabel>
+        <FollowLabel className={labelClassName} style={textStyle}>{followingLabel}</FollowLabel>
       </View>}
       <Animated.View testID={testID ? `${testID}-idle-label` : undefined}
         style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, idleLabelStyle]}>
         {iconOnly ? <RiUserAddLine width={20} height={20} fill={labelColor} />
-          : <Text variant="body-semibold" style={[{ color: labelColor }, textStyle]} numberOfLines={1}>{label}</Text>}
+          : <FollowLabel className={labelClassName} style={[{ color: color ?? (labelClassName?.trim() ? undefined : labelColor) }, textStyle]} numberOfLines={1}>{label}</FollowLabel>}
       </Animated.View>
       <Animated.View testID={testID ? `${testID}-following-label` : undefined}
         style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, followedLabelStyle]}>
         {iconOnly ? <RiUserFollowLine width={20} height={20} fill={labelColor} />
-          : <Text variant="body-semibold" style={[{ color: labelColor }, textStyle]} numberOfLines={1}>{followingLabel}</Text>}
+          : <FollowLabel className={labelClassName} style={[{ color: color ?? (labelClassName?.trim() ? undefined : labelColor) }, textStyle]} numberOfLines={1}>{followingLabel}</FollowLabel>}
       </Animated.View>
     </View>
   );
   return (
-    <Button appearance="subtle" tone={tone} size={size} iconOnly={iconOnly}
+    <Button appearance={appearance} material={material} className={className} tone={tone} size={size} iconOnly={iconOnly}
       pressed={following} stopPropagation accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint} disabled={disabled} loading={loading}
       onPressIn={previewLabel} onPressOut={restoreLabel}

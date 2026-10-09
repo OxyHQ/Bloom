@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { BloomSize } from '../appearance';
 import type { BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
@@ -21,6 +22,9 @@ export interface RadioProps<Value extends string = string> {
   onValueChange?: (value: Value) => void;
   /** Optional label text. */
   label?: string;
+  /** Decorative label layout, rendered in a View instead of Text. Supply
+   * `label` or `accessibilityLabel` for its accessible name. Do not nest controls. */
+  labelContent?: ReactNode;
   /** Optional description shown below the label. */
   description?: string;
   /** Size preset. */

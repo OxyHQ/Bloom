@@ -1,3 +1,4 @@
+import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
@@ -87,6 +88,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
     defaultChecked = false,
     onCheckedChange,
     label,
+    labelContent,
     description,
     size: sizeProp,
     disabled = false,
@@ -130,7 +132,8 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
     }
   }, [checked, isDisabled, setChecked]);
 
-  const hasText = Boolean(label || description);
+  const hasLabel = labelContent != null || Boolean(label);
+  const hasText = hasLabel || Boolean(description);
 
   const rowStyle = useMemo(
     (): WebCssStyle => ({
@@ -146,8 +149,11 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
 
   const slop = Math.max(8, Math.ceil((MIN_TOUCH_TARGET - sizeConfig.box) / 2));
 
+  const spaceKey = useChoiceSpaceKey(isDisabled, handlePress);
+
   return (
     <Pressable
+      {...spaceKey}
       // The DOM hooks the adopted sheets hang off. Through `dataSet`, because
       // react-native-web drops any prop outside its own fixed list — a literal
       // `'data-bloom-checkbox'` prop never reaches the DOM. See the longer note
@@ -191,7 +197,11 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
 
       {hasText && (
         <View style={{ flex: 1 }}>
-          {label && (
+          {labelContent != null ? (
+            <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              {labelContent}
+            </View>
+          ) : label && (
             <Text variant={sizeConfig.label} style={[{ color: paint.text }, labelStyle]}>
               {label}
             </Text>
@@ -199,7 +209,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
           {description && (
             <Text
               variant={sizeConfig.description}
-              style={{ color: paint.description, marginTop: label ? DESCRIPTION_GAP : 0 }}
+              style={{ color: paint.description, marginTop: hasLabel ? DESCRIPTION_GAP : 0 }}
             >
               {description}
             </Text>

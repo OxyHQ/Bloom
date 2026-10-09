@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { BloomTone } from '../appearance';
+import type { ButtonProps } from '../button/types';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
@@ -150,6 +151,15 @@ export interface DownloadButtonProps extends ToggleBase {
 }
 
 export interface FollowButtonProps extends ToggleBase {
+  /** Shared Button surface; defaults to subtle. */
+  appearance?: ButtonProps['appearance'];
+  /** Shared Button material; preserves the standard surface by default. */
+  material?: ButtonProps['material'];
+  /** Classes on the Button layout and surface owner. */
+  className?: string;
+  /** Typography classes on both animated labels and their measuring copies.
+   * Text mode only; explicit color/textStyle still take precedence. */
+  labelClassName?: string;
   /** Shared Button tone. Defaults to support (secondary). */
   tone?: BloomTone;
   /** Compact toggle with icons and the same accessible name. */
