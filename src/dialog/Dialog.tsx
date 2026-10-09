@@ -47,7 +47,7 @@ import {
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
-  SIDE_SHEET_MIN_GUTTER,
+  resolveSideSheetWidth,
   useResolvedPlacement,
   physicalDialogSide,
   type DialogSidePlacement,
@@ -128,6 +128,7 @@ function CenteredOrSideDialog({
   morph,
   placement,
   width = DEFAULT_SIDE_WIDTH,
+  minSideGutter,
   inset,
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
@@ -310,6 +311,7 @@ function CenteredOrSideDialog({
           open={sideOpen}
           onDismiss={handleDismiss}
           side={placement}
+          minSideGutter={minSideGutter}
           width={width}
           inset={inset}
           dismissOnBackdrop={dismissOnBackdrop}
@@ -415,6 +417,7 @@ function SideSheet({
   onDismiss,
   side,
   width,
+  minSideGutter,
   inset,
   dismissOnBackdrop,
   contentPadding,
@@ -442,6 +445,7 @@ function SideSheet({
   onDismiss: () => void;
   side: DialogSidePlacement;
   width: number;
+  minSideGutter?: number;
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
   contentPadding: number;
@@ -484,9 +488,8 @@ function SideSheet({
   const oppositeInset = edge === 'left' ? insetRight : insetLeft;
 
   const sideWidth = useMemo(() => {
-    const available = viewportWidth - anchorInset - oppositeInset - SIDE_SHEET_MIN_GUTTER;
-    return Math.max(0, Math.min(width, available));
-  }, [viewportWidth, anchorInset, oppositeInset, width]);
+    return resolveSideSheetWidth(viewportWidth, width, anchorInset, oppositeInset, minSideGutter);
+  }, [viewportWidth, anchorInset, oppositeInset, width, minSideGutter]);
 
   // Travel distance for the hidden state: the panel's measured width, with the
   // geometry target as the pre-measurement fallback.

@@ -68,7 +68,22 @@ export type StatBarProps = StatBarProgressProps | StatBarSplitProps;
 //  Meter — the bare determinate bar every progress bar in Bloom is built from
 // ---------------------------------------------------------------------------
 
+/** Visual-only entrance; the accessible value always remains the real measurement. */
+export interface MeterReveal {
+  visible: boolean;
+  /** Retain the revealed state after the first visible observation. Default false. */
+  once?: boolean;
+  /** Non-negative milliseconds. Default 300. */
+  duration?: number;
+  /** Non-negative milliseconds before motion begins. Default 0. */
+  delay?: number;
+  /** CSS cubic-bezier control points. Default ease. */
+  easing?: readonly [number, number, number, number];
+}
+
 interface MeterGeometryProps {
+  /** Animate only the fill from empty when visible; reduced motion displays the real value immediately. */
+  reveal?: MeterReveal;
   /** Classes on the track. Unclaimed properties retain the normal Meter defaults. */
   className?: string;
   /** Classes on the fill. Width continues to represent value/max. */

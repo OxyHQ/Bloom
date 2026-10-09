@@ -2142,3 +2142,5 @@ export * from './agent-avatar';
 export * from './agent-creator';
 export * from './project-board';
 export * from './multi-agent-chat';
+
+export * from './viewport';

@@ -140,3 +140,13 @@ geometry comes from `percent` alone.
 
 A bar in a stack of stats with no label is a colour. It is also the only thing
 a screen reader gets, since the bar itself conveys nothing.
+
+## Visual reveal
+
+`Meter` accepts `reveal={{ visible, once, duration, delay, easing }}`. This is opt-in and independent of `value`: `aria-valuenow`, `aria-valuemax`, `valueText` and the accessible label continue to describe the real measurement during the empty state, delay and animation. `RatingBar` forwards the same prop to its Meter.
+
+Before visibility, the fill is empty. Visibility starts a width animation on both platforms; native uses the Animated JS driver because width is a layout property. `once:true` retains the revealed state when visibility later becomes false. Defaults are `once:false`, duration 300ms, delay 0 and CSS ease (`[.25,.1,.25,1]`). Easing accepts four finite cubic-bezier coordinates with x coordinates in `[0,1]`. Delays and durations are nonnegative milliseconds.
+
+Reduced motion displays the real width immediately, including before the visibility threshold is reached, and cancels any pending delay or active motion when the preference changes. Removing `reveal` restores the ordinary meter. The existing `transitionMs` behavior is unchanged when no reveal is supplied; reveal owns timing when both props are present.
+
+Use [Viewport](./viewport.mdx) to provide real visibility from document scrolling, nested scrolling or native clipping viewports. The observer's `once` disconnects measurement after entry; the reveal's `once` keeps the visual state if a caller supplies a visibility signal that later changes.

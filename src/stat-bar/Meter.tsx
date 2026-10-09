@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import { styled } from 'react-native-css';
-import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -13,6 +13,7 @@ import {
   resolveMeterColors,
 } from './shared';
 import type { AnyMeterProps } from './types';
+import { useMeterReveal } from './use-meter-reveal';
 
 /**
  * ONE determinate bar. Every progress bar in Bloom is this one.
@@ -41,6 +42,7 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
   const {
     value,
+    reveal,
     max = 1,
     height = 6,
     radius = height / 2,
@@ -59,6 +61,8 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
   }, [transitionMs]);
 
   const fraction = meterFraction(value, max);
+  const revealedWidth = useMeterReveal(fraction, reveal);
+  const Fill = reveal ? Animated.View : View;
 
   const fillStyle: WebCssStyle = {
     width: `${fraction * 100}%`,
@@ -69,10 +73,10 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
   };
 
   const bar = (
-    <View
+    <Fill
       {...(transitionMs > 0 ? webDataSet({ bloomMeterFill: '' }) : null)}
       testID={fillTestID}
-      style={[fillStyle, callerFillStyle, { width: fillStyle.width }]}
+      style={[fillStyle, callerFillStyle, { width: reveal ? revealedWidth : fillStyle.width }]}
     />
   );
 

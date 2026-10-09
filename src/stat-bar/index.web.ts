@@ -18,3 +18,5 @@ export type {
   StatBarSplitProps,
   StatBarVariant,
 } from './types';
+
+export type { MeterReveal } from './types';

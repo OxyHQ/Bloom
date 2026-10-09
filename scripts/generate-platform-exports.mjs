@@ -79,6 +79,7 @@ const SUBPATHS = /** @type {const} */ ([
   // Window-edge geometry shared by every floating surface, plus the registry
   // that keeps them off each other. Platform-neutral, no native deps.
   ['./layout', 'layout/index.ts'],
+  ['./viewport', 'viewport/index.ts'],
   ['./fab', 'fab/index.ts'],
   ['./frosted-icon-button', 'frosted-icon-button/index.ts'],
   ['./divider', 'divider/index.ts'],
@@ -344,6 +345,7 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './viewport',
   './accordion',
   './rating',
   './stat-bar',

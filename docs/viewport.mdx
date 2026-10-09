@@ -1,0 +1,47 @@
+# Viewport
+
+`useInView` observes a host's visible area without changing its layout. Web uses `IntersectionObserver`, including ancestor scroll clipping. Native measures the target and each bound viewport in window coordinates after scroll, layout, content-size and window-size events. Measurements are grouped into animation frames; there is no idle polling and mounting never implies visibility.
+
+```tsx
+import { ViewportProvider, useViewportBinding, useInView } from '@oxy.so/bloom/viewport';
+import { RatingBar } from '@oxy.so/bloom/rating';
+import { ScrollView, View } from 'react-native';
+import { useRef } from 'react';
+
+function Histogram() {
+  const { inView, targetProps } = useInView({ threshold: 1, once: true });
+  return <View {...targetProps}>
+    <RatingBar label="Five stars" value={75} max={100} display="75%"
+      reveal={{ visible: inView, once: true, delay: 300, duration: 1000, easing: [.4, 0, .2, 1] }} />
+  </View>;
+}
+
+function BoundScroll() {
+  const viewportRef = useRef<ScrollView>(null);
+  const binding = useViewportBinding({ viewportRef });
+  return <ScrollView ref={viewportRef} {...binding}><Histogram /></ScrollView>;
+}
+
+export function Screen() {
+  return <ViewportProvider root><BoundScroll /></ViewportProvider>;
+}
+```
+
+The binding hook must execute **inside** its provider. Each provider owns one actual scrolling or clipping host. `targetProps` contains the ref and layout callback; on native it also preserves the measured host with `collapsable={false}`. Keep the hook on the component whose visibility lifetime matters: `once` is retained for that hook instance.
+
+| API | Contract |
+| --- | --- |
+| `ViewportProvider` | No layout box. Nested providers intersect their native clips. |
+| `root` | Starts a separate native clipping chain, for example a portaled dialog's scroller. The window still clips it. Default false. |
+| `useViewportBinding({ viewportRef, onScroll, onLayout, onContentSizeChange })` | Returns composed callbacks and `scrollEventThrottle:16`. The existing ref remains on the real host; it must support `measureInWindow`, or expose the measurable host through `getNativeScrollRef` (as ScrollView does). |
+| `useInView({ threshold, once })` | Returns `{ inView, targetProps }`. Threshold is visible area fraction in `[0,1]`, default 0; even threshold 0 requires nonzero intersection. Once defaults false. |
+
+On native, `useInView` requires a provider with a bound viewport. Missing geometry remains invisible. An outer bound viewport's scrolling/layout also invalidates observations inside nested providers. A root provider is required for a portal that should not inherit the page's clip. Native host measurements are asynchronous; stale results are discarded after newer events or unmount.
+
+On web the browser already owns the clipping chain: provider and binding are optional for document scrolling, and native binding callbacks simply forward the consumer's handlers. Environments without `IntersectionObserver` stay unobserved rather than treating mount as visibility.
+
+## Compose existing scroll owners
+
+Pass existing ordinary callbacks to `useViewportBinding`; they still run once with the original event/arguments. `useScrollMetricsBinding(viewport)` can then compose its own metrics with those callbacks. For an animated scroller, `useAnimatedScrollMetricsBinding({ ...viewport, handler })` preserves the existing Reanimated handler and bridges the visibility observer through its public JS observer slot. Pass a processed Reanimated handler to that `handler` option, never as `useViewportBinding.onScroll`.
+
+A consumer-owned forwardRef wrapper can preserve/merge its ScrollView ref and place its bound child inside the provider. No DOM access, additional scroll container or permanent measurement timer is necessary.

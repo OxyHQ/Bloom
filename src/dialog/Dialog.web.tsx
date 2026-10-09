@@ -66,7 +66,7 @@ import {
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
-  SIDE_SHEET_MIN_GUTTER,
+  resolveSideSheetWidth,
   useResolvedPlacement,
   physicalDialogSide,
   type DialogSidePlacement,
@@ -189,6 +189,7 @@ function CenterOrSideDialog({
   header,
   placement,
   width = DEFAULT_SIDE_WIDTH,
+  minSideGutter,
   maxWidth = DEFAULT_CENTER_MAX_WIDTH,
   inset,
   dismissOnBackdrop = true,
@@ -419,6 +420,7 @@ function CenterOrSideDialog({
             scrollable={scrollable}
             placement={resolvedPlacement}
             shown={!isClosing}
+            minSideGutter={minSideGutter}
             width={width}
             inset={inset}
             dismissOnBackdrop={dismissOnBackdrop}
@@ -652,6 +654,7 @@ function SheetSurface({
   placement,
   shown,
   width,
+  minSideGutter,
   inset,
   dismissOnBackdrop,
   contentPadding,
@@ -675,6 +678,7 @@ function SheetSurface({
   placement: DialogSidePlacement;
   shown: boolean;
   width: number;
+  minSideGutter?: number;
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
   contentPadding: number;
@@ -740,8 +744,7 @@ function SheetSurface({
     const edge = physicalDialogSide(placement, rtl);
     const anchorInset = edge === 'left' ? insetLeft : insetRight;
     const oppositeInset = edge === 'left' ? insetRight : insetLeft;
-    const available = viewportWidth - anchorInset - oppositeInset - SIDE_SHEET_MIN_GUTTER;
-    const cappedWidth = Math.max(0, Math.min(width, available));
+    const cappedWidth = resolveSideSheetWidth(viewportWidth, width, anchorInset, oppositeInset, minSideGutter);
     const hiddenSign = edge === 'left' ? '-100%' : '100%';
 
     return {
@@ -753,7 +756,7 @@ function SheetSurface({
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
     };
-  }, [visible, placement, rtl, width, inset, viewportWidth]);
+  }, [visible, placement, rtl, width, inset, viewportWidth, minSideGutter]);
 
   const handleBackdropPress = useCallback(() => {
     if (dismissOnBackdrop) onDismiss();

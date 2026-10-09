@@ -29,7 +29,7 @@ import type { RatingBarProps } from './types';
 
 const BAR_WIDTH = 96;
 
-function RatingBarComponent({ label, value, max = 5, display, labelWidth, style, testID, labelStyle, displayStyle, trackStyle, fillClassName }: RatingBarProps & {
+function RatingBarComponent({ label, value, reveal, max = 5, display, labelWidth, style, testID, labelStyle, displayStyle, trackStyle, fillClassName }: RatingBarProps & {
   labelStyle?: StyleProp<TextStyle>; displayStyle?: StyleProp<TextStyle>; trackStyle?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
@@ -54,6 +54,7 @@ function RatingBarComponent({ label, value, max = 5, display, labelWidth, style,
         {label}
       </Text>
       <Meter
+        reveal={reveal}
         value={value}
         max={safeMax}
         height={4}

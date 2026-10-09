@@ -110,9 +110,17 @@ export const HANDLE_RADIUS = 3;
 
 /**
  * Minimum gutter kept between a wide side-sheet and the opposite viewport edge
- * when capping its width, so the panel never spans the full screen.
+ * when capping its width by default. Callers can opt into a zero gutter.
  */
 export const SIDE_SHEET_MIN_GUTTER = 24;
+
+/** Shared native/web width cap; the gutter is separate from edge insets. */
+export function resolveSideSheetWidth(viewportWidth: number, width: number, anchorInset: number,
+  oppositeInset: number, minSideGutter = SIDE_SHEET_MIN_GUTTER): number {
+  const gutter = Number.isFinite(minSideGutter) ? Math.max(0, minSideGutter) : SIDE_SHEET_MIN_GUTTER;
+  return Math.max(0, Math.min(width, viewportWidth - anchorInset - oppositeInset - gutter));
+}
+
 
 /**
  * Resolve a (possibly responsive) `placement` to a concrete `DialogPlacement`

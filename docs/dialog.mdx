@@ -366,3 +366,5 @@ The default `material="surface"` keeps the existing optical treatment. Buttons
 and other controls inside the panel retain their own material choices.
 Standalone `BottomSheet` exposes the same material option with `backgroundFill`;
 an explicit `backgroundComponent` remains authoritative.
+
+`minSideGutter` controls the minimum opposite-edge space when capping a side sheet’s width (default 24px). Pass `0` with a viewport-sized `width` for a full-width side sheet. Insets are still subtracted; negative gutters clamp to zero and non-finite gutters use the default. This applies to both physical and logical side placements on web and native; center/bottom geometry is unchanged.
