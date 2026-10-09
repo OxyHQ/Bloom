@@ -1,3 +1,4 @@
+import { useRadioGroupItem } from './use-radio-group-item';
 import { useFieldMembership } from '../field/membership';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { useBloomAppearance } from '../appearance';
@@ -129,8 +130,11 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
       : null),
   };
 
+  const groupItem = useRadioGroupItem(value, disabled, handlePress);
+
   return (
     <Pressable
+      {...groupItem}
       {...webDataSet({ bloomRadioCard: '' })}
       style={[cardStyle, style]}
       onPress={handlePress}

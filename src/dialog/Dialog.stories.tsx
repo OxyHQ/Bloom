@@ -267,3 +267,16 @@ export const FocusRestoration: Story = {
     </>;
   },
 };
+
+export const FlatMaterial: Story = {
+  render: function FlatMaterialStory(args) {
+    const control = useDialogControl();
+    return <>
+      <Button onPress={control.open}>Open flat panel</Button>
+      <Dialog control={control} placement={args.placement ?? 'center'} material={args.material ?? 'flat'}
+        label="Material panel" panelStyle={{ backgroundColor: '#f3d7b6' }} header={{ title: 'Panel title' }} testID="material-panel">
+        <View style={{ height: 240, padding: 20 }}><Text>Opaque content surface</Text></View>
+      </Dialog>
+    </>;
+  },
+};

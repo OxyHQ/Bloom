@@ -58,6 +58,7 @@ import { MailRecipientField } from '../mail-compose';
 import { PaymentMethodList } from '../payment-method';
 import { Radio, RadioGroup } from '../radio';
 import { RatingInput } from '../rating';
+import { Search } from '../search';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import { Select, SelectTrigger, SelectValue } from '../select';
 import { Slider } from '../slider';
@@ -116,6 +117,17 @@ const SUBJECTS: Subject[] = [
     invalid: true,
     id: true,
     lastResortName: 'Hex color',
+  },
+  {
+    name: 'search',
+    render: (p) => <Search testID={TID} value="query" onClearText={() => {}} {...p} />,
+    ownNameProp: 'accessibilityLabel',
+    isInert: inputInert,
+    node: 'textInput',
+    describedBy: true,
+    invalid: true,
+    id: true,
+    lastResortName: 'Search',
   },
   {
     name: 'switch',

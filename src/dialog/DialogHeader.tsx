@@ -43,6 +43,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { Item } from '../item';
 import { useDialogControl } from './context';
+import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';
 import type { DialogHeaderConfig } from './types';
@@ -554,6 +555,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   header,
   onDismiss,
   collapse = true,
+  flatSurface = false,
   style,
 }: {
   controller: DialogHeaderController;
@@ -566,9 +568,12 @@ export const DialogNavHeader = memo(function DialogNavHeader({
    * collapse): the small title is then always visible — a plain titled nav bar.
    */
   collapse?: boolean;
+  /** Internal propagation of the owning panel material. */
+  flatSurface?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
+  const surfaceFill = useSurfaceFill();
   const common = useCommonMessages();
   const config = useMergedHeaderConfig(header, controller.store);
   const { scrollY, largeTitleHeight } = controller;
@@ -672,7 +677,8 @@ export const DialogNavHeader = memo(function DialogNavHeader({
           scrimStyle,
         ]}
       >
-        <NavScrim onImage={onImage} surface={theme.colors.background} />
+        {flatSurface && !onImage ? <View style={{ height: DIALOG_NAV_BAR_HEIGHT, backgroundColor: surfaceFill }} />
+          : <NavScrim onImage={onImage} surface={theme.colors.background} />}
       </Animated.View>
       <View pointerEvents="box-none" style={styles.navRow}>
         <View style={styles.side}>{left}</View>

@@ -76,6 +76,23 @@ function layOut(api: ReturnType<typeof render>, count = 4) {
 describe('Carousel', () => {
   beforeEach(() => scrollTo.mockClear());
 
+  it('wraps controls between distinct stops without hiding either boundary control', () => {
+    const api = renderWithTheme(gallery({ loop: true, hideUnavailableArrows: true, arrowsPlacement: 'footer', footer: <Text>Thumbnails</Text> }));
+    const scroll = layOut(api);
+    expect(api.getByText('Thumbnails')).toBeTruthy();
+    expect(api.getByLabelText('Previous slide').props.disabled).toBe(false);
+    fireEvent.press(api.getByLabelText('Previous slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 1248, animated: true });
+    scroll(1248);
+    expect(api.getByLabelText('Next slide').props.disabled).toBe(false);
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 0, animated: true });
+    const single = renderWithTheme(gallery({ loop: true }, 1));
+    layOut(single, 1);
+    expect(single.getByLabelText('Previous slide').props.disabled).toBe(true);
+    expect(single.getByLabelText('Next slide').props.disabled).toBe(true);
+  });
+
   it('does not report the last slide from unmeasured or hidden web geometry', () => {
     const onIndexChange = jest.fn();
     const api = renderWithTheme(gallery({ onIndexChange }));
@@ -396,6 +413,24 @@ describe('controlled Carousel', () => {
   afterEach(() => { jest.useRealTimers(); mockRtl = false; Platform.OS = originalOS; });
   const wrapped = (props: Partial<React.ComponentProps<typeof Carousel>>, count = 4) =>
     <BloomThemeProvider mode="light" colorPreset="teal">{gallery(props, count)}</BloomThemeProvider>;
+
+  it.each(['ios', 'android'] as const)('wraps controlled RTL navigation on %s without changing native offsets', os => {
+    mockRtl = true; Platform.OS = os;
+    const onIndexChange = jest.fn();
+    const api = render(wrapped({ index: 0, loop: true, onIndexChange }));
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    act(() => { fireEvent(track, 'layout', layout(0, 400)); fireEvent(track, 'contentSizeChange', 1648, 100); });
+    for (let i = 0; i < 4; i++) act(() => fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(1248 - i * 416, 400)));
+    fireEvent.press(api.getByLabelText('Previous slide'));
+    expect(onIndexChange).toHaveBeenLastCalledWith(3);
+    api.rerender(wrapped({ index: 3, loop: true, onIndexChange }));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: os === 'android' ? 0 : 1248, animated: true });
+    fireEvent.scroll(track, { nativeEvent: { contentOffset: { x: os === 'android' ? 0 : 1248, y: 0 }, contentSize: { width: 1648, height: 100 } } });
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(onIndexChange).toHaveBeenLastCalledWith(0);
+    api.rerender(wrapped({ index: 0, loop: true, onIndexChange }));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: os === 'android' ? 1248 : 0, animated: true });
+  });
 
   it('positions a nonzero initial index, animates external selection and never echoes intermediate events', () => {
     const onIndexChange = jest.fn();

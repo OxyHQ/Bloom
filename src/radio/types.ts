@@ -78,6 +78,8 @@ export interface RadioGroupProps<Value extends string = string> {
   tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
+  /** Layout/style on each owned Radio or RadioCard row. */
+  optionStyle?: StyleProp<ViewStyle>;
   /**
    * `default` renders each option as a `Radio` row; `card` as a `RadioCard`
    * (title + description left, the dot right, the whole

@@ -109,6 +109,7 @@ describe('the field contract', () => {
       'phone-input',
       'radio',
       'rating',
+      'search',
       'segmented-control',
       'select',
       'slider',

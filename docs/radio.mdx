@@ -141,3 +141,18 @@ and title contracts.
 A collection of composed rows belongs inside a named `radiogroup`. Space selects
 a focused row on web; choosing an already-selected row remains a no-op. This
 slot does not add arrow-key or roving-focus behavior to a custom collection.
+
+## Group row geometry and keyboard navigation
+
+`RadioGroup optionStyle` styles each option's whole interactive row (including
+card options); `style` continues to style only the group. For example,
+`optionStyle={{ minHeight: 44, paddingVertical: 12 }}` gives full-width choice
+rows without wrapping controls or duplicating their hit targets.
+
+On web the group has one tab stop: the selected enabled option, or the first
+enabled option when there is no enabled selection. Arrow keys focus and select
+the next enabled option, wrapping at each edge. Horizontal arrows respect RTL;
+Home/End reach the first/last enabled option. Disabled options are skipped, and
+a disabled group has no tab stop. Controlled values remain caller-owned.
+Space and Enter activate the focused option once. Native retains its platform
+accessibility focus behavior rather than applying DOM keyboard semantics.

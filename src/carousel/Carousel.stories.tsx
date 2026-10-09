@@ -208,7 +208,7 @@ export const Controlled: Story = {
   },
 };
 
-function HoverArrowsDemo({ mode, placement }: { mode: 'light' | 'dark'; placement: 'header' | 'overlay' }) {
+function HoverArrowsDemo({ mode, placement }: { mode: 'light' | 'dark'; placement: 'header' | 'overlay' | 'footer' }) {
   const [index, setIndex] = useState(0);
   const [show, setShow] = useState(true);
   return <BloomThemeProvider mode={mode} colorPreset="oxy"><Frame width={440}>
@@ -227,7 +227,7 @@ function HoverArrowsDemo({ mode, placement }: { mode: 'light' | 'dark'; placemen
 export const HoverArrowsLight: Story = { render: args => <HoverArrowsDemo mode="light" placement={args.arrowsPlacement ?? 'overlay'} /> };
 export const HoverArrowsDark: Story = { render: args => <HoverArrowsDemo mode="dark" placement={args.arrowsPlacement ?? 'overlay'} /> };
 
-function ArrowRecipeDemo({ mode, placement }: { mode: 'light' | 'dark'; placement: 'header' | 'overlay' }) {
+function ArrowRecipeDemo({ mode, placement }: { mode: 'light' | 'dark'; placement: 'header' | 'overlay' | 'footer' }) {
   const [index, setIndex] = useState(0);
   const [width, setWidth] = useState(440);
   const [count, setCount] = useState(3);
@@ -247,3 +247,17 @@ function ArrowRecipeDemo({ mode, placement }: { mode: 'light' | 'dark'; placemen
 }
 export const ArrowRecipeLight: Story = { render: args => <ArrowRecipeDemo mode="light" placement={args.arrowsPlacement ?? 'overlay'} /> };
 export const ArrowRecipeDark: Story = { render: args => <ArrowRecipeDemo mode="dark" placement={args.arrowsPlacement ?? 'overlay'} /> };
+
+export const FooterLoop: Story = {
+  render: function FooterLoopStory(args) {
+    const [index, setIndex] = useState(0);
+    return <Frame width={440}>
+      <Carousel testID="footer-gallery" accessibilityLabel="Looping gallery" index={index} onIndexChange={setIndex}
+        loop hideUnavailableArrows showDots={false} arrowsPlacement={args.arrowsPlacement ?? 'footer'} arrowsInset={{ start: -12, end: 20 }}
+        footer={<View style={{ flexDirection: 'row', gap: 6 }}>{[0, 1, 2].map(i => <Button key={i} size="sm" onPress={() => setIndex(i)}>Photo {i + 1}</Button>)}</View>}>
+        {[0, 1, 2].map(i => <CarouselItem key={i}><Slide label={`Image ${i + 1}`} /></CarouselItem>)}
+      </Carousel>
+      <Text testID="loop-index">{index}</Text>
+    </Frame>;
+  },
+};

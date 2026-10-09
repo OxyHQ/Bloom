@@ -68,6 +68,7 @@ export function DialogBottomSheet({
   description,
   actions,
   header,
+  material: surfaceMaterial = 'surface',
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   showHandle = true,
   dismissOnBackdrop = true,
@@ -254,6 +255,7 @@ export function DialogBottomSheet({
 
   return (
     <BottomSheet
+      material={surfaceMaterial}
       accessibilityLabel={label ?? header?.title}
       aria-labelledby={!header && title ? titleId : undefined}
       aria-describedby={!header && description ? descriptionId : undefined}
@@ -293,6 +295,7 @@ export function DialogBottomSheet({
       headerOverlay={
         header ? (
           <DialogNavHeader
+            flatSurface={surfaceMaterial === 'flat'}
             controller={headerController}
             header={header}
             onDismiss={close}
@@ -392,6 +395,7 @@ export type DialogBottomSheetProps = Pick<
   | 'description'
   | 'actions'
   | 'header'
+  | 'material'
   | 'maxHeightRatio'
   | 'showHandle'
   | 'dismissOnBackdrop'

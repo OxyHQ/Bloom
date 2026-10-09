@@ -28,7 +28,7 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | --- | --- | --- |
 | `header` | | Leading content of the arrows row, e.g. a section title. Header at the start, arrows at the end — one row, not two. |
 | `showArrows` | `true` | Prev/next buttons. They disable at each end; use your app's breakpoint to hide them on small screens. |
-| `arrowsPlacement` | `'header'` | `'header'` shares the title row; `'overlay'` centers controls vertically on the track's start/end edges without reserving a controls row. |
+| `arrowsPlacement` | `'header'` | `'header'` shares the title row; `'overlay'` centers controls on the track edges; `'footer'` shares a row below the track. |
 | `arrowButtonProps` | | Visual options for both buttons: `className`, `material`, `appearance`, `tone`, `size`, `iconSize`. Names, events and disabled state stay carousel-owned. |
 | `hideUnavailableArrows` | `false` | Hide each unavailable control while retaining its layout slot; excludes it from focus and accessibility. |
 | `showDots` | `true` | Position indicator, one dot per stop (see below); never shown for a single stop. Each dot is a button. |
@@ -120,7 +120,7 @@ behavior and its live `onIndexChange` notifications.
 
 `arrowsVisibility="hover"` fades rendered arrows in when a fine-pointer web user hovers over the carousel or focuses any of its controls. Keyboard focus reveals both arrows, including when the pointer is elsewhere. Reduced motion removes the fade. Native and touch/coarse-pointer browsers keep arrows visible; `showArrows` still lets the caller hide them at its mobile breakpoint.
 
-The default `arrowsVisibility="always"` keeps existing behavior. This option works with either `arrowsPlacement` and with controlled `index`.
+The default `arrowsVisibility="always"` keeps existing behavior. This option works with every `arrowsPlacement` and with controlled `index`.
 
 ```tsx
 <Carousel accessibilityLabel="Product photos" arrowsPlacement="overlay" arrowsVisibility="hover" index={index} onIndexChange={setIndex}>
@@ -147,3 +147,29 @@ focus moves to the track without scrolling the page. The same measured stops
 still govern visibility, navigation, controlled indices, list changes and RTL.
 `arrowsVisibility="hover"` remains compatible; unavailable arrows stay hidden
 even while the gallery is hovered or focused.
+
+## Footer controls and wrapping
+
+`footer` renders leading content below the track and dots. Set
+`arrowsPlacement="footer"` to put the existing previous/next controls beside it;
+without that placement the footer still renders independently. This supports a
+thumbnail strip and navigation in one row, without a second scroll authority.
+
+`arrowsInset` changes overlay offsets only. A number applies to both logical
+edges; `{ start: -12, end: 20 }` supports asymmetric layouts. Omitted edges use
+8px; negative values extend beyond the track. The surrounding layout must leave
+those controls unclipped.
+
+`loop` wraps previous/next at the first/last distinct scroll stop. It also owns
+Left/Right on the focused web track, respecting RTL. It does not clone slides or
+wrap a physical swipe. Controlled `index` still belongs to the caller and
+out-of-range indices still clamp. With fewer than two scroll stops the controls
+remain unavailable; otherwise `hideUnavailableArrows` does not hide either edge.
+
+```tsx
+<Carousel accessibilityLabel="Photos" index={index} onIndexChange={setIndex}
+  loop arrowsPlacement="footer" showDots={false}
+  footer={<ThumbnailStrip index={index} onChange={setIndex} />}>
+  {photos.map(photo => <CarouselItem key={photo.id}><Photo photo={photo} /></CarouselItem>)}
+</Carousel>
+```

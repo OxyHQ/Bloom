@@ -190,6 +190,7 @@ function transformOriginFor(side: FloatingSide, align: string): string {
 }
 
 export function FloatingPanel({
+  material: surfaceMaterial = 'surface',
   open,
   anchor,
   side = 'bottom',
@@ -217,8 +218,8 @@ export function FloatingPanel({
   const palette = useMenuPalette();
   const ownFill = StyleSheet.flatten(style)?.backgroundColor ?? palette.surface;
   const parsedFill = typeof ownFill === 'string' ? parseRgba(ownFill) : null;
-  const publishedFill = typeof ownFill === 'string' ? resolveSurfaceMaterial({ fill: ownFill, parentFill: parentFill }).publishedFill : undefined;
-  const materialStyle = useSurfaceMaterial('.bloom-floating-surface', 'bloom-floating-surface-css', typeof ownFill === 'string' ? ownFill : 'transparent');
+  const publishedFill = typeof ownFill === 'string' ? resolveSurfaceMaterial({ fill: ownFill, parentFill: parentFill, paint: surfaceMaterial !== 'flat' }).publishedFill : undefined;
+  const materialStyle = useSurfaceMaterial('.bloom-floating-surface', 'bloom-floating-surface-css', typeof ownFill === 'string' ? ownFill : 'transparent', surfaceMaterial !== 'flat');
   const transparentFill = ownFill === 'transparent' || parsedFill?.a === 0;
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
   // and `Portal` renders null on its first pass (it resolves its host in its own
@@ -517,7 +518,7 @@ export function FloatingPanel({
           role={role}
           aria-label={label}
           testID={testID}
-          className={cx('bloom-floating-surface', chrome.className, className)}
+          className={cx(surfaceMaterial !== 'flat' && 'bloom-floating-surface', chrome.className, className)}
           style={[
             styles.panel,
             PANEL_CURVE,

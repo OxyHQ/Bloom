@@ -71,6 +71,7 @@ export function PopoverTrigger({
 }
 
 export function PopoverContent({
+  material,
   children,
   label: labelProp,
   side,
@@ -104,6 +105,7 @@ export function PopoverContent({
 
   return (
     <FloatingPanel
+      material={material}
       open={popover.open}
       anchor={anchor}
       role="dialog"

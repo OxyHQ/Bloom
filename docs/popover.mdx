@@ -142,3 +142,11 @@ The outside press is caught by a transparent backdrop (it closes the popover and
 wraps its children in `SurfaceLevelProvider level={1}`
 ([Styles → Ambient level](/docs/bloom/main/styles)). A `TextField` inside used to
 step off the PAGE and land on exactly the panel's own fill (1.000:1, no shell).
+
+## Flat content surface
+
+`PopoverContent material="flat"` omits the floating panel's optical tint, sheen,
+rim and refraction. Its authored `style.backgroundColor` paints directly and is
+published as the descendant surface backing. On native the owning bottom sheet
+uses the same flat fill. Padding, radius, shadow and keyboard/placement behavior
+are unchanged; the default `material="surface"` preserves the standard treatment.

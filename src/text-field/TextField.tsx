@@ -474,7 +474,7 @@ export function TextFieldInput({
   // OVERRIDE it — so when the field has a text label the two must be the same
   // string rather than two spellings of it. On native there is no association
   // at all and this prop is the only name the control has.
-  const accessibleName = field?.labelText ?? label;
+  const accessibleName = rest.accessibilityLabel ?? field?.labelText ?? label;
   const webDisabled = IS_WEB && fieldDisabled ? ({ disabled: true } as Record<string, unknown>) : undefined;
   const reveal = canReveal ? (
     <RevealButton
@@ -527,7 +527,7 @@ export function TextFieldInput({
       fontWeight: TEXT_FIELD_TEXT.fontWeight,
       color: fieldDisabled ? ctx.palette.textDisabled : ctx.palette.text,
       minWidth: 0,
-      // Longhands, so a caller's `paddingRight` (Search's clear button) wins on
+      // Longhands, so caller-authored physical padding wins on
       // web too — `paddingHorizontal` becomes `padding-inline`, which outranks it.
       // Resolve against the field's layout direction, not the input's automatic
       // text direction (an English query may live inside an Arabic interface).
@@ -918,7 +918,7 @@ export function TextFieldHint({
  * disabled, red when it is invalid. The icon does not react to hover or
  * focus; the ring does.
  */
-export function TextFieldIcon({ icon: Comp, position = 'leading' }: TextFieldIconProps) {
+export function TextFieldIcon({ icon: Comp, position = 'leading', size = 20 }: TextFieldIconProps) {
   const ctx = useTextFieldContext();
   const color = resolveIconColor(ctx.palette, {
     invalid: ctx.invalid,
@@ -934,7 +934,8 @@ export function TextFieldIcon({ icon: Comp, position = 'leading' }: TextFieldIco
           : { marginInlineStart: TEXT_FIELD_TRAILING_GAP },
       ]}>
       <Comp
-        size="md"
+        width={size}
+        height={size}
         style={[
           {
             color,

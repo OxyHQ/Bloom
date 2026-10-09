@@ -327,8 +327,11 @@ const CarouselComponent = function Carousel({
   children,
   accessibilityLabel,
   header,
+  footer,
+  loop = false,
   showArrows = true,
   arrowsPlacement = 'header',
+  arrowsInset = 8,
   arrowsVisibility = 'always',
   arrowButtonProps,
   hideUnavailableArrows = false,
@@ -560,14 +563,23 @@ const CarouselComponent = function Carousel({
     node.addEventListener('pointerdown', beginDrag);
     window.addEventListener('pointerup', endDrag);
     window.addEventListener('pointercancel', endDrag);
-    for (const event of ['wheel', 'keydown']) node.addEventListener(event, interruptControlledScroll);
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Owned loop navigation must retain its pending destination so rapid
+      // key presses advance from the requested stop, not an animation frame.
+      if (loop && event.target === node && !event.altKey && !event.ctrlKey && !event.metaKey
+        && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) return;
+      interruptControlledScroll();
+    };
+    node.addEventListener('wheel', interruptControlledScroll);
+    node.addEventListener('keydown', onKeyDown);
     return () => {
       node.removeEventListener('pointerdown', beginDrag);
       window.removeEventListener('pointerup', endDrag);
       window.removeEventListener('pointercancel', endDrag);
-      for (const event of ['wheel', 'keydown']) node.removeEventListener(event, interruptControlledScroll);
+      node.removeEventListener('wheel', interruptControlledScroll);
+      node.removeEventListener('keydown', onKeyDown);
     };
-  }, [controlledIndex !== undefined, interruptControlledScroll, beginDrag, endDrag]);
+  }, [controlledIndex !== undefined, interruptControlledScroll, beginDrag, endDrag, loop]);
 
   const scrollToStop = (stop: Stop | undefined) => {
     if (!stop) return;
@@ -588,11 +600,10 @@ const CarouselComponent = function Carousel({
     const all = computeStops();
     if (!all) return;
     const x = pendingTarget.current ?? scroll.current.x;
-    scrollToStop(
-      direction === 1
-        ? all.find((stop) => stop.offset > x + 1)
-        : [...all].reverse().find((stop) => stop.offset < x - 1),
-    );
+    const target = direction === 1
+      ? all.find((stop) => stop.offset > x + 1)
+      : [...all].reverse().find((stop) => stop.offset < x - 1);
+    scrollToStop(target ?? (loop && all.length > 1 ? all[direction === 1 ? 0 : all.length - 1] : undefined));
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -635,6 +646,9 @@ const CarouselComponent = function Carousel({
   };
 
   const overlay = arrowsPlacement === 'overlay';
+  const canWrap = loop && stops.length > 1;
+  const previousUnavailable = atStart && !canWrap;
+  const nextUnavailable = atEnd && !canWrap;
   const arrowsVisible = showArrows && count > 0;
   // Slots stay mounted at the same edges even when their controls are hidden.
   // Hover opacity belongs to the slot, leaving the button's recipe authoritative.
@@ -652,7 +666,7 @@ const CarouselComponent = function Carousel({
   useLayoutEffect(() => {
     if (!IS_WEB || !hideUnavailableArrows || typeof HTMLElement === 'undefined') return;
     const activeElement = document.activeElement;
-    for (const [unavailable, ref] of [[atStart, previousArrowRef], [atEnd, nextArrowRef]] as const) {
+    for (const [unavailable, ref] of [[previousUnavailable, previousArrowRef], [nextUnavailable, nextArrowRef]] as const) {
       const slot: unknown = ref.current;
       if (unavailable && slot instanceof HTMLElement && slot.contains(activeElement)) {
         const trackNode: unknown = scrollRef.current?.getScrollableNode();
@@ -660,16 +674,16 @@ const CarouselComponent = function Carousel({
         break;
       }
     }
-  }, [atStart, atEnd, hideUnavailableArrows]);
+  }, [previousUnavailable, nextUnavailable, hideUnavailableArrows]);
   const arrowButtons = <>
     {arrow(<Button size={overlay ? 'lg' : 'sm'} appearance="subtle" tone="neutral" {...arrowButtonProps}
       icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
-      accessibilityLabel={previousLabel} disabled={atStart} onPress={() => step(-1)} />,
-      atStart, previousArrowRef)}
+      accessibilityLabel={previousLabel} disabled={previousUnavailable} onPress={() => step(-1)} />,
+      previousUnavailable, previousArrowRef)}
     {arrow(<Button size={overlay ? 'lg' : 'sm'} appearance="subtle" tone="neutral" {...arrowButtonProps}
       icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
-      accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => step(1)} />,
-      atEnd, nextArrowRef)}
+      accessibilityLabel={nextLabel} disabled={nextUnavailable} onPress={() => step(1)} />,
+      nextUnavailable, nextArrowRef)}
   </>;
   // iOS snapping reads physical offsets even though its imperative command and
   // scroll events use logical offsets. Android converts snap offsets internally.
@@ -682,9 +696,14 @@ const CarouselComponent = function Carousel({
       <ScrollView
         ref={scrollRef}
         {...webDataSet({ bloomCarouselTrack: align })}
-        // Focusable so the arrow keys scroll it once it has focus, the
-        // browser's own behaviour (`tabIndex={0}`).
-        {...(IS_WEB ? { tabIndex: 0 } : {})}
+        // The browser scrolls a focused track by default; wrapping opts into
+        // stop-based Left/Right navigation without intercepting slide controls.
+        {...(IS_WEB ? { tabIndex: 0, onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
+          if (!loop || event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
+          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+          event.preventDefault(); event.stopPropagation();
+          step((event.key === 'ArrowRight') !== rtl ? 1 : -1);
+        } } : {})}
         horizontal
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
@@ -718,10 +737,10 @@ const CarouselComponent = function Carousel({
       style={[{ width: '100%', flexDirection: 'column', gap: 16 }, style]}
       testID={testID}
     >
-      {header != null || (arrowsVisible && !overlay) ? (
+      {header != null || (arrowsVisible && arrowsPlacement === 'header') ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: inset }}>
           <View style={{ flex: 1, minWidth: 0 }}>{header}</View>
-          {arrowsVisible && !overlay ? arrowButtons : null}
+          {arrowsVisible && arrowsPlacement === 'header' ? arrowButtons : null}
         </View>
       ) : null}
 
@@ -729,7 +748,8 @@ const CarouselComponent = function Carousel({
         {track}
         {arrowsVisible && overlay ? <View pointerEvents="box-none"
           testID={testID ? `${testID}-overlay-arrows` : undefined}
-          style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: 8, insetInlineEnd: 8,
+          style={{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: typeof arrowsInset === 'number' ? arrowsInset : arrowsInset.start ?? 8,
+            insetInlineEnd: typeof arrowsInset === 'number' ? arrowsInset : arrowsInset.end ?? 8,
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           {arrowButtons}
         </View> : null}
@@ -753,6 +773,12 @@ const CarouselComponent = function Carousel({
               />
             );
           })}
+        </View>
+      ) : null}
+      {footer != null || (arrowsVisible && arrowsPlacement === 'footer') ? (
+        <View testID={testID ? `${testID}-footer` : undefined} style={{ flexDirection:'row', alignItems:'center', gap:8, paddingHorizontal:inset }}>
+          <View style={{ flex:1, minWidth:0 }}>{footer}</View>
+          {arrowsVisible && arrowsPlacement === 'footer' ? arrowButtons : null}
         </View>
       ) : null}
     </View>

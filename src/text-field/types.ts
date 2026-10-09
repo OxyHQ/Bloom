@@ -105,8 +105,10 @@ export type TextFieldHintProps = React.PropsWithChildren<
 >;
 
 export interface TextFieldIconProps {
-  /** A Bloom icon component, drawn at 20px. */
+  /** A Bloom icon component. */
   icon: React.ComponentType<SVGIconProps>;
+  /** Icon edge in pixels. Default 20. */
+  size?: number;
   /** `leading` (default) sits 2px before the input; `trailing` 8px after it. */
   position?: 'leading' | 'trailing';
 }

@@ -52,6 +52,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         open,
         onDismiss,
         enablePanDownToClose = true,
+        material: surfaceMaterial = 'surface',
         backgroundComponent,
         backgroundFill,
         backdropComponent,
@@ -590,7 +591,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // The paint is absolute: gestures, measurements and layout stay on the existing sheet.
     const flatSurfaceStyle = StyleSheet.flatten(style as StyleProp<ViewStyle>);
     const backingFill = String(backgroundFill ?? flatSurfaceStyle?.backgroundColor ?? colors.background);
-    const material = resolveSurfaceMaterial({ fill: backingFill, parentFill: colors.background, paint: !backgroundComponent, level: 0 });
+    const material = resolveSurfaceMaterial({ fill: backingFill, parentFill: colors.background, paint: !backgroundComponent && surfaceMaterial !== 'flat', level: 0 });
     const { paintFill, publishedFill: surfaceFill } = material;
     const surfaceRadius = flatSurfaceStyle?.borderRadius ?? flatSurfaceStyle?.borderTopLeftRadius ?? 24;
     const surfaceCorners: ViewStyle = {
@@ -744,10 +745,10 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                             sheetStyle,
                             sheetHeightStyle,
                             style,
-                            { backgroundColor: backgroundComponent ? surfaceFill : 'transparent' },
+                            { backgroundColor: backgroundComponent ? surfaceFill : surfaceMaterial === 'flat' ? paintFill : 'transparent' },
                         ]}
                     >
-                        {backgroundComponent ? backgroundComponent({ style: styles.background }) : (
+                        {backgroundComponent ? backgroundComponent({ style: styles.background }) : surfaceMaterial === 'flat' ? null : (
                             <View pointerEvents="none" style={[StyleSheet.absoluteFill, surfaceCorners, { overflow: 'hidden' }]}>
                                 <View pointerEvents="none" style={[StyleSheet.absoluteFill, { bottom: detached ? 0 : -(typeof surfaceRadius === 'number' ? surfaceRadius : 24) }]}>
                                     <SurfacePaint fill={paintFill} shape={{ curve: SURFACE_SHAPES.panel.curve }} radius={surfaceRadius} />

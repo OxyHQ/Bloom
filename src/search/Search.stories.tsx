@@ -109,3 +109,17 @@ export const StyledSlots: Story = {
     </View>;
   },
 };
+
+export const CustomAffordances: Story = {
+  render: function CustomAffordancesStory() {
+    const [value, setValue] = useState('A long search query to verify the clear control never overlaps text');
+    const [disabled, setDisabled] = useState(false);
+    return <View style={{ width: 320, gap: 20 }}>
+      <Search label="Custom search" value={value} onValueChange={setValue} onClearText={() => setValue('')}
+        iconSize={24} clearButtonProps={{ size: 24, glyphSize: 24 }} disabled={disabled}
+        fieldClassName="bloom-demo-search-layout" fieldChromeClassName="bloom-demo-search-chrome"
+        style={{ fontSize: 16, lineHeight: 20 }} />
+      <Button onPress={() => setDisabled(v => !v)}>Toggle disabled</Button>
+    </View>;
+  },
+};

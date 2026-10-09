@@ -73,6 +73,7 @@ export function PopoverTrigger({
 }
 
 export function PopoverContent({
+  material,
   children,
   label: labelProp,
   className,
@@ -86,6 +87,7 @@ export function PopoverContent({
 
   return (
     <SheetShell
+      material={material}
       control={control}
       label={label}
       onClose={onSheetClose}

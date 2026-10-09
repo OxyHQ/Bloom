@@ -212,3 +212,8 @@ export const Playground: StoryObj<typeof RadioGroup> = {
     return <View style={{ width: 440, maxWidth: '100%' }}><RadioGroup {...args} onValueChange={next => updateArgs({ value: next })} /></View>;
   },
 };
+
+export const KeyboardRows: Story = {
+  render: args => <RadioGroup label="Sort results" variant={args.variant} defaultValue="recent" optionStyle={{ minHeight: 44, paddingVertical: 12 }}
+    options={[{ value: 'recent', label: 'Most recent' }, { value: 'disabled', label: 'Unavailable', disabled: true }, { value: 'top', label: 'Top rated' }]} />,
+};

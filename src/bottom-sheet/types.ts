@@ -12,6 +12,8 @@ export interface BottomSheetRef {
 }
 
 export interface BottomSheetProps {
+    /** Standard optical surface, or the unmodified backing fill. Default surface. */
+    material?: 'surface' | 'flat';
     children: React.ReactNode;
     /** Accessible name for the modal sheet panel on web. */
     accessibilityLabel?: string;
