@@ -552,10 +552,10 @@ export type DialogMorph = ReturnType<typeof useDialogMorph>;
  * declare swaps via {@link useDialogFrame}), measures the content's natural
  * height, and carries the incoming-frame fade.
  *
- * MUST be rendered inside the surface's scroll content and MUST NOT be given a
- * growing/stretching style: it is sized by its own content, which is what lets
- * it report the incoming frame's natural height while the panel is still pinned
- * at the outgoing one.
+ * With natural-height measurement enabled, render inside the surface's scroll
+ * content without a growing style: the incoming frame must report its own
+ * height while the panel is pinned at the outgoing one. A surface whose child
+ * owns scrolling disables measurement and passes a bounded flex style instead.
  */
 export function DialogMorphContent({
   morph,

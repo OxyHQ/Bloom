@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useRef } from 'react';
+import { ScrollView, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -208,5 +208,43 @@ export const HeaderAccessibility: Story = {
         </Dialog>
       </OverlayInertBoundary>
     );
+  },
+};
+
+
+function OwnedScrollerDemo({ placement = 'end', header = true }: { placement?: 'center' | 'bottom' | 'end'; header?: boolean }) {
+  const control = useDialogControl();
+  const scroll = useRef<ScrollView>(null);
+  return <>
+    <Button onPress={() => control.open()}>Open owned scroller</Button>
+    <Dialog control={control} placement={placement} width={560} scrollable={false} contentPadding={0}
+      label="Owned scroller" testID="owned-dialog" header={header ? { title: 'Owned scroller', largeTitle: false } : undefined}>
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <Button onPress={() => scroll.current?.scrollTo({ y: 900, animated: false })}>Jump to row</Button>
+        <ScrollView ref={scroll} style={{ flex: 1, minHeight: 0 }} testID="owned-scroll">
+          {Array.from({ length: 60 }, (_, index) => <View key={index} style={{ height: 44 }}><Text>Row {index + 1}</Text></View>)}
+        </ScrollView>
+        <View style={{ height: 48 }} testID="owned-footer"><Button onPress={() => control.close()}>Done</Button></View>
+      </View>
+    </Dialog>
+  </>;
+}
+export const OwnedScroller: Story = { args: { placement: 'end' }, render: args => <OwnedScrollerDemo placement={args.placement as 'center' | 'bottom' | 'end'} /> };
+export const OwnedScrollerWithoutHeader: Story = { args: { placement: 'end' }, render: args => <OwnedScrollerDemo placement={args.placement as 'center' | 'bottom' | 'end'} header={false} /> };
+
+
+export const OwnedScrollerPagination: Story = {
+  args: { placement: 'bottom' },
+  render: function Pagination(args) {
+    const control = useDialogControl();
+    return <>
+      <Button onPress={() => control.open()}>Open paginated content</Button>
+      <Dialog control={control} placement={args.placement} label="Paginated content" header={{ title: 'Paginated content', largeTitle: false }} scrollable={false} contentPadding={0}>
+        <ScrollView style={{ flex: 1, minHeight: 0 }} testID="pagination-scroll">
+          {Array.from({ length: 60 }, (_, index) => <View key={index} style={{ height: 44 }}><Text>Row {index + 1}</Text></View>)}
+          <Button>Next page</Button>
+        </ScrollView>
+      </Dialog>
+    </>;
   },
 };

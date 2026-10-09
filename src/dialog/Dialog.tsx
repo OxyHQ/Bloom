@@ -304,6 +304,7 @@ function CenteredOrSideDialog({
         <SideSheet
           presentation={presentation}
           exitDuration={exitDuration}
+          scrollable={scrollableResolved}
           open={sideOpen}
           onDismiss={handleDismiss}
           side={placement}
@@ -341,7 +342,8 @@ function CenteredOrSideDialog({
       // Nav-header mode hides the drag handle (the nav bar sits at the very top)
       // and coordinates the body pan with the scroll so content scrolls.
       showHandle={!header}
-      manualActivation={!!header}
+      scrollable={scrollableResolved}
+      manualActivation={!!header && scrollableResolved}
       scrollY={header ? headerController.scrollY : undefined}
       headerOverlay={
         header ? (
@@ -374,6 +376,7 @@ function CenteredOrSideDialog({
             // Nav-header mode: the large title + screens own their padding.
             header ? null : { padding: contentPadding },
             { backgroundColor: 'transparent' },
+            scrollableResolved ? null : { flex: 1, minHeight: 0 },
             style,
             panelStyle,
           ]}
@@ -381,7 +384,7 @@ function CenteredOrSideDialog({
           {/* The morph layer is its own node INSIDE the class-name'd container:
               a className'd component's `onLayout` never fires on web, and this
               one has to measure the incoming frame. */}
-          <DialogMorphContent morph={morphState}>
+          <DialogMorphContent morph={morphState} style={scrollableResolved ? undefined : { flex: 1, minHeight: 0 }}>
             {header ? headerBody : bodyNode}
           </DialogMorphContent>
         </StyledView>
@@ -399,6 +402,7 @@ function CenteredOrSideDialog({
  * exit animations are safe (the web `removeChild` crash does not apply).
  */
 function SideSheet({
+  scrollable,
   presentation,
   exitDuration,
   open,
@@ -424,6 +428,7 @@ function SideSheet({
   style,
   children,
 }: {
+  scrollable: boolean;
   presentation?: DialogProps['presentation'];
   exitDuration?: number;
   open: boolean;
@@ -608,7 +613,7 @@ function SideSheet({
             <DialogHeaderProvider controller={headerController}>{surfaceChildren}</DialogHeaderProvider>
           </View>
         ) : (
-          <View style={{ padding: contentPadding, flex: presentation === 'custom' ? 1 : undefined, minHeight: 0, borderRadius: panelRadius, overflow: presentation === 'custom' ? 'visible' : 'hidden' }}>{surfaceChildren}</View>
+          <View style={{ padding: contentPadding, flex: presentation === 'custom' || !scrollable ? 1 : undefined, minHeight: 0, borderRadius: panelRadius, overflow: presentation === 'custom' ? 'visible' : 'hidden' }}>{surfaceChildren}</View>
         )}
         </SurfaceLevelProvider>
       </AnimatedStyledView>
