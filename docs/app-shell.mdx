@@ -692,6 +692,40 @@ content; omitting it preserves the existing 12px frame and wider-screen top gap.
 
 ### Pane error recovery
 
+### Animated list/detail visibility
+
+`transition="slide"` opts into coordinated pane motion. Keep `showList` true
+when opening detail to shrink the list and reveal detail beside it. Set
+`showList={!selected}` and `showDetail={selected}` on compact layouts to slide
+between full-width panes. The last open layout determines the return direction.
+Existing callers default to `transition="none"` and keep their immediate layout.
+
+```tsx
+<AppShellSplitPanes
+  variant="separated"
+  transition="slide"
+  list={<Results />}
+  detail={selected ? <Details /> : undefined}
+  showList={wide || !selected}
+  showDetail={selected}
+  paneScroll={false}
+/>
+```
+
+The expansion transition moves the actual panes with full opacity; it does not make
+screenshots or float an overlay above the list. The list retains its component
+state while it remains visible. Exiting panes stay mounted only until the transition
+settles, become inert immediately, then unmount. Rapid reversals continue from the
+current live position. System reduced motion settles immediately. Pane widths remain
+resizable; the optional info column keeps its existing immediate behavior.
+
+Use `useAppShellPaneActive()` inside a pane to suspend window-level shortcuts,
+subscriptions or screen effects as soon as that pane becomes logically hidden,
+including during its retained exit. The hook returns true outside split panes.
+DOM focus/pointer input and native accessibility are already disabled by the
+pane itself. Motion owns no scroll view: `paneScroll={false}` continues to leave
+scrolling to the surrounding document or to the pane's own virtualized list.
+
 `AppShellSplitPanes` isolates list, detail and info rendering failures independently.
 The default localized, themed EmptyState offers retry while the other panes and
 shell navigation keep working. Pass options per pane to customize the presentation

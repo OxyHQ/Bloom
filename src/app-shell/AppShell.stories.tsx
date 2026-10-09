@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
+import { ContentPanel } from '../content-panel';
 import { RiAddFill, RiFilter3Fill, RiHomeLine } from '../icons/remix';
 import { DEMO_NOTIFICATIONS } from '../notification-center/NotificationCenter.stories';
 import {
@@ -192,4 +193,29 @@ export const SeparatedPanes: Story = {
       list={<AiChatContainer><View style={{ flex: 1 }} /></AiChatContainer>}
       detail={<AiChatContainer><View style={{ flex: 1 }} /></AiChatContainer>} />
   </View>,
+};
+
+
+function AnimatedPanesExample() {
+  const [selected, setSelected] = useState(false);
+  const wide = useWindowDimensions().width >= 1024;
+  return <AppShell scroll="document" header={null} contentMaxWidth="none">
+    <AppShellSplitPanes variant="separated" transition="slide" paneScroll={false}
+      showList={wide || !selected} showDetail={selected} listWidth={380}
+      testID="animated-panes"
+      list={<ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
+        <AppShellHeader title="Transactions" actions={<Button onPress={() => setSelected(true)}>Open transaction</Button>} />
+        <Placeholder height={1000} />
+      </ContentPanel>}
+      detail={selected ? <ContentPanel framed chrome="none" contentStyle={{ padding: 16 }}>
+        <AppShellHeader title="Transaction details" actions={<Button onPress={() => setSelected(false)}>Close</Button>} />
+        <Placeholder height={700} />
+      </ContentPanel> : undefined} />
+  </AppShell>;
+}
+
+/** Open/close and resize the viewport: document scroll, native pane motion, no extra animation wrapper. */
+export const AnimatedPanes: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => <AnimatedPanesExample />,
 };

@@ -33,3 +33,10 @@ export function useAppShell(): AppShellContextValue {
 export function useOptionalAppShell(): AppShellContextValue | null {
   return useContext(AppShellContext);
 }
+
+/** Logical pane visibility, including while its exit animation is retained. */
+export const AppShellPaneActiveContext = createContext(true);
+/** Suspend pane-local global shortcuts/effects as soon as a pane is hidden. */
+export function useAppShellPaneActive(): boolean {
+  return useContext(AppShellPaneActiveContext);
+}
