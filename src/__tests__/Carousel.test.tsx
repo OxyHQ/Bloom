@@ -76,6 +76,18 @@ function layOut(api: ReturnType<typeof render>, count = 4) {
 describe('Carousel', () => {
   beforeEach(() => scrollTo.mockClear());
 
+  it('does not report the last slide from unmeasured or hidden web geometry', () => {
+    const onIndexChange = jest.fn();
+    const api = renderWithTheme(gallery({ onIndexChange }));
+    for (let i = 0; i < 4; i++) fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(0, 0));
+    expect(onIndexChange).not.toHaveBeenCalled();
+    const scroll = layOut(api);
+    expect(onIndexChange).not.toHaveBeenCalled();
+    scroll(416);
+    expect(onIndexChange).toHaveBeenCalledTimes(1);
+    expect(onIndexChange).toHaveBeenCalledWith(1);
+  });
+
   it('names the region and numbers every slide', () => {
     const api = renderWithTheme(gallery());
     expect(api.getByTestId('carousel').props.accessibilityLabel).toBe('Gallery');
@@ -342,6 +354,124 @@ describe('Carousel RTL scrolling', () => {
     fireEvent.press(api.getByLabelText('Previous slide'));
     expect(scrollTo).toHaveBeenLastCalledWith({ x: os === 'android' ? max - 368 : 368, animated: true });
     expect(track.props.snapToOffsets).toEqual(os === 'ios' ? [0, 140, 324, 508] : [0, 184, 368, 508]);
+  });
+});
+
+describe('controlled Carousel', () => {
+  const originalOS = Platform.OS;
+  beforeEach(() => { jest.useFakeTimers(); scrollTo.mockClear(); });
+  afterEach(() => { jest.useRealTimers(); mockRtl = false; Platform.OS = originalOS; });
+  const wrapped = (props: Partial<React.ComponentProps<typeof Carousel>>, count = 4) =>
+    <BloomThemeProvider mode="light" colorPreset="teal">{gallery(props, count)}</BloomThemeProvider>;
+
+  it('positions a nonzero initial index, animates external selection and never echoes intermediate events', () => {
+    const onIndexChange = jest.fn();
+    const api = render(wrapped({ index: 2, onIndexChange }));
+    const scroll = layOut(api);
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 832, animated: false });
+    scroll(416); scroll(832); scroll(832);
+    act(() => jest.advanceTimersByTime(200));
+    expect(onIndexChange).not.toHaveBeenCalled();
+    api.rerender(wrapped({ index: 3, onIndexChange }));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 1248, animated: true });
+    scroll(1000); scroll(1248);
+    act(() => jest.advanceTimersByTime(200));
+    expect(onIndexChange).not.toHaveBeenCalled();
+  });
+
+  it('requests arrow navigation but only moves when the owner accepts it', () => {
+    const onIndexChange = jest.fn();
+    const api = render(wrapped({ index: 1, onIndexChange }));
+    const scroll = layOut(api);
+    scroll(416);
+    scrollTo.mockClear();
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(onIndexChange).toHaveBeenCalledTimes(1);
+    expect(onIndexChange).toHaveBeenLastCalledWith(2);
+    expect(scrollTo).not.toHaveBeenCalled();
+    api.rerender(wrapped({ index: 2, onIndexChange }));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 832, animated: true });
+    scroll(832);
+    act(() => jest.advanceTimersByTime(200));
+    expect(onIndexChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for a drag to finish, reports once, and restores a rejected swipe without a feedback loop', () => {
+    const onIndexChange = jest.fn();
+    const api = render(wrapped({ index: 1, onIndexChange }));
+    const scroll = layOut(api);
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    scroll(416);
+    fireEvent(track, 'scrollBeginDrag');
+    scroll(832);
+    act(() => jest.advanceTimersByTime(300));
+    expect(onIndexChange).not.toHaveBeenCalled();
+    fireEvent(track, 'scrollEndDrag');
+    act(() => jest.advanceTimersByTime(200));
+    expect(onIndexChange).toHaveBeenCalledTimes(1);
+    expect(onIndexChange).toHaveBeenLastCalledWith(2);
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 416, animated: false });
+    scroll(416);
+    act(() => jest.advanceTimersByTime(200));
+    expect(onIndexChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('retains its selected child across resize and clamps after list removal without notifying', () => {
+    const onIndexChange = jest.fn();
+    const api = render(wrapped({ index: 3, onIndexChange }));
+    const scroll = layOut(api);
+    scroll(1248);
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    act(() => {
+      fireEvent(track, 'layout', layout(0, 300));
+      fireEvent(track, 'contentSizeChange', 4 * 300 + 3 * 16, 100);
+    });
+    for (let i = 0; i < 4; i++) act(() => fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(i * 316, 300)));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 948, animated: false });
+    api.rerender(wrapped({ index: 3, onIndexChange }, 2));
+    act(() => fireEvent(track, 'contentSizeChange', 616, 100));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 316, animated: false });
+    expect(onIndexChange).not.toHaveBeenCalled();
+  });
+
+  it('cancels pending swipe notifications when the list empties and can select after repopulation', () => {
+    const onIndexChange = jest.fn();
+    const api = render(wrapped({ index: 0, onIndexChange }));
+    const scroll = layOut(api);
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    fireEvent(track, 'scrollBeginDrag'); scroll(416); fireEvent(track, 'scrollEndDrag');
+    api.rerender(wrapped({ index: 0, onIndexChange }, 0));
+    act(() => jest.advanceTimersByTime(200));
+    expect(onIndexChange).not.toHaveBeenCalled();
+    expect(api.queryByLabelText('Next slide')).toBeNull();
+    api.rerender(wrapped({ index: 2, onIndexChange }, 3));
+    layOut(api, 3);
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: 832, animated: false });
+    expect(onIndexChange).not.toHaveBeenCalled();
+  });
+
+  it.each(['ios', 'android'] as const)('selects a narrow child by its own index in RTL on %s, including shared end stops', os => {
+    mockRtl = true; Platform.OS = os;
+    const onIndexChange = jest.fn();
+    const api = renderWithTheme(<Carousel accessibilityLabel="Controlled RTL" index={3} gap={12} onIndexChange={onIndexChange}>
+      {[0, 1, 2, 3, 4].map(i => <CarouselItem key={i} testID={`slide-${i}`} width={172}><></></CarouselItem>)}
+    </Carousel>);
+    const track = api.UNSAFE_getByType('ScrollView' as unknown as React.ComponentType);
+    const contentWidth = 908, max = 508;
+    act(() => { fireEvent(track, 'layout', layout(0, 400)); fireEvent(track, 'contentSizeChange', contentWidth, 100); });
+    for (let i = 0; i < 5; i++) act(() => fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(contentWidth - i * 184 - 172, 172)));
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: os === 'android' ? 0 : max, animated: false });
+    const scroll = (logical: number) => fireEvent.scroll(track, { nativeEvent: {
+      contentOffset: { x: os === 'android' ? max - logical : logical, y: 0 }, contentSize: { width: contentWidth, height: 100 },
+    } });
+    act(() => { scroll(max); scroll(max); jest.advanceTimersByTime(200); });
+    expect(onIndexChange).not.toHaveBeenCalled(); // child3 shares the end stop with child4
+    fireEvent(track, 'scrollBeginDrag');
+    act(() => scroll(0));
+    fireEvent(track, 'scrollEndDrag');
+    act(() => jest.advanceTimersByTime(200));
+    expect(onIndexChange).toHaveBeenCalledTimes(1);
+    expect(onIndexChange).toHaveBeenLastCalledWith(0);
   });
 });
 

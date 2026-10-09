@@ -32,7 +32,15 @@ export interface CarouselProps {
    * rests at the inset, not flush. Defaults to `0`.
    */
   inset?: number;
-  /** Called when the slide in view changes. */
+  /**
+   * Controlled zero-based child index. Out-of-range values clamp to the list;
+   * omitted keeps the carousel uncontrolled. Pair with `onIndexChange`.
+   */
+  index?: number;
+  /**
+   * Uncontrolled: the slide in view changed. Controlled: arrows/dots or a
+   * settled swipe request a child index. Prop-driven scrolls do not echo here.
+   */
   onIndexChange?: (index: number) => void;
   /** Accessible name of the previous button. Defaults to the localised `'Previous slide'` (in English). */
   previousLabel?: string;

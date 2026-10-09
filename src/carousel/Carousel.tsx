@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -158,6 +159,7 @@ const CarouselItemComponent = function CarouselItem({
   const index = useContext(CarouselItemIndexContext);
   const { messages } = useMessages(CAROUSEL_MESSAGES);
   const reportOffset = ctx?.reportOffset;
+  const itemRef = useRef<View>(null);
 
   const onLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -168,9 +170,20 @@ const CarouselItemComponent = function CarouselItem({
   );
 
   const slideWidth = width ?? (ctx && ctx.trackWidth > 0 ? ctx.trackWidth : undefined);
+  useLayoutEffect(() => {
+    const node: unknown = itemRef.current;
+    if (!IS_WEB || typeof HTMLElement === 'undefined' || !(node instanceof HTMLElement)) return;
+    // RNW observes sizes, so a keyed slide reordered without resizing might
+    // receive no onLayout. Read its new position after that DOM commit too.
+    const parent = node.parentElement;
+    if (!parent) return;
+    const bounds = node.getBoundingClientRect();
+    reportOffset?.(index, bounds.left - parent.getBoundingClientRect().left, bounds.width);
+  }, [index, reportOffset, slideWidth]);
 
   return (
     <View
+      ref={itemRef}
       {...webDataSet({ bloomCarouselItem: '' })}
       role="group"
       {...(IS_WEB ? { 'aria-roledescription': messages.slideRole } : {})}
@@ -308,6 +321,7 @@ const CarouselComponent = function Carousel({
   align = 'start',
   gap = 16,
   inset = 0,
+  index,
   onIndexChange,
   previousLabel: previousLabelProp,
   nextLabel: nextLabelProp,
@@ -327,9 +341,17 @@ const CarouselComponent = function Carousel({
 
   const slides = Children.toArray(children).filter(isValidElement);
   const count = slides.length;
+  // React's child keys keep measurements attached to slides across insertions,
+  // removals and reordering. Do not reuse a removed slide's numeric-index slot.
+  const keySignature = JSON.stringify(slides.map(child => child.key));
+  const slideKeys = useMemo(() => JSON.parse(keySignature) as string[], [keySignature]);
+  const controlledIndex = index === undefined ? undefined
+    : Math.min(Math.max(0, count - 1), Math.max(0, Math.trunc(Number.isFinite(index) ? index : 0)));
+  const controlledIndexRef = useRef(controlledIndex);
+  controlledIndexRef.current = controlledIndex;
 
   const scrollRef = useRef<ScrollView>(null);
-  const offsets = useRef<SlideOffset[]>([]);
+  const offsets = useRef(new Map<string, SlideOffset>());
   const scroll = useRef({ x: 0, contentWidth: 0 });
   const [trackWidth, setTrackWidth] = useState(0);
   const [stops, setStops] = useState<Stop[]>([]);
@@ -340,6 +362,33 @@ const CarouselComponent = function Carousel({
   const onIndexChangeRef = useRef(onIndexChange);
   onIndexChangeRef.current = onIndexChange;
   const activeSlideRef = useRef(0);
+  const pendingTarget = useRef<number | null>(null);
+  const appliedOffset = useRef<number | null>(null);
+  const dragging = useRef(false);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [settledRevision, setSettledRevision] = useState(0);
+  const lastAppliedSelection = useRef<{ index: number | undefined; keys: string; stops: Stop[] } | null>(null);
+  const clearSettleTimer = useCallback(() => {
+    if (settleTimer.current !== null) clearTimeout(settleTimer.current);
+    settleTimer.current = null;
+  }, []);
+  useEffect(() => clearSettleTimer, [clearSettleTimer]);
+  const scheduleSettled = useCallback(() => {
+    clearSettleTimer();
+    if (controlledIndexRef.current === undefined || dragging.current) return;
+    settleTimer.current = setTimeout(() => {
+      settleTimer.current = null;
+      const current = controlledIndexRef.current;
+      if (current === undefined || dragging.current) return;
+      if (activeSlideRef.current !== current) onIndexChangeRef.current?.(activeSlideRef.current);
+      // If the owner declined the request, restore its selected slide.
+      setSettledRevision(revision => revision + 1);
+    }, 150);
+  }, [clearSettleTimer]);
+  useEffect(() => {
+    const current = new Set(slideKeys);
+    for (const key of offsets.current.keys()) if (!current.has(key)) offsets.current.delete(key);
+  }, [slideKeys]);
 
   const targetFor = useCallback(
     (item: SlideOffset) => {
@@ -357,10 +406,11 @@ const CarouselComponent = function Carousel({
    * ONE list, so they cannot disagree about where the track can go.
    */
   const computeStops = useCallback((): Stop[] | null => {
-    const all = offsets.current.slice(0, count);
-    if (all.length !== count || all.some((o) => !o)) return null;
-    return toStops(all.map(targetFor));
-  }, [count, targetFor]);
+    if (trackWidth <= 0 || scroll.current.contentWidth <= 0) return null;
+    const all = slideKeys.map(key => offsets.current.get(key));
+    if (all.some(item => !item || item.width <= 0)) return null;
+    return toStops((all as SlideOffset[]).map(targetFor));
+  }, [slideKeys, targetFor, trackWidth]);
 
   const measure = useCallback(() => {
     const { x, contentWidth } = scroll.current;
@@ -396,22 +446,25 @@ const CarouselComponent = function Carousel({
     const slide = all[next]?.slide ?? 0;
     if (slide !== activeSlideRef.current) {
       activeSlideRef.current = slide;
-      onIndexChangeRef.current?.(slide);
+      if (controlledIndexRef.current === undefined) onIndexChangeRef.current?.(slide);
     }
   }, [computeStops, trackWidth]);
 
   const recomputeStops = useCallback(() => {
     const next = computeStops();
-    if (next) setStops(next);
+    if (next) setStops(previous => previous.length === next.length && previous.every((stop, i) =>
+      stop.offset === next[i]?.offset && stop.slide === next[i]?.slide) ? previous : next);
   }, [computeStops]);
 
   const reportOffset = useCallback(
     (index: number, x: number, width: number) => {
-      offsets.current[index] = { x, width };
+      const key = slideKeys[index];
+      if (key === undefined) return;
+      offsets.current.set(key, { x, width });
       recomputeStops();
       measure();
     },
-    [measure, recomputeStops],
+    [measure, recomputeStops, slideKeys],
   );
 
   useEffect(() => {
@@ -419,14 +472,94 @@ const CarouselComponent = function Carousel({
     measure();
   }, [recomputeStops, measure]);
 
-  const scrollToStop = (stop: Stop | undefined) => {
-    if (!stop) return;
+  const scrollToOffset = useCallback((offset: number, animated: boolean) => {
     // Web exposes negative scrollLeft in RTL; Android uses physical x, while
     // iOS's ScrollView command already converts a logical offset internally.
     const max = Math.max(0, scroll.current.contentWidth - trackWidth);
-    const x = !rtl ? stop.offset : IS_WEB ? -stop.offset
-      : Platform.OS === 'android' ? max - stop.offset : stop.offset;
-    scrollRef.current?.scrollTo({ x, animated: !reducedMotion });
+    const x = !rtl ? offset : IS_WEB ? -offset
+      : Platform.OS === 'android' ? max - offset : offset;
+    scrollRef.current?.scrollTo({ x, animated });
+  }, [rtl, trackWidth]);
+
+  useLayoutEffect(() => {
+    if (controlledIndex === undefined) {
+      pendingTarget.current = null;
+      appliedOffset.current = null;
+      lastAppliedSelection.current = null;
+      clearSettleTimer();
+      return;
+    }
+    clearSettleTimer();
+    const item = offsets.current.get(slideKeys[controlledIndex]!);
+    if (!item || !trackWidth || !scroll.current.contentWidth || !computeStops()) {
+      pendingTarget.current = null;
+      appliedOffset.current = null;
+      if (!slideKeys.length) lastAppliedSelection.current = null;
+      return;
+    }
+    const target = targetFor(item);
+    // CSS snapping may retain the same keyed element after a reorder before
+    // RNW delivers onScroll. Read the committed DOM position, not that old event.
+    const node: unknown = IS_WEB ? scrollRef.current?.getScrollableNode() : null;
+    if (typeof HTMLElement !== 'undefined' && node instanceof HTMLElement) {
+      scroll.current.x = rtl ? -node.scrollLeft : node.scrollLeft;
+    }
+    appliedOffset.current = target;
+    const previous = lastAppliedSelection.current;
+    const changedIndex = previous !== null && previous.keys === keySignature && previous.stops === stops
+      && !Object.is(previous.index, index);
+    lastAppliedSelection.current = { index, keys: keySignature, stops };
+    if (Math.abs(scroll.current.x - target) <= 1) {
+      pendingTarget.current = null;
+      return;
+    }
+    pendingTarget.current = target;
+    // Initial positioning, resize and list changes are immediate. Only a new
+    // selection animates; intermediate scroll events must not rewrite that selection.
+    scrollToOffset(target, changedIndex && !reducedMotion);
+  }, [index, controlledIndex, keySignature, slideKeys, stops, trackWidth, computeStops, targetFor,
+    reducedMotion, scrollToOffset, settledRevision, clearSettleTimer, rtl]);
+
+  const interruptControlledScroll = useCallback(() => {
+    pendingTarget.current = null;
+    appliedOffset.current = null;
+    clearSettleTimer();
+  }, [clearSettleTimer]);
+  const beginDrag = useCallback(() => {
+    dragging.current = true;
+    interruptControlledScroll();
+  }, [interruptControlledScroll]);
+  const endDrag = useCallback(() => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    scheduleSettled();
+  }, [scheduleSettled]);
+  useEffect(() => {
+    if (!IS_WEB || controlledIndex === undefined) return;
+    const node: unknown = scrollRef.current?.getScrollableNode();
+    if (typeof HTMLElement === 'undefined' || !(node instanceof HTMLElement)) return;
+    // RNW does not emit onScrollBeginDrag. Real input interrupts a requested
+    // smooth scroll so its resulting swipe/keyboard position can notify the owner.
+    node.addEventListener('pointerdown', beginDrag);
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    for (const event of ['wheel', 'keydown']) node.addEventListener(event, interruptControlledScroll);
+    return () => {
+      node.removeEventListener('pointerdown', beginDrag);
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+      for (const event of ['wheel', 'keydown']) node.removeEventListener(event, interruptControlledScroll);
+    };
+  }, [controlledIndex !== undefined, interruptControlledScroll, beginDrag, endDrag]);
+
+  const scrollToStop = (stop: Stop | undefined) => {
+    if (!stop) return;
+    if (controlledIndex !== undefined) {
+      if (stop.slide !== controlledIndex) onIndexChangeRef.current?.(stop.slide);
+      setSettledRevision(revision => revision + 1);
+    } else {
+      scrollToOffset(stop.offset, !reducedMotion);
+    }
   };
 
   /**
@@ -437,7 +570,7 @@ const CarouselComponent = function Carousel({
   const step = (direction: -1 | 1) => {
     const all = computeStops();
     if (!all) return;
-    const x = scroll.current.x;
+    const x = pendingTarget.current ?? scroll.current.x;
     scrollToStop(
       direction === 1
         ? all.find((stop) => stop.offset > x + 1)
@@ -452,6 +585,15 @@ const CarouselComponent = function Carousel({
       : Platform.OS === 'android' ? max - contentOffset.x : contentOffset.x;
     scroll.current = { x, contentWidth: contentSize.width };
     measure();
+    if (controlledIndexRef.current === undefined || count === 0 || !computeStops()) return;
+    if (pendingTarget.current !== null) {
+      if (Math.abs(x - pendingTarget.current) <= 1) pendingTarget.current = null;
+      return;
+    }
+    if (appliedOffset.current !== null && Math.abs(x - appliedOffset.current) <= 1) return;
+    // Commit a real swipe only after it settles, preserving momentum and
+    // preventing intermediate controlled updates from interrupting the gesture.
+    scheduleSettled();
   };
 
   const onContentSizeChange = (width: number) => {
@@ -503,6 +645,8 @@ const CarouselComponent = function Carousel({
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={onScroll}
+        onScrollBeginDrag={beginDrag}
+        onScrollEndDrag={endDrag}
         onContentSizeChange={onContentSizeChange}
         onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
         snapToOffsets={IS_WEB ? undefined : snapOffsets}

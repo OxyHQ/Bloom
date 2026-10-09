@@ -33,7 +33,8 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | `align` | `'start'` | Where a slide rests when it snaps: `'start'` or `'center'`. |
 | `gap` | `16` | Space between slides, px. |
 | `inset` | `0` | Horizontal padding of the header row, the dots and the track's two ends. Slides scroll under it to the edges, and a start-aligned slide snaps to the inset rather than flush. |
-| `onIndexChange` | | The slide in view changed. |
+| `index` | Uncontrolled | Optional zero-based child index. Requests that child’s measured stop; clamps to the available list. |
+| `onIndexChange` | | Uncontrolled: the slide in view changed. Controlled: a user navigation request; pair with `index`. |
 | `previousLabel` / `nextLabel` / `dotLabel` | Localised via `BloomProvider locale` | Override the button names. |
 
 `CarouselItem` fills the track by default, so exactly one slide is in view. Pass a smaller `width` to peek the next slide (pair it with `align="center"` for a centred gallery).
@@ -76,3 +77,38 @@ controls permits pointer interaction with slides. Their logical placement and
 chevrons mirror in RTL; scroll events, imperative navigation and native snap
 positions normalize each platform's offset convention. Reduced motion disables
 programmatic scroll animation in either placement.
+
+## Controlled galleries and thumbnails
+
+```tsx
+const [index, setIndex] = useState(0);
+<>
+  <Carousel accessibilityLabel="Product photos" index={index} onIndexChange={setIndex}>
+    {photos.map(photo => <CarouselItem key={photo.id}>
+      <Image source={photo.source} style={{ height: 360 }} />
+    </CarouselItem>)}
+  </Carousel>
+  {photos.map((photo, i) => <Button key={photo.id} onPress={() => setIndex(i)}>
+    {photo.label}
+  </Button>)}
+</>
+```
+
+`index` counts children, not the deduplicated stops used by dots. Several narrow
+children can share a stop at the end; selecting one does not rewrite the owner's
+index to that stop's last child. Negative indices clamp to zero, indices beyond
+the list clamp to its last child, fractional indices truncate, and nonfinite
+values use zero. An empty list does not scroll or notify.
+
+Controlled arrows and dots request a new index through `onIndexChange`; the
+owner accepts by updating `index`. A swipe or keyboard/trackpad scroll reports
+once it settles (150ms without scrolling, after the pointer/drag is released).
+Declining that request restores the controlled selection. Prop-driven movement,
+initial positioning, resize and list changes do not echo through the callback,
+and intermediate smooth-scroll positions never overwrite a requested thumbnail.
+
+Keep stable child keys. Measurements follow those keys through reordering and
+replacement, while the selected position remains a child index. Initial layout,
+resize and list changes reposition immediately; a changed selection animates
+unless reduced motion is enabled. Omit `index` to retain the existing carousel
+behavior and its live `onIndexChange` notifications.
