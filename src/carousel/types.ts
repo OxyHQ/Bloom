@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { ButtonProps } from '../button/types';
+
+/** Visual options only; the carousel retains navigation, names and disabled state. */
+export type CarouselArrowButtonProps = Pick<ButtonProps,
+  'className' | 'material' | 'appearance' | 'tone' | 'size' | 'iconSize'>;
 
 export interface CarouselProps {
   /** `CarouselItem`s. Each is labelled "N of M" for assistive technology. */
@@ -25,6 +30,10 @@ export interface CarouselProps {
    * them visible. showArrows still controls whether they are rendered.
    */
   arrowsVisibility?: 'always' | 'hover';
+  /** Optional visual recipe for both arrow buttons. Navigation remains carousel-owned. */
+  arrowButtonProps?: CarouselArrowButtonProps;
+  /** Hide unavailable arrows without moving their slots; hidden controls are not focusable. Defaults to false. */
+  hideUnavailableArrows?: boolean;
   /** Position indicator below the track. Defaults to `true`. */
   showDots?: boolean;
   /** Where a slide comes to rest when it snaps. Defaults to `'start'`. */

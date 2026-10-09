@@ -1,4 +1,5 @@
 import { useBloomAppearance } from '../appearance';
+import { FieldBox } from './FieldBox';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type AccessibilityProps,
@@ -88,6 +89,7 @@ interface TextFieldContextValue {
   addonFocused: boolean;
   /** Inside an `InputGroup`: the group paints the shell, so the field draws none. */
   bare: boolean;
+  chromeClassName?: string;
 }
 
 /**
@@ -167,6 +169,8 @@ export function TextField({
   size: sizeProp,
   radius = TEXT_FIELD_RADIUS,
   leadingAddon,
+  className,
+  chromeClassName,
   style,
 }: TextFieldProps) {
   const theme = useTheme();
@@ -223,15 +227,18 @@ export function TextField({
       palette,
       radius,
       bare,
+      chromeClassName,
     }),
-    [inputRef, hovered, onHoverIn, onHoverOut, focused, onFocus, onBlur, addonFocused, invalid, resolvedDisabled, size, palette, radius, bare],
+    [inputRef, hovered, onHoverIn, onHoverOut, focused, onFocus, onBlur, addonFocused, invalid, resolvedDisabled, size, palette, radius, bare, chromeClassName],
   );
 
   return (
     <Context.Provider value={context}>
-      <View
+      <FieldBox
         {...direction}
-        style={[
+        className={className}
+        style={style}
+        baseStyle={[
           a.flex_row,
           a.align_center,
           a.relative,
@@ -243,7 +250,6 @@ export function TextField({
                   ? TEXT_FIELD_ADDON_PADDING[size]
                   : { paddingHorizontal: TEXT_FIELD_GEOMETRY[size].paddingHorizontal },
               ],
-          style,
         ]}
         {...(IS_WEB
           ? ({
@@ -256,7 +262,7 @@ export function TextField({
           <LeadingAddon onFocusChange={setAddonFocused}>{leadingAddon}</LeadingAddon>
         ) : null}
         {children}
-      </View>
+      </FieldBox>
     </Context.Provider>
   );
 }
@@ -328,9 +334,11 @@ function Chrome({ invalid }: { invalid: boolean }) {
     disabled: ctx.disabled,
   });
   return (
-    <View
+    <FieldBox
       pointerEvents="none"
-      style={[
+      className={ctx.chromeClassName}
+      stateStyle={ctx.disabled || invalid ? paint : ctx.focused || ctx.addonFocused ? { borderColor: paint.borderColor } : undefined}
+      baseStyle={[
         a.z_10,
         a.absolute,
         a.inset_0,

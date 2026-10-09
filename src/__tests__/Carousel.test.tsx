@@ -97,6 +97,30 @@ describe('Carousel', () => {
     expect(hidden.queryByLabelText('Next slide')).toBeNull();
   });
 
+  it('retains arrow slots while excluding unavailable controls from accessibility', () => {
+    const api = renderWithTheme(gallery({ hideUnavailableArrows: true, arrowsPlacement: 'overlay' }));
+    const scroll = layOut(api);
+    expect(api.queryByLabelText('Previous slide')).toBeNull();
+    expect(api.getByLabelText('Next slide')).toBeTruthy();
+    const hidden = api.getByLabelText('Previous slide', { includeHiddenElements: true });
+    expect(hidden.props.disabled).toBe(true);
+    scroll(1248);
+    expect(api.queryByLabelText('Next slide')).toBeNull();
+    expect(api.getByLabelText('Previous slide')).toBeTruthy();
+    scroll(416);
+    expect(api.getByLabelText('Next slide')).toBeTruthy();
+    expect(api.getByLabelText('Previous slide')).toBeTruthy();
+  });
+
+  it('forwards the arrow visual recipe while retaining navigation ownership', () => {
+    const api = renderWithTheme(gallery({ arrowButtonProps: { material: 'flat', size: 'sm', iconSize: 20, className: 'rounded-full' } }));
+    layOut(api);
+    const button = api.UNSAFE_getAllByType(require('../button').Button).find(node => node.props.accessibilityLabel === 'Next slide');
+    expect(button?.props).toMatchObject({ material: 'flat', size: 'sm', iconSize: 20, className: 'rounded-full', disabled: false });
+    fireEvent.press(api.getByLabelText('Next slide'));
+    expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ x: 416 }));
+  });
+
   it('names the region and numbers every slide', () => {
     const api = renderWithTheme(gallery());
     expect(api.getByTestId('carousel').props.accessibilityLabel).toBe('Gallery');

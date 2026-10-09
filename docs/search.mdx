@@ -29,7 +29,24 @@ import { Search } from '@oxy.so/bloom/search';
 | `onClearText`  | the clear button's press                                     |
 | `label`        | the accessible name **and** the placeholder; defaults to `Search`, localised via `BloomProvider locale` |
 
-Everything else passes through to the underlying text input.
+`containerClassName` / `containerStyle` style the outer layout box, including
+its clear control. `fieldClassName` owns the field's height and padding;
+`fieldChromeClassName` owns its inset background, border/ring and corner radius.
+These slots work on web and native and retain the existing defaults when omitted.
+The field keeps disabled/invalid paint and its focus ring authoritative.
+`className` and `style` retain their existing input-only meaning; these surface
+slots do not change input typography or selection behavior. Use the input's
+`style` for text metrics; the RNW input's own reset still limits layered text
+classes, independently of the new surface slots.
+
+```tsx
+<Search value={query} onValueChange={setQuery} onClearText={() => setQuery('')}
+  containerClassName="w-full"
+  fieldClassName="h-11 px-3"
+  fieldChromeClassName="rounded-2xl border bg-background" />
+```
+
+Other props pass through to the underlying text input.
 
 ## `onClearText` reports; it does not clear
 

@@ -330,6 +330,8 @@ const CarouselComponent = function Carousel({
   showArrows = true,
   arrowsPlacement = 'header',
   arrowsVisibility = 'always',
+  arrowButtonProps,
+  hideUnavailableArrows = false,
   showDots = true,
   align = 'start',
   gap = 16,
@@ -364,6 +366,8 @@ const CarouselComponent = function Carousel({
   controlledIndexRef.current = controlledIndex;
 
   const scrollRef = useRef<ScrollView>(null);
+  const previousArrowRef = useRef<View>(null);
+  const nextArrowRef = useRef<View>(null);
   const offsets = useRef(new Map<string, SlideOffset>());
   const scroll = useRef({ x: 0, contentWidth: 0 });
   const [trackWidth, setTrackWidth] = useState(0);
@@ -632,19 +636,40 @@ const CarouselComponent = function Carousel({
 
   const overlay = arrowsPlacement === 'overlay';
   const arrowsVisible = showArrows && count > 0;
-  // Only the opt-in web presentation needs a fade wrapper. It never removes
-  // the button from the tab order or changes native controls. Each root owns
-  // the inherited opacity, so nested carousels reveal independently.
-  const arrow = (button: React.ReactElement) => IS_WEB && arrowsVisibility === 'hover'
-    ? <View {...webDataSet({ bloomCarouselArrow: '' })} style={{ flexShrink: 0 }}>{button}</View>
-    : button;
+  // Slots stay mounted at the same edges even when their controls are hidden.
+  // Hover opacity belongs to the slot, leaving the button's recipe authoritative.
+  const arrow = (button: React.ReactElement, unavailable: boolean, ref: React.RefObject<View | null>) => {
+    const hidden = hideUnavailableArrows && unavailable;
+    return hideUnavailableArrows || (IS_WEB && arrowsVisibility === 'hover')
+      ? <View ref={ref} {...webDataSet({ bloomCarouselArrow: '' })}
+          aria-hidden={hidden || undefined}
+          accessibilityElementsHidden={hidden}
+          importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
+          pointerEvents={hidden ? 'none' : 'auto'}
+          style={{ flexShrink: 0, ...(hidden ? { opacity: 0 } : undefined) }}>{button}</View>
+      : button;
+  };
+  useLayoutEffect(() => {
+    if (!IS_WEB || !hideUnavailableArrows || typeof HTMLElement === 'undefined') return;
+    const activeElement = document.activeElement;
+    for (const [unavailable, ref] of [[atStart, previousArrowRef], [atEnd, nextArrowRef]] as const) {
+      const slot: unknown = ref.current;
+      if (unavailable && slot instanceof HTMLElement && slot.contains(activeElement)) {
+        const trackNode: unknown = scrollRef.current?.getScrollableNode();
+        if (trackNode instanceof HTMLElement) trackNode.focus({ preventScroll: true });
+        break;
+      }
+    }
+  }, [atStart, atEnd, hideUnavailableArrows]);
   const arrowButtons = <>
-    {arrow(<Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
-      accessibilityLabel={previousLabel} disabled={atStart} onPress={() => step(-1)}
-      appearance="subtle" tone="neutral" />)}
-    {arrow(<Button size={overlay ? 'lg' : 'sm'} icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
-      accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => step(1)}
-      appearance="subtle" tone="neutral" />)}
+    {arrow(<Button size={overlay ? 'lg' : 'sm'} appearance="subtle" tone="neutral" {...arrowButtonProps}
+      icon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
+      accessibilityLabel={previousLabel} disabled={atStart} onPress={() => step(-1)} />,
+      atStart, previousArrowRef)}
+    {arrow(<Button size={overlay ? 'lg' : 'sm'} appearance="subtle" tone="neutral" {...arrowButtonProps}
+      icon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
+      accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => step(1)} />,
+      atEnd, nextArrowRef)}
   </>;
   // iOS snapping reads physical offsets even though its imperative command and
   // scroll events use logical offsets. Android converts snap offsets internally.

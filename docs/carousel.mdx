@@ -29,6 +29,8 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | `header` | | Leading content of the arrows row, e.g. a section title. Header at the start, arrows at the end — one row, not two. |
 | `showArrows` | `true` | Prev/next buttons. They disable at each end; use your app's breakpoint to hide them on small screens. |
 | `arrowsPlacement` | `'header'` | `'header'` shares the title row; `'overlay'` centers controls vertically on the track's start/end edges without reserving a controls row. |
+| `arrowButtonProps` | | Visual options for both buttons: `className`, `material`, `appearance`, `tone`, `size`, `iconSize`. Names, events and disabled state stay carousel-owned. |
+| `hideUnavailableArrows` | `false` | Hide each unavailable control while retaining its layout slot; excludes it from focus and accessibility. |
 | `showDots` | `true` | Position indicator, one dot per stop (see below); never shown for a single stop. Each dot is a button. |
 | `align` | `'start'` | Where a slide rests when it snaps: `'start'` or `'center'`. |
 | `gap` | `16` | Space between slides, px. |
@@ -125,3 +127,23 @@ The default `arrowsVisibility="always"` keeps existing behavior. This option wor
   {photos.map(photo => <CarouselItem key={photo.id}>{photo.content}</CarouselItem>)}
 </Carousel>
 ```
+
+## Arrow recipes and boundaries
+
+```tsx
+<Carousel accessibilityLabel="Photos" arrowsPlacement="overlay"
+  hideUnavailableArrows
+  arrowButtonProps={{ material: 'flat', className: 'h-10 w-10 rounded-full', iconSize: 20 }}>
+  {slides}
+</Carousel>
+```
+
+Use `material="flat"` for a consumer-authored fill and shadow. Leaving the visual
+options absent keeps the original buttons. Hidden boundary arrows retain their
+slots, so a remaining overlay arrow stays at its edge and header controls do
+not move. They are disabled, excluded from accessibility and cannot receive
+pointer input or keyboard focus. If a focused web arrow becomes unavailable,
+focus moves to the track without scrolling the page. The same measured stops
+still govern visibility, navigation, controlled indices, list changes and RTL.
+`arrowsVisibility="hover"` remains compatible; unavailable arrows stay hidden
+even while the gallery is hovered or focused.

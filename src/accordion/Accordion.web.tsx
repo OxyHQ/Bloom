@@ -21,7 +21,7 @@ const CSS = `@layer base {
 function useStyles() { useInteractiveWebCss('bloom-accordion', CSS); }
 
 /** RN Animated resolves numeric layout/opacity before this DOM host receives them. */
-const PanelHost = forwardRef<HTMLDivElement, Omit<React.HTMLAttributes<HTMLDivElement>, 'style'> & { style?: StyleProp<ViewStyle> }>(function PanelHost({ style, ...props }, ref) {
+const PanelHost = forwardRef<HTMLDivElement, Omit<React.HTMLAttributes<HTMLDivElement>, 'style'> & { style?: StyleProp<ViewStyle>; collapsable?: boolean }>(function PanelHost({ style, collapsable: _collapsable, ...props }, ref) {
   return <div {...props} ref={ref} style={resolveNativeWebStyle(style)} />;
 });
 const AnimatedPanel = Animated.createAnimatedComponent(PanelHost);

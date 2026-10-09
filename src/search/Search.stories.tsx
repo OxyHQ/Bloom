@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Search } from './index';
+import { Button } from '../button';
 import { Text } from '../typography';
 
 const meta: Meta<typeof Search> = {
@@ -89,5 +90,22 @@ export const Playground: StoryObj<typeof Search> = {
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
     return <View style={{ width: 440, maxWidth: '100%' }}><Search {...args} onValueChange={next => updateArgs({ value: next })} onClearText={() => updateArgs({ value: '' })} /></View>;
+  },
+};
+
+/** Independent layout and surface slots keep the input and clear control intact. */
+export const StyledSlots: Story = {
+  render: function StyledSlotsStory() {
+    const [value, setValue] = useState('');
+    const [disabled, setDisabled] = useState(false);
+    const [invalid, setInvalid] = useState(false);
+    return <View style={{ width:480, gap:16 }}>
+      <Search label="Default search" value="" />
+      <Search label="Styled search" value={value} onValueChange={setValue} onClearText={() => setValue('')}
+        disabled={disabled} invalid={invalid} containerClassName="bloom-demo-search-container"
+        fieldClassName="bloom-demo-search-field" fieldChromeClassName="bloom-demo-search-chrome" />
+      <Button onPress={() => setDisabled(value => !value)}>Toggle disabled</Button>
+      <Button onPress={() => setInvalid(value => !value)}>Toggle invalid</Button>
+    </View>;
   },
 };
