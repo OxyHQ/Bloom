@@ -29,6 +29,9 @@ try {
       }, png);
     };
     assert.ok(await pixels() > 100, `${shape}: caller SVG is actually painted over its background`);
+    // Negative control: restore the old unpositioned foreground paint order.
+    await avatar.locator('svg').last().evaluate(svg => { svg.parentElement.replaceWith(svg); });
+    assert.equal(await pixels(), 0, `${shape}: removing the foreground layer reproduces the covered icon`);
   }
   console.log('Custom SVG avatar placeholders paint visibly for circle and squircle backgrounds.');
 } finally { await browser.close(); }
