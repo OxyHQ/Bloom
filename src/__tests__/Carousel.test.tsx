@@ -76,6 +76,18 @@ function layOut(api: ReturnType<typeof render>, count = 4) {
 describe('Carousel', () => {
   beforeEach(() => scrollTo.mockClear());
 
+  it('does not report the last slide from unmeasured or hidden web geometry', () => {
+    const onIndexChange = jest.fn();
+    const api = renderWithTheme(gallery({ onIndexChange }));
+    for (let i = 0; i < 4; i++) fireEvent(api.getByTestId(`slide-${i}`), 'layout', layout(0, 0));
+    expect(onIndexChange).not.toHaveBeenCalled();
+    const scroll = layOut(api);
+    expect(onIndexChange).not.toHaveBeenCalled();
+    scroll(416);
+    expect(onIndexChange).toHaveBeenCalledTimes(1);
+    expect(onIndexChange).toHaveBeenCalledWith(1);
+  });
+
   it('names the region and numbers every slide', () => {
     const api = renderWithTheme(gallery());
     expect(api.getByTestId('carousel').props.accessibilityLabel).toBe('Gallery');
