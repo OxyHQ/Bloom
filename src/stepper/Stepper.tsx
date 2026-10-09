@@ -233,7 +233,9 @@ function StepperComponent({
     : {};
 
   const valueStyle: WebCssStyle = {
-    minWidth: outlined ? outlineFontSize * 2.8 : config.valueWidth,
+    // Reserve the value slot from the control's body size, independently of
+    // its smaller digit typography. Otherwise the capsule becomes too narrow.
+    minWidth: outlined ? (size === 'sm' ? 14 : 16) * 2.8 : config.valueWidth,
     height: outlined ? 22 : config.height,
     paddingLeft: 2,
     paddingRight: 2,

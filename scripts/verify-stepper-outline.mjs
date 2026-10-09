@@ -19,7 +19,10 @@ try {
     const minus = page.getByTestId('outline-stepper-decrement');
     await expect(root).toHaveCSS('height', '40px');
     await expect(root).toHaveCSS('border-top-width', '1px');
+    assert.ok(Math.abs((await root.boundingBox()).width - 102.8) < 0.1);
+    assert.ok(Math.abs((await value.boundingBox()).width - 44.8) < 0.1);
     await expect(page.getByTestId('compact-stepper')).toHaveCSS('height', '36px');
+    assert.ok(Math.abs((await page.getByTestId('compact-stepper-value').boundingBox()).width - 39.2) < 0.1);
     await expect(value.locator('div').last()).toHaveCSS('font-size', '14px');
     await expect(value.locator('div').last()).toHaveCSS('line-height', '18px');
     await expect(plus).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
