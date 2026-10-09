@@ -20,6 +20,9 @@ try {
   };
   await measure();
   const input = page.getByTestId('document-composer-input');
+  assert.equal(await page.getByTestId('document-composer-bar').evaluate(el => getComputedStyle(el).borderRadius), '32px');
+  assert.equal(await page.getByTestId('document-composer-bar').evaluate(el => getComputedStyle(el).minHeight), '64px');
+  assert.equal(await input.evaluate(el => getComputedStyle(el).fontSize), '16px');
   assert.equal(await page.getByTestId('document-composer-mic').count(), 0);
   assert.equal(await page.getByTestId('document-composer-send').isDisabled(), true);
   await input.click();

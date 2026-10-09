@@ -256,3 +256,11 @@ Mouse selection in `SuggestionList` preserves input focus until the option's
 click is delivered, so callers may hide suggestions directly in `onBlur`.
 Native suggestion scrolling uses `keyboardShouldPersistTaps="handled"`, allowing
 the first tap to choose an option while the keyboard is open.
+
+## Styling the editable bar
+
+`style` remains the outer stack containing the bar, banners and suggestions.
+`barStyle` styles the painted input surface itself, and `inputStyle` styles the
+editable text. Use paddingLeft/Right/Top/Bottom to override the bar's matching
+longhands. `sendIcon` accepts a Bloom icon component and changes only the glyph;
+send labels, disabled state, focus and submission behavior remain shared.

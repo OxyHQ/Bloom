@@ -205,6 +205,18 @@ describe('ChatComposer', () => {
     expect(onSend).toHaveBeenCalledTimes(1);
   });
 
+  it('accepts a custom send glyph while retaining the shared accessible control', () => {
+    const SendGlyph = () => <span data-testid="custom-send-glyph" />;
+    mount(<ChatComposer testID="styled" value="ready" sendIcon={SendGlyph}
+      barStyle={{ borderRadius: 32, minHeight: 64, paddingLeft: 16, paddingRight: 16 }}
+      inputStyle={{ fontSize: 16 }} />);
+    expect(byTestId('custom-send-glyph').closest('[data-testid="styled-send"]')).not.toBeNull();
+    expect(byTestId('styled-send').getAttribute('aria-label')).toBe('Send');
+    expect((byTestId('styled-send') as HTMLButtonElement).disabled).toBe(false);
+    // The browser script verifies bar/input geometry; jsdom cannot resolve
+    // react-native-web's dynamically inserted atomic stylesheet here.
+  });
+
   it('shows disabled send instead of a dead mic when recording is unavailable', () => {
     const onSend = jest.fn();
     mount(<ChatComposer testID="c" onSend={onSend} />);

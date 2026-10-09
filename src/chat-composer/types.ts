@@ -1,5 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
-import type { StyleProp, TextInput, ViewStyle } from 'react-native';
+import type { StyleProp, TextInput, TextStyle, ViewStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
 
@@ -124,6 +124,12 @@ export interface ChatComposerLabels {
 }
 
 export interface ChatComposerProps extends PartProps {
+  /** Style the input bar itself; outer `style` includes suggestions and banners. */
+  barStyle?: StyleProp<ViewStyle>;
+  /** Typography and other text styles on the editable field. */
+  inputStyle?: StyleProp<TextStyle>;
+  /** Send control glyph. Defaults to the paper plane. */
+  sendIcon?: ChatComposerIcon;
   /** The draft. Works controlled or uncontrolled. */
   value?: string;
   defaultValue?: string;
