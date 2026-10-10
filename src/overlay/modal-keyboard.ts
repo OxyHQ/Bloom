@@ -71,15 +71,21 @@ export function initialFocusWithin(node: HTMLElement): HTMLElement {
 /**
  * Keep Tab inside `node`: from the last tabbable (or from outside) forward to
  * the first, from the first (or from outside) backward to the last. Returns
- * whether it moved focus.
+ * whether it moved focus. With no available controls, the focusable panel is
+ * the fallback until its actions become available again.
  */
 export function wrapTab(event: KeyboardEvent, node: HTMLElement | null): boolean {
   if (event.key !== 'Tab' || !node) return false;
   const items = tabbablesWithin(node);
+  if (items.length === 0) {
+    event.preventDefault();
+    node.focus({ preventScroll: true });
+    return true;
+  }
   const first = items[0];
   const last = items[items.length - 1];
   const active = document.activeElement;
-  const outside = !node.contains(active);
+  const outside = active === node || !node.contains(active);
   if (event.shiftKey ? outside || active === first : outside || active === last) {
     event.preventDefault();
     (event.shiftKey ? last : first)?.focus();

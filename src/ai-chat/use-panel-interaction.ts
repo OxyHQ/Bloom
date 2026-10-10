@@ -38,7 +38,11 @@ export function usePanelInteraction(open: boolean, modal: boolean, close: () => 
     // This ref is a native View on native, a DOM host on web.
     const node = ref.current as unknown as HTMLElement | null;
     const opener = document.activeElement as HTMLElement | null;
-    const focusFirst = () => tabbablesWithin(node)[0]?.focus();
+    const focusFirst = () => {
+      const first = tabbablesWithin(node)[0];
+      if (first) first.focus();
+      else node?.focus({ preventScroll: true });
+    };
     if (modal) focusFirst();
     const onFocus = (event: FocusEvent) => {
       if (modal && !hasActiveOverlays() && node && !node.contains(event.target as Node)) focusFirst();

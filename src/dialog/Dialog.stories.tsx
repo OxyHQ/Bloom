@@ -347,3 +347,26 @@ function ComposedActionName() {
     Publish <strong>draft</strong><span aria-hidden="true"> decorative</span>
   </span>;
 }
+
+/** All actions temporarily unavailable while a request is in flight. */
+export const PendingFocus: Story = {
+  args: { placement: 'center' },
+  render: function PendingFocusStory(args) {
+    const control = useDialogControl();
+    const [pending, setPending] = React.useState(false);
+    React.useEffect(() => {
+      if (!pending) return;
+      const timer = setTimeout(() => setPending(false), 4000);
+      return () => clearTimeout(timer);
+    }, [pending]);
+    return <>
+      <OverlayInertBoundary testID="pending-boundary"><Button onPress={() => control.open()}>Open pending focus</Button></OverlayInertBoundary>
+      <Dialog control={control} placement={args.placement} label="Pending focus" dismissOnBackdrop={!pending}>
+        <View style={{ gap: 12 }}>
+          <Button disabled={pending} onPress={() => control.close()}>Cancel request</Button>
+          <Button loading={pending} onPress={() => setPending(true)}>Start request</Button>
+        </View>
+      </Dialog>
+    </>;
+  },
+};

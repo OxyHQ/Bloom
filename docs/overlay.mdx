@@ -169,3 +169,8 @@ CSS background image; native uses React Native's gradient background support.
 
 Blur clamps to 0..100, opacity to 0..1, and non-finite values use the shared
 backdrop defaults. `blurIntensity={0}` mounts no blur layer.
+
+On web, Tab and Shift+Tab remain on the modal panel when all its controls are
+disabled, hidden, or absent. Moving focus to this fallback does not scroll the
+panel. Once controls become available, traversal resumes from the first or last
+control according to direction.
