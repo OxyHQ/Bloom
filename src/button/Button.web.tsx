@@ -422,13 +422,19 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
     </>
   );
 
-  // A stable, layout-transparent parent preserves child state across loading.
-  // visibility hides its descendants without removing their measured geometry.
+  // A stable flex parent preserves child state and geometry across loading.
+  // Opacity hides paint while keeping the original accessible content/name.
+  // display:contents cannot apply opacity, and visibility/aria-hidden erase
+  // the name of controls whose label comes from their descendants.
   const body = (
     <>
       <span
-        aria-hidden={loading || undefined}
-        style={{ display: 'contents', visibility: loading ? 'hidden' : undefined }}
+        style={{
+          display: 'inline-flex', flexDirection: 'inherit', flexWrap: 'inherit',
+          alignItems: 'inherit', justifyContent: 'inherit', alignContent: 'inherit',
+          gap: 'inherit', alignSelf: 'stretch', flexGrow: 1, flexShrink: 1, minWidth: 0,
+          opacity: loading ? 0 : undefined, pointerEvents: loading ? 'none' : undefined,
+        }}
       >
         {content}
       </span>
@@ -508,7 +514,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
   }
 
   // `href` renders a real anchor, for a button link or an anchor `LinkButton`.
-  // A disabled link drops its `href`, so it is not a navigable link at all.
+  // A blocked link drops navigation, while retaining its role and name.
   if (href != null && !asChild) {
     return (
       <a
@@ -516,6 +522,7 @@ const ButtonWebComponent = forwardRef<View, ButtonProps>(function ButtonWebCompo
         aria-hidden={hidden}
         id={resolvedId}
         href={isInteractionBlocked ? undefined : href}
+        role={accessibilityRole ?? 'link'}
         target={target}
         rel={rel}
         className={composedClassName}

@@ -141,6 +141,25 @@ describe('Button.web', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
+  it.each(['string', 'composed', 'explicit'] as const)('retains its %s accessible name while busy', kind => {
+    const content = kind === 'composed'
+      ? <><span>Publish </span><strong>draft</strong><span aria-hidden="true"> decoration</span></>
+      : 'Remove variant';
+    const name = kind === 'explicit' ? 'Remove selected variant' : kind === 'composed' ? 'Publish draft' : 'Remove variant';
+    const ui = (loading: boolean) => <Button loading={loading} disabled={false}
+      accessibilityLabel={kind === 'explicit' ? name : undefined}>{content}</Button>;
+    const c = mount(ui(false));
+    const button = getByRole(c, 'button', { name });
+    mount(ui(true));
+    expect(getByRole(c, 'button', { name })).toBe(button);
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(button.firstElementChild).not.toHaveAttribute('aria-hidden');
+    mount(ui(false));
+    expect(getByRole(c, 'button', { name })).toBe(button);
+    expect(button).not.toHaveAttribute('aria-busy');
+  });
+
   it('keeps children mounted while loading so width is preserved', () => {
     const c = mount(<Button loading>Submit</Button>);
     expect(getByText(c, 'Submit')).toBeTruthy();
@@ -238,7 +257,7 @@ describe('Button.web', () => {
       const link = getByRole(c, 'link', { name: 'Docs' });
       expect(link.tagName).toBe('A');
       expect(link).toHaveAttribute('href', '/docs');
-      const off = getByText(c, 'Off').closest('a');
+      const off = getByRole(c, 'link', { name: 'Off' });
       expect(off).not.toHaveAttribute('href');
       expect(off).toHaveAttribute('aria-disabled', 'true');
     });

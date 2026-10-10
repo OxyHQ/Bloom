@@ -30,7 +30,7 @@ try {
         assert.ok(box && old.box);
         assert.ok(Math.abs(box.width - old.box.width) < .5 && Math.abs(box.height - old.box.height) < .5, `${old.id} dimensions changed during loading`);
         assert.deepEqual(await button.locator('[data-testid^="loading-counter-"]').evaluateAll(els => els.map(el => el.getAttribute('data-testid'))), old.names);
-        if (old.id !== 'loading-link') await expect(button.locator('[data-testid^="loading-counter-"]').first()).toHaveCSS('visibility', loading ? 'hidden' : 'visible');
+        if (old.id !== 'loading-link') await expect(button.locator(':scope > span').first()).toHaveCSS('opacity', loading ? '0' : '1');
       }
       assert.equal(await page.evaluate(() => globalThis.loadingCounterNodes.every(node => node.isConnected && document.querySelector(`[data-testid="${node.getAttribute('data-testid')}"]`) === node)), true);
     }

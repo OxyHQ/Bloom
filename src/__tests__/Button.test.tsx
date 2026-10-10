@@ -152,6 +152,26 @@ describe('Button', () => {
     expect(btn.props.disabled).toBe(true);
   });
 
+  it.each(['ios', 'android'] as const)('keeps composed labels exposed to %s accessibility while loading', platform => {
+    jest.replaceProperty(Platform, 'OS', platform);
+    const ui = (loading: boolean) => <BloomThemeProvider mode="light" colorPreset="teal">
+      <Button loading={loading} testID="named-loading"><Text>Publish </Text><Text>draft</Text></Button>
+    </BloomThemeProvider>;
+    const api = render(ui(false));
+    const label = api.getByText('Publish ');
+    api.rerender(ui(true));
+    const button = api.getByTestId('named-loading');
+    expect(button.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    for (let node = api.getByText('Publish '); node; node = node.parent!) {
+      expect(node.props.accessibilityElementsHidden).not.toBe(true);
+      expect(node.props.importantForAccessibility).not.toBe('no-hide-descendants');
+    }
+    expect(api.getByText('Publish ')).toBe(label);
+    api.rerender(ui(false));
+    expect(api.getByTestId('named-loading').props.disabled).toBe(false);
+    jest.restoreAllMocks();
+  });
+
   it('marks loading state as busy + disabled', () => {
     const { getByTestId } = renderWithTheme(
       <Button testID="busy-btn" loading>

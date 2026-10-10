@@ -112,7 +112,11 @@ Native text children are wrapped individually when mixed with custom layout node
 Changing `loading` preserves the mounted content and its component state. The
 content remains in layout while hidden and a spinner covers the button. This
 also preserves icon-only content; `asChild` retains the identity and state of
-the supplied element while applying the disabled/busy contract.
+the supplied element while applying the disabled/busy contract. Labels remain
+available to accessibility while loading, including composed text and caller
+labels; the spinner is decorative. Web links keep their link role while
+navigation is disabled. Hiding the paint does not replace or duplicate the
+content, alter its accessible name, or reset child state.
 
 ## Consumer classes
 
