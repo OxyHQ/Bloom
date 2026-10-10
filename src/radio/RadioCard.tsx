@@ -4,7 +4,7 @@ import { useRingOffsetStyle } from '../styles/surface-levels';
 import { useBloomAppearance } from '../appearance';
 import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -15,6 +15,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { RadioIndicator } from '../radio-indicator';
 import type { RadioCardProps } from './types';
+import { RadioHost, RadioLabel } from './RadioHost';
 import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
@@ -72,6 +73,9 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
   disabled: disabledProp = false,
   tone: toneProp,
   style,
+  className,
+  labelClassName,
+  labelStyle,
   accessibilityLabel,
   testID,
 }: RadioCardProps<Value>) {
@@ -134,10 +138,11 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
   const groupItem = useRadioGroupItem(value, disabled, handlePress);
 
   return (
-    <Pressable
+    <RadioHost
+      className={className}
       {...groupItem}
       {...webDataSet({ bloomRadioCard: '' })}
-      style={[cardStyle, style]}
+      style={[className ? { '--bloom-radio-ring': paint.ring, ...ringOffset } : cardStyle, style]}
       onPress={handlePress}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={disabled ? undefined : onPressOut}
@@ -155,9 +160,9 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
       testID={testID}
     >
       <View style={{ flexDirection: 'column', gap: 2, minWidth: 0, flexShrink: 1 }}>
-        {labelContent != null ? <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{labelContent}</View> : <Text variant="body-medium" numberOfLines={1} style={{ color: paint.title }}>
+        {labelContent != null ? <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{labelContent}</View> : <RadioLabel className={labelClassName} variant="body-medium" numberOfLines={1} style={[!labelClassName && { color: paint.title }, labelStyle]}>
           {title}
-        </Text>}
+        </RadioLabel>}
         {description != null && (
           <Text variant="body-regular" numberOfLines={1} style={{ color: paint.description }}>
             {description}
@@ -172,7 +177,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
           <RadioIndicator selected={checked} size={DOT_SIZE} selectedColor={color} selectedForeground={foreground} />
         </View>
       </View>
-    </Pressable>
+    </RadioHost>
   );
 };
 
