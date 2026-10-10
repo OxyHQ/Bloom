@@ -5,6 +5,8 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Screen, useScreen, useScreenWindowScroll } from '../screen';
 import type { ScreenContextValue } from '../screen/context';
+import { ScreenScope } from '../layout/screen-scope';
+import { PageHeader } from '../page-header';
 import { resolvedStyle } from './support/rendered-style';
 
 function wrap(children: React.ReactNode) { return <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>; }
@@ -88,6 +90,21 @@ it('keeps natural document height and reserves measured chrome exactly once', ()
   fireEvent(tree.getByTestId('page-header'), 'layout', { nativeEvent: { layout: { height: 72 } } });
   fireEvent(tree.getByTestId('page-bottom'), 'layout', { nativeEvent: { layout: { height: 90 } } });
   expect(resolvedStyle(tree.getByTestId('page-content').props.style)).toMatchObject({ paddingTop: 72, paddingBottom: 106 });
-  expect(resolvedStyle(tree.getByTestId('page-header').props.style)).toMatchObject({ position: 'sticky', top: 0, marginBottom: -72 });
+  expect(resolvedStyle(tree.getByTestId('page-header').props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)', marginBottom: -72 });
   expect(resolvedStyle(tree.getByTestId('page-bottom').props.style)).toMatchObject({ position: 'sticky', bottom: 0, marginTop: -90 });
+});
+
+
+it('positions only the header slot while content and standalone headers keep their own sticky behavior', () => {
+  const tree = render(wrap(<><Screen documentScroll testID="page" header={<PageHeader testID="managed" title="Managed" />}><PageHeader testID="content-header" title="Content" /></Screen><PageHeader testID="standalone" title="Standalone" /></>));
+  expect(resolvedStyle(tree.getByTestId('page-header').props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)' });
+  expect(resolvedStyle(tree.getByTestId('managed').props.style).position).toBe('relative');
+  for (const id of ['content-header', 'standalone']) expect(resolvedStyle(tree.getByTestId(id).props.style)).toMatchObject({ position: 'sticky', top: 'var(--bloom-panel-sticky-top, 0px)' });
+});
+
+
+it('does not carry a header slot position into an independent overlay or nested Screen', () => {
+  const tree = render(wrap(<Screen documentScroll header={<><PageHeader testID="managed" title="Managed" /><ScreenScope><PageHeader testID="overlay-header" title="Overlay" /></ScreenScope><Screen><PageHeader testID="nested-header" title="Nested" /></Screen></>} />));
+  expect(resolvedStyle(tree.getByTestId('managed').props.style).position).toBe('relative');
+  for (const id of ['overlay-header', 'nested-header']) expect(resolvedStyle(tree.getByTestId(id).props.style).position).toBe('sticky');
 });

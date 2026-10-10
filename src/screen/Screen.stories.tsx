@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Screen, ScreenScrollView } from './index';
 import { PageHeader } from '../page-header';
+import { AppShell } from '../app-shell';
 
 const meta: Meta<typeof Screen> = { title: 'Foundations/Screen', component: Screen };
 export default meta;
@@ -21,4 +22,14 @@ export const Playground: StoryObj<typeof Screen> = {
 
     return <View style={{ width: 520, maxWidth: '100%' }}><View style={{ height: 500 }}><Screen {...args} header={<PageHeader title="A continuous canvas" />}><ScreenScrollView>{Array.from({length:20}, (_, index) => <View key={index} style={{padding:20}}><Text>Row {index + 1}</Text></View>)}</ScreenScrollView></Screen></View></View>;
   },
+};
+
+/** A route paints the same surface as its shell and has one sticky header owner. */
+export const DocumentPanel: Story = {
+  parameters: { layout: 'fullscreen', bloomScroll: 'document', controls: { disable: true } },
+  render: () => <AppShell variant="feed" scroll="document" panel header={null} gutter={8} contentWidth={1100} testID="document-shell">
+    <Screen documentScroll testID="document-route" header={<PageHeader title="A continuous panel" testID="document-header" />}>
+      {Array.from({ length: 40 }, (_, index) => <View key={index} style={{ padding: 24 }}><Text>Row {index + 1}</Text></View>)}
+    </Screen>
+  </AppShell>,
 };
