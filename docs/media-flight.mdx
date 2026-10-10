@@ -363,6 +363,11 @@ So build the element yourself and let Bloom decide only what it must:
 />
 ```
 
+`VideoView` there is Bloom's, from `@oxy.so/bloom/video-view`, not expo-video's:
+it keeps the web `<video>` inline, without which iPhone Safari never starts it,
+and its `player` prop takes the slot's player as is. See
+[VideoView](./video-view.mdx).
+
 Three things about the props Bloom passes:
 
 - **Spread `style`.** A DOM `<video>` is a replaced element: `inset: 0` with

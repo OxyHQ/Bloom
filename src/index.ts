@@ -16,6 +16,9 @@
 //       · `./zoomable-media-gallery` and `./media-flight` — both reach
 //         `expo-image` through the shared `media-flight/MediaSurface`.
 //     Gate: `src/__tests__/root-barrel-graph.test.ts`.
+//     `./video-view` links no package, but its DECLARATIONS name the optional
+//     peer `expo-video`'s own types; on this barrel every app's typecheck
+//     would load them, including the apps that never installed it.
 //
 //  2. Its exports are generic, collision-prone names. Those come in as a
 //     NAMESPACE (the same rule that makes `Icons`/`Skeleton`/`Grid` namespaces),

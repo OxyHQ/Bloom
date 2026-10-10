@@ -183,6 +183,11 @@ const SUBPATHS = /** @type {const} */ ([
   // The shared-element layer that survives a route change. Subpath-only for the
   // same reason as the gallery: it statically links `expo-image`.
   ['./media-flight', 'media-flight/index.ts'],
+  // expo-video's view with inline playback on. Subpath-only because its
+  // declarations name `expo-video`'s own types: an app imports it to render
+  // video, so it has the optional peer; an app that renders none never loads
+  // those declarations.
+  ['./video-view', 'video-view/index.ts'],
   ['./teleport', 'teleport/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],

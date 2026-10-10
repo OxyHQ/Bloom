@@ -56,7 +56,7 @@ const config: Config = {
   },
   setupFiles: ['<rootDir>/__mocks__/setup.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native-web|@react-native|expo-linear-gradient))',
+    'node_modules/(?!(react-native-web|@react-native|expo-linear-gradient|expo-video))',
   ],
 };
 
