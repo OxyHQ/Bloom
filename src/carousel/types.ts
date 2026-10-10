@@ -24,6 +24,13 @@ export interface CarouselProps {
   footer?: ReactNode;
   /** Controls and track arrow keys wrap to the other end; no cloned slides. Default false. */
   loop?: boolean;
+  /**
+   * Arrow/track-key destinations are anchored at children 0, N, 2N, plus the
+   * reachable end. Dots, direct index selection and swipe keep individual stops.
+   * Default 1. Finite values truncate to integers and clamp to at least 1;
+   * non-finite values use 1. May change responsively without moving selection.
+   */
+  slidesPerGroup?: number;
   /** Previous / next buttons. Defaults to `true`; callers may hide them at their mobile breakpoint. */
   showArrows?: boolean;
   /** Overlay control offsets from logical track edges. Negative values extend outside. Default 8. */

@@ -173,3 +173,34 @@ remain unavailable; otherwise `hideUnavailableArrows` does not hide either edge.
   {photos.map(photo => <CarouselItem key={photo.id}><Photo photo={photo} /></CarouselItem>)}
 </Carousel>
 ```
+
+## Advancing by groups
+
+`slidesPerGroup` controls arrow and focused-track keyboard destinations. Pass a
+responsive value (for example 1, 2 or 3); Bloom does not own viewport breakpoints.
+Destinations are anchored to child indices `0, N, 2N…`, with the reachable end
+always included. A final group may be shorter, and children sharing the physical
+end still represent one stop. Between boundaries, the next/previous action goes
+to the adjacent group boundary, not an index relative to the currently visible
+child. With `loop`, an action at an end goes to the opposite end without clones.
+
+```tsx
+<Carousel accessibilityLabel="Collections" slidesPerGroup={columns}>
+  {items.map(item => <CarouselItem key={item.id} width={cardWidth}>
+    <CollectionCard item={item} />
+  </CarouselItem>)}
+</Carousel>
+```
+
+Dots, controlled `index` and swipe keep their individual measured slide stops.
+`onIndexChange` still reports a **child index**, never a group number; the
+clamped end uses the last child's index. A responsive group-size change does not
+move the current selection or emit an event. Finite numbers truncate to integers
+and clamp to at least 1; NaN and infinities use 1. Omission preserves existing
+one-stop navigation. Groups larger than the list expose start/end destinations.
+
+For groups greater than 1, web Left/Right keys on the focused track follow the
+same boundaries as its buttons, including RTL. Keys on interactive slide content
+are left to that control. Native arrows use the same measured destinations;
+native swipe/snap offsets remain per-slide. Reduced motion retains immediate
+scroll behavior.
