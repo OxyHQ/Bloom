@@ -44,9 +44,9 @@ export interface CardProps {
   /** Preset background + border + elevation. Default `solid` with small elevation. */
   appearance?: BloomAppearance;
   tone?: BloomTone;
-  /** Corner rung, or panel to inherit BloomScope.panelRadius and the shared circular curve. Default radius-12. */
+  /** Corner rung, or panel to inherit BloomScope.panelRadius and the shared circular curve. Default radius-20. */
   radius?: CardRadius;
-  /** Platform-adaptive curve. radius-max remains circular. */
+  /** Circular by default; smooth opts into platform-adaptive curves. radius-max remains circular. */
   cornerCurve?: CornerCurve;
   /** Clip children in an inner layer, preserving outer shadows and focus. */
   clipContent?: boolean;

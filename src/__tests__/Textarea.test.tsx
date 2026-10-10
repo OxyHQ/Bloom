@@ -33,7 +33,7 @@ function shellStyle(root: ReturnType<typeof render>) {
   const shells = root
     .UNSAFE_getAllByType(View)
     .map((v) => resolvedStyle(v.props.style))
-    .filter((s) => s.borderWidth === 2 && s.borderRadius === 10);
+    .filter((s) => s.borderWidth === 2 && s.borderRadius === 12);
   if (shells.length !== 1) throw new Error(`expected one shell, found ${shells.length}`);
   return shells[0]!;
 }

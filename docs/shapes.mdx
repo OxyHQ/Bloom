@@ -93,7 +93,10 @@ the other for its ring.
 
 `SURFACE_SHAPES` in `@oxy.so/bloom/design-tokens` contains component policies.
 Geometry does not import the theme or token recipes. Card, sidebar, menu,
-dialog and sheet consumers use these policies; capsules remain round.
+dialog and sheet consumers use these policies. Cards use a 20px circular corner;
+panels, menus and sheets also default to circular corners at their own radius
+rungs. `cornerCurve="smooth"` remains an explicit opt-in on Card and Surface.
+Capsules remain round.
 
 SurfacePaint accepts the same shape policy and direction as its caller (or a radius for circular corners).
 Its clipped layers and rim follow that policy. GlassIsland composes the same

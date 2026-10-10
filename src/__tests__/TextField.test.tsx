@@ -136,7 +136,7 @@ describe('TextField geometry', () => {
     expect(input.paddingLeft).toBe(4);
     const chrome = findChrome(root);
     expect(chrome.borderRadius).toBe(TEXT_FIELD_RADIUS);
-    expect(chrome.borderRadius).toBe(10);
+    expect(chrome.borderRadius).toBe(12);
   });
 
   it('pins the geometry numbers', () => {

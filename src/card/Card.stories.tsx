@@ -159,7 +159,7 @@ export const Default: Story = {
     <Card testID="card-default" style={{ width: 280, height: 96 }}>
       <CardBody>
         <CardTitle>Default</CardTitle>
-        <CardDescription>elevated, radius-12</CardDescription>
+        <CardDescription>elevated, radius-20</CardDescription>
       </CardBody>
     </Card>
   ),
@@ -169,4 +169,24 @@ export const Default: Story = {
 export const Playground: Story = {
   args: { appearance: 'solid', tone: 'neutral', radius: 'radius-12' },
   render: (args) => <View style={{ width: 340, maxWidth: '100%' }}><Card {...args}><CardHeader><CardTitle>Project overview</CardTitle><CardDescription>Change the surface using Controls.</CardDescription></CardHeader><CardBody><CardDescription>Header, content and footer share one card.</CardDescription></CardBody></Card></View>,
+};
+
+/** Shared rounded defaults beside deliberate compact and smooth overrides. */
+export const RoundedSurfaces: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
+      <Card testID="rounded-default" style={{ width: 220, height: 160, padding: 24 }}>
+        <CardTitle>Rounded by default</CardTitle>
+        <CardDescription>20px circular corners</CardDescription>
+      </Card>
+      <Card testID="rounded-compact" radius="radius-8" style={{ width: 220, height: 160, padding: 24 }}>
+        <CardTitle>Explicit compact radius</CardTitle>
+        <CardDescription>8px circular corners</CardDescription>
+      </Card>
+      <Card testID="rounded-smooth" cornerCurve="smooth" style={{ width: 220, height: 160, padding: 24 }}>
+        <CardTitle>Explicit smooth curve</CardTitle>
+        <CardDescription>20px adaptive squircle</CardDescription>
+      </Card>
+    </View>
+  ),
 };

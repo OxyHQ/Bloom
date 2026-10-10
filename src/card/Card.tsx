@@ -96,7 +96,7 @@ const CardRootComponent = React.forwardRef<View, CardProps>(function CardRootCom
   const panelShape = usePanelShape();
   const cornerCurve = cornerCurveProp ?? (radius === 'panel' ? panelShape.curve : SURFACE_SHAPES.card.curve);
   const explicitRadius = radius === 'panel' ? panelShape.radius : radius ? RADIUS[radius] : undefined;
-  const resolvedGeometry = resolveSurfaceGeometry(explicitRadius, style, RADIUS['radius-12'], cornerCurve);
+  const resolvedGeometry = resolveSurfaceGeometry(explicitRadius, style, SURFACE_SHAPES.card.radius, cornerCurve);
   const appearance = appearanceProp ?? 'solid';
   const {tone} = useBloomAppearance({tone: toneProp}, {size: 'md', tone: 'neutral'});
   const paint = resolveBloomColors(theme.colors, tone, appearance);
