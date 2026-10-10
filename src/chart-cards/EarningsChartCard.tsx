@@ -127,7 +127,12 @@ export function EarningsChartCard({
 }: EarningsChartCardProps) {
   const { locale: chartLocale, messages: chartText } = useMessages(CHART_CARDS_MESSAGES);
   const format = formatProp ?? ((value: number) => formatCurrency(value, 'USD', chartLocale));
-  const formatAxisValue = formatAxisValueProp ?? ((value: number) => (value === 0 ? formatCurrency(0, 'USD', chartLocale) : formatCompactCurrency(value, 'USD', chartLocale)));
+  const formatAxisValue =
+    formatAxisValueProp ??
+    ((value: number) =>
+      value === 0
+        ? formatCurrency(0, 'USD', chartLocale)
+        : formatCompactCurrency(value, 'USD', chartLocale));
   const title = titleProp ?? chartText.titles.earnedSoFar;
   const rangesLabel = rangesLabelProp ?? chartText.earningsPeriod;
   const theme = useTheme();
@@ -141,7 +146,11 @@ export function EarningsChartCard({
   const fill = color ?? tone.color;
   const fillActive = activeColor ?? (color ? color : tone.activeColor);
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -162,7 +171,11 @@ export function EarningsChartCard({
 
   const hovering = activeIndex !== null;
   const point = hovering ? data[activeIndex] : undefined;
-  const label = point ? (getPointTitle ? getPointTitle(point, activeIndex!) : monthTitle(point.label, chartLocale)) : title;
+  const label = point
+    ? getPointTitle
+      ? getPointTitle(point, activeIndex!)
+      : monthTitle(point.label, chartLocale)
+    : title;
   const total = headline ?? values.reduce((sum, v) => sum + v, 0);
 
   return (
@@ -191,7 +204,8 @@ export function EarningsChartCard({
           onActiveIndexChange={setActiveIndex}
           palette={palette}
           accessibilityLabel={accessibilityLabel ?? `${title} bar chart`}
-          testID={testID ? `${testID}-plot` : undefined}>
+          testID={testID ? `${testID}-plot` : undefined}
+        >
           {({ size, box, band, y }) => {
             const slot = singleBarSlot(band, BAR_CATEGORY_GAP, MAX_BAR_SIZE);
             const trackHeight = box.bottom - box.top;
@@ -199,7 +213,8 @@ export function EarningsChartCard({
               <Svg width={size.width} height={size.height} pointerEvents="none">
                 {values.map((v, i) => {
                   const x = box.left + i * band + slot.offset;
-                  const from = anim.from && anim.from.length === values.length ? anim.from[i]! : null;
+                  const from =
+                    anim.from && anim.from.length === values.length ? anim.from[i]! : null;
                   const value = from !== null ? lerp(from, v, anim.progress) : v;
                   const full = Math.max(0, box.bottom - y(value));
                   const height = from !== null ? full : full * anim.progress;

@@ -25,17 +25,18 @@ export interface MapControlsMessages {
   overlays: string;
 }
 
-export const MAP_CONTROLS_MESSAGES: MessageCatalog<MapControlsMessages> = defineMessages<MapControlsMessages>('MAP_CONTROLS_MESSAGES', {
-  group: 'Map controls',
-  locate: 'Show my location',
-  following: 'Stop following my location',
-  zoomIn: 'Zoom in',
-  zoomOut: 'Zoom out',
-  zoom: 'Zoom',
-  tilt: 'Tilt the map',
-  tiltOff: 'Flatten the map',
-  compass: (degrees) => `Facing ${degrees} degrees. Reset to north`,
-  layerTrigger: 'Map layers',
-  layers: 'Map',
-  overlays: 'Overlays',
-});
+export const MAP_CONTROLS_MESSAGES: MessageCatalog<MapControlsMessages> =
+  defineMessages<MapControlsMessages>('MAP_CONTROLS_MESSAGES', {
+    group: 'Map controls',
+    locate: 'Show my location',
+    following: 'Stop following my location',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    zoom: 'Zoom',
+    tilt: 'Tilt the map',
+    tiltOff: 'Flatten the map',
+    compass: (degrees) => `Facing ${degrees} degrees. Reset to north`,
+    layerTrigger: 'Map layers',
+    layers: 'Map',
+    overlays: 'Overlays',
+  });

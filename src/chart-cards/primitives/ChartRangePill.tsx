@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Platform,
+  Pressable,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import {
@@ -122,10 +130,14 @@ export function ChartRangeSelect({
           onHoverOut={() => setHovered(false)}
           style={[
             pillStyle(palette),
-            { paddingRight: 6, backgroundColor: hovered ? palette.pill.hover : palette.pill.background },
+            {
+              paddingRight: 6,
+              backgroundColor: hovered ? palette.pill.hover : palette.pill.background,
+            },
             transition,
             style,
-          ]}>
+          ]}
+        >
           <RiCalendarLine width={ICON} height={ICON} fill={palette.textSecondary} />
           <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
             {current?.label}
@@ -139,13 +151,15 @@ export function ChartRangeSelect({
         align="end"
         minWidth={RANGE_MENU_WIDTH}
         style={Platform.OS === 'web' ? MENU_PANEL_STYLE : undefined}
-        testID={testID ? `${testID}-menu` : undefined}>
+        testID={testID ? `${testID}-menu` : undefined}
+      >
         <DropdownMenuRadioGroup
           value={current?.id}
           onValueChange={(id) => {
             onChange?.(id);
             setOpen(false);
-          }}>
+          }}
+        >
           {ranges.map((r) => (
             <DropdownMenuRadioItem
               key={r.id}
@@ -153,7 +167,8 @@ export function ChartRangeSelect({
               indicatorPosition="trailing"
               indicator={<RiCheckLine width={ICON} height={ICON} fill={palette.textSecondary} />}
               style={{ paddingTop: 6, paddingBottom: 6 }}
-              testID={testID ? `${testID}-option-${r.id}` : undefined}>
+              testID={testID ? `${testID}-option-${r.id}` : undefined}
+            >
               {r.label}
             </DropdownMenuRadioItem>
           ))}

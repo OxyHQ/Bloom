@@ -88,7 +88,8 @@ export function IconAction({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={style}>
+      style={style}
+    >
       {icon(lit ? hoverColor : color)}
     </Pressable>
   );
@@ -127,7 +128,8 @@ function GradientFill({
   return (
     <View
       pointerEvents="none"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity }}>
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity }}
+    >
       <Svg width="100%" height="100%">
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
@@ -199,7 +201,8 @@ export function PrimaryDisc({
       onPressOut={() => setPressed(false)}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={style}>
+      style={style}
+    >
       <GradientFill paint={base} radius={size / 2} />
       {disabled ? null : (
         <GradientFill paint={paint.hover} radius={size / 2} opacity={hovered && !pressed ? 1 : 0} />

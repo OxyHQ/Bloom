@@ -22,8 +22,7 @@ export function drawFold(
   let sx = c.foldShape === 'slender' ? 0.86 : 1;
   const sy = 1;
   const movement = c.motion / 100;
-  const flutter =
-    (Math.sin(phase - 0.5) * 3 + rig.bounce * 4 + rig.headTilt * 10) * movement;
+  const flutter = (Math.sin(phase - 0.5) * 3 + rig.bounce * 4 + rig.headTilt * 10) * movement;
   const depth = (c.foldDepth - 45) * 0.35;
   const curl = (c.idle ? -3 : gaze[0] * side * 6) + flutter - arrivalFold * 24;
   const seamX = 49 - depth + curl;
@@ -55,8 +54,7 @@ export function drawFold(
       rest.f,
     ]);
   const symbol = isPaperSymbol(c.foldShape) ? c.foldShape : null;
-  const shaped =
-    c.foldShape === 'star' || c.foldShape === 'flower' || symbol !== null;
+  const shaped = c.foldShape === 'star' || c.foldShape === 'flower' || symbol !== null;
   const frontTurn = rotateLayer(faceTurn, shaped ? 24 : 60);
   const backTurn = rotateLayer(
     new DrawingMatrix([
@@ -82,19 +80,14 @@ export function drawFold(
     // tucks inward along one edge, leaving room for the eyes.
     const point = (angle: number, front: boolean): [number, number] => {
       const wave = Math.cos(petals * (angle + Math.PI / 2));
-      const r = flower
-        ? 58 + 28 * Math.sqrt(0.08 + (0.92 * (wave + 1)) / 2)
-        : 73 + 17 * wave;
+      const r = flower ? 58 + 28 * Math.sqrt(0.08 + (0.92 * (wave + 1)) / 2) : 73 + 17 * wave;
       const [x, y] = symbol
         ? paperSymbolPoint(symbol, angle)
         : [r * Math.cos(angle), r * Math.sin(angle)];
       const bearing = symbol ? Math.atan2(y, x) : angle;
       const edge = Math.max(0, Math.cos(bearing - 0.3));
       const fold = front ? tuck * edge * edge : 0;
-      return [
-        x - fold * Math.cos(bearing),
-        y - fold * 0.45 * Math.sin(bearing),
-      ];
+      return [x - fold * Math.cos(bearing), y - fold * 0.45 * Math.sin(bearing)];
     };
     // Cubic interpolation keeps the tips and valleys soft, including at 24px.
     const trace = (
@@ -170,8 +163,7 @@ export function drawFold(
           // All wall patches must share the sheets' winding to form a solid union.
           if (area < 0 !== facing < 0) corners.reverse();
           foldedSides.moveTo(...corners[0]!);
-          for (let j = 1; j < corners.length; j++)
-            foldedSides.lineTo(...corners[j]!);
+          for (let j = 1; j < corners.length; j++) foldedSides.lineTo(...corners[j]!);
           foldedSides.closePath();
         }
       }
@@ -241,18 +233,10 @@ export function drawFold(
     crease.bezierCurveTo(69, 12, seamX - 6, 18, seamX + 1, 43);
     crease.bezierCurveTo(seamX + 7, 66, 27, 79, -9, 77);
   }
-  const taper =
-    c.foldShape === 'petal' ? Math.min(1, Math.max(0, -gaze[1]) / 0.3) : 0;
+  const taper = c.foldShape === 'petal' ? Math.min(1, Math.max(0, -gaze[1]) / 0.3) : 0;
   // Star valleys sit closer to the face than the other outlines.
   const star = c.foldShape === 'star';
-  let gazeX =
-    symbol === 'diamond'
-      ? 0.65
-      : symbol
-        ? 1.45
-        : star
-          ? 1.5
-          : 1.85 - taper * 0.55;
+  let gazeX = symbol === 'diamond' ? 0.65 : symbol ? 1.45 : star ? 1.5 : 1.85 - taper * 0.55;
   let gazeY =
     symbol === 'diamond'
       ? 0.65
@@ -267,13 +251,7 @@ export function drawFold(
               : 1.9 - taper * 0.35;
   // The inward seam needs a little extra clearance at the strongest turns.
   let faceInset =
-    (symbol === 'diamond'
-      ? 0
-      : c.foldShape === 'petal'
-        ? -4
-        : shaped
-          ? -6
-          : -12) -
+    (symbol === 'diamond' ? 0 : c.foldShape === 'petal' ? -4 : shaped ? -6 : -12) -
     Math.max(0, gaze[0] * side - 0.23) * 28;
   let faceY = symbol === 'cloud' ? 8 : star ? 2 : -4;
 
@@ -345,14 +323,7 @@ export function drawFold(
   if (c.material === 'ribbons' && !rear) {
     ctx.save();
     ctx.clip(front);
-    ctx.transform(
-      frontTurn.a,
-      frontTurn.b,
-      frontTurn.c,
-      frontTurn.d,
-      frontTurn.e,
-      frontTurn.f,
-    );
+    ctx.transform(frontTurn.a, frontTurn.b, frontTurn.c, frontTurn.d, frontTurn.e, frontTurn.f);
     ctx.strokeStyle = `hsla(${c.hue - Math.min(c.spread, 60)}, ${c.saturation}%, 60%, .55)`;
     ctx.lineWidth = 27;
     const drift = Math.sin(phase) * movement * 12;
@@ -389,9 +360,7 @@ export function drawFold(
     ctx.save();
     ctx.clip(turning && !shaped ? silhouette : front);
     const faceProjection = shaped && turning ? frontTurn : faceTurn;
-    ctx.globalAlpha *=
-      faceOpacity *
-      (shaped && turning ? Math.max(0, Math.min(1, facing * 6)) : 1);
+    ctx.globalAlpha *= faceOpacity * (shaped && turning ? Math.max(0, Math.min(1, facing * 6)) : 1);
     ctx.transform(
       faceProjection.a,
       faceProjection.b,
@@ -403,36 +372,17 @@ export function drawFold(
     // Wrap the eyes farther around the face than the paper's gentle turn.
     // Per-point sphere projection compresses and tilts the far eye at corners.
     // Ease into the edge so full travel still leaves room for the eye contour.
-    const wrap = (angle: number, gain: number) =>
-      0.62 * Math.tanh((angle * gain) / 0.62);
+    const wrap = (angle: number, gain: number) => 0.62 * Math.tanh((angle * gain) / 0.62);
     // The petal narrows above the face, so upper glances follow that contour.
-    const eyeGaze: [number, number] = [
-      wrap(gaze[0], gazeX),
-      wrap(gaze[1], gazeY),
-    ];
+    const eyeGaze: [number, number] = [wrap(gaze[0], gazeX), wrap(gaze[1], gazeY)];
     // Mirror the paper, not expressions or eye perspective.
     ctx.scale(side, 1);
     ctx.translate(faceInset * side * (shaped ? 1 : facing), faceY);
-    drawFace(
-      ctx,
-      c,
-      phase,
-      rig,
-      eyeGaze,
-      cssSize,
-      shaped ? 0 : workTurn * side,
-    );
+    drawFace(ctx, c, phase, rig, eyeGaze, cssSize, shaped ? 0 : workTurn * side);
     ctx.restore();
     if (c.idle) {
       ctx.save();
-      ctx.transform(
-        frontTurn.a,
-        frontTurn.b,
-        frontTurn.c,
-        frontTurn.d,
-        frontTurn.e,
-        frontTurn.f,
-      );
+      ctx.transform(frontTurn.a, frontTurn.b, frontTurn.c, frontTurn.d, frontTurn.e, frontTurn.f);
       ctx.globalAlpha *= faceOpacity;
       ctx.scale(side, 1);
       ctx.translate(faceInset * side, faceY);

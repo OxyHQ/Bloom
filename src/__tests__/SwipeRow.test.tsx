@@ -29,11 +29,7 @@ import { useTheme } from '../theme/use-theme';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import { SwipeRow, useSwipeAvailable } from '../swipe-row';
-import {
-  SWIPE_ACTION_WIDTH,
-  SWIPE_COMMIT_FRACTION,
-  SWIPE_TAP_SLOP,
-} from '../swipe-row/constants';
+import { SWIPE_ACTION_WIDTH, SWIPE_COMMIT_FRACTION, SWIPE_TAP_SLOP } from '../swipe-row/constants';
 import { resolveSwipeRowPaint, swipeActionPaint } from '../swipe-row/shared';
 import type { SwipeRowAction } from '../swipe-row/types';
 
@@ -88,7 +84,8 @@ function maybe(id: string): HTMLElement | null {
  * `rgb(191, 31, 39)`. Comparing the digits is comparing the COLOUR, which is
  * what these assertions are about.
  */
-const sameColor = (a: string, b: string) => expect(a.replace(/[\s,]+/g, ' ')).toBe(b.replace(/[\s,]+/g, ' '));
+const sameColor = (a: string, b: string) =>
+  expect(a.replace(/[\s,]+/g, ' ')).toBe(b.replace(/[\s,]+/g, ' '));
 
 // ---------------------------------------------------------------------------
 //  Driving the pan

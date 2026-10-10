@@ -49,7 +49,8 @@ const CompositionBarComponent: React.FC<CompositionBarProps> = ({
     [positive],
   );
   const selected = useMemo(
-    () => (selectedKey ? positive.find((category) => category.key === selectedKey) ?? null : null),
+    () =>
+      selectedKey ? (positive.find((category) => category.key === selectedKey) ?? null) : null,
     [positive, selectedKey],
   );
 

@@ -8,71 +8,129 @@ import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': '左上角', 'top-right': '右上角', 'bottom-left': '左下角', 'bottom-right': '右下角' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': '左上角',
+  'top-right': '右上角',
+  'bottom-left': '左下角',
+  'bottom-right': '右下角',
+};
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "做出反应",
-  working: "工作",
-  avatarStyle: "头像风格",
-  proceduralAvatar: "当前头像",
-  betaPreset: "预设角色（测试版）",
-  betaEyes: "眼睛风格",
-  eyewear: "眼镜",
-  accessory: "配饰",
+  reaction: '做出反应',
+  working: '工作',
+  avatarStyle: '头像风格',
+  proceduralAvatar: '当前头像',
+  betaPreset: '预设角色（测试版）',
+  betaEyes: '眼睛风格',
+  eyewear: '眼镜',
+  accessory: '配饰',
   characterOption: (_category, _id, title) => String(title),
-  editor: "智能体编辑器",
-  newBot: "新机器人",
-  closeEditor: "关闭智能体编辑器",
-  details: "智能体外观和详情",
-  color: "头像颜色",
-  customColor: "自定义头像颜色",
-  name: "名称",
-  label: "标签",
-  description: "描述",
-  nameInput: "智能体名称",
-  labelInput: "智能体标签",
-  descriptionInput: "智能体描述",
-  labelPlaceholder: "经理、营销、画家",
-  descriptionPlaceholder: "智能体详情",
-  language: "语言",
-  languageInput: "智能体语言",
-  notifications: "通知",
-  notificationsDescription: "回复准备好时显示通知。",
-  notifyFinished: "此智能体完成后通知",
-  voice: "语音",
-  voiceInput: "智能体语音",
-  previewVoice: "试听语音",
-  savedVoice: "已保存语音",
-  systemVoice: "系统语音",
-  off: "关闭",
-  playbackSpeed: "播放速度",
-  emotion: "智能体表情",
-  shape: "头像形状",
-  hexColor: "十六进制颜色",
-  hue: "色相",
-  saturationBrightness: "饱和度和亮度",
-  increaseBrightness: "提高亮度",
-  decreaseBrightness: "降低亮度",
-  increaseHue: "提高色相",
-  decreaseHue: "降低色相",
-  nextShape: "下一形状",
-  previousShape: "上一形状",
-  newAgent: "新智能体",
-  emotions: { "neutral": "中性", "happy": "开心", "angry": "生气", "thinking": "思考", "shook": "震惊", "curious": "好奇", "wink": "眨眼", "sleepy": "困倦", "sad": "难过", "worried": "担心", "skeptical": "怀疑", "focused": "专注", "excited": "兴奋", "calm": "平静", "shy": "害羞", "confused": "困惑" },
-  shapes: { "slender": "细长", "pocket": "口袋", "petal": "花瓣", "flower": "花朵", "star": "星星", "heart": "爱心", "cloud": "云朵", "diamond": "菱形", "shield": "盾牌" },
-  colors: { "Blue": "蓝色", "Teal": "蓝绿色", "Violet": "紫罗兰色", "Pink": "粉色", "Red": "红色", "Orange": "橙色", "Cyan": "青色", "Lime": "青柠色", "Green": "绿色" },
-  languages: { "auto": "自动检测", "en": "英语", "tr": "土耳其语", "es": "西班牙语", "fr": "法语", "de": "德语", "ja": "日语", "pt": "葡萄牙语" },
-  avatarColorLabel: (name) => "{name}头像".replace("{name}", name),
-  shapeLabel: (name) => "{name}形状".replace("{name}", name),
-  silhouetteLabel: (name) => "{name}轮廓".replace("{name}", name),
-  livePreview: (name) => "{name}，实时头像预览".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "饱和度{s}%，亮度{v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "播放速度{speed}倍".replace("{speed}", String(speed)),
+  editor: '智能体编辑器',
+  newBot: '新机器人',
+  closeEditor: '关闭智能体编辑器',
+  details: '智能体外观和详情',
+  color: '头像颜色',
+  customColor: '自定义头像颜色',
+  name: '名称',
+  label: '标签',
+  description: '描述',
+  nameInput: '智能体名称',
+  labelInput: '智能体标签',
+  descriptionInput: '智能体描述',
+  labelPlaceholder: '经理、营销、画家',
+  descriptionPlaceholder: '智能体详情',
+  language: '语言',
+  languageInput: '智能体语言',
+  notifications: '通知',
+  notificationsDescription: '回复准备好时显示通知。',
+  notifyFinished: '此智能体完成后通知',
+  voice: '语音',
+  voiceInput: '智能体语音',
+  previewVoice: '试听语音',
+  savedVoice: '已保存语音',
+  systemVoice: '系统语音',
+  off: '关闭',
+  playbackSpeed: '播放速度',
+  emotion: '智能体表情',
+  shape: '头像形状',
+  hexColor: '十六进制颜色',
+  hue: '色相',
+  saturationBrightness: '饱和度和亮度',
+  increaseBrightness: '提高亮度',
+  decreaseBrightness: '降低亮度',
+  increaseHue: '提高色相',
+  decreaseHue: '降低色相',
+  nextShape: '下一形状',
+  previousShape: '上一形状',
+  newAgent: '新智能体',
+  emotions: {
+    neutral: '中性',
+    happy: '开心',
+    angry: '生气',
+    thinking: '思考',
+    shook: '震惊',
+    curious: '好奇',
+    wink: '眨眼',
+    sleepy: '困倦',
+    sad: '难过',
+    worried: '担心',
+    skeptical: '怀疑',
+    focused: '专注',
+    excited: '兴奋',
+    calm: '平静',
+    shy: '害羞',
+    confused: '困惑',
+  },
+  shapes: {
+    slender: '细长',
+    pocket: '口袋',
+    petal: '花瓣',
+    flower: '花朵',
+    star: '星星',
+    heart: '爱心',
+    cloud: '云朵',
+    diamond: '菱形',
+    shield: '盾牌',
+  },
+  colors: {
+    Blue: '蓝色',
+    Teal: '蓝绿色',
+    Violet: '紫罗兰色',
+    Pink: '粉色',
+    Red: '红色',
+    Orange: '橙色',
+    Cyan: '青色',
+    Lime: '青柠色',
+    Green: '绿色',
+  },
+  languages: {
+    auto: '自动检测',
+    en: '英语',
+    tr: '土耳其语',
+    es: '西班牙语',
+    fr: '法语',
+    de: '德语',
+    ja: '日语',
+    pt: '葡萄牙语',
+  },
+  avatarColorLabel: (name) => '{name}头像'.replace('{name}', name),
+  shapeLabel: (name) => '{name}形状'.replace('{name}', name),
+  silhouetteLabel: (name) => '{name}轮廓'.replace('{name}', name),
+  livePreview: (name) => '{name}，实时头像预览'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    '饱和度{s}%，亮度{v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) => '播放速度{speed}倍'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -126,7 +184,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: '草稿：', pinned: '已置顶', muted: '已静音', verified: '已认证', channel: '频道', bot: '机器人', group: '群组' },
+  item: {
+    draft: '草稿：',
+    pinned: '已置顶',
+    muted: '已静音',
+    verified: '已认证',
+    channel: '频道',
+    bot: '机器人',
+    group: '群组',
+  },
   search: { chat: '聊天', message: '消息', contact: '联系人', empty: '无结果' },
   list: '聊天',
   emptyTitle: '暂无对话',
@@ -184,10 +250,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `${team}菜单`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'KB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: '卡号', expiry: '有效期', securityCode: '安全码', name: '持卡人姓名', postcode: '邮政编码', country: '国家/地区' },
+  labels: {
+    number: '卡号',
+    expiry: '有效期',
+    securityCode: '安全码',
+    name: '持卡人姓名',
+    postcode: '邮政编码',
+    country: '国家/地区',
+  },
   selectCountry: '选择国家/地区',
 };
 
@@ -221,7 +299,15 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestionVerified: '已认证',
   searchingSuggestions: '正在搜索…',
   noSuggestions: { mention: '未找到用户', command: '未找到命令', emoji: '未找到表情' },
-  attachmentItems: { gallery: '相册', camera: '相机', file: '文件', location: '位置', contact: '联系人', poll: '投票', music: '音乐' },
+  attachmentItems: {
+    gallery: '相册',
+    camera: '相机',
+    file: '文件',
+    location: '位置',
+    contact: '联系人',
+    poll: '投票',
+    music: '音乐',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -272,7 +358,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: '显示歌词',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: '这里还没有内容', addresses: '地址' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: '这里还没有内容',
+  addresses: '地址',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: '单曲', ep: 'EP', album: '专辑' },
@@ -295,7 +384,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   periods: { '7d': '7 天', '28d': '28 天', '12m': '12 个月', all: '全部时间' },
   artworkNotSquare: (w, h) => `封面必须是正方形——此图片为 ${w}×${h} 像素。`,
-  artworkTooSmall: (w, h, min) => `封面太小（${w}×${h} 像素）。请上传至少 ${min}×${min} 像素的图片。`,
+  artworkTooSmall: (w, h, min) =>
+    `封面太小（${w}×${h} 像素）。请上传至少 ${min}×${min} 像素的图片。`,
   audience: { title: '听众', period: '时段' },
   breakdown: {
     locations: '热门地区',
@@ -308,7 +398,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   streams: {
     metrics: '图表指标',
-    summary: (metric, releases) => (releases ? `${metric}趋势；发行：${releases}` : `${metric}趋势`),
+    summary: (metric, releases) =>
+      releases ? `${metric}趋势；发行：${releases}` : `${metric}趋势`,
   },
   topTracks: {
     title: '热门曲目',
@@ -479,7 +570,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: '你的申请',
   applicationProgress: '申请进度',
   progressReady: (done, total) => `已就绪 ${done}/${total}`,
-  applicationStatus: { missing: '缺少', uploaded: '审核中', verified: '已验证', rejected: '已拒绝' },
+  applicationStatus: {
+    missing: '缺少',
+    uploaded: '审核中',
+    verified: '已验证',
+    rejected: '已拒绝',
+  },
   applicationAction: { upload: '上传', view: '查看', replace: '替换' },
   itemAction: (action, title) => `${action}${title}`,
   mortgage: {
@@ -499,7 +595,8 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
     totalCost: '总成本',
   },
   termYears: (n) => `${n}年`,
-  mortgageDisclaimer: '仅为估算，并非贷款要约。未包含手续费、税费和保险，并假设整个期限内利率固定。',
+  mortgageDisclaimer:
+    '仅为估算，并非贷款要约。未包含手续费、税费和保险，并假设整个期限内利率固定。',
 };
 
 const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
@@ -507,7 +604,13 @@ const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
   allCompleted: '所有步骤已完成',
   minimize: '收起步骤',
   expand: '展开步骤',
-  defaultSteps: ['读取项目文件', '更新并安装浅色模式令牌', '实现深色模式令牌', '添加可复用的已注册主题切换', '运行注册表、lint 和生产构建'],
+  defaultSteps: [
+    '读取项目文件',
+    '更新并安装浅色模式令牌',
+    '实现深色模式令牌',
+    '添加可复用的已注册主题切换',
+    '运行注册表、lint 和生产构建',
+  ],
 };
 
 const CALENDAR_MESSAGES: Translations['CALENDAR_MESSAGES'] = {
@@ -648,11 +751,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: '不适用于此货物',
   vehicle: '车型',
   vehicles: {
-    bike: { label: '货运自行车', capacity: '最多 25 kg · 60 × 40 × 40 cm', fits: ['文件', '一份外卖', '一个小箱子'] },
-    car: { label: '轿车', capacity: '最多 150 kg · 100 × 80 × 60 cm', fits: ['两个行李箱', '四个纸箱', '一辆自行车'] },
-    van: { label: '面包车', capacity: '最多 800 kg · 240 × 150 × 140 cm', fits: ['一张沙发', '单间搬家', '半个托盘'] },
-    boxTruck: { label: '厢式货车', capacity: '最多 3,500 kg · 420 × 200 × 210 cm', fits: ['两个托盘', '两居室搬家', '尾板升降'] },
-    refrigerated: { label: '冷藏车', capacity: '最多 700 kg · 保持 2–8 °C', fits: ['生鲜食品', '冷藏餐饮', '鲜花'] },
+    bike: {
+      label: '货运自行车',
+      capacity: '最多 25 kg · 60 × 40 × 40 cm',
+      fits: ['文件', '一份外卖', '一个小箱子'],
+    },
+    car: {
+      label: '轿车',
+      capacity: '最多 150 kg · 100 × 80 × 60 cm',
+      fits: ['两个行李箱', '四个纸箱', '一辆自行车'],
+    },
+    van: {
+      label: '面包车',
+      capacity: '最多 800 kg · 240 × 150 × 140 cm',
+      fits: ['一张沙发', '单间搬家', '半个托盘'],
+    },
+    boxTruck: {
+      label: '厢式货车',
+      capacity: '最多 3,500 kg · 420 × 200 × 210 cm',
+      fits: ['两个托盘', '两居室搬家', '尾板升降'],
+    },
+    refrigerated: {
+      label: '冷藏车',
+      capacity: '最多 700 kg · 保持 2–8 °C',
+      fits: ['生鲜食品', '冷藏餐饮', '鲜花'],
+    },
   },
 };
 
@@ -729,7 +852,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: '授权中', paid: '已支付', failed: '支付失败', refunded: '已退款', pending: '支付处理中' },
+  states: {
+    authorising: '授权中',
+    paid: '已支付',
+    failed: '支付失败',
+    refunded: '已退款',
+    pending: '支付处理中',
+  },
   reference: '参考号',
 };
 
@@ -752,9 +881,20 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `使用 ${b} 继续`, signIn: (b) => `使用 ${b} 登录`, signUp: (b) => `使用 ${b} 注册` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `使用 ${b} 继续`,
+    signIn: (b) => `使用 ${b} 登录`,
+    signUp: (b) => `使用 ${b} 注册`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: '其他', otherPlaceholder: '在此输入你的答案', steps: '步骤', step: (n) => `第 ${n} 步` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: '其他',
+  otherPlaceholder: '在此输入你的答案',
+  steps: '步骤',
+  step: (n) => `第 ${n} 步`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: '地图控件',
@@ -771,9 +911,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: '叠加层',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: '已过期', declined: '已拒绝' }, default: '默认', add: '添加付款方式', emptyTitle: '没有已保存的付款方式', paymentMethods: '付款方式' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: '已过期', declined: '已拒绝' },
+  default: '默认',
+  add: '添加付款方式',
+  emptyTitle: '没有已保存的付款方式',
+  paymentMethods: '付款方式',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `还有 ${n} 人`, profile: '个人资料' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => `还有 ${n} 人`,
+  profile: '个人资料',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: '菜单栏',
@@ -892,8 +1041,7 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   originally: (p) => `原价 ${p}`,
   approximateLocation: '大致位置',
   rated: (r) => `评分${r}分（满分5分）`,
-  ratedWithReviews: (r, c) =>
-    plural('zh', c, { other: `评分${r}分（满分5分），${c}条评价` }),
+  ratedWithReviews: (r, c) => plural('zh', c, { other: `评分${r}分（满分5分），${c}条评价` }),
   newListing: '新房源',
   previousPhoto: '上一张照片',
   nextPhoto: '下一张照片',
@@ -931,7 +1079,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: '幻灯片',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: '进行中', upcoming: '未开始', failed: '失败' }, status: '状态' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: '进行中', upcoming: '未开始', failed: '失败' },
+  status: '状态',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: '新',
@@ -1038,7 +1189,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: '素食', vegan: '纯素', 'gluten-free': '无麸质', 'dairy-free': '无乳制品', halal: '清真', kosher: '犹太洁食' },
+  diets: {
+    vegetarian: '素食',
+    vegan: '纯素',
+    'gluten-free': '无麸质',
+    'dairy-free': '无乳制品',
+    halal: '清真',
+    kosher: '犹太洁食',
+  },
   spicy: '辣度',
   spiceOf: (label, level, max) => `${label} ${level}/${max}`,
   originally: (price, original) => `${price}，原价 ${original}`,
@@ -1059,7 +1217,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `转到第 ${page} 页`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: '线索评分', factors: '评分构成', bands: { cold: '冷', warm: '温', hot: '热' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: '线索评分',
+  factors: '评分构成',
+  bands: { cold: '冷', warm: '温', hot: '热' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: '驾车', transit: '公共交通', walk: '步行', cycle: '骑行' },
@@ -1182,7 +1344,11 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     emptyDescription: '此对话使用你自己的 API 密钥。历史记录保存在此浏览器中。',
     thinking: '思考中',
     error: '出了点问题。请检查服务器日志，然后重试。',
-    suggestions: ['解释一下这个入门项目是做什么的', '用三句话写一条产品更新', '给一个日程安排应用起五个名字'],
+    suggestions: [
+      '解释一下这个入门项目是做什么的',
+      '用三句话写一条产品更新',
+      '给一个日程安排应用起五个名字',
+    ],
     you: '你',
     assistant: '助手',
   },
@@ -1203,7 +1369,8 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     renameField: '重命名对话',
     markUnread: '标记为未读',
     unread: '未读',
-    exportCount: (n) => (n === 0 ? '没有可导出的对话' : plural('zh', n, { other: '导出 {n} 个对话' })),
+    exportCount: (n) =>
+      n === 0 ? '没有可导出的对话' : plural('zh', n, { other: '导出 {n} 个对话' }),
     accountMenu: (name) => `${name}的账户菜单`,
     usageLeft: '剩余用量',
     upgrade: '升级到 Max',
@@ -1228,7 +1395,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   age: { now: '刚刚', minutes: (n) => `${n}分钟`, hours: (n) => `${n}小时`, days: (n) => `${n}天` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: '来源', working: '处理中' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: '来源',
+  working: '处理中',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: '收件人',
@@ -1315,12 +1485,18 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   ringItem: (label, value, pct) => `${label} ${value}，目标的 ${pct}%`,
   scoreOf: (score, max) => `${score}/${max}`,
   activityFor: (name, day) => `${name}${day}日的活动`,
-  contributions: (n, date) => { const on = date ? `${date} ` : ''; return n === 0 ? `${on}无贡献` : `${on}${n} 次贡献`; },
+  contributions: (n, date) => {
+    const on = date ? `${date} ` : '';
+    return n === 0 ? `${on}无贡献` : `${on}${n} 次贡献`;
+  },
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: '复制代码', copied: '代码已复制' };
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: '本页内容', progress: (at, of) => `第 ${at} 个标题，共 ${of} 个` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: '本页内容',
+  progress: (at, of) => `第 ${at} 个标题，共 ${of} 个`,
+};
 
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: '减少', increase: '增加' };
 
@@ -1379,7 +1555,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}，已静音`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: '近期入职' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: '近期入职',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: '草稿：',
@@ -1400,9 +1578,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: '邮件',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: '重要提醒', thisWeek: '本周' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: '重要提醒',
+  thisWeek: '本周',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `关于${label}`, fromLastMonth: '较上月' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `关于${label}`,
+  fromLastMonth: '较上月',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1451,7 +1635,12 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     other: '其他',
   },
   maintenancePriority: { low: '低优先级', medium: '中优先级', high: '高优先级', urgent: '紧急' },
-  maintenanceStage: { reported: '已报修', acknowledged: '已受理', scheduled: '已安排', resolved: '已解决' },
+  maintenanceStage: {
+    reported: '已报修',
+    acknowledged: '已受理',
+    scheduled: '已安排',
+    resolved: '已解决',
+  },
   documentStatus: { signed: '已签署', pending: '待签署', expired: '已过期' },
   timelineState: { complete: '已完成', current: '进行中', upcoming: '未开始' },
   leasePeriod: '租期',
@@ -1481,7 +1670,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: '标准', sm: '紧凑' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: '出了点问题', message: '发生了意外错误', retry: '重试' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: '出了点问题',
+  message: '发生了意外错误',
+  retry: '重试',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: '今年的贡献',
@@ -1660,7 +1853,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: '通话', email: '邮件', meeting: '会议', note: '备注', 'stage-change': '阶段变更', task: '任务已完成' },
+  kinds: {
+    call: '通话',
+    email: '邮件',
+    meeting: '会议',
+    note: '备注',
+    'stage-change': '阶段变更',
+    task: '任务已完成',
+  },
   empty: '暂无记录',
   loggedBy: (name) => `记录人：${name}`,
   filterActivity: '筛选动态',
@@ -1743,13 +1943,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${action}“${subject}”`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: '出租', sale: '出售', short_term_rent: '度假短租', exchange: '置换' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: '出租',
+    sale: '出售',
+    short_term_rent: '度假短租',
+    exchange: '置换',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: '比例尺', mapData: '地图数据' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: '比例尺',
+  mapData: '地图数据',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: '最小值', maximum: '最大值', value: (n) => `值 ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: '最小值',
+  maximum: '最大值',
+  value: (n) => `值 ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: '选择一个选项', scrollUp: '向上滚动', scrollDown: '向下滚动' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: '选择一个选项',
+  scrollUp: '向上滚动',
+  scrollDown: '向下滚动',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: '关闭媒体查看器',
@@ -1761,10 +1979,18 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
 
 const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: '关闭通知' };
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: '电话号码', countryCode: '国家/地区代码' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: '电话号码',
+  countryCode: '国家/地区代码',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: '配送时间', deliveryFee: '配送费', distance: '距离', minimumOrder: '起送价' },
+  facts: {
+    deliveryTime: '配送时间',
+    deliveryFee: '配送费',
+    distance: '距离',
+    minimumOrder: '起送价',
+  },
   availability: { paused: '暂停营业', closed: '已打烊' },
   new: '新店',
   rated: (value, reviews) =>
@@ -1773,7 +1999,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: '在线', idle: '离开', offline: '离线', busy: '忙碌' },
-  status: { sending: '正在发送…', sent: '已发送', delivered: '已送达', read: '已读', failed: '未发送' },
+  status: {
+    sending: '正在发送…',
+    sent: '已发送',
+    delivered: '已送达',
+    read: '已读',
+    failed: '未发送',
+  },
   unread: '未读',
   unreadCount: (n) => `${n} 条未读消息`,
 };
@@ -1854,7 +2086,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: '清除搜索内容' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `移除“${t}”`, full: (n) => `最多 ${n} 个`, suggestions: '建议' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `移除“${t}”`,
+  full: (n) => `最多 ${n} 个`,
+  suggestions: '建议',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1990,25 +2226,47 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   notChargedYet: '目前还不会向你收费',
   total: '总计',
   tripStatus: { confirmed: '已确认', pending: '待处理', cancelled: '已取消', completed: '已完成' },
-  priceName: booking_priceName((p, u) => `每${u} ${p}`, (s, o) => `${s}，原价 ${o}`),
+  priceName: booking_priceName(
+    (p, u) => `每${u} ${p}`,
+    (s, o) => `${s}，原价 ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: '上下文窗口', freeSpace: '可用空间', planUsageLimits: '套餐用量限制', managePlan: '管理套餐' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: '上下文窗口',
+  freeSpace: '可用空间',
+  planUsageLimits: '套餐用量限制',
+  managePlan: '管理套餐',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: '关闭操作',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: '添加头像' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: '添加头像',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: '主题', darkMode: '深色模式', lightMode: '浅色模式', useDarkMode: '使用深色模式', useLightMode: '使用浅色模式' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: '主题',
+  darkMode: '深色模式',
+  lightMode: '浅色模式',
+  useDarkMode: '使用深色模式',
+  useLightMode: '使用浅色模式',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: '已赚取',
   period: '收入周期',
   breakdown: '收入来源',
   payout: '下次打款',
-  payoutState: { scheduled: '已安排', processing: '打款中', paid: '已支付', held: '已暂扣', failed: '失败' },
+  payoutState: {
+    scheduled: '已安排',
+    processing: '打款中',
+    paid: '已支付',
+    held: '已暂扣',
+    failed: '失败',
+  },
   chart: (label) => `${label}收入（按周期）`,
   empty: '还没有收入',
   earnings: '收入',
@@ -2093,9 +2351,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: '更多格式', moreMenu: '更多格式' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: '筛选', showAll: '显示全部' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: '筛选',
+  showAll: '显示全部',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: '上一组类别', next: '下一组类别' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: '上一组类别',
+  next: '下一组类别',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2122,7 +2386,11 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   priceDetailsFor: (name) => `${name}的价格明细`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: '显示密码', hidePassword: '隐藏密码', required: '必填' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: '显示密码',
+  hidePassword: '隐藏密码',
+  required: '必填',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: '语音通话',
@@ -2220,252 +2488,260 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "保存更改" : "开始聊天" + (count ? ' · ' + plural('zh', count, {"other": "{n} 个智能体"}) : ''),
-  you: "你",
-  responseFailed: "{0} 未能回复。请重试。",
-  editAgentTitle: "编辑智能体",
-  aLittleHelp: "帮助",
-  aFewMindsOneConversation: "一些想法。一次谈话。",
-  aLittleRoomForSomethingNew: "一个容纳新事物的小空间",
-  accountDetails: "帐户详细信息",
-  add: "添加",
-  add2: "添加 {0}",
-  added: "已添加",
-  addedToYourWorkspace: "添加到您的工作区",
-  agent: "经纪人",
-  agentConversation: "代理对话",
-  appearance: "外观",
-  apps: "应用程序 · {0}",
-  availability: "可用性",
-  backToMarketplace: "返回市场",
-  billing: "计费",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "机器人",
-  bringYourAgentsIntoOneChat: "让您的代理参与一次聊天。",
-  category: "类别",
-  chatActions: "聊天操作",
-  chatList: "聊天列表",
-  chatName: "聊天名称",
-  chatRemoved: "聊天已删除",
-  chatWithYourAgents: "与您的代理聊天",
-  chooseAnAgentOrCreateYourOwn: "选择一个代理或创建您自己的代理来开始对话。",
-  chooseWhoSJoiningTheConversation: "选择谁加入对话。",
-  chooseYourTeammates: "选择你的队友",
-  closeMarketplace: "关闭市场",
-  closeSearch: "关闭搜索",
-  company: "公司",
-  companyDetails: "公司详情",
-  completionSound: "完成声音",
-  connectedAccount: "关联帐户",
-  connector: "连接器",
-  conversationIDCopied: "对话 ID 已复制",
-  conversationCopied: "对话已复制",
-  conversationOptions: "对话选项",
-  conversations: "对话",
-  copied: "已复制",
-  copyConversation: "复制对话",
-  copyConversationID: "复制对话 ID",
-  copyResponse: "复制回答",
-  couldnTCopyPleaseTryAgain: "无法复制。请再试一次。",
-  create: "创建",
-  createANewBot: "创建一个新机器人",
-  createBotOrChat: "创建机器人或聊天",
-  criticalRequests: "关键请求",
-  customize: "定制",
-  customizeANewTeammate: "定制一个新队友。",
-  dateOfBirth: "出生日期",
-  demoIntegrationAddingSavesItToThis: "演示集成。添加将其保存到此浏览器；没有连接外部帐户。",
-  desktopApp: "桌面应用程序",
-  details: "详细信息",
-  developer: "开发商",
-  deviceID: "设备 ID",
-  discover: "发现",
-  dispatchAlerts: "发送警报",
-  editConversationAgents: "编辑对话代理",
-  editBot: "编辑机器人",
-  editGroup: "编辑组",
-  editAgent: "编辑{0}",
-  email: "邮件",
-  everydayEssentials: "日常必需品",
-  exploreMarketplace: "探索市场",
-  explorePlugins: "探索插件",
-  explorePluginsAndBotsToBuildYour: "探索插件和机器人来建立您的团队。",
-  findYourNextTeammate: "寻找你的下一个队友",
-  findYourNextToolOrTeammate: "寻找你的下一个工具或队友",
-  firstName: "名字",
-  folders: "文件夹",
-  general: "一般",
-  getNotifiedWhenTheModeNeedsTo: "当模式需要做出关键决策时收到通知",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "有用的回复",
-  inTheBrowser: "在浏览器中",
-  inThisConversation: "在这次谈话中",
-  includes: "包括",
-  insideTheApp: "应用程序内部",
-  installed: "已安装",
-  integrations: "集成",
-  iLlApproachThisFromThePerspective: "我将从 {0} 的角度来解决这个问题。",
-  lastName: "姓氏",
-  limits: "限制",
-  logOutFromAllDevices: "从所有设备注销",
-  logout: "退出登录",
-  manage: "管理",
-  manageLimits: "管理限制",
-  marketplace: "市场",
-  marketplaceLinkCopied: "市场链接已复制",
-  marketplaceListings: "市场列表",
-  meetYourNextTeammate: "认识你的下一个队友",
-  messages: "消息",
-  noConversationsFound: "未找到任何对话。",
-  noMatchesYet: "还没有匹配项",
-  notifications: "通知",
-  openConversations: "公开对话",
-  openPullRequestLinksInsideYourApp: "在应用程序内打开拉取请求链接",
-  openTheMarketplaceToExplorePluginsAnd: "打开市场来探索插件和机器人。使用对话的菜单编辑机器人的外观和详细信息。从情感轮中选择一种表达方式。滚动或拖动形状弧，或使用其箭头键来探索形状。",
-  prDestination: "公关目的地",
-  people: "用户",
-  personal: "个人",
-  pinChat: "固定聊天",
-  pinnedChat: "固定聊天",
-  plugins: "插件",
-  profile: "个人资料",
-  public: "公开",
-  publicProfile: "公开资料",
-  pullRequests: "拉取请求",
-  pushNotificationOnYourPhoneWhenThe: "当应用程序向您发送消息时，在您的手机上推送通知",
-  remove: "移除",
-  removeChat: "删除聊天记录",
-  renameChat: "重命名对话",
-  responseCopied: "回复已复制",
-  reviewProvider: "评论提供者",
-  rulesAndWorkflows: "规则和工作流程",
-  saveName: "保存名称",
-  sayHelloTo: "向{0}问好",
-  searchConversations: "搜索对话",
-  searchConversations2: "搜索对话...",
-  searchMarketplace: "搜索市场",
-  selectGithubOrOtherProvidersForReviews: "选择 Github 或其他提供商进行评论",
-  selectedAgents: "选定的代理：{0}",
-  sendWithEnterUseShiftEnterFor: "按 Enter 键发送。使用 Shift + Enter 换行。您的更改将保留在此浏览器中。",
-  settings: "设置",
-  share: "分享",
-  showFundamentalNotificationsWhenAnAgentCompletes: "当代理完成任务时显示基本通知",
-  signOut: "退出",
-  skills: "技能",
-  skills2: "技能 · {0}",
-  soundEffectATaskIsCompleted: "音效任务完成",
-  startAConversation: "开始对话",
-  startAGroupChat: "发起群聊",
-  startChat: "开始聊天",
-  storage: "存储",
-  support: "支持",
-  systemNotifications: "系统通知",
-  thinkingTogether: "一起思考……",
-  thinking: "思考……",
-  today: "今天",
-  tools: "工具",
-  toolsForYourWorkflow: "适用于您的工作流程的工具",
-  tryAnotherNameCategoryOrKeyword: "尝试其他名称、类别或关键字。",
-  ultra149Mo: "超 149 美元/月",
-  unhelpfulResponse: "无益的回应",
-  unpinChat: "取消固定聊天",
-  upgradeToMax: "升级到 Max",
-  useToCreateABotOrStart: "使用 + 创建机器人或开始与多个代理对话。",
-  viewAdded: "视图已添加 {0}",
-  viewAll: "查看全部",
-  viewTeamProfile: "查看团队简介",
-  viewItem: "查看{0}",
-  website: "网站",
-  whenEnabledYourProfilePageWillBe: "启用后，任何人都可以看到您的个人资料页面",
-  youAreOn7xMoreUsageThan: "您的使用量是高级版的 7 倍",
-  youAreOn7xMoreUsageThan2: "您的使用量是常规的 7 倍。",
-  areHereSendAMessageToGet: "{0} 在这里。发送消息以了解每个人的观点。",
-  itemDetails: "{0} 详细信息",
-  agentThinking: "{0} 正在思考",
-  by: "{0} · 由 {1}",
-  results: (count: number) => plural('zh', count, {"other": "{n} 个结果"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('zh', apps, {"other": "{n} 个应用"}) + "，" : '') + plural('zh', skills, {"other": "{n} 个技能"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? '保存更改'
+      : '开始聊天' + (count ? ' · ' + plural('zh', count, { other: '{n} 个智能体' }) : ''),
+  you: '你',
+  responseFailed: '{0} 未能回复。请重试。',
+  editAgentTitle: '编辑智能体',
+  aLittleHelp: '帮助',
+  aFewMindsOneConversation: '一些想法。一次谈话。',
+  aLittleRoomForSomethingNew: '一个容纳新事物的小空间',
+  accountDetails: '帐户详细信息',
+  add: '添加',
+  add2: '添加 {0}',
+  added: '已添加',
+  addedToYourWorkspace: '添加到您的工作区',
+  agent: '经纪人',
+  agentConversation: '代理对话',
+  appearance: '外观',
+  apps: '应用程序 · {0}',
+  availability: '可用性',
+  backToMarketplace: '返回市场',
+  billing: '计费',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: '机器人',
+  bringYourAgentsIntoOneChat: '让您的代理参与一次聊天。',
+  category: '类别',
+  chatActions: '聊天操作',
+  chatList: '聊天列表',
+  chatName: '聊天名称',
+  chatRemoved: '聊天已删除',
+  chatWithYourAgents: '与您的代理聊天',
+  chooseAnAgentOrCreateYourOwn: '选择一个代理或创建您自己的代理来开始对话。',
+  chooseWhoSJoiningTheConversation: '选择谁加入对话。',
+  chooseYourTeammates: '选择你的队友',
+  closeMarketplace: '关闭市场',
+  closeSearch: '关闭搜索',
+  company: '公司',
+  companyDetails: '公司详情',
+  completionSound: '完成声音',
+  connectedAccount: '关联帐户',
+  connector: '连接器',
+  conversationIDCopied: '对话 ID 已复制',
+  conversationCopied: '对话已复制',
+  conversationOptions: '对话选项',
+  conversations: '对话',
+  copied: '已复制',
+  copyConversation: '复制对话',
+  copyConversationID: '复制对话 ID',
+  copyResponse: '复制回答',
+  couldnTCopyPleaseTryAgain: '无法复制。请再试一次。',
+  create: '创建',
+  createANewBot: '创建一个新机器人',
+  createBotOrChat: '创建机器人或聊天',
+  criticalRequests: '关键请求',
+  customize: '定制',
+  customizeANewTeammate: '定制一个新队友。',
+  dateOfBirth: '出生日期',
+  demoIntegrationAddingSavesItToThis: '演示集成。添加将其保存到此浏览器；没有连接外部帐户。',
+  desktopApp: '桌面应用程序',
+  details: '详细信息',
+  developer: '开发商',
+  deviceID: '设备 ID',
+  discover: '发现',
+  dispatchAlerts: '发送警报',
+  editConversationAgents: '编辑对话代理',
+  editBot: '编辑机器人',
+  editGroup: '编辑组',
+  editAgent: '编辑{0}',
+  email: '邮件',
+  everydayEssentials: '日常必需品',
+  exploreMarketplace: '探索市场',
+  explorePlugins: '探索插件',
+  explorePluginsAndBotsToBuildYour: '探索插件和机器人来建立您的团队。',
+  findYourNextTeammate: '寻找你的下一个队友',
+  findYourNextToolOrTeammate: '寻找你的下一个工具或队友',
+  firstName: '名字',
+  folders: '文件夹',
+  general: '一般',
+  getNotifiedWhenTheModeNeedsTo: '当模式需要做出关键决策时收到通知',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: '有用的回复',
+  inTheBrowser: '在浏览器中',
+  inThisConversation: '在这次谈话中',
+  includes: '包括',
+  insideTheApp: '应用程序内部',
+  installed: '已安装',
+  integrations: '集成',
+  iLlApproachThisFromThePerspective: '我将从 {0} 的角度来解决这个问题。',
+  lastName: '姓氏',
+  limits: '限制',
+  logOutFromAllDevices: '从所有设备注销',
+  logout: '退出登录',
+  manage: '管理',
+  manageLimits: '管理限制',
+  marketplace: '市场',
+  marketplaceLinkCopied: '市场链接已复制',
+  marketplaceListings: '市场列表',
+  meetYourNextTeammate: '认识你的下一个队友',
+  messages: '消息',
+  noConversationsFound: '未找到任何对话。',
+  noMatchesYet: '还没有匹配项',
+  notifications: '通知',
+  openConversations: '公开对话',
+  openPullRequestLinksInsideYourApp: '在应用程序内打开拉取请求链接',
+  openTheMarketplaceToExplorePluginsAnd:
+    '打开市场来探索插件和机器人。使用对话的菜单编辑机器人的外观和详细信息。从情感轮中选择一种表达方式。滚动或拖动形状弧，或使用其箭头键来探索形状。',
+  prDestination: '公关目的地',
+  people: '用户',
+  personal: '个人',
+  pinChat: '固定聊天',
+  pinnedChat: '固定聊天',
+  plugins: '插件',
+  profile: '个人资料',
+  public: '公开',
+  publicProfile: '公开资料',
+  pullRequests: '拉取请求',
+  pushNotificationOnYourPhoneWhenThe: '当应用程序向您发送消息时，在您的手机上推送通知',
+  remove: '移除',
+  removeChat: '删除聊天记录',
+  renameChat: '重命名对话',
+  responseCopied: '回复已复制',
+  reviewProvider: '评论提供者',
+  rulesAndWorkflows: '规则和工作流程',
+  saveName: '保存名称',
+  sayHelloTo: '向{0}问好',
+  searchConversations: '搜索对话',
+  searchConversations2: '搜索对话...',
+  searchMarketplace: '搜索市场',
+  selectGithubOrOtherProvidersForReviews: '选择 Github 或其他提供商进行评论',
+  selectedAgents: '选定的代理：{0}',
+  sendWithEnterUseShiftEnterFor:
+    '按 Enter 键发送。使用 Shift + Enter 换行。您的更改将保留在此浏览器中。',
+  settings: '设置',
+  share: '分享',
+  showFundamentalNotificationsWhenAnAgentCompletes: '当代理完成任务时显示基本通知',
+  signOut: '退出',
+  skills: '技能',
+  skills2: '技能 · {0}',
+  soundEffectATaskIsCompleted: '音效任务完成',
+  startAConversation: '开始对话',
+  startAGroupChat: '发起群聊',
+  startChat: '开始聊天',
+  storage: '存储',
+  support: '支持',
+  systemNotifications: '系统通知',
+  thinkingTogether: '一起思考……',
+  thinking: '思考……',
+  today: '今天',
+  tools: '工具',
+  toolsForYourWorkflow: '适用于您的工作流程的工具',
+  tryAnotherNameCategoryOrKeyword: '尝试其他名称、类别或关键字。',
+  ultra149Mo: '超 149 美元/月',
+  unhelpfulResponse: '无益的回应',
+  unpinChat: '取消固定聊天',
+  upgradeToMax: '升级到 Max',
+  useToCreateABotOrStart: '使用 + 创建机器人或开始与多个代理对话。',
+  viewAdded: '视图已添加 {0}',
+  viewAll: '查看全部',
+  viewTeamProfile: '查看团队简介',
+  viewItem: '查看{0}',
+  website: '网站',
+  whenEnabledYourProfilePageWillBe: '启用后，任何人都可以看到您的个人资料页面',
+  youAreOn7xMoreUsageThan: '您的使用量是高级版的 7 倍',
+  youAreOn7xMoreUsageThan2: '您的使用量是常规的 7 倍。',
+  areHereSendAMessageToGet: '{0} 在这里。发送消息以了解每个人的观点。',
+  itemDetails: '{0} 详细信息',
+  agentThinking: '{0} 正在思考',
+  by: '{0} · 由 {1}',
+  results: (count: number) => plural('zh', count, { other: '{n} 个结果' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('zh', apps, { other: '{n} 个应用' }) + '，' : '') +
+    plural('zh', skills, { other: '{n} 个技能' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Bloom设计任务", defaultTeam: "Bloom团队",
+    defaultTitle: 'Bloom设计任务',
+    defaultTeam: 'Bloom团队',
     openTicket: (code, title) => `打开 ${code}: ${title}`,
-    addTicketTo: column => `添加任务到 ${column}`,
-    "board": "项目看板",
-    "controls": "看板控件",
-    "navigation": "打开导航",
-    "inbox": "打开项目收件箱",
-    "newTicket": "新建任务",
-    "columns": "项目看板列",
-    "sortTickets": "排序任务",
-    "filterTickets": "筛选任务",
-    "displayOptions": "显示选项",
-    "sort": "排序",
-    "filter": "筛选",
-    "display": "显示",
-    "manualOrder": "手动排序",
-    "priority": "优先级",
-    "title": "标题",
-    "project": "项目",
-    "allPriorities": "所有优先级",
-    "allProjects": "所有项目",
-    "clearFilters": "清除筛选",
-    "showDone": "显示已完成列",
-    "fillScreens": "填满宽屏",
-    "createTicket": "创建任务",
-    "closeCreate": "关闭任务创建",
-    "ticketTitle": "任务标题",
-    "enterTitle": "输入任务标题",
-    "description": "描述",
-    "descriptionArea": "描述区域",
-    "status": "状态",
-    "urgency": "紧急程度",
-    "assignee": "负责人",
-    "unassigned": "未分配",
-    "keepCreating": "继续创建",
-    "cancel": "取消",
-    "addTicket": "添加任务",
-    "sortTitle": "按标题排序",
-    "noTickets": "这里没有问题",
-    "favoriteAdd": "添加到收藏",
-    "favoriteRemove": "从收藏中移除",
-    "copyLink": "复制任务链接",
-    "actions": "任务操作",
-    "editDescription": "编辑描述",
-    "copyId": "复制任务ID",
-    "reopen": "重新打开任务",
-    "markDone": "标记为已完成",
-    "closeDetails": "关闭任务详情",
-    "linkCopied": "任务链接已复制",
-    "idCopied": "任务ID已复制",
-    "copyFailed": "无法复制。请重试。",
-    "createdBy": "创建者",
-    "saveDescription": "保存描述",
-    "ticketDescription": "任务描述",
-    "properties": "属性",
-    "editAssignees": "编辑负责人",
-    "resources": "资源",
-    "tokens": "消耗的令牌",
-    "comments": "评论",
-    "you": "你",
-    "justNow": "刚刚",
-    "addComment": "添加评论",
-    "enterComment": "输入你的评论",
-    "postComment": "发布评论",
-    "moveUp": "向上移动",
-    "moveDown": "向下移动",
-    "nextColumn": "移到下一列",
-    "previousColumn": "移到上一列",
-    "keyboardHint": "按Enter打开，空格选取，方向键移动，空格放下，Escape取消。"
-},
+    addTicketTo: (column) => `添加任务到 ${column}`,
+    board: '项目看板',
+    controls: '看板控件',
+    navigation: '打开导航',
+    inbox: '打开项目收件箱',
+    newTicket: '新建任务',
+    columns: '项目看板列',
+    sortTickets: '排序任务',
+    filterTickets: '筛选任务',
+    displayOptions: '显示选项',
+    sort: '排序',
+    filter: '筛选',
+    display: '显示',
+    manualOrder: '手动排序',
+    priority: '优先级',
+    title: '标题',
+    project: '项目',
+    allPriorities: '所有优先级',
+    allProjects: '所有项目',
+    clearFilters: '清除筛选',
+    showDone: '显示已完成列',
+    fillScreens: '填满宽屏',
+    createTicket: '创建任务',
+    closeCreate: '关闭任务创建',
+    ticketTitle: '任务标题',
+    enterTitle: '输入任务标题',
+    description: '描述',
+    descriptionArea: '描述区域',
+    status: '状态',
+    urgency: '紧急程度',
+    assignee: '负责人',
+    unassigned: '未分配',
+    keepCreating: '继续创建',
+    cancel: '取消',
+    addTicket: '添加任务',
+    sortTitle: '按标题排序',
+    noTickets: '这里没有问题',
+    favoriteAdd: '添加到收藏',
+    favoriteRemove: '从收藏中移除',
+    copyLink: '复制任务链接',
+    actions: '任务操作',
+    editDescription: '编辑描述',
+    copyId: '复制任务ID',
+    reopen: '重新打开任务',
+    markDone: '标记为已完成',
+    closeDetails: '关闭任务详情',
+    linkCopied: '任务链接已复制',
+    idCopied: '任务ID已复制',
+    copyFailed: '无法复制。请重试。',
+    createdBy: '创建者',
+    saveDescription: '保存描述',
+    ticketDescription: '任务描述',
+    properties: '属性',
+    editAssignees: '编辑负责人',
+    resources: '资源',
+    tokens: '消耗的令牌',
+    comments: '评论',
+    you: '你',
+    justNow: '刚刚',
+    addComment: '添加评论',
+    enterComment: '输入你的评论',
+    postComment: '发布评论',
+    moveUp: '向上移动',
+    moveDown: '向下移动',
+    nextColumn: '移到下一列',
+    previousColumn: '移到上一列',
+    keyboardHint: '按Enter打开，空格选取，方向键移动，空格放下，Escape取消。',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "智能体头像", unavailable: "头像不可用", },
+  AGENT_AVATAR_MESSAGES: { label: '智能体头像', unavailable: '头像不可用' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

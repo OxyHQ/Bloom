@@ -13,4 +13,11 @@ export interface SocialButtonMessages {
   actions: Record<SocialButtonAction, (brand: string) => string>;
 }
 
-export const SOCIAL_BUTTON_MESSAGES: MessageCatalog<SocialButtonMessages> = defineMessages<SocialButtonMessages>('SOCIAL_BUTTON_MESSAGES', { actions: { continue: (b) => `Continue with ${b}`, signIn: (b) => `Sign in with ${b}`, signUp: (b) => `Sign up with ${b}` } });
+export const SOCIAL_BUTTON_MESSAGES: MessageCatalog<SocialButtonMessages> =
+  defineMessages<SocialButtonMessages>('SOCIAL_BUTTON_MESSAGES', {
+    actions: {
+      continue: (b) => `Continue with ${b}`,
+      signIn: (b) => `Sign in with ${b}`,
+      signUp: (b) => `Sign up with ${b}`,
+    },
+  });

@@ -85,10 +85,20 @@ export const SelectableCards: Story = {
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof RadioIndicator> = {
   args: { selected: true, size: 24 },
-  parameters: { controls: { disable: false, include: ['selected', 'size', 'selectedColor', 'borderColor'] } },
-  argTypes: { selected: { control: 'boolean' }, size: { control: { type: 'range', min: 12, max: 40, step: 2 } }, selectedColor: { control: 'text' }, borderColor: { control: 'text' } },
+  parameters: {
+    controls: { disable: false, include: ['selected', 'size', 'selectedColor', 'borderColor'] },
+  },
+  argTypes: {
+    selected: { control: 'boolean' },
+    size: { control: { type: 'range', min: 12, max: 40, step: 2 } },
+    selectedColor: { control: 'text' },
+    borderColor: { control: 'text' },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><RadioIndicator {...args} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <RadioIndicator {...args} />
+      </View>
+    );
   },
 };

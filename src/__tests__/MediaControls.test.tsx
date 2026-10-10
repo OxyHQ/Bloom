@@ -121,7 +121,11 @@ describe('PlayButton', () => {
   });
 
   it('draws the sizes 32 / 48 / 56 as circles', () => {
-    for (const [size, px] of [['sm', 32], ['md', 48], ['lg', 56]] as const) {
+    for (const [size, px] of [
+      ['sm', 32],
+      ['md', 48],
+      ['lg', 56],
+    ] as const) {
       mount(<PlayButton playing={false} size={size} testID="p" />);
       const style = byTestId('p').style;
       expect(style.width).toBe(`${px}px`);
@@ -134,7 +138,9 @@ describe('PlayButton', () => {
     const paint = resolveMediaControlsPaint(theme);
     expect(byTestId('p').style.backgroundColor).toBe(normalise(paint.accent));
     mount(<PlayButton playing={false} variant="inverse" testID="p" />, 'dark');
-    expect(byTestId('p').style.backgroundColor).toBe(normalise(resolveMediaControlsPaint(theme).inverse));
+    expect(byTestId('p').style.backgroundColor).toBe(
+      normalise(resolveMediaControlsPaint(theme).inverse),
+    );
     mount(<PlayButton playing={false} variant="plain" testID="p" />);
     expect(byTestId('p').style.backgroundColor).toBe('');
   });
@@ -188,7 +194,9 @@ describe('LikeButton', () => {
   });
 
   it('takes translated labels', () => {
-    mount(<LikeButton liked={false} accessibilityLabel="Guardar" onLikedChange={() => {}} testID="l" />);
+    mount(
+      <LikeButton liked={false} accessibilityLabel="Guardar" onLikedChange={() => {}} testID="l" />,
+    );
     expect(byTestId('l').getAttribute('aria-label')).toBe('Guardar');
   });
 });
@@ -266,7 +274,9 @@ describe('PlaybackProgress', () => {
     expect(onSeek).toHaveBeenLastCalledWith(225);
 
     onSeek.mockClear();
-    mount(<PlaybackProgress value={223} duration={225} onSeek={onSeek} keyboardStep={10} testID="s" />);
+    mount(
+      <PlaybackProgress value={223} duration={225} onSeek={onSeek} keyboardStep={10} testID="s" />,
+    );
     key(byTestId('s-track'), 'ArrowUp');
     expect(onSeek).toHaveBeenLastCalledWith(225);
   });
@@ -305,7 +315,12 @@ describe('VolumeControl', () => {
   it('names the mute button by its action and toggles mute', () => {
     const onMutedChange = jest.fn();
     mount(
-      <VolumeControl volume={0.4} onVolumeChange={() => {}} onMutedChange={onMutedChange} testID="v" />,
+      <VolumeControl
+        volume={0.4}
+        onVolumeChange={() => {}}
+        onMutedChange={onMutedChange}
+        testID="v"
+      />,
     );
     const button = byTestId('v-mute');
     expect(button.getAttribute('role')).toBe('button');
@@ -334,14 +349,25 @@ describe('VolumeControl', () => {
     const onVolumeChange = jest.fn();
     const onMutedChange = jest.fn();
     mount(
-      <VolumeControl volume={0.4} onVolumeChange={onVolumeChange} onMutedChange={onMutedChange} testID="v" />,
+      <VolumeControl
+        volume={0.4}
+        onVolumeChange={onVolumeChange}
+        onMutedChange={onMutedChange}
+        testID="v"
+      />,
     );
     key(byTestId('v-slider'), 'ArrowRight');
     expect(onVolumeChange).toHaveBeenLastCalledWith(0.45);
     expect(onMutedChange).not.toHaveBeenCalled();
 
     mount(
-      <VolumeControl volume={0.4} muted onVolumeChange={onVolumeChange} onMutedChange={onMutedChange} testID="v" />,
+      <VolumeControl
+        volume={0.4}
+        muted
+        onVolumeChange={onVolumeChange}
+        onMutedChange={onMutedChange}
+        testID="v"
+      />,
     );
     key(byTestId('v-slider'), 'ArrowRight');
     expect(onVolumeChange).toHaveBeenLastCalledWith(0.05);
@@ -356,7 +382,9 @@ describe('VolumeControl', () => {
   });
 
   it('marks the hover reveal only when asked', () => {
-    mount(<VolumeControl volume={0.4} onVolumeChange={() => {}} sliderVisibility="hover" testID="v" />);
+    mount(
+      <VolumeControl volume={0.4} onVolumeChange={() => {}} sliderVisibility="hover" testID="v" />,
+    );
     expect(byTestId('v').getAttribute('data-bloom-volume-reveal')).toBe('hover');
   });
 });

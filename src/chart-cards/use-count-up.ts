@@ -48,7 +48,11 @@ export function useCountUp(target: number, duration = COUNT_UP_MS): number {
  * precision through the integer-stepping roll.
  */
 export function useCountUpPrecise(value: number, duration = COUNT_UP_MS): number {
-  const places = Number.isInteger(value) ? 0 : Math.abs(value * 10 - Math.round(value * 10)) < 1e-6 ? 1 : 2;
+  const places = Number.isInteger(value)
+    ? 0
+    : Math.abs(value * 10 - Math.round(value * 10)) < 1e-6
+      ? 1
+      : 2;
   const scale = 10 ** places;
   return useCountUp(Math.round(value * scale), duration) / scale;
 }

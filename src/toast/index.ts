@@ -21,6 +21,4 @@ export type {
   ToastType,
   ToastVariant,
 } from './types';
-export {
-  ToastOutlet,
-} from './ToastOutlet';
+export { ToastOutlet } from './ToastOutlet';

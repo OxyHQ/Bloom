@@ -103,11 +103,7 @@ export type SelectContentProps<T> = {
   /** The array of items to choose from. */
   items: readonly T[];
   /** Renders a single item. Use `SelectItem` inside this callback. */
-  renderItem: (
-    item: T,
-    index: number,
-    selectedValue?: string | null,
-  ) => React.ReactElement;
+  renderItem: (item: T, index: number, selectedValue?: string | null) => React.ReactElement;
   /**
    * Extracts a unique string key from an item.
    * Defaults to `item => item.value`.

@@ -8,71 +8,129 @@ import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'উপরে বাঁয়ে', 'top-right': 'উপরে ডানে', 'bottom-left': 'নিচে বাঁয়ে', 'bottom-right': 'নিচে ডানে' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': 'উপরে বাঁয়ে',
+  'top-right': 'উপরে ডানে',
+  'bottom-left': 'নিচে বাঁয়ে',
+  'bottom-right': 'নিচে ডানে',
+};
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "প্রতিক্রিয়া দেখান",
-  working: "কাজ করুন",
-  avatarStyle: "অবতারের ধরন",
-  proceduralAvatar: "বর্তমান অবতার",
-  betaPreset: "প্রস্তুত চরিত্র (বিটা)",
-  betaEyes: "চোখের ধরন",
-  eyewear: "চশমা",
-  accessory: "অনুষঙ্গ",
+  reaction: 'প্রতিক্রিয়া দেখান',
+  working: 'কাজ করুন',
+  avatarStyle: 'অবতারের ধরন',
+  proceduralAvatar: 'বর্তমান অবতার',
+  betaPreset: 'প্রস্তুত চরিত্র (বিটা)',
+  betaEyes: 'চোখের ধরন',
+  eyewear: 'চশমা',
+  accessory: 'অনুষঙ্গ',
   characterOption: (_category, _id, title) => String(title),
-  editor: "এজেন্ট সম্পাদক",
-  newBot: "নতুন বট",
-  closeEditor: "এজেন্ট সম্পাদক বন্ধ করুন",
-  details: "এজেন্টের চেহারা ও বিবরণ",
-  color: "অবতারের রং",
-  customColor: "অবতারের নিজস্ব রং",
-  name: "নাম",
-  label: "লেবেল",
-  description: "বিবরণ",
-  nameInput: "এজেন্টের নাম",
-  labelInput: "এজেন্টের লেবেল",
-  descriptionInput: "এজেন্টের বিবরণ",
-  labelPlaceholder: "ব্যবস্থাপক, বিপণন, চিত্রশিল্পী",
-  descriptionPlaceholder: "এজেন্টের বিবরণ",
-  language: "ভাষা",
-  languageInput: "এজেন্টের ভাষা",
-  notifications: "বিজ্ঞপ্তি",
-  notificationsDescription: "উত্তর প্রস্তুত হলে বিজ্ঞপ্তি দেখান।",
-  notifyFinished: "এই এজেন্ট শেষ করলে জানান",
-  voice: "কণ্ঠ",
-  voiceInput: "এজেন্টের কণ্ঠ",
-  previewVoice: "কণ্ঠ শুনুন",
-  savedVoice: "সংরক্ষিত কণ্ঠ",
-  systemVoice: "সিস্টেমের কণ্ঠ",
-  off: "বন্ধ",
-  playbackSpeed: "প্লেব্যাকের গতি",
-  emotion: "এজেন্টের অনুভূতি",
-  shape: "অবতারের আকৃতি",
-  hexColor: "হেক্স রং",
-  hue: "রঙের আভা",
-  saturationBrightness: "স্যাচুরেশন ও উজ্জ্বলতা",
-  increaseBrightness: "উজ্জ্বলতা বাড়ান",
-  decreaseBrightness: "উজ্জ্বলতা কমান",
-  increaseHue: "রঙের আভা বাড়ান",
-  decreaseHue: "রঙের আভা কমান",
-  nextShape: "পরবর্তী আকৃতি",
-  previousShape: "আগের আকৃতি",
-  newAgent: "নতুন এজেন্ট",
-  emotions: { "neutral": "স্বাভাবিক", "happy": "খুশি", "angry": "রাগান্বিত", "thinking": "চিন্তামগ্ন", "shook": "বিস্মিত", "curious": "কৌতূহলী", "wink": "চোখ টিপে", "sleepy": "ঘুমন্ত", "sad": "দুঃখিত", "worried": "উদ্বিগ্ন", "skeptical": "সন্দিহান", "focused": "মনোযোগী", "excited": "উচ্ছ্বসিত", "calm": "শান্ত", "shy": "লাজুক", "confused": "বিভ্রান্ত" },
-  shapes: { "slender": "সরু", "pocket": "পকেট", "petal": "পাপড়ি", "flower": "ফুল", "star": "তারা", "heart": "হৃদয়", "cloud": "মেঘ", "diamond": "হীরা", "shield": "ঢাল" },
-  colors: { "Blue": "নীল", "Teal": "নীলাভ সবুজ", "Violet": "বেগুনি", "Pink": "গোলাপি", "Red": "লাল", "Orange": "কমলা", "Cyan": "সায়ান", "Lime": "লাইম", "Green": "সবুজ" },
-  languages: { "auto": "স্বয়ংক্রিয় শনাক্তকরণ", "en": "ইংরেজি", "tr": "তুর্কি", "es": "স্প্যানিশ", "fr": "ফরাসি", "de": "জার্মান", "ja": "জাপানি", "pt": "পর্তুগিজ" },
-  avatarColorLabel: (name) => "{name} অবতার".replace("{name}", name),
-  shapeLabel: (name) => "{name} আকৃতি".replace("{name}", name),
-  silhouetteLabel: (name) => "{name} ছায়ামূর্তি".replace("{name}", name),
-  livePreview: (name) => "{name}, অবতারের সরাসরি পূর্বরূপ".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "স্যাচুরেশন {s}%, উজ্জ্বলতা {v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "প্লেব্যাকের গতি {speed} গুণ".replace("{speed}", String(speed)),
+  editor: 'এজেন্ট সম্পাদক',
+  newBot: 'নতুন বট',
+  closeEditor: 'এজেন্ট সম্পাদক বন্ধ করুন',
+  details: 'এজেন্টের চেহারা ও বিবরণ',
+  color: 'অবতারের রং',
+  customColor: 'অবতারের নিজস্ব রং',
+  name: 'নাম',
+  label: 'লেবেল',
+  description: 'বিবরণ',
+  nameInput: 'এজেন্টের নাম',
+  labelInput: 'এজেন্টের লেবেল',
+  descriptionInput: 'এজেন্টের বিবরণ',
+  labelPlaceholder: 'ব্যবস্থাপক, বিপণন, চিত্রশিল্পী',
+  descriptionPlaceholder: 'এজেন্টের বিবরণ',
+  language: 'ভাষা',
+  languageInput: 'এজেন্টের ভাষা',
+  notifications: 'বিজ্ঞপ্তি',
+  notificationsDescription: 'উত্তর প্রস্তুত হলে বিজ্ঞপ্তি দেখান।',
+  notifyFinished: 'এই এজেন্ট শেষ করলে জানান',
+  voice: 'কণ্ঠ',
+  voiceInput: 'এজেন্টের কণ্ঠ',
+  previewVoice: 'কণ্ঠ শুনুন',
+  savedVoice: 'সংরক্ষিত কণ্ঠ',
+  systemVoice: 'সিস্টেমের কণ্ঠ',
+  off: 'বন্ধ',
+  playbackSpeed: 'প্লেব্যাকের গতি',
+  emotion: 'এজেন্টের অনুভূতি',
+  shape: 'অবতারের আকৃতি',
+  hexColor: 'হেক্স রং',
+  hue: 'রঙের আভা',
+  saturationBrightness: 'স্যাচুরেশন ও উজ্জ্বলতা',
+  increaseBrightness: 'উজ্জ্বলতা বাড়ান',
+  decreaseBrightness: 'উজ্জ্বলতা কমান',
+  increaseHue: 'রঙের আভা বাড়ান',
+  decreaseHue: 'রঙের আভা কমান',
+  nextShape: 'পরবর্তী আকৃতি',
+  previousShape: 'আগের আকৃতি',
+  newAgent: 'নতুন এজেন্ট',
+  emotions: {
+    neutral: 'স্বাভাবিক',
+    happy: 'খুশি',
+    angry: 'রাগান্বিত',
+    thinking: 'চিন্তামগ্ন',
+    shook: 'বিস্মিত',
+    curious: 'কৌতূহলী',
+    wink: 'চোখ টিপে',
+    sleepy: 'ঘুমন্ত',
+    sad: 'দুঃখিত',
+    worried: 'উদ্বিগ্ন',
+    skeptical: 'সন্দিহান',
+    focused: 'মনোযোগী',
+    excited: 'উচ্ছ্বসিত',
+    calm: 'শান্ত',
+    shy: 'লাজুক',
+    confused: 'বিভ্রান্ত',
+  },
+  shapes: {
+    slender: 'সরু',
+    pocket: 'পকেট',
+    petal: 'পাপড়ি',
+    flower: 'ফুল',
+    star: 'তারা',
+    heart: 'হৃদয়',
+    cloud: 'মেঘ',
+    diamond: 'হীরা',
+    shield: 'ঢাল',
+  },
+  colors: {
+    Blue: 'নীল',
+    Teal: 'নীলাভ সবুজ',
+    Violet: 'বেগুনি',
+    Pink: 'গোলাপি',
+    Red: 'লাল',
+    Orange: 'কমলা',
+    Cyan: 'সায়ান',
+    Lime: 'লাইম',
+    Green: 'সবুজ',
+  },
+  languages: {
+    auto: 'স্বয়ংক্রিয় শনাক্তকরণ',
+    en: 'ইংরেজি',
+    tr: 'তুর্কি',
+    es: 'স্প্যানিশ',
+    fr: 'ফরাসি',
+    de: 'জার্মান',
+    ja: 'জাপানি',
+    pt: 'পর্তুগিজ',
+  },
+  avatarColorLabel: (name) => '{name} অবতার'.replace('{name}', name),
+  shapeLabel: (name) => '{name} আকৃতি'.replace('{name}', name),
+  silhouetteLabel: (name) => '{name} ছায়ামূর্তি'.replace('{name}', name),
+  livePreview: (name) => '{name}, অবতারের সরাসরি পূর্বরূপ'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'স্যাচুরেশন {s}%, উজ্জ্বলতা {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) => 'প্লেব্যাকের গতি {speed} গুণ'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -110,7 +168,10 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
   resizePanels: 'প্যানেলের আকার বদলান',
 };
 
-const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: 'নিশ্চিত করুন', ok: 'ঠিক আছে' };
+const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = {
+  confirm: 'নিশ্চিত করুন',
+  ok: 'ঠিক আছে',
+};
 
 const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
   channels: {
@@ -126,7 +187,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'খসড়া:', pinned: 'পিন করা', muted: 'মিউট করা', verified: 'যাচাইকৃত', channel: 'চ্যানেল', bot: 'বট', group: 'গ্রুপ' },
+  item: {
+    draft: 'খসড়া:',
+    pinned: 'পিন করা',
+    muted: 'মিউট করা',
+    verified: 'যাচাইকৃত',
+    channel: 'চ্যানেল',
+    bot: 'বট',
+    group: 'গ্রুপ',
+  },
   search: { chat: 'চ্যাট', message: 'বার্তা', contact: 'পরিচিতি', empty: 'কোনো ফলাফল নেই' },
   list: 'চ্যাট',
   emptyTitle: 'এখনও কোনো কথোপকথন নেই',
@@ -184,10 +253,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `${team} মেনু`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'KB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'কার্ড নম্বর', expiry: 'মেয়াদ শেষের তারিখ', securityCode: 'নিরাপত্তা কোড', name: 'কার্ডে থাকা নাম', postcode: 'পোস্টকোড', country: 'দেশ' },
+  labels: {
+    number: 'কার্ড নম্বর',
+    expiry: 'মেয়াদ শেষের তারিখ',
+    securityCode: 'নিরাপত্তা কোড',
+    name: 'কার্ডে থাকা নাম',
+    postcode: 'পোস্টকোড',
+    country: 'দেশ',
+  },
   selectCountry: 'একটি দেশ বেছে নিন',
 };
 
@@ -220,8 +301,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'লোকজন', command: 'কমান্ড', emoji: 'ইমোজি' },
   suggestionVerified: 'যাচাইকৃত',
   searchingSuggestions: 'খোঁজা হচ্ছে…',
-  noSuggestions: { mention: 'কাউকে পাওয়া যায়নি', command: 'কোনো কমান্ড পাওয়া যায়নি', emoji: 'কোনো ইমোজি পাওয়া যায়নি' },
-  attachmentItems: { gallery: 'গ্যালারি', camera: 'ক্যামেরা', file: 'ফাইল', location: 'অবস্থান', contact: 'পরিচিতি', poll: 'পোল', music: 'সংগীত' },
+  noSuggestions: {
+    mention: 'কাউকে পাওয়া যায়নি',
+    command: 'কোনো কমান্ড পাওয়া যায়নি',
+    emoji: 'কোনো ইমোজি পাওয়া যায়নি',
+  },
+  attachmentItems: {
+    gallery: 'গ্যালারি',
+    camera: 'ক্যামেরা',
+    file: 'ফাইল',
+    location: 'অবস্থান',
+    contact: 'পরিচিতি',
+    poll: 'পোল',
+    music: 'সংগীত',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -272,7 +365,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: 'গানের কথা দেখান',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'এখানে এখনও কিছু নেই', addresses: 'ঠিকানা' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'এখানে এখনও কিছু নেই',
+  addresses: 'ঠিকানা',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'সিঙ্গেল', ep: 'EP', album: 'অ্যালবাম' },
@@ -351,7 +447,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     role: 'ভূমিকা',
     name: 'নাম',
     add: 'ক্রেডিট যোগ করুন',
-    remove: (index, name) => (name ? `ক্রেডিট ${index + 1} সরান, ${name}` : `ক্রেডিট ${index + 1} সরান`),
+    remove: (index, name) =>
+      name ? `ক্রেডিট ${index + 1} সরান, ${name}` : `ক্রেডিট ${index + 1} সরান`,
     empty: 'এই ট্র্যাকের গান লেখক, প্রযোজক ও শিল্পীদের ক্রেডিট দিন।',
     field: (field, n) => `${field}, ক্রেডিট ${n}`,
   },
@@ -395,7 +492,11 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     pitchPlaceholder: 'এই রিলিজটি কেন আলাদা? এটি কার জন্য, এবং এর পেছনের গল্প কী?',
     submit: 'পিচ পাঠান',
     tagLimit: (max) => `সর্বোচ্চ ${max}টি বেছে নিন`,
-    statuses: { submitted: 'পিচ পাঠানো হয়েছে', accepted: 'পর্যালোচনার জন্য নির্বাচিত', declined: 'এবার নির্বাচিত হয়নি' },
+    statuses: {
+      submitted: 'পিচ পাঠানো হয়েছে',
+      accepted: 'পর্যালোচনার জন্য নির্বাচিত',
+      declined: 'এবার নির্বাচিত হয়নি',
+    },
     statusDescriptions: {
       submitted: 'সম্পাদকরা প্রতিটি পিচ পড়েন। রিলিজের তারিখের আগেই আপনি উত্তর পাবেন।',
       accepted: 'আপনার রিলিজটি সম্পাদকীয় প্লেলিস্টের জন্য বিবেচনা করা হচ্ছে।',
@@ -481,7 +582,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'আপনার আবেদন',
   applicationProgress: 'আবেদনের অগ্রগতি',
   progressReady: (done, total) => `${total}টির মধ্যে ${done}টি প্রস্তুত`,
-  applicationStatus: { missing: 'নেই', uploaded: 'পর্যালোচনায়', verified: 'যাচাইকৃত', rejected: 'প্রত্যাখ্যাত' },
+  applicationStatus: {
+    missing: 'নেই',
+    uploaded: 'পর্যালোচনায়',
+    verified: 'যাচাইকৃত',
+    rejected: 'প্রত্যাখ্যাত',
+  },
   applicationAction: { upload: 'আপলোড করুন', view: 'দেখুন', replace: 'বদলান' },
   itemAction: (action, title) => `${title}: ${action}`,
   mortgage: {
@@ -657,11 +763,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'এই মালের জন্য উপলব্ধ নয়',
   vehicle: 'যানবাহন',
   vehicles: {
-    bike: { label: 'কার্গো বাইক', capacity: '২৫ কেজি পর্যন্ত · ৬০ × ৪০ × ৪০ সেমি', fits: ['নথিপত্র', 'খাবারের অর্ডার', 'একটি ছোট বাক্স'] },
-    car: { label: 'গাড়ি', capacity: '১৫০ কেজি পর্যন্ত · ১০০ × ৮০ × ৬০ সেমি', fits: ['দুটি স্যুটকেস', 'চারটি বাক্স', 'একটি সাইকেল'] },
-    van: { label: 'ভ্যান', capacity: '৮০০ কেজি পর্যন্ত · ২৪০ × ১৫০ × ১৪০ সেমি', fits: ['একটি সোফা', 'স্টুডিও বাসা বদল', 'অর্ধেক প্যালেট'] },
-    boxTruck: { label: 'বক্স ট্রাক', capacity: '৩,৫০০ কেজি পর্যন্ত · ৪২০ × ২০০ × ২১০ সেমি', fits: ['দুটি প্যালেট', 'দুই শোবার ঘরের বাসা বদল', 'টেল লিফট'] },
-    refrigerated: { label: 'রেফ্রিজারেটেড ভ্যান', capacity: '৭০০ কেজি পর্যন্ত · ২–৮ °সে-এ', fits: ['তাজা পণ্য', 'ঠান্ডা ক্যাটারিং', 'ফুল'] },
+    bike: {
+      label: 'কার্গো বাইক',
+      capacity: '২৫ কেজি পর্যন্ত · ৬০ × ৪০ × ৪০ সেমি',
+      fits: ['নথিপত্র', 'খাবারের অর্ডার', 'একটি ছোট বাক্স'],
+    },
+    car: {
+      label: 'গাড়ি',
+      capacity: '১৫০ কেজি পর্যন্ত · ১০০ × ৮০ × ৬০ সেমি',
+      fits: ['দুটি স্যুটকেস', 'চারটি বাক্স', 'একটি সাইকেল'],
+    },
+    van: {
+      label: 'ভ্যান',
+      capacity: '৮০০ কেজি পর্যন্ত · ২৪০ × ১৫০ × ১৪০ সেমি',
+      fits: ['একটি সোফা', 'স্টুডিও বাসা বদল', 'অর্ধেক প্যালেট'],
+    },
+    boxTruck: {
+      label: 'বক্স ট্রাক',
+      capacity: '৩,৫০০ কেজি পর্যন্ত · ৪২০ × ২০০ × ২১০ সেমি',
+      fits: ['দুটি প্যালেট', 'দুই শোবার ঘরের বাসা বদল', 'টেল লিফট'],
+    },
+    refrigerated: {
+      label: 'রেফ্রিজারেটেড ভ্যান',
+      capacity: '৭০০ কেজি পর্যন্ত · ২–৮ °সে-এ',
+      fits: ['তাজা পণ্য', 'ঠান্ডা ক্যাটারিং', 'ফুল'],
+    },
   },
 };
 
@@ -738,7 +864,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'অনুমোদন করা হচ্ছে', paid: 'পরিশোধিত', failed: 'পেমেন্ট ব্যর্থ', refunded: 'ফেরত দেওয়া হয়েছে', pending: 'পেমেন্ট অপেক্ষমাণ' },
+  states: {
+    authorising: 'অনুমোদন করা হচ্ছে',
+    paid: 'পরিশোধিত',
+    failed: 'পেমেন্ট ব্যর্থ',
+    refunded: 'ফেরত দেওয়া হয়েছে',
+    pending: 'পেমেন্ট অপেক্ষমাণ',
+  },
   reference: 'রেফারেন্স',
 };
 
@@ -757,13 +889,26 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `5-এর মধ্যে ${value} রেটিং`,
-      reviews === undefined ? undefined : placeCard_countOf('bn', reviews, { other: '{n}টি রিভিউ' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('bn', reviews, { other: '{n}টি রিভিউ' }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `${b} দিয়ে চালিয়ে যান`, signIn: (b) => `${b} দিয়ে সাইন ইন করুন`, signUp: (b) => `${b} দিয়ে সাইন আপ করুন` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `${b} দিয়ে চালিয়ে যান`,
+    signIn: (b) => `${b} দিয়ে সাইন ইন করুন`,
+    signUp: (b) => `${b} দিয়ে সাইন আপ করুন`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'অন্যান্য', otherPlaceholder: 'আপনার উত্তর এখানে লিখুন', steps: 'ধাপ', step: (n) => `ধাপ ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'অন্যান্য',
+  otherPlaceholder: 'আপনার উত্তর এখানে লিখুন',
+  steps: 'ধাপ',
+  step: (n) => `ধাপ ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'মানচিত্রের নিয়ন্ত্রণ',
@@ -780,9 +925,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'ওভারলে',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'মেয়াদোত্তীর্ণ', declined: 'প্রত্যাখ্যাত' }, default: 'ডিফল্ট', add: 'পেমেন্ট পদ্ধতি যোগ করুন', emptyTitle: 'কোনো সংরক্ষিত পেমেন্ট পদ্ধতি নেই', paymentMethods: 'পেমেন্ট পদ্ধতি' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'মেয়াদোত্তীর্ণ', declined: 'প্রত্যাখ্যাত' },
+  default: 'ডিফল্ট',
+  add: 'পেমেন্ট পদ্ধতি যোগ করুন',
+  emptyTitle: 'কোনো সংরক্ষিত পেমেন্ট পদ্ধতি নেই',
+  paymentMethods: 'পেমেন্ট পদ্ধতি',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `আরও ${n} জন`, profile: 'প্রোফাইল' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => `আরও ${n} জন`,
+  profile: 'প্রোফাইল',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'মেনু বার',
@@ -803,7 +957,8 @@ const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   codePanel: {
     changes: 'পরিবর্তন',
     browser: 'ব্রাউজার',
-    uncommitted: (n) => plural('bn', n, { one: '{n}টি কমিট না করা পরিবর্তন', other: '{n}টি কমিট না করা পরিবর্তন' }),
+    uncommitted: (n) =>
+      plural('bn', n, { one: '{n}টি কমিট না করা পরিবর্তন', other: '{n}টি কমিট না করা পরিবর্তন' }),
     undo: 'পরিবর্তন বাতিল করুন',
     browserPreview: 'ব্রাউজার প্রিভিউ',
   },
@@ -897,12 +1052,16 @@ const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
 };
 
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
-  statuses: { reserved: 'সংরক্ষিত', sold: 'বিক্রি হয়েছে', rented: 'ভাড়া হয়েছে', unavailable: 'উপলভ্য নয়' },
+  statuses: {
+    reserved: 'সংরক্ষিত',
+    sold: 'বিক্রি হয়েছে',
+    rented: 'ভাড়া হয়েছে',
+    unavailable: 'উপলভ্য নয়',
+  },
   originally: (p) => `আগে ${p}`,
   approximateLocation: 'আনুমানিক অবস্থান',
   rated: (r) => `৫-এর মধ্যে ${r} রেটিং`,
-  ratedWithReviews: (r, c) =>
-    plural('bn', c, { other: `৫-এর মধ্যে ${r} রেটিং, ${c}টি রিভিউ` }),
+  ratedWithReviews: (r, c) => plural('bn', c, { other: `৫-এর মধ্যে ${r} রেটিং, ${c}টি রিভিউ` }),
   newListing: 'নতুন',
   previousPhoto: 'আগের ছবি',
   nextPhoto: 'পরের ছবি',
@@ -940,7 +1099,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'স্লাইড',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'চলছে', upcoming: 'এখনও নয়', failed: 'ব্যর্থ' }, status: 'অবস্থা' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'চলছে', upcoming: 'এখনও নয়', failed: 'ব্যর্থ' },
+  status: 'অবস্থা',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'নতুন',
@@ -958,7 +1120,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     swap: { title: 'বাড়ি বদল', description: 'অন্য সদস্যদের সঙ্গে বাড়ি বদল করুন।' },
     monthlyRent: 'মাসিক ভাড়া',
     deposit: 'জামানত',
-    depositOption: (months) => (months === 0 ? 'নেই' : plural('bn', months, { one: '{n} মাস', other: '{n} মাস' })),
+    depositOption: (months) =>
+      months === 0 ? 'নেই' : plural('bn', months, { one: '{n} মাস', other: '{n} মাস' }),
     availableFrom: 'যেদিন থেকে উপলব্ধ',
     minimumStay: 'ন্যূনতম মেয়াদ',
     months: (months) => plural('bn', months, { one: '{n} মাস', other: '{n} মাস' }),
@@ -1000,7 +1163,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     },
   },
   addressPrecisionLabel: 'ঠিকানার নির্ভুলতা',
-  addressPrecisionFootnote: 'প্রকাশিত মানচিত্র এই পছন্দ অনুসরণ করে। আপনার সঠিক ঠিকানা শুধু আপনার নিশ্চিত করা লোকদের সঙ্গেই শেয়ার করা হয়।',
+  addressPrecisionFootnote:
+    'প্রকাশিত মানচিত্র এই পছন্দ অনুসরণ করে। আপনার সঠিক ঠিকানা শুধু আপনার নিশ্চিত করা লোকদের সঙ্গেই শেয়ার করা হয়।',
   qualityTitle: 'লিস্টিংয়ের মান',
   qualityScore: 'লিস্টিংয়ের মানের স্কোর',
   tips: 'পরামর্শ',
@@ -1013,7 +1177,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   card: 'কার্ড',
   page: 'পেজ',
   previewAs: 'যেভাবে দেখুন',
-  reviews: (n, shown) => plural('bn', n, { one: '{s}টি রিভিউ', other: '{s}টি রিভিউ' }).replace('{s}', shown),
+  reviews: (n, shown) =>
+    plural('bn', n, { one: '{s}টি রিভিউ', other: '{s}টি রিভিউ' }).replace('{s}', shown),
 };
 
 const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
@@ -1047,7 +1212,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'নিরামিষ', vegan: 'ভিগান', 'gluten-free': 'গ্লুটেন-মুক্ত', 'dairy-free': 'দুগ্ধজাত-মুক্ত', halal: 'হালাল', kosher: 'কোশার' },
+  diets: {
+    vegetarian: 'নিরামিষ',
+    vegan: 'ভিগান',
+    'gluten-free': 'গ্লুটেন-মুক্ত',
+    'dairy-free': 'দুগ্ধজাত-মুক্ত',
+    halal: 'হালাল',
+    kosher: 'কোশার',
+  },
   spicy: 'ঝাল',
   spiceOf: (label, level, max) => `${label} ${max}-এর মধ্যে ${level}`,
   originally: (price, original) => `${price}, আগে ছিল ${original}`,
@@ -1068,7 +1240,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `পৃষ্ঠা ${page}-এ যান`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'লিড স্কোর', factors: 'এটি কী দিয়ে তৈরি', bands: { cold: 'ঠান্ডা', warm: 'উষ্ণ', hot: 'গরম' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'লিড স্কোর',
+  factors: 'এটি কী দিয়ে তৈরি',
+  bands: { cold: 'ঠান্ডা', warm: 'উষ্ণ', hot: 'গরম' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'গাড়ি', transit: 'গণপরিবহন', walk: 'হাঁটা', cycle: 'সাইকেল' },
@@ -1217,7 +1393,9 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     markUnread: 'অপঠিত হিসেবে চিহ্নিত করুন',
     unread: 'অপঠিত',
     exportCount: (n) =>
-      n === 0 ? 'এক্সপোর্ট করার মতো কোনো চ্যাট নেই' : plural('bn', n, { other: '{n}টি চ্যাট এক্সপোর্ট করুন' }),
+      n === 0
+        ? 'এক্সপোর্ট করার মতো কোনো চ্যাট নেই'
+        : plural('bn', n, { other: '{n}টি চ্যাট এক্সপোর্ট করুন' }),
     accountMenu: (name) => `${name}-এর অ্যাকাউন্ট মেনু`,
     usageLeft: 'বাকি ব্যবহার',
     upgrade: 'Max-এ আপগ্রেড করুন',
@@ -1242,7 +1420,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   age: { now: 'এখন', minutes: (n) => `${n} মি`, hours: (n) => `${n} ঘ`, days: (n) => `${n} দি` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'উৎস', working: 'কাজ চলছে' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'উৎস',
+  working: 'কাজ চলছে',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'প্রাপক',
@@ -1329,12 +1510,21 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   ringItem: (label, value, pct) => `${label} ${value}, লক্ষ্যের ${pct}%`,
   scoreOf: (score, max) => `${max}-এর মধ্যে ${score}`,
   activityFor: (name, day) => `${day} ${name}-এর কার্যকলাপ`,
-  contributions: (n, date) => { const on = date ? `${date}-এ ` : ''; return n === 0 ? `${on}কোনো অবদান নেই` : `${on}${n}টি অবদান`; },
+  contributions: (n, date) => {
+    const on = date ? `${date}-এ ` : '';
+    return n === 0 ? `${on}কোনো অবদান নেই` : `${on}${n}টি অবদান`;
+  },
 };
 
-const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'কোড কপি করুন', copied: 'কোড কপি হয়েছে' };
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
+  copy: 'কোড কপি করুন',
+  copied: 'কোড কপি হয়েছে',
+};
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'এই পৃষ্ঠায়', progress: (at, of) => `${of}টির মধ্যে শিরোনাম ${at}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'এই পৃষ্ঠায়',
+  progress: (at, of) => `${of}টির মধ্যে শিরোনাম ${at}`,
+};
 
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'কমান', increase: 'বাড়ান' };
 
@@ -1393,7 +1583,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, মিউট করা`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'সাম্প্রতিক নিয়োগ' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'সাম্প্রতিক নিয়োগ',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'খসড়া:',
@@ -1414,9 +1606,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'মেইল',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'গুরুত্বপূর্ণ সতর্কতা', thisWeek: 'এই সপ্তাহে' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'গুরুত্বপূর্ণ সতর্কতা',
+  thisWeek: 'এই সপ্তাহে',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `${label} সম্পর্কে`, fromLastMonth: 'গত মাসের তুলনায়' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `${label} সম্পর্কে`,
+  fromLastMonth: 'গত মাসের তুলনায়',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1464,8 +1662,18 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'হিটিং',
     other: 'অন্যান্য',
   },
-  maintenancePriority: { low: 'কম অগ্রাধিকার', medium: 'মাঝারি অগ্রাধিকার', high: 'উচ্চ অগ্রাধিকার', urgent: 'জরুরি' },
-  maintenanceStage: { reported: 'জানানো হয়েছে', acknowledged: 'গৃহীত', scheduled: 'নির্ধারিত', resolved: 'সমাধান হয়েছে' },
+  maintenancePriority: {
+    low: 'কম অগ্রাধিকার',
+    medium: 'মাঝারি অগ্রাধিকার',
+    high: 'উচ্চ অগ্রাধিকার',
+    urgent: 'জরুরি',
+  },
+  maintenanceStage: {
+    reported: 'জানানো হয়েছে',
+    acknowledged: 'গৃহীত',
+    scheduled: 'নির্ধারিত',
+    resolved: 'সমাধান হয়েছে',
+  },
   documentStatus: { signed: 'স্বাক্ষরিত', pending: 'স্বাক্ষরের অপেক্ষায়', expired: 'মেয়াদোত্তীর্ণ' },
   timelineState: { complete: 'সম্পন্ন', current: 'চলছে', upcoming: 'এখনও নয়' },
   leasePeriod: 'লিজের মেয়াদ',
@@ -1495,7 +1703,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'সাধারণ', sm: 'সংক্ষিপ্ত' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'কিছু একটা ভুল হয়েছে', message: 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে', retry: 'আবার চেষ্টা করুন' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'কিছু একটা ভুল হয়েছে',
+  message: 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে',
+  retry: 'আবার চেষ্টা করুন',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'এ বছরের অবদান',
@@ -1674,7 +1886,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'কল', email: 'ইমেল', meeting: 'মিটিং', note: 'নোট', 'stage-change': 'পর্যায় পরিবর্তন', task: 'কাজ সম্পন্ন' },
+  kinds: {
+    call: 'কল',
+    email: 'ইমেল',
+    meeting: 'মিটিং',
+    note: 'নোট',
+    'stage-change': 'পর্যায় পরিবর্তন',
+    task: 'কাজ সম্পন্ন',
+  },
   empty: 'এখনও কিছু লগ করা হয়নি',
   loggedBy: (name) => `${name} লগ করেছেন`,
   filterActivity: 'কার্যকলাপ ফিল্টার করুন',
@@ -1688,8 +1907,7 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   helpful: 'সহায়ক',
   report: 'রিপোর্ট করুন',
   promptTitle: 'আপনি কি এখানে থাকতেন?',
-  promptDescription: (building) =>
-    `${building}-এর ভবিষ্যৎ ভাড়াটেদের সাহায্য করুন। রিভিউ বেনামী থাকে।`,
+  promptDescription: (building) => `${building}-এর ভবিষ্যৎ ভাড়াটেদের সাহায্য করুন। রিভিউ বেনামী থাকে।`,
   writeReview: 'রিভিউ লিখুন',
   reviewCount: (n) => plural('bn', n, { other: '{n}টি রিভিউ' }),
   depositRate: (percent) => `${percent}% ভাড়ায় জামানত ফেরত দেওয়া হয়েছে`,
@@ -1758,13 +1976,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${subject}: ${action}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'ভাড়া', sale: 'বিক্রয়', short_term_rent: 'ছুটির ভাড়া', exchange: 'বিনিময়' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'ভাড়া',
+    sale: 'বিক্রয়',
+    short_term_rent: 'ছুটির ভাড়া',
+    exchange: 'বিনিময়',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'স্কেল', mapData: 'মানচিত্রের ডেটা' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'স্কেল',
+  mapData: 'মানচিত্রের ডেটা',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'সর্বনিম্ন', maximum: 'সর্বোচ্চ', value: (n) => `মান ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'সর্বনিম্ন',
+  maximum: 'সর্বোচ্চ',
+  value: (n) => `মান ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'একটি বিকল্প বেছে নিন', scrollUp: 'উপরে স্ক্রল করুন', scrollDown: 'নিচে স্ক্রল করুন' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'একটি বিকল্প বেছে নিন',
+  scrollUp: 'উপরে স্ক্রল করুন',
+  scrollDown: 'নিচে স্ক্রল করুন',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'মিডিয়া ভিউয়ার বন্ধ করুন',
@@ -1776,10 +2012,18 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
 
 const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'বিজ্ঞপ্তি সরান' };
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'ফোন নম্বর', countryCode: 'দেশের কোড' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'ফোন নম্বর',
+  countryCode: 'দেশের কোড',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: 'ডেলিভারির সময়', deliveryFee: 'ডেলিভারি', distance: 'দূরত্ব', minimumOrder: 'ন্যূনতম অর্ডার' },
+  facts: {
+    deliveryTime: 'ডেলিভারির সময়',
+    deliveryFee: 'ডেলিভারি',
+    distance: 'দূরত্ব',
+    minimumOrder: 'ন্যূনতম অর্ডার',
+  },
   availability: { paused: 'বিরতিতে', closed: 'বন্ধ' },
   new: 'নতুন',
   rated: (value, reviews) =>
@@ -1788,7 +2032,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'অনলাইন', idle: 'দূরে', offline: 'অফলাইন', busy: 'ব্যস্ত' },
-  status: { sending: 'পাঠানো হচ্ছে…', sent: 'পাঠানো হয়েছে', delivered: 'পৌঁছেছে', read: 'পড়া হয়েছে', failed: 'পাঠানো যায়নি' },
+  status: {
+    sending: 'পাঠানো হচ্ছে…',
+    sent: 'পাঠানো হয়েছে',
+    delivered: 'পৌঁছেছে',
+    read: 'পড়া হয়েছে',
+    failed: 'পাঠানো যায়নি',
+  },
   unread: 'অপঠিত',
   unreadCount: (n) => `${n}টি অপঠিত বার্তা`,
 };
@@ -1869,7 +2119,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'অনুসন্ধান মুছে ফেলুন' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `${t} সরান`, full: (n) => `সর্বাধিক ${n}টি`, suggestions: 'পরামর্শ' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `${t} সরান`,
+  full: (n) => `সর্বাধিক ${n}টি`,
+  suggestions: 'পরামর্শ',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1937,7 +2191,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'ফাইলের নাম',
     uploadedOn: 'আপলোডের তারিখ',
     fileSize: 'ফাইলের আকার',
-    sortBy: { name: 'ফাইলের নাম অনুযায়ী সাজান', uploadedAt: 'আপলোডের তারিখ অনুযায়ী সাজান', size: 'ফাইলের আকার অনুযায়ী সাজান' },
+    sortBy: {
+      name: 'ফাইলের নাম অনুযায়ী সাজান',
+      uploadedAt: 'আপলোডের তারিখ অনুযায়ী সাজান',
+      size: 'ফাইলের আকার অনুযায়ী সাজান',
+    },
     selectFile: (name) => `${name} নির্বাচন করুন`,
     deleteFile: 'ফাইল মুছুন',
     deleteNamed: (name) => `${name} মুছুন`,
@@ -2006,25 +2264,47 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   notChargedYet: 'এখনই আপনার কাছ থেকে কোনো টাকা নেওয়া হবে না',
   total: 'মোট',
   tripStatus: { confirmed: 'নিশ্চিত', pending: 'অপেক্ষমাণ', cancelled: 'বাতিল', completed: 'সম্পন্ন' },
-  priceName: booking_priceName((p, u) => `প্রতি ${u} ${p}`, (s, o) => `${s}, আগে ${o}`),
+  priceName: booking_priceName(
+    (p, u) => `প্রতি ${u} ${p}`,
+    (s, o) => `${s}, আগে ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'কনটেক্সট উইন্ডো', freeSpace: 'খালি জায়গা', planUsageLimits: 'প্ল্যানের ব্যবহারের সীমা', managePlan: 'প্ল্যান পরিচালনা করুন' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'কনটেক্সট উইন্ডো',
+  freeSpace: 'খালি জায়গা',
+  planUsageLimits: 'প্ল্যানের ব্যবহারের সীমা',
+  managePlan: 'প্ল্যান পরিচালনা করুন',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'অ্যাকশন বন্ধ করুন',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'প্রোফাইল ছবি যোগ করুন' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'প্রোফাইল ছবি যোগ করুন',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'থিম', darkMode: 'ডার্ক মোড', lightMode: 'লাইট মোড', useDarkMode: 'ডার্ক মোড ব্যবহার করুন', useLightMode: 'লাইট মোড ব্যবহার করুন' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'থিম',
+  darkMode: 'ডার্ক মোড',
+  lightMode: 'লাইট মোড',
+  useDarkMode: 'ডার্ক মোড ব্যবহার করুন',
+  useLightMode: 'লাইট মোড ব্যবহার করুন',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'আয়',
   period: 'আয়ের সময়কাল',
   breakdown: 'কোথা থেকে এসেছে',
   payout: 'পরবর্তী পেআউট',
-  payoutState: { scheduled: 'নির্ধারিত', processing: 'পথে আছে', paid: 'পরিশোধিত', held: 'আটকে আছে', failed: 'ব্যর্থ' },
+  payoutState: {
+    scheduled: 'নির্ধারিত',
+    processing: 'পথে আছে',
+    paid: 'পরিশোধিত',
+    held: 'আটকে আছে',
+    failed: 'ব্যর্থ',
+  },
   chart: (label) => `${label}-এর আয়, সময়কাল অনুযায়ী`,
   empty: 'এখনও কোনো আয় নেই',
   earnings: 'আয়',
@@ -2109,9 +2389,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'আরও ফরম্যাটিং', moreMenu: 'আরও ফরম্যাটিং' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'ফিল্টার', showAll: 'সব দেখান' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'ফিল্টার',
+  showAll: 'সব দেখান',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'আগের বিভাগগুলি', next: 'পরের বিভাগগুলি' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'আগের বিভাগগুলি',
+  next: 'পরের বিভাগগুলি',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2138,7 +2424,11 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   priceDetailsFor: (name) => `${name}-এর দামের বিবরণ`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'পাসওয়ার্ড দেখান', hidePassword: 'পাসওয়ার্ড লুকান', required: 'আবশ্যক' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'পাসওয়ার্ড দেখান',
+  hidePassword: 'পাসওয়ার্ড লুকান',
+  required: 'আবশ্যক',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'কল করুন',
@@ -2236,252 +2526,263 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "পরিবর্তন সংরক্ষণ করুন" : "চ্যাট শুরু করুন" + (count ? ' · ' + plural('bn', count, {"other": "{n} জন এজেন্ট"}) : ''),
-  you: "আপনি",
-  responseFailed: "{0} উত্তর দিতে পারেনি। আবার চেষ্টা করুন।",
-  editAgentTitle: "এজেন্ট সম্পাদনা করুন",
-  aLittleHelp: "একটু সাহায্য",
-  aFewMindsOneConversation: "কয়েক মন। এক কথোপকথন।",
-  aLittleRoomForSomethingNew: "নতুন কিছুর জন্য একটু জায়গা",
-  accountDetails: "অ্যাকাউন্টের বিবরণ",
-  add: "যোগ করুন",
-  add2: "যোগ করুন {0}",
-  added: "যোগ করা হয়েছে",
-  addedToYourWorkspace: "আপনার কর্মক্ষেত্রে যোগ করা হয়েছে",
-  agent: "এজেন্ট",
-  agentConversation: "এজেন্ট কথোপকথন",
-  appearance: "চেহারা",
-  apps: "অ্যাপস · {0}",
-  availability: "প্রাপ্যতা",
-  backToMarketplace: "মার্কেটপ্লেসে ফিরে যান",
-  billing: "বিলিং",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "বট",
-  bringYourAgentsIntoOneChat: "আপনার এজেন্টদের এক চ্যাটে আনুন।",
-  category: "বিভাগ",
-  chatActions: "চ্যাট অ্যাকশন",
-  chatList: "চ্যাট তালিকা",
-  chatName: "চ্যাটের নাম",
-  chatRemoved: "চ্যাট সরানো হয়েছে",
-  chatWithYourAgents: "আপনার এজেন্টদের সাথে চ্যাট করুন",
-  chooseAnAgentOrCreateYourOwn: "একটি এজেন্ট চয়ন করুন বা একটি কথোপকথন শুরু করতে আপনার নিজের তৈরি করুন৷",
-  chooseWhoSJoiningTheConversation: "কে কথোপকথনে যোগ দিচ্ছে তা চয়ন করুন৷",
-  chooseYourTeammates: "আপনার সতীর্থদের বেছে নিন",
-  closeMarketplace: "মার্কেটপ্লেস বন্ধ করুন",
-  closeSearch: "অনুসন্ধান বন্ধ করুন",
-  company: "কোম্পানি",
-  companyDetails: "কোম্পানির বিবরণ",
-  completionSound: "সমাপ্তি শব্দ",
-  connectedAccount: "সংযুক্ত অ্যাকাউন্ট",
-  connector: "সংযোগকারী",
-  conversationIDCopied: "কথোপকথন আইডি কপি করা হয়েছে",
-  conversationCopied: "কথোপকথন অনুলিপি করা হয়েছে৷",
-  conversationOptions: "কথোপকথনের বিকল্প",
-  conversations: "কথোপকথন",
-  copied: "কপি হয়েছে",
-  copyConversation: "কথোপকথন কপি করুন",
-  copyConversationID: "কথোপকথনের আইডি কপি করুন",
-  copyResponse: "উত্তর কপি করুন",
-  couldnTCopyPleaseTryAgain: "কপি করা যায়নি। আবার চেষ্টা করুন.",
-  create: "তৈরি করুন",
-  createANewBot: "একটি নতুন বট তৈরি করুন",
-  createBotOrChat: "বট বা চ্যাট তৈরি করুন",
-  criticalRequests: "সমালোচনামূলক অনুরোধ",
-  customize: "কাস্টমাইজ করুন",
-  customizeANewTeammate: "একটি নতুন সতীর্থ কাস্টমাইজ করুন।",
-  dateOfBirth: "জন্ম তারিখ",
-  demoIntegrationAddingSavesItToThis: "ডেমো ইন্টিগ্রেশন। যোগ করা এই ব্রাউজারে সংরক্ষণ করে; কোনো বাহ্যিক অ্যাকাউন্ট সংযুক্ত নেই।",
-  desktopApp: "ডেস্কটপ অ্যাপ",
-  details: "বিশদ বিবরণ",
-  developer: "বিকাশকারী",
-  deviceID: "ডিভাইস আইডি",
-  discover: "আবিষ্কার করুন",
-  dispatchAlerts: "প্রেরণ সতর্কতা",
-  editConversationAgents: "কথোপকথন এজেন্ট সম্পাদনা করুন",
-  editBot: "বট সম্পাদনা করুন",
-  editGroup: "গ্রুপ সম্পাদনা করুন",
-  editAgent: "সম্পাদনা করুন {0}",
-  email: "ইমেল",
-  everydayEssentials: "প্রতিদিনের প্রয়োজনীয় জিনিস",
-  exploreMarketplace: "মার্কেটপ্লেস অন্বেষণ করুন",
-  explorePlugins: "প্লাগইনগুলি অন্বেষণ করুন৷",
-  explorePluginsAndBotsToBuildYour: "আপনার দল তৈরি করতে প্লাগইন এবং বটগুলি অন্বেষণ করুন৷",
-  findYourNextTeammate: "আপনার পরবর্তী সতীর্থ খুঁজুন",
-  findYourNextToolOrTeammate: "আপনার পরবর্তী টুল বা টিমমেট খুঁজুন",
-  firstName: "প্রথম নাম",
-  folders: "ফোল্ডার",
-  general: "সাধারণ",
-  getNotifiedWhenTheModeNeedsTo: "যখন মোডের একটি গুরুত্বপূর্ণ সিদ্ধান্ত নেওয়ার প্রয়োজন হয় তখন বিজ্ঞপ্তি পান",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "সহায়ক প্রতিক্রিয়া",
-  inTheBrowser: "ব্রাউজারে",
-  inThisConversation: "এই কথোপকথনে",
-  includes: "অন্তর্ভুক্ত",
-  insideTheApp: "অ্যাপের ভিতরে",
-  installed: "ইনস্টল করা হয়েছে",
-  integrations: "ইন্টিগ্রেশন",
-  iLlApproachThisFromThePerspective: "আমি {0} এর দৃষ্টিকোণ থেকে এটির সাথে যোগাযোগ করব৷",
-  lastName: "শেষ নাম",
-  limits: "সীমা",
-  logOutFromAllDevices: "সকল ডিভাইস থেকে লগ আউট করুন",
-  logout: "লগ আউট",
-  manage: "পরিচালনা করুন",
-  manageLimits: "সীমা পরিচালনা করুন",
-  marketplace: "মার্কেটপ্লেস",
-  marketplaceLinkCopied: "মার্কেটপ্লেস লিঙ্ক কপি করা হয়েছে",
-  marketplaceListings: "মার্কেটপ্লেস তালিকা",
-  meetYourNextTeammate: "আপনার পরবর্তী সতীর্থের সাথে দেখা করুন",
-  messages: "বার্তা",
-  noConversationsFound: "কোনো কথোপকথন পাওয়া যায়নি।",
-  noMatchesYet: "এখনো কোনো মিল নেই",
-  notifications: "বিজ্ঞপ্তি",
-  openConversations: "কথোপকথন খুলুন",
-  openPullRequestLinksInsideYourApp: "আপনার অ্যাপের ভিতরে পুল অনুরোধের লিঙ্ক খুলুন",
-  openTheMarketplaceToExplorePluginsAnd: "প্লাগইন এবং বট অন্বেষণ করতে মার্কেটপ্লেস খুলুন। একটি কথোপকথনের মেনু ব্যবহার করে এর বটের চেহারা এবং বিবরণ সম্পাদনা করুন। আবেগ চাকা থেকে একটি অভিব্যক্তি চয়ন করুন. আকৃতির চাপটি স্ক্রোল করুন বা টেনে আনুন, বা আকারগুলি অন্বেষণ করতে এর তীর কীগুলি ব্যবহার করুন৷",
-  prDestination: "পিআর গন্তব্য",
-  people: "লোকজন",
-  personal: "ব্যক্তিগত",
-  pinChat: "পিন চ্যাট",
-  pinnedChat: "পিন করা চ্যাট",
-  plugins: "প্লাগইন",
-  profile: "প্রোফাইল",
-  public: "সর্বজনীন",
-  publicProfile: "পাবলিক প্রোফাইল",
-  pullRequests: "অনুরোধ টানুন",
-  pushNotificationOnYourPhoneWhenThe: "অ্যাপটি আপনাকে মেসেজ করলে আপনার ফোনে পুশ নোটিফিকেশন",
-  remove: "সরান",
-  removeChat: "চ্যাট সরান",
-  renameChat: "চ্যাটের নাম বদলান",
-  responseCopied: "প্রতিক্রিয়া কপি করা হয়েছে",
-  reviewProvider: "পর্যালোচনা প্রদানকারী",
-  rulesAndWorkflows: "নিয়ম এবং কর্মপ্রবাহ",
-  saveName: "নাম সংরক্ষণ করুন",
-  sayHelloTo: "{0} কে হ্যালো বলুন",
-  searchConversations: "কথোপকথন খুঁজুন",
-  searchConversations2: "কথোপকথন অনুসন্ধান করুন...",
-  searchMarketplace: "মার্কেটপ্লেস অনুসন্ধান করুন",
-  selectGithubOrOtherProvidersForReviews: "পর্যালোচনার জন্য Github বা অন্যান্য প্রদানকারী নির্বাচন করুন",
-  selectedAgents: "নির্বাচিত এজেন্ট: {0}",
-  sendWithEnterUseShiftEnterFor: "এন্টার দিয়ে পাঠান। একটি নতুন লাইনের জন্য Shift + Enter ব্যবহার করুন। আপনার পরিবর্তনগুলি এই ব্রাউজারেই থাকবে৷",
-  settings: "সেটিংস",
-  share: "শেয়ার করুন",
-  showFundamentalNotificationsWhenAnAgentCompletes: "কোনো এজেন্ট কোনো কাজ সম্পন্ন করলে মৌলিক বিজ্ঞপ্তি দেখান",
-  signOut: "সাইন আউট করুন",
-  skills: "দক্ষতা",
-  skills2: "দক্ষতা · {0}",
-  soundEffectATaskIsCompleted: "সাউন্ড ইফেক্ট একটি কাজ সম্পন্ন হয়",
-  startAConversation: "একটি কথোপকথন শুরু করুন",
-  startAGroupChat: "একটি গ্রুপ চ্যাট শুরু করুন",
-  startChat: "চ্যাট শুরু করুন",
-  storage: "সঞ্চয়স্থান",
-  support: "সমর্থন",
-  systemNotifications: "সিস্টেম বিজ্ঞপ্তি",
-  thinkingTogether: "একসাথে ভাবছি...",
-  thinking: "ভাবছি...",
-  today: "আজ",
-  tools: "টুলস",
-  toolsForYourWorkflow: "আপনার কর্মপ্রবাহের জন্য টুল",
-  tryAnotherNameCategoryOrKeyword: "অন্য নাম, বিভাগ বা কীওয়ার্ড চেষ্টা করুন।",
-  ultra149Mo: "আল্ট্রা $149/মাস",
-  unhelpfulResponse: "অসহায় প্রতিক্রিয়া",
-  unpinChat: "চ্যাট আনপিন করুন",
-  upgradeToMax: "Max-এ আপগ্রেড করুন",
-  useToCreateABotOrStart: "একটি বট তৈরি করতে বা একাধিক এজেন্টের সাথে কথোপকথন শুরু করতে + ব্যবহার করুন।",
-  viewAdded: "ভিউ যোগ করা হয়েছে {0}",
-  viewAll: "সব দেখুন",
-  viewTeamProfile: "টিম প্রোফাইল দেখুন",
-  viewItem: "দেখুন {0}",
-  website: "ওয়েবসাইট",
-  whenEnabledYourProfilePageWillBe: "সক্রিয় হলে আপনার প্রোফাইল পৃষ্ঠাটি যে কারো কাছে দৃশ্যমান হবে",
-  youAreOn7xMoreUsageThan: "আপনি প্রিমিয়ামের থেকে 7 গুণ বেশি ব্যবহার করছেন",
-  youAreOn7xMoreUsageThan2: "আপনি নিয়মিত থেকে 7 গুণ বেশি ব্যবহার করছেন।",
-  areHereSendAMessageToGet: "{0} এখানে আছে। সবার দৃষ্টিভঙ্গি পেতে একটি বার্তা পাঠান।",
-  itemDetails: "{0} বিশদ বিবরণ",
-  agentThinking: "{0} ভাবছে",
-  by: "{0} · {1} দ্বারা",
-  results: (count: number) => plural('bn', count, {"other": "{n}টি ফলাফল"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('bn', apps, {"other": "{n}টি অ্যাপ"}) + ", " : '') + plural('bn', skills, {"other": "{n}টি দক্ষতা"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'পরিবর্তন সংরক্ষণ করুন'
+      : 'চ্যাট শুরু করুন' + (count ? ' · ' + plural('bn', count, { other: '{n} জন এজেন্ট' }) : ''),
+  you: 'আপনি',
+  responseFailed: '{0} উত্তর দিতে পারেনি। আবার চেষ্টা করুন।',
+  editAgentTitle: 'এজেন্ট সম্পাদনা করুন',
+  aLittleHelp: 'একটু সাহায্য',
+  aFewMindsOneConversation: 'কয়েক মন। এক কথোপকথন।',
+  aLittleRoomForSomethingNew: 'নতুন কিছুর জন্য একটু জায়গা',
+  accountDetails: 'অ্যাকাউন্টের বিবরণ',
+  add: 'যোগ করুন',
+  add2: 'যোগ করুন {0}',
+  added: 'যোগ করা হয়েছে',
+  addedToYourWorkspace: 'আপনার কর্মক্ষেত্রে যোগ করা হয়েছে',
+  agent: 'এজেন্ট',
+  agentConversation: 'এজেন্ট কথোপকথন',
+  appearance: 'চেহারা',
+  apps: 'অ্যাপস · {0}',
+  availability: 'প্রাপ্যতা',
+  backToMarketplace: 'মার্কেটপ্লেসে ফিরে যান',
+  billing: 'বিলিং',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'বট',
+  bringYourAgentsIntoOneChat: 'আপনার এজেন্টদের এক চ্যাটে আনুন।',
+  category: 'বিভাগ',
+  chatActions: 'চ্যাট অ্যাকশন',
+  chatList: 'চ্যাট তালিকা',
+  chatName: 'চ্যাটের নাম',
+  chatRemoved: 'চ্যাট সরানো হয়েছে',
+  chatWithYourAgents: 'আপনার এজেন্টদের সাথে চ্যাট করুন',
+  chooseAnAgentOrCreateYourOwn: 'একটি এজেন্ট চয়ন করুন বা একটি কথোপকথন শুরু করতে আপনার নিজের তৈরি করুন৷',
+  chooseWhoSJoiningTheConversation: 'কে কথোপকথনে যোগ দিচ্ছে তা চয়ন করুন৷',
+  chooseYourTeammates: 'আপনার সতীর্থদের বেছে নিন',
+  closeMarketplace: 'মার্কেটপ্লেস বন্ধ করুন',
+  closeSearch: 'অনুসন্ধান বন্ধ করুন',
+  company: 'কোম্পানি',
+  companyDetails: 'কোম্পানির বিবরণ',
+  completionSound: 'সমাপ্তি শব্দ',
+  connectedAccount: 'সংযুক্ত অ্যাকাউন্ট',
+  connector: 'সংযোগকারী',
+  conversationIDCopied: 'কথোপকথন আইডি কপি করা হয়েছে',
+  conversationCopied: 'কথোপকথন অনুলিপি করা হয়েছে৷',
+  conversationOptions: 'কথোপকথনের বিকল্প',
+  conversations: 'কথোপকথন',
+  copied: 'কপি হয়েছে',
+  copyConversation: 'কথোপকথন কপি করুন',
+  copyConversationID: 'কথোপকথনের আইডি কপি করুন',
+  copyResponse: 'উত্তর কপি করুন',
+  couldnTCopyPleaseTryAgain: 'কপি করা যায়নি। আবার চেষ্টা করুন.',
+  create: 'তৈরি করুন',
+  createANewBot: 'একটি নতুন বট তৈরি করুন',
+  createBotOrChat: 'বট বা চ্যাট তৈরি করুন',
+  criticalRequests: 'সমালোচনামূলক অনুরোধ',
+  customize: 'কাস্টমাইজ করুন',
+  customizeANewTeammate: 'একটি নতুন সতীর্থ কাস্টমাইজ করুন।',
+  dateOfBirth: 'জন্ম তারিখ',
+  demoIntegrationAddingSavesItToThis:
+    'ডেমো ইন্টিগ্রেশন। যোগ করা এই ব্রাউজারে সংরক্ষণ করে; কোনো বাহ্যিক অ্যাকাউন্ট সংযুক্ত নেই।',
+  desktopApp: 'ডেস্কটপ অ্যাপ',
+  details: 'বিশদ বিবরণ',
+  developer: 'বিকাশকারী',
+  deviceID: 'ডিভাইস আইডি',
+  discover: 'আবিষ্কার করুন',
+  dispatchAlerts: 'প্রেরণ সতর্কতা',
+  editConversationAgents: 'কথোপকথন এজেন্ট সম্পাদনা করুন',
+  editBot: 'বট সম্পাদনা করুন',
+  editGroup: 'গ্রুপ সম্পাদনা করুন',
+  editAgent: 'সম্পাদনা করুন {0}',
+  email: 'ইমেল',
+  everydayEssentials: 'প্রতিদিনের প্রয়োজনীয় জিনিস',
+  exploreMarketplace: 'মার্কেটপ্লেস অন্বেষণ করুন',
+  explorePlugins: 'প্লাগইনগুলি অন্বেষণ করুন৷',
+  explorePluginsAndBotsToBuildYour: 'আপনার দল তৈরি করতে প্লাগইন এবং বটগুলি অন্বেষণ করুন৷',
+  findYourNextTeammate: 'আপনার পরবর্তী সতীর্থ খুঁজুন',
+  findYourNextToolOrTeammate: 'আপনার পরবর্তী টুল বা টিমমেট খুঁজুন',
+  firstName: 'প্রথম নাম',
+  folders: 'ফোল্ডার',
+  general: 'সাধারণ',
+  getNotifiedWhenTheModeNeedsTo: 'যখন মোডের একটি গুরুত্বপূর্ণ সিদ্ধান্ত নেওয়ার প্রয়োজন হয় তখন বিজ্ঞপ্তি পান',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'সহায়ক প্রতিক্রিয়া',
+  inTheBrowser: 'ব্রাউজারে',
+  inThisConversation: 'এই কথোপকথনে',
+  includes: 'অন্তর্ভুক্ত',
+  insideTheApp: 'অ্যাপের ভিতরে',
+  installed: 'ইনস্টল করা হয়েছে',
+  integrations: 'ইন্টিগ্রেশন',
+  iLlApproachThisFromThePerspective: 'আমি {0} এর দৃষ্টিকোণ থেকে এটির সাথে যোগাযোগ করব৷',
+  lastName: 'শেষ নাম',
+  limits: 'সীমা',
+  logOutFromAllDevices: 'সকল ডিভাইস থেকে লগ আউট করুন',
+  logout: 'লগ আউট',
+  manage: 'পরিচালনা করুন',
+  manageLimits: 'সীমা পরিচালনা করুন',
+  marketplace: 'মার্কেটপ্লেস',
+  marketplaceLinkCopied: 'মার্কেটপ্লেস লিঙ্ক কপি করা হয়েছে',
+  marketplaceListings: 'মার্কেটপ্লেস তালিকা',
+  meetYourNextTeammate: 'আপনার পরবর্তী সতীর্থের সাথে দেখা করুন',
+  messages: 'বার্তা',
+  noConversationsFound: 'কোনো কথোপকথন পাওয়া যায়নি।',
+  noMatchesYet: 'এখনো কোনো মিল নেই',
+  notifications: 'বিজ্ঞপ্তি',
+  openConversations: 'কথোপকথন খুলুন',
+  openPullRequestLinksInsideYourApp: 'আপনার অ্যাপের ভিতরে পুল অনুরোধের লিঙ্ক খুলুন',
+  openTheMarketplaceToExplorePluginsAnd:
+    'প্লাগইন এবং বট অন্বেষণ করতে মার্কেটপ্লেস খুলুন। একটি কথোপকথনের মেনু ব্যবহার করে এর বটের চেহারা এবং বিবরণ সম্পাদনা করুন। আবেগ চাকা থেকে একটি অভিব্যক্তি চয়ন করুন. আকৃতির চাপটি স্ক্রোল করুন বা টেনে আনুন, বা আকারগুলি অন্বেষণ করতে এর তীর কীগুলি ব্যবহার করুন৷',
+  prDestination: 'পিআর গন্তব্য',
+  people: 'লোকজন',
+  personal: 'ব্যক্তিগত',
+  pinChat: 'পিন চ্যাট',
+  pinnedChat: 'পিন করা চ্যাট',
+  plugins: 'প্লাগইন',
+  profile: 'প্রোফাইল',
+  public: 'সর্বজনীন',
+  publicProfile: 'পাবলিক প্রোফাইল',
+  pullRequests: 'অনুরোধ টানুন',
+  pushNotificationOnYourPhoneWhenThe: 'অ্যাপটি আপনাকে মেসেজ করলে আপনার ফোনে পুশ নোটিফিকেশন',
+  remove: 'সরান',
+  removeChat: 'চ্যাট সরান',
+  renameChat: 'চ্যাটের নাম বদলান',
+  responseCopied: 'প্রতিক্রিয়া কপি করা হয়েছে',
+  reviewProvider: 'পর্যালোচনা প্রদানকারী',
+  rulesAndWorkflows: 'নিয়ম এবং কর্মপ্রবাহ',
+  saveName: 'নাম সংরক্ষণ করুন',
+  sayHelloTo: '{0} কে হ্যালো বলুন',
+  searchConversations: 'কথোপকথন খুঁজুন',
+  searchConversations2: 'কথোপকথন অনুসন্ধান করুন...',
+  searchMarketplace: 'মার্কেটপ্লেস অনুসন্ধান করুন',
+  selectGithubOrOtherProvidersForReviews: 'পর্যালোচনার জন্য Github বা অন্যান্য প্রদানকারী নির্বাচন করুন',
+  selectedAgents: 'নির্বাচিত এজেন্ট: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'এন্টার দিয়ে পাঠান। একটি নতুন লাইনের জন্য Shift + Enter ব্যবহার করুন। আপনার পরিবর্তনগুলি এই ব্রাউজারেই থাকবে৷',
+  settings: 'সেটিংস',
+  share: 'শেয়ার করুন',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'কোনো এজেন্ট কোনো কাজ সম্পন্ন করলে মৌলিক বিজ্ঞপ্তি দেখান',
+  signOut: 'সাইন আউট করুন',
+  skills: 'দক্ষতা',
+  skills2: 'দক্ষতা · {0}',
+  soundEffectATaskIsCompleted: 'সাউন্ড ইফেক্ট একটি কাজ সম্পন্ন হয়',
+  startAConversation: 'একটি কথোপকথন শুরু করুন',
+  startAGroupChat: 'একটি গ্রুপ চ্যাট শুরু করুন',
+  startChat: 'চ্যাট শুরু করুন',
+  storage: 'সঞ্চয়স্থান',
+  support: 'সমর্থন',
+  systemNotifications: 'সিস্টেম বিজ্ঞপ্তি',
+  thinkingTogether: 'একসাথে ভাবছি...',
+  thinking: 'ভাবছি...',
+  today: 'আজ',
+  tools: 'টুলস',
+  toolsForYourWorkflow: 'আপনার কর্মপ্রবাহের জন্য টুল',
+  tryAnotherNameCategoryOrKeyword: 'অন্য নাম, বিভাগ বা কীওয়ার্ড চেষ্টা করুন।',
+  ultra149Mo: 'আল্ট্রা $149/মাস',
+  unhelpfulResponse: 'অসহায় প্রতিক্রিয়া',
+  unpinChat: 'চ্যাট আনপিন করুন',
+  upgradeToMax: 'Max-এ আপগ্রেড করুন',
+  useToCreateABotOrStart: 'একটি বট তৈরি করতে বা একাধিক এজেন্টের সাথে কথোপকথন শুরু করতে + ব্যবহার করুন।',
+  viewAdded: 'ভিউ যোগ করা হয়েছে {0}',
+  viewAll: 'সব দেখুন',
+  viewTeamProfile: 'টিম প্রোফাইল দেখুন',
+  viewItem: 'দেখুন {0}',
+  website: 'ওয়েবসাইট',
+  whenEnabledYourProfilePageWillBe: 'সক্রিয় হলে আপনার প্রোফাইল পৃষ্ঠাটি যে কারো কাছে দৃশ্যমান হবে',
+  youAreOn7xMoreUsageThan: 'আপনি প্রিমিয়ামের থেকে 7 গুণ বেশি ব্যবহার করছেন',
+  youAreOn7xMoreUsageThan2: 'আপনি নিয়মিত থেকে 7 গুণ বেশি ব্যবহার করছেন।',
+  areHereSendAMessageToGet: '{0} এখানে আছে। সবার দৃষ্টিভঙ্গি পেতে একটি বার্তা পাঠান।',
+  itemDetails: '{0} বিশদ বিবরণ',
+  agentThinking: '{0} ভাবছে',
+  by: '{0} · {1} দ্বারা',
+  results: (count: number) => plural('bn', count, { other: '{n}টি ফলাফল' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('bn', apps, { other: '{n}টি অ্যাপ' }) + ', ' : '') +
+    plural('bn', skills, { other: '{n}টি দক্ষতা' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Bloom ডিজাইন কাজ", defaultTeam: "Bloom দল",
+    defaultTitle: 'Bloom ডিজাইন কাজ',
+    defaultTeam: 'Bloom দল',
     openTicket: (code, title) => `খুলুন ${code}: ${title}`,
-    addTicketTo: column => `কাজ যোগ করুন ${column}`,
-    "board": "প্রকল্প বোর্ড",
-    "controls": "বোর্ড নিয়ন্ত্রণ",
-    "navigation": "নেভিগেশন খুলুন",
-    "inbox": "প্রকল্পের ইনবক্স খুলুন",
-    "newTicket": "নতুন কাজ",
-    "columns": "প্রকল্প বোর্ডের কলাম",
-    "sortTickets": "কাজ সাজান",
-    "filterTickets": "কাজ ছাঁকুন",
-    "displayOptions": "প্রদর্শন বিকল্প",
-    "sort": "সাজান",
-    "filter": "ছাঁকুন",
-    "display": "প্রদর্শন",
-    "manualOrder": "হাতে সাজানো ক্রম",
-    "priority": "অগ্রাধিকার",
-    "title": "শিরোনাম",
-    "project": "প্রকল্প",
-    "allPriorities": "সব অগ্রাধিকার",
-    "allProjects": "সব প্রকল্প",
-    "clearFilters": "ফিল্টার মুছুন",
-    "showDone": "সম্পূর্ণ কলাম দেখান",
-    "fillScreens": "প্রশস্ত পর্দা পূরণ করুন",
-    "createTicket": "কাজ তৈরি করুন",
-    "closeCreate": "কাজ তৈরি বন্ধ করুন",
-    "ticketTitle": "কাজের শিরোনাম",
-    "enterTitle": "কাজের শিরোনাম লিখুন",
-    "description": "বিবরণ",
-    "descriptionArea": "বিবরণের স্থান",
-    "status": "অবস্থা",
-    "urgency": "জরুরি",
-    "assignee": "দায়িত্বপ্রাপ্ত",
-    "unassigned": "নির্ধারিত নয়",
-    "keepCreating": "তৈরি করতে থাকুন",
-    "cancel": "বাতিল",
-    "addTicket": "কাজ যোগ করুন",
-    "sortTitle": "শিরোনাম অনুযায়ী সাজান",
-    "noTickets": "এখানে কোনো সমস্যা নেই",
-    "favoriteAdd": "পছন্দে যোগ করুন",
-    "favoriteRemove": "পছন্দ থেকে সরান",
-    "copyLink": "কাজের লিংক কপি করুন",
-    "actions": "কাজের কার্যক্রম",
-    "editDescription": "বিবরণ সম্পাদনা করুন",
-    "copyId": "কাজের ID কপি করুন",
-    "reopen": "কাজ আবার খুলুন",
-    "markDone": "সম্পূর্ণ চিহ্নিত করুন",
-    "closeDetails": "কাজের বিস্তারিত বন্ধ করুন",
-    "linkCopied": "কাজের লিংক কপি হয়েছে",
-    "idCopied": "কাজের ID কপি হয়েছে",
-    "copyFailed": "কপি করা যায়নি। আবার চেষ্টা করুন।",
-    "createdBy": "তৈরি করেছেন",
-    "saveDescription": "বিবরণ সংরক্ষণ করুন",
-    "ticketDescription": "কাজের বিবরণ",
-    "properties": "বৈশিষ্ট্য",
-    "editAssignees": "দায়িত্বপ্রাপ্তদের সম্পাদনা করুন",
-    "resources": "সম্পদ",
-    "tokens": "খরচ হওয়া টোকেন",
-    "comments": "মন্তব্য",
-    "you": "আপনি",
-    "justNow": "এইমাত্র",
-    "addComment": "মন্তব্য যোগ করুন",
-    "enterComment": "আপনার মন্তব্য লিখুন",
-    "postComment": "মন্তব্য প্রকাশ করুন",
-    "moveUp": "উপরে সরান",
-    "moveDown": "নিচে সরান",
-    "nextColumn": "পরের কলামে সরান",
-    "previousColumn": "আগের কলামে সরান",
-    "keyboardHint": "Enter দিয়ে খুলুন। স্পেস দিয়ে ধরুন, তীর দিয়ে সরান, স্পেস দিয়ে ছাড়ুন এবং Escape দিয়ে বাতিল করুন।"
-},
+    addTicketTo: (column) => `কাজ যোগ করুন ${column}`,
+    board: 'প্রকল্প বোর্ড',
+    controls: 'বোর্ড নিয়ন্ত্রণ',
+    navigation: 'নেভিগেশন খুলুন',
+    inbox: 'প্রকল্পের ইনবক্স খুলুন',
+    newTicket: 'নতুন কাজ',
+    columns: 'প্রকল্প বোর্ডের কলাম',
+    sortTickets: 'কাজ সাজান',
+    filterTickets: 'কাজ ছাঁকুন',
+    displayOptions: 'প্রদর্শন বিকল্প',
+    sort: 'সাজান',
+    filter: 'ছাঁকুন',
+    display: 'প্রদর্শন',
+    manualOrder: 'হাতে সাজানো ক্রম',
+    priority: 'অগ্রাধিকার',
+    title: 'শিরোনাম',
+    project: 'প্রকল্প',
+    allPriorities: 'সব অগ্রাধিকার',
+    allProjects: 'সব প্রকল্প',
+    clearFilters: 'ফিল্টার মুছুন',
+    showDone: 'সম্পূর্ণ কলাম দেখান',
+    fillScreens: 'প্রশস্ত পর্দা পূরণ করুন',
+    createTicket: 'কাজ তৈরি করুন',
+    closeCreate: 'কাজ তৈরি বন্ধ করুন',
+    ticketTitle: 'কাজের শিরোনাম',
+    enterTitle: 'কাজের শিরোনাম লিখুন',
+    description: 'বিবরণ',
+    descriptionArea: 'বিবরণের স্থান',
+    status: 'অবস্থা',
+    urgency: 'জরুরি',
+    assignee: 'দায়িত্বপ্রাপ্ত',
+    unassigned: 'নির্ধারিত নয়',
+    keepCreating: 'তৈরি করতে থাকুন',
+    cancel: 'বাতিল',
+    addTicket: 'কাজ যোগ করুন',
+    sortTitle: 'শিরোনাম অনুযায়ী সাজান',
+    noTickets: 'এখানে কোনো সমস্যা নেই',
+    favoriteAdd: 'পছন্দে যোগ করুন',
+    favoriteRemove: 'পছন্দ থেকে সরান',
+    copyLink: 'কাজের লিংক কপি করুন',
+    actions: 'কাজের কার্যক্রম',
+    editDescription: 'বিবরণ সম্পাদনা করুন',
+    copyId: 'কাজের ID কপি করুন',
+    reopen: 'কাজ আবার খুলুন',
+    markDone: 'সম্পূর্ণ চিহ্নিত করুন',
+    closeDetails: 'কাজের বিস্তারিত বন্ধ করুন',
+    linkCopied: 'কাজের লিংক কপি হয়েছে',
+    idCopied: 'কাজের ID কপি হয়েছে',
+    copyFailed: 'কপি করা যায়নি। আবার চেষ্টা করুন।',
+    createdBy: 'তৈরি করেছেন',
+    saveDescription: 'বিবরণ সংরক্ষণ করুন',
+    ticketDescription: 'কাজের বিবরণ',
+    properties: 'বৈশিষ্ট্য',
+    editAssignees: 'দায়িত্বপ্রাপ্তদের সম্পাদনা করুন',
+    resources: 'সম্পদ',
+    tokens: 'খরচ হওয়া টোকেন',
+    comments: 'মন্তব্য',
+    you: 'আপনি',
+    justNow: 'এইমাত্র',
+    addComment: 'মন্তব্য যোগ করুন',
+    enterComment: 'আপনার মন্তব্য লিখুন',
+    postComment: 'মন্তব্য প্রকাশ করুন',
+    moveUp: 'উপরে সরান',
+    moveDown: 'নিচে সরান',
+    nextColumn: 'পরের কলামে সরান',
+    previousColumn: 'আগের কলামে সরান',
+    keyboardHint:
+      'Enter দিয়ে খুলুন। স্পেস দিয়ে ধরুন, তীর দিয়ে সরান, স্পেস দিয়ে ছাড়ুন এবং Escape দিয়ে বাতিল করুন।',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "এজেন্টের অবতার", unavailable: "অবতার উপলব্ধ নেই", },
+  AGENT_AVATAR_MESSAGES: { label: 'এজেন্টের অবতার', unavailable: 'অবতার উপলব্ধ নেই' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

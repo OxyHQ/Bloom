@@ -1,8 +1,4 @@
-import {
-  FOLD_CONFIG,
-  parsePreset,
-  type AvatarConfig,
-} from '../agent-avatar/model';
+import { FOLD_CONFIG, parsePreset, type AvatarConfig } from '../agent-avatar/model';
 import { pickMessages } from '../locale/messages';
 import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
 
@@ -68,9 +64,7 @@ const NEW_AGENT_IDENTITIES = [
 ] satisfies Pick<Agent, 'name' | 'avatar'>[];
 
 /** Choose an unused identity, including when restoring old unnamed demo bots. */
-export function nextAgentIdentity(
-  agents: Pick<Agent, 'name'>[],
-): Pick<Agent, 'name' | 'avatar'> {
+export function nextAgentIdentity(agents: Pick<Agent, 'name'>[]): Pick<Agent, 'name' | 'avatar'> {
   const names = new Set(agents.map((agent) => agent.name.toLowerCase()));
   let index = 0;
   while (true) {
@@ -116,8 +110,7 @@ const ADDITIONAL_AGENTS: Agent[] = [
     id: 'data',
     name: 'Data analyst',
     label: 'Analytics',
-    description:
-      'Turns data into clear insights, useful charts, and practical decisions.',
+    description: 'Turns data into clear insights, useful charts, and practical decisions.',
     avatar: {
       ...FOLD_CONFIG,
       foldShape: 'pocket',
@@ -190,8 +183,7 @@ export const INITIAL_AGENTS: Agent[] = [
     id: 'research',
     name: 'research assistant',
     label: 'Research',
-    description:
-      'Connects the dots, asks better questions, and brings the evidence.',
+    description: 'Connects the dots, asks better questions, and brings the evidence.',
     avatar: {
       ...FOLD_CONFIG,
       foldShape: 'petal',
@@ -220,59 +212,58 @@ export const INITIAL_AGENTS: Agent[] = [
   ...ADDITIONAL_AGENTS,
 ];
 
-const SAMPLE_CONVERSATIONS: Record<string, { prompt: string; reply: string }> =
-  {
-    design: {
-      prompt: 'How can we make the landing page feel clearer?',
-      reply:
-        'Give the hero one clear action. Lead with the outcome, pair it with a focused product preview, and move the secondary links below the fold.\n\nFor the next section, show three concrete benefits with short examples. That creates a natural path from understanding the product to trying it.',
-    },
-    content: {
-      prompt: 'Can you help tighten our welcome email?',
-      reply:
-        'The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the main button close to that instruction.\n\nSave the feature tour for a follow-up. A new customer should leave this email knowing exactly where to begin.',
-    },
-    marketing: {
-      prompt: 'What should our launch campaign focus on?',
-      reply:
-        'Lead with the problem your audience recognizes. Build the campaign around one before-and-after story, then adapt it for email, social, and the launch page.\n\nTry two opening lines with a small audience first. Use the response to choose a direction before expanding the campaign.',
-    },
-    seo: {
-      prompt: 'Help me plan a useful topic cluster for our blog.',
-      reply:
-        'Start with a practical guide to the core topic. Support it with focused articles that answer the next questions readers are likely to ask.\n\nLink each article back to the guide and to one related next step. Clear titles and useful examples will make the structure easier for people to navigate.',
-    },
-    research: {
-      prompt: 'How should we prepare for customer interviews?',
-      reply:
-        'Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what a good result would have looked like.\n\nKeep the first five interviews focused on the same questions. Compare the patterns afterward before deciding which assumption to test next.',
-    },
-    security: {
-      prompt: 'What should we check before sharing the beta?',
-      reply:
-        'Review access permissions before inviting testers. Confirm that every request checks the current user’s access and that one account cannot read another account’s data.\n\nThen check the password-reset flow, uploaded files, and sensitive information in logs. Keep a short checklist so the same checks run before each release.',
-    },
-    product: {
-      prompt: 'Can you help prioritize our first release?',
-      reply:
-        'Keep the first release focused on one complete journey. Pick the three things someone must be able to do to reach the main outcome, and move supporting ideas into a later list.\n\nGive each priority a clear success condition. That makes it easier to decide whether the release is ready without adding more features.',
-    },
-    cloud: {
-      prompt: 'How should we approach our staging deployment?',
-      reply:
-        'Give staging its own environment and data. Match the production configuration closely, while keeping credentials, storage, and deployment permissions separate.\n\nAdd a health check and a simple rollback path before automating releases. Then use a small deployment to verify logs, startup behavior, and connectivity.',
-    },
-    support: {
-      prompt: 'Help me write a reply to a customer whose import failed.',
-      reply:
-        'Acknowledge the failed import and offer one clear next step. Ask for the file type and the error they saw, then explain what you will check with that information.\n\nKeep the reply warm and specific. Let them know when to expect an update so they do not have to chase the conversation.',
-    },
-    data: {
-      prompt: 'Which numbers should we include in the weekly dashboard?',
-      reply:
-        'Track activation alongside weekly retention. Those two measures help show whether new people reach value and whether they come back after the first visit.\n\nBreak the results down by signup week and acquisition source. Add a short note about unusual changes so the dashboard helps people decide what to investigate.',
-    },
-  };
+const SAMPLE_CONVERSATIONS: Record<string, { prompt: string; reply: string }> = {
+  design: {
+    prompt: 'How can we make the landing page feel clearer?',
+    reply:
+      'Give the hero one clear action. Lead with the outcome, pair it with a focused product preview, and move the secondary links below the fold.\n\nFor the next section, show three concrete benefits with short examples. That creates a natural path from understanding the product to trying it.',
+  },
+  content: {
+    prompt: 'Can you help tighten our welcome email?',
+    reply:
+      'The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the main button close to that instruction.\n\nSave the feature tour for a follow-up. A new customer should leave this email knowing exactly where to begin.',
+  },
+  marketing: {
+    prompt: 'What should our launch campaign focus on?',
+    reply:
+      'Lead with the problem your audience recognizes. Build the campaign around one before-and-after story, then adapt it for email, social, and the launch page.\n\nTry two opening lines with a small audience first. Use the response to choose a direction before expanding the campaign.',
+  },
+  seo: {
+    prompt: 'Help me plan a useful topic cluster for our blog.',
+    reply:
+      'Start with a practical guide to the core topic. Support it with focused articles that answer the next questions readers are likely to ask.\n\nLink each article back to the guide and to one related next step. Clear titles and useful examples will make the structure easier for people to navigate.',
+  },
+  research: {
+    prompt: 'How should we prepare for customer interviews?',
+    reply:
+      'Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what a good result would have looked like.\n\nKeep the first five interviews focused on the same questions. Compare the patterns afterward before deciding which assumption to test next.',
+  },
+  security: {
+    prompt: 'What should we check before sharing the beta?',
+    reply:
+      'Review access permissions before inviting testers. Confirm that every request checks the current user’s access and that one account cannot read another account’s data.\n\nThen check the password-reset flow, uploaded files, and sensitive information in logs. Keep a short checklist so the same checks run before each release.',
+  },
+  product: {
+    prompt: 'Can you help prioritize our first release?',
+    reply:
+      'Keep the first release focused on one complete journey. Pick the three things someone must be able to do to reach the main outcome, and move supporting ideas into a later list.\n\nGive each priority a clear success condition. That makes it easier to decide whether the release is ready without adding more features.',
+  },
+  cloud: {
+    prompt: 'How should we approach our staging deployment?',
+    reply:
+      'Give staging its own environment and data. Match the production configuration closely, while keeping credentials, storage, and deployment permissions separate.\n\nAdd a health check and a simple rollback path before automating releases. Then use a small deployment to verify logs, startup behavior, and connectivity.',
+  },
+  support: {
+    prompt: 'Help me write a reply to a customer whose import failed.',
+    reply:
+      'Acknowledge the failed import and offer one clear next step. Ask for the file type and the error they saw, then explain what you will check with that information.\n\nKeep the reply warm and specific. Let them know when to expect an update so they do not have to chase the conversation.',
+  },
+  data: {
+    prompt: 'Which numbers should we include in the weekly dashboard?',
+    reply:
+      'Track activation alongside weekly retention. Those two measures help show whether new people reach value and whether they come back after the first visit.\n\nBreak the results down by signup week and acquisition source. Add a short note about unusual changes so the dashboard helps people decide what to investigate.',
+  },
+};
 
 function sampleMessages(agentId: string): Message[] {
   const sample = SAMPLE_CONVERSATIONS[agentId];
@@ -302,9 +293,7 @@ const STARTER_CHAT_AGENT_IDS = new Set([
 export const INITIAL_WORKSPACE: Workspace = {
   agents: INITIAL_AGENTS,
   activeId: 'chat-design',
-  chats: INITIAL_AGENTS.filter((agent) =>
-    STARTER_CHAT_AGENT_IDS.has(agent.id),
-  ).map((agent) => ({
+  chats: INITIAL_AGENTS.filter((agent) => STARTER_CHAT_AGENT_IDS.has(agent.id)).map((agent) => ({
     id: `chat-${agent.id}`,
     title: agent.name,
     agentIds: [agent.id],
@@ -340,9 +329,7 @@ export function restoreWorkspace(raw: string): Workspace | null {
         name: a.name.slice(0, 48),
         label: a.label.slice(0, 60),
         description: a.description.slice(0, 500),
-        ...(a.preferences
-          ? { preferences: normalizeAgentPreferences(a.preferences) }
-          : {}),
+        ...(a.preferences ? { preferences: normalizeAgentPreferences(a.preferences) } : {}),
         avatar: {
           ...parsePreset({ name: a.name, config: a.avatar }).config,
           family: 'fold',
@@ -435,25 +422,17 @@ export function restoreWorkspace(raw: string): Workspace | null {
               (chat) =>
                 chat.agentIds.includes(agent.id) &&
                 (chat.agentIds.length > 1 ||
-                  chat.messages.some(
-                    (message) => message.id !== `intro-${agent.id}`,
-                  )),
+                  chat.messages.some((message) => message.id !== `intro-${agent.id}`)),
             ),
         )
         .map((agent) => agent.id),
     );
     agents = agents.filter((agent) => !retired.has(agent.id));
-    chats = chats.filter(
-      (chat) => !chat.agentIds.some((id) => retired.has(id)),
-    );
+    chats = chats.filter((chat) => !chat.agentIds.some((id) => retired.has(id)));
     // Remove only untouched surplus starter chats; keep all agents available in the picker.
     chats = chats.filter((chat) => {
-      const agent = agents.find(
-        (agent) => agent.id === (chat.agentIds[0] ?? ''),
-      );
-      const original = INITIAL_AGENTS.find(
-        (initial) => initial.id === agent?.id,
-      );
+      const agent = agents.find((agent) => agent.id === (chat.agentIds[0] ?? ''));
+      const original = INITIAL_AGENTS.find((initial) => initial.id === agent?.id);
       if (
         !agent ||
         !original ||
@@ -489,8 +468,7 @@ export function restoreWorkspace(raw: string): Workspace | null {
       if (
         agents.some(
           (existing) =>
-            existing.id === agent.id ||
-            existing.name.toLowerCase() === agent.name.toLowerCase(),
+            existing.id === agent.id || existing.name.toLowerCase() === agent.name.toLowerCase(),
         )
       )
         continue;
@@ -509,8 +487,7 @@ export function restoreWorkspace(raw: string): Workspace | null {
       ? ([
           ...new Set(
             data.installedPlugins.filter(
-              (id: unknown): id is string =>
-                typeof id === 'string' && /^[a-z-]{1,40}$/.test(id),
+              (id: unknown): id is string => typeof id === 'string' && /^[a-z-]{1,40}$/.test(id),
             ),
           ),
         ].slice(0, 100) as string[])
@@ -519,23 +496,15 @@ export function restoreWorkspace(raw: string): Workspace | null {
       agents,
       chats,
       ...(installedPlugins ? { installedPlugins } : {}),
-      activeId: chats.some((c) => c.id === data.activeId)
-        ? data.activeId
-        : (chats[0]?.id ?? ''),
+      activeId: chats.some((c) => c.id === data.activeId) ? data.activeId : (chats[0]?.id ?? ''),
     };
   } catch {
     return null;
   }
 }
 
-export function conversationFor(
-  agents: Agent[],
-  ids: string[],
-  id: string,
-): Conversation {
-  const selected = [...new Set(ids)].flatMap(
-    (id) => agents.find((agent) => agent.id === id) ?? [],
-  );
+export function conversationFor(agents: Agent[], ids: string[], id: string): Conversation {
+  const selected = [...new Set(ids)].flatMap((id) => agents.find((agent) => agent.id === id) ?? []);
   return {
     id,
     title: selected.map((a) => a.label || a.name).join(' + '),
@@ -562,16 +531,12 @@ export function updateConversationAgents(
   };
 }
 
-export function removeConversation(
-  workspace: Workspace,
-  chatId: string,
-): Workspace {
+export function removeConversation(workspace: Workspace, chatId: string): Workspace {
   const chats = workspace.chats.filter((chat) => chat.id !== chatId);
   return {
     ...workspace,
     chats,
-    activeId:
-      workspace.activeId === chatId ? (chats[0]?.id ?? '') : workspace.activeId,
+    activeId: workspace.activeId === chatId ? (chats[0]?.id ?? '') : workspace.activeId,
   };
 }
 
@@ -593,9 +558,7 @@ export const DEMO_ANSWERS = [
 export function formatDemoReply(text: string): string {
   const footer = '\n\nThis is a sample response from the interactive template.';
   if (!text.startsWith('For “') || !text.endsWith(footer)) return text;
-  const body = text
-    .slice(0, -footer.length)
-    .replace(/^For “[\s\S]*?”:\n\n/u, '');
+  const body = text.slice(0, -footer.length).replace(/^For “[\s\S]*?”:\n\n/u, '');
   const paragraphs = body.split(/\n\s*\n/u);
   return [paragraphs.slice(0, 2).join(' '), paragraphs.slice(2).join(' ')]
     .filter(Boolean)
@@ -621,9 +584,6 @@ export function demoReply(agent: Agent, turn = 0): string {
     0,
     INITIAL_AGENTS.findIndex((a) => a.id === agent.id),
   );
-  const answer =
-    DEMO_ANSWERS[
-      (Math.max(0, Math.floor(turn)) + offset) % DEMO_ANSWERS.length
-    ];
+  const answer = DEMO_ANSWERS[(Math.max(0, Math.floor(turn)) + offset) % DEMO_ANSWERS.length];
   return `${suggestions[agent.id] ?? formatChatMessage(messages.iLlApproachThisFromThePerspective, agent.label || agent.name)} ${answer}`;
 }

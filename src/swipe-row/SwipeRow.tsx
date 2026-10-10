@@ -189,11 +189,7 @@ export function SwipeRow({
             testID={testID ? `${testID}-action-${action.key}` : undefined}
           >
             <Icon width={22} height={22} fill={tone.foreground} />
-            <Text
-              variant="caption-2-medium"
-              numberOfLines={1}
-              style={{ color: tone.foreground }}
-            >
+            <Text variant="caption-2-medium" numberOfLines={1} style={{ color: tone.foreground }}>
               {action.label}
             </Text>
           </Pressable>
@@ -247,11 +243,7 @@ export function SwipeRow({
           wherever a row is under the finger, which is everywhere. */}
       <GestureDetector gesture={pan} touchAction="pan-y">
         <Animated.View
-          style={[
-            { backgroundColor: rowFill },
-            height === undefined ? null : { height },
-            rowStyle,
-          ]}
+          style={[{ backgroundColor: rowFill }, height === undefined ? null : { height }, rowStyle]}
         >
           {children}
           {open !== null ? (

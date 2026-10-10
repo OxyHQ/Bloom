@@ -6,7 +6,13 @@ import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
 import { LISTING_CARD_MESSAGES, type ListingCardMessages } from './messages';
-import type { ListingCardProps, ListingFact, ListingPriceLine, ListingStatus, Offering } from './types';
+import type {
+  ListingCardProps,
+  ListingFact,
+  ListingPriceLine,
+  ListingStatus,
+  Offering,
+} from './types';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -104,7 +110,8 @@ export function resolveListingCardPaint(theme: Theme): ListingCardPaint {
 // ---------------------------------------------------------------------------
 
 /** The English status labels. `available` draws nothing. The card itself speaks `LISTING_CARD_MESSAGES` in the locale. */
-export const STATUS_LABELS: Readonly<Record<Exclude<ListingStatus, 'available'>, string>> = LISTING_CARD_MESSAGES.en.statuses;
+export const STATUS_LABELS: Readonly<Record<Exclude<ListingStatus, 'available'>, string>> =
+  LISTING_CARD_MESSAGES.en.statuses;
 
 /** The status pill's label, or `null` for an available listing. */
 export function statusLabelFor(

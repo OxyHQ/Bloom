@@ -24,17 +24,18 @@ export interface PlaceReviewsMessages {
   recommendRate: (percent: number) => string;
 }
 
-export const PLACE_REVIEWS_MESSAGES: MessageCatalog<PlaceReviewsMessages> = defineMessages<PlaceReviewsMessages>('PLACE_REVIEWS_MESSAGES', {
-  depositReturned: 'Deposit returned',
-  depositNotReturned: 'Deposit not returned',
-  recommend: 'Would recommend',
-  notRecommend: "Wouldn't recommend",
-  helpful: 'Helpful',
-  report: 'Report',
-  promptTitle: 'Did you live here?',
-  promptDescription: (building) => `Help future tenants of ${building}. Reviews are anonymous.`,
-  writeReview: 'Write a review',
-  reviewCount: (n) => plural('en', n, { one: '{n} review', other: '{n} reviews' }),
-  depositRate: (percent) => `Deposit returned in ${percent}% of tenancies`,
-  recommendRate: (percent) => `${percent}% would recommend living here`,
-});
+export const PLACE_REVIEWS_MESSAGES: MessageCatalog<PlaceReviewsMessages> =
+  defineMessages<PlaceReviewsMessages>('PLACE_REVIEWS_MESSAGES', {
+    depositReturned: 'Deposit returned',
+    depositNotReturned: 'Deposit not returned',
+    recommend: 'Would recommend',
+    notRecommend: "Wouldn't recommend",
+    helpful: 'Helpful',
+    report: 'Report',
+    promptTitle: 'Did you live here?',
+    promptDescription: (building) => `Help future tenants of ${building}. Reviews are anonymous.`,
+    writeReview: 'Write a review',
+    reviewCount: (n) => plural('en', n, { one: '{n} review', other: '{n} reviews' }),
+    depositRate: (percent) => `Deposit returned in ${percent}% of tenancies`,
+    recommendRate: (percent) => `${percent}% would recommend living here`,
+  });

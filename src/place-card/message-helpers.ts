@@ -12,7 +12,9 @@ export function countOf(
   count: number | string,
   forms: Partial<Record<PluralCategory, string>> & { other: string },
 ): string {
-  return typeof count === 'number' ? plural(language, count, forms) : forms.other.replace('{n}', count);
+  return typeof count === 'number'
+    ? plural(language, count, forms)
+    : forms.other.replace('{n}', count);
 }
 export const withReviews = (sentence: string, reviews: string | undefined) =>
   reviews === undefined ? sentence : `${sentence}, ${reviews}`;

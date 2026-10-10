@@ -20,7 +20,12 @@ import type { NearbyPlacesProps } from './types';
  * Each row is one `listitem` named "Rossio Metro, Metro station, 4 min walk"
  * (`formatTime`).
  */
-function NearbyPlacesComponent({ items, formatTime: formatTimeProp, style, testID }: NearbyPlacesProps) {
+function NearbyPlacesComponent({
+  items,
+  formatTime: formatTimeProp,
+  style,
+  testID,
+}: NearbyPlacesProps) {
   const { messages } = useMessages(PROPERTY_INSIGHTS_MESSAGES);
   const formatTime = formatTimeProp ?? messages.walkTime;
   const theme = useTheme();
@@ -35,7 +40,13 @@ function NearbyPlacesComponent({ items, formatTime: formatTimeProp, style, testI
           accessible
           accessibilityLabel={[name, category, formatTime(time)].filter(Boolean).join(', ')}
           testID={testID ? `${testID}-item-${index}` : undefined}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 12, paddingBottom: 12 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            paddingTop: 12,
+            paddingBottom: 12,
+          }}
         >
           <View
             style={{
@@ -54,14 +65,21 @@ function NearbyPlacesComponent({ items, formatTime: formatTimeProp, style, testI
               {name}
             </Text>
             {category ? (
-              <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+              <Text
+                variant="body-2-regular"
+                numberOfLines={1}
+                style={{ color: palette.textSecondary }}
+              >
                 {category}
               </Text>
             ) : null}
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <ModeIcon width={16} height={16} fill={palette.textSecondary} />
-            <Text variant="body-2-medium" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+            <Text
+              variant="body-2-medium"
+              style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+            >
               {time}
             </Text>
           </View>

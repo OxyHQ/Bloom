@@ -268,7 +268,10 @@ export interface AudiobookCardProps extends MediaCardCommonProps, MediaCardArtwo
 }
 
 export interface GenreCardProps
-  extends Pick<MediaCardCommonProps, 'onPress' | 'href' | 'size' | 'accessibilityLabel' | 'skeleton' | 'style' | 'testID'> {
+  extends Pick<
+    MediaCardCommonProps,
+    'onPress' | 'href' | 'size' | 'accessibilityLabel' | 'skeleton' | 'style' | 'testID'
+  > {
   title: string;
   /** The tile colour (hex). Darkened as far as needed to keep the title legible. */
   color?: string;
@@ -337,19 +340,19 @@ export interface FriendActivityCardProps
 
 export interface QuickAccessTileProps
   extends Pick<
-    MediaCardCommonProps,
-    | 'onPress'
-    | 'href'
-    | 'onPlay'
-    | 'playing'
-    | 'loading'
-    | 'current'
-    | 'skeleton'
-    | 'selected'
-    | 'accessibilityLabel'
-    | 'style'
-    | 'testID'
-  >,
+      MediaCardCommonProps,
+      | 'onPress'
+      | 'href'
+      | 'onPlay'
+      | 'playing'
+      | 'loading'
+      | 'current'
+      | 'skeleton'
+      | 'selected'
+      | 'accessibilityLabel'
+      | 'style'
+      | 'testID'
+    >,
     MediaCardArtworkProps {
   title: string;
   /** Round cover (an artist). */

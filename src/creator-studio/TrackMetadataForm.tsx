@@ -21,7 +21,12 @@ import { ArtistChipsInput, IsrcField } from './MetadataFields';
 import { useMessages } from '../locale/messages';
 import { CREATOR_STUDIO_MESSAGES } from './messages';
 import { resolveCreatorStudioPaint } from './shared';
-import type { CreatorOption, TrackMetadata, TrackMetadataFormLabels, TrackMetadataFormProps } from './types';
+import type {
+  CreatorOption,
+  TrackMetadata,
+  TrackMetadataFormLabels,
+  TrackMetadataFormProps,
+} from './types';
 
 /**
  * `TrackMetadataForm`: everything a track needs before distribution, composed

@@ -7,10 +7,7 @@ import { Text } from '../typography';
 import { type CharacterCapabilities, CharacterRuntimeContext } from './context';
 import { characterHtml, scriptJson } from './character-html';
 import { loadCharacterRuntime } from './character-runtime-module';
-import {
-  characterWebView,
-  type CharacterWebViewHandle,
-} from './character-webview';
+import { characterWebView, type CharacterWebViewHandle } from './character-webview';
 import { legacyRecipe } from './legacy-recipe';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
@@ -133,9 +130,7 @@ function NativeCharacter({
     if (!WebView) onError();
   }, [WebView, onError]);
   const send = () =>
-    ref.current?.injectJavaScript(
-      `window.updateCharacter?.(${scriptJson(value)}); true;`,
-    );
+    ref.current?.injectJavaScript(`window.updateCharacter?.(${scriptJson(value)}); true;`);
   useEffect(send, [value]);
   if (!WebView) return null;
   return (
@@ -180,17 +175,10 @@ export function CharacterAvatar(props: AgentAvatarProps) {
     size = 64,
   } = props;
   useEffect(() => {
-    const motion = AccessibilityInfo.addEventListener(
-      'reduceMotionChanged',
-      setReduced,
-    );
-    const state = AppState.addEventListener('change', (next) =>
-      setActive(next === 'active'),
-    );
+    const motion = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
+    const state = AppState.addEventListener('change', (next) => setActive(next === 'active'));
     const media =
-      Platform.OS === 'web'
-        ? window.matchMedia('(prefers-reduced-motion: reduce)')
-        : undefined;
+      Platform.OS === 'web' ? window.matchMedia('(prefers-reduced-motion: reduce)') : undefined;
     const change = () => setReduced(media!.matches);
     media?.addEventListener('change', change);
     if (media) change();
@@ -203,9 +191,7 @@ export function CharacterAvatar(props: AgentAvatarProps) {
   useEffect(() => setFailed(false), [runtimeUrl, config.character]);
   const legacy = useMemo(
     () =>
-      !config.character || config.character.preset === 'bloom'
-        ? legacyRecipe(config)
-        : undefined,
+      !config.character || config.character.preset === 'bloom' ? legacyRecipe(config) : undefined,
     [config],
   );
   const value = useMemo(
@@ -243,9 +229,7 @@ export function CharacterAvatar(props: AgentAvatarProps) {
       style={[{ width: size, height: size }, props.style]}
       accessible
       accessibilityRole="image"
-      accessibilityLabel={
-        props.accessibilityLabel ?? props.label ?? messages.label
-      }
+      accessibilityLabel={props.accessibilityLabel ?? props.label ?? messages.label}
       testID={props.testID}
     >
       {runtimeUrl && !failed ? (

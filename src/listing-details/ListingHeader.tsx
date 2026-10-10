@@ -10,7 +10,13 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LISTING_HEADER_WIDE_MIN_WIDTH } from './constants';
-import { IS_WEB, LISTING_DETAILS_CSS, LISTING_DETAILS_STYLE_ID, resolveListingPalette, type ListingPalette } from './shared';
+import {
+  IS_WEB,
+  LISTING_DETAILS_CSS,
+  LISTING_DETAILS_STYLE_ID,
+  resolveListingPalette,
+  type ListingPalette,
+} from './shared';
 import { webDataSet as webData } from '../styles/web-data';
 import type { ListingHeaderActionProps, ListingHeaderProps } from './types';
 import { useContainerWidth } from '../hooks/use-container-width';
@@ -67,7 +73,6 @@ function InlineLink({
   }
   return (
     <LinkButton
-
       linkTone="text"
       underline="rest"
       size="sm"
@@ -123,7 +128,10 @@ function ListingHeaderActionComponent({
     >
       {Icon ? <Icon width={16} height={16} fill={palette.text} /> : null}
       {iconOnly ? null : (
-        <Text variant="body-semibold" style={{ color: palette.text, textDecorationLine: 'underline' }}>
+        <Text
+          variant="body-semibold"
+          style={{ color: palette.text, textDecorationLine: 'underline' }}
+        >
           {label}
         </Text>
       )}
@@ -160,7 +168,9 @@ function ListingHeaderComponent({
   const meta: React.ReactNode[] = [];
   if (badge) meta.push(<React.Fragment key="badge">{badge}</React.Fragment>);
   if (rating !== undefined) {
-    meta.push(<Rating key="rating" value={rating} testID={testID ? `${testID}-rating` : undefined} />);
+    meta.push(
+      <Rating key="rating" value={rating} testID={testID ? `${testID}-rating` : undefined} />,
+    );
   }
   if (reviewsLabel) {
     meta.push(
@@ -230,7 +240,13 @@ function ListingHeaderComponent({
       ) : null}
       {meta.length > 0 ? (
         <View
-          style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 8, rowGap: 4 }}
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            columnGap: 8,
+            rowGap: 4,
+          }}
           testID={testID ? `${testID}-meta` : undefined}
         >
           {meta.flatMap((node, index) =>

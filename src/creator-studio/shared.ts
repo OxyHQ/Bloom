@@ -1,18 +1,28 @@
 import { Platform } from 'react-native';
 
-import { ACCENT_TABLE, colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
+import {
+  ACCENT_TABLE,
+  colorRamp,
+  DANGER_TABLE,
+  mixColor,
+  resolveButtonRamps,
+} from '../button/shared';
 import type { AccentTone } from '../theme/accent-colors';
-import { surfaceTextOn, resolveSurfaceLevel, surfaceFillOn, hairlineOn } from '../styles/surface-levels';
+import {
+  surfaceTextOn,
+  resolveSurfaceLevel,
+  surfaceFillOn,
+  hairlineOn,
+} from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
-import type {
-  CreatorOption,
-  ReleaseStatus,
-  ReleaseType,
-  TrackUploadStatus,
-} from './types';
+import type { CreatorOption, ReleaseStatus, ReleaseType, TrackUploadStatus } from './types';
 import { clamp } from '../styles/clamp';
 import { pickMessages } from '../locale/messages';
-import { CREATOR_STUDIO_MESSAGES, type CreatorCreditRole, type CreatorStudioMessages } from './messages';
+import {
+  CREATOR_STUDIO_MESSAGES,
+  type CreatorCreditRole,
+  type CreatorStudioMessages,
+} from './messages';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -92,10 +102,12 @@ export function resolveCreatorStudioPaint(theme: Theme): CreatorStudioPaint {
 // ---------------------------------------------------------------------------
 
 /** The English release types; components read the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const RELEASE_TYPE_LABELS: Record<ReleaseType, string> = CREATOR_STUDIO_MESSAGES.en.releaseTypes;
+export const RELEASE_TYPE_LABELS: Record<ReleaseType, string> =
+  CREATOR_STUDIO_MESSAGES.en.releaseTypes;
 
 /** The English status names; components read the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = CREATOR_STUDIO_MESSAGES.en.releaseStatuses;
+export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> =
+  CREATOR_STUDIO_MESSAGES.en.releaseStatuses;
 
 /**
  * The status badge's tone. Each status reads from a distinct role, so the
@@ -108,7 +120,10 @@ export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = CREATOR_STUD
  *   rejected   error     needs the artist
  *   takedown   error     outlined — ended, not actionable
  */
-export const RELEASE_STATUS_TONES: Record<ReleaseStatus, { tone: AccentTone; fill: 'subtle' | 'outlined' }> = {
+export const RELEASE_STATUS_TONES: Record<
+  ReleaseStatus,
+  { tone: AccentTone; fill: 'subtle' | 'outlined' }
+> = {
   draft: { tone: 'default', fill: 'subtle' },
   'in-review': { tone: 'warning', fill: 'subtle' },
   scheduled: { tone: 'info', fill: 'subtle' },
@@ -138,7 +153,9 @@ export function creditRoleOptions(messages: CreatorStudioMessages): CreatorOptio
 }
 
 /** The built-in credit roles in English; `CreditsEditor` defaults to the localised ones. */
-export const DEFAULT_CREDIT_ROLES: readonly CreatorOption[] = creditRoleOptions(CREATOR_STUDIO_MESSAGES.en);
+export const DEFAULT_CREDIT_ROLES: readonly CreatorOption[] = creditRoleOptions(
+  CREATOR_STUDIO_MESSAGES.en,
+);
 
 // ---------------------------------------------------------------------------
 //  Uploads
@@ -193,13 +210,18 @@ const ISRC_RE = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/;
 
 /** Uppercases and strips everything but letters and digits, capped at 12 characters. */
 export function normalizeIsrc(value: string): string {
-  return value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+  return value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 12);
 }
 
 /** Groups a (partial) ISRC as `CC-XXX-YY-NNNNN` while typing. */
 export function formatIsrc(value: string): string {
   const raw = normalizeIsrc(value);
-  const parts = [raw.slice(0, 2), raw.slice(2, 5), raw.slice(5, 7), raw.slice(7, 12)].filter(Boolean);
+  const parts = [raw.slice(0, 2), raw.slice(2, 5), raw.slice(5, 7), raw.slice(7, 12)].filter(
+    Boolean,
+  );
   return parts.join('-');
 }
 

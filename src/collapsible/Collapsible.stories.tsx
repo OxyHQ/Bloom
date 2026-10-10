@@ -59,10 +59,7 @@ function Composed() {
                 className="w-full"
                 contentClassName="gap-space-12 p-space-12"
               >
-                <TextInput
-                  accessibilityLabel="Delivery note"
-                  placeholder="Delivery note"
-                />
+                <TextInput accessibilityLabel="Delivery note" placeholder="Delivery note" />
                 <Select value={interval} onValueChange={setInterval}>
                   <SelectTrigger label="Delivery frequency">
                     <SelectValue />
@@ -78,13 +75,8 @@ function Composed() {
                     )}
                   />
                 </Select>
-                <Button onPress={() => setTall((value) => !value)}>
-                  Resize content
-                </Button>
-                <View
-                  testID="natural-content"
-                  style={{ height: tall ? 1200 : 220 }}
-                >
+                <Button onPress={() => setTall((value) => !value)}>Resize content</Button>
+                <View testID="natural-content" style={{ height: tall ? 1200 : 220 }}>
                   <Text>Delivery details</Text>
                 </View>
               </Collapsible>

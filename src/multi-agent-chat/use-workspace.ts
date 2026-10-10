@@ -16,12 +16,7 @@ export function useWorkspace({
   onChange.current = onWorkspaceChange;
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    if (
-      !initialWorkspace &&
-      storageKey &&
-      Platform.OS === 'web' &&
-      typeof window !== 'undefined'
-    ) {
+    if (!initialWorkspace && storageKey && Platform.OS === 'web' && typeof window !== 'undefined') {
       try {
         const raw = window.localStorage.getItem(storageKey);
         const saved = raw && restoreWorkspace(raw);
@@ -36,12 +31,7 @@ export function useWorkspace({
     setLoaded(true);
   }, [initialWorkspace, storageKey]);
   useEffect(() => {
-    if (
-      loaded &&
-      storageKey &&
-      Platform.OS === 'web' &&
-      typeof window !== 'undefined'
-    ) {
+    if (loaded && storageKey && Platform.OS === 'web' && typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(storageKey, JSON.stringify(workspace));
       } catch {

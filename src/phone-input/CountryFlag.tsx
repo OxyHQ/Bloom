@@ -35,7 +35,12 @@ function Shape({ shape }: { shape: FlagShape }) {
  * Decorative unless given an `accessibilityLabel` — next to a country name or a
  * dial code the flag says nothing the text doesn't.
  */
-export function CountryFlag({ iso2, size = COUNTRY_FLAG_WIDTH, accessibilityLabel, style }: CountryFlagProps) {
+export function CountryFlag({
+  iso2,
+  size = COUNTRY_FLAG_WIDTH,
+  accessibilityLabel,
+  style,
+}: CountryFlagProps) {
   const art = COUNTRY_FLAGS[iso2.toUpperCase()];
   if (!art) return null;
   const [viewBox, shapes] = art;
@@ -60,7 +65,8 @@ export function CountryFlag({ iso2, size = COUNTRY_FLAG_WIDTH, accessibilityLabe
           borderRadius: COUNTRY_FLAG_RADIUS,
         },
         style,
-      ]}>
+      ]}
+    >
       <Svg width={size} height={height} viewBox={viewBox === 0 ? DEFAULT_FLAG_VIEWBOX : viewBox}>
         {shapes.map((shape, index) => (
           <Shape key={index} shape={shape} />

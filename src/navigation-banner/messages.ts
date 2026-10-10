@@ -37,18 +37,19 @@ export interface NavigationBannerMessages {
   end: string;
 }
 
-export const NAVIGATION_BANNER_MESSAGES: MessageCatalog<NavigationBannerMessages> = defineMessages<NavigationBannerMessages>('NAVIGATION_BANNER_MESSAGES', {
-  states: { 'off-route': 'Off route', rerouting: 'Finding a new route' },
-  thenLine: (street, maneuver) => words('then', maneuver?.toLowerCase(), street),
-  laneGuidance: 'Lane guidance',
-  laneCount: (n) => plural('en', n, { one: '{n} lane', other: '{n} lanes' }),
-  laneNumber: (n) => `lane ${n}`,
-  and: (a, b) => `${a} and ${b}`,
-  useLanes: (lanes) => `use ${lanes}`,
-  speedLimit: (limit) => `Speed limit ${limit}`,
-  overLimit: 'over the limit',
-  arrival: 'Arrival',
-  left: 'Left',
-  distance: 'Distance',
-  end: 'End',
-});
+export const NAVIGATION_BANNER_MESSAGES: MessageCatalog<NavigationBannerMessages> =
+  defineMessages<NavigationBannerMessages>('NAVIGATION_BANNER_MESSAGES', {
+    states: { 'off-route': 'Off route', rerouting: 'Finding a new route' },
+    thenLine: (street, maneuver) => words('then', maneuver?.toLowerCase(), street),
+    laneGuidance: 'Lane guidance',
+    laneCount: (n) => plural('en', n, { one: '{n} lane', other: '{n} lanes' }),
+    laneNumber: (n) => `lane ${n}`,
+    and: (a, b) => `${a} and ${b}`,
+    useLanes: (lanes) => `use ${lanes}`,
+    speedLimit: (limit) => `Speed limit ${limit}`,
+    overLimit: 'over the limit',
+    arrival: 'Arrival',
+    left: 'Left',
+    distance: 'Distance',
+    end: 'End',
+  });

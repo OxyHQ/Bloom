@@ -36,7 +36,10 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
   const progress = useSidebarCollapseProgress(collapsed);
   const expandedLane = geometry?.expandedLane ?? SIDEBAR_LOGO_SIZE;
   const collapsedLane = geometry?.collapsedLane ?? SIDEBAR_LOGO_SIZE;
-  const markStyle = useAnimatedStyle(() => ({ width: expandedLane + (collapsedLane - expandedLane) * progress.value }), [progress, expandedLane, collapsedLane]);
+  const markStyle = useAnimatedStyle(
+    () => ({ width: expandedLane + (collapsedLane - expandedLane) * progress.value }),
+    [progress, expandedLane, collapsedLane],
+  );
   useSidebarWebCss();
   const { icon, wordmark, href, onPress, accessibilityLabel } = logo;
   const label = accessibilityLabel ?? (typeof wordmark === 'string' ? wordmark : undefined);
@@ -45,7 +48,15 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
     <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 0 }}>
       {icon != null ? (
         <Animated.View
-          style={[{ height: SIDEBAR_LOGO_SIZE, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, markStyle]}
+          style={[
+            {
+              height: SIDEBAR_LOGO_SIZE,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            },
+            markStyle,
+          ]}
           testID={testID ? `${testID}-icon` : undefined}
         >
           {icon}
@@ -53,7 +64,14 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
       ) : null}
       {wordmark != null && showWordmark ? (
         <Collapsible collapsed={collapsed}>
-          <View style={{ minHeight: SIDEBAR_LOGO_SIZE, paddingInlineStart: icon != null ? 8 : 0, justifyContent: 'center' }} testID={testID ? `${testID}-wordmark` : undefined}>
+          <View
+            style={{
+              minHeight: SIDEBAR_LOGO_SIZE,
+              paddingInlineStart: icon != null ? 8 : 0,
+              justifyContent: 'center',
+            }}
+            testID={testID ? `${testID}-wordmark` : undefined}
+          >
             {typeof wordmark === 'string' ? (
               <Text variant="headline-semibold" numberOfLines={1} style={{ color: palette.text }}>
                 {wordmark}
@@ -69,13 +87,23 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
 
   if (!href && !onPress) {
     return (
-      <View accessibilityLabel={label} role={label ? 'img' : undefined} style={{ minWidth: 0, flexShrink: 1 }} testID={testID}>
+      <View
+        accessibilityLabel={label}
+        role={label ? 'img' : undefined}
+        style={{ minWidth: 0, flexShrink: 1 }}
+        testID={testID}
+      >
         {content}
       </View>
     );
   }
 
-  const ringStyle: WebCssStyle = { minWidth: 0, flexShrink: 1, borderRadius: 10, '--bloom-sidebar-ring': palette.ring };
+  const ringStyle: WebCssStyle = {
+    minWidth: 0,
+    flexShrink: 1,
+    borderRadius: 10,
+    '--bloom-sidebar-ring': palette.ring,
+  };
   return (
     <Pressable
       {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' }, ...(href ? { href } : null) } : {})}

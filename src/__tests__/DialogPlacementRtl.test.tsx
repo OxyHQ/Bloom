@@ -132,27 +132,49 @@ describe('web fork', () => {
   });
 });
 
-
-describe.each([['native', Dialog], ['web', DialogWeb]] as const)('%s minSideGutter', (platformName, Component) => {
+describe.each([
+  ['native', Dialog],
+  ['web', DialogWeb],
+] as const)('%s minSideGutter', (platformName, Component) => {
   const platform = ReactNative.Platform as { OS: string };
   const originalOS = platform.OS;
-  afterEach(() => { platform.OS = originalOS; });
+  afterEach(() => {
+    platform.OS = originalOS;
+  });
   it.each([false, true])('allows full width while preserving logical alignment (rtl=%s)', (rtl) => {
     platform.OS = platformName === 'web' ? 'web' : 'ios';
     i18n.isRTL = rtl;
     document.documentElement.dir = rtl ? 'rtl' : 'ltr';
-    const screen = renderIn(<Component open placement="end" width={1000} minSideGutter={0} testID="full"><Text>Body</Text></Component>);
+    const screen = renderIn(
+      <Component open placement="end" width={1000} minSideGutter={0} testID="full">
+        <Text>Body</Text>
+      </Component>,
+    );
     const style = resolvedStyle(screen.getByTestId('full').props.style);
     expect(style.width).toBe(375);
     expect(style[platformName === 'web' ? (rtl ? 'left' : 'right') : 'insetInlineEnd']).toBe(0);
   });
-  it.each([[undefined, 351], [0, 375], [-10, 375], [40, 335], [NaN, 351]] as const)('caps gutter %s at width %s', (gutter, width) => {
+  it.each([
+    [undefined, 351],
+    [0, 375],
+    [-10, 375],
+    [40, 335],
+    [NaN, 351],
+  ] as const)('caps gutter %s at width %s', (gutter, width) => {
     platform.OS = platformName === 'web' ? 'web' : 'ios';
-    const screen = renderIn(<Component open placement="end" width={1000} minSideGutter={gutter} testID="full"><Text>Body</Text></Component>);
+    const screen = renderIn(
+      <Component open placement="end" width={1000} minSideGutter={gutter} testID="full">
+        <Text>Body</Text>
+      </Component>,
+    );
     expect(resolvedStyle(screen.getByTestId('full').props.style).width).toBe(width);
   });
   it('subtracts both edge insets before applying the requested width', () => {
-    const screen = renderIn(<Component open placement="end" width={1000} minSideGutter={0} inset={INSET} testID="full"><Text>Body</Text></Component>);
+    const screen = renderIn(
+      <Component open placement="end" width={1000} minSideGutter={0} inset={INSET} testID="full">
+        <Text>Body</Text>
+      </Component>,
+    );
     expect(resolvedStyle(screen.getByTestId('full').props.style).width).toBe(335);
   });
 });

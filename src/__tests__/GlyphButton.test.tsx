@@ -261,7 +261,14 @@ describe('GlyphButton accessibility and disabled', () => {
     const onPress = jest.fn();
     const onLongPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="Locating" busy onPress={onPress} onLongPress={onLongPress} />,
+      <GlyphButton
+        testID="g"
+        icon={makeGlyph()}
+        accessibilityLabel="Locating"
+        busy
+        onPress={onPress}
+        onLongPress={onLongPress}
+      />,
     );
     const node = getByTestId('g');
     fireEvent.press(node);

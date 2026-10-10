@@ -14,5 +14,9 @@ export function resolveSurfaceGeometry(
     ...(typeof effectiveRadius === 'number' ? { radius: effectiveRadius } : {}),
     curve: effectiveRadius === 9999 ? 'round' : curve,
   };
-  return { radius: effectiveRadius, shape, style: { ...surfaceStyle(shape), borderRadius: effectiveRadius } };
+  return {
+    radius: effectiveRadius,
+    shape,
+    style: { ...surfaceStyle(shape), borderRadius: effectiveRadius },
+  };
 }

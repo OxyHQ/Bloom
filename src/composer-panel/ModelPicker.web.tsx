@@ -13,9 +13,9 @@ import type { ModelPickerProps } from './types';
 export function ModelPicker(props: ModelPickerProps) {
   return (
     <ComposerButtonContext.Provider value={Button}>
-    <ComposerPopoverContext.Provider value={ComposerPopover}>
-      <ModelPickerBase {...props} />
-    </ComposerPopoverContext.Provider>
+      <ComposerPopoverContext.Provider value={ComposerPopover}>
+        <ModelPickerBase {...props} />
+      </ComposerPopoverContext.Provider>
     </ComposerButtonContext.Provider>
   );
 }

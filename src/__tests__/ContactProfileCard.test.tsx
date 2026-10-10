@@ -153,7 +153,9 @@ describe('the identity', () => {
     const onPress = jest.fn();
     mount(<ContactProfileCard {...NORA} onPress={onPress} testID="c" />);
     const subject = byTestId('c-subject');
-    expect(subject.getAttribute('aria-label')).toBe('Nora Vance, Head of Operations, Larkspur Freight');
+    expect(subject.getAttribute('aria-label')).toBe(
+      'Nora Vance, Head of Operations, Larkspur Freight',
+    );
     expect(subject.getAttribute('role')).toBe('button');
     act(() => {
       subject.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -226,8 +228,21 @@ describe('the channels are LABELLED actions, not glyphs', () => {
     const style = getComputedStyle(control);
     // The shared Button keeps paint on its material layer, not its layout host.
     const material = control.querySelector<HTMLElement>('.bloom-surface-paint');
-    const fill = control.style.getPropertyValue('--bloom-btn-bg') || material?.style.getPropertyValue('--bloom-surface-paint-fill');
-    expect(fill).toBe(resolveButtonPalette('solid', theme, 'neutral', undefined, surfaceFillOn(theme, resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background))).rest.background);
+    const fill =
+      control.style.getPropertyValue('--bloom-btn-bg') ||
+      material?.style.getPropertyValue('--bloom-surface-paint-fill');
+    expect(fill).toBe(
+      resolveButtonPalette(
+        'solid',
+        theme,
+        'neutral',
+        undefined,
+        surfaceFillOn(
+          theme,
+          resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background),
+        ),
+      ).rest.background,
+    );
     expect(Number.parseFloat(style.height)).toBeGreaterThanOrEqual(32);
   });
 
@@ -267,9 +282,7 @@ describe('the numbers are a figure and TILES', () => {
     expect(byTestId('c-headline-value').textContent).toBe('€248,000');
     expect(getComputedStyle(byTestId('c-headline-value')).fontSize).toBe('24px');
     const delta = resolveAccentColors(theme.colors, 'success', 'subtle');
-    expect(getComputedStyle(byTestId('c-delta')).backgroundColor).toBe(
-      normalise(delta.background),
-    );
+    expect(getComputedStyle(byTestId('c-delta')).backgroundColor).toBe(normalise(delta.background));
   });
 
   it('paints a tile on the next fill UP from the card, value over label', () => {
@@ -279,7 +292,10 @@ describe('the numbers are a figure and TILES', () => {
     for (const mode of ['light', 'dark'] as const) {
       mount(<ContactProfileCard {...NORA} testID="c" />, mode);
       const tile = byTestId('c-stat-0');
-      const expected = surfaceFillOn(theme, resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background));
+      const expected = surfaceFillOn(
+        theme,
+        resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background),
+      );
       expect([mode, getComputedStyle(tile).backgroundColor]).toEqual([mode, normalise(expected)]);
       expect([mode, getComputedStyle(tile).backgroundColor]).not.toEqual([
         mode,
@@ -299,7 +315,10 @@ describe('the numbers are a figure and TILES', () => {
 
   it('lays the tiles out in one row when the card is wide and in pairs when it is not', () => {
     expect(contactStatRows(4, true)).toEqual([[0, 1, 2, 3]]);
-    expect(contactStatRows(4, false)).toEqual([[0, 1], [2, 3]]);
+    expect(contactStatRows(4, false)).toEqual([
+      [0, 1],
+      [2, 3],
+    ]);
     expect(contactStatRows(3, false)).toEqual([[0, 1], [2]]);
     expect(contactStatRows(0, true)).toEqual([]);
   });
@@ -410,8 +429,12 @@ describe('one component, two densities', () => {
     expect(queryTestId('c-footer')).not.toBeNull();
     const material = byTestId('c').querySelector<HTMLElement>('.bloom-surface-paint');
     expect(material).not.toBeNull();
-    expect(material!.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(resolveSurfaceTint(theme.colors.card));
-    expect(byTestId('c').style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background));
+    expect(material!.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(
+      resolveSurfaceTint(theme.colors.card),
+    );
+    expect(byTestId('c').style.getPropertyValue('--bloom-surface')).toBe(
+      resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background),
+    );
   });
 
   it('draws a ROW at compact: no surface, no cover, no tiles, no owner, 64 tall', () => {
@@ -429,17 +452,35 @@ describe('one component, two densities', () => {
   });
 
   it('shows a company its people, and only at comfortable', () => {
-    const people = [{ id: 'a', name: 'Rhea Santos' }, { id: 'b', name: 'Kofi Mensah' }];
+    const people = [
+      { id: 'a', name: 'Rhea Santos' },
+      { id: 'b', name: 'Kofi Mensah' },
+    ];
     mount(<ContactProfileCard kind="company" name="Quillon Health" people={people} testID="c" />);
     expect(queryTestId('c-people')).not.toBeNull();
-    mount(<ContactProfileCard kind="company" name="Quillon Health" people={people} density="compact" testID="c" />);
+    mount(
+      <ContactProfileCard
+        kind="company"
+        name="Quillon Health"
+        people={people}
+        density="compact"
+        testID="c"
+      />,
+    );
     expect(queryTestId('c-people')).toBeNull();
   });
 });
 
-
 it('shares the nested custom backing with its material, published fill and stat tiles', () => {
-  mount(<SurfaceLevelProvider level={3} fill="#0000ff"><ContactProfileCard {...NORA} style={{ backgroundColor: 'rgba(255,0,0,.5)' }} testID="nested" /></SurfaceLevelProvider>);
+  mount(
+    <SurfaceLevelProvider level={3} fill="#0000ff">
+      <ContactProfileCard
+        {...NORA}
+        style={{ backgroundColor: 'rgba(255,0,0,.5)' }}
+        testID="nested"
+      />
+    </SurfaceLevelProvider>,
+  );
   const expected = 'rgb(128, 0, 128)';
   const card = byTestId('nested');
   const material = card.querySelector<HTMLElement>('.bloom-surface-paint');

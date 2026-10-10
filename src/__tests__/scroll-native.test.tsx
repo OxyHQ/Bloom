@@ -13,14 +13,7 @@
 // key change — an in-screen tab swap, a genuine remount — which is the one case
 // the hook exists for.
 
-import {
-  createContext,
-  createElement,
-  useContext,
-  useEffect,
-  useRef,
-  type ReactNode,
-} from 'react';
+import { createContext, createElement, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
@@ -32,8 +25,7 @@ import type {
   ScrollRouterAdapter,
 } from '../scroll/types';
 
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // ---- A test router ---------------------------------------------------------
 
@@ -507,9 +499,7 @@ describe('native scroll-restoration hook', () => {
   });
 
   it('throws outside a provider, the same as on web', () => {
-    const consoleError = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined);
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
       const list = new FakeList();
       function Bare(): ReactNode {
@@ -521,9 +511,7 @@ describe('native scroll-restoration hook', () => {
         act(() => {
           harness.root.render(createElement(Bare));
         });
-      }).toThrow(
-        /useScrollRestoration must be used within a <ScrollRestorationProvider>/,
-      );
+      }).toThrow(/useScrollRestoration must be used within a <ScrollRestorationProvider>/);
     } finally {
       consoleError.mockRestore();
     }

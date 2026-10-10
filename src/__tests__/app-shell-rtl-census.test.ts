@@ -48,9 +48,11 @@ const PAIRS: Array<[string, string]> = [
   ['paddingLeft', 'paddingRight'],
   ['marginLeft', 'marginRight'],
 ];
-const BANNED = /^(border(Left|Right)\w*|border(Top|Bottom)(Left|Right)Radius|paddingStart|paddingEnd|marginStart|marginEnd)$/;
+const BANNED =
+  /^(border(Left|Right)\w*|border(Top|Bottom)(Left|Right)Radius|paddingStart|paddingEnd|marginStart|marginEnd)$/;
 const SIGNS = /\b(translateX|scaleX|skewX|transformOrigin)\b|\bside=/;
-const ONE_SIDED_CLASS = /(^|\s)(-?m[lr]-|p[lr]-|border-[lr](\s|-|$)|rounded-[lr]-|rounded-(tl|tr|bl|br)-|text-(left|right)(\s|$))/;
+const ONE_SIDED_CLASS =
+  /(^|\s)(-?m[lr]-|p[lr]-|border-[lr](\s|-|$)|rounded-[lr]-|rounded-(tl|tr|bl|br)-|text-(left|right)(\s|$))/;
 
 function files(dir: string): string[] {
   const out: string[] = [];
@@ -73,7 +75,8 @@ function nameOf(name: ts.PropertyName): string | null {
 /** Every offense in one source text. Exported shape kept tiny so the self-test can feed it strings. */
 function scan(file: string, text: string): string[] {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const where = (node: ts.Node) => `${file}:${source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1}`;
+  const where = (node: ts.Node) =>
+    `${file}:${source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1}`;
   const offenses: string[] = [];
 
   const visit = (node: ts.Node): void => {
@@ -90,38 +93,48 @@ function scan(file: string, text: string): string[] {
       for (const [a, b] of PAIRS) {
         const va = values.get(a);
         const vb = values.get(b);
-        if ((va === undefined) !== (vb === undefined)) offenses.push(`${where(node)} ${va !== undefined ? a : b} without ${va !== undefined ? b : a}`);
-        else if (va !== undefined && va !== vb) offenses.push(`${where(node)} ${a}: ${va} differs from ${b}: ${vb}`);
+        if ((va === undefined) !== (vb === undefined))
+          offenses.push(
+            `${where(node)} ${va !== undefined ? a : b} without ${va !== undefined ? b : a}`,
+          );
+        else if (va !== undefined && va !== vb)
+          offenses.push(`${where(node)} ${a}: ${va} differs from ${b}: ${vb}`);
       }
-      for (const name of values.keys()) if (BANNED.test(name)) offenses.push(`${where(node)} ${name}`);
+      for (const name of values.keys())
+        if (BANNED.test(name)) offenses.push(`${where(node)} ${name}`);
     }
     if (ts.isJsxAttribute(node) && node.name.getText(source) === 'className' && node.initializer) {
       const literal = node.initializer.getText(source);
-      if (ONE_SIDED_CLASS.test(literal.replace(/^["'`{]+|["'`}]+$/g, ''))) offenses.push(`${where(node)} className ${literal}`);
+      if (ONE_SIDED_CLASS.test(literal.replace(/^["'`{]+|["'`}]+$/g, '')))
+        offenses.push(`${where(node)} className ${literal}`);
       const left = /(^|[\s"'`])left-/.test(literal);
       const right = /(^|[\s"'`])right-/.test(literal);
-      if (left !== right) offenses.push(`${where(node)} className ${literal} (unpaired ${left ? 'left-' : 'right-'})`);
+      if (left !== right)
+        offenses.push(
+          `${where(node)} className ${literal} (unpaired ${left ? 'left-' : 'right-'})`,
+        );
     }
     ts.forEachChild(node, visit);
   };
   visit(source);
 
   const code = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-  if (SIGNS.test(code) && !/\buseIsRtl\b/.test(code)) offenses.push(`${file} writes a sign (${code.match(SIGNS)![0]}) without reading useIsRtl`);
+  if (SIGNS.test(code) && !/\buseIsRtl\b/.test(code))
+    offenses.push(`${file} writes a sign (${code.match(SIGNS)![0]}) without reading useIsRtl`);
   return offenses;
 }
 
 describe('page-frame families carry no physical edge', () => {
-  const all = ROOTS.flatMap(root => files(join(SRC, root)));
+  const all = ROOTS.flatMap((root) => files(join(SRC, root)));
 
   it('walks the families it names', () => {
     // A walk that silently finds nothing would pass everything.
     expect(all.length).toBeGreaterThanOrEqual(40);
-    for (const root of ROOTS) expect(all.some(file => file.includes(`${root}/`))).toBe(true);
+    for (const root of ROOTS) expect(all.some((file) => file.includes(`${root}/`))).toBe(true);
   });
 
   it('finds no offense', () => {
-    const offenses = all.flatMap(file => scan(relative(SRC, file), readFileSync(file, 'utf8')));
+    const offenses = all.flatMap((file) => scan(relative(SRC, file), readFileSync(file, 'utf8')));
     expect(offenses).toEqual([]);
   });
 
@@ -129,10 +142,19 @@ describe('page-frame families carry no physical edge', () => {
   it.each([
     ['an unpaired physical inset', `const s = { position: 'absolute', left: 0 };`],
     ['an asymmetric pair', `const s = { paddingLeft: 8, paddingRight: 10 };`],
-    ['a one-sided margin inside a mapper', `useAnimatedStyle(() => ({ marginLeft: 10 * p.value }), [p]);`],
+    [
+      'a one-sided margin inside a mapper',
+      `useAnimatedStyle(() => ({ marginLeft: 10 * p.value }), [p]);`,
+    ],
     ['a physical border', `const s = { borderRightWidth: 1 };`],
-    ['the RN logical spelling a web mapper drops', `useAnimatedStyle(() => ({ paddingStart: 8 }), []);`],
-    ['a sign with no direction', `useAnimatedStyle(() => ({ transform: [{ translateX: 4 }] }), []);`],
+    [
+      'the RN logical spelling a web mapper drops',
+      `useAnimatedStyle(() => ({ paddingStart: 8 }), []);`,
+    ],
+    [
+      'a sign with no direction',
+      `useAnimatedStyle(() => ({ transform: [{ translateX: 4 }] }), []);`,
+    ],
     ['a physical floating side with no direction', `const x = <PopoverContent side="right" />;`],
     ['a one-sided utility class', `const x = <View className="absolute pl-4" />;`],
     ['an unpaired positioning class', `const x = <View className="absolute left-0 top-0" />;`],
@@ -142,9 +164,18 @@ describe('page-frame families carry no physical edge', () => {
 
   it.each([
     ['a symmetric pair', `const s = { paddingLeft: 8, paddingRight: 8, left: 0, right: 0 };`],
-    ['logical insets', `useAnimatedStyle(() => ({ paddingInlineStart: 8, insetInlineEnd: 4 }), []);`],
-    ['a sign read from the direction', `const dir = useIsRtl() ? -1 : 1; const s = { transform: [{ translateX: dir * 4 }] };`],
-    ['a paired positioning class', `const x = <View className="absolute bottom-0 left-0 right-0" />;`],
+    [
+      'logical insets',
+      `useAnimatedStyle(() => ({ paddingInlineStart: 8, insetInlineEnd: 4 }), []);`,
+    ],
+    [
+      'a sign read from the direction',
+      `const dir = useIsRtl() ? -1 : 1; const s = { transform: [{ translateX: dir * 4 }] };`,
+    ],
+    [
+      'a paired positioning class',
+      `const x = <View className="absolute bottom-0 left-0 right-0" />;`,
+    ],
   ])('passes %s', (_label, text) => {
     expect(scan('probe.tsx', text)).toEqual([]);
   });

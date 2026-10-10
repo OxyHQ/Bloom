@@ -4,8 +4,8 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-import { createContext } from "react";
-import type { ScrollViewContextValue } from "./types";
+import { createContext } from 'react';
+import type { ScrollViewContextValue } from './types';
 
 const ScrollViewContext = createContext<ScrollViewContextValue>(null);
 

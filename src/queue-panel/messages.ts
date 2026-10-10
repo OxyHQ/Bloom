@@ -29,21 +29,22 @@ export interface QueuePanelMessages {
   emptyRecent: string;
 }
 
-export const QUEUE_PANEL_MESSAGES: MessageCatalog<QueuePanelMessages> = defineMessages<QueuePanelMessages>('QUEUE_PANEL_MESSAGES', {
-  queueTab: 'Queue',
-  recentTab: 'Recently played',
-  close: 'Close queue',
-  nextInQueue: 'Next in queue',
-  nextFrom: (c) => `Next from: ${c}`,
-  nextUp: 'Next up',
-  clearQueue: 'Clear queue',
-  reorder: (t) => `Reorder ${t}`,
-  reorderHint: 'Drag, or use the arrow keys',
-  moveUp: 'Move up',
-  moveDown: 'Move down',
-  remove: 'Remove from queue',
-  moved: (t, p, n) => `${t} moved to position ${p} of ${n}`,
-  emptyQueue: 'Your queue is empty',
-  emptyQueueHint: 'Add songs and episodes to hear them next.',
-  emptyRecent: 'Nothing played yet',
-});
+export const QUEUE_PANEL_MESSAGES: MessageCatalog<QueuePanelMessages> =
+  defineMessages<QueuePanelMessages>('QUEUE_PANEL_MESSAGES', {
+    queueTab: 'Queue',
+    recentTab: 'Recently played',
+    close: 'Close queue',
+    nextInQueue: 'Next in queue',
+    nextFrom: (c) => `Next from: ${c}`,
+    nextUp: 'Next up',
+    clearQueue: 'Clear queue',
+    reorder: (t) => `Reorder ${t}`,
+    reorderHint: 'Drag, or use the arrow keys',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    remove: 'Remove from queue',
+    moved: (t, p, n) => `${t} moved to position ${p} of ${n}`,
+    emptyQueue: 'Your queue is empty',
+    emptyQueueHint: 'Add songs and episodes to hear them next.',
+    emptyRecent: 'Nothing played yet',
+  });

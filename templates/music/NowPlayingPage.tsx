@@ -24,7 +24,12 @@ import { useMusicRouter } from './router';
  */
 
 export function playerTrack(item: Playable): MediaPlayerTrack {
-  return { title: item.title, artists: item.artists, artwork: item.artwork, explicit: item.explicit };
+  return {
+    title: item.title,
+    artists: item.artists,
+    artwork: item.artwork,
+    explicit: item.explicit,
+  };
 }
 
 /** The main artist of a track, for the about card. */
@@ -92,7 +97,13 @@ function LivePreviewCard({ onShowLyrics }: { onShowLyrics: () => void }) {
 //  Desktop side card
 // ---------------------------------------------------------------------------
 
-export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void; onShowLyrics: () => void }) {
+export function NowPlayingSide({
+  onClose,
+  onShowLyrics,
+}: {
+  onClose: () => void;
+  onShowLyrics: () => void;
+}) {
   const player = usePlayer();
   const router = useMusicRouter();
   const theme = useTheme();
@@ -115,12 +126,13 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
           {player.context?.name ?? 'Now playing'}
         </Text>
         <Button
-
           size="sm"
           iconOnly
           icon={RiCloseLine}
           accessibilityLabel="Hide now playing view"
-          onPress={onClose} tone="accent" appearance="subtle"
+          onPress={onClose}
+          tone="accent"
+          appearance="subtle"
         />
       </View>
       <ScrollView
@@ -139,11 +151,18 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
                 <Text variant="title-2-bold" numberOfLines={2}>
                   {item.title}
                 </Text>
-                <Text variant="body-2-medium" numberOfLines={1} style={{ color: theme.colors.textSecondary }}>
+                <Text
+                  variant="body-2-medium"
+                  numberOfLines={1}
+                  style={{ color: theme.colors.textSecondary }}
+                >
                   {item.artists.map((a) => a.name).join(', ')}
                 </Text>
               </View>
-              <LikeButton liked={player.liked.has(item.id)} onLikedChange={(on) => player.setLiked(item.id, on)} />
+              <LikeButton
+                liked={player.liked.has(item.id)}
+                onLikedChange={(on) => player.setLiked(item.id, on)}
+              />
             </View>
             {item.kind === 'track' ? (
               <LivePreviewCard onShowLyrics={onShowLyrics} />
@@ -154,10 +173,11 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
                   {SHOW_BY_ID[item.parentId]?.description}
                 </Text>
                 <Button
-
                   size="sm"
                   style={{ alignSelf: 'flex-start' }}
-                  onPress={() => router.navigate({ name: 'podcast', id: item.parentId })} tone="neutral" appearance="outline"
+                  onPress={() => router.navigate({ name: 'podcast', id: item.parentId })}
+                  tone="neutral"
+                  appearance="outline"
                 >
                   Go to show
                 </Button>
@@ -183,7 +203,9 @@ export function NowPlayingSide({ onClose, onShowLyrics }: { onClose: () => void;
                 contextType={friend.contextType}
                 live={friend.live}
                 time={friend.time}
-                onPress={() => router.navigate({ name: 'album', id: ALBUM_BY_ID[track.albumId]!.id })}
+                onPress={() =>
+                  router.navigate({ name: 'album', id: ALBUM_BY_ID[track.albumId]!.id })
+                }
               />
             );
           })}
@@ -206,7 +228,13 @@ export interface FullPlayerProps {
 }
 
 /** `FullScreenPlayer` fed from the player. It fills its parent. */
-export function FullPlayer({ onCollapse, onQueuePress, queueActive, onDevicePress, onLyricsPress }: FullPlayerProps) {
+export function FullPlayer({
+  onCollapse,
+  onQueuePress,
+  queueActive,
+  onDevicePress,
+  onLyricsPress,
+}: FullPlayerProps) {
   const player = usePlayer();
   const position = usePosition();
   const router = useMusicRouter();
@@ -290,10 +318,19 @@ export function ImmersivePlayer({ onCollapse, onQueuePress, onDevicePress }: Ful
   const withLyrics = width >= 1100 && player.current?.kind === 'track';
   return (
     <View
-      style={{ flex: 1, minHeight: 0, flexDirection: 'row', backgroundColor: resolveButtonRamps(theme).neutral[950] }}
+      style={{
+        flex: 1,
+        minHeight: 0,
+        flexDirection: 'row',
+        backgroundColor: resolveButtonRamps(theme).neutral[950],
+      }}
     >
       <View style={{ flex: 1, minWidth: 0 }}>
-        <FullPlayer onCollapse={onCollapse} onQueuePress={onQueuePress} onDevicePress={onDevicePress} />
+        <FullPlayer
+          onCollapse={onCollapse}
+          onQueuePress={onQueuePress}
+          onDevicePress={onDevicePress}
+        />
       </View>
       {withLyrics ? (
         <View style={{ width: Math.min(640, Math.round(width * 0.42)), minHeight: 0 }}>

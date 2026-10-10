@@ -7,4 +7,9 @@ export {
   VENDOR_PHOTO_ASPECT_RATIO,
 } from './constants';
 export { availabilityLabelFor, composeVendorName, vendorCuisines, vendorFacts } from './shared';
-export type { VendorAvailability, VendorCardDensity, VendorCardProps, VendorFactKey } from './types';
+export type {
+  VendorAvailability,
+  VendorCardDensity,
+  VendorCardProps,
+  VendorFactKey,
+} from './types';

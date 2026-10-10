@@ -32,7 +32,8 @@ import type { ReleaseStep, ReleaseStepState, ReleaseTimelineProps } from './type
  */
 
 /** The English state words; the component reads the localised ones from `CREATOR_STUDIO_MESSAGES`. */
-export const RELEASE_STEP_STATE_LABELS: Record<ReleaseStepState, string> = CREATOR_STUDIO_MESSAGES.en.timeline.states;
+export const RELEASE_STEP_STATE_LABELS: Record<ReleaseStepState, string> =
+  CREATOR_STUDIO_MESSAGES.en.timeline.states;
 
 const MARKER = 24;
 /** The narrowest a horizontal step may be before the timeline falls back to vertical. */
@@ -43,7 +44,9 @@ export function releaseStepAccessibilityLabel(
   step: ReleaseStep,
   stateLabels: Record<ReleaseStepState, string> = RELEASE_STEP_STATE_LABELS,
 ): string {
-  return [step.label, stateLabels[step.state], step.date, step.description].filter(Boolean).join(', ');
+  return [step.label, stateLabels[step.state], step.date, step.description]
+    .filter(Boolean)
+    .join(', ');
 }
 
 function Marker({ state, paint }: { state: ReleaseStepState; paint: CreatorStudioPaint }) {
@@ -151,10 +154,15 @@ function ReleaseTimelineComponent({
             <View key={step.id} {...itemProps} style={styles.hItem}>
               <View style={styles.hTrack}>
                 <View
-                  style={[styles.hConnector, { backgroundColor: first ? 'transparent' : previousConnector }]}
+                  style={[
+                    styles.hConnector,
+                    { backgroundColor: first ? 'transparent' : previousConnector },
+                  ]}
                 />
                 <Marker state={step.state} paint={paint} />
-                <View style={[styles.hConnector, { backgroundColor: last ? 'transparent' : connector }]} />
+                <View
+                  style={[styles.hConnector, { backgroundColor: last ? 'transparent' : connector }]}
+                />
               </View>
               <View style={styles.hText}>
                 {label}
@@ -203,10 +211,22 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4 },
   vItem: { flexDirection: 'row', gap: 12 },
   vRail: { width: MARKER, alignItems: 'center' },
-  vConnector: { width: 2, flexGrow: 1, minHeight: 16, marginTop: 4, marginBottom: 4, borderRadius: 1 },
+  vConnector: {
+    width: 2,
+    flexGrow: 1,
+    minHeight: 16,
+    marginTop: 4,
+    marginBottom: 4,
+    borderRadius: 1,
+  },
   vText: { flex: 1, minWidth: 0, gap: 2, paddingTop: 2 },
   vTextGap: { paddingBottom: 16 },
-  vHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  vHeading: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   flexText: { flexShrink: 1 },
   hItem: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, alignItems: 'center', gap: 8 },
   hTrack: { width: '100%', flexDirection: 'row', alignItems: 'center' },

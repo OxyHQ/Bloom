@@ -48,7 +48,12 @@ const STATS = [
 function DemoFollowButton({ initial = false }: { initial?: boolean }) {
   const [following, setFollowing] = React.useState(initial);
   return (
-    <Button size="sm" appearance={following ? 'outline' : 'solid'} tone={following ? 'neutral' : 'accent'} onPress={() => setFollowing((value) => !value)}>
+    <Button
+      size="sm"
+      appearance={following ? 'outline' : 'solid'}
+      tone={following ? 'neutral' : 'accent'}
+      onPress={() => setFollowing((value) => !value)}
+    >
       {following ? 'Following' : 'Follow'}
     </Button>
   );
@@ -137,7 +142,12 @@ function MatrixGrid() {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
       <UserHoverCard {...BASE} action={<DemoFollowButton />} testID="card-basic" />
-      <UserHoverCard {...BASE} cover={SAMPLE_COVER} action={<DemoFollowButton />} testID="card-cover" />
+      <UserHoverCard
+        {...BASE}
+        cover={SAMPLE_COVER}
+        action={<DemoFollowButton />}
+        testID="card-cover"
+      />
       <UserHoverCard
         {...BASE}
         avatar={null}
@@ -161,9 +171,7 @@ export const Matrix: Story = {
 
 function DarkSurface({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
-  return (
-    <View style={{ padding: 24, backgroundColor: theme.colors.background }}>{children}</View>
-  );
+  return <View style={{ padding: 24, backgroundColor: theme.colors.background }}>{children}</View>;
 }
 
 export const Dark: Story = {
@@ -171,7 +179,11 @@ export const Dark: Story = {
   render: (_args, context) => (
     <BloomThemeProvider
       mode="dark"
-      colorPreset={context.globals.colorPreset as React.ComponentProps<typeof BloomThemeProvider>['colorPreset']}
+      colorPreset={
+        context.globals.colorPreset as React.ComponentProps<
+          typeof BloomThemeProvider
+        >['colorPreset']
+      }
     >
       <DarkSurface>
         <MatrixGrid />

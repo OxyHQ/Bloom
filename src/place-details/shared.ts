@@ -118,7 +118,10 @@ export const DEFAULT_HOURS_FORMAT: HoursFormat = {
  * alignment that makes the column scannable. Both stretches are short; the pair
  * fits in the space one does.
  */
-export function formatHoursDay(day: PlaceHoursDay, format: HoursFormat = DEFAULT_HOURS_FORMAT): string {
+export function formatHoursDay(
+  day: PlaceHoursDay,
+  format: HoursFormat = DEFAULT_HOURS_FORMAT,
+): string {
   const intervals = day.intervals ?? [];
   if (intervals.length === 0) return day.closedLabel ?? format.closed;
   return intervals.map(({ open, close }) => `${open}${format.interval}${close}`).join(format.split);

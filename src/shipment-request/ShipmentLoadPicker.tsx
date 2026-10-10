@@ -4,13 +4,28 @@ import { View } from 'react-native';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { resolveSelectionPaint, SelectionCard } from '../listing-editor/SelectionCard';
 import { useMessages } from '../locale/messages';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { StepperRow } from '../stepper';
-import { TextField, TextFieldHint, TextFieldInput, TextFieldLabel, TextFieldSuffix } from '../text-field';
+import {
+  TextField,
+  TextFieldHint,
+  TextFieldInput,
+  TextFieldLabel,
+  TextFieldSuffix,
+} from '../text-field';
 import { Textarea } from '../textarea';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { builtInLoadKinds, builtInLoadSizes, SHIPMENT_LOAD_LABELS, SHIPMENT_REQUEST_GEOMETRY } from './constants';
+import {
+  builtInLoadKinds,
+  builtInLoadSizes,
+  SHIPMENT_LOAD_LABELS,
+  SHIPMENT_REQUEST_GEOMETRY,
+} from './constants';
 import { SHIPMENT_REQUEST_MESSAGES } from './messages';
 import { joinShipmentName, sanitizeWeight } from './shared';
 import type { ShipmentLoadPickerProps, ShipmentLoadSize } from './types';
@@ -102,9 +117,7 @@ function ShipmentLoadPickerComponent({
             />
           ))}
         </View>
-        {errors.kind ? (
-          <TextFieldHint isInvalid>{errors.kind}</TextFieldHint>
-        ) : null}
+        {errors.kind ? <TextFieldHint isInvalid>{errors.kind}</TextFieldHint> : null}
       </View>
 
       <View style={{ gap: 8 }}>
@@ -144,9 +157,7 @@ function ShipmentLoadPickerComponent({
             {chosenSize.detail}
           </Text>
         ) : null}
-        {errors.size ? (
-          <TextFieldHint isInvalid>{errors.size}</TextFieldHint>
-        ) : null}
+        {errors.size ? <TextFieldHint isInvalid>{errors.size}</TextFieldHint> : null}
       </View>
 
       <View
@@ -159,12 +170,7 @@ function ShipmentLoadPickerComponent({
           gap: SHIPMENT_REQUEST_GEOMETRY.controlGap,
         }}
       >
-        <View
-          style={[
-            { gap: 8 },
-            wide ? { width: SHIPMENT_REQUEST_GEOMETRY.weightWidth } : null,
-          ]}
-        >
+        <View style={[{ gap: 8 }, wide ? { width: SHIPMENT_REQUEST_GEOMETRY.weightWidth } : null]}>
           <TextFieldLabel>{labels.weight}</TextFieldLabel>
           <TextField isInvalid={!!errors.weight} disabled={disabled}>
             <TextFieldInput
@@ -180,9 +186,7 @@ function ShipmentLoadPickerComponent({
             />
             <TextFieldSuffix label={labels.weightUnit}>{labels.weightUnit}</TextFieldSuffix>
           </TextField>
-          {errors.weight ? (
-            <TextFieldHint isInvalid>{errors.weight}</TextFieldHint>
-          ) : null}
+          {errors.weight ? <TextFieldHint isInvalid>{errors.weight}</TextFieldHint> : null}
         </View>
 
         <View style={{ flex: wide ? 1 : undefined, minWidth: 0, gap: 8 }}>
@@ -198,9 +202,7 @@ function ShipmentLoadPickerComponent({
             style={{ paddingTop: 0, paddingBottom: 0 }}
             testID={id('quantity')}
           />
-          {errors.quantity ? (
-            <TextFieldHint isInvalid>{errors.quantity}</TextFieldHint>
-          ) : null}
+          {errors.quantity ? <TextFieldHint isInvalid>{errors.quantity}</TextFieldHint> : null}
         </View>
       </View>
 

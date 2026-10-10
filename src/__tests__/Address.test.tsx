@@ -57,12 +57,27 @@ const SECTIONS: AddressListSection[] = [
 
 describe('AddressRow', () => {
   it('names itself from its own text, in reading order, as one utterance', () => {
-    mount(<AddressRow title="Home" subtitle="Carrer de l’Om 14" meta="1.2 km" onPress={() => undefined} testID="row" />);
+    mount(
+      <AddressRow
+        title="Home"
+        subtitle="Carrer de l’Om 14"
+        meta="1.2 km"
+        onPress={() => undefined}
+        testID="row"
+      />,
+    );
     expect(byLabel('Home, Carrer de l’Om 14, 1.2 km')).not.toBeNull();
   });
 
   it('lets a caller replace that name', () => {
-    mount(<AddressRow title="HQ" subtitle="Bldg 4" accessibilityLabel="Head office, building four" onPress={() => undefined} />);
+    mount(
+      <AddressRow
+        title="HQ"
+        subtitle="Bldg 4"
+        accessibilityLabel="Head office, building four"
+        onPress={() => undefined}
+      />,
+    );
     expect(byLabel('Head office, building four')).not.toBeNull();
     expect(document.querySelector('[aria-label="HQ, Bldg 4"]')).toBeNull();
   });
@@ -157,13 +172,7 @@ describe('AddressRow', () => {
   });
 
   it('keeps the action in the trailing slot when the row is NOT a control', () => {
-    mount(
-      <AddressRow
-        title="Home"
-        action={<span data-testid="action">x</span>}
-        testID="row"
-      />,
-    );
+    mount(<AddressRow title="Home" action={<span data-testid="action">x</span>} testID="row" />);
     // Nothing to nest inside, so nothing is split out.
     const row = byTestId('row');
     expect(row.contains(byTestId('action'))).toBe(true);
@@ -219,7 +228,14 @@ describe('AddressList — the variant is the announced tree', () => {
   });
 
   it('renders a plain list as lists of listitems, one per section', () => {
-    mount(<AddressList sections={SECTIONS} onSelect={() => undefined} accessibilityLabel="Places" testID="l" />);
+    mount(
+      <AddressList
+        sections={SECTIONS}
+        onSelect={() => undefined}
+        accessibilityLabel="Places"
+        testID="l"
+      />,
+    );
     expect(byTestId('l').getAttribute('role')).toBeNull();
     expect(byTestId('l-section-0').getAttribute('role')).toBe('list');
     expect(byTestId('l-section-0').getAttribute('aria-label')).toBe('Saved');
@@ -238,7 +254,9 @@ describe('AddressList — the variant is the announced tree', () => {
 
 describe('AddressList — loading and empty', () => {
   it('marks the placeholder block busy and draws the asked-for number of rows', () => {
-    mount(<AddressList sections={[]} loading loadingRows={4} accessibilityLabel="Results" testID="l" />);
+    mount(
+      <AddressList sections={[]} loading loadingRows={4} accessibilityLabel="Results" testID="l" />,
+    );
     expect(byTestId('l').getAttribute('aria-busy')).toBe('true');
     expect(byTestId('l').getAttribute('aria-label')).toBe('Results');
     expect(queryTestId('l-placeholder-3')).not.toBeNull();
@@ -249,7 +267,10 @@ describe('AddressList — loading and empty', () => {
   it('is empty when the SECTIONS exist but hold nothing', () => {
     mount(
       <AddressList
-        sections={[{ title: 'Recent', entries: [] }, { title: 'Saved', entries: [] }]}
+        sections={[
+          { title: 'Recent', entries: [] },
+          { title: 'Saved', entries: [] },
+        ]}
         emptyTitle="Nothing here"
         emptyDescription="Places you use show up here."
         testID="l"
@@ -263,7 +284,9 @@ describe('AddressList — loading and empty', () => {
   });
 
   it('lets a caller replace the whole empty block', () => {
-    mount(<AddressList sections={[]} empty={<span data-testid="own-empty">Add one</span>} testID="l" />);
+    mount(
+      <AddressList sections={[]} empty={<span data-testid="own-empty">Add one</span>} testID="l" />,
+    );
     expect(queryTestId('own-empty')).not.toBeNull();
     expect(queryTestId('l-empty')).toBeNull();
   });
@@ -283,7 +306,9 @@ describe('the paint is read off the surface, over every preset and mode', () => 
           const where = `${preset}/${mode}/L${level}`;
           if (paint.tile === surface) failures.push(`${where}: the tile is the surface`);
           if (contrastRatio(paint.textSecondary, surface) < AA_TEXT) {
-            failures.push(`${where}: subtitle ${contrastRatio(paint.textSecondary, surface).toFixed(2)}`);
+            failures.push(
+              `${where}: subtitle ${contrastRatio(paint.textSecondary, surface).toFixed(2)}`,
+            );
           }
         }
       }

@@ -37,7 +37,7 @@ const values = (root: ReturnType<typeof render>, length = 6) =>
 const key = (k: string) => ({ nativeEvent: { key: k }, preventDefault: () => {} });
 
 describe('InputOtp palette (design tokens)', () => {
-  it.each(['light', 'dark'] as const)('inherits field surfaces and error pairs in %s', mode => {
+  it.each(['light', 'dark'] as const)('inherits field surfaces and error pairs in %s', (mode) => {
     const theme = captureTheme(mode);
     const c = theme.colors;
     expect(resolveInputOtpPalette(theme)).toMatchObject({
@@ -55,13 +55,36 @@ describe('InputOtp palette (design tokens)', () => {
   it('precedence: focus ring beats the red edge, invalid pins hover, disabled drops the shadow', () => {
     const p = resolveInputOtpPalette(captureTheme('light'));
     const s = (o: Partial<Record<'hovered' | 'focused' | 'invalid' | 'disabled', boolean>>) =>
-      resolveInputOtpBoxPaint(p, { hovered: false, focused: false, invalid: false, disabled: false, ...o });
-    expect(s({})).toEqual({ backgroundColor: p.background, borderColor: p.border, color: p.text, boxShadow: p.shadow });
+      resolveInputOtpBoxPaint(p, {
+        hovered: false,
+        focused: false,
+        invalid: false,
+        disabled: false,
+        ...o,
+      });
+    expect(s({})).toEqual({
+      backgroundColor: p.background,
+      borderColor: p.border,
+      color: p.text,
+      boxShadow: p.shadow,
+    });
     expect(s({ hovered: true }).borderColor).toBe(p.borderHover);
-    expect(s({ focused: true })).toMatchObject({ borderColor: p.ring, boxShadow: `0 0 0 2px ${p.ring}, ${p.shadow}` });
-    expect(s({ invalid: true, hovered: true })).toMatchObject({ borderColor: p.borderInvalid, backgroundColor: p.backgroundInvalid, color: p.textInvalid });
+    expect(s({ focused: true })).toMatchObject({
+      borderColor: p.ring,
+      boxShadow: `0 0 0 2px ${p.ring}, ${p.shadow}`,
+    });
+    expect(s({ invalid: true, hovered: true })).toMatchObject({
+      borderColor: p.borderInvalid,
+      backgroundColor: p.backgroundInvalid,
+      color: p.textInvalid,
+    });
     expect(s({ invalid: true, focused: true }).borderColor).toBe(p.ring);
-    expect(s({ disabled: true, hovered: true })).toEqual({ backgroundColor: p.backgroundDisabled, borderColor: p.border, color: p.textDisabled, boxShadow: 'none' });
+    expect(s({ disabled: true, hovered: true })).toEqual({
+      backgroundColor: p.backgroundDisabled,
+      borderColor: p.border,
+      color: p.textDisabled,
+      boxShadow: 'none',
+    });
   });
 });
 
@@ -70,7 +93,15 @@ describe('InputOtp', () => {
     const root = renderWithTheme(<InputOtp testID="otp" />);
     expect(root.getByLabelText('One-time code')).toBeTruthy();
     const style = resolvedStyle(box(root, 0).props.style);
-    expect(style).toMatchObject({ width: 48, height: 48, borderRadius: 12, borderWidth: 1, fontSize: 18, fontWeight: '500', textAlign: 'center' });
+    expect(style).toMatchObject({
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      borderWidth: 1,
+      fontSize: 18,
+      fontWeight: '500',
+      textAlign: 'center',
+    });
     // Narrows, never grows, when the row does not fit (ten boxes on a phone).
     expect(style).toMatchObject({ flexShrink: 1, minWidth: 0 });
     expect(style.flexGrow).toBeUndefined();
@@ -165,7 +196,10 @@ describe('InputOtp', () => {
 
 describe('InputOtp type="alphanumeric"', () => {
   const chars = (root: ReturnType<typeof render>, length: number) =>
-    Array.from({ length }, (_, i) => root.getByLabelText(`Character ${i + 1} of ${length}`).props.value).join('');
+    Array.from(
+      { length },
+      (_, i) => root.getByLabelText(`Character ${i + 1} of ${length}`).props.value,
+    ).join('');
 
   it('cleans per type: numeric keeps digits, alphanumeric upper-cases and keeps A-Z0-9', () => {
     expect(cleanInputOtpValue('ab-12 3c')).toBe('123');
@@ -177,7 +211,10 @@ describe('InputOtp type="alphanumeric"', () => {
 
   it('keeps the numeric default: number pad, digit boxes', () => {
     const root = renderWithTheme(<InputOtp length={2} />);
-    expect(box(root, 0, 2).props).toMatchObject({ inputMode: 'numeric', keyboardType: 'number-pad' });
+    expect(box(root, 0, 2).props).toMatchObject({
+      inputMode: 'numeric',
+      keyboardType: 'number-pad',
+    });
     expect(box(root, 0, 2).props.autoCapitalize).toBeUndefined();
   });
 
@@ -200,7 +237,13 @@ describe('InputOtp type="alphanumeric"', () => {
     const onChange = jest.fn();
     const onComplete = jest.fn();
     const root = renderWithTheme(
-      <InputOtp type="alphanumeric" length={10} groupEvery={5} onChange={onChange} onComplete={onComplete} />,
+      <InputOtp
+        type="alphanumeric"
+        length={10}
+        groupEvery={5}
+        onChange={onChange}
+        onComplete={onComplete}
+      />,
     );
     fireEvent.changeText(root.getByLabelText('Character 1 of 10'), 'abcde-fg234');
     expect(chars(root, 10)).toBe('ABCDEFG234');
@@ -210,7 +253,8 @@ describe('InputOtp type="alphanumeric"', () => {
 
   it('groupEvery={5} splits ten boxes into two groups of five', () => {
     const root = renderWithTheme(<InputOtp type="alphanumeric" length={10} groupEvery={5} />);
-    const margin = (i: number) => resolvedStyle(root.getByLabelText(`Character ${i + 1} of 10`).props.style).marginLeft;
+    const margin = (i: number) =>
+      resolvedStyle(root.getByLabelText(`Character ${i + 1} of 10`).props.style).marginLeft;
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(margin)).toEqual([0, 0, 0, 0, 0, 12, 0, 0, 0, 0]);
   });
 

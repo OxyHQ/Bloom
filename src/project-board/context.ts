@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  type ComponentType,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, type ComponentType, type ReactNode } from 'react';
 import type * as NativeButton from '../button';
 import type * as NativeDialog from '../dialog';
 import type * as NativeMenu from '../dropdown-menu';
@@ -34,15 +29,11 @@ export interface ProjectBoardPlatform {
   DropdownMenuCheckboxItem: typeof NativeMenu.DropdownMenuCheckboxItem;
   DropdownMenuLabel: typeof NativeMenu.DropdownMenuLabel;
 }
-export const ProjectBoardPlatformContext =
-  createContext<ProjectBoardPlatform | null>(null);
+export const ProjectBoardPlatformContext = createContext<ProjectBoardPlatform | null>(null);
 /** The plot starts its own reveal after the panel has reached its live pixels. */
 export const TicketGenieEnteredContext = createContext(true);
 export function useProjectBoardPlatform() {
   const platform = useContext(ProjectBoardPlatformContext);
-  if (!platform)
-    throw new Error(
-      'Project Board parts must be rendered inside ProjectBoard.',
-    );
+  if (!platform) throw new Error('Project Board parts must be rendered inside ProjectBoard.');
   return platform;
 }

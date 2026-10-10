@@ -8,12 +8,12 @@ import { Divider } from '../divider';
 
 const meta: Meta<typeof ContentPanel> = {
   argTypes: {
-    "framed": { control: 'boolean' },
-    "surfaceClassName": { control: 'text' },
-    "contentClassName": { control: 'text' },
-    "showStickyFrame": { control: 'boolean' },
-    "maskColor": { control: 'text' },
-    "overlaySizing": { control: 'select', options: ["viewport","panel"] },
+    framed: { control: 'boolean' },
+    surfaceClassName: { control: 'text' },
+    contentClassName: { control: 'text' },
+    showStickyFrame: { control: 'boolean' },
+    maskColor: { control: 'text' },
+    overlaySizing: { control: 'select', options: ['viewport', 'panel'] },
   },
   title: 'Base/Content Panel',
   component: ContentPanel,
@@ -28,9 +28,9 @@ function Body() {
     <View style={{ gap: 12, paddingVertical: 16 }}>
       <Text style={{ fontSize: 20, fontWeight: '700' }}>Settings</Text>
       <Text>
-        A content panel is the column a screen's content lives in. It decides the
-        maximum reading width and, above a breakpoint, whether that column reads
-        as a framed surface or as the page itself.
+        A content panel is the column a screen's content lives in. It decides the maximum reading
+        width and, above a breakpoint, whether that column reads as a framed surface or as the page
+        itself.
       </Text>
       <Divider spacing={8} />
       <Text>Nothing inside it needs to know which of the two it got.</Text>
@@ -61,10 +61,22 @@ export const Plain: Story = {
  */
 export const Framed: Story = {
   args: { framed: true, framedFrom: 640 },
-  parameters: { controls: { include: ["framed","framedFrom","surfaceClassName","contentClassName","showStickyFrame","maskColor","overlaySizing"] } },
+  parameters: {
+    controls: {
+      include: [
+        'framed',
+        'framedFrom',
+        'surfaceClassName',
+        'contentClassName',
+        'showStickyFrame',
+        'maskColor',
+        'overlaySizing',
+      ],
+    },
+  },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 720 }}>
-      <ContentPanel {...args}  >
+      <ContentPanel {...args}>
         <Body />
       </ContentPanel>
     </View>
@@ -88,15 +100,26 @@ export const Framed: Story = {
  * `"panel"` sizes them to the panel's own real box instead.
  */
 export const ExternalHeaderBoundedShell: Story = {
-  args: { framed: true, overlaySizing: "panel" },
-  parameters: { controls: { include: ["framed","overlaySizing","surfaceClassName","contentClassName","showStickyFrame","maskColor"] } },
+  args: { framed: true, overlaySizing: 'panel' },
+  parameters: {
+    controls: {
+      include: [
+        'framed',
+        'overlaySizing',
+        'surfaceClassName',
+        'contentClassName',
+        'showStickyFrame',
+        'maskColor',
+      ],
+    },
+  },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 720, height: 480, flexDirection: 'column' }}>
       <View style={{ height: 56, justifyContent: 'center' }}>
         <Text style={{ fontSize: 16, fontWeight: '700' }}>External header (outside the panel)</Text>
       </View>
       <View style={{ flex: 1 }}>
-        <ContentPanel {...args}  >
+        <ContentPanel {...args}>
           <Body />
         </ContentPanel>
       </View>

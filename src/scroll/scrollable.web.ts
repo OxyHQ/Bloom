@@ -88,10 +88,7 @@ export function createScroller(target: ScrollRestorationTarget): ResolvedScrolle
         if (typeof window === 'undefined' || typeof document === 'undefined') {
           return 0;
         }
-        return Math.max(
-          0,
-          document.documentElement.scrollHeight - window.innerHeight,
-        );
+        return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
       },
     };
   }

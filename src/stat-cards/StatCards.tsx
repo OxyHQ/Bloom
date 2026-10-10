@@ -1,13 +1,7 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { Platform, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { Chip } from '../chip';
@@ -96,7 +90,13 @@ const CHIP_TONES = { lime: 'success', rose: 'danger', neutral: 'neutral' } as co
 
 let gradientIdCounter = 0;
 
-function GradientTile({ colors, children }: { colors: readonly [string, string]; children: React.ReactNode }) {
+function GradientTile({
+  colors,
+  children,
+}: {
+  colors: readonly [string, string];
+  children: React.ReactNode;
+}) {
   const id = useMemo(() => `bloom-stat-tile${gradientIdCounter++}`, []);
   return (
     <View style={styles.tile}>
@@ -183,7 +183,10 @@ function StatHint({
       if (!node || typeof node.getBoundingClientRect !== 'function') return;
       const r = node.getBoundingClientRect();
       const inside =
-        event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom;
+        event.clientX >= r.left &&
+        event.clientX <= r.right &&
+        event.clientY >= r.top &&
+        event.clientY <= r.bottom;
       if (!inside) {
         clearTimer();
         setHovered(false);
@@ -260,10 +263,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
   if (variant === 'footer') {
     const gradient = tileGradient(theme, stat.tone ?? 'blue');
     return (
-      <Card radius="radius-16" elevation="none"
-        testID={testID}
-        style={[styles.footerCard, style]}
-      >
+      <Card radius="radius-16" elevation="none" testID={testID} style={[styles.footerCard, style]}>
         <View style={styles.footerHeader}>
           <GradientTile colors={gradient}>
             <Icon width={20} height={20} fill="#fff" />
@@ -279,11 +279,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
         </View>
 
         <View style={styles.footerBody}>
-          <Text
-            variant="body-medium"
-            numberOfLines={1}
-            style={{ color: surfaces.textSecondary }}
-          >
+          <Text variant="body-medium" numberOfLines={1} style={{ color: surfaces.textSecondary }}>
             {stat.label}
           </Text>
           <Text
@@ -295,7 +291,9 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
           </Text>
         </View>
 
-        <Card radius="radius-12" elevation="none"
+        <Card
+          radius="radius-12"
+          elevation="none"
           testID={testID ? `${testID}-band` : undefined}
           style={styles.band}
         >
@@ -319,10 +317,7 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
   }
 
   return (
-    <Card radius="radius-16" elevation="none"
-      testID={testID}
-      style={[styles.plainCard, style]}
-    >
+    <Card radius="radius-16" elevation="none" testID={testID} style={[styles.plainCard, style]}>
       {stat.accessory != null ? (
         <View style={styles.plainHeader}>
           <View style={[styles.iconTile, { backgroundColor: surfaces.iconTile }]}>

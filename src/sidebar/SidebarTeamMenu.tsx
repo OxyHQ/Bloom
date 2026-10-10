@@ -1,5 +1,11 @@
 import React, { memo, useEffect, useState } from 'react';
-import { Pressable, View, StyleSheet, useWindowDimensions, type GestureResponderEvent } from 'react-native';
+import {
+  Pressable,
+  View,
+  StyleSheet,
+  useWindowDimensions,
+  type GestureResponderEvent,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -99,7 +105,11 @@ function TeamMenuRow({
     >
       <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Icon width={20} height={20} fill={palette.textSecondary} />
-        <Text variant="body-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.text }}>
+        <Text
+          variant="body-medium"
+          numberOfLines={1}
+          style={{ flexShrink: 1, color: palette.text }}
+        >
           {item.label}
         </Text>
       </View>
@@ -130,7 +140,10 @@ function Group({
       {divider ? <MenuDivider palette={palette} spacing={10} /> : null}
       <View style={{ width: '100%', gap: group.label ? 6 : 4, paddingTop: group.label ? 4 : 0 }}>
         {group.label ? (
-          <Text variant="body-medium" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textSecondary }}>
+          <Text
+            variant="body-medium"
+            style={{ paddingLeft: 8, paddingRight: 8, color: palette.textSecondary }}
+          >
             {group.label}
           </Text>
         ) : null}
@@ -145,7 +158,12 @@ function Group({
   );
 }
 
-const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collapsed = false, style, testID }) => {
+const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({
+  team,
+  collapsed = false,
+  style,
+  testID,
+}) => {
   const palette = useSidebarPalette();
   const { messages } = useMessages(SIDEBAR_MESSAGES);
   useSidebarWebCss();
@@ -159,9 +177,14 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
   const turn = useSharedValue(0);
   useEffect(() => {
     const target = open ? 180 : 0;
-    turn.value = reducedMotion ? target : withTiming(target, { duration: 200, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
+    turn.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: 200, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
   }, [open, reducedMotion, turn]);
-  const chevronStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.value}deg` }] }), [turn]);
+  const chevronStyle = useAnimatedStyle(
+    () => ({ transform: [{ rotate: `${turn.value}deg` }] }),
+    [turn],
+  );
 
   const progress = useSidebarCollapseProgress(collapsed);
   const inSidebar = useInSidebar();
@@ -172,15 +195,31 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
   const geometry = useAnimatedStyle(() => {
     const p = progress.value;
     const height = expandedHeight + (36 - expandedHeight) * p;
-    return { width: inSidebar ? '100%' : naturalWidth.value > 0 ? naturalWidth.value + (36 - naturalWidth.value) * p : p === 1 ? 36 : '100%',
+    return {
+      width: inSidebar
+        ? '100%'
+        : naturalWidth.value > 0
+          ? naturalWidth.value + (36 - naturalWidth.value) * p
+          : p === 1
+            ? 36
+            : '100%',
       height,
-      borderRadius: height / 2, paddingInlineStart: 10 + (compactPadding - 10) * p, paddingInlineEnd: 16 + (compactPadding - 16) * p };
+      borderRadius: height / 2,
+      paddingInlineStart: 10 + (compactPadding - 10) * p,
+      paddingInlineEnd: 16 + (compactPadding - 16) * p,
+    };
   }, [progress, expandedHeight, inSidebar, naturalWidth, compactPadding]);
   const fill = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const cardStyle: WebCssStyle = {
-    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    overflow: 'hidden', borderWidth: 2, borderColor: hovered ? palette.teamHoverBorder : 'transparent',
-    '--bloom-sidebar-ring': palette.ring, '--bloom-sidebar-ring-offset': palette.panel,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: hovered ? palette.teamHoverBorder : 'transparent',
+    '--bloom-sidebar-ring': palette.ring,
+    '--bloom-sidebar-ring-offset': palette.panel,
   };
 
   const identity = (
@@ -207,20 +246,39 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
           accessibilityLabel={team.name}
           onHoverIn={onIn}
           onHoverOut={onOut}
-          onLayout={(event) => { if (progress.value === 0) naturalWidth.value = event.nativeEvent.layout.width; }}
+          onLayout={(event) => {
+            if (progress.value === 0) naturalWidth.value = event.nativeEvent.layout.width;
+          }}
           style={[cardStyle, style, { backgroundColor: 'transparent' }, geometry]}
           testID={testID}
         >
-          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: StyleSheet.flatten(style)?.backgroundColor ?? palette.tertiary }, fill]} />
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              { backgroundColor: StyleSheet.flatten(style)?.backgroundColor ?? palette.tertiary },
+              fill,
+            ]}
+          />
           <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1 }}>
             <SidebarAvatarView avatar={team.avatar} size="md" palette={palette} />
             <Collapsible collapsed={collapsed}>
-              <View style={{ paddingInlineStart: 8, justifyContent: 'center', alignItems: 'flex-start' }}>
+              <View
+                style={{
+                  paddingInlineStart: 8,
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                }}
+              >
                 <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                   {team.name}
                 </Text>
                 {team.email ? (
-                  <Text variant="body-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+                  <Text
+                    variant="body-regular"
+                    numberOfLines={1}
+                    style={{ color: palette.textSecondary }}
+                  >
                     {team.email}
                   </Text>
                 ) : null}
@@ -258,7 +316,17 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
         testID={testID ? `${testID}-menu` : undefined}
       >
         <View style={{ gap: 7 }}>
-          <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 8, paddingRight: 8, paddingTop: 4 }}>
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingTop: 4,
+            }}
+          >
             {identity}
           </View>
           {team.groups?.length ? (
@@ -287,7 +355,11 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
                 paddingBottom: 8,
               }}
             >
-              <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
+              <Text
+                variant="body-2-medium"
+                numberOfLines={1}
+                style={{ color: palette.textTertiary }}
+              >
                 {team.footer.label}
               </Text>
               {team.footer.version ? (
@@ -301,7 +373,11 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
                     backgroundColor: palette.tertiary,
                   }}
                 >
-                  <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
+                  <Text
+                    variant="body-2-medium"
+                    numberOfLines={1}
+                    style={{ color: palette.textTertiary }}
+                  >
                     {team.footer.version}
                   </Text>
                 </View>

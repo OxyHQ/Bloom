@@ -11,11 +11,7 @@ import Animated, {
 
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
-import {
-  STORY_DURATION_MS,
-  resolveChatPeoplePaint,
-  storyProgressFill,
-} from './shared';
+import { STORY_DURATION_MS, resolveChatPeoplePaint, storyProgressFill } from './shared';
 import type { StoryProgressBarsProps } from './types';
 import { CHAT_PEOPLE_MESSAGES } from './messages';
 
@@ -109,7 +105,9 @@ function Bar({
       }}
       testID={testID}
     >
-      <Animated.View style={[{ height, borderRadius: height / 2, backgroundColor: color }, style]} />
+      <Animated.View
+        style={[{ height, borderRadius: height / 2, backgroundColor: color }, style]}
+      />
     </View>
   );
 }

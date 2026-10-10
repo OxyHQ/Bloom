@@ -24,13 +24,12 @@ const outputPath = join(
 
 const palettes = Object.fromEntries(
   APP_COLOR_NAMES.flatMap((name) =>
-    (['light', 'dark'] as const).map((mode) => [
-      `${name}/${mode}`,
-      getResolvedTokens(name, mode),
-    ]),
+    (['light', 'dark'] as const).map((mode) => [`${name}/${mode}`, getResolvedTokens(name, mode)]),
   ),
 );
 
 const json = `${JSON.stringify(palettes, null, 2)}\n`;
 writeFileSync(outputPath, json);
-console.log(`[generate-theme-golden] wrote ${relative(repoRoot, outputPath)} (${json.length} bytes)`);
+console.log(
+  `[generate-theme-golden] wrote ${relative(repoRoot, outputPath)} (${json.length} bytes)`,
+);

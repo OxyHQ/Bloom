@@ -43,12 +43,12 @@ const meta: Meta<typeof AvatarGroup> = {
   title: 'Base/Avatar Group',
   component: AvatarGroup,
   argTypes: {
-    "layout": { control: 'select', options: ["stack","row","cluster"] },
-    "variant": { control: 'text' },
-    "total": { control: 'number' },
-    "spacing": { control: 'number' },
-    "ringColor": { control: 'text' },
-    "showInitials": { control: 'boolean' },
+    layout: { control: 'select', options: ['stack', 'row', 'cluster'] },
+    variant: { control: 'text' },
+    total: { control: 'number' },
+    spacing: { control: 'number' },
+    ringColor: { control: 'text' },
+    showInitials: { control: 'boolean' },
     size: { control: { type: 'number', min: 16, max: 96, step: 4 } },
     max: { control: { type: 'number', min: 1, max: 10, step: 1 } },
     overlap: { control: { type: 'number', min: 0, max: 48, step: 1 } },
@@ -125,9 +125,7 @@ function HoverCardStory() {
               backgroundColor: '#1A73E8',
             }}
           >
-            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>
-              Follow
-            </Text>
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>Follow</Text>
           </RNPressable>
         )}
       />
@@ -191,12 +189,7 @@ export const ClusterLayout: Story = {
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
       {[3, 4, 5, 6, 8, 12, 20].map((count) => (
         <View key={count} style={{ alignItems: 'center', gap: 8 }}>
-          <AvatarGroup
-            layout="cluster"
-            items={MANY.slice(0, count)}
-            size={120}
-            showInitials
-          />
+          <AvatarGroup layout="cluster" items={MANY.slice(0, count)} size={120} showInitials />
           <Text>{count}</Text>
         </View>
       ))}
@@ -232,11 +225,26 @@ export const ClusterWithPhotos: Story = {
  * "+N" bubble as the last (smallest) cluster member.
  */
 export const ClusterOverflow: Story = {
-  args: { layout: "cluster", size: 140, max: 20, showInitials: true },
-  parameters: { controls: { include: ["layout","size","max","showInitials","variant","total","spacing","ringColor","overlap","hoverCard"] } },
+  args: { layout: 'cluster', size: 140, max: 20, showInitials: true },
+  parameters: {
+    controls: {
+      include: [
+        'layout',
+        'size',
+        'max',
+        'showInitials',
+        'variant',
+        'total',
+        'spacing',
+        'ringColor',
+        'overlap',
+        'hoverCard',
+      ],
+    },
+  },
   render: (args) => (
     <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
-      <AvatarGroup {...args}  items={MANY}    />
+      <AvatarGroup {...args} items={MANY} />
       <Text>25 members, max 20 → cap + &quot;+N&quot;</Text>
     </View>
   ),

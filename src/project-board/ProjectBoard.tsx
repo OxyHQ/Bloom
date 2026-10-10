@@ -5,10 +5,7 @@ import { Portal } from '../portal';
 import * as Select from '../select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
 import { ProjectBoardBase } from './ProjectBoardBase';
-import {
-  TicketCornerGenieSurface,
-  TicketGenieSurface,
-} from './TicketGenieSurface';
+import { TicketCornerGenieSurface, TicketGenieSurface } from './TicketGenieSurface';
 import { ProjectBoardPlatformContext } from './context';
 import type { ProjectBoardProps } from './types';
 

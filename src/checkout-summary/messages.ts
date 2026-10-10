@@ -21,12 +21,13 @@ export interface CheckoutSummaryMessages {
   placingOrder: string;
 }
 
-export const CHECKOUT_SUMMARY_MESSAGES: MessageCatalog<CheckoutSummaryMessages> = defineMessages<CheckoutSummaryMessages>('CHECKOUT_SUMMARY_MESSAGES', {
-  title: 'Review your order',
-  orderSummary: 'Order summary',
-  deliverTo: 'Deliver to',
-  notChosen: 'Not chosen yet',
-  opensPicker: 'Opens the picker',
-  placeOrder: 'Place order',
-  placingOrder: 'Placing your order',
-});
+export const CHECKOUT_SUMMARY_MESSAGES: MessageCatalog<CheckoutSummaryMessages> =
+  defineMessages<CheckoutSummaryMessages>('CHECKOUT_SUMMARY_MESSAGES', {
+    title: 'Review your order',
+    orderSummary: 'Order summary',
+    deliverTo: 'Deliver to',
+    notChosen: 'Not chosen yet',
+    opensPicker: 'Opens the picker',
+    placeOrder: 'Place order',
+    placingOrder: 'Placing your order',
+  });

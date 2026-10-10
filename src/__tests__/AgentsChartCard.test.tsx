@@ -17,9 +17,8 @@ import { purpleStop } from '../chart-cards/ai-profile-hues';
 
 // December's bar heights, ~5px per agent.
 const DECEMBER = [
-  73, 141, 118, 0, 118, 18, 0, 0, 0, 95,
-  0, 158, 78, 45, 0, 45, 135, 88, 0, 0,
-  107, 21, 45, 105, 87, 66, 19, 128, 98, 34,
+  73, 141, 118, 0, 118, 18, 0, 0, 0, 95, 0, 158, 78, 45, 0, 45, 135, 88, 0, 0, 107, 21, 45, 105, 87,
+  66, 19, 128, 98, 34,
 ];
 const DATA: AgentsPoint[] = DECEMBER.map((h, day) => ({ label: `Dec ${day + 1}`, value: h / 5 }));
 const MAX = 158 / 5;
@@ -35,13 +34,19 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 /** The card at 680 wide: a 660 × 206 track. */
 function layoutPlot(getByTestId: (id: string) => unknown, width = 660) {
   act(() => {
-    fireEvent(getByTestId('agents-plot') as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height: 206 } } });
+    fireEvent(getByTestId('agents-plot') as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height: 206 } },
+    });
   });
 }
 
 describe('agents bar geometry', () => {
-  it("draws each day at its target height and an idle day as the 4px stub", () => {
-    const heights = agentsBarHeights(DATA.map((d) => d.value), 158, MAX);
+  it('draws each day at its target height and an idle day as the 4px stub', () => {
+    const heights = agentsBarHeights(
+      DATA.map((d) => d.value),
+      158,
+      MAX,
+    );
     expect(heights[0]).toBeCloseTo(73, 9);
     expect(heights[11]).toBeCloseTo(158, 9);
     expect(heights[3]).toBe(AGENTS_ZERO_BAR);
@@ -63,7 +68,14 @@ describe('agents bar geometry', () => {
 describe('AgentsChartCard', () => {
   it('keeps the card shell: radius 20, padding 12 / 10, gap 10, the pill 16 from the top right', () => {
     const { getByTestId } = renderCard(
-      <AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} range="December" onNextRange={() => {}} />,
+      <AgentsChartCard
+        testID="agents"
+        data={DATA}
+        headline={32}
+        max={MAX}
+        range="December"
+        onNextRange={() => {}}
+      />,
     );
     const palette = resolveChartCardPalette(buildTheme('teal', 'light'));
     expect(cardLayout(getByTestId('agents'))).toMatchObject({
@@ -81,12 +93,18 @@ describe('AgentsChartCard', () => {
       width: 128,
       height: 32,
     });
-    expect(resolvedStyle(getByTestId('agents-plot').props.style)).toMatchObject({ height: 206, gap: 7, flexDirection: 'row' });
+    expect(resolvedStyle(getByTestId('agents-plot').props.style)).toMatchObject({
+      height: 206,
+      gap: 7,
+      flexDirection: 'row',
+    });
   });
 
   it('paints purple-300 bars (500 in dark), radius 4, and the idle stubs in chart-track', () => {
     const light = buildTheme('teal', 'light');
-    const { getByTestId } = renderCard(<AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} />);
+    const { getByTestId } = renderCard(
+      <AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} />,
+    );
     const bar = resolvedStyle(getByTestId('agents-bar-11').props.style);
     expect(bar).toMatchObject({ borderRadius: 4, backgroundColor: purpleStop(light, 300) });
     expect(bar.height).toBeCloseTo(158, 9);
@@ -96,17 +114,26 @@ describe('AgentsChartCard', () => {
     });
 
     const dark = buildTheme('teal', 'dark');
-    const darkCard = renderCard(<AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} />, 'dark');
-    expect(resolvedStyle(darkCard.getByTestId('agents-bar-0').props.style).backgroundColor).toBe(purpleStop(dark, 500));
+    const darkCard = renderCard(
+      <AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} />,
+      'dark',
+    );
+    expect(resolvedStyle(darkCard.getByTestId('agents-bar-0').props.style).backgroundColor).toBe(
+      purpleStop(dark, 500),
+    );
   });
 
   it('headlines the resting count and names the plot', () => {
-    const { getByTestId, getByText } = renderCard(<AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} />);
+    const { getByTestId, getByText } = renderCard(
+      <AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} />,
+    );
     expect(getByText('Agents')).toBeTruthy();
     expect(getByTestId('agents-headline').props.children).toBe('32 agents');
     const surface = getByTestId('agents-plot-surface');
     expect(surface.props.role).toBe('img');
-    expect(surface.props.accessibilityLabel).toMatch(/^Agents bar chart: Dec 1 15 agents, Dec 2 28 agents/);
+    expect(surface.props.accessibilityLabel).toMatch(
+      /^Agents bar chart: Dec 1 15 agents, Dec 2 28 agents/,
+    );
     expect(getByText('Jun 14')).toBeTruthy();
     expect(getByText('Today')).toBeTruthy();
   });
@@ -130,7 +157,9 @@ describe('AgentsChartCard', () => {
     });
     expect(onActiveIndexChange).toHaveBeenLastCalledWith(1);
     expect(getByText('Dec 2')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('agents-bar-1').props.style).backgroundColor).toBe(purpleStop(theme, 400));
+    expect(resolvedStyle(getByTestId('agents-bar-1').props.style).backgroundColor).toBe(
+      purpleStop(theme, 400),
+    );
 
     // A gap between columns keeps the day.
     act(() => {
@@ -157,7 +186,13 @@ describe('AgentsChartCard', () => {
   it('scrubs with a finger on native and lets go to clear', () => {
     const onActiveIndexChange = jest.fn();
     const { getByTestId } = renderCard(
-      <AgentsChartCard testID="agents" data={DATA} headline={32} max={MAX} onActiveIndexChange={onActiveIndexChange} />,
+      <AgentsChartCard
+        testID="agents"
+        data={DATA}
+        headline={32}
+        max={MAX}
+        onActiveIndexChange={onActiveIndexChange}
+      />,
     );
     layoutPlot(getByTestId);
     const surface = getByTestId('agents-plot-surface');

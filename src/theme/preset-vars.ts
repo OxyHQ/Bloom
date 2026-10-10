@@ -147,10 +147,7 @@ function authoredTokens(
  * Tailwind v4 `@theme inline` compiles its color utilities to — resolves
  * directly to a valid color on web.
  */
-export function applyPresetVarsToDocument(
-  colorName: AppColorName,
-  mode: 'light' | 'dark',
-): void {
+export function applyPresetVarsToDocument(colorName: AppColorName, mode: 'light' | 'dark'): void {
   // Web-only: on native `document` is undefined, so this is a no-op there
   // without needing a `react-native` Platform import (keeping this module —
   // and `getPresetVars` — free of any RN dependency so it is importable from

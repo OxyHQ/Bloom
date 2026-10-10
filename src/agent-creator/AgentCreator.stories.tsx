@@ -16,8 +16,7 @@ function ControlledCreator() {
     id: 'designer',
     name: 'Landing page designer',
     label: 'Design',
-    description:
-      'Clear layouts, thoughtful hierarchy, and a little personality.',
+    description: 'Clear layouts, thoughtful hierarchy, and a little personality.',
     avatar: { ...FOLD_CONFIG, hue: 157, saturation: 37, eyes: 'curious' },
   });
   return (
@@ -30,9 +29,7 @@ export const Basic: Story = { render: () => <ControlledCreator /> };
 
 import { INITIAL_WORKSPACE } from '../multi-agent-chat/data';
 function SourceComparisonCreator() {
-  const [agent, setAgent] = useState<AgentCreatorAgent>(
-    INITIAL_WORKSPACE.agents[0]!,
-  );
+  const [agent, setAgent] = useState<AgentCreatorAgent>(INITIAL_WORKSPACE.agents[0]!);
   return (
     <View style={{ width: 360, height: 900, padding: 12 }}>
       <AgentCreator agent={agent} onChange={setAgent} onClose={() => {}} />

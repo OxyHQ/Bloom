@@ -4,7 +4,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
-import { BloomScope } from "../appearance";
+import { BloomScope } from '../appearance';
 import { hostNodes, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -15,7 +15,10 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
-const materialCount = (tree: unknown) => hostNodes(tree).filter((n) => n.type === 'LinearGradient' && /^bloom-surface-.*-sheen$/.test(String(n.props.id))).length;
+const materialCount = (tree: unknown) =>
+  hostNodes(tree).filter(
+    (n) => n.type === 'LinearGradient' && /^bloom-surface-.*-sheen$/.test(String(n.props.id)),
+  ).length;
 
 /** A divider is the only 1px-wide box a group renders. */
 const hairlineCount = (tree: unknown) =>
@@ -30,8 +33,12 @@ describe('ButtonGroup, glass', () => {
       </ButtonGroup>,
     );
     expect(materialCount(toJSON())).toBe(1);
-    expect(resolvedStyle(getByTestId('a').props.style).backgroundColor).toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
-    expect(resolvedStyle(getByTestId('b').props.style).backgroundColor).toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
+    expect(resolvedStyle(getByTestId('a').props.style).backgroundColor).toMatch(
+      /^(transparent|rgba\(0, 0, 0, 0\))$/,
+    );
+    expect(resolvedStyle(getByTestId('b').props.style).backgroundColor).toMatch(
+      /^(transparent|rgba\(0, 0, 0, 0\))$/,
+    );
   });
 
   it('keeps the group a named group, and draws a divider between items by default', () => {
@@ -93,13 +100,19 @@ describe('ButtonGroup, glass', () => {
 });
 
 it('inherits compact density while explicit group and item sizes win', () => {
-  const screen = renderWithTheme(<BloomScope size="sm">
-    <ButtonGroup accessibilityLabel="Inherited"><ButtonGroupItem testID="inherited">A</ButtonGroupItem></ButtonGroup>
-    <ButtonGroup size="md" accessibilityLabel="Override">
-      <ButtonGroupItem testID="group-size">B</ButtonGroupItem>
-      <ButtonGroupItem size="sm" testID="item-size">C</ButtonGroupItem>
-    </ButtonGroup>
-  </BloomScope>);
+  const screen = renderWithTheme(
+    <BloomScope size="sm">
+      <ButtonGroup accessibilityLabel="Inherited">
+        <ButtonGroupItem testID="inherited">A</ButtonGroupItem>
+      </ButtonGroup>
+      <ButtonGroup size="md" accessibilityLabel="Override">
+        <ButtonGroupItem testID="group-size">B</ButtonGroupItem>
+        <ButtonGroupItem size="sm" testID="item-size">
+          C
+        </ButtonGroupItem>
+      </ButtonGroup>
+    </BloomScope>,
+  );
   expect(resolvedStyle(screen.getByTestId('inherited').props.style).height).toBe(30);
   expect(resolvedStyle(screen.getByTestId('group-size').props.style).height).toBe(34);
   expect(resolvedStyle(screen.getByTestId('item-size').props.style).height).toBe(30);
@@ -108,7 +121,9 @@ it('inherits compact density while explicit group and item sizes win', () => {
 it('adds an inset material only for checked items', () => {
   const { getByTestId, toJSON } = renderWithTheme(
     <ButtonGroup testID="group">
-      <ButtonGroupItem testID="selected" checked>Day</ButtonGroupItem>
+      <ButtonGroupItem testID="selected" checked>
+        Day
+      </ButtonGroupItem>
       <ButtonGroupItem testID="unselected">Week</ButtonGroupItem>
       <ButtonGroupItem>Month</ButtonGroupItem>
     </ButtonGroup>,
@@ -117,33 +132,54 @@ it('adds an inset material only for checked items', () => {
   expect(resolvedStyle(getByTestId('group-items').props.style).padding).toBe(2);
   expect(resolvedStyle(getByTestId('selected').props.style).borderRadius).toBeGreaterThan(0);
   expect(getByTestId('selected').props['aria-pressed']).toBe(true);
-  const separators = hostNodes(toJSON()).filter(n => resolvedStyle(n.props.style).width === 1);
+  const separators = hostNodes(toJSON()).filter((n) => resolvedStyle(n.props.style).width === 1);
   expect(separators).toHaveLength(2);
-  for (const separator of separators) expect(resolvedStyle(separator.props.style)).toMatchObject({ marginTop: 8, marginBottom: 8 });
+  for (const separator of separators)
+    expect(resolvedStyle(separator.props.style)).toMatchObject({ marginTop: 8, marginBottom: 8 });
 });
 
 // Layout callbacks are the real registration boundary. Reanimated's test mock
 // snapshots animated styles on render, so a second render reads effect writes;
 // spring interpolation itself belongs to the real-browser check.
 function selectionFixture(checked: readonly string[], removeFirst = false) {
-  return <BloomThemeProvider mode="light" colorPreset="teal">
-    <ButtonGroup testID="moving-group">
-      {!removeFirst ? <ButtonGroupItem key="day" testID="day" checked={checked.includes('day')}>Day</ButtonGroupItem> : null}
-      <ButtonGroupItem key="month" testID="month" checked={checked.includes('month')}>Long month label</ButtonGroupItem>
-    </ButtonGroup>
-  </BloomThemeProvider>;
+  return (
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <ButtonGroup testID="moving-group">
+        {!removeFirst ? (
+          <ButtonGroupItem key="day" testID="day" checked={checked.includes('day')}>
+            Day
+          </ButtonGroupItem>
+        ) : null}
+        <ButtonGroupItem key="month" testID="month" checked={checked.includes('month')}>
+          Long month label
+        </ButtonGroupItem>
+      </ButtonGroup>
+    </BloomThemeProvider>
+  );
 }
 
 it('moves one measured capsule between unequal items without duplicating their materials', () => {
   const screen = render(selectionFixture(['day']));
-  fireEvent(screen.getByTestId('day'), 'layout', { nativeEvent: { layout: { x: 2, y: 2, width: 48, height: 34 } } });
-  fireEvent(screen.getByTestId('month'), 'layout', { nativeEvent: { layout: { x: 51, y: 2, width: 130, height: 34 } } });
+  fireEvent(screen.getByTestId('day'), 'layout', {
+    nativeEvent: { layout: { x: 2, y: 2, width: 48, height: 34 } },
+  });
+  fireEvent(screen.getByTestId('month'), 'layout', {
+    nativeEvent: { layout: { x: 51, y: 2, width: 130, height: 34 } },
+  });
   screen.rerender(selectionFixture(['day']));
-  expect(resolvedStyle(screen.getByTestId('moving-group-selection').props.style)).toMatchObject({ width: 48, height: 34, opacity: 1, transform: [{ translateX: 2 }, { translateY: 2 }] });
+  expect(resolvedStyle(screen.getByTestId('moving-group-selection').props.style)).toMatchObject({
+    width: 48,
+    height: 34,
+    opacity: 1,
+    transform: [{ translateX: 2 }, { translateY: 2 }],
+  });
   expect(materialCount(screen.toJSON())).toBe(2);
   screen.rerender(selectionFixture(['month']));
   screen.rerender(selectionFixture(['month']));
-  expect(resolvedStyle(screen.getByTestId('moving-group-selection').props.style)).toMatchObject({ width: 130, transform: [{ translateX: 51 }, { translateY: 2 }] });
+  expect(resolvedStyle(screen.getByTestId('moving-group-selection').props.style)).toMatchObject({
+    width: 130,
+    transform: [{ translateX: 51 }, { translateY: 2 }],
+  });
   expect(materialCount(screen.toJSON())).toBe(2);
   expect(screen.getByTestId('month').props['aria-pressed']).toBe(true);
   expect(screen.getByTestId('day').props['aria-pressed']).toBe(false);
@@ -151,8 +187,13 @@ it('moves one measured capsule between unequal items without duplicating their m
 
 it('keeps independently checked controls painted locally instead of moving one shared capsule', () => {
   const screen = render(selectionFixture(['day', 'month']));
-  for (const [id, x] of [['day', 2], ['month', 51]] as const) {
-    fireEvent(screen.getByTestId(id), 'layout', { nativeEvent: { layout: { x, y: 2, width: 48, height: 34 } } });
+  for (const [id, x] of [
+    ['day', 2],
+    ['month', 51],
+  ] as const) {
+    fireEvent(screen.getByTestId(id), 'layout', {
+      nativeEvent: { layout: { x, y: 2, width: 48, height: 34 } },
+    });
   }
   screen.rerender(selectionFixture(['day', 'month']));
   expect(screen.queryByTestId('moving-group-selection')).toBeNull();
@@ -163,11 +204,16 @@ it('keeps independently checked controls painted locally instead of moving one s
 
 it('unregisters a removed selected item and fades its capsule without moving to another item', () => {
   const screen = render(selectionFixture(['day']));
-  fireEvent(screen.getByTestId('day'), 'layout', { nativeEvent: { layout: { x: 2, y: 2, width: 48, height: 34 } } });
+  fireEvent(screen.getByTestId('day'), 'layout', {
+    nativeEvent: { layout: { x: 2, y: 2, width: 48, height: 34 } },
+  });
   screen.rerender(selectionFixture(['day']));
   screen.rerender(selectionFixture(['day'], true));
   screen.rerender(selectionFixture(['day'], true));
   expect(screen.queryByTestId('day')).toBeNull();
-  expect(resolvedStyle(screen.getByTestId('moving-group-selection').props.style)).toMatchObject({ opacity: 0, transform: [{ translateX: 2 }, { translateY: 2 }] });
+  expect(resolvedStyle(screen.getByTestId('moving-group-selection').props.style)).toMatchObject({
+    opacity: 0,
+    transform: [{ translateX: 2 }, { translateY: 2 }],
+  });
   expect(screen.getByTestId('month').props['aria-pressed']).toBe(false);
 });

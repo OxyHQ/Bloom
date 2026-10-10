@@ -52,7 +52,11 @@ export function QueueCover({ cover, size = QUEUE_COVER_SIZE }: { cover?: string;
   return (
     <View style={box}>
       {uri ? (
-        <Image source={{ uri }} style={{ width: size, height: size }} accessibilityIgnoresInvertColors />
+        <Image
+          source={{ uri }}
+          style={{ width: size, height: size }}
+          accessibilityIgnoresInvertColors
+        />
       ) : (
         <RiMusic2Line width={size / 2} height={size / 2} fill={paint.placeholderGlyph} />
       )}
@@ -143,15 +147,25 @@ function QueuePanelRowComponent({
           ) : null}
         </View>
         {current ? (
-          <NowPlayingIndicator playing={playing} size={14} testID={testID ? `${testID}-indicator` : undefined} />
+          <NowPlayingIndicator
+            playing={playing}
+            size={14}
+            testID={testID ? `${testID}-indicator` : undefined}
+          />
         ) : track.meta ? (
-          <Text variant="caption-1-regular" numberOfLines={1} style={{ color: paint.textSecondary }}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={{ color: paint.textSecondary }}
+          >
             {track.meta}
           </Text>
         ) : null}
       </Pressable>
       {trailing ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 4, gap: 2 }}>{trailing}</View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 4, gap: 2 }}>
+          {trailing}
+        </View>
       ) : null}
     </View>
   );

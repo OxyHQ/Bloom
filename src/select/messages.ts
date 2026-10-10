@@ -9,4 +9,7 @@ export interface SelectMessages {
   scrollDown: string;
 }
 
-export const SELECT_MESSAGES: MessageCatalog<SelectMessages> = defineMessages<SelectMessages>('SELECT_MESSAGES', { selectOption: 'Select an option', scrollUp: 'Scroll up', scrollDown: 'Scroll down' });
+export const SELECT_MESSAGES: MessageCatalog<SelectMessages> = defineMessages<SelectMessages>(
+  'SELECT_MESSAGES',
+  { selectOption: 'Select an option', scrollUp: 'Scroll up', scrollDown: 'Scroll down' },
+);

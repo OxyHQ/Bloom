@@ -29,7 +29,11 @@ import {
   estimateGeometry,
   priceVerdictTone,
 } from '../property-insights/PriceEstimate';
-import { describePriceHistory, priceDomain, stepPath } from '../property-insights/PriceHistoryChart';
+import {
+  describePriceHistory,
+  priceDomain,
+  stepPath,
+} from '../property-insights/PriceHistoryChart';
 import { rentDeltaTone } from '../property-insights/RentHistoryList';
 import {
   ENERGY_CLASSES,
@@ -98,23 +102,27 @@ function normalise(color: string): string {
 // ---------------------------------------------------------------------------
 
 describe('energy tones', () => {
-  it.each(['light', 'dark'] as const)('run green → yellow → red, and every letter clears 4.5:1 (%s)', (mode) => {
-    mount(<></>, mode);
-    const tones = resolveEnergyTones(theme);
-    expect(tones).toHaveLength(7);
-    const hue = (c: string) => srgbToOklch(parseRgba(c)!).h;
-    // A is green, D a yellow, G a red.
-    expect(hue(tones[0]!.fill)).toBeGreaterThan(120);
-    expect(hue(tones[3]!.fill)).toBeGreaterThan(70);
-    expect(hue(tones[3]!.fill)).toBeLessThan(120);
-    expect(hue(tones[6]!.fill)).toBeLessThan(45);
-    // D is the lightest step.
-    const l = tones.map((t) => srgbToOklch(parseRgba(t.fill)!).l);
-    expect(Math.max(...l)).toBe(l[3]);
-    for (const tone of tones) expect(contrastRatio(tone.fill, tone.foreground)).toBeGreaterThanOrEqual(4.5);
-    // Neighbours are distinct colours.
-    expect(new Set(tones.map((t) => t.fill)).size).toBe(7);
-  });
+  it.each(['light', 'dark'] as const)(
+    'run green → yellow → red, and every letter clears 4.5:1 (%s)',
+    (mode) => {
+      mount(<></>, mode);
+      const tones = resolveEnergyTones(theme);
+      expect(tones).toHaveLength(7);
+      const hue = (c: string) => srgbToOklch(parseRgba(c)!).h;
+      // A is green, D a yellow, G a red.
+      expect(hue(tones[0]!.fill)).toBeGreaterThan(120);
+      expect(hue(tones[3]!.fill)).toBeGreaterThan(70);
+      expect(hue(tones[3]!.fill)).toBeLessThan(120);
+      expect(hue(tones[6]!.fill)).toBeLessThan(45);
+      // D is the lightest step.
+      const l = tones.map((t) => srgbToOklch(parseRgba(t.fill)!).l);
+      expect(Math.max(...l)).toBe(l[3]);
+      for (const tone of tones)
+        expect(contrastRatio(tone.fill, tone.foreground)).toBeGreaterThanOrEqual(4.5);
+      // Neighbours are distinct colours.
+      expect(new Set(tones.map((t) => t.fill)).size).toBe(7);
+    },
+  );
 
   it('every letter clears 4.5:1 on its bar in EVERY preset and mode', () => {
     const failures: string[] = [];
@@ -122,7 +130,8 @@ describe('energy tones', () => {
       for (const mode of ['light', 'dark'] as const) {
         resolveEnergyTones(buildTheme(preset as AppColorName, mode)).forEach((tone, i) => {
           const ratio = contrastRatio(tone.fill, tone.foreground);
-          if (ratio < 4.5) failures.push(`${preset}/${mode}/${ENERGY_CLASSES[i]} ${ratio.toFixed(2)}`);
+          if (ratio < 4.5)
+            failures.push(`${preset}/${mode}/${ENERGY_CLASSES[i]} ${ratio.toFixed(2)}`);
         });
       }
     }
@@ -148,17 +157,25 @@ describe('EnergyLabel', () => {
     });
     // jsdom never lays out, so two columns render compact: the tag is the letter, the value moves below.
     expect(byTestId('e-consumption-tag').textContent).toBe('C');
-    expect(getComputedStyle(byTestId('e-consumption-tag-body')).backgroundColor).toBe(normalise(tones[2]!.fill));
+    expect(getComputedStyle(byTestId('e-consumption-tag-body')).backgroundColor).toBe(
+      normalise(tones[2]!.fill),
+    );
     expect(byTestId('e-values').textContent).toContain('C · 112 kWh/m²·year');
   });
 
   it('is one named image, composed from both ratings', () => {
     mount(
-      <EnergyLabel consumption={{ rating: 'C', value: '112 kWh/m²·year' }} emissions={{ rating: 'D' }} testID="e" />,
+      <EnergyLabel
+        consumption={{ rating: 'C', value: '112 kWh/m²·year' }}
+        emissions={{ rating: 'D' }}
+        testID="e"
+      />,
     );
     const label = byTestId('e');
     expect(label.getAttribute('role')).toBe('img');
-    expect(label.getAttribute('aria-label')).toBe('Energy rating. Consumption: C, 112 kWh/m²·year. Emissions: D.');
+    expect(label.getAttribute('aria-label')).toBe(
+      'Energy rating. Consumption: C, 112 kWh/m²·year. Emissions: D.',
+    );
   });
 
   it('a single rating carries its value in the tag', () => {
@@ -185,7 +202,9 @@ describe('EnergyBadge', () => {
     expect(badge.getAttribute('aria-label')).toBe('Energy rating C');
     expect(getComputedStyle(badge).height).toBe('24px');
     expect(Number.parseFloat(getComputedStyle(badge).borderTopLeftRadius)).toBeGreaterThan(100);
-    expect(getComputedStyle(byTestId('b-disc')).backgroundColor).toBe(normalise(resolveEnergyTones(theme)[2]!.fill));
+    expect(getComputedStyle(byTestId('b-disc')).backgroundColor).toBe(
+      normalise(resolveEnergyTones(theme)[2]!.fill),
+    );
     expect(badge.textContent).toBe('CEnergy');
   });
 
@@ -206,7 +225,9 @@ describe('PriceEstimate — verdict maths', () => {
     const above = computePriceVerdict(250000, 278000, 300000);
     expect(above.position).toBe('above');
     expect(defaultFormatVerdict(above)).toBe('Above estimate by 8%');
-    expect(defaultFormatVerdict(computePriceVerdict(362000, 398000, 340000))).toBe('Below estimate by 6%');
+    expect(defaultFormatVerdict(computePriceVerdict(362000, 398000, 340000))).toBe(
+      'Below estimate by 6%',
+    );
     expect(defaultFormatVerdict({ position: 'above', ratio: 0.001 })).toBe('Above estimate by 1%');
   });
 
@@ -260,7 +281,9 @@ describe('PriceEstimate', () => {
     expect(byTestId('pe-bar').getAttribute('aria-label')).toBe(
       'Estimated price €362,000 – €398,000, Asking €385,000, High confidence',
     );
-    expect(byTestId('pe-footer').textContent).toBe('Automated valuation · Model 3.2 · Updated 2 Sep 2026');
+    expect(byTestId('pe-footer').textContent).toBe(
+      'Automated valuation · Model 3.2 · Updated 2 Sep 2026',
+    );
   });
 
   it('positions the band and the marker as shares of the domain', () => {
@@ -268,12 +291,19 @@ describe('PriceEstimate', () => {
     const { band, domain } = estimateGeometry(362000, 398000, 'high', [385000, 381000]);
     const pct = (v: number) => ((v - domain[0]) / (domain[1] - domain[0])) * 100;
     const bandStyle = byTestId('pe-band').style;
-    expect(Number.parseFloat(getComputedStyle(byTestId('pe-band')).left || bandStyle.left)).toBeCloseTo(pct(band[0]), 3);
-    expect(Number.parseFloat(getComputedStyle(byTestId('pe-asking')).left)).toBeCloseTo(pct(385000), 3);
+    expect(
+      Number.parseFloat(getComputedStyle(byTestId('pe-band')).left || bandStyle.left),
+    ).toBeCloseTo(pct(band[0]), 3);
+    expect(Number.parseFloat(getComputedStyle(byTestId('pe-asking')).left)).toBeCloseTo(
+      pct(385000),
+      3,
+    );
   });
 
   it('above by more than 10% is an error chip', () => {
-    mount(<PriceEstimate low={180000} high={205000} asking={250000} confidence="high" testID="pe" />);
+    mount(
+      <PriceEstimate low={180000} high={205000} asking={250000} confidence="high" testID="pe" />,
+    );
     expect(byTestId('pe-verdict').textContent).toBe('Above estimate by 22%');
     expect(getComputedStyle(byTestId('pe-verdict')).backgroundColor).toBe(
       normalise(resolveAccentColors(theme.colors, 'error', 'subtle').background),
@@ -283,7 +313,9 @@ describe('PriceEstimate', () => {
   it('LOW confidence widens the band, paints no firm core, hides the estimate tick and withholds the verdict', () => {
     mount(<PriceEstimate {...base} confidence="low" />);
     const palette = resolveInsightPalette(theme);
-    expect(getComputedStyle(byTestId('pe-soft-band')).backgroundColor).toBe(normalise(palette.bandSoft));
+    expect(getComputedStyle(byTestId('pe-soft-band')).backgroundColor).toBe(
+      normalise(palette.bandSoft),
+    );
     expect(getComputedStyle(byTestId('pe-band')).backgroundColor).toBe(normalise(palette.bandSoft));
     expect(queryTestId('pe-estimate')).toBeNull();
     expect(byTestId('pe-verdict').textContent).toBe('Not enough data for a verdict');
@@ -322,7 +354,13 @@ describe('PriceEstimate', () => {
 
 describe('PriceHistoryChart — maths and summary', () => {
   it('a step path holds each price until the next point', () => {
-    expect(stepPath([{ x: 0, y: 10 }, { x: 5, y: 20 }, { x: 9, y: 15 }])).toBe('M0,10H5V20H9V15');
+    expect(
+      stepPath([
+        { x: 0, y: 10 },
+        { x: 5, y: 20 },
+        { x: 9, y: 15 },
+      ]),
+    ).toBe('M0,10H5V20H9V15');
   });
 
   it('the Y domain is nice ticks around the prices, never from zero', () => {
@@ -339,8 +377,16 @@ describe('PriceHistoryChart — maths and summary', () => {
       { label: 'Mar', value: 385000, title: 'March 2026' },
     ];
     expect(
-      describePriceHistory('Price history', '1Y', data, [{ index: 1, kind: 'price-drop', label: 'Price drop −5%' }], formatEuros),
-    ).toBe('Price history, 1Y: from €405,000 in September 2025 to €385,000 in March 2026. Price drop −5%, March 2026.');
+      describePriceHistory(
+        'Price history',
+        '1Y',
+        data,
+        [{ index: 1, kind: 'price-drop', label: 'Price drop −5%' }],
+        formatEuros,
+      ),
+    ).toBe(
+      'Price history, 1Y: from €405,000 in September 2025 to €385,000 in March 2026. Price drop −5%, March 2026.',
+    );
   });
 
   it('formats euros and compact ticks', () => {
@@ -398,7 +444,7 @@ describe('PriceHistoryChart', () => {
       />,
     );
     const all = byTestId('ph-range-all');
-    act(() => (all.querySelector('[role="radio"]') as HTMLElement | null ?? all).click());
+    act(() => ((all.querySelector('[role="radio"]') as HTMLElement | null) ?? all).click());
     expect(onPeriodChange).toHaveBeenCalledWith('all');
   });
 });
@@ -418,7 +464,9 @@ describe('PricePerAreaComparison', () => {
     );
     expect(byTestId('pc').getAttribute('role')).toBe('list');
     expect(byTestId('pc').getAttribute('aria-label')).toBe('Price per square metre');
-    expect(byTestId('pc-row-0-fill').style.width || getComputedStyle(byTestId('pc-row-0-fill')).width).toBe('50%');
+    expect(
+      byTestId('pc-row-0-fill').style.width || getComputedStyle(byTestId('pc-row-0-fill')).width,
+    ).toBe('50%');
     expect(getComputedStyle(byTestId('pc-row-1-fill')).width).toBe('100%');
     // This is a CHART, not a meter: each bar is a different subject, so its
     // colour says WHICH one it is. The highlighted row is the brand-anchored
@@ -435,7 +483,9 @@ describe('PricePerAreaComparison', () => {
     );
     // And it draws NO rail: `neutralSeries` is `neutral-800` in dark, so on any
     // rail dark enough to read as one the comparators land on its own colour.
-    expect(getComputedStyle(byTestId('pc-row-0-fill').parentElement!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(getComputedStyle(byTestId('pc-row-0-fill').parentElement!).backgroundColor).toBe(
+      'rgba(0, 0, 0, 0)',
+    );
     expect(byTestId('pc-row-0').getAttribute('aria-label')).toBe('This home: €2,000/m²');
   });
 });
@@ -456,7 +506,9 @@ describe('NeighbourhoodScores', () => {
     expect(bar.getAttribute('aria-valuenow')).toBe('9.2');
     expect(bar.getAttribute('aria-valuetext')).toBe('9.2 out of 10');
     expect(getComputedStyle(byTestId('ns-item-0-fill')).width).toBe('92%');
-    expect(getComputedStyle(byTestId('ns-item-0-fill')).backgroundColor).toBe(normalise(theme.colors.primary));
+    expect(getComputedStyle(byTestId('ns-item-0-fill')).backgroundColor).toBe(
+      normalise(theme.colors.primary),
+    );
     expect(byTestId('ns-item-1').textContent).toBe('Quiet5');
   });
 
@@ -474,7 +526,12 @@ describe('NeighbourhoodScores', () => {
 
 describe('NearbyPlaces', () => {
   it('one named list item per place', () => {
-    mount(<NearbyPlaces items={[{ icon: RiSubwayLine, name: 'Lapa', category: 'Metro', time: '4 min' }]} testID="np" />);
+    mount(
+      <NearbyPlaces
+        items={[{ icon: RiSubwayLine, name: 'Lapa', category: 'Metro', time: '4 min' }]}
+        testID="np"
+      />,
+    );
     expect(byTestId('np').getAttribute('role')).toBe('list');
     const row = byTestId('np-item-0');
     expect(row.getAttribute('role')).toBe('listitem');
@@ -488,7 +545,12 @@ describe('RentHistoryList', () => {
     mount(
       <RentHistoryList
         items={[
-          { period: 'Since Oct 2026', amount: '€1,150 / month', delta: '+4%', note: 'Current listing' },
+          {
+            period: 'Since Oct 2026',
+            amount: '€1,150 / month',
+            delta: '+4%',
+            note: 'Current listing',
+          },
           { period: 'Mar 2021 – Sep 2023', amount: '€1,040 / month', delta: '−2%' },
         ]}
         testID="rh"
@@ -497,7 +559,9 @@ describe('RentHistoryList', () => {
     expect(byTestId('rh').getAttribute('aria-label')).toBe('Rent history');
     expect(getComputedStyle(byTestId('rh-item-0')).borderTopWidth).toBe('0px');
     expect(getComputedStyle(byTestId('rh-item-1')).borderTopWidth).toBe('1px');
-    expect(byTestId('rh-item-0').getAttribute('aria-label')).toBe('€1,150 / month, Since Oct 2026, +4%, Current listing');
+    expect(byTestId('rh-item-0').getAttribute('aria-label')).toBe(
+      '€1,150 / month, Since Oct 2026, +4%, Current listing',
+    );
     expect(getComputedStyle(byTestId('rh-item-0-delta')).backgroundColor).toBe(
       normalise(resolveAccentColors(theme.colors, 'warning', 'subtle').background),
     );

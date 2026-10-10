@@ -22,11 +22,7 @@
  * (TalkBack's double-tap-and-hold, VoiceOver's actions rotor).
  */
 import React, { useCallback, useEffect, useRef } from 'react';
-import {
-  View,
-  type AccessibilityActionEvent,
-  type GestureResponderEvent,
-} from 'react-native';
+import { View, type AccessibilityActionEvent, type GestureResponderEvent } from 'react-native';
 
 import type { TriggerHandleProps } from './types';
 
@@ -102,12 +98,15 @@ export function LongPressArea({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={accessibilityRole}
       accessibilityState={{ disabled: !!disabled }}
-      accessibilityActions={disabled ? undefined : [{ name: 'longpress', label: accessibilityLabel }]}
+      accessibilityActions={
+        disabled ? undefined : [{ name: 'longpress', label: accessibilityLabel }]
+      }
       onAccessibilityAction={onAccessibilityAction}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={cancel}
-      onTouchCancel={cancel}>
+      onTouchCancel={cancel}
+    >
       {children}
     </View>
   );

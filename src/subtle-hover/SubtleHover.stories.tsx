@@ -103,7 +103,13 @@ export const Playground: StoryObj<typeof SubtleHover> = {
   parameters: { controls: { disable: false, include: ['active'] } },
   argTypes: { active: { control: 'boolean' } },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><View style={{ height: 72, justifyContent: 'center', padding: 16 }}><SubtleHover {...args} /><Text>Hover surface preview</Text></View></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <View style={{ height: 72, justifyContent: 'center', padding: 16 }}>
+          <SubtleHover {...args} />
+          <Text>Hover surface preview</Text>
+        </View>
+      </View>
+    );
   },
 };

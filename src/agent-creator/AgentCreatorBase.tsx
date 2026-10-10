@@ -2,14 +2,8 @@ import { useContext, useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import { AgentAvatar, type AvatarConfig } from '../agent-avatar';
 import type { AvatarCharacterCategory } from '../agent-avatar/config-character';
-import {
-  CharacterRuntimeContext,
-  CharacterCapabilitiesContext,
-} from '../agent-avatar/context';
-import {
-  legacyCharacterRecipe,
-  legacyNativeShape,
-} from '../agent-avatar/legacy-recipe';
+import { CharacterRuntimeContext, CharacterCapabilitiesContext } from '../agent-avatar/context';
+import { legacyCharacterRecipe, legacyNativeShape } from '../agent-avatar/legacy-recipe';
 import { Button } from '../button/Button';
 import { CloseButton } from '../button/CloseButton';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -25,11 +19,7 @@ import { EmotionPicker } from './EmotionPicker';
 import { GlossArt } from './GlossArt';
 import { ScrollSurface } from './ScrollSurface';
 import { ShapeArc } from './ShapeArc';
-import {
-  AVATAR_COLORS,
-  CHARACTER_COLORS,
-  CHARACTER_OPTIONS,
-} from './constants';
+import { AVATAR_COLORS, CHARACTER_COLORS, CHARACTER_OPTIONS } from './constants';
 import {
   AgentCreatorCopyContext,
   useAgentCreatorBindings,
@@ -50,10 +40,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   const [workingKey, setWorkingKey] = useState(0);
   const runtime = useContext(CharacterRuntimeContext);
   const catalog = useContext(CharacterCapabilitiesContext);
-  const previewConfig = useMemo(
-    () => ({ ...c, lookAt: 'wander' as const }),
-    [c],
-  );
+  const previewConfig = useMemo(() => ({ ...c, lookAt: 'wander' as const }), [c]);
   const { runtimeUrl } = runtime;
   const beta = Boolean(c.character && c.character.preset !== 'bloom');
   const nativeShape = legacyNativeShape(c);
@@ -61,25 +48,15 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   const capabilities =
     catalog.capabilitiesByKey?.get(key) ??
     (catalog.capabilities?.key === key ? catalog.capabilities : undefined);
-  const betaColor =
-    capabilities?.selected.color ?? c.character?.selections?.color;
+  const betaColor = capabilities?.selected.color ?? c.character?.selections?.color;
   const customColorValue = beta
     ? (c.character?.bodyColor ??
       CHARACTER_COLORS[betaColor as keyof typeof CHARACTER_COLORS] ??
       avatarHex(c))
     : (c.character?.bodyColor ?? avatarHex(c));
-  const selectedEyes =
-    capabilities?.selected.eyes ?? c.character?.selections?.eyes ?? 'oval';
-  const characterConfig = (
-    category: AvatarCharacterCategory,
-    id: string,
-  ): AvatarConfig => {
-    if (
-      !beta &&
-      (category === 'eyes' ||
-        category === 'eyewear' ||
-        category === 'accessory')
-    )
+  const selectedEyes = capabilities?.selected.eyes ?? c.character?.selections?.eyes ?? 'oval';
+  const characterConfig = (category: AvatarCharacterCategory, id: string): AvatarConfig => {
+    if (!beta && (category === 'eyes' || category === 'eyewear' || category === 'accessory'))
       return {
         ...c,
         character: {
@@ -94,14 +71,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
           preset: 'blue_beret',
           bodyColor: customColorValue,
           selections: {
-            eyewear:
-              c.character?.selections?.eyewear ??
-              capabilities?.selected.eyewear ??
-              'none',
+            eyewear: c.character?.selections?.eyewear ?? capabilities?.selected.eyewear ?? 'none',
             accessory:
-              c.character?.selections?.accessory ??
-              capabilities?.selected.accessory ??
-              'none',
+              c.character?.selections?.accessory ?? capabilities?.selected.accessory ?? 'none',
             eyes: selectedEyes,
           },
         };
@@ -113,18 +85,14 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   };
   const selectCharacter = (category: AvatarCharacterCategory, id: string) =>
     onChange({ ...agent, avatar: characterConfig(category, id) });
-  const thumbnailBase = runtimeUrl
-    ? runtimeUrl.slice(0, runtimeUrl.lastIndexOf('/') + 1)
-    : '';
+  const thumbnailBase = runtimeUrl ? runtimeUrl.slice(0, runtimeUrl.lastIndexOf('/') + 1) : '';
   const eyeBackground = customColorValue;
   const migratedShapes = [
-    ...(['slender', 'pocket', 'petal', 'star', 'cloud', 'shield'] as const).map(
-      (shape) => ({
-        family: 'fold' as const,
-        shape,
-        title: messages.shapes[shape],
-      }),
-    ),
+    ...(['slender', 'pocket', 'petal', 'star', 'cloud', 'shield'] as const).map((shape) => ({
+      family: 'fold' as const,
+      shape,
+      title: messages.shapes[shape],
+    })),
     ...(
       [
         ['pebble', 'Pebble'],
@@ -136,10 +104,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
       title: messages.characterOption('shape', shape, title),
     })),
   ];
-  const migratedConfig = (
-    family: 'fold' | 'blob',
-    shape: string,
-  ): AvatarConfig => {
+  const migratedConfig = (family: 'fold' | 'blob', shape: string): AvatarConfig => {
     const { character: _character, ...existing } = c;
     const color = hexAppearance(customColorValue);
     return {
@@ -156,20 +121,15 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               preset: 'bloom',
               selections: {
                 eyes: selectedEyes,
-                ...((capabilities?.selected.eyewear ??
-                c.character?.selections?.eyewear)
+                ...((capabilities?.selected.eyewear ?? c.character?.selections?.eyewear)
                   ? {
-                      eyewear:
-                        capabilities?.selected.eyewear ??
-                        c.character?.selections?.eyewear,
+                      eyewear: capabilities?.selected.eyewear ?? c.character?.selections?.eyewear,
                     }
                   : {}),
-                ...((capabilities?.selected.accessory ??
-                c.character?.selections?.accessory)
+                ...((capabilities?.selected.accessory ?? c.character?.selections?.accessory)
                   ? {
                       accessory:
-                        capabilities?.selected.accessory ??
-                        c.character?.selections?.accessory,
+                        capabilities?.selected.accessory ?? c.character?.selections?.accessory,
                     }
                   : {}),
               },
@@ -195,8 +155,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     : undefined;
   const shapeValue = beta
     ? (capabilities?.selected.shape ?? c.character?.selections?.shape)
-    : (nativeShape ??
-      `legacy:${c.family}:${c.family === 'fold' ? c.foldShape : c.shape}`);
+    : (nativeShape ?? `legacy:${c.family}:${c.family === 'fold' ? c.foldShape : c.shape}`);
   const selectShape = (id: string) => {
     if (id.startsWith('legacy:')) {
       const [, family, shape] = id.split(':');
@@ -212,18 +171,13 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
         label: messages.characterOption('eyes', id, title),
         config: characterConfig('eyes', id),
         thumbnail: `${thumbnailBase}thumbnails/eyes/${id}.png`,
-        disabled:
-          !capabilities || capabilities.available[`eyes:${id}`] === false,
+        disabled: !capabilities || capabilities.available[`eyes:${id}`] === false,
       }))
     : undefined;
   const appearance = (patch: Partial<AvatarConfig>) => {
     const { character: _character, ...procedural } = c;
-    const character =
-      c.character?.preset === 'bloom' ? { ...c.character } : undefined;
-    if (
-      character &&
-      ('hue' in patch || 'saturation' in patch || 'lightness' in patch)
-    )
+    const character = c.character?.preset === 'bloom' ? { ...c.character } : undefined;
+    if (character && ('hue' in patch || 'saturation' in patch || 'lightness' in patch))
       delete character.bodyColor;
     onChange({
       ...agent,
@@ -236,16 +190,11 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     });
   };
   return (
-    <AgentCreatorCopyContext.Provider
-      value={{ locale: props.locale, labels: props.labels }}
-    >
+    <AgentCreatorCopyContext.Provider value={{ locale: props.locale, labels: props.labels }}>
       <StyledView
         {...directionProps}
         accessibilityLabel={messages.editor}
-        className={
-          className ??
-          'flex h-full min-h-0 flex-col bg-background-full ps-1 pe-2'
-        }
+        className={className ?? 'flex h-full min-h-0 flex-col bg-background-full ps-1 pe-2'}
         style={[
           {
             flex: 1,
@@ -294,8 +243,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 position: 'absolute',
                 left: '50%',
                 top: 30,
-                transform:
-                  Platform.OS === 'web' ? undefined : [{ translateX: -134 }],
+                transform: Platform.OS === 'web' ? undefined : [{ translateX: -134 }],
                 zIndex: 10,
               }}
             >
@@ -306,9 +254,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 choices={eyeChoices}
                 backgroundColor={eyeBackground}
                 value={runtimeUrl ? selectedEyes : undefined}
-                onSelect={
-                  runtimeUrl ? (id) => selectCharacter('eyes', id) : undefined
-                }
+                onSelect={runtimeUrl ? (id) => selectCharacter('eyes', id) : undefined}
               />
             </StyledView>
             <StyledView
@@ -318,8 +264,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 position: 'absolute',
                 left: '50%',
                 top: 83,
-                transform:
-                  Platform.OS === 'web' ? undefined : [{ translateX: -81 }],
+                transform: Platform.OS === 'web' ? undefined : [{ translateX: -81 }],
               }}
             >
               <AgentAvatar
@@ -342,9 +287,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 onChange={(foldShape) =>
                   appearance({
                     foldShape,
-                    ...(c.family === 'alien'
-                      ? { family: 'fold' as const }
-                      : {}),
+                    ...(c.family === 'alien' ? { family: 'fold' as const } : {}),
                   })
                 }
                 choices={shapeChoices}
@@ -355,10 +298,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
           </StyledView>
           {runtimeUrl && (
             <StyledView className="mt-2 flex-row justify-center gap-2">
-              <Button
-                size="xs"
-                onPress={() => setReactionKey((key) => key + 1)}
-              >
+              <Button size="xs" onPress={() => setReactionKey((key) => key + 1)}>
                 {messages.reaction}
               </Button>
               <Button size="xs" onPress={() => setWorkingKey((key) => key + 1)}>
@@ -370,8 +310,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
             character={c.character ?? { preset: 'bloom' }}
             capabilitiesKey={key}
             onChange={(character) => {
-              if (character)
-                onChange({ ...agent, avatar: { ...c, character } });
+              if (character) onChange({ ...agent, avatar: { ...c, character } });
               else appearance({});
             }}
           />
@@ -389,16 +328,12 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               {!beta &&
                 AVATAR_COLORS.map(([hue, saturation, name, center, edge]) => {
                   const active =
-                    c.hue === hue &&
-                    c.saturation === saturation &&
-                    c.lightness === undefined;
+                    c.hue === hue && c.saturation === saturation && c.lightness === undefined;
                   return (
                     <StyledPressable
                       key={name}
                       accessibilityRole="button"
-                      accessibilityLabel={messages.avatarColorLabel(
-                        messages.colors[name],
-                      )}
+                      accessibilityLabel={messages.avatarColorLabel(messages.colors[name])}
                       accessibilityState={{ selected: active }}
                       aria-pressed={active}
                       onPress={() =>
@@ -417,13 +352,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 })}
               {beta &&
                 CHARACTER_OPTIONS.color.map(([id, title]) => {
-                  const active =
-                    !c.character?.bodyColor &&
-                    capabilities?.selected.color === id;
+                  const active = !c.character?.bodyColor && capabilities?.selected.color === id;
                   const hex = CHARACTER_COLORS[id];
-                  const disabled =
-                    !capabilities ||
-                    capabilities.available[`color:${id}`] === false;
+                  const disabled = !capabilities || capabilities.available[`color:${id}`] === false;
                   return (
                     <StyledPressable
                       key={id}
@@ -445,9 +376,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               <Popover>
                 <PopoverTrigger asChild label={messages.customColor}>
                   <StyledPressable
-                    aria-pressed={
-                      beta ? Boolean(c.character?.bodyColor) : undefined
-                    }
+                    aria-pressed={beta ? Boolean(c.character?.bodyColor) : undefined}
                     accessibilityState={{
                       selected: beta && Boolean(c.character?.bodyColor),
                     }}
@@ -570,9 +499,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   fieldStyle={{ height: 62 }}
                   style={{ height: 62 }}
                   value={agent.description}
-                  onChangeText={(description) =>
-                    onChange({ ...agent, description })
-                  }
+                  onChangeText={(description) => onChange({ ...agent, description })}
                   placeholder={messages.descriptionPlaceholder}
                 />
               </StyledView>

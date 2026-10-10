@@ -56,7 +56,9 @@ function leaves(value: unknown, path = ''): Map<string, Leaf> {
     // runtime check cannot read it, so it tries counts at even positions first
     // (the common `(n)` / `(name, n)` shapes) and all-strings second. A catalog
     // entry that renders under neither is broken for real callers too.
-    const numeric = Array.from({ length: fn.length }, (_, index) => (index % 2 === 0 ? 3 : `«${index}»`));
+    const numeric = Array.from({ length: fn.length }, (_, index) =>
+      index % 2 === 0 ? 3 : `«${index}»`,
+    );
     const textual = Array.from({ length: fn.length }, (_, index) => `«${index}»`);
     let rendered: unknown;
     try {
@@ -74,15 +76,30 @@ function leaves(value: unknown, path = ''): Map<string, Leaf> {
 }
 
 const isCatalog = (value: unknown): value is MessageCatalog<unknown> =>
-  Boolean(value) && typeof value === 'object' && typeof (value as { id?: unknown }).id === 'string' && 'en' in (value as object);
+  Boolean(value) &&
+  typeof value === 'object' &&
+  typeof (value as { id?: unknown }).id === 'string' &&
+  'en' in (value as object);
 
-const catalogs: { name: string; exportName: string; source: MessageCatalog<unknown>; catalog: Record<string, unknown> }[] = [];
+const catalogs: {
+  name: string;
+  exportName: string;
+  source: MessageCatalog<unknown>;
+  catalog: Record<string, unknown>;
+}[] = [];
 for (const file of catalogFiles()) {
   const module = require(file) as Record<string, unknown>;
   for (const [name, value] of Object.entries(module)) {
     if (isCatalog(value)) {
-      const catalog = Object.fromEntries(BLOOM_LANGUAGES.map((language) => [language, pickMessages(value, language)]));
-      catalogs.push({ name: `${relative(SRC, file)}#${name}`, exportName: name, source: value, catalog });
+      const catalog = Object.fromEntries(
+        BLOOM_LANGUAGES.map((language) => [language, pickMessages(value, language)]),
+      );
+      catalogs.push({
+        name: `${relative(SRC, file)}#${name}`,
+        exportName: name,
+        source: value,
+        catalog,
+      });
     }
   }
 }
@@ -98,54 +115,79 @@ const SHARED_WORDS = [
 describe('message catalogs', () => {
   it('finds the catalogs (control: the common words and the date-picker at least)', () => {
     const names = catalogs.map((c) => c.name);
-    expect(names).toEqual(expect.arrayContaining([
-      'locale/common-messages.ts#COMMON_MESSAGES',
-      'date-picker/messages.ts#DATE_PICKER_MESSAGES',
-    ]));
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'locale/common-messages.ts#COMMON_MESSAGES',
+        'date-picker/messages.ts#DATE_PICKER_MESSAGES',
+      ]),
+    );
   });
 
   it('pins shared-word exceptions to existing identical translations', () => {
     for (const entry of SHARED_WORDS) {
-      const catalog = catalogs.find(item => item.name === entry.catalog)?.catalog;
+      const catalog = catalogs.find((item) => item.name === entry.catalog)?.catalog;
       expect(catalog).toBeDefined();
       expect(leaves(catalog?.en).get(entry.path)).toBe(entry.text);
       expect(leaves(catalog?.[entry.language]).get(entry.path)).toBe(entry.text);
     }
   });
 
-  describe.each(catalogs.map((c) => [c.name, c.catalog, c] as const))('%s', (_name, catalog, found) => {
-    const english = leaves(catalog.en);
+  describe.each(catalogs.map((c) => [c.name, c.catalog, c] as const))(
+    '%s',
+    (_name, catalog, found) => {
+      const english = leaves(catalog.en);
 
-    it('carries English only, under its own name as id', () => {
-      expect(Object.keys(found.source).sort()).toEqual(['en', 'id']);
-      expect(found.source.id).toBe(found.exportName);
-    });
+      it('carries English only, under its own name as id', () => {
+        expect(Object.keys(found.source).sort()).toEqual(['en', 'id']);
+        expect(found.source.id).toBe(found.exportName);
+      });
 
-    it('is translated in every language module', () => {
-      for (const language of BLOOM_LANGUAGES) {
-        if (language === 'en') continue;
-        const module = require(`../locale/translations/${language}`) as { default: Translations };
-        expect({ language, present: found.source.id in module.default }).toEqual({ language, present: true });
-      }
-    });
-
-    it('has the same shape in every language, and every entry renders a string', () => {
-      for (const language of BLOOM_LANGUAGES) {
-        const own = leaves(catalog[language]);
-        expect([...own.keys()].sort()).toEqual([...english.keys()].sort());
-        for (const [path, text] of own) {
-          expect({ language, path, ok: text.trim().length > 0 && !text.startsWith('<') }).toEqual({ language, path, ok: true });
+      it('is translated in every language module', () => {
+        for (const language of BLOOM_LANGUAGES) {
+          if (language === 'en') continue;
+          const module = require(`../locale/translations/${language}`) as { default: Translations };
+          expect({ language, present: found.source.id in module.default }).toEqual({
+            language,
+            present: true,
+          });
         }
-      }
-    });
+      });
 
-    it('is translated, not English pasted in', () => {
-      for (const language of BLOOM_LANGUAGES) {
-        if (language === 'en') continue;
-        const own = leaves(catalog[language]);
-        const same = [...own].filter(([path, text]) => english.get(path) === text && !SHARED_WORDS.some(entry => entry.catalog === _name && entry.language === language && entry.path === path && entry.text === text)).map(([path]) => path);
-        expect({ language, same: same.length > own.size / 4 ? same : [] }).toEqual({ language, same: [] });
-      }
-    });
-  });
+      it('has the same shape in every language, and every entry renders a string', () => {
+        for (const language of BLOOM_LANGUAGES) {
+          const own = leaves(catalog[language]);
+          expect([...own.keys()].sort()).toEqual([...english.keys()].sort());
+          for (const [path, text] of own) {
+            expect({ language, path, ok: text.trim().length > 0 && !text.startsWith('<') }).toEqual(
+              { language, path, ok: true },
+            );
+          }
+        }
+      });
+
+      it('is translated, not English pasted in', () => {
+        for (const language of BLOOM_LANGUAGES) {
+          if (language === 'en') continue;
+          const own = leaves(catalog[language]);
+          const same = [...own]
+            .filter(
+              ([path, text]) =>
+                english.get(path) === text &&
+                !SHARED_WORDS.some(
+                  (entry) =>
+                    entry.catalog === _name &&
+                    entry.language === language &&
+                    entry.path === path &&
+                    entry.text === text,
+                ),
+            )
+            .map(([path]) => path);
+          expect({ language, same: same.length > own.size / 4 ? same : [] }).toEqual({
+            language,
+            same: [],
+          });
+        }
+      });
+    },
+  );
 });

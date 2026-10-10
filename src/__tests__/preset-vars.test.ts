@@ -128,9 +128,9 @@ describe('getResolvedTokens (single canonical rgb pipeline)', () => {
           const value = resolved[key] ?? '';
           // A bare triple (`185 50% 5%`) is INVALID CSS — the incident. Every
           // base token must come out as a complete color the browser parses.
-          expect(value.startsWith('rgb(') || value.startsWith('hsl(') || value.startsWith('#')).toBe(
-            true,
-          );
+          expect(
+            value.startsWith('rgb(') || value.startsWith('hsl(') || value.startsWith('#'),
+          ).toBe(true);
           // Never a bare HSL triple.
           expect(/^-?\d[\d.]*\s+[\d.]+%/.test(value)).toBe(false);
         }

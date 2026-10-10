@@ -37,14 +37,9 @@ describe('areToastsEqual', () => {
 
   it('compares icon and jsx by reference', () => {
     const icon = React.createElement('Icon');
+    expect(areToastsEqual(baseToast({ icon }), baseToast({ icon }))).toBe(true);
     expect(
-      areToastsEqual(baseToast({ icon }), baseToast({ icon })),
-    ).toBe(true);
-    expect(
-      areToastsEqual(
-        baseToast({ icon }),
-        baseToast({ icon: React.createElement('Icon') }),
-      ),
+      areToastsEqual(baseToast({ icon }), baseToast({ icon: React.createElement('Icon') })),
     ).toBe(false);
   });
 
@@ -54,9 +49,7 @@ describe('areToastsEqual', () => {
       loading: 'Saving…',
       error: 'Failed',
     };
-    expect(
-      areToastsEqual(baseToast({ promiseOptions }), baseToast({ promiseOptions })),
-    ).toBe(true);
+    expect(areToastsEqual(baseToast({ promiseOptions }), baseToast({ promiseOptions }))).toBe(true);
     expect(
       areToastsEqual(
         baseToast({ promiseOptions }),
@@ -85,14 +78,9 @@ describe('areToastsEqual', () => {
 
   it('compares a rendered action node by reference', () => {
     const action = React.createElement('Button');
-    expect(areToastsEqual(baseToast({ action }), baseToast({ action }))).toBe(
-      true,
-    );
+    expect(areToastsEqual(baseToast({ action }), baseToast({ action }))).toBe(true);
     expect(
-      areToastsEqual(
-        baseToast({ action }),
-        baseToast({ action: React.createElement('Button') }),
-      ),
+      areToastsEqual(baseToast({ action }), baseToast({ action: React.createElement('Button') })),
     ).toBe(false);
   });
 

@@ -21,18 +21,18 @@ import {
 
 const meta: Meta<typeof ComposerPanel> = {
   argTypes: {
-    "value": { control: 'text' },
-    "defaultValue": { control: 'text' },
-    "disabled": { control: 'boolean' },
-    "placeholder": { control: 'text' },
-    "permission": { control: 'text' },
-    "defaultPermission": { control: 'text' },
-    "model": { control: 'text' },
-    "defaultModel": { control: 'text' },
-    "effort": { control: 'number' },
-    "defaultEffort": { control: 'number' },
-    "listening": { control: 'boolean' },
-    "defaultListening": { control: 'boolean' }
+    value: { control: 'text' },
+    defaultValue: { control: 'text' },
+    disabled: { control: 'boolean' },
+    placeholder: { control: 'text' },
+    permission: { control: 'text' },
+    defaultPermission: { control: 'text' },
+    model: { control: 'text' },
+    defaultModel: { control: 'text' },
+    effort: { control: 'number' },
+    defaultEffort: { control: 'number' },
+    listening: { control: 'boolean' },
+    defaultListening: { control: 'boolean' },
   },
   title: 'Blocks/Composer Panel',
   component: ComposerPanel,
@@ -113,11 +113,20 @@ const PROVIDERS: ModelPickerProvider[] = [
   },
   { id: 'jina', name: 'Jina', models: [{ id: 'jina/embeddings-v4', name: 'Embeddings v4' }] },
   { id: 'ollama', name: 'Ollama', models: [{ id: 'ollama/gemma-4', name: 'Gemma 4' }] },
-  { id: 'google', name: 'Google', models: [{ id: 'google/gemini-3.5-pro', name: 'Gemini 3.5 Pro' }] },
-  { id: 'mistral', name: 'Mistral', models: [{ id: 'mistral/mistral-large-3', name: 'Mistral Large 3' }] },
+  {
+    id: 'google',
+    name: 'Google',
+    models: [{ id: 'google/gemini-3.5-pro', name: 'Gemini 3.5 Pro' }],
+  },
+  {
+    id: 'mistral',
+    name: 'Mistral',
+    models: [{ id: 'mistral/mistral-large-3', name: 'Mistral Large 3' }],
+  },
 ];
 
-const PHOTO = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTIiIGhlaWdodD0iMTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmNTllMGIiLz48c3RvcCBvZmZzZXQ9IjAuNSIgc3RvcC1jb2xvcj0iI2VmNDQ0NCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYzNjZmMSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMTIiIGhlaWdodD0iMTEyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iNzgiIGN5PSIzNCIgcj0iMTQiIGZpbGw9IiNmZGU2OGEiLz48cGF0aCBkPSJNMCA5MCBMNDAgNTggTDcwIDgwIEwxMTIgNTAgTDExMiAxMTIgTDAgMTEyIFoiIGZpbGw9IiMxZTI5M2IiIG9wYWNpdHk9IjAuNyIvPjwvc3ZnPg==';
+const PHOTO =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTIiIGhlaWdodD0iMTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmNTllMGIiLz48c3RvcCBvZmZzZXQ9IjAuNSIgc3RvcC1jb2xvcj0iI2VmNDQ0NCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYzNjZmMSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMTIiIGhlaWdodD0iMTEyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iNzgiIGN5PSIzNCIgcj0iMTQiIGZpbGw9IiNmZGU2OGEiLz48cGF0aCBkPSJNMCA5MCBMNDAgNTggTDcwIDgwIEwxMTIgNTAgTDExMiAxMTIgTDAgMTEyIFoiIGZpbGw9IiMxZTI5M2IiIG9wYWNpdHk9IjAuNyIvPjwvc3ZnPg==';
 
 const STATUS = <ComposerPanelStatusTab branch="Main" project="project-sea" context={57} />;
 
@@ -171,7 +180,9 @@ export const Attachments: Story = {
           providers={PROVIDERS}
           status={STATUS}
           attachments={files}
-          onRemoveAttachment={(id) => setFiles((current) => current.filter((file) => file.id !== id))}
+          onRemoveAttachment={(id) =>
+            setFiles((current) => current.filter((file) => file.id !== id))
+          }
         />
       </Frame>
     );
@@ -188,9 +199,16 @@ export const FailedAttachments: Story = {
       { id: 'brief', name: 'Brief.docx', kind: 'document' },
     ]);
     const retry = (id: string) => {
-      setFiles((current) => current.map((file) => (file.id === id ? { ...file, error: undefined, progress: 30 } : file)));
+      setFiles((current) =>
+        current.map((file) =>
+          file.id === id ? { ...file, error: undefined, progress: 30 } : file,
+        ),
+      );
       setTimeout(
-        () => setFiles((current) => current.map((file) => (file.id === id ? { ...file, progress: undefined } : file))),
+        () =>
+          setFiles((current) =>
+            current.map((file) => (file.id === id ? { ...file, progress: undefined } : file)),
+          ),
         1200,
       );
     };
@@ -202,7 +220,9 @@ export const FailedAttachments: Story = {
           status={STATUS}
           attachments={files}
           onAttachmentRetry={retry}
-          onRemoveAttachment={(id) => setFiles((current) => current.filter((file) => file.id !== id))}
+          onRemoveAttachment={(id) =>
+            setFiles((current) => current.filter((file) => file.id !== id))
+          }
         />
       </Frame>
     );
@@ -234,20 +254,34 @@ export const UploadQueue: Story = {
 
 /** A turn in flight: send greyed out, the mic listening. */
 export const Disabled: Story = {
-  args: { disabled: true, defaultListening: true, defaultValue: "Summarise the Q3 numbers and draft the board update.", defaultModel: "anthropic/opus-5", defaultPermission: "plan" },
-  parameters: { controls: { include: ["disabled","defaultListening","defaultValue","defaultModel","defaultPermission","value","placeholder","permission","model","effort","defaultEffort","listening"] } },
+  args: {
+    disabled: true,
+    defaultListening: true,
+    defaultValue: 'Summarise the Q3 numbers and draft the board update.',
+    defaultModel: 'anthropic/opus-5',
+    defaultPermission: 'plan',
+  },
+  parameters: {
+    controls: {
+      include: [
+        'disabled',
+        'defaultListening',
+        'defaultValue',
+        'defaultModel',
+        'defaultPermission',
+        'value',
+        'placeholder',
+        'permission',
+        'model',
+        'effort',
+        'defaultEffort',
+        'listening',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <ComposerPanel {...args}
-        testID="composer"
-
-
-
-        providers={PROVIDERS}
-
-
-        status={STATUS}
-      />
+      <ComposerPanel {...args} testID="composer" providers={PROVIDERS} status={STATUS} />
     </Frame>
   ),
 };
@@ -308,7 +342,13 @@ export const Pill: Story = {
     <View style={{ maxWidth: '100%', paddingTop: 380, width: 700, gap: 10 }}>
       <ComposerPill testID="pill" models={PILL_MODELS} defaultModel="Fable 5" />
       <View style={{ paddingLeft: 6, paddingRight: 6 }}>
-        <ComposerStatusBar branch="Main" folders={FOLDERS} mode="Agent" context={57} testID="status" />
+        <ComposerStatusBar
+          branch="Main"
+          folders={FOLDERS}
+          mode="Agent"
+          context={57}
+          testID="status"
+        />
       </View>
     </View>
   ),
@@ -322,12 +362,22 @@ export const PillGlass: Story = {
     return (
       <View style={{ maxWidth: '100%', width: 700, gap: 16 }}>
         <View style={{ alignSelf: 'flex-start' }}>
-          <Button size="sm" onPress={() => setWorking((w) => !w)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setWorking((w) => !w)}
+            appearance="outline"
+            tone="neutral"
+          >
             {working ? 'Stop working' : 'Start working'}
           </Button>
         </View>
         <ComposerLoader active={working}>
-          <ComposerPill surface={false} glass={working} models={PILL_MODELS} defaultModel="Fable 5" />
+          <ComposerPill
+            surface={false}
+            glass={working}
+            models={PILL_MODELS}
+            defaultModel="Fable 5"
+          />
         </ComposerLoader>
       </View>
     );
@@ -340,7 +390,11 @@ export const PillStates: Story = {
   render: () => (
     <View style={{ maxWidth: '100%', width: 520, gap: 16 }}>
       <ComposerPill models={PILL_MODELS} defaultListening />
-      <ComposerPill models={PILL_MODELS} disabled defaultValue="A long message that runs past the end of the field and fades out" />
+      <ComposerPill
+        models={PILL_MODELS}
+        disabled
+        defaultValue="A long message that runs past the end of the field and fades out"
+      />
     </View>
   ),
 };
@@ -395,8 +449,18 @@ export const PillModelIdentity: Story = {
     const [model, setModel] = useState('oxy/fable-5');
     return (
       <View style={{ paddingTop: 380, width: 700, gap: 16 }}>
-        <ComposerPill models={PILL_MODELS_BY_ID} model={model} onModelChange={setModel} effort={null} />
-        <ComposerPill models={PILL_MODELS_BY_ID} model={model} onModelChange={setModel} effortLevels={[]} />
+        <ComposerPill
+          models={PILL_MODELS_BY_ID}
+          model={model}
+          onModelChange={setModel}
+          effort={null}
+        />
+        <ComposerPill
+          models={PILL_MODELS_BY_ID}
+          model={model}
+          onModelChange={setModel}
+          effortLevels={[]}
+        />
       </View>
     );
   },

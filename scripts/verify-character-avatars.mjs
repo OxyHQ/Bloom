@@ -5,9 +5,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:6006';
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
@@ -44,40 +42,23 @@ try {
       onError: (e) => (window.fail = String(e)),
     });
   });
-  await page.waitForFunction(
-    () => window.ready || window.fail,
-    {},
-    { timeout: 30000 },
-  );
+  await page.waitForFunction(() => window.ready || window.fail, {}, { timeout: 30000 });
   assert.equal(await page.evaluate(() => window.fail), undefined);
   await page.locator('canvas').first().click();
-  assert.equal(
-    await page.evaluate(() => control.diagnostics().lastReaction),
-    0,
-  );
+  assert.equal(await page.evaluate(() => control.diagnostics().lastReaction), 0);
   await page.evaluate(() => {
     props = { ...props, workingKey: 1 };
     control.update(props);
   });
   await page.waitForTimeout(300);
-  assert.equal(
-    await page.evaluate(() => control.diagnostics().activityMode),
-    true,
-  );
+  assert.equal(await page.evaluate(() => control.diagnostics().activityMode), true);
   assert.equal(
     await page.evaluate(() => control.diagnostics().lastActivityResult),
     0,
     'The original engine must accept the working activity',
   );
-  await page.waitForFunction(
-    () => !control.diagnostics().activityMode,
-    {},
-    { timeout: 30000 },
-  );
-  assert.equal(
-    await page.evaluate(() => control.diagnostics().activityMode),
-    false,
-  );
+  await page.waitForFunction(() => !control.diagnostics().activityMode, {}, { timeout: 30000 });
+  assert.equal(await page.evaluate(() => control.diagnostics().activityMode), false);
   await page.evaluate(() => {
     props = { ...props, paused: true };
     control.update(props);
@@ -120,11 +101,7 @@ try {
     };
     control.update(props);
   });
-  await page.waitForFunction(
-    () => runtime.runtimeStats().active === 0,
-    {},
-    { timeout: 30000 },
-  );
+  await page.waitForFunction(() => runtime.runtimeStats().active === 0, {}, { timeout: 30000 });
   await page.evaluate(() => {
     window.checkTransition = false;
   });
@@ -173,8 +150,7 @@ try {
     control.update(props);
   });
   await page.waitForFunction(
-    () =>
-      !control.diagnostics().pending && runtime.runtimeStats().instances === 0,
+    () => !control.diagnostics().pending && runtime.runtimeStats().instances === 0,
     {},
     { timeout: 30000 },
   );
@@ -228,11 +204,7 @@ try {
       );
     }
   });
-  await page.waitForFunction(
-    () => completed === 24 || failures.length,
-    {},
-    { timeout: 60000 },
-  );
+  await page.waitForFunction(() => completed === 24 || failures.length, {}, { timeout: 60000 });
   await page.waitForTimeout(100);
   const portraits = await page.evaluate(() => ({
     completed,
@@ -248,11 +220,7 @@ try {
   }));
   assert.equal(portraits.completed, 24);
   assert.deepEqual(portraits.failures, []);
-  assert.equal(
-    portraits.stats.instances,
-    0,
-    'Static previews must release their engine/context',
-  );
+  assert.equal(portraits.stats.instances, 0, 'Static previews must release their engine/context');
   assert.equal(portraits.stats.active, 0);
   assert.equal(portraits.canvases, 24);
   assert.ok(

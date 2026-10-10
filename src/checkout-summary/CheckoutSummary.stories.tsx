@@ -122,11 +122,13 @@ export const NothingChosen: Story = {
         address={undefined}
         delivery={{ label: 'Delivery window', placeholder: 'Choose a window', onPress: () => {} }}
         note={{ label: 'Note for the shop', placeholder: 'Add a note', onPress: () => {} }}
-        extras={[
-          { label: 'Deliver to', placeholder: 'Choose an address', onPress: () => {} },
-        ]}
+        extras={[{ label: 'Deliver to', placeholder: 'Choose an address', onPress: () => {} }]}
         price={{ lines: LINES, total: { label: 'Total', amount: '€49.62', state: 'estimated' } }}
-        confirm={{ amount: '€49.62', disabled: true, terms: 'Choose an address and a window first.' }}
+        confirm={{
+          amount: '€49.62',
+          disabled: true,
+          terms: 'Choose an address and a window first.',
+        }}
       />
     </Page>
   ),

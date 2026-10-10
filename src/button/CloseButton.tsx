@@ -7,11 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import {
-  BUTTON_TRANSITION_MS,
-  CLOSE_BUTTON_GEOMETRY,
-  resolveCloseButtonPaint,
-} from './shared';
+import { BUTTON_TRANSITION_MS, CLOSE_BUTTON_GEOMETRY, resolveCloseButtonPaint } from './shared';
 import type { CloseButtonProps } from './types';
 
 /**

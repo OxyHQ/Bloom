@@ -11,7 +11,14 @@ import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { formatFileSize } from '../file-upload/shared';
-import { MediaFailure, MediaImage, MediaOverlay, MediaPill, MediaPressable, MediaProgressRing } from './parts';
+import {
+  MediaFailure,
+  MediaImage,
+  MediaOverlay,
+  MediaPill,
+  MediaPressable,
+  MediaProgressRing,
+} from './parts';
 import {
   fileMetaLine,
   fitMedia,
@@ -62,7 +69,14 @@ function VideoNoteRing({
       style={{ position: 'absolute', width: size, height: size, transform: [{ rotate: '-90deg' }] }}
     >
       <Svg width={size} height={size}>
-        <Circle cx={size / 2} cy={size / 2} r={radius} stroke={track} strokeWidth={NOTE_RING} fill="none" />
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={track}
+          strokeWidth={NOTE_RING}
+          fill="none"
+        />
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -136,8 +150,10 @@ function VideoMessageComponent({
     [theme, tone, onColor, bubbleColor],
   );
 
-  const clock = durationLabel ?? (typeof duration === 'number' ? formatDuration(duration) : undefined);
-  const size = sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
+  const clock =
+    durationLabel ?? (typeof duration === 'number' ? formatDuration(duration) : undefined);
+  const size =
+    sizeLabel ?? (typeof sizeBytes === 'number' ? formatFileSize(sizeBytes, locale) : undefined);
   const name = accessibilityLabel ?? fileMetaLine([messages.video, clock]);
   const sending = state === 'sending';
 
@@ -180,15 +196,12 @@ function VideoMessageComponent({
           pointerEvents="none"
           style={{ position: 'absolute', width: diameter, height: diameter }}
         >
-          <VideoNoteRing
-            size={diameter}
-            value={fraction}
-            color={paint.accent}
-            track={paint.rail}
-          />
+          <VideoNoteRing size={diameter} value={fraction} color={paint.accent} track={paint.rail} />
         </View>
         {clock ? (
-          <View style={{ paddingTop: space.sm, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View
+            style={{ paddingTop: space.sm, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+          >
             <Text variant="caption-1-regular" style={{ color: paint.textMuted }}>
               {clock}
             </Text>
@@ -282,7 +295,11 @@ function VideoMessageComponent({
         ) : null}
       </MediaPressable>
       {state === 'failed' ? (
-        <MediaFailure paint={paint} onRetry={onRetry} testID={testID ? `${testID}-failed` : undefined} />
+        <MediaFailure
+          paint={paint}
+          onRetry={onRetry}
+          testID={testID ? `${testID}-failed` : undefined}
+        />
       ) : null}
     </View>
   );

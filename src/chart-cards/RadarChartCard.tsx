@@ -1,6 +1,13 @@
 import { boundedLabelSlot } from './svg-text';
 import React, { useCallback, useMemo } from 'react';
-import { Platform, StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import Svg, { Circle, G, Line, Path } from 'react-native-svg';
 
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -238,7 +245,11 @@ export function RadarChartCard({
     [series, palettes],
   );
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -251,7 +262,8 @@ export function RadarChartCard({
   const totalOf = (key: string) => data.reduce((sum, row) => sum + valueOf(row, key), 0);
   const hovering = activeIndex !== null;
   const domainMax =
-    maxOverride ?? (isScore ? 100 : Math.max(1, ...series.flatMap((s) => data.map((row) => valueOf(row, s.key)))));
+    maxOverride ??
+    (isScore ? 100 : Math.max(1, ...series.flatMap((s) => data.map((row) => valueOf(row, s.key)))));
 
   const headlineValue = primary
     ? hovering
@@ -261,7 +273,10 @@ export function RadarChartCard({
   const headerLabel = hovering ? String(data[activeIndex]?.label ?? label) : label;
 
   const score = primary ? Math.round(totalOf(primary.key) / Math.max(1, data.length)) : 0;
-  const caption = typeof scoreCaption === 'function' ? scoreCaption(score) : (scoreCaption ?? defaultRadarScoreCaption(score));
+  const caption =
+    typeof scoreCaption === 'function'
+      ? scoreCaption(score)
+      : (scoreCaption ?? defaultRadarScoreCaption(score));
 
   const legendItems =
     series.length > 1
@@ -273,18 +288,24 @@ export function RadarChartCard({
       : null;
   const overlayLegend = legendItems !== null && legend === 'overlay';
 
-  const values = useMemo(() => series.flatMap((s) => data.map((row) => valueOf(row, s.key))), [series, data]);
+  const values = useMemo(
+    () => series.flatMap((s) => data.map((row) => valueOf(row, s.key))),
+    [series, data],
+  );
   const radiusTicks = useMemo(() => fixedDomainTicks(0, domainMax, RADIUS_TICK_COUNT), [domainMax]);
   // The polygons animate in pixels, so a new ceiling morphs them too (recharts keeps `prevPoints`).
   const anim = useChartProgress(useMemo(() => [...values, domainMax], [values, domainMax]));
 
   const labelEase = useWebTransition('color', 150);
-  const cardShadow = theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14)' : '0 1px 1px 0 rgb(0 0 0 / 0.05)';
+  const cardShadow = theme.isDark
+    ? '0 1px 1px 0 rgb(0 0 0 / 0.14)'
+    : '0 1px 1px 0 rgb(0 0 0 / 0.05)';
   // `bg-background-inner-default backdrop-blur-[2px]`: in dark mode the inner surface is
   // canonical inner surface at 60%, so the polygon shows through, softened.
   const discStyle = useMemo<WebCssStyle>(() => {
     const n800 = parseRgba(palette.inner);
-    const backgroundColor = theme.isDark && n800 ? `rgba(${n800.r}, ${n800.g}, ${n800.b}, 0.6)` : palette.inner;
+    const backgroundColor =
+      theme.isDark && n800 ? `rgba(${n800.r}, ${n800.g}, ${n800.b}, 0.6)` : palette.inner;
     return Platform.OS === 'web'
       ? { backgroundColor, backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)' }
       : { backgroundColor };
@@ -308,17 +329,30 @@ export function RadarChartCard({
     `${label} ${kind}: ${data.map((row) => String(row.label)).join(', ')}${series.length > 1 ? ` — ${series.map((s) => s.label).join(', ')}` : ''}`;
 
   const plot = (
-    <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, transform: [{ translateY: plotOffsetY }] }}>
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        transform: [{ translateY: plotOffsetY }],
+      }}
+    >
       <PolarSurface
         accessibilityLabel={a11y}
         testID={testID ? `${testID}-plot` : undefined}
         onPointerAt={onPointerAt}
-        onPointerLeave={() => setActiveIndex(null)}>
+        onPointerLeave={() => setActiveIndex(null)}
+      >
         {({ width, height }) => {
           const { cx, cy, outerRadius } = geometryFor(width, height);
           const r = (v: number) => (outerRadius * v) / Math.max(1e-9, domainMax);
-          const axisPoint = (i: number, radius: number) => polarToCartesian(cx, cy, radius, radarAxisAngle(i, count));
-          const targets: PolarPoint[][] = series.map((s) => data.map((row, i) => axisPoint(i, r(valueOf(row, s.key)))));
+          const axisPoint = (i: number, radius: number) =>
+            polarToCartesian(cx, cy, radius, radarAxisAngle(i, count));
+          const targets: PolarPoint[][] = series.map((s) =>
+            data.map((row, i) => axisPoint(i, r(valueOf(row, s.key)))),
+          );
           // recharts animates each vertex from its previous position, or out of the centre.
           const prevMax = anim.from ? anim.from[anim.from.length - 1]! : null;
           const shapes = targets.map((points, s) =>
@@ -336,7 +370,12 @@ export function RadarChartCard({
           const dotted = variant === 'dots' || isScore;
           return (
             <>
-              <Svg width={width} height={height} style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Svg
+                width={width}
+                height={height}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              >
                 <G>
                   {radiusTicks.map((t) => (
                     <Path
@@ -411,8 +450,17 @@ export function RadarChartCard({
                 const nameColor = { color: active ? palette.text : palette.textTertiary };
                 if (!isScore) {
                   return (
-                    <AxisLabel plotWidth={width} key={`label-${i}`} x={at.x} y={at.y + 4 - BASELINE_12} anchor={anchor}>
-                      <Text numberOfLines={1} style={[AXIS_TYPE, nameColor, labelEase, { maxWidth: '100%' }]}>
+                    <AxisLabel
+                      plotWidth={width}
+                      key={`label-${i}`}
+                      x={at.x}
+                      y={at.y + 4 - BASELINE_12}
+                      anchor={anchor}
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={[AXIS_TYPE, nameColor, labelEase, { maxWidth: '100%' }]}
+                      >
                         {String(row.label)}
                       </Text>
                     </AxisLabel>
@@ -425,16 +473,37 @@ export function RadarChartCard({
                 const alert = alertBelow !== undefined && value < alertBelow;
                 return (
                   <React.Fragment key={`label-${i}`}>
-                    <AxisLabel plotWidth={width} x={at.x} y={at.y + base - BASELINE_11} anchor={anchor}>
-                      <Text numberOfLines={1} style={[SCORE_NAME_TYPE, nameColor, labelEase, { maxWidth: '100%' }]}>
+                    <AxisLabel
+                      plotWidth={width}
+                      x={at.x}
+                      y={at.y + base - BASELINE_11}
+                      anchor={anchor}
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={[SCORE_NAME_TYPE, nameColor, labelEase, { maxWidth: '100%' }]}
+                      >
                         {String(row.label)}
                       </Text>
                     </AxisLabel>
-                    <AxisLabel plotWidth={width} x={at.x} y={at.y + base + 17 - BASELINE_16} anchor={anchor}>
+                    <AxisLabel
+                      plotWidth={width}
+                      x={at.x}
+                      y={at.y + base + 17 - BASELINE_16}
+                      anchor={anchor}
+                    >
                       <Text
                         numberOfLines={1}
                         testID={testID ? `${testID}-score-${i}` : undefined}
-                        style={[SCORE_VALUE_TYPE, { maxWidth: '100%', color: alert ? palette.negative.foreground : palette.text }, TABULAR]}>
+                        style={[
+                          SCORE_VALUE_TYPE,
+                          {
+                            maxWidth: '100%',
+                            color: alert ? palette.negative.foreground : palette.text,
+                          },
+                          TABULAR,
+                        ]}
+                      >
                         {format(value)}
                       </Text>
                     </AxisLabel>
@@ -448,7 +517,16 @@ export function RadarChartCard({
       {isScore ? (
         <View
           pointerEvents="none"
-          style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' }}>
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <View
             testID={testID ? `${testID}-score` : undefined}
             style={{
@@ -459,14 +537,19 @@ export function RadarChartCard({
               justifyContent: 'center',
               boxShadow: cardShadow,
               ...discStyle,
-            }}>
-            <Text variant="title-1-medium" style={[{ lineHeight: 24, color: palette.text }, TABULAR]}>
+            }}
+          >
+            <Text
+              variant="title-1-medium"
+              style={[{ lineHeight: 24, color: palette.text }, TABULAR]}
+            >
               {format(score)}
             </Text>
             <Text
               variant="caption-1-medium"
               numberOfLines={1}
-              style={{ marginTop: 4, maxWidth: 72, color: palette.textTertiary }}>
+              style={{ marginTop: 4, maxWidth: 72, color: palette.textTertiary }}
+            >
               {caption}
             </Text>
           </View>
@@ -494,13 +577,26 @@ export function RadarChartCard({
             <ChartLegend
               items={legendItems}
               testID={testID ? `${testID}-legend` : undefined}
-              style={{ minHeight: 32, width: 'auto', maxWidth: '100%', flexShrink: 1, justifyContent: 'flex-end', columnGap: 12 }}
+              style={{
+                minHeight: 32,
+                width: 'auto',
+                maxWidth: '100%',
+                flexShrink: 1,
+                justifyContent: 'flex-end',
+                columnGap: 12,
+              }}
             />
           ) : undefined
         }
       />
 
-      <View style={tiles ? { width: '100%', height: TILES_PLOT_HEIGHT } : { width: '100%', flex: 1, minHeight: 0 }}>
+      <View
+        style={
+          tiles
+            ? { width: '100%', height: TILES_PLOT_HEIGHT }
+            : { width: '100%', flex: 1, minHeight: 0 }
+        }
+      >
         {plot}
         {overlayLegend ? (
           <ChartLegend
@@ -523,7 +619,10 @@ export function RadarChartCard({
         <ChartStatTiles
           testID={testID ? `${testID}-tiles` : undefined}
           // No swatch: every axis belongs to the same (first) series.
-          items={data.map((row) => ({ label: String(row.label), value: format(primary ? valueOf(row, primary.key) : 0) }))}
+          items={data.map((row) => ({
+            label: String(row.label),
+            value: format(primary ? valueOf(row, primary.key) : 0),
+          }))}
           activeIndex={activeIndex}
           onActiveChange={setActiveIndex}
         />

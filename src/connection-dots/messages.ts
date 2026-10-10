@@ -8,6 +8,7 @@ export interface ConnectionDotsMessages {
   connecting: string;
 }
 
-export const CONNECTION_DOTS_MESSAGES: MessageCatalog<ConnectionDotsMessages> = defineMessages<ConnectionDotsMessages>('CONNECTION_DOTS_MESSAGES', {
-  connecting: 'Connecting',
-});
+export const CONNECTION_DOTS_MESSAGES: MessageCatalog<ConnectionDotsMessages> =
+  defineMessages<ConnectionDotsMessages>('CONNECTION_DOTS_MESSAGES', {
+    connecting: 'Connecting',
+  });

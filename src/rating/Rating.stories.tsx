@@ -30,7 +30,15 @@ export const Matrix: Story = {
   render: function RatingMatrix() {
     const theme = useTheme();
     return (
-      <View style={{ gap: 20, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          gap: 20,
+          padding: 16,
+          width: '100%',
+          maxWidth: '100%',
+          backgroundColor: theme.colors.background,
+        }}
+      >
         {(['medium', 'small'] as const).map((size) => (
           <View key={size} style={{ gap: 12 }}>
             <Caption>{size}</Caption>
@@ -68,7 +76,15 @@ export const Breakdown: Story = {
       ['1', 0],
     ];
     return (
-      <View style={{ gap: 24, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          gap: 24,
+          padding: 16,
+          width: '100%',
+          maxWidth: '100%',
+          backgroundColor: theme.colors.background,
+        }}
+      >
         {[300, 560].map((width) => (
           <View key={width} style={{ width, maxWidth: '100%', gap: 16 }}>
             <Caption>{`${width} wide`}</Caption>
@@ -109,7 +125,15 @@ export const Input: Story = {
     const [clean, setClean] = useState<number | null>(null);
     const [outOfTen, setOutOfTen] = useState<number | null>(7);
     return (
-      <View style={{ gap: 24, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          gap: 24,
+          padding: 16,
+          width: '100%',
+          maxWidth: '100%',
+          backgroundColor: theme.colors.background,
+        }}
+      >
         {(['sm', 'md', 'lg'] as const).map((size) => (
           <View key={size} style={{ gap: 8 }}>
             <Caption>{size}</Caption>
@@ -154,11 +178,23 @@ export const Input: Story = {
 };
 
 export const AuthoredSummary: Story = {
-  render: () => <View style={{ width: 360, padding: 24, gap: 16 }}>
-    <Rating value={4.5} variant="stars" showValue={false} starSize={20} testID="summary-stars" />
-    <RatingBar label="5" value={.75} max={1} labelWidth={16} display="75%" testID="summary-rating"
-      className="bloom-demo-rating-row" labelClassName="bloom-demo-rating-label" displayClassName="bloom-demo-rating-label"
-      trackClassName="bloom-demo-rating-track" fillClassName="bloom-demo-rating-fill" />
-    <RatingBar label="Default" value={3} testID="default-rating" />
-  </View>,
+  render: () => (
+    <View style={{ width: 360, padding: 24, gap: 16 }}>
+      <Rating value={4.5} variant="stars" showValue={false} starSize={20} testID="summary-stars" />
+      <RatingBar
+        label="5"
+        value={0.75}
+        max={1}
+        labelWidth={16}
+        display="75%"
+        testID="summary-rating"
+        className="bloom-demo-rating-row"
+        labelClassName="bloom-demo-rating-label"
+        displayClassName="bloom-demo-rating-label"
+        trackClassName="bloom-demo-rating-track"
+        fillClassName="bloom-demo-rating-fill"
+      />
+      <RatingBar label="Default" value={3} testID="default-rating" />
+    </View>
+  ),
 };

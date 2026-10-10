@@ -1,5 +1,12 @@
 import React, { memo, useMemo } from 'react';
-import { Image, Linking, Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import {
+  Image,
+  Linking,
+  Pressable,
+  View,
+  type GestureResponderEvent,
+  type ViewStyle,
+} from 'react-native';
 
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -160,7 +167,11 @@ function WishlistCardComponent({
       <View style={{ marginTop: 12, gap: 2 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           {Icon ? (
-            <View aria-hidden style={{ flexShrink: 0 }} testID={testID ? `${testID}-icon` : undefined}>
+            <View
+              aria-hidden
+              style={{ flexShrink: 0 }}
+              testID={testID ? `${testID}-icon` : undefined}
+            >
               <Icon width={16} height={16} fill={color ?? paint.textSecondary} />
             </View>
           ) : null}

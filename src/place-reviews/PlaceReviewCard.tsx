@@ -15,7 +15,12 @@ import { useContainerWidth } from '../hooks/use-container-width';
 import { Rating, RatingBar } from '../rating';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
-import { HousingCard, HousingToggleButton, useHousingPalette, useHousingWebCss } from '../tenancy/parts';
+import {
+  HousingCard,
+  HousingToggleButton,
+  useHousingPalette,
+  useHousingWebCss,
+} from '../tenancy/parts';
 import { IS_WEB } from '../tenancy/shared';
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
@@ -92,7 +97,8 @@ function PlaceReviewCardComponent({
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const { width, onLayout } = useContainerWidth();
   const wide =
-    layout === 'wide' || (layout === 'auto' && width != null && width >= PLACE_REVIEW_CATEGORIES_WIDE_MIN_WIDTH);
+    layout === 'wide' ||
+    (layout === 'auto' && width != null && width >= PLACE_REVIEW_CATEGORIES_WIDE_MIN_WIDTH);
 
   const [expanded, setExpanded] = useControllableState({
     value: expandedProp,
@@ -113,9 +119,14 @@ function PlaceReviewCardComponent({
   }, []);
   const truncatable = clamps && clampedHeight > 0 && fullHeight > clampedHeight + 1;
 
-  const ring: WebCssStyle = { '--bloom-housing-ring': palette.ring, borderRadius: 4, alignSelf: 'flex-start' };
+  const ring: WebCssStyle = {
+    '--bloom-housing-ring': palette.ring,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  };
 
-  const helpfulText = helpfulCount != null && helpfulCount > 0 ? `${helpfulLabel} · ${helpfulCount}` : helpfulLabel;
+  const helpfulText =
+    helpfulCount != null && helpfulCount > 0 ? `${helpfulLabel} · ${helpfulCount}` : helpfulLabel;
   const cellWidth = wide && width != null ? Math.floor((width - 24) / 2) : undefined;
 
   return (
@@ -124,11 +135,20 @@ function PlaceReviewCardComponent({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           {authorInitial ? <Avatar name={authorInitial} size={40} testID={id('avatar')} /> : null}
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text variant="body-semibold" numberOfLines={1} style={{ color: palette.text }} testID={id('author')}>
+            <Text
+              variant="body-semibold"
+              numberOfLines={1}
+              style={{ color: palette.text }}
+              testID={id('author')}
+            >
               {authorLabel}
             </Text>
             {date ? (
-              <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+              <Text
+                variant="caption-1-regular"
+                numberOfLines={1}
+                style={{ color: palette.textSecondary }}
+              >
                 {date}
               </Text>
             ) : null}
@@ -227,7 +247,10 @@ function PlaceReviewCardComponent({
               style={ring}
               testID={id('toggle')}
             >
-              <Text variant="body-semibold" style={{ color: palette.text, textDecorationLine: 'underline' }}>
+              <Text
+                variant="body-semibold"
+                style={{ color: palette.text, textDecorationLine: 'underline' }}
+              >
                 {expanded ? showLessLabel : showMoreLabel}
               </Text>
             </Pressable>
@@ -263,7 +286,6 @@ function PlaceReviewCardComponent({
             )}
             {onReport ? (
               <LinkButton
-
                 linkTone="secondary"
                 size="sm"
                 leadingIcon={RiFlagLine}

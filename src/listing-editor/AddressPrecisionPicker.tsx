@@ -9,7 +9,11 @@ import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { LISTING_EDITOR_MESSAGES, type ListingEditorMessages } from './messages';
 import { resolveSelectionPaint, SelectionCard } from './SelectionCard';
-import type { AddressPrecision, AddressPrecisionOption, AddressPrecisionPickerProps } from './types';
+import type {
+  AddressPrecision,
+  AddressPrecisionOption,
+  AddressPrecisionPickerProps,
+} from './types';
 
 /**
  * How precisely the published listing shows where the home is: three radio
@@ -37,7 +41,9 @@ import type { AddressPrecision, AddressPrecisionOption, AddressPrecisionPickerPr
 
 const PRECISIONS: ReadonlyArray<AddressPrecision> = ['exact', 'street', 'approximate'];
 
-function precisionOptions(copy: ListingEditorMessages['addressPrecision']): ReadonlyArray<AddressPrecisionOption> {
+function precisionOptions(
+  copy: ListingEditorMessages['addressPrecision'],
+): ReadonlyArray<AddressPrecisionOption> {
   return PRECISIONS.map((value) => ({ value, ...copy[value] }));
 }
 
@@ -45,9 +51,8 @@ function precisionOptions(copy: ListingEditorMessages['addressPrecision']): Read
  * The three cards' English copy. The picker's own default speaks the locale;
  * this stays for callers that build on it.
  */
-export const DEFAULT_ADDRESS_PRECISION_OPTIONS: ReadonlyArray<AddressPrecisionOption> = precisionOptions(
-  LISTING_EDITOR_MESSAGES.en.addressPrecision,
-);
+export const DEFAULT_ADDRESS_PRECISION_OPTIONS: ReadonlyArray<AddressPrecisionOption> =
+  precisionOptions(LISTING_EDITOR_MESSAGES.en.addressPrecision);
 
 interface MapPaint {
   ground: string;
@@ -73,7 +78,13 @@ function resolveMapPaint(theme: Theme): MapPaint {
 }
 
 /** Bloom's placeholder map for one precision. Decorative. */
-export function PrecisionMapPlaceholder({ precision, height }: { precision: AddressPrecision; height: number }) {
+export function PrecisionMapPlaceholder({
+  precision,
+  height,
+}: {
+  precision: AddressPrecision;
+  height: number;
+}) {
   const theme = useTheme();
   const paint = useMemo(() => resolveMapPaint(theme), [theme]);
   const circle = Math.round(height * 0.72);
@@ -113,7 +124,16 @@ export function PrecisionMapPlaceholder({ precision, height }: { precision: Addr
           backgroundColor: precision === 'street' ? paint.accent : paint.road,
         }}
       />
-      <View style={{ position: 'absolute', top: 0, bottom: 0, left: '55%', width: 8, backgroundColor: paint.road }} />
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: '55%',
+          width: 8,
+          backgroundColor: paint.road,
+        }}
+      />
       {precision === 'approximate' ? (
         <View
           style={{
@@ -132,7 +152,9 @@ export function PrecisionMapPlaceholder({ precision, height }: { precision: Addr
         />
       ) : null}
       {precision === 'exact' ? (
-        <View style={{ position: 'absolute', top: '50%', left: '42%', marginTop: -30, marginLeft: -14 }}>
+        <View
+          style={{ position: 'absolute', top: '50%', left: '42%', marginTop: -30, marginLeft: -14 }}
+        >
           <RiMapPin2Fill width={28} height={28} fill={paint.pin} />
         </View>
       ) : null}
@@ -164,12 +186,20 @@ function AddressPrecisionPickerComponent({
   const mapHeight = row ? 112 : 96;
 
   return (
-    <View testID={testID} style={[{ gap: 12 }, style]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+    <View
+      testID={testID}
+      style={[{ gap: 12 }, style]}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
       <View
         role="radiogroup"
         accessibilityLabel={accessibilityLabel}
         aria-disabled={disabled || undefined}
-        style={{ flexDirection: row ? 'row' : 'column', alignItems: row ? 'stretch' : undefined, gap: 12 }}
+        style={{
+          flexDirection: row ? 'row' : 'column',
+          alignItems: row ? 'stretch' : undefined,
+          gap: 12,
+        }}
       >
         {options.map((option) => (
           <SelectionCard
@@ -182,7 +212,13 @@ function AddressPrecisionPickerComponent({
             }}
             title={option.title}
             description={option.description}
-            media={renderMap ? renderMap(option.value) : <PrecisionMapPlaceholder precision={option.value} height={mapHeight} />}
+            media={
+              renderMap ? (
+                renderMap(option.value)
+              ) : (
+                <PrecisionMapPlaceholder precision={option.value} height={mapHeight} />
+              )
+            }
             disabled={disabled}
             style={row ? { flex: 1, flexBasis: 0 } : undefined}
             testID={testID ? `${testID}-${option.value}` : undefined}

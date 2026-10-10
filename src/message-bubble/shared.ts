@@ -414,7 +414,9 @@ export function resolveMessageBubblePaint(theme: Theme): MessageBubblePaint {
     pillFill: colors.backgroundSecondary,
     pillText: colors.textSecondary,
     unread: dark ? accent[400] : accent[600],
-    unreadLine: dark ? mixColor(background, accent[400], 0.4) : mixColor(background, accent[600], 0.35),
+    unreadLine: dark
+      ? mixColor(background, accent[400], 0.4)
+      : mixColor(background, accent[600], 0.35),
     reactionFill: colors.backgroundTertiary,
     reactionText: colors.text,
     reactionMineFill: colors.primarySubtle,

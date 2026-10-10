@@ -9,6 +9,9 @@ export interface FloatingMessages {
   submenu: string;
 }
 
-export const FLOATING_MESSAGES: MessageCatalog<FloatingMessages> = defineMessages<FloatingMessages>('FLOATING_MESSAGES', {
-  submenu: 'Submenu',
-});
+export const FLOATING_MESSAGES: MessageCatalog<FloatingMessages> = defineMessages<FloatingMessages>(
+  'FLOATING_MESSAGES',
+  {
+    submenu: 'Submenu',
+  },
+);

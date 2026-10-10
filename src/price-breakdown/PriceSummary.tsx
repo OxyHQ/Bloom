@@ -10,11 +10,7 @@ import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  PRICE_LINE_GAP,
-  PRICE_PENDING_PLACEHOLDER,
-  PRICE_RULE_SPACING,
-} from './constants';
+import { PRICE_LINE_GAP, PRICE_PENDING_PLACEHOLDER, PRICE_RULE_SPACING } from './constants';
 import { PRICE_BREAKDOWN_MESSAGES } from './messages';
 import { PriceSummaryLine } from './PriceSummaryLine';
 import { resolvePricePaint } from './shared';
@@ -69,7 +65,8 @@ function PriceSummaryComponent({
   const toggle = useCallback(() => setOpen(!open), [open, setOpen]);
 
   const words = { ...messages.states, ...stateLabels };
-  const totalCaveat = total && total.state && total.state !== 'final' ? words[total.state] : undefined;
+  const totalCaveat =
+    total && total.state && total.state !== 'final' ? words[total.state] : undefined;
   const showLines = !collapsible || open;
 
   return (
@@ -102,12 +99,13 @@ function PriceSummaryComponent({
       {collapsible ? (
         <View style={{ alignItems: 'flex-start', paddingTop: showLines ? PRICE_LINE_GAP : 0 }}>
           <Button
-
             size="sm"
             trailingIcon={open ? RiArrowUpSLine : RiArrowDownSLine}
             onPress={toggle}
             aria-expanded={open}
-            testID={testID ? `${testID}-disclosure` : undefined} tone="accent" appearance="plain"
+            testID={testID ? `${testID}-disclosure` : undefined}
+            tone="accent"
+            appearance="plain"
           >
             {open ? collapseLabel : expandLabel}
           </Button>
@@ -147,7 +145,11 @@ function PriceSummaryComponent({
                 <Text
                   variant="body-2-regular"
                   testID={testID ? `${testID}-total-secondary-amount` : undefined}
-                  style={{ color: paint.textSecondary, fontVariant: ['tabular-nums'], textAlign: 'right' }}
+                  style={{
+                    color: paint.textSecondary,
+                    fontVariant: ['tabular-nums'],
+                    textAlign: 'right',
+                  }}
                 >
                   {total.secondaryAmount}
                 </Text>

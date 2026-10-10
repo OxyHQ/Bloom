@@ -15,8 +15,7 @@ import { createElement, type ReactNode } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 interface FakeRoute {
   key: string;
@@ -157,8 +156,6 @@ describe('expo-router scroll adapter', () => {
     const cyclic: Record<string, unknown> = { name: 'loop' };
     cyclic.self = cyclic;
 
-    expect(() =>
-      contentIdFor({ key: 'k', name: 'p', params: { nested: cyclic } }),
-    ).not.toThrow();
+    expect(() => contentIdFor({ key: 'k', name: 'p', params: { nested: cyclic } })).not.toThrow();
   });
 });

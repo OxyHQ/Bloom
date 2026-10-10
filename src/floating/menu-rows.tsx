@@ -98,7 +98,8 @@ function IndicatorGutter({
       {children}
       <StyledView
         className={position === 'leading' ? ROW_INDICATOR_CLASS : ROW_INDICATOR_END_CLASS}
-        pointerEvents="none">
+        pointerEvents="none"
+      >
         {indicator}
       </StyledView>
     </StyledView>
@@ -153,7 +154,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
         accessibilityLabel={accessibilityLabel}
         className={className}
         style={style}
-        testID={testID}>
+        testID={testID}
+      >
         {body}
       </MenuRowShell>
     );
@@ -180,19 +182,13 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     // The selection tick: `size-4 shrink-0 text-text-secondary`.
     const selectedIndicator =
       indicator === undefined ? (
-        <CheckIcon
-          width={ROW_ICON_SIZE}
-          height={ROW_ICON_SIZE}
-          fill={palette.textSecondary}
-        />
+        <CheckIcon width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
       ) : (
         indicator
       );
 
     return (
-      <IndicatorGutter
-        position={indicatorPosition}
-        indicator={checked ? selectedIndicator : null}>
+      <IndicatorGutter position={indicatorPosition} indicator={checked ? selectedIndicator : null}>
         <MenuRowShell
           role="checkbox"
           checked={checked}
@@ -208,7 +204,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           accessibilityLabel={accessibilityLabel}
           className={className}
           style={style}
-          testID={testID}>
+          testID={testID}
+        >
           {body}
         </MenuRowShell>
       </IndicatorGutter>
@@ -253,9 +250,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
       indicator === undefined ? <StyledView className={ROW_RADIO_DOT_CLASS} /> : indicator;
 
     return (
-      <IndicatorGutter
-        position={indicatorPosition}
-        indicator={checked ? selectedIndicator : null}>
+      <IndicatorGutter position={indicatorPosition} indicator={checked ? selectedIndicator : null}>
         <MenuRowShell
           role="radio"
           checked={checked}
@@ -271,7 +266,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           accessibilityLabel={accessibilityLabel}
           className={className}
           style={style}
-          testID={testID}>
+          testID={testID}
+        >
           {body}
         </MenuRowShell>
       </IndicatorGutter>
@@ -298,7 +294,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           menuType('body-medium', className),
           className ? null : { color: palette.textSecondary },
           style,
-        ]}>
+        ]}
+      >
         {children}
       </StyledText>
     );
@@ -331,7 +328,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           menuType('caption-1-medium', className),
           className ? null : { color: palette.textSecondary },
           style,
-        ]}>
+        ]}
+      >
         {children}
       </StyledText>
     );

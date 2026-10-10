@@ -13,10 +13,10 @@ import type { ImportantAlertsCardAlert } from './types';
 
 const meta: Meta<typeof ImportantAlertsCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "countCaption": { control: 'text' },
-    "rangeLabel": { control: 'text' },
-    "height": { control: 'number' }
+    title: { control: 'text' },
+    countCaption: { control: 'text' },
+    rangeLabel: { control: 'text' },
+    height: { control: 'number' },
   },
   title: 'Blocks/Important Alerts',
   component: ImportantAlertsCard,
@@ -71,34 +71,32 @@ const ALERTS: ImportantAlertsCardAlert[] = [
     icon: RiLungsFill,
     tone: 'teal',
     title: 'Low blood oxygen',
-    description: 'Your blood oxygen dipped to 93% for a short period during sleep on the night of 4 June.',
+    description:
+      'Your blood oxygen dipped to 93% for a short period during sleep on the night of 4 June.',
     date: 'June, 5',
   },
 ];
 
 /** The medical dashboard card: 12 this week, the six latest in a scrolling feed. */
 export const Default: Story = {
-  args: { count: 12, rangeLabel: "29 Jun - 5 Jul" },
-  parameters: { controls: { include: ["count","rangeLabel","title","countCaption","height"] } },
+  args: { count: 12, rangeLabel: '29 Jun - 5 Jul' },
+  parameters: { controls: { include: ['count', 'rangeLabel', 'title', 'countCaption', 'height'] } },
   render: (args) => (
     <View style={{ maxWidth: '100%', padding: 40, width: 400 }}>
-      <ImportantAlertsCard {...args} testID="alerts" alerts={ALERTS}   />
+      <ImportantAlertsCard {...args} testID="alerts" alerts={ALERTS} />
     </View>
   ),
 };
 
 /** No range pill, a custom caption, a taller card and an explicit icon colour. */
 export const Customised: Story = {
-  args: { count: "3", title: "Alerts", countCaption: "today", height: 420 },
-  parameters: { controls: { include: ["count","title","countCaption","height","rangeLabel"] } },
+  args: { count: '3', title: 'Alerts', countCaption: 'today', height: 420 },
+  parameters: { controls: { include: ['count', 'title', 'countCaption', 'height', 'rangeLabel'] } },
   render: (args) => (
     <View style={{ maxWidth: '100%', padding: 40, width: 400 }}>
-      <ImportantAlertsCard {...args}
+      <ImportantAlertsCard
+        {...args}
         alerts={[{ ...ALERTS[0]!, iconBackground: '#111827' }, ...ALERTS.slice(1, 3)]}
-
-
-
-
       />
     </View>
   ),
@@ -106,11 +104,11 @@ export const Customised: Story = {
 
 /** A single alert — the feed never reaches the bottom edge, so nothing clips. */
 export const Short: Story = {
-  args: { count: 1, rangeLabel: "29 Jun - 5 Jul" },
-  parameters: { controls: { include: ["count","rangeLabel","title","countCaption","height"] } },
+  args: { count: 1, rangeLabel: '29 Jun - 5 Jul' },
+  parameters: { controls: { include: ['count', 'rangeLabel', 'title', 'countCaption', 'height'] } },
   render: (args) => (
     <View style={{ maxWidth: '100%', padding: 40, width: 400 }}>
-      <ImportantAlertsCard {...args} alerts={ALERTS.slice(0, 1)}   />
+      <ImportantAlertsCard {...args} alerts={ALERTS.slice(0, 1)} />
     </View>
   ),
 };

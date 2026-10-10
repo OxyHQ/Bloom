@@ -44,7 +44,10 @@ import { useFieldMembership } from '../field/membership';
  * caller.
  */
 
-const SIZE_CONFIG: Record<TimeFieldSize, { width: number; height: number; type: 'body-medium' | 'body-2-medium' }> = {
+const SIZE_CONFIG: Record<
+  TimeFieldSize,
+  { width: number; height: number; type: 'body-medium' | 'body-2-medium' }
+> = {
   sm: { width: 96, height: 32, type: 'body-2-medium' },
   md: { width: 104, height: 38, type: 'body-medium' },
 };
@@ -52,7 +55,11 @@ const SIZE_CONFIG: Record<TimeFieldSize, { width: number; height: number; type: 
 /** `transition-colors duration-100 ease-out` on the border. Web only. */
 const FIELD_TRANSITION: WebCssStyle | null =
   Platform.OS === 'web'
-    ? { transitionProperty: 'border-color', transitionDuration: '100ms', transitionTimingFunction: 'ease-out' }
+    ? {
+        transitionProperty: 'border-color',
+        transitionDuration: '100ms',
+        transitionTimingFunction: 'ease-out',
+      }
     : null;
 
 function TimeFieldComponent({

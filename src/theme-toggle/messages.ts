@@ -12,4 +12,11 @@ export interface ThemeToggleMessages {
   useLightMode: string;
 }
 
-export const THEME_TOGGLE_MESSAGES: MessageCatalog<ThemeToggleMessages> = defineMessages<ThemeToggleMessages>('THEME_TOGGLE_MESSAGES', { theme: 'Theme', darkMode: 'Dark mode', lightMode: 'Light mode', useDarkMode: 'Use dark mode', useLightMode: 'Use light mode' });
+export const THEME_TOGGLE_MESSAGES: MessageCatalog<ThemeToggleMessages> =
+  defineMessages<ThemeToggleMessages>('THEME_TOGGLE_MESSAGES', {
+    theme: 'Theme',
+    darkMode: 'Dark mode',
+    lightMode: 'Light mode',
+    useDarkMode: 'Use dark mode',
+    useLightMode: 'Use light mode',
+  });

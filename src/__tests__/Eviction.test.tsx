@@ -98,7 +98,9 @@ describe('EvictionReportCard', () => {
   it('paints executed as a solid neutral badge', () => {
     mount(<EvictionReportCard {...base} status="executed" testID="e" />, 'dark');
     const solid = resolveAccentColors(theme.colors, 'default', 'solid');
-    expect(getComputedStyle(byTestId('e-status')).backgroundColor).toBe(normalise(solid.background));
+    expect(getComputedStyle(byTestId('e-status')).backgroundColor).toBe(
+      normalise(solid.background),
+    );
   });
 
   it('draws the date as a heading and the relative line as given, in the status text colour', () => {
@@ -117,7 +119,12 @@ describe('EvictionReportCard', () => {
 
   it('draws the coarse area and household chips as a list', () => {
     mount(
-      <EvictionReportCard {...base} status="scheduled" household={['Family with minors', 'Elderly person']} testID="e" />,
+      <EvictionReportCard
+        {...base}
+        status="scheduled"
+        household={['Family with minors', 'Elderly person']}
+        testID="e"
+      />,
     );
     expect(byTestId('e-area').textContent).toBe('Carabanchel, Madrid');
     const household = byTestId('e-household');
@@ -128,7 +135,15 @@ describe('EvictionReportCard', () => {
 
   it('the attend toggle keeps its name and carries aria-pressed, and flips on press', () => {
     const onAttendingChange = jest.fn();
-    mount(<EvictionReportCard {...base} status="scheduled" attending={false} onAttendingChange={onAttendingChange} testID="e" />);
+    mount(
+      <EvictionReportCard
+        {...base}
+        status="scheduled"
+        attending={false}
+        onAttendingChange={onAttendingChange}
+        testID="e"
+      />,
+    );
     const toggle = byTestId('e-attend');
     expect(toggle.getAttribute('role')).toBe('button');
     expect(toggle.getAttribute('aria-label')).toBe("I'll be there");
@@ -136,11 +151,21 @@ describe('EvictionReportCard', () => {
     act(() => toggle.click());
     expect(onAttendingChange).toHaveBeenCalledWith(true);
 
-    mount(<EvictionReportCard {...base} status="scheduled" attending onAttendingChange={onAttendingChange} testID="e" />);
+    mount(
+      <EvictionReportCard
+        {...base}
+        status="scheduled"
+        attending
+        onAttendingChange={onAttendingChange}
+        testID="e"
+      />,
+    );
     const on = byTestId('e-attend');
     expect(on.getAttribute('aria-pressed')).toBe('true');
     expect(on.getAttribute('aria-label')).toBe("I'll be there");
-    expect(getComputedStyle(on).backgroundColor).toBe(normalise(resolveHousingPalette(theme).toggleOn));
+    expect(getComputedStyle(on).backgroundColor).toBe(
+      normalise(resolveHousingPalette(theme).toggleOn),
+    );
     expect(getComputedStyle(on).height).toBe('32px');
   });
 
@@ -177,7 +202,12 @@ describe('EvictionTimeline', () => {
       <EvictionTimeline
         testID="h"
         events={[
-          { kind: 'published', title: 'Report published', date: '2 Sep', source: 'Neighbourhood assembly' },
+          {
+            kind: 'published',
+            title: 'Report published',
+            date: '2 Sep',
+            source: 'Neighbourhood assembly',
+          },
           { kind: 'suspended', title: 'Suspended', date: '10 Sep' },
           { kind: 'date-set', title: 'New date', date: '23 Sep', upcoming: true },
         ]}
@@ -191,6 +221,8 @@ describe('EvictionTimeline', () => {
       normalise(resolveAccentColors(theme.colors, 'success', 'solid').background),
     );
     expect(byTestId('h-2-marker').getAttribute('aria-label')).toBe('Not yet');
-    expect(getComputedStyle(byTestId('h-2-marker')).backgroundColor).toBe(normalise(resolveHousingPalette(theme).surface));
+    expect(getComputedStyle(byTestId('h-2-marker')).backgroundColor).toBe(
+      normalise(resolveHousingPalette(theme).surface),
+    );
   });
 });

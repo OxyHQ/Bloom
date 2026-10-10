@@ -51,4 +51,3 @@ export function useSettingsWebCss(): void {
     if (IS_WEB) adoptStyleSheet(STYLE_ID, CSS);
   }, []);
 }
-

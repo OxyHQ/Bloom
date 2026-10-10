@@ -4,7 +4,13 @@ import { mixColor, resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import { quietTextOver } from '../styles/color-contrast';
-import { AA_TEXT, resolveSurfaceLevel, surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
+import {
+  AA_TEXT,
+  resolveSurfaceLevel,
+  surfaceFillOn,
+  hairlineOn,
+  surfaceTextOn,
+} from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import { TYPE_SCALE } from '../typography/scale';
@@ -21,11 +27,9 @@ export const IS_WEB = Platform.OS === 'web';
 /** A header lays its cover beside the text from this container width. */
 export const MEDIA_HEADER_WIDE_MIN_WIDTH = 600;
 
-
 // ---------------------------------------------------------------------------
 //  Contrast
 // ---------------------------------------------------------------------------
-
 
 // ---------------------------------------------------------------------------
 //  The band — every colour a header paints
@@ -113,7 +117,7 @@ export function resolveMediaHeaderPaint(
   const dark = theme.isDark;
   const tinted = tintArtworkColor(artworkColor, dark);
   const fallback = tinted === null;
-  const bandTop = tinted ?? (surfaceFillOn(theme, colors.background));
+  const bandTop = tinted ?? surfaceFillOn(theme, colors.background);
   const bandBottom = mixColor(colors.background, bandTop, 0.55);
 
   const onBand = readableOn([bandTop, bandBottom], [colors.text, colors.background]);
@@ -139,7 +143,11 @@ export function resolveMediaHeaderPaint(
     text: colors.text,
     // Floored on `card` — the harder of the two fills this label lands on. As
     // `neutral-500` it measured 4.38:1 on the light card.
-    textMuted: quietTextOver([colors.background, resolveSurfaceLevel(theme, 1).background], colors.text, AA_TEXT),
+    textMuted: quietTextOver(
+      [colors.background, resolveSurfaceLevel(theme, 1).background],
+      colors.text,
+      AA_TEXT,
+    ),
     wash: surfaceFillOn(theme, colors.background),
     border: hairlineOn(theme, colors.background),
     borderHover: colors.text,
@@ -197,7 +205,8 @@ export const TITLE_COMPACT_WIDTH = 480;
  */
 export function selectTitleVariant(title: string, width: number): TypeScaleVariant {
   const chars = Array.from(title.trim()).length;
-  const start = width < TITLE_COMPACT_WIDTH ? TITLE_STEPS.findIndex((s) => s.variant === 'display-4-bold') : 0;
+  const start =
+    width < TITLE_COMPACT_WIDTH ? TITLE_STEPS.findIndex((s) => s.variant === 'display-4-bold') : 0;
   for (let i = start; i < TITLE_STEPS.length - 1; i++) {
     const step = TITLE_STEPS[i]!;
     const estimated = chars * TYPE_SCALE[step.variant].fontSize * TITLE_GLYPH_RATIO;

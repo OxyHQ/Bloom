@@ -48,11 +48,7 @@ function Row({ title, subtitle }: { title: string; subtitle: string }) {
       <Text variant="headline-regular" numberOfLines={1} style={{ color: theme.colors.text }}>
         {title}
       </Text>
-      <Text
-        variant="body-regular"
-        numberOfLines={1}
-        style={{ color: theme.colors.textSecondary }}
-      >
+      <Text variant="body-regular" numberOfLines={1} style={{ color: theme.colors.textSecondary }}>
         {subtitle}
       </Text>
     </View>

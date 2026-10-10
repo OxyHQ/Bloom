@@ -17,7 +17,11 @@ import {
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -80,7 +84,9 @@ const POP_EASE = Easing.bezier(0, 0, 0.58, 1);
  * light 200 → 700, dark from the deep end 950 → 500, so more activity always
  * reads as more contrast against the card.
  */
-export function useContributionTiers(color?: string): readonly [string, string, string, string, string, string] {
+export function useContributionTiers(
+  color?: string,
+): readonly [string, string, string, string, string, string] {
   const theme = useTheme();
   const palette = useChartCardPalette();
   return useMemo(() => {
@@ -142,11 +148,16 @@ export function ContributionsGrid({
     if (clearTimer.current) clearTimeout(clearTimer.current);
     clearTimer.current = setTimeout(() => setActive(null), 16);
   };
-  useEffect(() => () => {
-    if (clearTimer.current) clearTimeout(clearTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (clearTimer.current) clearTimeout(clearTimer.current);
+    },
+    [],
+  );
 
-  const clock = useRef(new Animated.Value(animateIn && !reducedMotion ? 0 : POP_STAGGER_MS + POP_MS)).current;
+  const clock = useRef(
+    new Animated.Value(animateIn && !reducedMotion ? 0 : POP_STAGGER_MS + POP_MS),
+  ).current;
   useEffect(() => {
     if (!animateIn || reducedMotion) {
       clock.setValue(POP_STAGGER_MS + POP_MS);
@@ -191,8 +202,12 @@ export function ContributionsGrid({
     <View
       testID={testID}
       onLayout={onLayout}
-      style={[{ flexDirection: 'column', gap: GAP, width: compact ? columns * pitch - GAP : '100%' }, style]}
-      {...nativeHandlers}>
+      style={[
+        { flexDirection: 'column', gap: GAP, width: compact ? columns * pitch - GAP : '100%' },
+        style,
+      ]}
+      {...nativeHandlers}
+    >
       {Array.from({ length: CONTRIBUTION_ROWS }, (_, row) => (
         <View key={`row-${row}`} style={styles.gridRow}>
           {Array.from({ length: columns }, (_, col) => {
@@ -241,8 +256,13 @@ export function ContributionsGrid({
             top: (anchorIndex % CONTRIBUTION_ROWS) * pitch,
             width: cellSize,
             height: cellSize,
-          }}>
-          <Tooltip position="top" visible={active !== null} onVisibleChange={(open) => !open && setActive(null)}>
+          }}
+        >
+          <Tooltip
+            position="top"
+            visible={active !== null}
+            onVisibleChange={(open) => !open && setActive(null)}
+          >
             <TooltipTrigger>
               <View style={{ width: cellSize, height: cellSize }} />
             </TooltipTrigger>
@@ -364,7 +384,10 @@ export function ContributionsCard({
       ],
     [periodsProp, chartText],
   );
-  const months = useMemo(() => monthsProp ?? localMonthNames(chartLocale, 'short'), [monthsProp, chartLocale]);
+  const months = useMemo(
+    () => monthsProp ?? localMonthNames(chartLocale, 'short'),
+    [monthsProp, chartLocale],
+  );
   const palette = useChartCardSurfacePalette(style);
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
@@ -375,7 +398,9 @@ export function ContributionsCard({
   const stats = selected?.stats ?? statsProp;
   const delta = selected?.delta ?? deltaProp;
   const total = selected?.total ?? totalProp ?? cells.reduce((s, c) => s + c.count, 0);
-  const cardShadow = theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14)' : '0 1px 1px 0 rgb(0 0 0 / 0.05)';
+  const cardShadow = theme.isDark
+    ? '0 1px 1px 0 rgb(0 0 0 / 0.14)'
+    : '0 1px 1px 0 rgb(0 0 0 / 0.05)';
 
   const grid = (
     <View style={[styles.gridBlock, !wide && { width: undefined }]}>
@@ -391,7 +416,11 @@ export function ContributionsCard({
       />
       <View style={styles.months}>
         {months.map((month, i) => (
-          <Text key={`${i}-${month}`} variant="body-2-medium" style={{ color: palette.textTertiary }}>
+          <Text
+            key={`${i}-${month}`}
+            variant="body-2-medium"
+            style={{ color: palette.textTertiary }}
+          >
             {month}
           </Text>
         ))}
@@ -406,11 +435,8 @@ export function ContributionsCard({
       contentStyle={styles.cardContent}
       elevation="none"
       testID={testID}
-      style={[
-        styles.card,
-        { height: wide ? CONTRIBUTIONS_CARD_HEIGHT : undefined },
-        style,
-      ]}>
+      style={[styles.card, { height: wide ? CONTRIBUTIONS_CARD_HEIGHT : undefined }, style]}
+    >
       <ChartHeadline
         label={title}
         value={total}
@@ -431,11 +457,23 @@ export function ContributionsCard({
                   <View
                     key={`${i}-${stat.label}`}
                     testID={testID ? `${testID}-stat-${i}` : undefined}
-                    style={[styles.stat, { backgroundColor: palette.inner, boxShadow: cardShadow } as WebCssStyle]}>
-                    <Text variant="body-medium" numberOfLines={1} style={{ width: '100%', color: palette.text }}>
+                    style={[
+                      styles.stat,
+                      { backgroundColor: palette.inner, boxShadow: cardShadow } as WebCssStyle,
+                    ]}
+                  >
+                    <Text
+                      variant="body-medium"
+                      numberOfLines={1}
+                      style={{ width: '100%', color: palette.text }}
+                    >
                       {stat.value}
                     </Text>
-                    <Text variant="body-medium" numberOfLines={1} style={{ width: '100%', color: palette.textSecondary }}>
+                    <Text
+                      variant="body-medium"
+                      numberOfLines={1}
+                      style={{ width: '100%', color: palette.textSecondary }}
+                    >
                       {stat.label}
                     </Text>
                   </View>
@@ -457,9 +495,14 @@ export function ContributionsCard({
               type="radio"
               variant="plain"
               value={selectedId}
-              onValueChange={select}>
+              onValueChange={select}
+            >
               {periods.map((p) => (
-                <SegmentedControlItem key={p.id} value={p.id} testID={testID ? `${testID}-period-${p.id}` : undefined}>
+                <SegmentedControlItem
+                  key={p.id}
+                  value={p.id}
+                  testID={testID ? `${testID}-period-${p.id}` : undefined}
+                >
                   <SegmentedControlItemText>{p.label}</SegmentedControlItemText>
                 </SegmentedControlItem>
               ))}
@@ -505,8 +548,20 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10,
   },
-  activity: { marginTop: -8, flex: 1, minHeight: 0, width: '100%', flexDirection: 'column', gap: 4 },
-  activityHeader: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  activity: {
+    marginTop: -8,
+    flex: 1,
+    minHeight: 0,
+    width: '100%',
+    flexDirection: 'column',
+    gap: 4,
+  },
+  activityHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   gridBlock: { width: '100%', flexDirection: 'column', gap: 6 },
   gridRow: { flexDirection: 'row', gap: GAP },
   months: { width: '100%', flexDirection: 'row', justifyContent: 'space-between' },

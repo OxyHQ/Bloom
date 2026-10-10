@@ -2,19 +2,26 @@ import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { RiBuilding2Line, RiEyeLine, RiFlashlightLine, RiGroupLine, RiUserAddLine, RiVipCrownLine } from '../icons/remix';
+import {
+  RiBuilding2Line,
+  RiEyeLine,
+  RiFlashlightLine,
+  RiGroupLine,
+  RiUserAddLine,
+  RiVipCrownLine,
+} from '../icons/remix';
 import { StageBarsCard, type StageBar, type StageBarsRange } from './StageBarsCard';
 
 const meta: Meta<typeof StageBarsCard> = {
   argTypes: {
-    "title": { control: 'text' },
-    "mono": { control: 'boolean' },
-    "showIcons": { control: 'boolean' },
-    "headline": { control: 'number' },
-    "delta": { control: 'number' },
-    "range": { control: 'text' },
-    "defaultRange": { control: 'text' },
-    "activeIndex": { control: 'number' }
+    title: { control: 'text' },
+    mono: { control: 'boolean' },
+    showIcons: { control: 'boolean' },
+    headline: { control: 'number' },
+    delta: { control: 'number' },
+    range: { control: 'text' },
+    defaultRange: { control: 'text' },
+    activeIndex: { control: 'number' },
   },
   title: 'Charts/Stage Bars',
   component: StageBarsCard,
@@ -34,12 +41,23 @@ const STAGES: StageBar[] = [
   { label: 'Enterprise', value: 180, icon: RiBuilding2Line },
 ];
 
-const stagesOf = (values: number[]): StageBar[] => STAGES.map((s, i) => ({ ...s, value: values[i]! }));
+const stagesOf = (values: number[]): StageBar[] =>
+  STAGES.map((s, i) => ({ ...s, value: values[i]! }));
 
 const RANGES: StageBarsRange[] = [
-  { id: '7d', label: 'Last 7 days', stages: stagesOf([1180, 790, 460, 250, 120, 40]), delta: 0.024 },
+  {
+    id: '7d',
+    label: 'Last 7 days',
+    stages: stagesOf([1180, 790, 460, 250, 120, 40]),
+    delta: 0.024,
+  },
   { id: '30d', label: 'Last 30 days', stages: STAGES, delta: 0.061 },
-  { id: '90d', label: 'Last 90 days', stages: stagesOf([13900, 9410, 5720, 3300, 1520, 510]), delta: -0.012 },
+  {
+    id: '90d',
+    label: 'Last 90 days',
+    stages: stagesOf([13900, 9410, 5720, 3300, 1520, 510]),
+    delta: -0.012,
+  },
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
@@ -58,11 +76,24 @@ export const Default: Story = {
 
 /** Single ink, no icons, a static pill and a flat delta. */
 export const Mono: Story = {
-  args: { mono: true, showIcons: false, range: "Last 30 days", delta: 0 },
-  parameters: { controls: { include: ["mono","showIcons","range","delta","title","headline","defaultRange","activeIndex"] } },
+  args: { mono: true, showIcons: false, range: 'Last 30 days', delta: 0 },
+  parameters: {
+    controls: {
+      include: [
+        'mono',
+        'showIcons',
+        'range',
+        'delta',
+        'title',
+        'headline',
+        'defaultRange',
+        'activeIndex',
+      ],
+    },
+  },
   render: (args) => (
     <Frame>
-      <StageBarsCard {...args} testID="stage"   stages={STAGES}   />
+      <StageBarsCard {...args} testID="stage" stages={STAGES} />
     </Frame>
   ),
 };
@@ -80,14 +111,17 @@ export const Hovered: Story = {
 
 /** Three stages with custom colours: the card keeps its 329px floor and centres the rows. */
 export const FewStages: Story = {
-  args: { title: "Checkout", range: "This week" },
-  parameters: { controls: { include: ["title","range","mono","showIcons","headline","defaultRange","activeIndex"] } },
+  args: { title: 'Checkout', range: 'This week' },
+  parameters: {
+    controls: {
+      include: ['title', 'range', 'mono', 'showIcons', 'headline', 'defaultRange', 'activeIndex'],
+    },
+  },
   render: (args) => (
     <Frame>
-      <StageBarsCard {...args}
-
+      <StageBarsCard
+        {...args}
         delta={-0.034}
-
         stages={[
           { label: 'Cart', value: 920, color: '#f97316' },
           { label: 'Payment', value: 610 },

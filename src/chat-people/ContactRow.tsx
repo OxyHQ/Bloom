@@ -80,36 +80,44 @@ function ContactRowComponent(props: ContactRowProps) {
 
   const body = (
     <>
-      {avatarSlot !== undefined ? avatarSlot : <AvatarPresence
-        source={avatar}
-        variant={avatarVariant}
-        name={name}
-        size={AVATAR[size]}
-        status={status}
-        presenceRingColor={paint.surface}
-        presenceLabel=""
-      />}
+      {avatarSlot !== undefined ? (
+        avatarSlot
+      ) : (
+        <AvatarPresence
+          source={avatar}
+          variant={avatarVariant}
+          name={name}
+          size={AVATAR[size]}
+          status={status}
+          presenceRingColor={paint.surface}
+          presenceLabel=""
+        />
+      )}
       <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
-        {identitySlot !== undefined ? identitySlot : <>
-        <Text
-          variant="body-medium"
-          numberOfLines={1}
-          style={[{ color: paint.text }, textStyle]}
-          testID={testID ? `${testID}-name` : undefined}
-        >
-          {name}
-        </Text>
-        {subtitle === undefined ? null : (
-          <Text
-            variant="caption-1-regular"
-            numberOfLines={1}
-            style={{ color: paint.textSecondary }}
-            testID={testID ? `${testID}-subtitle` : undefined}
-          >
-            {subtitle}
-          </Text>
+        {identitySlot !== undefined ? (
+          identitySlot
+        ) : (
+          <>
+            <Text
+              variant="body-medium"
+              numberOfLines={1}
+              style={[{ color: paint.text }, textStyle]}
+              testID={testID ? `${testID}-name` : undefined}
+            >
+              {name}
+            </Text>
+            {subtitle === undefined ? null : (
+              <Text
+                variant="caption-1-regular"
+                numberOfLines={1}
+                style={{ color: paint.textSecondary }}
+                testID={testID ? `${testID}-subtitle` : undefined}
+              >
+                {subtitle}
+              </Text>
+            )}
+          </>
         )}
-        </>}
       </View>
       {trailingSlot !== undefined ? (
         trailingSlot
@@ -188,10 +196,7 @@ function ContactRowComponent(props: ContactRowProps) {
   );
 
   return (
-    <View
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: 8 }, style]}
-      testID={testID}
-    >
+    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 8 }, style]} testID={testID}>
       {main}
       {trailing === 'action' && onAction !== undefined ? (
         actionDone ? (
@@ -206,12 +211,13 @@ function ContactRowComponent(props: ContactRowProps) {
           </View>
         ) : (
           <Button
-
             size="sm"
             disabled={disabled}
             onPress={onAction}
             accessibilityLabel={messages.actionOn(actionLabel, name)}
-            testID={testID ? `${testID}-action` : undefined} tone="neutral" appearance="outline"
+            testID={testID ? `${testID}-action` : undefined}
+            tone="neutral"
+            appearance="outline"
           >
             {actionLabel}
           </Button>

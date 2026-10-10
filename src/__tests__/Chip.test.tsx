@@ -20,7 +20,14 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { Chip, ChipRow, CHIP_GEOMETRY, chipRowOverflow, resolveChipPaint, resolveChipRing } from '../chip';
+import {
+  Chip,
+  ChipRow,
+  CHIP_GEOMETRY,
+  chipRowOverflow,
+  resolveChipPaint,
+  resolveChipRing,
+} from '../chip';
 import { resolveButtonRamps } from '../button/shared';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { APP_COLOR_NAMES } from '../theme/color-presets';
@@ -116,8 +123,20 @@ describe('Chip rungs', () => {
     // 32 with 12px sides (the filter/segment pill) and 40 with 16 (the filters
     // sheet). Written as an EQUALITY: a rung drifting by a pixel puts every
     // folded family back where it started, silently.
-    expect(CHIP_GEOMETRY.xl).toMatchObject({ height: 32, paddingHorizontal: 12, iconGap: 8, icon: 16, minWidth: 0 });
-    expect(CHIP_GEOMETRY['2xl']).toMatchObject({ height: 40, paddingHorizontal: 16, iconGap: 8, icon: 18, minWidth: 48 });
+    expect(CHIP_GEOMETRY.xl).toMatchObject({
+      height: 32,
+      paddingHorizontal: 12,
+      iconGap: 8,
+      icon: 16,
+      minWidth: 0,
+    });
+    expect(CHIP_GEOMETRY['2xl']).toMatchObject({
+      height: 40,
+      paddingHorizontal: 16,
+      iconGap: 8,
+      icon: 18,
+      minWidth: 48,
+    });
   });
 
   it('the 2xl rung keeps a one-character label from collapsing to a dot', () => {
@@ -213,7 +232,11 @@ describe('Chip inverted', () => {
 
   it('does not promote to the brand tone the way the accent fills do', () => {
     mount(<></>);
-    const inverted = resolveChipPaint(theme, { tone: 'default', variant: 'inverted', selected: true });
+    const inverted = resolveChipPaint(theme, {
+      tone: 'default',
+      variant: 'inverted',
+      selected: true,
+    });
     const promoted = resolveAccentColors(theme.colors, 'primary', 'subtle');
     expect(inverted.background).not.toBe(promoted.background);
     expect(inverted.background).toBe(theme.colors.text);
@@ -221,10 +244,14 @@ describe('Chip inverted', () => {
 
   it('answers hover with its border, which is the only state a fill-less pill can show', () => {
     mount(<></>);
-    expect(resolveChipPaint(theme, { tone: 'default', variant: 'inverted', selected: false }).hoveredBorder).toBe(
-      theme.colors.text,
-    );
-    expect(resolveChipPaint(theme, { tone: 'default', variant: 'subtle', selected: false }).hoveredBorder).toBeNull();
+    expect(
+      resolveChipPaint(theme, { tone: 'default', variant: 'inverted', selected: false })
+        .hoveredBorder,
+    ).toBe(theme.colors.text);
+    expect(
+      resolveChipPaint(theme, { tone: 'default', variant: 'subtle', selected: false })
+        .hoveredBorder,
+    ).toBeNull();
   });
 });
 
@@ -250,22 +277,25 @@ describe('Chip role and state', () => {
     }
   });
 
-  it.each([true, false])('a checkbox chip spells aria-checked="%s" and toggles through onCheckedChange', (checked) => {
-    const onCheckedChange = jest.fn();
-    mount(
-      <Chip role="checkbox" checked={checked} onCheckedChange={onCheckedChange} testID="c">
-        Wi-Fi
-      </Chip>,
-    );
-    const el = byTestId('c');
-    expect(el.getAttribute('role')).toBe('checkbox');
-    expect(el.getAttribute('aria-checked')).toBe(String(checked));
-    expect(el.getAttribute('aria-pressed')).toBeNull();
-    act(() => {
-      el.click();
-    });
-    expect(onCheckedChange).toHaveBeenCalledWith(!checked);
-  });
+  it.each([true, false])(
+    'a checkbox chip spells aria-checked="%s" and toggles through onCheckedChange',
+    (checked) => {
+      const onCheckedChange = jest.fn();
+      mount(
+        <Chip role="checkbox" checked={checked} onCheckedChange={onCheckedChange} testID="c">
+          Wi-Fi
+        </Chip>,
+      );
+      const el = byTestId('c');
+      expect(el.getAttribute('role')).toBe('checkbox');
+      expect(el.getAttribute('aria-checked')).toBe(String(checked));
+      expect(el.getAttribute('aria-pressed')).toBeNull();
+      act(() => {
+        el.click();
+      });
+      expect(onCheckedChange).toHaveBeenCalledWith(!checked);
+    },
+  );
 
   it('is not a control at all without onPress', () => {
     mount(
@@ -302,7 +332,9 @@ describe('ChipRow', () => {
         </Chip>
       </ChipRow>,
     );
-    const names = [...container.querySelectorAll('[role="button"]')].map((n) => n.getAttribute('aria-label'));
+    const names = [...container.querySelectorAll('[role="button"]')].map((n) =>
+      n.getAttribute('aria-label'),
+    );
     expect(names).toContain('Remove Furnished');
     expect(names).toContain('Clear the date filter');
   });
@@ -332,10 +364,25 @@ describe('ChipRow', () => {
   });
 
   it('decides each edge from the offset, with 1px of slack', () => {
-    expect(chipRowOverflow({ x: 0, viewport: 0, content: 0 })).toEqual({ previous: false, next: false });
-    expect(chipRowOverflow({ x: 0, viewport: 300, content: 300 })).toEqual({ previous: false, next: false });
-    expect(chipRowOverflow({ x: 0, viewport: 300, content: 900 })).toEqual({ previous: false, next: true });
-    expect(chipRowOverflow({ x: 300, viewport: 300, content: 900 })).toEqual({ previous: true, next: true });
-    expect(chipRowOverflow({ x: 600, viewport: 300, content: 900 })).toEqual({ previous: true, next: false });
+    expect(chipRowOverflow({ x: 0, viewport: 0, content: 0 })).toEqual({
+      previous: false,
+      next: false,
+    });
+    expect(chipRowOverflow({ x: 0, viewport: 300, content: 300 })).toEqual({
+      previous: false,
+      next: false,
+    });
+    expect(chipRowOverflow({ x: 0, viewport: 300, content: 900 })).toEqual({
+      previous: false,
+      next: true,
+    });
+    expect(chipRowOverflow({ x: 300, viewport: 300, content: 900 })).toEqual({
+      previous: true,
+      next: true,
+    });
+    expect(chipRowOverflow({ x: 600, viewport: 300, content: 900 })).toEqual({
+      previous: true,
+      next: false,
+    });
   });
 });

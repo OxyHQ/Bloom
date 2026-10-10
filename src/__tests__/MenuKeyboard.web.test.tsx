@@ -229,15 +229,18 @@ describe('DropdownMenu (web) — keyboard', () => {
     expect(row('Oldest').getAttribute('aria-checked')).toBe('true');
   });
 
-  it.each(['Escape', 'Tab'])('%s closes without activating and returns focus to the trigger', (key) => {
-    mount(<Actions />);
-    openWith('Enter');
-    press('ArrowDown');
-    press(key);
-    expect(expanded('menu')).toBe(false);
-    expect(actions.duplicate).not.toHaveBeenCalled();
-    expect(document.activeElement).toBe(trigger('menu'));
-  });
+  it.each(['Escape', 'Tab'])(
+    '%s closes without activating and returns focus to the trigger',
+    (key) => {
+      mount(<Actions />);
+      openWith('Enter');
+      press('ArrowDown');
+      press(key);
+      expect(expanded('menu')).toBe(false);
+      expect(actions.duplicate).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(trigger('menu'));
+    },
+  );
 });
 
 describe('Menubar and ContextMenu (web) — the same keys', () => {
@@ -277,7 +280,12 @@ describe('Menubar and ContextMenu (web) — the same keys', () => {
     );
     act(() => {
       trigger('area').dispatchEvent(
-        new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 20, clientY: 20 }),
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 20,
+          clientY: 20,
+        }),
       );
     });
     flush();

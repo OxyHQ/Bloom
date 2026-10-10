@@ -67,7 +67,8 @@ import type { AgentProgressProps } from './types';
  */
 
 /** The demo workflow in English; the component shows it in the locale's language. */
-export const DEFAULT_AGENT_PROGRESS_STEPS: readonly string[] = AGENT_PROGRESS_MESSAGES.en.defaultSteps;
+export const DEFAULT_AGENT_PROGRESS_STEPS: readonly string[] =
+  AGENT_PROGRESS_MESSAGES.en.defaultSteps;
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -138,9 +139,13 @@ function hex(color: string): string {
 function resolvePalette(theme: Theme): ProgressPalette {
   const c = theme.colors;
   return {
-    surface: c.card, border: hex(c.borderLight), quaternary: hex(c.backgroundTertiary),
-    iconSecondary: hex(c.textSecondary), textSecondary: c.textSecondary,
-    textPrimary: c.text, ring: hex(c.textSecondary),
+    surface: c.card,
+    border: hex(c.borderLight),
+    quaternary: hex(c.backgroundTertiary),
+    iconSecondary: hex(c.textSecondary),
+    textSecondary: c.textSecondary,
+    textPrimary: c.text,
+    ring: hex(c.textSecondary),
     shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
 }
@@ -329,7 +334,13 @@ function ArcRing({
     [progress, circumference],
   );
   return (
-    <Svg width={size} height={size} viewBox={`0 0 ${viewBox} ${viewBox}`} aria-hidden testID={testID}>
+    <Svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${viewBox} ${viewBox}`}
+      aria-hidden
+      testID={testID}
+    >
       <G transform={`rotate(-90 ${c} ${c})`}>
         <Circle cx={c} cy={c} r={r} fill="none" stroke={track} strokeWidth={strokeWidth} />
         <AnimatedCircle
@@ -441,7 +452,9 @@ function RingSpacer({ complete }: { complete: boolean }) {
     () => ({ width: width.value, opacity: opacity.value }),
     [width, opacity],
   );
-  return <Animated.View aria-hidden style={[{ height: 16, flexShrink: 0, overflow: 'hidden' }, style]} />;
+  return (
+    <Animated.View aria-hidden style={[{ height: 16, flexShrink: 0, overflow: 'hidden' }, style]} />
+  );
 }
 
 /** The header label: a new label rises in as the old one rises out (popLayout, 260ms). */
@@ -458,7 +471,9 @@ function StatusLabel({
 }) {
   const [shown, setShown] = useState({ current: label, previous: null as string | null, n: 0 });
   useEffect(() => {
-    setShown((s) => (s.current === label ? s : { current: label, previous: s.current, n: s.n + 1 }));
+    setShown((s) =>
+      s.current === label ? s : { current: label, previous: s.current, n: s.n + 1 },
+    );
   }, [label]);
   const textStyle = [TYPE_SCALE['body-medium'], { color }];
   const clear = useCallback(() => setShown((s) => ({ ...s, previous: null })), []);
@@ -682,7 +697,11 @@ function StepRow({
             enter={{ duration: 250, easing: EASE_OUT }}
             style={rowStyles.iconFill}
           >
-            <StepLoader running={processingStarted && active} duration={stepDuration} palette={palette} />
+            <StepLoader
+              running={processingStarted && active}
+              duration={stepDuration}
+              palette={palette}
+            />
           </Presence>
           <Presence
             show={pending}
@@ -834,7 +853,11 @@ function AgentProgressComponent({
   const theme = useTheme();
   const surfaceLayer = useSurfaceLayer();
   const customSurface = StyleSheet.flatten(style);
-  const material = resolveSurfaceMaterial({ fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill), parentFill: surfaceLayer.parentFill, parentLevel: surfaceLayer.parentLevel });
+  const material = resolveSurfaceMaterial({
+    fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill),
+    parentFill: surfaceLayer.parentFill,
+    parentLevel: surfaceLayer.parentLevel,
+  });
   const { paintFill: paintFill, publishedFill: surfaceFill } = material;
   const palette = resolvePalette(theme);
   const reducedMotion = useReducedMotion();
@@ -881,7 +904,15 @@ function AgentProgressComponent({
       setInternalCompleted((count) => Math.min(count + 1, stepCount));
     }, safeStepDuration);
     return () => clearTimeout(id);
-  }, [controlled, complete, completedCount, paused, processingStarted, stepCount, safeStepDuration]);
+  }, [
+    controlled,
+    complete,
+    completedCount,
+    paused,
+    processingStarted,
+    stepCount,
+    safeStepDuration,
+  ]);
 
   useEffect(() => {
     if (!complete || !onFinished || paused) return;
@@ -968,7 +999,16 @@ function AgentProgressComponent({
     ring.value = current;
     const remaining = safeStepDuration * ((to - current) * stepCount);
     ring.value = withTiming(to, { duration: remaining, easing: Easing.linear });
-  }, [processingStarted, complete, completedCount, stepCount, paused, reducedMotion, safeStepDuration, ring]);
+  }, [
+    processingStarted,
+    complete,
+    completedCount,
+    stepCount,
+    paused,
+    reducedMotion,
+    safeStepDuration,
+    ring,
+  ]);
 
   const statusLabel = complete
     ? (labels?.allCompleted ?? messages.allCompleted)
@@ -1003,122 +1043,134 @@ function AgentProgressComponent({
     <Animated.View
       aria-live="polite"
       testID={testID}
-      style={[styles.card, cardStatic, style, cardStyle, { backgroundColor: 'transparent', ...material.vars }]}
+      style={[
+        styles.card,
+        cardStatic,
+        style,
+        cardStyle,
+        { backgroundColor: 'transparent', ...material.vars },
+      ]}
     >
       <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? CARD_RADIUS} />
       <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-      <Presence
-        show={minimized}
-        initial={false}
-        from={{ opacity: 0, blur: 3 }}
-        exit={{ opacity: 0, blur: 3 }}
-        enter={{ duration: 200, delay: 120 }}
-        style={styles.fill}
-      >
-        <Pressable
-          testID={`${testID}-minimized`}
-          accessibilityRole="button"
-          accessibilityLabel={labels?.expand ?? messages.expand}
-          onPress={expand}
-          onHoverIn={() => setHovered(true)}
-          onHoverOut={() => setHovered(false)}
-          style={styles.bar}
-          {...(IS_WEB ? ({ dataSet: { bloomAgentProgressBar: '' } } as Record<string, unknown>) : {})}
+        <Presence
+          show={minimized}
+          initial={false}
+          from={{ opacity: 0, blur: 3 }}
+          exit={{ opacity: 0, blur: 3 }}
+          enter={{ duration: 200, delay: 120 }}
+          style={styles.fill}
         >
-          <View style={styles.barLead}>
-            <RingSpacer complete={complete} />
-            <StatusLabel label={statusLabel} color={palette.textSecondary} />
-          </View>
-
-          {!complete ? (
-            <View style={[styles.barStep, stepMask]}>
-              <CurrentStepIcon palette={palette} />
-              <View style={styles.barStepText}>
-                <AgentProgressLoadingText>{currentStep}</AgentProgressLoadingText>
-              </View>
-            </View>
-          ) : null}
-
-          <View
-            aria-hidden
-            pointerEvents="none"
-            style={[styles.expandGlyph, { opacity: hovered ? 1 : 0 }, EXPAND_TRANSITION]}
-            {...(IS_WEB ? ({ dataSet: { bloomAgentProgressExpand: '' } } as Record<string, unknown>) : {})}
+          <Pressable
+            testID={`${testID}-minimized`}
+            accessibilityRole="button"
+            accessibilityLabel={labels?.expand ?? messages.expand}
+            onPress={expand}
+            onHoverIn={() => setHovered(true)}
+            onHoverOut={() => setHovered(false)}
+            style={styles.bar}
+            {...(IS_WEB
+              ? ({ dataSet: { bloomAgentProgressBar: '' } } as Record<string, unknown>)
+              : {})}
           >
-            <ExpandIcon palette={palette} />
-          </View>
-        </Pressable>
-      </Presence>
+            <View style={styles.barLead}>
+              <RingSpacer complete={complete} />
+              <StatusLabel label={statusLabel} color={palette.textSecondary} />
+            </View>
 
-      <Presence
-        show={!minimized}
-        from={{ opacity: 0, blur: 3 }}
-        exit={{ opacity: 0, y: -4, blur: 3 }}
-        enter={{ duration: fastReopen ? 160 : 220 }}
-        style={[styles.expanded, { height: expandedHeight }]}
-        testID={`${testID}-expanded`}
-      >
-        <View style={styles.expandedInner}>
-          <View style={styles.header}>
-            <RingSpacer complete={complete} />
-            <StatusLabel label={statusLabel} color={palette.textSecondary} grow />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={labels?.minimize ?? messages.minimize}
-              onPress={minimize}
-              onHoverIn={() => setMinimizeHovered(true)}
-              onHoverOut={() => setMinimizeHovered(false)}
-              style={[styles.minimize, { opacity: minimizeHovered ? 0.8 : 1 }]}
-              testID={`${testID}-minimize`}
-              {...(IS_WEB ? ({ dataSet: { bloomAgentProgressMinimize: '' } } as Record<string, unknown>) : {})}
-            >
-              <MinimizeIcon palette={palette} />
-            </Pressable>
-          </View>
-
-          <View style={styles.steps}>
-            {activeIndex >= 0 ? (
-              <ActiveBorder index={activeIndex} reopening={fastReopen} palette={palette} />
+            {!complete ? (
+              <View style={[styles.barStep, stepMask]}>
+                <CurrentStepIcon palette={palette} />
+                <View style={styles.barStepText}>
+                  <AgentProgressLoadingText>{currentStep}</AgentProgressLoadingText>
+                </View>
+              </View>
             ) : null}
-            {progressSteps.map((step, index) => (
-              <StepRow
-                key={step}
-                label={step}
-                index={index}
-                completedCount={completedCount}
-                processingStarted={processingStarted}
-                reopening={fastReopen}
-                stepCount={stepCount}
-                stepDuration={safeStepDuration}
-                palette={palette}
-                testID={`${testID}-step-${index}`}
-              />
-            ))}
-          </View>
-        </View>
-      </Presence>
 
-      <Presence
-        show={!complete}
-        initial={false}
-        from={{ opacity: 0, scale: 0.82 }}
-        exit={{ opacity: 0, scale: 0.82 }}
-        enter={{ duration: 250 }}
-        style={styles.ring}
-        pointerEvents="none"
-      >
-        <ArcRing
-          progress={ring}
-          size={RING_SIZE}
-          viewBox={16}
-          r={RING_R}
-          circumference={RING_C}
-          strokeWidth={2.5}
-          track={palette.border}
-          color={palette.ring}
-          testID={`${testID}-ring`}
-        />
-      </Presence>
+            <View
+              aria-hidden
+              pointerEvents="none"
+              style={[styles.expandGlyph, { opacity: hovered ? 1 : 0 }, EXPAND_TRANSITION]}
+              {...(IS_WEB
+                ? ({ dataSet: { bloomAgentProgressExpand: '' } } as Record<string, unknown>)
+                : {})}
+            >
+              <ExpandIcon palette={palette} />
+            </View>
+          </Pressable>
+        </Presence>
+
+        <Presence
+          show={!minimized}
+          from={{ opacity: 0, blur: 3 }}
+          exit={{ opacity: 0, y: -4, blur: 3 }}
+          enter={{ duration: fastReopen ? 160 : 220 }}
+          style={[styles.expanded, { height: expandedHeight }]}
+          testID={`${testID}-expanded`}
+        >
+          <View style={styles.expandedInner}>
+            <View style={styles.header}>
+              <RingSpacer complete={complete} />
+              <StatusLabel label={statusLabel} color={palette.textSecondary} grow />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={labels?.minimize ?? messages.minimize}
+                onPress={minimize}
+                onHoverIn={() => setMinimizeHovered(true)}
+                onHoverOut={() => setMinimizeHovered(false)}
+                style={[styles.minimize, { opacity: minimizeHovered ? 0.8 : 1 }]}
+                testID={`${testID}-minimize`}
+                {...(IS_WEB
+                  ? ({ dataSet: { bloomAgentProgressMinimize: '' } } as Record<string, unknown>)
+                  : {})}
+              >
+                <MinimizeIcon palette={palette} />
+              </Pressable>
+            </View>
+
+            <View style={styles.steps}>
+              {activeIndex >= 0 ? (
+                <ActiveBorder index={activeIndex} reopening={fastReopen} palette={palette} />
+              ) : null}
+              {progressSteps.map((step, index) => (
+                <StepRow
+                  key={step}
+                  label={step}
+                  index={index}
+                  completedCount={completedCount}
+                  processingStarted={processingStarted}
+                  reopening={fastReopen}
+                  stepCount={stepCount}
+                  stepDuration={safeStepDuration}
+                  palette={palette}
+                  testID={`${testID}-step-${index}`}
+                />
+              ))}
+            </View>
+          </View>
+        </Presence>
+
+        <Presence
+          show={!complete}
+          initial={false}
+          from={{ opacity: 0, scale: 0.82 }}
+          exit={{ opacity: 0, scale: 0.82 }}
+          enter={{ duration: 250 }}
+          style={styles.ring}
+          pointerEvents="none"
+        >
+          <ArcRing
+            progress={ring}
+            size={RING_SIZE}
+            viewBox={16}
+            r={RING_R}
+            circumference={RING_C}
+            strokeWidth={2.5}
+            track={palette.border}
+            color={palette.ring}
+            testID={`${testID}-ring`}
+          />
+        </Presence>
       </SurfaceLevelProvider>
     </Animated.View>
   );
@@ -1151,7 +1203,13 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 6,
   },
-  barLead: { flexDirection: 'row', alignItems: 'center', flexShrink: 0, minWidth: 0, paddingLeft: 4 },
+  barLead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+    minWidth: 0,
+    paddingLeft: 4,
+  },
   barStep: {
     flex: 1,
     minWidth: 0,
@@ -1164,7 +1222,14 @@ const styles = StyleSheet.create({
     paddingRight: 24,
   },
   barStepText: { flex: 1, minWidth: 0 },
-  expandGlyph: { position: 'absolute', right: 10, top: '50%', marginTop: -10, width: 20, height: 20 },
+  expandGlyph: {
+    position: 'absolute',
+    right: 10,
+    top: '50%',
+    marginTop: -10,
+    width: 20,
+    height: 20,
+  },
   expanded: {
     position: 'absolute',
     top: 0,

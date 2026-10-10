@@ -49,22 +49,60 @@ const WORKLET_HOOKS = new Map<string, number[]>([
 ]);
 /** Gesture builder callbacks, workletized unless the chain opts into `runOnJS(true)`. */
 const GESTURE_CALLBACKS = new Set([
-  'onBegin', 'onStart', 'onUpdate', 'onChange', 'onEnd', 'onFinalize',
-  'onTouchesDown', 'onTouchesMove', 'onTouchesUp', 'onTouchesCancelled',
+  'onBegin',
+  'onStart',
+  'onUpdate',
+  'onChange',
+  'onEnd',
+  'onFinalize',
+  'onTouchesDown',
+  'onTouchesMove',
+  'onTouchesUp',
+  'onTouchesCancelled',
 ]);
 /** Copied by the runtime, or references it resolves itself. */
-const COPYABLE = new Set(['SharedValue', 'DerivedValue', 'Mutable', 'AnimatedRef', 'Map', 'Set', 'RegExp', 'Error', 'ArrayBuffer']);
+const COPYABLE = new Set([
+  'SharedValue',
+  'DerivedValue',
+  'Mutable',
+  'AnimatedRef',
+  'Map',
+  'Set',
+  'RegExp',
+  'Error',
+  'ArrayBuffer',
+]);
 /** Reach one of these and the copy throws (or drags app data along until something does). */
-const UNCOPYABLE = new Set(['Date', 'Promise', 'ReactElement', 'ReactPortal', 'Element', 'Component', 'PureComponent']);
+const UNCOPYABLE = new Set([
+  'Date',
+  'Promise',
+  'ReactElement',
+  'ReactPortal',
+  'Element',
+  'Component',
+  'PureComponent',
+]);
 
-type FunctionNode = ts.ArrowFunction | ts.FunctionExpression | ts.FunctionDeclaration | ts.MethodDeclaration;
+type FunctionNode =
+  | ts.ArrowFunction
+  | ts.FunctionExpression
+  | ts.FunctionDeclaration
+  | ts.MethodDeclaration;
 
 const isFunctionNode = (node: ts.Node): node is FunctionNode =>
-  ts.isArrowFunction(node) || ts.isFunctionExpression(node) || ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node);
+  ts.isArrowFunction(node) ||
+  ts.isFunctionExpression(node) ||
+  ts.isFunctionDeclaration(node) ||
+  ts.isMethodDeclaration(node);
 
 function hasWorkletDirective(fn: FunctionNode): boolean {
   const first = fn.body && ts.isBlock(fn.body) ? fn.body.statements[0] : undefined;
-  return !!first && ts.isExpressionStatement(first) && ts.isStringLiteral(first.expression) && first.expression.text === 'worklet';
+  return (
+    !!first &&
+    ts.isExpressionStatement(first) &&
+    ts.isStringLiteral(first.expression) &&
+    first.expression.text === 'worklet'
+  );
 }
 
 /** `Gesture.Pan().minDistance(4).onUpdate` → `Gesture`, and whether `.runOnJS(…)` is in the chain. */
@@ -72,7 +110,12 @@ function gestureChain(expression: ts.Expression): { root: ts.Expression; onJS: b
   let onJS = false;
   let node = expression;
   while (ts.isCallExpression(node) || ts.isPropertyAccessExpression(node)) {
-    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === 'runOnJS') onJS = true;
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === 'runOnJS'
+    )
+      onJS = true;
     node = node.expression;
   }
   return { root: node, onJS };
@@ -84,7 +127,11 @@ function worklets(sf: ts.SourceFile): FunctionNode[] {
     if (isFunctionNode(node) && hasWorkletDirective(node)) found.push(node);
     if (ts.isCallExpression(node)) {
       const callee = node.expression;
-      const name = ts.isIdentifier(callee) ? callee.text : ts.isPropertyAccessExpression(callee) ? callee.name.text : '';
+      const name = ts.isIdentifier(callee)
+        ? callee.text
+        : ts.isPropertyAccessExpression(callee)
+          ? callee.name.text
+          : '';
       for (const index of WORKLET_HOOKS.get(name) ?? []) {
         const arg = node.arguments[index];
         if (arg && isFunctionNode(arg)) found.push(arg);
@@ -92,14 +139,16 @@ function worklets(sf: ts.SourceFile): FunctionNode[] {
         if (arg && ts.isObjectLiteralExpression(arg)) {
           for (const property of arg.properties) {
             if (ts.isMethodDeclaration(property)) found.push(property);
-            else if (ts.isPropertyAssignment(property) && isFunctionNode(property.initializer)) found.push(property.initializer);
+            else if (ts.isPropertyAssignment(property) && isFunctionNode(property.initializer))
+              found.push(property.initializer);
           }
         }
       }
       if (ts.isPropertyAccessExpression(callee) && GESTURE_CALLBACKS.has(name)) {
         const arg = node.arguments[0];
         const { root, onJS } = gestureChain(callee);
-        if (arg && isFunctionNode(arg) && ts.isIdentifier(root) && root.text === 'Gesture' && !onJS) found.push(arg);
+        if (arg && isFunctionNode(arg) && ts.isIdentifier(root) && root.text === 'Gesture' && !onJS)
+          found.push(arg);
       }
     }
     ts.forEachChild(node, visit);
@@ -108,16 +157,33 @@ function worklets(sf: ts.SourceFile): FunctionNode[] {
   return found;
 }
 
-function uncopyable(checker: ts.TypeChecker, type: ts.Type, depth = 0, seen = new Set<ts.Type>()): string | null {
+function uncopyable(
+  checker: ts.TypeChecker,
+  type: ts.Type,
+  depth = 0,
+  seen = new Set<ts.Type>(),
+): string | null {
   if (seen.has(type) || depth > 6) return null;
   seen.add(type);
-  if (type.flags & (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike
-    | ts.TypeFlags.EnumLike | ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void | ts.TypeFlags.Never | ts.TypeFlags.ESSymbolLike)) {
+  if (
+    type.flags &
+    (ts.TypeFlags.StringLike |
+      ts.TypeFlags.NumberLike |
+      ts.TypeFlags.BooleanLike |
+      ts.TypeFlags.BigIntLike |
+      ts.TypeFlags.EnumLike |
+      ts.TypeFlags.Undefined |
+      ts.TypeFlags.Null |
+      ts.TypeFlags.Void |
+      ts.TypeFlags.Never |
+      ts.TypeFlags.ESSymbolLike)
+  ) {
     return null;
   }
   if (type.flags & ts.TypeFlags.Any) return 'any';
   if (type.flags & ts.TypeFlags.Unknown) return 'unknown';
-  if (type.flags & ts.TypeFlags.TypeParameter) return `type parameter ${checker.typeToString(type)}`;
+  if (type.flags & ts.TypeFlags.TypeParameter)
+    return `type parameter ${checker.typeToString(type)}`;
   if (type.isUnionOrIntersection()) {
     for (const member of type.types) {
       const found = uncopyable(checker, member, depth, seen);
@@ -141,7 +207,12 @@ function uncopyable(checker: ts.TypeChecker, type: ts.Type, depth = 0, seen = ne
   for (const property of type.getProperties()) {
     const declaration = property.valueDeclaration ?? property.declarations?.[0];
     if (!declaration) continue;
-    const found = uncopyable(checker, checker.getTypeOfSymbolAtLocation(property, declaration), depth + 1, seen);
+    const found = uncopyable(
+      checker,
+      checker.getTypeOfSymbolAtLocation(property, declaration),
+      depth + 1,
+      seen,
+    );
     if (found) return `.${property.getName()}: ${found}`;
   }
   return null;
@@ -153,12 +224,16 @@ interface Scan {
   findings: string[];
 }
 
-const CONFIG = ts.getParsedCommandLineOfConfigFile(join(ROOT, 'tsconfig.json'), {}, {
-  ...ts.sys,
-  onUnRecoverableConfigFileDiagnostic: (diagnostic) => {
-    throw new Error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+const CONFIG = ts.getParsedCommandLineOfConfigFile(
+  join(ROOT, 'tsconfig.json'),
+  {},
+  {
+    ...ts.sys,
+    onUnRecoverableConfigFileDiagnostic: (diagnostic) => {
+      throw new Error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+    },
   },
-});
+);
 if (!CONFIG) throw new Error('tsconfig.json did not parse');
 
 function scan(rootNames: string[], include: (file: string) => boolean): Scan {
@@ -175,25 +250,44 @@ function scan(rootNames: string[], include: (file: string) => boolean): Scan {
         ts.forEachChild(node, visit);
         if (!ts.isIdentifier(node)) return;
         const parent = node.parent;
-        if ((ts.isPropertyAccessExpression(parent) && parent.name === node) || (ts.isPropertyAssignment(parent) && parent.name === node)
-          || ts.isTypeReferenceNode(parent) || ts.isQualifiedName(parent)) return;
+        if (
+          (ts.isPropertyAccessExpression(parent) && parent.name === node) ||
+          (ts.isPropertyAssignment(parent) && parent.name === node) ||
+          ts.isTypeReferenceNode(parent) ||
+          ts.isQualifiedName(parent)
+        )
+          return;
         const symbol = ts.isShorthandPropertyAssignment(parent)
           ? checker.getShorthandAssignmentValueSymbol(parent)
           : checker.getSymbolAtLocation(node);
         const declaration = symbol?.declarations?.[0];
         if (!symbol || !declaration || captured.has(node.text)) return;
-        if (!(symbol.flags & (ts.SymbolFlags.Variable | ts.SymbolFlags.Alias | ts.SymbolFlags.Function))) return;
+        if (
+          !(
+            symbol.flags &
+            (ts.SymbolFlags.Variable | ts.SymbolFlags.Alias | ts.SymbolFlags.Function)
+          )
+        )
+          return;
         // Globals and library bindings are the runtime's own business.
         if (declaration.getSourceFile().isDeclarationFile) return;
         // Declared inside the worklet: not a capture.
-        if (declaration.getSourceFile() === sf && declaration.pos >= fn.pos && declaration.end <= fn.end) return;
+        if (
+          declaration.getSourceFile() === sf &&
+          declaration.pos >= fn.pos &&
+          declaration.end <= fn.end
+        )
+          return;
         captured.add(node.text);
         result.captures += 1;
-        const target = symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+        const target =
+          symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
         const found = uncopyable(checker, checker.getTypeOfSymbolAtLocation(target, node));
         if (found) {
           const line = sf.getLineAndCharacterOfPosition(fn.getStart(sf)).line + 1;
-          result.findings.push(`${relative(SRC, sf.fileName)}:${line} captures ${node.text} (${found})`);
+          result.findings.push(
+            `${relative(SRC, sf.fileName)}:${line} captures ${node.text} (${found})`,
+          );
         }
       };
       ts.forEachChild(fn, visit);
@@ -223,8 +317,12 @@ describe('worklet captures', () => {
     const result = scan([fixture], (file) => file === fixture);
     expect(result.worklets).toBe(3);
     expect(result.findings).toEqual([
-      expect.stringMatching(/^__tests__\/support\/worklet-capture-fixture\.tsx:\d+ captures history \(\[\]: \.createdAt: Date\)$/),
-      expect.stringMatching(/^__tests__\/support\/worklet-capture-fixture\.tsx:\d+ captures slot \(ReactElement\)$/),
+      expect.stringMatching(
+        /^__tests__\/support\/worklet-capture-fixture\.tsx:\d+ captures history \(\[\]: \.createdAt: Date\)$/,
+      ),
+      expect.stringMatching(
+        /^__tests__\/support\/worklet-capture-fixture\.tsx:\d+ captures slot \(ReactElement\)$/,
+      ),
     ]);
   });
 });

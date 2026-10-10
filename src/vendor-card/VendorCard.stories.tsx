@@ -21,7 +21,10 @@ type Story = StoryObj;
 
 const photo = (seed: string) => `https://picsum.photos/seed/${seed}/800/450`;
 
-type Vendor = Omit<VendorCardProps, 'favorite' | 'onFavoriteChange'> & { id: string; saved?: boolean };
+type Vendor = Omit<VendorCardProps, 'favorite' | 'onFavoriteChange'> & {
+  id: string;
+  saved?: boolean;
+};
 
 const VENDORS: Vendor[] = [
   {
@@ -88,12 +91,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Shelf({ children }: { children: React.ReactNode }) {
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>{children}</View>
-  );
+  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>{children}</View>;
 }
 
-function SavedVendor({ vendor, density }: { vendor: Vendor; density?: VendorCardProps['density'] }) {
+function SavedVendor({
+  vendor,
+  density,
+}: {
+  vendor: Vendor;
+  density?: VendorCardProps['density'];
+}) {
   const { id, saved, ...rest } = vendor;
   const [favorite, setFavorite] = useState(saved ?? false);
   return (

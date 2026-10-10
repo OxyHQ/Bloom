@@ -91,10 +91,7 @@ function serializeContentParams(params: object | undefined): string {
   if (params === undefined) return '';
   const source = params as Record<string, unknown>;
   return Object.keys(source)
-    .filter(
-      (key) =>
-        !NON_CONTENT_PARAM_KEYS.has(key) && !key.startsWith(INTERNAL_PARAM_PREFIX),
-    )
+    .filter((key) => !NON_CONTENT_PARAM_KEYS.has(key) && !key.startsWith(INTERNAL_PARAM_PREFIX))
     .sort()
     .map((key) => `${JSON.stringify(key)}:${serializeValue(source[key], 1)}`)
     .join(',');

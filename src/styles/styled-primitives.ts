@@ -121,8 +121,8 @@ export const StyledImage: ComponentType<ImageProps & { ref?: Ref<Image> }> = sty
   className: 'style',
 });
 
-const PressableBase: ForwardRefExoticComponent<StyledPressableBase & RefAttributes<View>> = Pressable;
-export const StyledPressable: ComponentType<StyledPressableProps> = styled(
-  PressableBase,
-  { className: 'style' },
-);
+const PressableBase: ForwardRefExoticComponent<StyledPressableBase & RefAttributes<View>> =
+  Pressable;
+export const StyledPressable: ComponentType<StyledPressableProps> = styled(PressableBase, {
+  className: 'style',
+});

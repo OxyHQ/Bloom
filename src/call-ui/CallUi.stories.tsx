@@ -28,8 +28,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-const PHOTO = (seed: string, w = 200, h = 200) =>
-  `https://picsum.photos/seed/${seed}/${w}/${h}`;
+const PHOTO = (seed: string, w = 200, h = 200) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 const PEOPLE: readonly GroupCallParticipant[] = [
   { id: 'ana', name: 'Ana Restrepo', avatar: PHOTO('ana') },
@@ -155,7 +154,11 @@ function Caption({ children }: { children: string }) {
 }
 
 function Phone({ children }: { children: React.ReactNode }) {
-  return <View style={{ width: '100%', maxWidth: 390, height: 760, alignSelf: 'center' }}>{children}</View>;
+  return (
+    <View style={{ width: '100%', maxWidth: 390, height: 760, alignSelf: 'center' }}>
+      {children}
+    </View>
+  );
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,11 @@
 import React, { memo, useContext, useEffect, useId, useState } from 'react';
-import { Platform, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+  type LayoutChangeEvent,
+} from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { remainingScrollDistance, useScrollMetricsValue } from '../layout/scroll-metrics';
@@ -18,21 +24,33 @@ const BAR_HEIGHT = 56;
 
 /** Page-local controls floating over a bounded scroller, above app navigation. */
 function PageFooterComponent({
-  children, actions, bottomInset, safeArea, position = 'absolute', scrim = 'always', scrimColor, scrollThreshold = 20, style, testID,
+  children,
+  actions,
+  bottomInset,
+  safeArea,
+  position = 'absolute',
+  scrim = 'always',
+  scrimColor,
+  scrollThreshold = 20,
+  style,
+  testID,
 }: PageFooterProps) {
   const theme = useTheme();
   const documentAnchor = useDocumentAnchor(position === 'document');
   const metrics = useScrollMetricsValue();
   const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : 20);
-  const scrimStyle = useAnimatedStyle(() => ({
-    opacity: scrim === 'auto' ? Math.min(1, remainingScrollDistance(metrics) / threshold) : 1,
-  }), [metrics, scrim, threshold]);
+  const scrimStyle = useAnimatedStyle(
+    () => ({
+      opacity: scrim === 'auto' ? Math.min(1, remainingScrollDistance(metrics) / threshold) : 1,
+    }),
+    [metrics, scrim, threshold],
+  );
   const fill = useSurfaceFill() ?? theme.colors.background;
   const occupied = useBottomEdgeInset();
   const rawBottom = bottomInset ?? occupied;
   const bottom = Number.isFinite(rawBottom) ? Math.max(0, rawBottom) : 0;
   const insets = useContext(SafeAreaInsetsContext);
-  const padBottom = (safeArea ?? Platform.OS !== 'web') && bottom === 0 ? insets?.bottom ?? 0 : 0;
+  const padBottom = (safeArea ?? Platform.OS !== 'web') && bottom === 0 ? (insets?.bottom ?? 0) : 0;
   const windowWidth = useWindowDimensions().width;
   const [width, setWidth] = useState<number | null>(null);
   // Measure the row, not the outer box: a safe-area change can then update the
@@ -55,56 +73,82 @@ function PageFooterComponent({
 
   return (
     <>
-    {documentAnchor.enabled ? <View
-      ref={documentAnchor.ref}
-      onLayout={documentAnchor.measure}
-      pointerEvents="none"
-      style={{ height: 0, width: '100%' }}
-      testID={testID ? `${testID}-anchor` : undefined}
-    /> : null}
-    <View
-      testID={testID}
-      pointerEvents="box-none"
-      style={[styles.container, { bottom, paddingBottom: padBottom }, documentAnchor.style, style]}
-    >
-      {scrim !== 'none' ? (
-        <Animated.View
+      {documentAnchor.enabled ? (
+        <View
+          ref={documentAnchor.ref}
+          onLayout={documentAnchor.measure}
           pointerEvents="none"
-          style={[styles.scrim, { height: height * (1 + SCRIM_TAIL_RATIO) }, scrimStyle]}
-          testID={testID ? `${testID}-scrim` : undefined}
-        >
-          <EdgeScrim edge="bottom" color={scrimColor ?? fill} testID={testID ? `${testID}-scrim-gradient` : undefined} />
-        </Animated.View>
+          style={{ height: 0, width: '100%' }}
+          testID={testID ? `${testID}-anchor` : undefined}
+        />
       ) : null}
       <View
-        onLayout={onLayout}
+        testID={testID}
         pointerEvents="box-none"
-        style={[styles.row, { paddingLeft: sideInset, paddingRight: sideInset }]}
-        testID={testID ? `${testID}-row` : undefined}
+        style={[
+          styles.container,
+          { bottom, paddingBottom: padBottom },
+          documentAnchor.style,
+          style,
+        ]}
       >
-        <BloomScope>
-          {children != null ? <View pointerEvents="box-none" style={styles.content}>{children}</View> : null}
-          {actions != null ? (
-            <View pointerEvents="box-none" style={styles.actions} testID={testID ? `${testID}-actions` : undefined}>
-              {actions}
-            </View>
-          ) : null}
-        </BloomScope>
+        {scrim !== 'none' ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.scrim, { height: height * (1 + SCRIM_TAIL_RATIO) }, scrimStyle]}
+            testID={testID ? `${testID}-scrim` : undefined}
+          >
+            <EdgeScrim
+              edge="bottom"
+              color={scrimColor ?? fill}
+              testID={testID ? `${testID}-scrim-gradient` : undefined}
+            />
+          </Animated.View>
+        ) : null}
+        <View
+          onLayout={onLayout}
+          pointerEvents="box-none"
+          style={[styles.row, { paddingLeft: sideInset, paddingRight: sideInset }]}
+          testID={testID ? `${testID}-row` : undefined}
+        >
+          <BloomScope>
+            {children != null ? (
+              <View pointerEvents="box-none" style={styles.content}>
+                {children}
+              </View>
+            ) : null}
+            {actions != null ? (
+              <View
+                pointerEvents="box-none"
+                style={styles.actions}
+                testID={testID ? `${testID}-actions` : undefined}
+              >
+                {actions}
+              </View>
+            ) : null}
+          </BloomScope>
+        </View>
       </View>
-    </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute', left: 0, right: 0, zIndex: Z_INDEX.floating,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: Z_INDEX.floating,
     ...(Platform.OS !== 'web' ? { elevation: Z_INDEX.floating } : {}),
   },
   scrim: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   row: {
-    minHeight: BAR_HEIGHT, flexDirection: 'row', alignItems: 'center',
-    gap: 8, paddingTop: 8, paddingBottom: 8,
+    minHeight: BAR_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   content: { flex: 1, minWidth: 0 },
   actions: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, flexShrink: 1 },

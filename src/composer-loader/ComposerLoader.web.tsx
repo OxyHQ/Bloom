@@ -179,7 +179,9 @@ function ComposerLoaderComponent({
               strokeLinecap="round"
               strokeDasharray={`${stroke.dash} ${100 - stroke.dash}`}
               className={RECT_CLASS}
-              filter={stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined}
+              filter={
+                stroke.blur > 0 ? `url(#${blurFilterId(gradientId, stroke.blur)})` : undefined
+              }
               style={{
                 opacity: stroke.opacity,
                 animation: `${KEYFRAMES} ${speed}s linear ${(stroke.phase * speed) / 100}s infinite ${direction}`,

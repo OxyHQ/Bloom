@@ -2,12 +2,7 @@ import type { RefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WORKING_SECONDS } from '../agent-avatar/working';
 import { useMessages } from '../locale/messages';
-import {
-  demoReply,
-  type Conversation,
-  type Message,
-  type Workspace,
-} from './data';
+import { demoReply, type Conversation, type Message, type Workspace } from './data';
 import { MULTI_AGENT_CHAT_MESSAGES, formatChatMessage } from './messages';
 import { streamReply, waitForReply } from './stream-reply';
 import type { MultiAgentChatProps } from './types';
@@ -63,8 +58,7 @@ export function useReplies(
       const chat = current.current.chats.find((c) => c.id === id) ?? draft;
       if (!chat || !text.trim() || jobs.current.has(id)) return;
       const participants = chat.agentIds.flatMap(
-        (agentId) =>
-          current.current.agents.find((agent) => agent.id === agentId) ?? [],
+        (agentId) => current.current.agents.find((agent) => agent.id === agentId) ?? [],
       );
       if (!participants.length) return;
       const history: Message[] = [
@@ -92,8 +86,7 @@ export function useReplies(
         [id]: controller.signal.aborted ? '' : chatId('turn'),
       }));
       setNotice('');
-      const active = () =>
-        !controller.signal.aborted && jobs.current.get(id) === controller;
+      const active = () => !controller.signal.aborted && jobs.current.get(id) === controller;
       try {
         for (const agent of participants) {
           if (!active()) break;
@@ -109,15 +102,10 @@ export function useReplies(
               onRespond
                 ? onRespond(agent, history, controller.signal)
                 : Promise.resolve(
-                    demoReply(
-                      agent,
-                      history.filter((m) => m.role === 'user').length - 1,
-                    ),
+                    demoReply(agent, history.filter((m) => m.role === 'user').length - 1),
                   ),
               waitForReply(
-                WORKING_SECONDS * 2000 +
-                  350 +
-                  (agent.id === participants[0]?.id ? arrivalMs : 0),
+                WORKING_SECONDS * 2000 + 350 + (agent.id === participants[0]?.id ? arrivalMs : 0),
                 controller.signal,
               ),
             ]);
@@ -152,8 +140,7 @@ export function useReplies(
               }));
             });
           } catch {
-            if (active())
-              setNotice(formatChatMessage(messages.responseFailed, agent.name));
+            if (active()) setNotice(formatChatMessage(messages.responseFailed, agent.name));
           }
         }
       } finally {

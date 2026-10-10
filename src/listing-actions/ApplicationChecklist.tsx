@@ -14,7 +14,11 @@ import { useMessages } from '../locale/messages';
 import { Meter } from '../stat-bar';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { Text } from '../typography';
-import { APPLICATION_CHECKLIST_MAX_WIDTH, APPLICATION_ITEM_ACTION, APPLICATION_ITEM_STATUS } from './constants';
+import {
+  APPLICATION_CHECKLIST_MAX_WIDTH,
+  APPLICATION_ITEM_ACTION,
+  APPLICATION_ITEM_STATUS,
+} from './constants';
 import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { useActionPalette } from './parts';
 import type { ApplicationChecklistProps, ApplicationItem, ApplicationItemStatus } from './types';
@@ -114,7 +118,10 @@ function ApplicationChecklistComponent({
         {items.map((item, index) => {
           const info = APPLICATION_ITEM_STATUS[item.status];
           const Glyph = STATUS_ICON[item.status];
-          const actionLabel = item.actionLabel === undefined ? messages.applicationAction[APPLICATION_ITEM_ACTION[item.status]] : item.actionLabel;
+          const actionLabel =
+            item.actionLabel === undefined
+              ? messages.applicationAction[APPLICATION_ITEM_ACTION[item.status]]
+              : item.actionLabel;
           const onAction = item.onAction ?? (onItemAction ? () => onItemAction(item) : undefined);
           const rejected = item.status === 'rejected';
           const detail = rejected && item.reason ? item.reason : item.description;
@@ -136,7 +143,15 @@ function ApplicationChecklistComponent({
                 <Glyph width={20} height={20} fill={glyphColor(item.status)} />
               </View>
               <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 8, rowGap: 4 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    columnGap: 8,
+                    rowGap: 4,
+                  }}
+                >
                   <Text variant="body-medium" style={{ color: palette.text, flexShrink: 1 }}>
                     {item.title}
                   </Text>

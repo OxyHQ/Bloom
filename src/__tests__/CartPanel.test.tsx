@@ -86,11 +86,21 @@ describe('it does no money maths, and holds no second breakdown', () => {
   it('draws a line’s secondary price under its price, and says it in the line’s name', () => {
     mount(
       panel({
-        lines: [{ id: 'ember', name: 'Ember flatbread', price: '$13.20', secondaryPrice: '≈ 12,00 €', quantity: 1 }],
+        lines: [
+          {
+            id: 'ember',
+            name: 'Ember flatbread',
+            price: '$13.20',
+            secondaryPrice: '≈ 12,00 €',
+            quantity: 1,
+          },
+        ],
       }),
     );
     expect(byTestId('c-line-ember-secondary-price').textContent).toBe('≈ 12,00 €');
-    expect(rowOf('c-line-ember').getAttribute('aria-label')).toBe('Ember flatbread, 1, $13.20, ≈ 12,00 €');
+    expect(rowOf('c-line-ember').getAttribute('aria-label')).toBe(
+      'Ember flatbread, 1, $13.20, ≈ 12,00 €',
+    );
     mount(panel());
     expect(queryTestId('c-line-sorrel-secondary-price')).toBeNull();
   });
@@ -346,7 +356,14 @@ describe('the tip picker', () => {
 
 describe('the promo field is an input OR a pill, never both', () => {
   it('shows the input, with apply disabled while it is blank', () => {
-    mount(<CartPromoField value="" onChangeText={() => undefined} onApply={() => undefined} testID="p" />);
+    mount(
+      <CartPromoField
+        value=""
+        onChangeText={() => undefined}
+        onApply={() => undefined}
+        testID="p"
+      />,
+    );
     expect(queryTestId('p-applied')).toBeNull();
     expect(byTestId('p-apply').getAttribute('aria-disabled')).toBe('true');
   });
@@ -410,7 +427,12 @@ describe('typing in the promo field reaches the app', () => {
       const [value, setValue] = useState('');
       return (
         <>
-          <CartPromoField value={value} onChangeText={setValue} onApply={() => undefined} testID="p" />
+          <CartPromoField
+            value={value}
+            onChangeText={setValue}
+            onApply={() => undefined}
+            testID="p"
+          />
         </>
       );
     }

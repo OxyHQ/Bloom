@@ -14,9 +14,7 @@ import type { Ref, RefObject } from 'react';
  * no copy-specific identity, so the callback stays assignable to `Ref<T>` from
  * any copy of the types.
  */
-export function mergeRefs<T>(
-  refs: Array<Ref<T> | null | undefined>,
-): (instance: T | null) => void {
+export function mergeRefs<T>(refs: Array<Ref<T> | null | undefined>): (instance: T | null) => void {
   return (instance: T | null) => {
     for (const ref of refs) {
       if (typeof ref === 'function') {

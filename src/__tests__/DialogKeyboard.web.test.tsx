@@ -115,7 +115,8 @@ function Controlled({
       dismissOnBackdrop={dismissOnBackdrop}
       placement="center"
       label="Palette"
-      testID="dialog">
+      testID="dialog"
+    >
       {children}
     </Dialog>
   );
@@ -123,7 +124,12 @@ function Controlled({
 
 const Search = () => <TextInput testID="search" accessibilityLabel="Search" />;
 const Row = ({ id }: { id: string }) => (
-  <Pressable testID={id} accessibilityRole="button" accessibilityLabel={id} onPress={() => undefined}>
+  <Pressable
+    testID={id}
+    accessibilityRole="button"
+    accessibilityLabel={id}
+    onPress={() => undefined}
+  >
     <Text>{id}</Text>
   </Pressable>
 );
@@ -225,7 +231,12 @@ describe('Dialog.web keyboard and focus', () => {
       const [inner, setInner] = React.useState(false);
       return (
         <Controlled onClose={outerClose}>
-          <Pressable testID="open-inner" accessibilityRole="button" accessibilityLabel="Shortcuts" onPress={() => setInner(true)}>
+          <Pressable
+            testID="open-inner"
+            accessibilityRole="button"
+            accessibilityLabel="Shortcuts"
+            onPress={() => setInner(true)}
+          >
             <Text>Shortcuts</Text>
           </Pressable>
           <Dialog
@@ -236,7 +247,8 @@ describe('Dialog.web keyboard and focus', () => {
             }}
             placement="center"
             label="Shortcuts"
-            testID="inner">
+            testID="inner"
+          >
             <Search />
           </Dialog>
         </Controlled>
@@ -259,7 +271,13 @@ describe('Dialog.web keyboard and focus', () => {
   });
 
   describe('the bottom placement (the shared BottomSheet)', () => {
-    function Sheet({ onClose, dismissOnBackdrop }: { onClose: () => void; dismissOnBackdrop?: boolean }) {
+    function Sheet({
+      onClose,
+      dismissOnBackdrop,
+    }: {
+      onClose: () => void;
+      dismissOnBackdrop?: boolean;
+    }) {
       const [open, setOpen] = React.useState(true);
       return (
         <Dialog
@@ -270,7 +288,8 @@ describe('Dialog.web keyboard and focus', () => {
           }}
           dismissOnBackdrop={dismissOnBackdrop}
           placement="bottom"
-          label="Shortcuts">
+          label="Shortcuts"
+        >
           <Search />
         </Dialog>
       );
@@ -300,19 +319,44 @@ describe('Dialog.web keyboard and focus', () => {
 
 describe('bottom dialog panel semantics', () => {
   it('names and describes the modal panel from its declarative content', () => {
-    mount(<Dialog open placement="bottom" title="Account preferences" description="Manage your account."><TextInput accessibilityLabel="Display name" /></Dialog>);
+    mount(
+      <Dialog
+        open
+        placement="bottom"
+        title="Account preferences"
+        description="Manage your account."
+      >
+        <TextInput accessibilityLabel="Display name" />
+      </Dialog>,
+    );
     const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"]');
     expect(dialogs).toHaveLength(1);
     const panel = dialogs[0]!;
     expect(panel.getAttribute('aria-modal')).toBe('true');
-    expect(document.getElementById(panel.getAttribute('aria-labelledby')!)?.textContent).toBe('Account preferences');
-    expect(document.getElementById(panel.getAttribute('aria-describedby')!)?.textContent).toBe('Manage your account.');
+    expect(document.getElementById(panel.getAttribute('aria-labelledby')!)?.textContent).toBe(
+      'Account preferences',
+    );
+    expect(document.getElementById(panel.getAttribute('aria-describedby')!)?.textContent).toBe(
+      'Manage your account.',
+    );
     expect(panel.querySelector('[aria-label="Display name"]')).not.toBeNull();
     expect(panel.tabIndex).toBe(-1);
   });
 
   it('includes navigation header controls within the named dialog', () => {
-    mount(<Dialog open placement="bottom" title="Unused title" description="Unused description" header={{ title: 'Account preferences' }}><Pressable accessibilityRole="button"><Text>Save</Text></Pressable></Dialog>);
+    mount(
+      <Dialog
+        open
+        placement="bottom"
+        title="Unused title"
+        description="Unused description"
+        header={{ title: 'Account preferences' }}
+      >
+        <Pressable accessibilityRole="button">
+          <Text>Save</Text>
+        </Pressable>
+      </Dialog>,
+    );
     const panel = dialogNamed('Account preferences');
     expect(panel.getAttribute('aria-modal')).toBe('true');
     expect(panel.querySelectorAll('button').length).toBeGreaterThanOrEqual(2);
@@ -322,7 +366,11 @@ describe('bottom dialog panel semantics', () => {
   });
 
   it('uses an explicit label for custom content without dangling text associations', () => {
-    mount(<Dialog open placement="bottom" label="Sign in"><TextInput accessibilityLabel="Email" /></Dialog>);
+    mount(
+      <Dialog open placement="bottom" label="Sign in">
+        <TextInput accessibilityLabel="Email" />
+      </Dialog>,
+    );
     const panel = dialogNamed('Sign in');
     expect(panel.hasAttribute('aria-labelledby')).toBe(false);
     expect(panel.hasAttribute('aria-describedby')).toBe(false);
@@ -334,12 +382,20 @@ describe('temporarily unavailable modal controls', () => {
   it('keeps Tab on the topmost empty panel without activating the parent trap', () => {
     function NestedPending() {
       const [inner, setInner] = React.useState(false);
-      return <Dialog open label="Outer">
-        <Pressable testID="open-pending" accessibilityRole="button" onPress={() => setInner(true)}><Text>Open pending</Text></Pressable>
-        <Dialog open={inner} label="Inner pending" dismissOnBackdrop={false}>
-          <button disabled>Unavailable</button>
+      return (
+        <Dialog open label="Outer">
+          <Pressable
+            testID="open-pending"
+            accessibilityRole="button"
+            onPress={() => setInner(true)}
+          >
+            <Text>Open pending</Text>
+          </Pressable>
+          <Dialog open={inner} label="Inner pending" dismissOnBackdrop={false}>
+            <button disabled>Unavailable</button>
+          </Dialog>
         </Dialog>
-      </Dialog>;
+      );
     }
     mount(<NestedPending />);
     act(() => byTestId('open-pending').click());
@@ -364,12 +420,20 @@ describe('closing before the entry focus frame', () => {
     function Nested() {
       const [child, setChild] = React.useState(false);
       const closeChild = React.useCallback(() => setChild(false), []);
-      return <Dialog open label="Parent">
-        <Pressable testID="rapid-child-opener" accessibilityRole="button" onPress={() => setChild(true)}><Text>Open child</Text></Pressable>
-        <Dialog open={child} label="Transient child" placement="end">
-          <CloseImmediately close={closeChild} />
+      return (
+        <Dialog open label="Parent">
+          <Pressable
+            testID="rapid-child-opener"
+            accessibilityRole="button"
+            onPress={() => setChild(true)}
+          >
+            <Text>Open child</Text>
+          </Pressable>
+          <Dialog open={child} label="Transient child" placement="end">
+            <CloseImmediately close={closeChild} />
+          </Dialog>
         </Dialog>
-      </Dialog>;
+      );
     }
     mount(<Nested />);
     const trigger = byTestId('rapid-child-opener');
@@ -390,16 +454,28 @@ describe('closing before the entry focus frame', () => {
   });
 });
 
-
 it('preserves the opener when Escape dismisses a nested child before its autofocus frame', () => {
   function Nested() {
     const [child, setChild] = React.useState(false);
-    return <Dialog open label="Parent">
-      <Pressable testID="escape-child-opener" accessibilityRole="button" onPress={() => setChild(true)}><Text>Open child</Text></Pressable>
-      <Dialog open={child} onClose={() => setChild(false)} label="Transient child" placement="end">
-        <button>Transient child action</button>
+    return (
+      <Dialog open label="Parent">
+        <Pressable
+          testID="escape-child-opener"
+          accessibilityRole="button"
+          onPress={() => setChild(true)}
+        >
+          <Text>Open child</Text>
+        </Pressable>
+        <Dialog
+          open={child}
+          onClose={() => setChild(false)}
+          label="Transient child"
+          placement="end"
+        >
+          <button>Transient child action</button>
+        </Dialog>
       </Dialog>
-    </Dialog>;
+    );
   }
   mount(<Nested />);
   const trigger = byTestId('escape-child-opener');

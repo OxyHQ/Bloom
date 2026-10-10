@@ -35,8 +35,28 @@ export const STATS: AiProfileCardStat[] = [
   { value: '62 days', label: 'Top streak' },
 ];
 
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const COUNT_BANDS: [number, number][] = [[0, 0], [1, 4], [5, 9], [10, 15], [16, 24], [25, 40]];
+const MONTH_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+const COUNT_BANDS: [number, number][] = [
+  [0, 0],
+  [1, 4],
+  [5, 9],
+  [10, 15],
+  [16, 24],
+  [25, 40],
+];
 
 /** Hash-scattered activity tiers. */
 function tierFor(row: number, col: number) {
@@ -59,7 +79,11 @@ export function contributionCells(columns: number, year = 2026): ContributionCel
     const count = hi === 0 ? 0 : lo + ((hashContributionCell(row, col) >>> 3) % (hi - lo + 1));
     const dayOfYear = Math.round((index / (columns * 7 - 1)) * 364);
     const d = new Date(Date.UTC(year, 0, 1 + dayOfYear));
-    return { count, tier: tier as ContributionCell['tier'], date: `${MONTH_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}` };
+    return {
+      count,
+      tier: tier as ContributionCell['tier'],
+      date: `${MONTH_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`,
+    };
   });
 }
 
@@ -70,15 +94,24 @@ export const CELLS = contributionCells(38);
 // ---------------------------------------------------------------------------
 
 export const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 /** December's bar heights straight from Figma, px in a 206 track. */
 const DECEMBER_BARS = [
-  73, 141, 118, 0, 118, 18, 0, 0, 0, 95,
-  0, 158, 78, 45, 0, 45, 135, 88, 0, 0,
-  107, 21, 45, 105, 87, 66, 19, 128, 98, 34,
+  73, 141, 118, 0, 118, 18, 0, 0, 0, 95, 0, 158, 78, 45, 0, 45, 135, 88, 0, 0, 107, 21, 45, 105, 87,
+  66, 19, 128, 98, 34,
 ];
 
 function hash(a: number, b: number) {
@@ -104,7 +137,10 @@ function barsFor(month: number): number[] {
 export function agentsFor(month: number): { data: AgentsPoint[]; headline: number; max: number } {
   const bars = barsFor(month);
   return {
-    data: bars.map((h, day) => ({ label: `${MONTH_NAMES[month]!.slice(0, 3)} ${day + 1}`, value: h / 5 })),
+    data: bars.map((h, day) => ({
+      label: `${MONTH_NAMES[month]!.slice(0, 3)} ${day + 1}`,
+      value: h / 5,
+    })),
     headline: month === 11 ? 32 : 22 + (hash(month + 3, 17) % 27),
     max: 158 / 5,
   };
@@ -115,9 +151,8 @@ export function agentsFor(month: number): { data: AgentsPoint[]; headline: numbe
 // ---------------------------------------------------------------------------
 
 const TOKENS = [
-  34.2, 28.6, 6.1, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 31.4, 4.8, 2.2, 1.1, 5.6, 1.4, 0.8, 42.1,
-  51.8, 48.3, 33.6, 9.2, 3.4, 18.7, 25.3, 37.9, 30.2, 24.6,
+  34.2, 28.6, 6.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31.4, 4.8, 2.2, 1.1, 5.6, 1.4, 0.8, 42.1, 51.8, 48.3,
+  33.6, 9.2, 3.4, 18.7, 25.3, 37.9, 30.2, 24.6,
 ];
 
 export const TOKENS_SERIES: TokensPoint[] = TOKENS.map((value, day) => {

@@ -66,8 +66,12 @@ describe('ButtonGroup', () => {
     // have — "not pressed" on an attach button that fires and is done.
     const screen = renderWithTheme(
       <ButtonGroup accessibilityLabel="Format">
-        <ButtonGroupItem testID="action" onPress={() => {}}>Attach</ButtonGroupItem>
-        <ButtonGroupItem testID="off" selected={false} onPress={() => {}}>Bold</ButtonGroupItem>
+        <ButtonGroupItem testID="action" onPress={() => {}}>
+          Attach
+        </ButtonGroupItem>
+        <ButtonGroupItem testID="off" selected={false} onPress={() => {}}>
+          Bold
+        </ButtonGroupItem>
       </ButtonGroup>,
     );
     const action = screen.getByTestId('action');
@@ -79,10 +83,16 @@ describe('ButtonGroup', () => {
 
   it('keeps controlled changes and disabled state on the real Button', () => {
     const change = jest.fn();
-    const screen = renderWithTheme(<ButtonGroup>
-      <ButtonGroupItem testID="selected" checked onCheckedChange={change}>B</ButtonGroupItem>
-      <ButtonGroupItem testID="disabled" disabled onCheckedChange={change}>C</ButtonGroupItem>
-    </ButtonGroup>);
+    const screen = renderWithTheme(
+      <ButtonGroup>
+        <ButtonGroupItem testID="selected" checked onCheckedChange={change}>
+          B
+        </ButtonGroupItem>
+        <ButtonGroupItem testID="disabled" disabled onCheckedChange={change}>
+          C
+        </ButtonGroupItem>
+      </ButtonGroup>,
+    );
     pressHost(screen.getByTestId('selected'));
     expect(change).toHaveBeenCalledWith(false);
     expect(screen.getByTestId('disabled').props.disabled).toBe(true);

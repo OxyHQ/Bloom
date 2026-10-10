@@ -31,9 +31,7 @@ const isActive = (status: AppStateStatus) => status === 'active';
  * @returns an unsubscribe function — a no-op when the platform provides no
  *   `AppState` subscription.
  */
-export function subscribeToAppState(
-  onChange: (status: AppStateStatus) => void,
-): () => void {
+export function subscribeToAppState(onChange: (status: AppStateStatus) => void): () => void {
   if (!AppState.isAvailable) {
     return NOOP;
   }

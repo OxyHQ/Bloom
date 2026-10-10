@@ -74,7 +74,13 @@ export interface PriceHistoryPoint {
   title?: string;
 }
 
-export type PriceEventKind = 'listed' | 'price-drop' | 'price-rise' | 'rented' | 'sold' | 'delisted';
+export type PriceEventKind =
+  | 'listed'
+  | 'price-drop'
+  | 'price-rise'
+  | 'rented'
+  | 'sold'
+  | 'delisted';
 
 export interface PriceHistoryEvent {
   /** Index into the period's `data` the marker sits on. */

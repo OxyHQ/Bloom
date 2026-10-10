@@ -8,7 +8,8 @@ import { DIRECTIONS_MESSAGES } from './messages';
 import type { DirectionsManeuver, DirectionsMode, DirectionsTraffic } from './types';
 
 /** The English mode words. The components speak `DIRECTIONS_MESSAGES` in the app's locale. */
-export const DIRECTIONS_MODE_LABELS: Readonly<Record<DirectionsMode, string>> = DIRECTIONS_MESSAGES.en.modes;
+export const DIRECTIONS_MODE_LABELS: Readonly<Record<DirectionsMode, string>> =
+  DIRECTIONS_MESSAGES.en.modes;
 
 /** The glyph each mode draws — on the switcher, on a leg header, on a route row. */
 export const DIRECTIONS_MODE_ICON: Readonly<Record<DirectionsMode, BloomIconComponent>> = {

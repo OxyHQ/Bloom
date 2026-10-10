@@ -13,9 +13,10 @@ export interface AiProfileCardMessages {
   periods: { weekly: string; monthly: string; yearly: string };
 }
 
-export const AI_PROFILE_CARD_MESSAGES: MessageCatalog<AiProfileCardMessages> = defineMessages<AiProfileCardMessages>('AI_PROFILE_CARD_MESSAGES', {
-  contributions: 'Contributions this year',
-  activity: 'Activity',
-  periodGroup: (label) => `${label} period`,
-  periods: { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' },
-});
+export const AI_PROFILE_CARD_MESSAGES: MessageCatalog<AiProfileCardMessages> =
+  defineMessages<AiProfileCardMessages>('AI_PROFILE_CARD_MESSAGES', {
+    contributions: 'Contributions this year',
+    activity: 'Activity',
+    periodGroup: (label) => `${label} period`,
+    periods: { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' },
+  });

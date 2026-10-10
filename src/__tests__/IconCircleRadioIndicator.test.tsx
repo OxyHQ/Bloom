@@ -120,9 +120,9 @@ describe('RadioIndicator', () => {
 
   it('falls back to white for a caller-supplied accent it cannot reason about', () => {
     const rendered = styles(<RadioIndicator selected selectedColor="rgb(102, 51, 153)" />);
-    expect(String(rendered[2]?.experimental_backgroundImage ?? rendered[2]?.backgroundImage)).toContain(
-      'rgb(102, 51, 153)',
-    );
+    expect(
+      String(rendered[2]?.experimental_backgroundImage ?? rendered[2]?.backgroundImage),
+    ).toContain('rgb(102, 51, 153)');
     expect(rendered[3]?.backgroundColor).toBe('#FFFFFF');
   });
 

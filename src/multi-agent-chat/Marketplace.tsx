@@ -1,10 +1,5 @@
 import React, { useRef, useState, type ReactNode } from 'react';
-import {
-  Platform,
-  useWindowDimensions,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { Platform, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import { AgentAvatar } from '../agent-avatar';
 import { Button, CloseButton } from '../button';
@@ -41,10 +36,8 @@ import {
   type MultiAgentChatMessages,
 } from './messages';
 import { ScrollSurface } from './ScrollSurface';
-const cx = (...classes: (string | false | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
-const focus =
-  'outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring';
+const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(' ');
+const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring';
 type View = 'discover' | 'plugin' | 'bot' | 'installed';
 const categories = (messages: MultiAgentChatMessages) =>
   [
@@ -75,12 +68,8 @@ function CatalogGrid({
   return (
     <StyledView
       className={className}
-      onLayout={
-        native ? (event) => setWidth(event.nativeEvent.layout.width) : undefined
-      }
-      style={
-        native ? { flexDirection: 'row', flexWrap: 'wrap', gap } : undefined
-      }
+      onLayout={native ? (event) => setWidth(event.nativeEvent.layout.width) : undefined}
+      style={native ? { flexDirection: 'row', flexWrap: 'wrap', gap } : undefined}
     >
       {native
         ? React.Children.map(children, (child) =>
@@ -93,8 +82,7 @@ function CatalogGrid({
                     child.props.style,
                     {
                       width:
-                        count === 2 &&
-                        child.props.className?.includes('col-span-2')
+                        count === 2 && child.props.className?.includes('col-span-2')
                           ? '100%'
                           : width
                             ? Math.max(0, (width - gap * (count - 1)) / count)
@@ -109,13 +97,7 @@ function CatalogGrid({
   );
 }
 
-function ItemIcon({
-  item,
-  size = 44,
-}: {
-  item: MarketplaceItem;
-  size?: number;
-}) {
+function ItemIcon({ item, size = 44 }: { item: MarketplaceItem; size?: number }) {
   const { isDark } = useTheme();
   if (item.avatar)
     return (
@@ -247,24 +229,15 @@ export function Marketplace({
             accessibilityRole="button"
             accessibilityLabel={formatChatMessage(messages.viewItem, item.name)}
             onPress={() => openDetail(item)}
-            className={cx(
-              'flex min-w-0 items-center gap-3 rounded-xl text-start flex-row',
-              focus,
-            )}
+            className={cx('flex min-w-0 items-center gap-3 rounded-xl text-start flex-row', focus)}
           >
             <ItemIcon item={item} size={36} />
             <StyledView className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <Text className="truncate text-body-medium text-text-primary">
-                {item.name}
-              </Text>
-              <Text className="text-caption-1-regular text-text-tertiary">
-                {item.category}
-              </Text>
+              <Text className="truncate text-body-medium text-text-primary">{item.name}</Text>
+              <Text className="text-caption-1-regular text-text-tertiary">{item.category}</Text>
             </StyledView>
           </StyledPressable>
-          <Text className="text-body-2-regular text-text-secondary">
-            {item.description}
-          </Text>
+          <Text className="text-body-2-regular text-text-secondary">{item.description}</Text>
           <Button
             size="sm"
             appearance="subtle"
@@ -306,12 +279,8 @@ export function Marketplace({
           >
             <ItemIcon item={item} size={52} />
             <StyledView className="flex flex-col gap-1">
-              <Text className="text-body-2-medium text-text-primary">
-                {item.name}
-              </Text>
-              <Text className="text-caption-1-regular text-text-secondary">
-                {item.category}
-              </Text>
+              <Text className="text-body-2-medium text-text-primary">{item.name}</Text>
+              <Text className="text-caption-1-regular text-text-secondary">{item.category}</Text>
             </StyledView>
           </StyledPressable>
         ))}
@@ -333,9 +302,7 @@ export function Marketplace({
                   className="bg-transparent text-text-secondary hover:bg-background-secondary-default active:bg-background-tertiary-default"
                   iconOnly
                   leadingIcon={RiArrowLeftLine}
-                  accessibilityLabel={
-                    detail ? messages.backToMarketplace : backLabel
-                  }
+                  accessibilityLabel={detail ? messages.backToMarketplace : backLabel}
                   onPress={() => {
                     if (detail) {
                       setDetail(null);
@@ -344,9 +311,7 @@ export function Marketplace({
                   }}
                 />
               )}
-              <Text className="text-title-3-medium text-text-primary">
-                {messages.marketplace}
-              </Text>
+              <Text className="text-title-3-medium text-text-primary">{messages.marketplace}</Text>
             </StyledView>
             <CloseButton
               accessibilityLabel={messages.closeMarketplace}
@@ -378,11 +343,7 @@ export function Marketplace({
                       {detail.name}
                     </Text>
                     <Text className="text-body-2-regular text-text-secondary">
-                      {formatChatMessage(
-                        messages.by,
-                        detail.category,
-                        detail.developer,
-                      )}
+                      {formatChatMessage(messages.by, detail.category, detail.developer)}
                     </Text>
                   </StyledView>
                   <Text
@@ -443,18 +404,13 @@ export function Marketplace({
                   </SettingsSectionLabel>
                   <StyledView className="flex flex-col gap-2">
                     {detail.skills.map((skill) => (
-                      <SettingsCard
-                        key={skill.name}
-                        className="flex-row items-center gap-3 p-3"
-                      >
+                      <SettingsCard key={skill.name} className="flex-row items-center gap-3 p-3">
                         <RiCodeSSlashLine
                           className="size-5 shrink-0 text-foreground-icon-secondary"
                           aria-hidden
                         />
                         <StyledView className="flex min-w-0 flex-col gap-1">
-                          <Text className="text-body-medium text-text-primary">
-                            {skill.name}
-                          </Text>
+                          <Text className="text-body-medium text-text-primary">{skill.name}</Text>
                           <Text className="text-body-2-regular text-text-secondary">
                             {skill.description}
                           </Text>
@@ -468,23 +424,15 @@ export function Marketplace({
                     <SettingsSectionLabel>
                       {formatChatMessage(messages.apps, detail.apps.length)}
                     </SettingsSectionLabel>
-                    <CatalogGrid
-                      gap={8}
-                      className="grid grid-cols-1 gap-2 sm:grid-cols-2"
-                    >
+                    <CatalogGrid gap={8} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {detail.apps.map((app) => (
-                        <SettingsCard
-                          key={app}
-                          className="flex-row items-center gap-3 p-3"
-                        >
+                        <SettingsCard key={app} className="flex-row items-center gap-3 p-3">
                           <RiPlugLine
                             className="size-5 shrink-0 text-foreground-icon-secondary"
                             aria-hidden
                           />
                           <StyledView className="min-w-0">
-                            <Text className="text-body-medium text-text-primary">
-                              {app}
-                            </Text>
+                            <Text className="text-body-medium text-text-primary">{app}</Text>
                             <Text className="text-caption-1-regular text-text-secondary">
                               {messages.connector}
                             </Text>
@@ -495,9 +443,7 @@ export function Marketplace({
                   </StyledView>
                 )}
                 <StyledView className="flex flex-col gap-1">
-                  <SettingsSectionLabel>
-                    {messages.details}
-                  </SettingsSectionLabel>
+                  <SettingsSectionLabel>{messages.details}</SettingsSectionLabel>
                   <SettingsCard
                     className="gap-4 p-4"
                     style={{
@@ -517,23 +463,15 @@ export function Marketplace({
                         [messages.category, detail.category],
                         [
                           messages.includes,
-                          messages.includedSkills(
-                            detail.apps.length,
-                            detail.skills.length,
-                          ),
+                          messages.includedSkills(detail.apps.length, detail.skills.length),
                         ],
                         [messages.availability, messages.public],
                       ].map(([label, value]) => (
-                        <StyledView
-                          key={label}
-                          className="flex min-w-0 flex-col gap-1"
-                        >
+                        <StyledView key={label} className="flex min-w-0 flex-col gap-1">
                           <Text className="text-caption-1-regular text-text-secondary">
                             {label}
                           </Text>
-                          <Text className="text-body-medium text-text-primary">
-                            {value}
-                          </Text>
+                          <Text className="text-body-medium text-text-primary">{value}</Text>
                         </StyledView>
                       ))}
                     </CatalogGrid>

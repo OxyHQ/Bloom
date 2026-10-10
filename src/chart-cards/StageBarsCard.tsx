@@ -9,7 +9,11 @@ import { ChartCardSurface, CHART_CARD_HEIGHT } from './primitives/ChartCardSurfa
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardSurfacePalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import {
+  useChartCardSurfacePalette,
+  useChartTones,
+  useMonoTone,
+} from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import {
@@ -125,7 +129,11 @@ export function StageBarsCard({
   const headline = selected?.headline ?? headlineProp;
   const delta = selected?.delta ?? deltaProp;
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(stages.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    stages.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -134,7 +142,9 @@ export function StageBarsCard({
     [select, setActiveIndex],
   );
 
-  const tones: ChartSeriesTone[] = stages.map((s, i) => (mono ? monoTone : resolveTone(palettes, i, s.color, s.activeColor)));
+  const tones: ChartSeriesTone[] = stages.map((s, i) =>
+    mono ? monoTone : resolveTone(palettes, i, s.color, s.activeColor),
+  );
   const top = Math.max(1, stages[0]?.value ?? 1);
   const hovering = activeIndex !== null;
   const headerLabel = hovering ? stages[activeIndex]!.label : title;
@@ -146,7 +156,11 @@ export function StageBarsCard({
     `${title}: ${stages.map((s) => `${s.label} ${format(s.value)} (${Math.round((s.value / top) * 100)}%)`).join(', ')}`;
 
   return (
-    <ChartCardSurface height="auto" style={[{ minHeight: CHART_CARD_HEIGHT }, style]} testID={testID}>
+    <ChartCardSurface
+      height="auto"
+      style={[{ minHeight: CHART_CARD_HEIGHT }, style]}
+      testID={testID}
+    >
       <ChartHeader
         label={headerLabel}
         value={headlineValue}
@@ -168,15 +182,28 @@ export function StageBarsCard({
         role="img"
         accessibilityLabel={summary}
         testID={testID ? `${testID}-rows` : undefined}
-        style={{ width: '100%', flexGrow: 1, minHeight: 0, justifyContent: 'center', paddingTop: 8, paddingBottom: 8 }}>
+        style={{
+          width: '100%',
+          flexGrow: 1,
+          minHeight: 0,
+          justifyContent: 'center',
+          paddingTop: 8,
+          paddingBottom: 8,
+        }}
+      >
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <View style={{ flexShrink: 0, alignItems: 'flex-end', gap: ROW_GAP }}>
             {stages.map((stage, i) => (
               <View
                 key={`label-${stage.label}-${i}`}
                 {...hoverTarget(i, setActiveIndex)}
-                style={[{ height: BAR_HEIGHT, justifyContent: 'center', opacity: dim(i) }, fade]}>
-                <Text variant="body-regular" numberOfLines={1} style={{ color: palette.textSecondary, textAlign: 'right' }}>
+                style={[{ height: BAR_HEIGHT, justifyContent: 'center', opacity: dim(i) }, fade]}
+              >
+                <Text
+                  variant="body-regular"
+                  numberOfLines={1}
+                  style={{ color: palette.textSecondary, textAlign: 'right' }}
+                >
                   {stage.label}
                 </Text>
               </View>
@@ -191,7 +218,20 @@ export function StageBarsCard({
                 color={activeIndex === i ? tones[i]!.activeColor : tones[i]!.color}
                 track={palette.track}
                 opacity={dim(i)}
-                icon={showIcons ? renderChartIcon(stage.icon, ICON_SIZE, contrastRatio(activeIndex === i ? tones[i]!.activeColor : tones[i]!.color, '#ffffff') >= 4.5 ? '#ffffff' : '#000000') : null}
+                icon={
+                  showIcons
+                    ? renderChartIcon(
+                        stage.icon,
+                        ICON_SIZE,
+                        contrastRatio(
+                          activeIndex === i ? tones[i]!.activeColor : tones[i]!.color,
+                          '#ffffff',
+                        ) >= 4.5
+                          ? '#ffffff'
+                          : '#000000',
+                      )
+                    : null
+                }
                 hover={hoverTarget(i, setActiveIndex)}
                 testID={testID ? `${testID}-bar-${i}` : undefined}
               />
@@ -203,13 +243,29 @@ export function StageBarsCard({
                 key={`value-${stage.label}-${i}`}
                 {...hoverTarget(i, setActiveIndex)}
                 style={[
-                  { height: BAR_HEIGHT, flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end', gap: 6, opacity: dim(i) },
+                  {
+                    height: BAR_HEIGHT,
+                    flexDirection: 'row',
+                    alignItems: 'baseline',
+                    justifyContent: 'flex-end',
+                    gap: 6,
+                    opacity: dim(i),
+                  },
                   fade,
-                ]}>
-                <Text variant="body-medium" numberOfLines={1} style={[{ color: palette.text }, TABULAR]}>
+                ]}
+              >
+                <Text
+                  variant="body-medium"
+                  numberOfLines={1}
+                  style={[{ color: palette.text }, TABULAR]}
+                >
                   {format(stage.value)}
                 </Text>
-                <Text variant="caption-1-medium" numberOfLines={1} style={[{ color: palette.textTertiary }, TABULAR]}>
+                <Text
+                  variant="caption-1-medium"
+                  numberOfLines={1}
+                  style={[{ color: palette.textTertiary }, TABULAR]}
+                >
                   {`${Math.round((stage.value / top) * 100)}%`}
                 </Text>
               </View>
@@ -262,18 +318,37 @@ function StageTrack({
       {...hover}
       testID={testID}
       style={[
-        { height: BAR_HEIGHT, minWidth: 0, overflow: 'hidden', borderRadius: borderRadius.full, backgroundColor: track, opacity },
+        {
+          height: BAR_HEIGHT,
+          minWidth: 0,
+          overflow: 'hidden',
+          borderRadius: borderRadius.full,
+          backgroundColor: track,
+          opacity,
+        },
         fade,
-      ]}>
+      ]}
+    >
       <Animated.View
         testID={testID ? `${testID}-fill` : undefined}
         style={[
-          { position: 'absolute', top: 0, bottom: 0, left: 0, width, borderRadius: borderRadius.full, backgroundColor: color },
+          {
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            width,
+            borderRadius: borderRadius.full,
+            backgroundColor: color,
+          },
           colorEase,
         ]}
       />
       {icon ? (
-        <View pointerEvents="none" style={{ position: 'absolute', top: 0, bottom: 0, left: 4, justifyContent: 'center' }}>
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', top: 0, bottom: 0, left: 4, justifyContent: 'center' }}
+        >
           {icon}
         </View>
       ) : null}

@@ -204,7 +204,10 @@ function Star({
       return;
     }
     // Keyframes 0% (0, 0) → 40% (1, 1) → 60% (0.8, 0.9) → 100% (0, 0).
-    const seg = (fraction: number) => ({ duration: STAR_PERIOD_MS * fraction, easing: EASE_IN_OUT });
+    const seg = (fraction: number) => ({
+      duration: STAR_PERIOD_MS * fraction,
+      easing: EASE_IN_OUT,
+    });
     const delay = (index * STAR_PERIOD_MS * 0.7) / STAR_LAYOUT.length;
     scale.value = withDelay(
       delay,
@@ -251,13 +254,7 @@ function Star({
   );
 }
 
-function StarsIndicator({
-  color,
-  reducedMotion,
-}: {
-  color: string;
-  reducedMotion: boolean;
-}) {
+function StarsIndicator({ color, reducedMotion }: { color: string; reducedMotion: boolean }) {
   return (
     <View
       aria-hidden
@@ -290,13 +287,7 @@ const INFINITY_PATH = 'M28 14C33 5 47 5 47 14C47 23 33 23 28 14C23 5 9 5 9 14C9 
  */
 const INFINITY_LENGTH = 101.2956;
 
-function InfinityIndicator({
-  color,
-  reducedMotion,
-}: {
-  color: string;
-  reducedMotion: boolean;
-}) {
+function InfinityIndicator({ color, reducedMotion }: { color: string; reducedMotion: boolean }) {
   const offset = useSharedValue(0);
 
   useEffect(() => {
@@ -414,9 +405,7 @@ function AgentThinkingComponent({
           reducedMotion={reducedMotion}
         />
       )}
-      {variant === 'infinity' && (
-        <InfinityIndicator color={color} reducedMotion={reducedMotion} />
-      )}
+      {variant === 'infinity' && <InfinityIndicator color={color} reducedMotion={reducedMotion} />}
       <ThinkingLabel
         testID={testID ? `${testID}-label` : undefined}
         color={color}

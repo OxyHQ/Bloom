@@ -39,6 +39,4 @@ const HEADER = [
 const css = `${HEADER}\n\n${bloomThemeBlock()}\n`;
 
 writeFileSync(OUT_PATH, css);
-console.log(
-  `[generate-theme-css] wrote ${relative(REPO_ROOT, OUT_PATH)} (${css.length} bytes)`,
-);
+console.log(`[generate-theme-css] wrote ${relative(REPO_ROOT, OUT_PATH)} (${css.length} bytes)`);

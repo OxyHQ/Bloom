@@ -18,11 +18,7 @@ import { LongPressArea } from '../floating/LongPressArea';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { ContextMenuProvider, useContextMenu } from './context';
-import type {
-  ContextMenuContentProps,
-  ContextMenuProps,
-  ContextMenuTriggerProps,
-} from './types';
+import type { ContextMenuContentProps, ContextMenuProps, ContextMenuTriggerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CONTEXT_MENU_MESSAGES } from './messages';
 
@@ -82,17 +78,14 @@ export function ContextMenuTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
-      }}>
+      }}
+    >
       {asChild ? children : <LongPressArea>{children}</LongPressArea>}
     </TriggerSlot>
   );
 }
 
-export function ContextMenuContent({
-  children,
-  label: labelProp,
-  style,
-}: ContextMenuContentProps) {
+export function ContextMenuContent({ children, label: labelProp, style }: ContextMenuContentProps) {
   const { messages } = useMessages(CONTEXT_MENU_MESSAGES);
   const label = labelProp ?? messages.contextMenu;
   const menu = useContextMenu();

@@ -27,9 +27,19 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
-import { WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, WEB_VIEWPORT_HEIGHT, type WebCssStyle } from '../styles/web-view-style';
+import {
+  WEB_OVERFLOW_CLIP,
+  WEB_POSITION_FIXED,
+  WEB_VIEWPORT_HEIGHT,
+  type WebCssStyle,
+} from '../styles/web-view-style';
 import { Text } from '../typography';
-import { AiChatDocumentGutterContext, AiChatShellContext, useAiChatShell, type AiChatShellState } from './context';
+import {
+  AiChatDocumentGutterContext,
+  AiChatShellContext,
+  useAiChatShell,
+  type AiChatShellState,
+} from './context';
 import {
   dataHook,
   DOCUMENT_RAIL,
@@ -65,7 +75,11 @@ const DRAWER_MS = 300;
 const CLOSED_LAYER: ViewProps =
   Platform.OS === 'web'
     ? ({ 'aria-hidden': true, inert: true } as ViewProps)
-    : { 'aria-hidden': true, accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' };
+    : {
+        'aria-hidden': true,
+        accessibilityElementsHidden: true,
+        importantForAccessibility: 'no-hide-descendants',
+      };
 
 // --- Nav drawer swipe ------------------------------------------------------
 //
@@ -92,8 +106,6 @@ const NAV_SWIPE_RATIO = 2;
 const NAV_SWIPE_FLICK = 0.3;
 /** A settle never runs shorter than this, so the last few px are still seen. */
 const NAV_SETTLE_MIN_MS = 120;
-
-
 
 // ---------------------------------------------------------------------------
 //  Mobile header
@@ -125,20 +137,38 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
           paddingTop: 11,
         },
         style,
-      ]}>
-      <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      ]}
+    >
+      <View
+        style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+      >
         {shell.navCollapsed && shell.hasNav ? (
-          <Button size="md" icon={RiMenuLine} accessibilityLabel={shell.labels.openNavigation} onPress={shell.openNav} appearance="plain" tone="neutral" />
+          <Button
+            size="md"
+            icon={RiMenuLine}
+            accessibilityLabel={shell.labels.openNavigation}
+            onPress={shell.openNav}
+            appearance="plain"
+            tone="neutral"
+          />
         ) : null}
         <Text
           variant="headline-medium"
           numberOfLines={1}
-          style={{ flexShrink: 1, paddingLeft: 4, paddingRight: 4, color: palette.text }}>
+          style={{ flexShrink: 1, paddingLeft: 4, paddingRight: 4, color: palette.text }}
+        >
           {title}
         </Text>
       </View>
       {shell.hasPanel ? (
-        <Button size="md" icon={shell.panelIcon} accessibilityLabel={shell.labels.openPanel(shell.panelLabel)} onPress={shell.openPanel} appearance="plain" tone="neutral" />
+        <Button
+          size="md"
+          icon={shell.panelIcon}
+          accessibilityLabel={shell.labels.openPanel(shell.panelLabel)}
+          onPress={shell.openPanel}
+          appearance="plain"
+          tone="neutral"
+        />
       ) : null}
     </View>
   );
@@ -210,7 +240,7 @@ export function AiChatShell({
   const deviceInsets = useContext(SafeAreaInsetsContext);
   const inheritedBottomInset = useContext(BottomBarSlotContext);
   const ownsSafeArea = safeArea && Platform.OS !== 'web';
-  const safeInsets = ownsSafeArea ? deviceInsets ?? NO_SAFE_INSETS : NO_SAFE_INSETS;
+  const safeInsets = ownsSafeArea ? (deviceInsets ?? NO_SAFE_INSETS) : NO_SAFE_INSETS;
   const reducedMotion = useReducedMotion();
   const { messages } = useMessages(AI_CHAT_MESSAGES);
   const panelLabel = panelLabelProp ?? messages.code;
@@ -262,7 +292,9 @@ export function AiChatShell({
   const onResize = useCallback(
     (dx: number) => {
       // Dragging right widens the chat, so the panel gives up that width.
-      setPanelWidth(Math.min(maxPanelWidth, Math.max(minPanelWidth, widthAtDragStart.current - dx)));
+      setPanelWidth(
+        Math.min(maxPanelWidth, Math.max(minPanelWidth, widthAtDragStart.current - dx)),
+      );
     },
     [maxPanelWidth, minPanelWidth],
   );
@@ -284,7 +316,9 @@ export function AiChatShell({
     const target = navOpen ? 1 : 0;
     if (revealTarget.current === target) return;
     revealTarget.current = target;
-    reveal.value = reducedMotion ? target : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
+    reveal.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
   }, [navOpen, reducedMotion, reveal]);
   /**
    * Land the drawer open or closed, animating from wherever it is now.
@@ -309,7 +343,10 @@ export function AiChatShell({
     [reveal],
   );
   const workspaceStyle = useAnimatedStyle(
-    () => ({ transform: [{ translateX: REVEAL_OFFSET * reveal.value }], borderRadius: 32 * reveal.value }),
+    () => ({
+      transform: [{ translateX: REVEAL_OFFSET * reveal.value }],
+      borderRadius: 32 * reveal.value,
+    }),
     [reveal],
   );
   const veilStyle = useAnimatedStyle(() => ({ opacity: reveal.value }), [reveal]);
@@ -386,8 +423,7 @@ export function AiChatShell({
         },
         onPanResponderRelease: (_event, gesture) => {
           const progress = clamp01(swipe.current.from + gesture.dx / REVEAL_OFFSET);
-          const open =
-            Math.abs(gesture.vx) >= NAV_SWIPE_FLICK ? gesture.vx > 0 : progress >= 0.5;
+          const open = Math.abs(gesture.vx) >= NAV_SWIPE_FLICK ? gesture.vx > 0 : progress >= 0.5;
           const remaining = Math.abs((open ? 1 : 0) - progress);
           swipe.current.settle(
             open,
@@ -406,7 +442,9 @@ export function AiChatShell({
   const drawer = useSharedValue(panelOpen ? 1 : 0);
   useEffect(() => {
     const target = panelOpen ? 1 : 0;
-    drawer.value = reducedMotion ? target : withTiming(target, { duration: DRAWER_MS, easing: DRAWER_EASE });
+    drawer.value = reducedMotion
+      ? target
+      : withTiming(target, { duration: DRAWER_MS, easing: DRAWER_EASE });
   }, [panelOpen, reducedMotion, drawer]);
   const [shellWidth, setShellWidth] = useState(windowWidth);
   const drawerWidth = Math.min(410, shellWidth - safeInsets.left - safeInsets.right - 12);
@@ -462,16 +500,20 @@ export function AiChatShell({
     // A document-scrolled shell is at least one screen and grows with the
     // chat. `clip`, not `hidden`, so it is not a scroll container of its own
     // and the sticky columns inside still stick to the screen.
-    ...(documentScroll ? { minHeight: WEB_VIEWPORT_HEIGHT, overflow: WEB_OVERFLOW_CLIP } : { height: '100%', overflow: 'hidden' }),
+    ...(documentScroll
+      ? { minHeight: WEB_VIEWPORT_HEIGHT, overflow: WEB_OVERFLOW_CLIP }
+      : { height: '100%', overflow: 'hidden' }),
     flexDirection: 'row',
     gap: 16,
     padding: SHELL_GUTTER,
-    ...(ownsSafeArea ? {
-      paddingTop: SHELL_GUTTER + safeInsets.top,
-      paddingRight: SHELL_GUTTER + safeInsets.right,
-      paddingBottom: SHELL_GUTTER + safeInsets.bottom,
-      paddingLeft: SHELL_GUTTER + safeInsets.left,
-    } : null),
+    ...(ownsSafeArea
+      ? {
+          paddingTop: SHELL_GUTTER + safeInsets.top,
+          paddingRight: SHELL_GUTTER + safeInsets.right,
+          paddingBottom: SHELL_GUTTER + safeInsets.bottom,
+          paddingLeft: SHELL_GUTTER + safeInsets.left,
+        }
+      : null),
     backgroundColor: surface ? palette.full : 'transparent',
   };
 
@@ -480,179 +522,248 @@ export function AiChatShell({
 
   return (
     <BottomBarSlotContext.Provider value={ownsSafeArea ? safeInsets.bottom : inheritedBottomInset}>
-    <AiChatShellContext.Provider value={shellState}>
-      <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-      <AiChatDocumentGutterContext.Provider value={documentScroll && surface ? palette.full : null}>
-      <View
-        {...dataHook('bloomAiChatDragging', dragging ? 'on' : '')}
-        {...(navSwipeArmed ? navSwipe.panHandlers : null)}
-        testID={testID}
-        onLayout={(event: LayoutChangeEvent) => setShellWidth(event.nativeEvent.layout.width)}
-        style={[rootStyle, style, backing.vars]}>
-        {background ? (
-          <View pointerEvents="none" style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0 }}>
-            {background}
-          </View>
-        ) : null}
-        {!navInFlow && mobileSidebar ? (
-          <View
-            ref={navRef}
-            tabIndex={Platform.OS === 'web' ? -1 : undefined}
-            {...(navOpen ? null : CLOSED_LAYER)}
-            pointerEvents={navOpen ? 'box-none' : 'none'}
-            style={{ position: overlayPosition, top: 0, bottom: 0, left: safeInsets.left, zIndex: 10, width: 272, paddingTop: 12 + safeInsets.top, paddingBottom: 12 + safeInsets.bottom, paddingLeft: 6 }}>
-            <Animated.View
-              pointerEvents={navOpen ? 'auto' : 'none'}
-              style={[{ height: '100%', width: 260, transformOrigin: 'left' }, railStyle]}>
-              {mobileSidebar}
-            </Animated.View>
-          </View>
-        ) : null}
+      <AiChatShellContext.Provider value={shellState}>
+        <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
+          <AiChatDocumentGutterContext.Provider
+            value={documentScroll && surface ? palette.full : null}
+          >
+            <View
+              {...dataHook('bloomAiChatDragging', dragging ? 'on' : '')}
+              {...(navSwipeArmed ? navSwipe.panHandlers : null)}
+              testID={testID}
+              onLayout={(event: LayoutChangeEvent) => setShellWidth(event.nativeEvent.layout.width)}
+              style={[rootStyle, style, backing.vars]}
+            >
+              {background ? (
+                <View
+                  pointerEvents="none"
+                  style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0 }}
+                >
+                  {background}
+                </View>
+              ) : null}
+              {!navInFlow && mobileSidebar ? (
+                <View
+                  ref={navRef}
+                  tabIndex={Platform.OS === 'web' ? -1 : undefined}
+                  {...(navOpen ? null : CLOSED_LAYER)}
+                  pointerEvents={navOpen ? 'box-none' : 'none'}
+                  style={{
+                    position: overlayPosition,
+                    top: 0,
+                    bottom: 0,
+                    left: safeInsets.left,
+                    zIndex: 10,
+                    width: 272,
+                    paddingTop: 12 + safeInsets.top,
+                    paddingBottom: 12 + safeInsets.bottom,
+                    paddingLeft: 6,
+                  }}
+                >
+                  <Animated.View
+                    pointerEvents={navOpen ? 'auto' : 'none'}
+                    style={[{ height: '100%', width: 260, transformOrigin: 'left' }, railStyle]}
+                  >
+                    {mobileSidebar}
+                  </Animated.View>
+                </View>
+              ) : null}
 
-        {navInFlow ? (
-          <View
-            style={{
-              ...(documentScroll ? DOCUMENT_RAIL : { position: 'relative', height: '100%' }),
-              zIndex: 10,
-              // Untouched unless the host asked for a width: the sidebar has
-              // always sized itself.
-              ...(sidebarCollapsed
-                ? (collapsedSidebarWidth !== undefined ? { width: collapsedSidebarWidth, flexShrink: 0 } : null)
-                : sidebarWidth !== undefined
-                  ? { width: sidebarWidth, flexShrink: 0 }
-                  : null),
-            }}>
-            {sidebar}
-          </View>
-        ) : null}
+              {navInFlow ? (
+                <View
+                  style={{
+                    ...(documentScroll ? DOCUMENT_RAIL : { position: 'relative', height: '100%' }),
+                    zIndex: 10,
+                    // Untouched unless the host asked for a width: the sidebar has
+                    // always sized itself.
+                    ...(sidebarCollapsed
+                      ? collapsedSidebarWidth !== undefined
+                        ? { width: collapsedSidebarWidth, flexShrink: 0 }
+                        : null
+                      : sidebarWidth !== undefined
+                        ? { width: sidebarWidth, flexShrink: 0 }
+                        : null),
+                  }}
+                >
+                  {sidebar}
+                </View>
+              ) : null}
 
-        <SurfaceLevelProvider level={backing.level} fill={surface ? palette.full : backing.fill}>
-        <Animated.View
-          style={[
-            {
-              position: 'relative',
-              zIndex: navInFlow ? 0 : 20,
-              minWidth: 0,
-              flex: 1,
-              flexDirection: 'column',
-              gap: 8,
-              overflow: documentScroll ? WEB_OVERFLOW_CLIP : 'hidden',
-              backgroundColor: surface ? palette.full : 'transparent',
-            },
-            navInFlow ? null : workspaceStyle,
-            surfaceFillVars(surface ? palette.full : undefined),
-          ]}>
-          {!navInFlow ? (
-            <Animated.View
-              {...(navOpen ? null : CLOSED_LAYER)}
-              pointerEvents={navOpen ? 'auto' : 'none'}
-              style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }, veilStyle]}>
-              {/* Never a Tab stop: open, focus is kept in the drawer and Escape
+              <SurfaceLevelProvider
+                level={backing.level}
+                fill={surface ? palette.full : backing.fill}
+              >
+                <Animated.View
+                  style={[
+                    {
+                      position: 'relative',
+                      zIndex: navInFlow ? 0 : 20,
+                      minWidth: 0,
+                      flex: 1,
+                      flexDirection: 'column',
+                      gap: 8,
+                      overflow: documentScroll ? WEB_OVERFLOW_CLIP : 'hidden',
+                      backgroundColor: surface ? palette.full : 'transparent',
+                    },
+                    navInFlow ? null : workspaceStyle,
+                    surfaceFillVars(surface ? palette.full : undefined),
+                  ]}
+                >
+                  {!navInFlow ? (
+                    <Animated.View
+                      {...(navOpen ? null : CLOSED_LAYER)}
+                      pointerEvents={navOpen ? 'auto' : 'none'}
+                      style={[
+                        { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 },
+                        veilStyle,
+                      ]}
+                    >
+                      {/* Never a Tab stop: open, focus is kept in the drawer and Escape
                   closes it; closed, the veil is not there at all. `tabIndex`,
                   not `focusable` — react-native-web's Pressable writes its own
                   tabIndex 0 over `focusable`. */}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={l.closeNavigation}
-                tabIndex={-1}
-                onPress={() => setNavOpen(false)}
-                style={{ flex: 1, backgroundColor: veil }}
-              />
-            </Animated.View>
-          ) : null}
-          <View
-            style={
-              documentScroll
-                ? { minWidth: 0, flexGrow: 1, flexDirection: 'row', gap: 12 }
-                : { minHeight: 0, minWidth: 0, flex: 1, flexDirection: 'row', gap: 12, overflow: 'hidden' }
-            }>
-            <View style={{ position: 'relative', minWidth: 0, flex: 1, flexBasis: 0, flexDirection: 'row' }}>
-              {children}
-              {wide && panel ? (
-                <AiChatResizeHandle
-                  label={l.resize}
-                  onResizeStart={onResizeStart}
-                  onResize={onResize}
-                  onResizeEnd={() => setDragging(false)}
-                  onNudge={onNudge}
-                />
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={l.closeNavigation}
+                        tabIndex={-1}
+                        onPress={() => setNavOpen(false)}
+                        style={{ flex: 1, backgroundColor: veil }}
+                      />
+                    </Animated.View>
+                  ) : null}
+                  <View
+                    style={
+                      documentScroll
+                        ? { minWidth: 0, flexGrow: 1, flexDirection: 'row', gap: 12 }
+                        : {
+                            minHeight: 0,
+                            minWidth: 0,
+                            flex: 1,
+                            flexDirection: 'row',
+                            gap: 12,
+                            overflow: 'hidden',
+                          }
+                    }
+                  >
+                    <View
+                      style={{
+                        position: 'relative',
+                        minWidth: 0,
+                        flex: 1,
+                        flexBasis: 0,
+                        flexDirection: 'row',
+                      }}
+                    >
+                      {children}
+                      {wide && panel ? (
+                        <AiChatResizeHandle
+                          label={l.resize}
+                          onResizeStart={onResizeStart}
+                          onResize={onResize}
+                          onResizeEnd={() => setDragging(false)}
+                          onNudge={onNudge}
+                        />
+                      ) : null}
+                    </View>
+                    {wide && panel ? (
+                      documentScroll ? (
+                        // A row, so the panel stretches to the rail's height.
+                        <View style={[DOCUMENT_RAIL, { flexDirection: 'row' }]}>
+                          {panel(panelWidth)}
+                        </View>
+                      ) : (
+                        panel(panelWidth)
+                      )
+                    ) : null}
+                  </View>
+                </Animated.View>
+              </SurfaceLevelProvider>
+
+              {!wide && panel ? (
+                <View
+                  {...(panelOpen ? null : CLOSED_LAYER)}
+                  pointerEvents={panelOpen ? 'auto' : 'none'}
+                  style={{
+                    position: overlayPosition,
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 50,
+                  }}
+                >
+                  <Animated.View
+                    style={[
+                      { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+                      backdropStyle,
+                    ]}
+                  >
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={l.closePanel(panelLabel)}
+                      tabIndex={panelOpen ? 0 : -1}
+                      onPress={() => setPanelOpen(false)}
+                      style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                    />
+                  </Animated.View>
+                  <SurfaceLevelProvider level={backing.level} fill={palette.full}>
+                    <Animated.View
+                      ref={panelRef}
+                      tabIndex={Platform.OS === 'web' ? -1 : undefined}
+                      role="dialog"
+                      aria-modal={panelOpen}
+                      accessibilityLabel={panelLabel}
+                      accessibilityViewIsModal={panelOpen}
+                      style={[
+                        {
+                          position: 'absolute',
+                          top: 0,
+                          bottom: 0,
+                          right: safeInsets.right,
+                          width: drawerWidth,
+                          flexDirection: 'column',
+                          backgroundColor: palette.full,
+                          padding: 12,
+                          paddingTop: 12 + safeInsets.top,
+                          paddingBottom: 12 + safeInsets.bottom,
+                          boxShadow: palette.shadowSidebar,
+                        },
+                        drawerStyle,
+                        surfaceFillVars(palette.full),
+                      ]}
+                    >
+                      <View
+                        style={{
+                          minHeight: 40,
+                          flexShrink: 0,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingLeft: 4,
+                          paddingRight: 4,
+                        }}
+                      >
+                        <Text variant="headline-medium" style={{ color: palette.text }}>
+                          {panelLabel}
+                        </Text>
+                        <Button
+                          size="md"
+                          icon={RiCloseLine}
+                          accessibilityLabel={l.closePanel(panelLabel)}
+                          onPress={() => setPanelOpen(false)}
+                          appearance="plain"
+                          tone="neutral"
+                        />
+                      </View>
+                      <View style={{ minHeight: 0, flex: 1 }}>{panel('100%')}</View>
+                    </Animated.View>
+                  </SurfaceLevelProvider>
+                </View>
               ) : null}
             </View>
-            {wide && panel ? (
-              documentScroll ? (
-                // A row, so the panel stretches to the rail's height.
-                <View style={[DOCUMENT_RAIL, { flexDirection: 'row' }]}>{panel(panelWidth)}</View>
-              ) : (
-                panel(panelWidth)
-              )
-            ) : null}
-          </View>
-        </Animated.View>
+          </AiChatDocumentGutterContext.Provider>
         </SurfaceLevelProvider>
-
-        {!wide && panel ? (
-          <View
-            {...(panelOpen ? null : CLOSED_LAYER)}
-            pointerEvents={panelOpen ? 'auto' : 'none'}
-            style={{ position: overlayPosition, top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
-            <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, backdropStyle]}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={l.closePanel(panelLabel)}
-                tabIndex={panelOpen ? 0 : -1}
-                onPress={() => setPanelOpen(false)}
-                style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
-              />
-            </Animated.View>
-            <SurfaceLevelProvider level={backing.level} fill={palette.full}>
-            <Animated.View
-              ref={panelRef}
-              tabIndex={Platform.OS === 'web' ? -1 : undefined}
-              role="dialog"
-              aria-modal={panelOpen}
-              accessibilityLabel={panelLabel}
-              accessibilityViewIsModal={panelOpen}
-              style={[
-                {
-                  position: 'absolute',
-                  top: 0,
-                  bottom: 0,
-                  right: safeInsets.right,
-                  width: drawerWidth,
-                  flexDirection: 'column',
-                  backgroundColor: palette.full,
-                  padding: 12,
-                  paddingTop: 12 + safeInsets.top,
-                  paddingBottom: 12 + safeInsets.bottom,
-                  boxShadow: palette.shadowSidebar,
-                },
-                drawerStyle,
-                surfaceFillVars(palette.full),
-              ]}>
-              <View
-                style={{
-                  minHeight: 40,
-                  flexShrink: 0,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingLeft: 4,
-                  paddingRight: 4,
-                }}>
-                <Text variant="headline-medium" style={{ color: palette.text }}>
-                  {panelLabel}
-                </Text>
-                <Button size="md" icon={RiCloseLine} accessibilityLabel={l.closePanel(panelLabel)} onPress={() => setPanelOpen(false)} appearance="plain" tone="neutral" />
-              </View>
-              <View style={{ minHeight: 0, flex: 1 }}>{panel('100%')}</View>
-            </Animated.View>
-            </SurfaceLevelProvider>
-          </View>
-        ) : null}
-      </View>
-      </AiChatDocumentGutterContext.Provider>
-      </SurfaceLevelProvider>
-    </AiChatShellContext.Provider>
+      </AiChatShellContext.Provider>
     </BottomBarSlotContext.Provider>
   );
 }

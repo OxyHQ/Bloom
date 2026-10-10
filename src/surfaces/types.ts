@@ -133,10 +133,7 @@ export interface SurfaceControls {
    * dismissal result. The child paints above (higher layer) and captures
    * backdrop/Escape/back until it is dismissed.
    */
-  present: <Result = unknown>(
-    render: SurfaceRenderFn,
-    opts?: PresentOptions,
-  ) => Promise<Result>;
+  present: <Result = unknown>(render: SurfaceRenderFn, opts?: PresentOptions) => Promise<Result>;
 }
 
 /** A surface's content factory — receives its own {@link SurfaceControls}. */

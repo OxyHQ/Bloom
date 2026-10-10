@@ -13,7 +13,8 @@ try {
     await expect(active).toHaveAttribute('aria-current', 'page', { timeout: 120000 });
     await expect(archived).not.toHaveAttribute('aria-current');
     await expect(active).not.toHaveAttribute('aria-pressed');
-    await archived.focus(); await page.keyboard.press('Enter');
+    await archived.focus();
+    await page.keyboard.press('Enter');
     await expect(archived).toHaveAttribute('aria-current', 'page');
     await expect(active).not.toHaveAttribute('aria-current');
     await active.click();
@@ -22,4 +23,6 @@ try {
     console.log({ width, currentLink: true, ordinaryLink: true, keyboard: true });
     await page.close();
   }
-} finally { await browser.close(); }
+} finally {
+  await browser.close();
+}

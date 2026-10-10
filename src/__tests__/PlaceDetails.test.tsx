@@ -82,7 +82,11 @@ import { PlaceInfoList } from '../place-details/PlaceInfoList';
 import { PlacePopularTimes } from '../place-details/PlacePopularTimes';
 import { PlaceTransit } from '../place-details/PlaceTransit';
 import { chartHueTone } from '../chart-cards/palette';
-import { describeBusyChart, formatHoursDay, resolvePlaceDetailsPaint } from '../place-details/shared';
+import {
+  describeBusyChart,
+  formatHoursDay,
+  resolvePlaceDetailsPaint,
+} from '../place-details/shared';
 import type {
   PlaceAmenity,
   PlaceHoursDay,
@@ -158,13 +162,7 @@ describe('PlaceInfoList: a row is one press target that says what it is', () => 
   });
 
   it("takes an app's own action word over the English one", () => {
-    mount(
-      <PlaceInfoList
-        items={INFO}
-        actionLabels={{ copy: 'Copia' }}
-        testID="i"
-      />,
-    );
+    mount(<PlaceInfoList items={INFO} actionLabels={{ copy: 'Copia' }} testID="i" />);
     expect(labelled('Address: Plaça de les Bruixes 4, Copia')).toBeTruthy();
   });
 
@@ -190,9 +188,7 @@ describe('PlaceInfoList: a row is one press target that says what it is', () => 
   });
 
   it('marks a disabled row as disabled rather than dropping its press target', () => {
-    mount(
-      <PlaceInfoList items={[{ ...INFO[0]!, disabled: true }]} testID="i" />,
-    );
+    mount(<PlaceInfoList items={[{ ...INFO[0]!, disabled: true }]} testID="i" />);
     const row = labelled('Address: Plaça de les Bruixes 4, Copy');
     expect(row.getAttribute('aria-disabled')).toBe('true');
   });
@@ -248,7 +244,9 @@ describe('PlaceHours: the week under today, and both said out loud', () => {
   });
 
   it('says TODAY rather than only drawing it heavier', () => {
-    mount(<PlaceHours days={WEEK} state="open" summary="Open until 20:00" defaultExpanded testID="h" />);
+    mount(
+      <PlaceHours days={WEEK} state="open" summary="Open until 20:00" defaultExpanded testID="h" />,
+    );
     expect(byTestId('h-day-1').getAttribute('aria-label')).toBe(
       'Today, Wednesday, 07:30 – 14:00, 17:00 – 20:00',
     );
@@ -277,8 +275,14 @@ describe('PlaceHours: the week under today, and both said out loud', () => {
     const painted = new Map<string, string>();
     for (const state of states) {
       mount(<PlaceHours days={WEEK} state={state} summary="…" testID="h" />);
-      const { resolveAccentColors } = jest.requireActual('../theme/accent-colors') as typeof import('../theme/accent-colors');
-      const expected = resolveAccentColors(theme().colors, PLACE_OPEN_TONE[state], 'subtle').background;
+      const { resolveAccentColors } = jest.requireActual(
+        '../theme/accent-colors',
+      ) as typeof import('../theme/accent-colors');
+      const expected = resolveAccentColors(
+        theme().colors,
+        PLACE_OPEN_TONE[state],
+        'subtle',
+      ).background;
       const actual = getComputedStyle(byTestId('h-state')).backgroundColor;
       expect([state, actual]).toEqual([state, css(expected)]);
       painted.set(state, actual);
@@ -297,10 +301,7 @@ describe('PlaceHours: the week under today, and both said out loud', () => {
 //  PlaceAmenities
 // ---------------------------------------------------------------------------
 
-const AMENITIES: PlaceAmenity[] = [
-  { label: 'Free wifi' },
-  { label: 'Parking', available: false },
-];
+const AMENITIES: PlaceAmenity[] = [{ label: 'Free wifi' }, { label: 'Parking', available: false }];
 
 describe('PlaceAmenities: the listing block, and a strip for a sheet', () => {
   it('names an unavailable amenity as unavailable in BOTH layouts', () => {
@@ -512,12 +513,33 @@ describe('PlaceTransit: a departure is one utterance, and live is a word', () =>
 it('offers the same expansion action for truncated chips and delegated lists', () => {
   const onShowAll = jest.fn();
   for (const layout of ['list', 'chips'] as const) {
-    mount(<PlaceAmenities items={AMENITIES} layout={layout} limit={1} total={7} onShowAll={onShowAll} showAllLabel={n => `Ver ${n}`} testID="expand" />);
+    mount(
+      <PlaceAmenities
+        items={AMENITIES}
+        layout={layout}
+        limit={1}
+        total={7}
+        onShowAll={onShowAll}
+        showAllLabel={(n) => `Ver ${n}`}
+        testID="expand"
+      />,
+    );
     expect(byTestId('expand-show-all').textContent).toBe('Ver 7');
     click(byTestId('expand-show-all'));
   }
   expect(onShowAll).toHaveBeenCalledTimes(2);
-  mount(<LocaleProvider locale="es"><PlaceAmenities items={AMENITIES} layout="chips" limit={1} total={7} onShowAll={onShowAll} testID="expand" /></LocaleProvider>);
+  mount(
+    <LocaleProvider locale="es">
+      <PlaceAmenities
+        items={AMENITIES}
+        layout="chips"
+        limit={1}
+        total={7}
+        onShowAll={onShowAll}
+        testID="expand"
+      />
+    </LocaleProvider>,
+  );
   expect(byTestId('expand-show-all').textContent).toBe('Mostrar los 7 servicios');
   mount(<PlaceAmenities items={AMENITIES} layout="chips" onShowAll={onShowAll} testID="expand" />);
   expect(queryTestId('expand-show-all')).toBeNull();
@@ -526,7 +548,10 @@ it('offers the same expansion action for truncated chips and delegated lists', (
 it('keeps day selection consistent with the fallback chart after data replacement', () => {
   const onDayChange = jest.fn();
   mount(<PlacePopularTimes days={DAYS} onDayChange={onDayChange} testID="p" />);
-  const replacement = [DAYS[0]!, { ...DAYS[0]!, id: 'wed', label: 'W', accessibilityLabel: 'Wednesday' }];
+  const replacement = [
+    DAYS[0]!,
+    { ...DAYS[0]!, id: 'wed', label: 'W', accessibilityLabel: 'Wednesday' },
+  ];
   mount(<PlacePopularTimes days={replacement} onDayChange={onDayChange} testID="p" />);
   expect(labelled('Monday').getAttribute('aria-checked')).toBe('true');
   expect(byTestId('p-chart').getAttribute('aria-label')).toBe('Monday, busiest at 9');
@@ -535,27 +560,45 @@ it('keeps day selection consistent with the fallback chart after data replacemen
   expect(labelled('Monday').getAttribute('aria-checked')).toBe('true');
 });
 
-it.each([0, 1, 11, 23])('prioritizes current-hour label %s without overlapping regular labels', async currentHourIndex => {
-  const hours = Array.from({ length: 24 }, (_, i) => ({ label: String(i), value: 40 }));
-  mount(<PlacePopularTimes days={[{ id: 'today', label: 'Today', hours, currentHourIndex }]} testID="p" />);
-  await flushLayout();
-  const selected = byTestId(`p-hour-${currentHourIndex}`);
-  const left = Number.parseFloat(getComputedStyle(selected).left);
-  for (let i = 0; i < 24; i++) {
-    const node = queryTestId(`p-hour-${i}`);
-    if (node && i !== currentHourIndex) {
-      expect(Math.abs(Number.parseFloat(getComputedStyle(node).left) - left)).toBeGreaterThanOrEqual(40);
+it.each([0, 1, 11, 23])(
+  'prioritizes current-hour label %s without overlapping regular labels',
+  async (currentHourIndex) => {
+    const hours = Array.from({ length: 24 }, (_, i) => ({ label: String(i), value: 40 }));
+    mount(
+      <PlacePopularTimes
+        days={[{ id: 'today', label: 'Today', hours, currentHourIndex }]}
+        testID="p"
+      />,
+    );
+    await flushLayout();
+    const selected = byTestId(`p-hour-${currentHourIndex}`);
+    const left = Number.parseFloat(getComputedStyle(selected).left);
+    for (let i = 0; i < 24; i++) {
+      const node = queryTestId(`p-hour-${i}`);
+      if (node && i !== currentHourIndex) {
+        expect(
+          Math.abs(Number.parseFloat(getComputedStyle(node).left) - left),
+        ).toBeGreaterThanOrEqual(40);
+      }
     }
-  }
-});
+  },
+);
 
-it.each(['light', 'dark'] as const)('amenity list text follows an inverse ambient surface in %s mode', mode => {
-  const fill = mode === 'light' ? '#101010' : '#FAFAFA';
-  mount(<SurfaceLevelProvider level={2} fill={fill}><PlaceAmenities items={AMENITIES} testID="ambient" /></SurfaceLevelProvider>, mode);
-  const expected = surfaceTextOn(theme(), fill);
-  const swatch = document.createElement('div');
-  swatch.style.color = expected.text;
-  expect(getComputedStyle(byTestId('ambient-item-0-label')).color).toBe(swatch.style.color);
-  swatch.style.color = expected.textSecondary;
-  expect(getComputedStyle(byTestId('ambient-item-1-label')).color).toBe(swatch.style.color);
-});
+it.each(['light', 'dark'] as const)(
+  'amenity list text follows an inverse ambient surface in %s mode',
+  (mode) => {
+    const fill = mode === 'light' ? '#101010' : '#FAFAFA';
+    mount(
+      <SurfaceLevelProvider level={2} fill={fill}>
+        <PlaceAmenities items={AMENITIES} testID="ambient" />
+      </SurfaceLevelProvider>,
+      mode,
+    );
+    const expected = surfaceTextOn(theme(), fill);
+    const swatch = document.createElement('div');
+    swatch.style.color = expected.text;
+    expect(getComputedStyle(byTestId('ambient-item-0-label')).color).toBe(swatch.style.color);
+    swatch.style.color = expected.textSecondary;
+    expect(getComputedStyle(byTestId('ambient-item-1-label')).color).toBe(swatch.style.color);
+  },
+);

@@ -44,10 +44,7 @@ export function TicketGenieSurface({
     const p = reduced ? 0 : progress.value;
     const extension = 64 * phase(0, 0.42, p);
     const swallow = phase(0.32, 1, p);
-    const stretch = Math.max(
-      0.001,
-      ((height + extension) * (1 - swallow)) / height,
-    );
+    const stretch = Math.max(0.001, ((height + extension) * (1 - swallow)) / height);
     return {
       opacity: 1 - phase(0.94, 1, p),
       transform: [
@@ -64,19 +61,15 @@ export function TicketGenieSurface({
   }, [progress, reduced, corner, height, viewportHeight]);
   return (
     <TicketGenieEnteredContext.Provider value={entered}>
-    <AnimatedView
-      onLayout={(event) => setHeight(event.nativeEvent.layout.height || 280)}
-      style={[corner ? { flex: 1, minHeight: 0 } : {}, style]}
-    >
-      {children}
-    </AnimatedView>
+      <AnimatedView
+        onLayout={(event) => setHeight(event.nativeEvent.layout.height || 280)}
+        style={[corner ? { flex: 1, minHeight: 0 } : {}, style]}
+      >
+        {children}
+      </AnimatedView>
     </TicketGenieEnteredContext.Provider>
   );
 }
-export function TicketCornerGenieSurface({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function TicketCornerGenieSurface({ children }: { children: ReactNode }) {
   return <TicketGenieSurface corner>{children}</TicketGenieSurface>;
 }

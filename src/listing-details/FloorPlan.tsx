@@ -81,7 +81,12 @@ function PlanTile({ plan, uri, name, aspectRatio, onPress, testID }: PlanTilePro
   const inner = (
     <>
       {uri ? (
-        <View style={[StyleSheet.absoluteFill, { paddingTop: 16, paddingBottom: 16, paddingLeft: 16, paddingRight: 16 }]}>
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { paddingTop: 16, paddingBottom: 16, paddingLeft: 16, paddingRight: 16 },
+          ]}
+        >
           <Image
             source={{ uri }}
             resizeMode="contain"
@@ -133,12 +138,26 @@ function PlanTile({ plan, uri, name, aspectRatio, onPress, testID }: PlanTilePro
           {inner}
         </Pressable>
       ) : (
-        <View accessible accessibilityRole="image" accessibilityLabel={name} style={frame} testID={testID}>
+        <View
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={name}
+          style={frame}
+          testID={testID}
+        >
           {inner}
         </View>
       )}
-      <View style={{ gap: 2 }} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-        <Text variant="body-semibold" style={{ color: palette.text }} testID={testID ? `${testID}-label` : undefined}>
+      <View
+        style={{ gap: 2 }}
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+      >
+        <Text
+          variant="body-semibold"
+          style={{ color: palette.text }}
+          testID={testID ? `${testID}-label` : undefined}
+        >
           {plan.label}
         </Text>
         {plan.description ? (
@@ -163,12 +182,19 @@ function FloorPlanComponent({
 }: FloorPlanProps) {
   const { messages } = useMessages(LISTING_DETAILS_MESSAGES);
   const planLabel =
-    planLabelProp ?? ((plan: FloorPlanItem, position: number, total: number) => defaultPlanLabel(plan, position, total, messages));
+    planLabelProp ??
+    ((plan: FloorPlanItem, position: number, total: number) =>
+      defaultPlanLabel(plan, position, total, messages));
   useInteractiveWebCss(LISTING_DETAILS_STYLE_ID, LISTING_DETAILS_CSS);
   const resolver = useImageResolver();
   const { width, onLayout } = useContainerWidth();
 
-  const wanted = columns === 'auto' ? (width != null && width >= FLOOR_PLAN_TWO_COLUMN_MIN_WIDTH ? 2 : 1) : columns;
+  const wanted =
+    columns === 'auto'
+      ? width != null && width >= FLOOR_PLAN_TWO_COLUMN_MIN_WIDTH
+        ? 2
+        : 1
+      : columns;
   const count = plans.length <= 1 ? 1 : wanted;
   const total = plans.length;
 

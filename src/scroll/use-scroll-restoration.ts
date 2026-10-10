@@ -59,9 +59,7 @@ export function useScrollRestoration(
   // on the first render rather than defaulting to false, because the effect is
   // a passive one: a caller hiding its list until the offset lands would
   // otherwise get one painted frame at the wrong position.
-  const [restorePending, setRestorePending] = useState(
-    () => enabled && scrollKey !== null,
-  );
+  const [restorePending, setRestorePending] = useState(() => enabled && scrollKey !== null);
 
   useEffect(() => {
     if (!enabled || scrollKey === null) {
@@ -113,8 +111,5 @@ export function useScrollRestoration(
     [store],
   );
 
-  return useMemo(
-    () => ({ onScroll, restorePending }),
-    [onScroll, restorePending],
-  );
+  return useMemo(() => ({ onScroll, restorePending }), [onScroll, restorePending]);
 }

@@ -5,20 +5,35 @@ export const SURFACE_REFRACTION_ID = 'bloom-surface-refraction-v1';
 const ROOT_ID = `${SURFACE_REFRACTION_ID}-defs`;
 
 const PRIMITIVES: ReadonlyArray<readonly [string, Record<string, string>]> = [
-  ['feTurbulence', {
-    type: 'fractalNoise', baseFrequency: '0.01 0.01', numOctaves: '1',
-    seed: '8', result: 'noise',
-  }],
+  [
+    'feTurbulence',
+    {
+      type: 'fractalNoise',
+      baseFrequency: '0.01 0.01',
+      numOctaves: '1',
+      seed: '8',
+      result: 'noise',
+    },
+  ],
   ['feGaussianBlur', { in: 'noise', stdDeviation: '3', result: 'smooth-noise' }],
-  ['feDisplacementMap', {
-    in: 'SourceGraphic', in2: 'smooth-noise', scale: '150',
-    xChannelSelector: 'R', yChannelSelector: 'G',
-  }],
+  [
+    'feDisplacementMap',
+    {
+      in: 'SourceGraphic',
+      in2: 'smooth-noise',
+      scale: '150',
+      xChannelSelector: 'R',
+      yChannelSelector: 'G',
+    },
+  ],
 ];
 // HMR updates this automatically when the recipe changes; mounted pages need
 // no manual reload and unchanged mounts never rebuild the definition.
 const FILTER_ATTRIBUTES = {
-  x: '0', y: '0', width: '100%', height: '100%',
+  x: '0',
+  y: '0',
+  width: '100%',
+  height: '100%',
   'color-interpolation-filters': 'sRGB',
 };
 const RECIPE = JSON.stringify({ primitives: PRIMITIVES, attributes: FILTER_ATTRIBUTES });

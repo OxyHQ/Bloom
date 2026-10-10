@@ -57,7 +57,7 @@ jest.mock('react-native', () => ({
   PlatformColor: (...names: string[]) => ({ semantic: names }),
 }));
 
-const ROLES =Object.keys(TYPOGRAPHY) as TypeRoleName[];
+const ROLES = Object.keys(TYPOGRAPHY) as TypeRoleName[];
 const CUSTOM_METRICS = ['native-line-px', 'native-line-variable', 'native-line-ratio'];
 
 async function buildTailwindCss(candidates: string[]): Promise<string> {
@@ -91,10 +91,16 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
   let resolved: Record<string, Record<string, unknown>>;
 
   beforeAll(async () => {
-    const candidates = [...ROLES.map((role) => `text-${role}`), 'text-sm', 'leading-[20px]', ...CUSTOM_METRICS];
+    const candidates = [
+      ...ROLES.map((role) => `text-${role}`),
+      'text-sm',
+      'leading-[20px]',
+      ...CUSTOM_METRICS,
+    ];
     const css = await buildTailwindCss(candidates);
 
-    const { compile } = require('react-native-css/compiler') as typeof import('react-native-css/compiler');
+    const { compile } =
+      require('react-native-css/compiler') as typeof import('react-native-css/compiler');
     const { StyleCollection } = require('react-native-css/native') as {
       StyleCollection: { inject(stylesheet: unknown): void };
     };
@@ -148,11 +154,18 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
 it('preserves NativeWind styled image dimensions on the native runtime', async () => {
   const { styled } = require('nativewind') as typeof import('nativewind');
   const { Image } = require('expo-image') as typeof import('expo-image');
-  const { compile } = require('react-native-css/compiler') as typeof import('react-native-css/compiler');
+  const { compile } =
+    require('react-native-css/compiler') as typeof import('react-native-css/compiler');
   const { StyleCollection } = require('react-native-css/native');
   const StyledImage = styled(Image, { className: 'style' });
   StyleCollection.inject(compile(await buildTailwindCss(['w-24', 'h-20']), {}).stylesheet());
-  const screen = render(<StyledImage testID="styled-image" className="w-24 h-20" source={{ uri: 'https://example.test/image.png' }} />);
+  const screen = render(
+    <StyledImage
+      testID="styled-image"
+      className="w-24 h-20"
+      source={{ uri: 'https://example.test/image.png' }}
+    />,
+  );
   expect(flattenStyle(screen.getByTestId('styled-image').props.style)).toEqual(
     expect.objectContaining({ width: 96, height: 80 }),
   );

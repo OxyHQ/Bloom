@@ -156,9 +156,7 @@ function byTestId(c: HTMLElement, id: string): HTMLElement {
 function byRole(c: HTMLElement, role: string): HTMLElement {
   const el = c.querySelector(`[role="${role}"]`);
   if (!(el instanceof HTMLElement)) {
-    throw new Error(
-      `No element with role="${role}" in DOM:\n${c.innerHTML.slice(0, 600)}`,
-    );
+    throw new Error(`No element with role="${role}" in DOM:\n${c.innerHTML.slice(0, 600)}`);
   }
   return el;
 }
@@ -317,7 +315,12 @@ describe('role="button" toggles use aria-pressed', () => {
 
   it('FrostedIconButton emits aria-pressed, matching its .web fork', () => {
     const c = mount(
-      <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <Text {...iconProps}>x</Text>} checked testID="fib" />,
+      <FrostedIconButton
+        accessibilityLabel="Back"
+        icon={(iconProps) => <Text {...iconProps}>x</Text>}
+        checked
+        testID="fib"
+      />,
     );
     expect(byTestId(c, 'fib').getAttribute('aria-pressed')).toBe('true');
   });
@@ -355,7 +358,13 @@ describe('role="button" toggles use aria-pressed', () => {
         testID="row"
         actions={[
           { key: 'speak', label: 'Read aloud', icon: RiFireLine, onPress: () => {}, active: true },
-          { key: 'again', label: 'Regenerate', icon: RiFireLine, onPress: () => {}, disabled: true },
+          {
+            key: 'again',
+            label: 'Regenerate',
+            icon: RiFireLine,
+            onPress: () => {},
+            disabled: true,
+          },
         ]}
       />,
     );
@@ -496,9 +505,7 @@ describe('Slider', () => {
   it('emits the value as aria-value* — the object form reached web as nothing', () => {
     // react-native-web has no handling for `accessibilityValue` at all, so the
     // slider announced its role and no value whatsoever.
-    const c = mount(
-      <Slider value={40} min={0} max={100} onValueChange={() => {}} testID="sl" />,
-    );
+    const c = mount(<Slider value={40} min={0} max={100} onValueChange={() => {}} testID="sl" />);
     const el = byTestId(c, 'sl');
     expect(el.getAttribute('role')).toBe('slider');
     expect(el.getAttribute('aria-valuenow')).toBe('40');
@@ -576,15 +583,27 @@ describe('TabBar', () => {
 });
 
 describe('Radio', () => {
-  it.each([true, false])('RadioChip forwards its name, checked=%s and disabled state', checked => {
-    const c = mount(<RadioChip value="large" checked={checked} disabled label="Large" testID="chip" onValueChange={() => {}} />);
-    const el = byTestId(c, 'chip');
-    expect(el.getAttribute('role')).toBe('radio');
-    expect(el.getAttribute('aria-label')).toBe('Large');
-    expect(el.getAttribute('aria-checked')).toBe(String(checked));
-    expect(el.getAttribute('aria-disabled')).toBe('true');
-    expect(el.getAttribute('aria-pressed')).toBeNull();
-  });
+  it.each([true, false])(
+    'RadioChip forwards its name, checked=%s and disabled state',
+    (checked) => {
+      const c = mount(
+        <RadioChip
+          value="large"
+          checked={checked}
+          disabled
+          label="Large"
+          testID="chip"
+          onValueChange={() => {}}
+        />,
+      );
+      const el = byTestId(c, 'chip');
+      expect(el.getAttribute('role')).toBe('radio');
+      expect(el.getAttribute('aria-label')).toBe('Large');
+      expect(el.getAttribute('aria-checked')).toBe(String(checked));
+      expect(el.getAttribute('aria-disabled')).toBe('true');
+      expect(el.getAttribute('aria-pressed')).toBeNull();
+    },
+  );
 
   it('emits role="radio" with aria-checked', () => {
     const c = mount(
@@ -638,20 +657,27 @@ describe('Radio', () => {
 // census.test.ts` is the half that fails by default; these are the three it
 // found, asserted against the DOM react-native-web actually emits.
 describe('Loading: an indeterminate progressbar, when named', () => {
-  it.each(['spinner', 'inline'] as const)('%s: role, aria-label and aria-busy, and NO aria-valuenow', (variant) => {
-    const c = mount(<Loading variant={variant} accessibilityLabel="Loading results" testID="ld" />);
-    const el = byTestId(c, 'ld');
-    expect(el.getAttribute('role')).toBe('progressbar');
-    expect(el.getAttribute('aria-label')).toBe('Loading results');
-    expect(el.getAttribute('aria-busy')).toBe('true');
-    // Indeterminate: a spinner has no amount done, and ARIA spells that by omission.
-    expect(el.getAttribute('aria-valuenow')).toBeNull();
-  });
+  it.each(['spinner', 'inline'] as const)(
+    '%s: role, aria-label and aria-busy, and NO aria-valuenow',
+    (variant) => {
+      const c = mount(
+        <Loading variant={variant} accessibilityLabel="Loading results" testID="ld" />,
+      );
+      const el = byTestId(c, 'ld');
+      expect(el.getAttribute('role')).toBe('progressbar');
+      expect(el.getAttribute('aria-label')).toBe('Loading results');
+      expect(el.getAttribute('aria-busy')).toBe('true');
+      // Indeterminate: a spinner has no amount done, and ARIA spells that by omission.
+      expect(el.getAttribute('aria-valuenow')).toBeNull();
+    },
+  );
 
   it('the web top bar names its spinner while showing, and nothing once collapsed', () => {
     let c = mount(<LoadingWeb variant="top" accessibilityLabel="Refreshing" testID="ld" />);
     expect(byRole(c, 'progressbar').getAttribute('aria-label')).toBe('Refreshing');
-    c = mount(<LoadingWeb variant="top" showLoading={false} accessibilityLabel="Refreshing" testID="ld" />);
+    c = mount(
+      <LoadingWeb variant="top" showLoading={false} accessibilityLabel="Refreshing" testID="ld" />,
+    );
     expect(c.querySelector('[role="progressbar"]')).toBeNull();
   });
 
@@ -668,7 +694,9 @@ describe('progressbars announce their value', () => {
     // and rings and the listening bars all render THIS. Asserting it here is
     // what makes the fold worth doing: one subject in this suite now covers
     // eleven families, instead of eleven chances to forget to join.
-    const c = mount(<Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" testID="m" />);
+    const c = mount(
+      <Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" testID="m" />,
+    );
     const el = byRole(c, 'progressbar');
     expect(el.getAttribute('aria-label')).toBe('Cleanliness');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
@@ -691,7 +719,13 @@ describe('progressbars announce their value', () => {
 
   it('MeterRing', () => {
     const c = mount(
-      <MeterRing value={50} max={100} accessibilityLabel="Listing quality" valueText="50, Good" testID="r" />,
+      <MeterRing
+        value={50}
+        max={100}
+        accessibilityLabel="Listing quality"
+        valueText="50, Good"
+        testID="r"
+      />,
     );
     const el = byTestId(c, 'r');
     expect(el.getAttribute('role')).toBe('progressbar');
@@ -798,7 +832,6 @@ describe('View-based containers emit aria-disabled', () => {
     expect(c.querySelector('[aria-disabled="true"]')).not.toBeNull();
   });
 });
-
 
 // The menu ROW, which is the second entry in `aria-state-source-census.test.ts`'s
 // `DELEGATING_TAGS` — `floating/shared.tsx`'s `MenuRowShell` takes a `role` and
@@ -909,7 +942,6 @@ describe('menu rows spell their state per role', () => {
   });
 });
 
-
 // Every ROOT trigger says WHAT it opens. Five families, three kinds of surface —
 // so a single shared value would be right for three of them and a lie for the
 // other two, which is why `aria-haspopup` is set per family from
@@ -1001,7 +1033,11 @@ describe('a trigger announces what it opens', () => {
   });
 
   it('an ordinary Button opens nothing and says so by omission', () => {
-    const c = mount(<Button onPress={() => {}} testID="btn">Save</Button>);
+    const c = mount(
+      <Button onPress={() => {}} testID="btn">
+        Save
+      </Button>,
+    );
     expect(byTestId(c, 'btn').getAttribute('aria-haspopup')).toBeNull();
   });
 });
@@ -1009,7 +1045,15 @@ describe('a trigger announces what it opens', () => {
 describe('Stepper', () => {
   it('emits the value as aria-value* on a named slider, and aria-disabled when disabled', () => {
     const c = mount(
-      <Stepper value={2} min={1} max={16} onValueChange={() => {}} accessibilityLabel="Adults" disabled testID="st" />,
+      <Stepper
+        value={2}
+        min={1}
+        max={16}
+        onValueChange={() => {}}
+        accessibilityLabel="Adults"
+        disabled
+        testID="st"
+      />,
     );
     const el = byTestId(c, 'st-value');
     expect(el.getAttribute('role')).toBe('slider');
@@ -1046,7 +1090,10 @@ describe('Listing actions', () => {
         testID="vs"
       />,
     );
-    expect(allByRole(c, 'radiogroup').map((g) => g.getAttribute('aria-label'))).toEqual(['Day', 'Time']);
+    expect(allByRole(c, 'radiogroup').map((g) => g.getAttribute('aria-label'))).toEqual([
+      'Day',
+      'Time',
+    ]);
     expect(byTestId(c, 'vs-day-mon').getAttribute('aria-checked')).toBe('true');
     expect(byTestId(c, 'vs-day-tue').getAttribute('aria-checked')).toBe('false');
     expect(byTestId(c, 'vs-day-tue').getAttribute('aria-disabled')).toBe('true');
@@ -1073,9 +1120,23 @@ describe('Listing actions', () => {
 
 describe('Stay filters', () => {
   it('CountFilter: a named radiogroup whose pills spell the selection as aria-checked', () => {
-    const c = mount(<CountFilter title="Bedrooms" value={2} max={3} onValueChange={() => {}} disabled testID="cf" />);
+    const c = mount(
+      <CountFilter
+        title="Bedrooms"
+        value={2}
+        max={3}
+        onValueChange={() => {}}
+        disabled
+        testID="cf"
+      />,
+    );
     expect(byRole(c, 'radiogroup').getAttribute('aria-label')).toBe('Bedrooms');
-    expect(allByRole(c, 'radio').map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true', 'false']);
+    expect(allByRole(c, 'radio').map((r) => r.getAttribute('aria-checked'))).toEqual([
+      'false',
+      'false',
+      'true',
+      'false',
+    ]);
     expect(byTestId(c, 'cf-2').getAttribute('aria-label')).toBe('2');
     expect(byTestId(c, 'cf-2').getAttribute('aria-disabled')).toBe('true');
   });
@@ -1117,7 +1178,12 @@ describe('Stay filters', () => {
 describe('StaySearchBar', () => {
   it('a segment is a named button carrying aria-expanded', () => {
     const c = mount(
-      <StaySearchBar activeSegment="guests" onActiveSegmentChange={() => {}} dismissible={false} testID="bar" />,
+      <StaySearchBar
+        activeSegment="guests"
+        onActiveSegmentChange={() => {}}
+        dismissible={false}
+        testID="bar"
+      />,
     );
     expect(byTestId(c, 'bar-guests').getAttribute('aria-expanded')).toBe('true');
     expect(byTestId(c, 'bar-guests').getAttribute('aria-label')).toBe('Who, Add guests');
@@ -1129,7 +1195,10 @@ describe('DestinationSuggestions', () => {
   it('emits aria-selected on every option of a named listbox', () => {
     const c = mount(
       <DestinationSuggestions
-        items={[{ id: 'a', title: 'Marrowfield' }, { id: 'b', title: 'Old Halden' }]}
+        items={[
+          { id: 'a', title: 'Marrowfield' },
+          { id: 'b', title: 'Old Halden' },
+        ]}
         highlightedIndex={1}
         onSelect={() => {}}
         testID="ds"
@@ -1143,7 +1212,15 @@ describe('DestinationSuggestions', () => {
 
 describe('StaySearchStep', () => {
   it('a collapsed step is a named button with aria-expanded="false"', () => {
-    const c = mount(<StaySearchStep label="Who" summary="Add guests" expanded={false} onPress={() => {}} testID="st" />);
+    const c = mount(
+      <StaySearchStep
+        label="Who"
+        summary="Add guests"
+        expanded={false}
+        onPress={() => {}}
+        testID="st"
+      />,
+    );
     expect(byTestId(c, 'st').getAttribute('aria-expanded')).toBe('false');
     expect(byTestId(c, 'st').getAttribute('aria-label')).toBe('Who, Add guests');
   });
@@ -1151,7 +1228,15 @@ describe('StaySearchStep', () => {
 
 describe('BookingCard', () => {
   it('names each field cell and spells the open picker as aria-expanded, on every cell', () => {
-    const c = mount(<BookingCard price="$180" guests="2 guests" checkIn="10/12/2026" activeField="checkIn" testID="bc" />);
+    const c = mount(
+      <BookingCard
+        price="$180"
+        guests="2 guests"
+        checkIn="10/12/2026"
+        activeField="checkIn"
+        testID="bc"
+      />,
+    );
     const checkIn = byTestId(c, 'bc-check-in');
     expect(checkIn.getAttribute('role')).toBe('button');
     expect(checkIn.getAttribute('aria-label')).toBe('Check-in: 10/12/2026');
@@ -1189,13 +1274,22 @@ describe('CategoryBar', () => {
 
 describe('Map pieces', () => {
   it('a price marker emits aria-pressed for the active state', () => {
-    const c = mount(<MapPriceMarker price="€120" state="active" accessibilityLabel="€120 per night, Lisbon" testID="pm" />);
+    const c = mount(
+      <MapPriceMarker
+        price="€120"
+        state="active"
+        accessibilityLabel="€120 per night, Lisbon"
+        testID="pm"
+      />,
+    );
     expect(byTestId(c, 'pm').getAttribute('aria-pressed')).toBe('true');
     expect(byTestId(c, 'pm').getAttribute('aria-label')).toBe('€120 per night, Lisbon');
   });
 
   it('the search toggle emits aria-checked', () => {
-    const c = mount(<MapSearchAreaButton variant="toggle" checked onCheckedChange={() => {}} testID="sa" />);
+    const c = mount(
+      <MapSearchAreaButton variant="toggle" checked onCheckedChange={() => {}} testID="sa" />,
+    );
     expect(byTestId(c, 'sa').getAttribute('role')).toBe('checkbox');
     expect(byTestId(c, 'sa').getAttribute('aria-checked')).toBe('true');
   });
@@ -1277,14 +1371,17 @@ describe('modal dialogs say they are modal', () => {
   // `aria-modal` is what tells a screen reader the page behind is out of
   // reach; the panel is portaled, so it is found on the document, not in the
   // mount container.
-  it.each(['center', 'right'] as const)('Dialog (%s) emits role="dialog", aria-modal and its name', (placement) => {
-    mount(
-      <WebDialog open onClose={() => {}} placement={placement} label="Shortcuts">
-        <Text>Body</Text>
-      </WebDialog>,
-    );
-    const panel = document.querySelector('[role="dialog"][aria-label="Shortcuts"]');
-    expect(panel).not.toBeNull();
-    expect(panel?.getAttribute('aria-modal')).toBe('true');
-  });
+  it.each(['center', 'right'] as const)(
+    'Dialog (%s) emits role="dialog", aria-modal and its name',
+    (placement) => {
+      mount(
+        <WebDialog open onClose={() => {}} placement={placement} label="Shortcuts">
+          <Text>Body</Text>
+        </WebDialog>,
+      );
+      const panel = document.querySelector('[role="dialog"][aria-label="Shortcuts"]');
+      expect(panel).not.toBeNull();
+      expect(panel?.getAttribute('aria-modal')).toBe('true');
+    },
+  );
 });

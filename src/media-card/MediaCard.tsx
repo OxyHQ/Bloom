@@ -102,7 +102,11 @@ export function MediaCardSkeleton({
   const art = round ? (
     <SkeletonCircle size={box.width} />
   ) : (
-    <SkeletonBox width={box.width} height={box.height} borderRadius={radius ?? squareRadius(size, layout)} />
+    <SkeletonBox
+      width={box.width}
+      height={box.height}
+      borderRadius={radius ?? squareRadius(size, layout)}
+    />
   );
   return (
     <View
@@ -245,10 +249,22 @@ function MediaCardComponent(props: MediaCardProps) {
   const play =
     visibility === 'none' ? null : (
       <View
-        {...webDataSet(visibility === 'hover' ? { bloomMediaCardReveal: 'hover', bloomMediaCardPlay: '' } : { bloomMediaCardPlay: '' })}
+        {...webDataSet(
+          visibility === 'hover'
+            ? { bloomMediaCardReveal: 'hover', bloomMediaCardPlay: '' }
+            : { bloomMediaCardPlay: '' },
+        )}
         style={
           row
-            ? { position: 'absolute', top: 0, left: 0, width: box.width, height: box.height, alignItems: 'center', justifyContent: 'center' }
+            ? {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: box.width,
+                height: box.height,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }
             : { position: 'absolute', right: 8, bottom: 8 }
         }
         pointerEvents="box-none"
@@ -279,7 +295,16 @@ function MediaCardComponent(props: MediaCardProps) {
   ) : null;
 
   const artworkNode = (
-    <View style={{ position: 'relative', width: box.width, height: box.height, flexShrink: 0, alignSelf: centered && !row ? 'center' : undefined }} pointerEvents="box-none">
+    <View
+      style={{
+        position: 'relative',
+        width: box.width,
+        height: box.height,
+        flexShrink: 0,
+        alignSelf: centered && !row ? 'center' : undefined,
+      }}
+      pointerEvents="box-none"
+    >
       <View pointerEvents="none">
         <Artwork
           source={artwork}
@@ -322,7 +347,11 @@ function MediaCardComponent(props: MediaCardProps) {
     <View style={{ flex: 1, minWidth: 0, gap: 2 }} pointerEvents="box-none">
       <View pointerEvents="none" style={{ gap: 2 }}>
         {eyebrow ? (
-          <Text variant="caption-1-medium" numberOfLines={1} style={{ color: paint.textSecondary, textAlign: align }}>
+          <Text
+            variant="caption-1-medium"
+            numberOfLines={1}
+            style={{ color: paint.textSecondary, textAlign: align }}
+          >
             {eyebrow}
           </Text>
         ) : null}
@@ -360,7 +389,11 @@ function MediaCardComponent(props: MediaCardProps) {
           ) : null,
         )}
         {description ? (
-          <Text variant={secondaryVariant} numberOfLines={2} style={{ color: paint.textSecondary, textAlign: align, marginTop: 2 }}>
+          <Text
+            variant={secondaryVariant}
+            numberOfLines={2}
+            style={{ color: paint.textSecondary, textAlign: align, marginTop: 2 }}
+          >
             {description}
           </Text>
         ) : null}
@@ -414,18 +447,29 @@ function MediaCardComponent(props: MediaCardProps) {
       />
       {row ? (
         <View
-          style={{ flexDirection: 'row', alignItems: rowAlign === 'top' ? 'flex-start' : 'center', gap: TEXT_GAP }}
+          style={{
+            flexDirection: 'row',
+            alignItems: rowAlign === 'top' ? 'flex-start' : 'center',
+            gap: TEXT_GAP,
+          }}
           pointerEvents="box-none"
         >
           {artworkNode}
           <View style={{ flex: 1, minWidth: 0 }} pointerEvents="box-none">
             <View
-              style={{ flexDirection: 'row', alignItems: rowAlign === 'top' ? 'flex-start' : 'center', gap: TEXT_GAP }}
+              style={{
+                flexDirection: 'row',
+                alignItems: rowAlign === 'top' ? 'flex-start' : 'center',
+                gap: TEXT_GAP,
+              }}
               pointerEvents="box-none"
             >
               {textBlock}
               {trailing != null ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }} pointerEvents="box-none">
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}
+                  pointerEvents="box-none"
+                >
                   {trailing}
                 </View>
               ) : null}
@@ -444,7 +488,10 @@ function MediaCardComponent(props: MediaCardProps) {
           <View style={{ flexDirection: 'row', marginTop: TEXT_GAP }} pointerEvents="box-none">
             {textBlock}
             {menuNode ? (
-              <View style={{ position: 'absolute', top: eyebrow ? 10 : -6, right: -8 }} pointerEvents="box-none">
+              <View
+                style={{ position: 'absolute', top: eyebrow ? 10 : -6, right: -8 }}
+                pointerEvents="box-none"
+              >
                 {menuNode}
               </View>
             ) : null}

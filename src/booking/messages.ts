@@ -26,15 +26,26 @@ export interface BookingMessages {
   priceName: (price: string, unit?: string, originalPrice?: string) => string;
 }
 
-export const BOOKING_MESSAGES: MessageCatalog<BookingMessages> = defineMessages<BookingMessages>('BOOKING_MESSAGES', {
-  checkIn: 'Check-in',
-  checkOut: 'Checkout',
-  guests: 'Guests',
-  addDate: 'Add date',
-  reserve: 'Reserve',
-  checkAvailability: 'Check availability',
-  notChargedYet: "You won't be charged yet",
-  total: 'Total',
-  tripStatus: { confirmed: 'Confirmed', pending: 'Pending', cancelled: 'Cancelled', completed: 'Completed' },
-  priceName: priceName((p, u) => `${p} per ${u}`, (s, o) => `${s}, originally ${o}`),
-});
+export const BOOKING_MESSAGES: MessageCatalog<BookingMessages> = defineMessages<BookingMessages>(
+  'BOOKING_MESSAGES',
+  {
+    checkIn: 'Check-in',
+    checkOut: 'Checkout',
+    guests: 'Guests',
+    addDate: 'Add date',
+    reserve: 'Reserve',
+    checkAvailability: 'Check availability',
+    notChargedYet: "You won't be charged yet",
+    total: 'Total',
+    tripStatus: {
+      confirmed: 'Confirmed',
+      pending: 'Pending',
+      cancelled: 'Cancelled',
+      completed: 'Completed',
+    },
+    priceName: priceName(
+      (p, u) => `${p} per ${u}`,
+      (s, o) => `${s}, originally ${o}`,
+    ),
+  },
+);

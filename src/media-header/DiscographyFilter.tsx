@@ -28,7 +28,9 @@ function discographyOptions(messages: MediaHeaderMessages): readonly Discography
 }
 
 /** The English chips; the filter draws the locale's (`BloomProvider locale`) unless `options` is given. */
-export const DEFAULT_DISCOGRAPHY_OPTIONS: readonly DiscographyFilterOption[] = discographyOptions(MEDIA_HEADER_MESSAGES.en);
+export const DEFAULT_DISCOGRAPHY_OPTIONS: readonly DiscographyFilterOption[] = discographyOptions(
+  MEDIA_HEADER_MESSAGES.en,
+);
 
 function DiscographyFilterComponent({
   value,
@@ -41,7 +43,10 @@ function DiscographyFilterComponent({
   testID,
 }: DiscographyFilterProps) {
   const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
-  const options = useMemo(() => optionsProp ?? discographyOptions(messages), [optionsProp, messages]);
+  const options = useMemo(
+    () => optionsProp ?? discographyOptions(messages),
+    [optionsProp, messages],
+  );
   // `null` is a deliberate "no heading"; only an absent title takes the catalog's.
   const title = titleProp === undefined ? messages.discography : titleProp;
   const showAllLabel = showAllLabelProp ?? messages.showAll;
@@ -51,9 +56,21 @@ function DiscographyFilterComponent({
   return (
     <View style={[{ gap: 12 }, style]} testID={testID}>
       {title !== null || onShowAll ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
           {title !== null ? (
-            <Text variant="title-1-bold" role="heading" aria-level={2} style={{ color: paint.text }}>
+            <Text
+              variant="title-1-bold"
+              role="heading"
+              aria-level={2}
+              style={{ color: paint.text }}
+            >
               {title}
             </Text>
           ) : (
@@ -71,7 +88,10 @@ function DiscographyFilterComponent({
             >
               <Text
                 variant="body-semibold"
-                style={{ color: paint.textMuted, textDecorationLine: hovered ? 'underline' : 'none' }}
+                style={{
+                  color: paint.textMuted,
+                  textDecorationLine: hovered ? 'underline' : 'none',
+                }}
               >
                 {showAllLabel}
               </Text>

@@ -42,7 +42,13 @@ const ROW_ICON = 18;
 const ARROW_ICON = 20;
 const ROW_BUTTON_ICON = 14;
 
-function InfoChip({ children, palette }: { children: React.ReactNode; palette: CalendarViewPalette }) {
+function InfoChip({
+  children,
+  palette,
+}: {
+  children: React.ReactNode;
+  palette: CalendarViewPalette;
+}) {
   return (
     <View
       style={{
@@ -72,7 +78,13 @@ const ROW_CHROME: ViewStyle = {
   paddingLeft: 8,
 };
 
-function DetailRow({ children, palette }: { children: React.ReactNode; palette: CalendarViewPalette }) {
+function DetailRow({
+  children,
+  palette,
+}: {
+  children: React.ReactNode;
+  palette: CalendarViewPalette;
+}) {
   return (
     <View
       style={{
@@ -118,7 +130,16 @@ function RowButton({
   onPress?: () => void;
 }) {
   return (
-    <Button size="xs" leading={<Icon width={ROW_BUTTON_ICON} height={ROW_BUTTON_ICON} fill={palette.iconSecondary} />} accessibilityLabel={label} onPress={onPress} appearance="plain" tone="neutral" />
+    <Button
+      size="xs"
+      leading={
+        <Icon width={ROW_BUTTON_ICON} height={ROW_BUTTON_ICON} fill={palette.iconSecondary} />
+      }
+      accessibilityLabel={label}
+      onPress={onPress}
+      appearance="plain"
+      tone="neutral"
+    />
   );
 }
 
@@ -215,7 +236,12 @@ export function CalendarViewEventDetails({
             }}
           >
             <InfoChip palette={palette}>{event.meeting.code}</InfoChip>
-            <Button size="xs" onPress={onJoinMeeting ? () => onJoinMeeting(event) : undefined} appearance="solid" tone="accent">
+            <Button
+              size="xs"
+              onPress={onJoinMeeting ? () => onJoinMeeting(event) : undefined}
+              appearance="solid"
+              tone="accent"
+            >
               {messages.join}
             </Button>
           </View>
@@ -230,14 +256,20 @@ export function CalendarViewEventDetails({
               <Text variant="body-2-medium">{event.time}</Text>
               {event.endTime ? (
                 <>
-                  <RiArrowRightLine width={ARROW_ICON} height={ARROW_ICON} fill={palette.iconSecondary} />
+                  <RiArrowRightLine
+                    width={ARROW_ICON}
+                    height={ARROW_ICON}
+                    fill={palette.iconSecondary}
+                  />
                   <Text variant="body-2-medium">{event.endTime}</Text>
                 </>
               ) : null}
             </View>
           </RowLead>
           {event.endTime ? (
-            <InfoChip palette={palette}>{durationLabel(event.time!, event.endTime, messages.duration)}</InfoChip>
+            <InfoChip palette={palette}>
+              {durationLabel(event.time!, event.endTime, messages.duration)}
+            </InfoChip>
           ) : null}
         </DetailRow>
       ) : null}
@@ -291,7 +323,11 @@ export function CalendarViewEventDetails({
                   paddingBottom: 6,
                 }}
               >
-                <Avatar size="xs" color={participant.color ?? 'neutral'} initials={participant.initials} />
+                <Avatar
+                  size="xs"
+                  color={participant.color ?? 'neutral'}
+                  initials={participant.initials}
+                />
                 <Text variant="body-2-medium" numberOfLines={1} style={{ flexShrink: 1 }}>
                   {participant.email}
                 </Text>

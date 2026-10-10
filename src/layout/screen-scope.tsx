@@ -50,7 +50,9 @@ export function ScreenScope({ children }: PropsWithChildren) {
         <TopEdgeProvider>
           <BottomEdgeProvider>
             {/* null means no scroller has claimed this scope yet. */}
-            <ScrollMetricsContext.Provider value={null}><ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider></ScrollMetricsContext.Provider>
+            <ScrollMetricsContext.Provider value={null}>
+              <ScrollOffsetProvider value={null}>{children}</ScrollOffsetProvider>
+            </ScrollMetricsContext.Provider>
           </BottomEdgeProvider>
         </TopEdgeProvider>
       </ScreenNavigationContext.Provider>

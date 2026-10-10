@@ -57,12 +57,15 @@ import { CHAT_COMPOSER_MESSAGES } from './messages';
 import { useCommonMessages } from '../locale/common-messages';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton, SuggestionList }: {
+export function createChatComposer({
+  ComposerAttachmentStrip,
+  ComposerIconButton,
+  SuggestionList,
+}: {
   ComposerAttachmentStrip: typeof ComposerAttachmentStripComponent;
   ComposerIconButton: typeof ComposerIconButtonComponent;
   SuggestionList: typeof SuggestionListComponent;
 }) {
-
   const EASE_OUT = Easing.bezier(0, 0, 0.2, 1);
 
   /**
@@ -98,7 +101,8 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
         aria-hidden={!shown}
         accessibilityElementsHidden={!shown}
         importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}
-        style={[{ position: 'absolute', top: 0, left: 0 }, animated]}>
+        style={[{ position: 'absolute', top: 0, left: 0 }, animated]}
+      >
         {children}
       </Animated.View>
     );
@@ -184,8 +188,12 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
     );
 
     const requestedLineHeight = StyleSheet.flatten(inputStyle)?.lineHeight;
-    const lineHeight = typeof requestedLineHeight === 'number' && Number.isFinite(requestedLineHeight) && requestedLineHeight > 0
-      ? requestedLineHeight : LINE_HEIGHT;
+    const lineHeight =
+      typeof requestedLineHeight === 'number' &&
+      Number.isFinite(requestedLineHeight) &&
+      requestedLineHeight > 0
+        ? requestedLineHeight
+        : LINE_HEIGHT;
     const minHeight = Math.max(1, minLines) * lineHeight;
     const maxHeight = Math.max(1, minLines, maxLines) * lineHeight;
     const [contentHeight, setContentHeight] = useState(minHeight);
@@ -311,7 +319,8 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
       <View
         accessibilityLabel={accessibilityLabel}
         style={[{ width: '100%', flexDirection: 'column', gap: 6 }, style]}
-        testID={testID}>
+        testID={testID}
+      >
         {openSuggestions ? (
           <SuggestionList
             kind={suggestionKind}
@@ -347,14 +356,16 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                   paddingLeft: 12,
                   paddingRight: 12,
                 }}
-                testID={testID ? `${testID}-notice` : undefined}>
+                testID={testID ? `${testID}-notice` : undefined}
+              >
                 {typeof notice === 'string' ? (
                   <>
                     <NoticeIcon width={16} height={16} fill={palette.iconSecondary} />
                     <Text
                       variant="body-2-regular"
                       numberOfLines={2}
-                      style={{ color: palette.textSecondary, textAlign: 'center' }}>
+                      style={{ color: palette.textSecondary, textAlign: 'center' }}
+                    >
                       {notice}
                     </Text>
                   </>
@@ -384,7 +395,8 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                     minHeight: CONTROL_SIZE,
                     paddingLeft: 6,
                     paddingRight: 6,
-                  }}>
+                  }}
+                >
                   <TextInput
                     ref={setFieldRef}
                     {...dataHook('bloomChatComposerInput')}
@@ -402,17 +414,20 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                     selectionColor={palette.accent}
                     cursorColor={palette.accent}
                     scrollEnabled={height >= maxHeight}
-                    style={[{
-                      width: '100%',
-                      height,
-                      maxHeight,
-                      padding: 0,
-                      margin: 0,
-                      ...TYPE_SCALE['body-regular'],
-                      fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
-                      color: disabled ? palette.textSecondary : palette.text,
-                      backgroundColor: 'transparent',
-                    }, inputStyle]}
+                    style={[
+                      {
+                        width: '100%',
+                        height,
+                        maxHeight,
+                        padding: 0,
+                        margin: 0,
+                        ...TYPE_SCALE['body-regular'],
+                        fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
+                        color: disabled ? palette.textSecondary : palette.text,
+                        backgroundColor: 'transparent',
+                      },
+                      inputStyle,
+                    ]}
                     testID={testID ? `${testID}-input` : undefined}
                   />
                 </View>
@@ -450,17 +465,19 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
                       testID={testID ? `${testID}-send` : undefined}
                     />
                   </SwapLayer>
-                  {hasMic ? <SwapLayer shown={!showSend}>
-                    <ComposerIconButton
-                      icon={RiMic2Line}
-                      accessibilityLabel={labels.mic}
-                      onPress={onMicPress}
-                      onPressIn={onMicPressIn}
-                      onPressOut={onMicPressOut}
-                      disabled={disabled}
-                      testID={testID ? `${testID}-mic` : undefined}
-                    />
-                  </SwapLayer> : null}
+                  {hasMic ? (
+                    <SwapLayer shown={!showSend}>
+                      <ComposerIconButton
+                        icon={RiMic2Line}
+                        accessibilityLabel={labels.mic}
+                        onPress={onMicPress}
+                        onPressIn={onMicPressIn}
+                        onPressOut={onMicPressOut}
+                        disabled={disabled}
+                        testID={testID ? `${testID}-mic` : undefined}
+                      />
+                    </SwapLayer>
+                  ) : null}
                 </View>
               </>
             )}
@@ -470,7 +487,8 @@ export function createChatComposer({ ComposerAttachmentStrip, ComposerIconButton
         {showKeyboardHint && IS_WEB && notice === undefined ? (
           <Text
             variant="caption-2-regular"
-            style={{ color: palette.textPlaceholder, paddingLeft: 14 }}>
+            style={{ color: palette.textPlaceholder, paddingLeft: 14 }}
+          >
             {sendOn === 'enter' ? labels.enterHint : labels.modEnterHint}
           </Text>
         ) : null}

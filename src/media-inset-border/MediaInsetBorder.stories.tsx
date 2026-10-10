@@ -16,8 +16,7 @@ export default meta;
 
 type Story = StoryObj<typeof MediaInsetBorder>;
 
-const SAMPLE_URI =
-  'https://images.unsplash.com/photo-1526779259212-939e64788e3c?w=400&q=80';
+const SAMPLE_URI = 'https://images.unsplash.com/photo-1526779259212-939e64788e3c?w=400&q=80';
 
 export const OverImage: Story = {
   render: (args) => (

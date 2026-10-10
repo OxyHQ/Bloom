@@ -1,7 +1,11 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { resolveButtonPalette } from '../button/shared';
 import { Text } from 'react-native';
-import { SurfaceLevelProvider, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import React from 'react';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
@@ -54,13 +58,21 @@ describe('ComposerPanel', () => {
   it('keeps the card: radius 24, padding 10, the card surface; send is 36 round', () => {
     const { getByTestId, getByLabelText } = renderIn(<ComposerPanel testID="composer" />);
     const theme = buildTheme('teal', 'light');
-    const card = getByTestId('composer').findAll(node => resolvedStyle(node.props.style).borderRadius === 24 && resolvedStyle(node.props.style).padding === 10)[0]!;
+    const card = getByTestId('composer').findAll(
+      (node) =>
+        resolvedStyle(node.props.style).borderRadius === 24 &&
+        resolvedStyle(node.props.style).padding === 10,
+    )[0]!;
     expect(resolvedStyle(card.props.style)).toMatchObject({
       borderRadius: 24,
       padding: 10,
       backgroundColor: 'transparent',
     });
-    expect(getByTestId('composer').findAll(node => node.props.fill === theme.colors.card && node.props.radius === 24).length).toBeGreaterThan(0);
+    expect(
+      getByTestId('composer').findAll(
+        (node) => node.props.fill === theme.colors.card && node.props.radius === 24,
+      ).length,
+    ).toBeGreaterThan(0);
     expect(resolvedStyle(getByLabelText('Send message').props.style)).toMatchObject({
       width: 36,
       height: 36,
@@ -70,12 +82,18 @@ describe('ComposerPanel', () => {
   it('paints the card with the canonical card role in dark mode', () => {
     const { getByTestId } = renderIn(<ComposerPanel testID="composer" />, 'dark');
     const { colors } = buildTheme('teal', 'dark');
-    expect(getByTestId('composer').findAll(node => node.props.fill === colors.card && node.props.radius === 24).length).toBeGreaterThan(0);
+    expect(
+      getByTestId('composer').findAll(
+        (node) => node.props.fill === colors.card && node.props.radius === 24,
+      ).length,
+    ).toBeGreaterThan(0);
   });
 
   it('submits the draft from send and clears it when uncontrolled', () => {
     const onSubmit = jest.fn();
-    const { getByTestId, getByLabelText } = renderIn(<ComposerPanel testID="composer" onSubmit={onSubmit} />);
+    const { getByTestId, getByLabelText } = renderIn(
+      <ComposerPanel testID="composer" onSubmit={onSubmit} />,
+    );
     fireEvent.changeText(getByTestId('composer-input'), 'Draft the update');
     pressHost(getByLabelText('Send message'));
     expect(onSubmit).toHaveBeenCalledWith('Draft the update');
@@ -107,7 +125,9 @@ describe('ComposerPanel', () => {
 
   it('draws no stop without a handler, and refuses to submit while busy', () => {
     const onSubmit = jest.fn();
-    const { getByLabelText, queryByLabelText } = renderIn(<ComposerPanel busy defaultValue="hi" onSubmit={onSubmit} />);
+    const { getByLabelText, queryByLabelText } = renderIn(
+      <ComposerPanel busy defaultValue="hi" onSubmit={onSubmit} />,
+    );
     expect(queryByLabelText('Stop generating')).toBeNull();
     pressHost(getByLabelText('Send message'));
     expect(onSubmit).not.toHaveBeenCalled();
@@ -117,7 +137,11 @@ describe('ComposerPanel', () => {
     const onPermissionChange = jest.fn();
     const onLearnMore = jest.fn();
     const { getByTestId, queryByTestId, getByLabelText } = renderIn(
-      <ComposerPanel testID="composer" onPermissionChange={onPermissionChange} onLearnMore={onLearnMore} />,
+      <ComposerPanel
+        testID="composer"
+        onPermissionChange={onPermissionChange}
+        onLearnMore={onLearnMore}
+      />,
     );
     const trigger = getByTestId('composer-permission');
     expect(trigger.props.accessibilityLabel).toBe('Permission: Auto');
@@ -140,7 +164,9 @@ describe('ComposerPanel', () => {
 
   it('lists the add menu groups and reports the chosen row', () => {
     const onAddMenuSelect = jest.fn();
-    const { getByTestId } = renderIn(<ComposerPanel testID="composer" onAddMenuSelect={onAddMenuSelect} />);
+    const { getByTestId } = renderIn(
+      <ComposerPanel testID="composer" onAddMenuSelect={onAddMenuSelect} />,
+    );
     pressHost(getByTestId('composer-add'));
     const panel = within(getByTestId('composer-add-panel'));
     expect(panel.getByText('Add')).toBeTruthy();
@@ -206,7 +232,9 @@ describe('ComposerPanel', () => {
       { id: 'a', name: 'Brief.docx', kind: 'document' },
       { id: 'b', name: 'Deck.key', kind: 'presentation', progress: 40 },
     ];
-    const { getByLabelText, getByText, queryByLabelText } = renderIn(<ComposerPanel attachments={files} onRemoveAttachment={onRemove} />);
+    const { getByLabelText, getByText, queryByLabelText } = renderIn(
+      <ComposerPanel attachments={files} onRemoveAttachment={onRemove} />,
+    );
     expect(getByText('40%', { includeHiddenElements: true })).toBeTruthy();
     const landed = getByLabelText('Remove Brief.docx');
     expect(resolvedStyle(landed.props.style).opacity).toBe(1);
@@ -245,7 +273,11 @@ describe('ComposerPanel', () => {
       { id: 'b', name: 'Photo.png', kind: 'image', src: 'x.png', error: 'Network error' },
     ];
     const { getByLabelText, queryByLabelText } = renderIn(
-      <ComposerPanel attachments={files} onAttachmentRetry={onRetry} labels={{ retry: 'Try again' }} />,
+      <ComposerPanel
+        attachments={files}
+        onAttachmentRetry={onRetry}
+        labels={{ retry: 'Try again' }}
+      />,
     );
     expect(queryByLabelText('Try again Brief.docx')).toBeNull();
     pressHost(getByLabelText('Try again Photo.png'));
@@ -254,13 +286,24 @@ describe('ComposerPanel', () => {
 
   it('keeps + and voice on the card and truncates the model chip instead (long names, large fonts)', () => {
     const long: ModelPickerProvider[] = [
-      { id: 'deepseek', name: 'DeepSeek', models: [{ id: 'deepseek/v4-pro', name: 'DeepSeek: DeepSeek V4 Pro 0813' }] },
+      {
+        id: 'deepseek',
+        name: 'DeepSeek',
+        models: [{ id: 'deepseek/v4-pro', name: 'DeepSeek: DeepSeek V4 Pro 0813' }],
+      },
     ];
-    const { getByLabelText, getByTestId } = renderIn(<ComposerPanel testID="composer" providers={long} />);
+    const { getByLabelText, getByTestId } = renderIn(
+      <ComposerPanel testID="composer" providers={long} />,
+    );
     const style = (node: { props: Record<string, unknown> }) => resolvedStyle(node.props.style);
     const trigger = getByTestId('composer-model');
     // The chip is the one that gives: it shrinks, and it is never a fixed 32.
-    expect(style(trigger)).toMatchObject({ flexShrink: 1, minWidth: 0, minHeight: 32, maxWidth: 240 });
+    expect(style(trigger)).toMatchObject({
+      flexShrink: 1,
+      minWidth: 0,
+      minHeight: 32,
+      maxWidth: 240,
+    });
     expect(style(trigger).height).toBe('auto');
     const name = within(trigger).getByText('DeepSeek: DeepSeek V4 Pro 0813');
     expect(name.props.numberOfLines).toBe(1);
@@ -277,7 +320,9 @@ describe('ComposerPanel', () => {
 
   it('sizes the prompt to a value set from outside, without waiting for a focus (native)', () => {
     const question = 'Line one\nLine two\nLine three\nLine four';
-    const draw = (value: string) => <ComposerPanel testID="composer" value={value} onValueChange={() => {}} />;
+    const draw = (value: string) => (
+      <ComposerPanel testID="composer" value={value} onValueChange={() => {}} />
+    );
     const screen = renderIn(draw(''));
     const input = () => screen.getByTestId('composer-input');
     const twin = () => screen.getByTestId('composer-input-twin', { includeHiddenElements: true });
@@ -285,13 +330,21 @@ describe('ComposerPanel', () => {
       fireEvent(twin(), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 300, height } } });
 
     // An edit loads a four-line question: the twin lays it out, the field follows.
-    screen.rerender(<BloomThemeProvider mode="light" colorPreset="teal">{draw(question)}</BloomThemeProvider>);
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {draw(question)}
+      </BloomThemeProvider>,
+    );
     expect(twin().props.children).toBe(question);
     layout(80);
     expect(resolvedStyle(input().props.style).height).toBe(80);
 
     // Cancel clears it: one line again, not four.
-    screen.rerender(<BloomThemeProvider mode="light" colorPreset="teal">{draw('')}</BloomThemeProvider>);
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {draw('')}
+      </BloomThemeProvider>,
+    );
     expect(twin().props.children).toBe(' ');
     layout(20);
     expect(resolvedStyle(input().props.style).height).toBe(20);
@@ -307,7 +360,11 @@ describe('ComposerPanel', () => {
 
   it('grows the permission chip with the system font and truncates a long mode name', () => {
     const modes = [
-      { ...COMPOSER_PANEL_PERMISSIONS[0]!, id: 'long', label: 'Ask before every single change to the project' },
+      {
+        ...COMPOSER_PANEL_PERMISSIONS[0]!,
+        id: 'long',
+        label: 'Ask before every single change to the project',
+      },
     ];
     const { getByTestId } = renderIn(<ComposerPanel testID="composer" permissions={modes} />);
     const trigger = getByTestId('composer-permission');
@@ -327,14 +384,21 @@ describe('ComposerPanel', () => {
   it('lets the model panel rows grow with the system font', () => {
     const { getByTestId } = renderIn(<ComposerPanel testID="composer" providers={PROVIDERS} />);
     pressHost(getByTestId('composer-model'));
-    let row = within(getByTestId('composer-model-panel')).getByLabelText('OpenAI GPT-5.6 Mini').parent;
+    let row = within(getByTestId('composer-model-panel')).getByLabelText(
+      'OpenAI GPT-5.6 Mini',
+    ).parent;
     while (row && resolvedStyle(row.props.style).flexDirection !== 'row') row = row.parent;
     expect(resolvedStyle(row!.props.style)).toMatchObject({ minHeight: 36 });
     expect(resolvedStyle(row!.props.style).height).toBeUndefined();
   });
 
   it('exports the four permission modes', () => {
-    expect(COMPOSER_PANEL_PERMISSIONS.map((mode) => mode.id)).toEqual(['auto', 'manual', 'plan', 'bypass']);
+    expect(COMPOSER_PANEL_PERMISSIONS.map((mode) => mode.id)).toEqual([
+      'auto',
+      'manual',
+      'plan',
+      'bypass',
+    ]);
   });
 });
 
@@ -361,7 +425,9 @@ describe('ComposerPanelStatusTab', () => {
 describe('ModelPicker', () => {
   it('names the chosen model and browses lineups from the provider rail', () => {
     const onValueChange = jest.fn();
-    const { getByTestId } = renderIn(<ModelPicker testID="picker" providers={PROVIDERS} onValueChange={onValueChange} />);
+    const { getByTestId } = renderIn(
+      <ModelPicker testID="picker" providers={PROVIDERS} onValueChange={onValueChange} />,
+    );
     const trigger = getByTestId('picker');
     expect(trigger.props.accessibilityLabel).toBe('Models: GPT-5.6 Mini');
 
@@ -391,11 +457,18 @@ describe('ModelPicker', () => {
   it('reads "no stop chosen" as Auto and commits a stop from there', () => {
     const onEffortChange = jest.fn();
     const { getByTestId, getByLabelText, getAllByLabelText } = renderIn(
-      <ModelPicker testID="picker" providers={PROVIDERS} effort={null} onEffortChange={onEffortChange} />,
+      <ModelPicker
+        testID="picker"
+        providers={PROVIDERS}
+        effort={null}
+        onEffortChange={onEffortChange}
+      />,
     );
     pressHost(getByTestId('picker'));
     pressHost(getByLabelText('Effort: Auto'));
-    const slider = getAllByLabelText('Effort').find((node) => node.props.accessibilityRole === 'adjustable')!;
+    const slider = getAllByLabelText('Effort').find(
+      (node) => node.props.accessibilityRole === 'adjustable',
+    )!;
     // No value is reported at all — the absence is not the first stop.
     expect(slider.props['aria-valuenow']).toBeUndefined();
     expect(slider.props['aria-valuetext']).toBe('Auto');
@@ -425,7 +498,9 @@ describe('ModelPicker', () => {
     pressHost(getByTestId('picker'));
     const chip = getByLabelText('Effort: Medium');
     pressHost(chip);
-    const slider = getAllByLabelText('Effort').find((node) => node.props.accessibilityRole === 'adjustable')!;
+    const slider = getAllByLabelText('Effort').find(
+      (node) => node.props.accessibilityRole === 'adjustable',
+    )!;
     expect(slider.props.accessibilityRole).toBe('adjustable');
     expect(slider.props['aria-valuemin']).toBe(0);
     expect(slider.props['aria-valuemax']).toBe(5);
@@ -482,7 +557,12 @@ describe('ComposerAttachments', () => {
       { id: 'b', name: 'Two.docx', kind: 'document', progress: 0 },
     ];
     const { queryByLabelText } = renderIn(
-      <ComposerAttachments attachments={files} uploadDuration={200} uploadGap={10} onUploadComplete={onUploadComplete} />,
+      <ComposerAttachments
+        attachments={files}
+        uploadDuration={200}
+        uploadGap={10}
+        onUploadComplete={onUploadComplete}
+      />,
     );
     expect(queryByLabelText('One.docx: Too large')).toBeTruthy();
     expect(queryByLabelText('Two.docx')).toBeTruthy();
@@ -497,19 +577,28 @@ describe('ComposerAttachments', () => {
 describe('ComposerPill', () => {
   it('draws the 52px pill with the surface and shadow, and drops both inside a loader', () => {
     const { getByTestId, rerender } = renderIn(<ComposerPill testID="pill" />);
-    expect(resolvedStyle(getByTestId('pill').props.style)).toMatchObject({ height: 52, borderRadius: 9999, padding: 8, gap: 10 });
+    expect(resolvedStyle(getByTestId('pill').props.style)).toMatchObject({
+      height: 52,
+      borderRadius: 9999,
+      padding: 8,
+      gap: 10,
+    });
     expect(resolvedStyle(getByTestId('pill').props.style).boxShadow).toBeTruthy();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <ComposerPill testID="pill" surface={false} />
       </BloomThemeProvider>,
     );
-    expect(resolvedStyle(getByTestId('pill').props.style)).toMatchObject({ backgroundColor: 'transparent' });
+    expect(resolvedStyle(getByTestId('pill').props.style)).toMatchObject({
+      backgroundColor: 'transparent',
+    });
   });
 
   it('submits the text from send, and greys send out while disabled', () => {
     const onSubmit = jest.fn();
-    const { getByLabelText, rerender } = renderIn(<ComposerPill defaultValue="hi" onSubmit={onSubmit} />);
+    const { getByLabelText, rerender } = renderIn(
+      <ComposerPill defaultValue="hi" onSubmit={onSubmit} />,
+    );
     pressHost(getByLabelText('Send message'));
     expect(onSubmit).toHaveBeenCalledWith('hi');
     rerender(
@@ -564,7 +653,11 @@ describe('ComposerPill', () => {
     const none = renderIn(<ComposerPill />);
     expect(none.queryByLabelText('Fable 5')).toBeNull();
     const { getByLabelText, getByText } = renderIn(
-      <ComposerPill models={['Composer 2.5', 'Fable 5']} defaultModel="Fable 5" onModelChange={onModelChange} />,
+      <ComposerPill
+        models={['Composer 2.5', 'Fable 5']}
+        defaultModel="Fable 5"
+        onModelChange={onModelChange}
+      />,
     );
     const trigger = getByLabelText('Fable 5');
     fireEvent.press(trigger);
@@ -602,7 +695,9 @@ describe('ComposerPill', () => {
   });
 
   it('drops the effort half of the menu without stops', () => {
-    const { getByLabelText, queryByText } = renderIn(<ComposerPill models={['Fable 5']} effortLevels={[]} />);
+    const { getByLabelText, queryByText } = renderIn(
+      <ComposerPill models={['Fable 5']} effortLevels={[]} />,
+    );
     fireEvent.press(getByLabelText('Fable 5'));
     expect(queryByText('Models')).toBeTruthy();
     expect(queryByText(/^Effort/)).toBeNull();
@@ -610,7 +705,9 @@ describe('ComposerPill', () => {
 
   it('turns send into stop while busy, and keeps stop live under `disabled`', () => {
     const onStop = jest.fn();
-    const { getByLabelText, queryByLabelText } = renderIn(<ComposerPill busy disabled onStop={onStop} />);
+    const { getByLabelText, queryByLabelText } = renderIn(
+      <ComposerPill busy disabled onStop={onStop} />,
+    );
     expect(queryByLabelText('Send message')).toBeNull();
     pressHost(getByLabelText('Stop generating'));
     expect(onStop).toHaveBeenCalledTimes(1);
@@ -642,7 +739,9 @@ describe('ComposerStatusBar', () => {
   });
 
   it('is at least 26 tall, never exactly, so its labels grow with the system font', () => {
-    const { getByTestId } = renderIn(<ComposerStatusBar testID="status" branch="Main" folders={FOLDERS} />);
+    const { getByTestId } = renderIn(
+      <ComposerStatusBar testID="status" branch="Main" folders={FOLDERS} />,
+    );
     expect(resolvedStyle(getByTestId('status').props.style)).toMatchObject({ minHeight: 26 });
     expect(resolvedStyle(getByTestId('status').props.style).height).toBeUndefined();
   });
@@ -661,29 +760,44 @@ describe('ComposerStatusBar', () => {
   });
 });
 
+it.each(['light', 'dark'] as const)(
+  'composer reads canonical foreground and surface roles in %s mode',
+  (mode) => {
+    const theme = buildTheme('teal', mode);
+    const c = theme.colors;
+    expect(resolveComposerPalette(theme)).toMatchObject({
+      surface: c.card,
+      secondary: c.backgroundSecondary,
+      tertiary: c.backgroundTertiary,
+      border: c.borderLight,
+      textSecondary: c.textSecondary,
+      textTertiary: c.textTertiary,
+      iconSecondary: c.textSecondary,
+      iconTertiary: c.textTertiary,
+      focusRing: c.primary,
+      accent500: c.primarySubtleForeground,
+      errorSurface: c.errorSubtle,
+      errorText: c.errorSubtleForeground,
+    });
+  },
+);
 
-it.each(['light', 'dark'] as const)('composer reads canonical foreground and surface roles in %s mode', (mode) => {
-  const theme = buildTheme('teal', mode);
-  const c = theme.colors;
-  expect(resolveComposerPalette(theme)).toMatchObject({
-    surface: c.card, secondary: c.backgroundSecondary, tertiary: c.backgroundTertiary,
-    border: c.borderLight, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
-    iconSecondary: c.textSecondary, iconTertiary: c.textTertiary, focusRing: c.primary,
-    accent500: c.primarySubtleForeground,
-    errorSurface: c.errorSubtle, errorText: c.errorSubtleForeground,
-  });
-});
-
- it('pairs the send arrow with each action paint state', () => {
+it('pairs the send arrow with each action paint state', () => {
   const palette = resolveButtonPalette('solid', buildTheme('teal', 'light'), 'action');
-  const { getByLabelText, UNSAFE_getByType, rerender } = renderIn(<SendButton disabled={false} onPress={() => {}} label="Send" />);
+  const { getByLabelText, UNSAFE_getByType, rerender } = renderIn(
+    <SendButton disabled={false} onPress={() => {}} label="Send" />,
+  );
   const arrow = () => UNSAFE_getByType(RiArrowUpLine).props.fill;
   expect(arrow()).toBe(palette.rest.foreground);
   fireEvent(getByLabelText('Send'), 'hoverIn');
   expect(arrow()).toBe(palette.hover.foreground);
   fireEvent(getByLabelText('Send'), 'pressIn');
   expect(arrow()).toBe(palette.active.foreground);
-  rerender(<BloomThemeProvider mode="light" colorPreset="teal"><SendButton disabled onPress={() => {}} label="Send" /></BloomThemeProvider>);
+  rerender(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <SendButton disabled onPress={() => {}} label="Send" />
+    </BloomThemeProvider>,
+  );
   expect(arrow()).toBe(palette.disabled.foreground);
 });
 
@@ -704,26 +818,41 @@ describe('emptyAction', () => {
 
   it('gives the slot back to send for a lone attachment', () => {
     const { queryByLabelText } = renderIn(
-      <ComposerPanel attachments={[{ id: 'a', name: 'a.png', kind: 'image' }]} emptyAction={call} />,
+      <ComposerPanel
+        attachments={[{ id: 'a', name: 'a.png', kind: 'image' }]}
+        emptyAction={call}
+      />,
     );
     expect(queryByLabelText('Voice mode')).toBeNull();
     expect(queryByLabelText('Send message')).not.toBeNull();
   });
 
   it('lets a stop win over the empty action', () => {
-    const { queryByLabelText } = renderIn(<ComposerPanel busy onStop={() => {}} emptyAction={call} />);
+    const { queryByLabelText } = renderIn(
+      <ComposerPanel busy onStop={() => {}} emptyAction={call} />,
+    );
     expect(queryByLabelText('Voice mode')).toBeNull();
     expect(queryByLabelText('Stop generating')).not.toBeNull();
   });
 });
 
 function ComposerSurfaceProbe() {
-  return <Text testID="composer-surface-probe">{`${useSurfaceLevelValue()}:${useSurfaceFill()}`}</Text>;
+  return (
+    <Text testID="composer-surface-probe">{`${useSurfaceLevelValue()}:${useSurfaceFill()}`}</Text>
+  );
 }
 it('leaves a plain pill on its parent and publishes the filled pill backing', () => {
   for (const surface of [false, true]) {
-    const screen = renderIn(<SurfaceLevelProvider level={2} fill="#123456"><ComposerPill surface={surface} emptyAction={<ComposerSurfaceProbe />} /></SurfaceLevelProvider>);
-    expect(screen.getByTestId('composer-surface-probe').props.children).toBe(surface ? `1:${resolveSurfaceMaterial({ fill: buildTheme('teal', 'light').colors.card, parentFill: '#123456' }).publishedFill}` : '2:#123456');
+    const screen = renderIn(
+      <SurfaceLevelProvider level={2} fill="#123456">
+        <ComposerPill surface={surface} emptyAction={<ComposerSurfaceProbe />} />
+      </SurfaceLevelProvider>,
+    );
+    expect(screen.getByTestId('composer-surface-probe').props.children).toBe(
+      surface
+        ? `1:${resolveSurfaceMaterial({ fill: buildTheme('teal', 'light').colors.card, parentFill: '#123456' }).publishedFill}`
+        : '2:#123456',
+    );
     screen.unmount();
   }
 });

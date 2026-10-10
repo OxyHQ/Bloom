@@ -18,18 +18,33 @@ export default meta;
 type Story = StoryObj;
 
 const photos = (seed: string, count: number) =>
-  Array.from({ length: count }, (_, index) => `https://picsum.photos/seed/${seed}-${index}/800/760`);
+  Array.from(
+    { length: count },
+    (_, index) => `https://picsum.photos/seed/${seed}-${index}/800/760`,
+  );
 
 function facts(beds: number | null, baths: number, area: number, floor?: number): ListingFact[] {
   const list: ListingFact[] = [];
-  if (beds != null) list.push({ icon: RiHotelBedLine, label: String(beds), accessibilityLabel: `${beds} ${beds === 1 ? 'bedroom' : 'bedrooms'}` });
-  list.push({ icon: RiDropLine, label: String(baths), accessibilityLabel: `${baths} ${baths === 1 ? 'bathroom' : 'bathrooms'}` });
+  if (beds != null)
+    list.push({
+      icon: RiHotelBedLine,
+      label: String(beds),
+      accessibilityLabel: `${beds} ${beds === 1 ? 'bedroom' : 'bedrooms'}`,
+    });
+  list.push({
+    icon: RiDropLine,
+    label: String(baths),
+    accessibilityLabel: `${baths} ${baths === 1 ? 'bathroom' : 'bathrooms'}`,
+  });
   list.push({ icon: RiRulerLine, label: `${area} m²` });
   if (floor != null) list.push({ icon: RiBuilding2Line, label: `Floor ${floor}` });
   return list;
 }
 
-type Home = Omit<ListingCardProps, 'favorite' | 'onFavoriteChange'> & { id: string; saved?: boolean };
+type Home = Omit<ListingCardProps, 'favorite' | 'onFavoriteChange'> & {
+  id: string;
+  saved?: boolean;
+};
 
 const HOMES: Home[] = [
   {
@@ -117,7 +132,10 @@ const HOMES: Home[] = [
     subtitle: 'Private room · 4 housemates',
     address: 'Quarry Lane, Eastwold',
     offerings: ['long_term_rent', 'short_term_rent', 'exchange'],
-    priceLines: [{ price: '€420', unit: '/ month' }, { price: '€38', unit: 'night' }],
+    priceLines: [
+      { price: '€420', unit: '/ month' },
+      { price: '€38', unit: 'night' },
+    ],
     facts: [
       { icon: RiHotelBedLine, label: 'Double bed' },
       { icon: RiDropLine, label: 'Shared bath' },
@@ -130,7 +148,9 @@ const HOMES: Home[] = [
 function Page({ children, width }: { children: React.ReactNode; width?: number }) {
   const theme = useTheme();
   return (
-    <View style={{ alignSelf: 'stretch', minHeight: '100%', backgroundColor: theme.colors.background }}>
+    <View
+      style={{ alignSelf: 'stretch', minHeight: '100%', backgroundColor: theme.colors.background }}
+    >
       <View style={{ width: '100%', maxWidth: width, alignSelf: 'center' }}>{children}</View>
     </View>
   );

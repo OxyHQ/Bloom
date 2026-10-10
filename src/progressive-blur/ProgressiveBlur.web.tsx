@@ -6,11 +6,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { View } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
-import {
-  buildMaskGradient,
-  buildTailGradient,
-  WEB_BLUR_PER_INTENSITY,
-} from './shared';
+import { buildMaskGradient, buildTailGradient, WEB_BLUR_PER_INTENSITY } from './shared';
 import type { ProgressiveBlurProps } from './types';
 
 /**

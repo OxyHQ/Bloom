@@ -261,13 +261,23 @@ export function HomePage() {
                 value={filter}
                 onValueChange={(v) => setFilter((v ?? 'all') as HomeFilter)}
               />
-              <Text role="heading" aria-level={1} variant="title-1-bold" style={{ color: paint.onBand }}>
+              <Text
+                role="heading"
+                aria-level={1}
+                variant="title-1-bold"
+                style={{ color: paint.onBand }}
+              >
                 {GREETING}
               </Text>
             </>
           )}
           {mobile ? (
-            <Text role="heading" aria-level={1} variant="title-2-bold" style={{ color: paint.onBand }}>
+            <Text
+              role="heading"
+              aria-level={1}
+              variant="title-2-bold"
+              style={{ color: paint.onBand }}
+            >
               {GREETING}
             </Text>
           ) : null}
@@ -290,7 +300,12 @@ export function HomePage() {
           ) : null}
           {podcasts ? <ContinueListening size={tileSize} /> : null}
           {music ? (
-            <Shelf title="New releases" subtitle="From artists you follow" onShowAll={() => {}} contentInset={gutter}>
+            <Shelf
+              title="New releases"
+              subtitle="From artists you follow"
+              onShowAll={() => {}}
+              contentInset={gutter}
+            >
               {ALBUMS.filter((a) => a.year === '2026').map((album) => (
                 <AlbumTile key={album.id} id={album.id} size={tileSize} />
               ))}
@@ -305,11 +320,16 @@ export function HomePage() {
           ) : null}
           {music ? (
             <Shelf title="Playlists for tonight" contentInset={gutter}>
-              {['late-night-drive', 'rainy-trams', 'kitchen-soul', 'deep-focus', 'sunday-market', 'harbour-run'].map(
-                (id) => (
-                  <PlaylistTile key={id} id={id} size={tileSize} />
-                ),
-              )}
+              {[
+                'late-night-drive',
+                'rainy-trams',
+                'kitchen-soul',
+                'deep-focus',
+                'sunday-market',
+                'harbour-run',
+              ].map((id) => (
+                <PlaylistTile key={id} id={id} size={tileSize} />
+              ))}
             </Shelf>
           ) : null}
           {podcasts ? (
@@ -337,7 +357,12 @@ export function HomePage() {
             </Shelf>
           ) : null}
           {music ? (
-            <Shelf title="Live near you" subtitle="Port Aldern and nearby" onShowAll={() => {}} contentInset={gutter}>
+            <Shelf
+              title="Live near you"
+              subtitle="Port Aldern and nearby"
+              onShowAll={() => {}}
+              contentInset={gutter}
+            >
               {EVENTS.map((event) => (
                 <EventTile key={event.id} event={event} size={mobile ? 'medium' : 'large'} />
               ))}

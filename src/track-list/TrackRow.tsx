@@ -1,12 +1,4 @@
-import React, {
-  forwardRef,
-  Fragment,
-  memo,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { forwardRef, Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
   Pressable,
@@ -20,7 +12,13 @@ import { RiArrowDownLine } from '../icons/remix/RiArrowDownLine';
 import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
 import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiDraggable } from '../icons/remix/RiDraggable';
-import { ExplicitBadge, formatDuration, LikeButton, NowPlayingIndicator, PlayButton } from '../media-controls';
+import {
+  ExplicitBadge,
+  formatDuration,
+  LikeButton,
+  NowPlayingIndicator,
+  PlayButton,
+} from '../media-controls';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -73,7 +71,9 @@ import { TRACK_LIST_MESSAGES } from './messages';
 
 const INDEX_GLYPH = 14;
 
-function readPress(event: GestureResponderEvent | undefined): TrackRowPressEvent & { keyboard: boolean } {
+function readPress(
+  event: GestureResponderEvent | undefined,
+): TrackRowPressEvent & { keyboard: boolean } {
   const native = (event?.nativeEvent ?? {}) as {
     type?: string;
     shiftKey?: boolean;
@@ -85,7 +85,8 @@ function readPress(event: GestureResponderEvent | undefined): TrackRowPressEvent
     keyboard: native.type === 'keyup' || native.type === 'keydown',
     shiftKey: native.shiftKey === true,
     toggleKey: native.metaKey === true || native.ctrlKey === true,
-    clickCount: IS_WEB && typeof native.detail === 'number' && native.detail > 0 ? native.detail : 1,
+    clickCount:
+      IS_WEB && typeof native.detail === 'number' && native.detail > 0 ? native.detail : 1,
   };
 }
 
@@ -354,7 +355,9 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
 
   const artists = (
     <Text
-      variant={compact && !narrow ? 'caption-1-regular' : narrow ? 'body-2-regular' : 'caption-1-regular'}
+      variant={
+        compact && !narrow ? 'caption-1-regular' : narrow ? 'body-2-regular' : 'caption-1-regular'
+      }
       numberOfLines={1}
       style={{ color: paint.textMuted, flexShrink: 1 }}
     >
@@ -392,7 +395,12 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
         has('index') && !narrow ? cellGap : null,
       ]}
     >
-      <TrackCover cover={track.cover} size={geo.cover} radius={geo.coverRadius} dimmed={unavailable} />
+      <TrackCover
+        cover={track.cover}
+        size={geo.cover}
+        radius={geo.coverRadius}
+        dimmed={unavailable}
+      />
       <View style={{ flex: 1, minWidth: 0, marginLeft: compact ? 10 : 12, opacity: dim }}>
         <Text
           variant={compact ? 'body-2-medium' : 'body-medium'}
@@ -523,8 +531,17 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
         ) : null}
         {indexCell}
         {titleCell}
-        {has('album') ? mutedCell('album', track.album, { flex: CELL.flex.album }, onAlbumPress ? () => onAlbumPress(track) : undefined) : null}
-        {has('dateAdded') ? mutedCell('dateAdded', track.dateAdded, { flex: CELL.flex.dateAdded }) : null}
+        {has('album')
+          ? mutedCell(
+              'album',
+              track.album,
+              { flex: CELL.flex.album },
+              onAlbumPress ? () => onAlbumPress(track) : undefined,
+            )
+          : null}
+        {has('dateAdded')
+          ? mutedCell('dateAdded', track.dateAdded, { flex: CELL.flex.dateAdded })
+          : null}
         {has('plays') ? mutedCell('plays', track.plays, { width: CELL.plays }) : null}
         {showLikeSlot ? (
           <View style={[{ width: CELL.button, alignItems: 'center' }, cellGap]}>
@@ -540,7 +557,13 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
           </View>
         ) : null}
         {has('duration') && !narrow ? (
-          <View role={ROLE_GRIDCELL} style={[{ width: CELL.duration, opacity: dim }, showLikeSlot ? { marginLeft: 8 } : cellGap]}>
+          <View
+            role={ROLE_GRIDCELL}
+            style={[
+              { width: CELL.duration, opacity: dim },
+              showLikeSlot ? { marginLeft: 8 } : cellGap,
+            ]}
+          >
             <Text
               variant="body-2-regular"
               numberOfLines={1}
@@ -553,7 +576,10 @@ const TrackRowComponent = forwardRef<View, TrackRowProps>(function TrackRow(
         {has('actions') && (menuItems !== undefined || reorderable) ? (
           <View
             role={ROLE_GRIDCELL}
-            style={[{ width: CELL.button, alignItems: 'center' }, narrow ? { marginLeft: 4 } : { marginLeft: 8 }]}
+            style={[
+              { width: CELL.button, alignItems: 'center' },
+              narrow ? { marginLeft: 4 } : { marginLeft: 8 },
+            ]}
           >
             {showMore ? (
               <TrackMenu

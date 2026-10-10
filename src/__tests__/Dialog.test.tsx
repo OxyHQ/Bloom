@@ -46,7 +46,11 @@ describe('Dialog (unified API)', () => {
     let control: ReturnType<typeof useDialogControl> | undefined;
     const onDelete = jest.fn();
     const { getByText } = renderWithTheme(
-      <Harness onControl={(c) => { control = c; }}>
+      <Harness
+        onControl={(c) => {
+          control = c;
+        }}
+      >
         {(c) => (
           <Dialog
             control={c}
@@ -60,7 +64,9 @@ describe('Dialog (unified API)', () => {
         )}
       </Harness>,
     );
-    act(() => { control?.open(); });
+    act(() => {
+      control?.open();
+    });
     expect(getByText('Delete item?')).toBeTruthy();
     expect(getByText('This action cannot be undone.')).toBeTruthy();
     expect(getByText('Delete')).toBeTruthy();
@@ -70,7 +76,11 @@ describe('Dialog (unified API)', () => {
   it('renders custom children alongside the declarative header', () => {
     let control: ReturnType<typeof useDialogControl> | undefined;
     const { getByText } = renderWithTheme(
-      <Harness onControl={(c) => { control = c; }}>
+      <Harness
+        onControl={(c) => {
+          control = c;
+        }}
+      >
         {(c) => (
           <Dialog control={c} title="Pick a tag">
             <Text>Custom body content</Text>
@@ -78,7 +88,9 @@ describe('Dialog (unified API)', () => {
         )}
       </Harness>,
     );
-    act(() => { control?.open(); });
+    act(() => {
+      control?.open();
+    });
     expect(getByText('Pick a tag')).toBeTruthy();
     expect(getByText('Custom body content')).toBeTruthy();
   });
@@ -87,19 +99,23 @@ describe('Dialog (unified API)', () => {
     let control: ReturnType<typeof useDialogControl> | undefined;
     const onConfirm = jest.fn();
     const { getByText } = renderWithTheme(
-      <Harness onControl={(c) => { control = c; }}>
+      <Harness
+        onControl={(c) => {
+          control = c;
+        }}
+      >
         {(c) => (
           <Dialog
             control={c}
             title="Confirm?"
-            actions={[
-              { label: 'Confirm', onPress: onConfirm },
-            ]}
+            actions={[{ label: 'Confirm', onPress: onConfirm }]}
           />
         )}
       </Harness>,
     );
-    act(() => { control?.open(); });
+    act(() => {
+      control?.open();
+    });
     act(() => {
       fireEvent.press(getByText('Confirm'));
     });
@@ -111,7 +127,11 @@ describe('Dialog nav header (rich fields)', () => {
   function openHeader(header: React.ComponentProps<typeof Dialog>['header']) {
     let control: ReturnType<typeof useDialogControl> | undefined;
     const utils = renderWithTheme(
-      <Harness onControl={(c) => { control = c; }}>
+      <Harness
+        onControl={(c) => {
+          control = c;
+        }}
+      >
         {(c) => (
           <Dialog control={c} header={header} scrollable>
             <Text>Screen body</Text>
@@ -119,7 +139,9 @@ describe('Dialog nav header (rich fields)', () => {
         )}
       </Harness>,
     );
-    act(() => { control?.open(); });
+    act(() => {
+      control?.open();
+    });
     return utils;
   }
 
@@ -156,7 +178,9 @@ describe('Dialog nav header (rich fields)', () => {
       title: 'T',
       primaryAction: { label: 'Save', onPress: onSave },
     });
-    act(() => { fireEvent.press(getByText('Save')); });
+    act(() => {
+      fireEvent.press(getByText('Save'));
+    });
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 

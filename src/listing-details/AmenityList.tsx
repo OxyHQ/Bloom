@@ -44,7 +44,11 @@ function AmenityListComponent({
   const { width, onLayout } = useContainerWidth();
 
   const count =
-    columns === 'auto' ? (width != null && width >= AMENITY_LIST_TWO_COLUMN_MIN_WIDTH ? 2 : 1) : columns;
+    columns === 'auto'
+      ? width != null && width >= AMENITY_LIST_TWO_COLUMN_MIN_WIDTH
+        ? 2
+        : 1
+      : columns;
   const shown = limit != null && limit >= 0 ? items.slice(0, limit) : items;
   const fullCount = Math.max(total ?? items.length, items.length);
   const hasMore = fullCount > shown.length;
@@ -95,7 +99,12 @@ function AmenityListComponent({
       </View>
       {onShowAll && hasMore ? (
         <View style={{ flexDirection: 'row' }}>
-          <Button  onPress={onShowAll} testID={testID ? `${testID}-show-all` : undefined} tone="neutral" appearance="outline">
+          <Button
+            onPress={onShowAll}
+            testID={testID ? `${testID}-show-all` : undefined}
+            tone="neutral"
+            appearance="outline"
+          >
             {buttonLabel}
           </Button>
         </View>

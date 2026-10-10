@@ -92,7 +92,14 @@ function EvictionReportCardComponent({
 
   return (
     <HousingCard style={[{ gap: 16 }, style]} testID={testID}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}
+      >
         <Badge
           content={statusLabel ?? messages.status[status]}
           color={info.tone}
@@ -108,7 +115,11 @@ function EvictionReportCardComponent({
             style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 }}
           >
             <RiShieldCheckFill width={14} height={14} fill={verifiedColor} />
-            <Text variant="caption-1-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
+            <Text
+              variant="caption-1-medium"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary }}
+            >
               {verifiedLabel}
             </Text>
           </View>
@@ -126,7 +137,15 @@ function EvictionReportCardComponent({
           {date}
         </Text>
         {time || relativeLabel ? (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 8, rowGap: 2 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              columnGap: 8,
+              rowGap: 2,
+            }}
+          >
             {time ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <RiTimeLine width={16} height={16} fill={palette.textSecondary} />
@@ -156,13 +175,21 @@ function EvictionReportCardComponent({
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} testID={id('area')}>
         <RiMapPinLine width={16} height={16} fill={palette.textSecondary} />
-        <Text variant="body-medium" numberOfLines={2} style={{ color: palette.text, flexShrink: 1 }}>
+        <Text
+          variant="body-medium"
+          numberOfLines={2}
+          style={{ color: palette.text, flexShrink: 1 }}
+        >
           {area}
         </Text>
       </View>
 
       {household && household.length > 0 ? (
-        <View role="list" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }} testID={id('household')}>
+        <View
+          role="list"
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}
+          testID={id('household')}
+        >
           {household.map((item, index) => (
             <View key={`${item}-${index}`} role="listitem">
               <Chip size="small" variant="subtle" color="default">
@@ -185,7 +212,10 @@ function EvictionReportCardComponent({
       ) : null}
 
       {hasSupport ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 6 }} testID={id('support')}>
+        <View
+          style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 6 }}
+          testID={id('support')}
+        >
           {attendeesLabel ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <RiGroupLine width={16} height={16} fill={palette.textSecondary} />
@@ -229,17 +259,25 @@ function EvictionReportCardComponent({
             />
           ) : null}
           {onShare ? (
-            <Button  size="sm" leadingIcon={RiShareLine} onPress={onShare} testID={id('share')} tone="neutral" appearance="outline">
+            <Button
+              size="sm"
+              leadingIcon={RiShareLine}
+              onPress={onShare}
+              testID={id('share')}
+              tone="neutral"
+              appearance="outline"
+            >
               {shareLabel}
             </Button>
           ) : null}
           {onContactSupport ? (
             <Button
-
               size="sm"
               leadingIcon={RiChat3Line}
               onPress={onContactSupport}
-              testID={id('contact')} tone="neutral" appearance="outline"
+              testID={id('contact')}
+              tone="neutral"
+              appearance="outline"
             >
               {contactSupportLabel}
             </Button>

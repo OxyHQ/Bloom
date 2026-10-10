@@ -65,13 +65,9 @@ function CharacterLab() {
           ))}
         </View>
         <View style={{ flexDirection: 'row', gap: 12 }}>
-          <Button onPress={() => setPaused(!paused)}>
-            {paused ? 'Resume' : 'Pause'}
-          </Button>
+          <Button onPress={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</Button>
           <Button onPress={() => setWorking((key) => key + 1)}>Working</Button>
-          <Button onPress={() => setReaction((key) => key + 1)}>
-            Reaction
-          </Button>
+          <Button onPress={() => setReaction((key) => key + 1)}>Reaction</Button>
         </View>
         <View
           style={{
@@ -131,18 +127,18 @@ function CharacterEditor() {
 export const Editor: Story = { render: () => <CharacterEditor /> };
 
 const legacyCharacters = [
-  ...FOLD_SHAPES.filter(
-    (shape) => !['heart', 'flower', 'diamond'].includes(shape),
-  ).map((foldShape) => ({
-    id: `fold-${foldShape}`,
-    config: { ...FOLD_CONFIG, foldShape },
-  })),
-  ...SHAPES.filter(
-    (shape) => !['circle', 'triangle', 'flower', 'diamond'].includes(shape),
-  ).map((shape) => ({
-    id: `blob-${shape}`,
-    config: { ...DEFAULT_CONFIG, shape },
-  })),
+  ...FOLD_SHAPES.filter((shape) => !['heart', 'flower', 'diamond'].includes(shape)).map(
+    (foldShape) => ({
+      id: `fold-${foldShape}`,
+      config: { ...FOLD_CONFIG, foldShape },
+    }),
+  ),
+  ...SHAPES.filter((shape) => !['circle', 'triangle', 'flower', 'diamond'].includes(shape)).map(
+    (shape) => ({
+      id: `blob-${shape}`,
+      config: { ...DEFAULT_CONFIG, shape },
+    }),
+  ),
 ];
 function MigratedCharacters() {
   const [selected, setSelected] = useState(
@@ -175,17 +171,8 @@ function MigratedCharacters() {
           }}
         >
           {legacyCharacters.map((item) => (
-            <View
-              key={item.id}
-              style={{ alignItems: 'center', width: 130, gap: 8 }}
-            >
-              <AgentAvatar
-                config={item.config}
-                size={100}
-                portrait
-                paused
-                label={item.id}
-              />
+            <View key={item.id} style={{ alignItems: 'center', width: 130, gap: 8 }}>
+              <AgentAvatar config={item.config} size={100} portrait paused label={item.id} />
               <Button onPress={() => setSelected(item)}>{item.id}</Button>
             </View>
           ))}
@@ -222,9 +209,7 @@ const stressCharacters = Array.from({ length: 48 }, (_, index) => {
     id: `stress-avatar-${index + 1}`,
     name: migrated ? legacy.id : original[1],
     kind: migrated ? 'Migrated' : 'Original',
-    config: migrated
-      ? legacy.config
-      : { ...FOLD_CONFIG, character: { preset: original[0] } },
+    config: migrated ? legacy.config : { ...FOLD_CONFIG, character: { preset: original[0] } },
   };
 });
 
@@ -285,9 +270,8 @@ function ManyAvatarGallery() {
       <StyledView className="w-full max-w-[1020px] gap-5 p-4">
         <Text variant="title-2-medium">48 original and migrated avatars</Text>
         <Text variant="body-regular">
-          Scroll the gallery and use each avatar’s React or Work button.
-          Overflow avatars retain their painted 3D image and reclaim a renderer
-          when you interact.
+          Scroll the gallery and use each avatar’s React or Work button. Overflow avatars retain
+          their painted 3D image and reclaim a renderer when you interact.
         </Text>
         <Button onPress={() => setPaused((value) => !value)}>
           {paused ? 'Resume all' : 'Pause all'}

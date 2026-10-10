@@ -65,35 +65,42 @@ function ShipmentRequestFormComponent({
 
   // Which sections exist, so the LAST one can drop its rule without every
   // section having to know what follows it.
-  const sections: { key: string; title: string; description?: string; content: React.ReactNode }[] = [
-    {
-      key: 'route',
-      title: labels.route,
-      description: labels.routeDescription,
-      content: <RouteStops {...route} testID={route.testID ?? id('route')} />,
-    },
-    {
-      key: 'load',
-      title: labels.load,
-      description: labels.loadDescription,
-      content: (
-        <ShipmentLoadPicker
-          {...loadProps}
-          value={load}
-          onValueChange={onLoadChange}
-          disabled={disabled || loadProps?.disabled}
-          testID={id('load')}
-        />
-      ),
-    },
-  ];
+  const sections: { key: string; title: string; description?: string; content: React.ReactNode }[] =
+    [
+      {
+        key: 'route',
+        title: labels.route,
+        description: labels.routeDescription,
+        content: <RouteStops {...route} testID={route.testID ?? id('route')} />,
+      },
+      {
+        key: 'load',
+        title: labels.load,
+        description: labels.loadDescription,
+        content: (
+          <ShipmentLoadPicker
+            {...loadProps}
+            value={load}
+            onValueChange={onLoadChange}
+            disabled={disabled || loadProps?.disabled}
+            testID={id('load')}
+          />
+        ),
+      },
+    ];
 
   if (photos) {
     sections.push({
       key: 'photos',
       title: labels.photos,
       description: labels.photosDescription,
-      content: <SortablePhotoGrid {...photos} disabled={disabled || photos.disabled} testID={id('photos')} />,
+      content: (
+        <SortablePhotoGrid
+          {...photos}
+          disabled={disabled || photos.disabled}
+          testID={id('photos')}
+        />
+      ),
     });
   }
 
@@ -122,12 +129,7 @@ function ShipmentRequestFormComponent({
   }
 
   return (
-    <View
-      testID={testID}
-      role="form"
-      accessibilityLabel={accessibilityLabel}
-      style={style}
-    >
+    <View testID={testID} role="form" accessibilityLabel={accessibilityLabel} style={style}>
       {sections.map((section, index) => (
         <FilterSection
           key={section.key}

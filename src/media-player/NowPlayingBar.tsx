@@ -37,7 +37,6 @@ export function nowPlayingBarLayout(width: number): NowPlayingBarLayout {
   return 'narrow';
 }
 
-
 /**
  * The desktop player bar, full width at the bottom of the window.
  *
@@ -118,153 +117,166 @@ function NowPlayingBarComponent({
 
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-    <View
-      onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
-      style={[
-        {
-          width: '100%',
-          height: NOW_PLAYING_BAR_HEIGHT,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 16,
-          paddingLeft: 16,
-          paddingRight: 16,
-          backgroundColor: theme.colors.background,
-          borderTopWidth: 1,
-          borderTopColor: hairlineOn(theme, theme.colors.background),
-        },
-        style,
-        backing.vars,
-      ]}
-      testID={testID}
-      {...webDataSet({ bloomPlayerLayout: layout })}
-    >
       <View
-        style={{
-          flexGrow: 1,
-          flexShrink: 1,
-          flexBasis: 0,
-          maxWidth: narrow ? undefined : '30%',
-          minWidth: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 12,
-        }}
-        testID={id('track')}
+        onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
+        style={[
+          {
+            width: '100%',
+            height: NOW_PLAYING_BAR_HEIGHT,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 16,
+            paddingLeft: 16,
+            paddingRight: 16,
+            backgroundColor: theme.colors.background,
+            borderTopWidth: 1,
+            borderTopColor: hairlineOn(theme, theme.colors.background),
+          },
+          style,
+          backing.vars,
+        ]}
+        testID={testID}
+        {...webDataSet({ bloomPlayerLayout: layout })}
       >
-        <Artwork source={track.artwork} size={56} radius={8} />
-        <TrackText
-          track={track}
-          titleVariant="body-medium"
-          artistVariant="caption-1-regular"
-          titleColor={paint.text}
-          artistColor={paint.textMuted}
-          onTitlePress={onTitlePress}
-          onArtistPress={onArtistPress}
-          titleLabel={labels.openTrack}
-          trailingTitle={track.explicit ? <ExplicitBadge size="small" /> : null}
+        <View
+          style={{
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: 0,
+            maxWidth: narrow ? undefined : '30%',
+            minWidth: 0,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+          }}
           testID={id('track')}
-        />
-        {onLikedChange ? (
-          <LikeButton liked={liked} onLikedChange={onLikedChange} size="sm" testID={id('like')} />
-        ) : null}
-      </View>
+        >
+          <Artwork source={track.artwork} size={56} radius={8} />
+          <TrackText
+            track={track}
+            titleVariant="body-medium"
+            artistVariant="caption-1-regular"
+            titleColor={paint.text}
+            artistColor={paint.textMuted}
+            onTitlePress={onTitlePress}
+            onArtistPress={onArtistPress}
+            titleLabel={labels.openTrack}
+            trailingTitle={track.explicit ? <ExplicitBadge size="small" /> : null}
+            testID={id('track')}
+          />
+          {onLikedChange ? (
+            <LikeButton liked={liked} onLikedChange={onLikedChange} size="sm" testID={id('like')} />
+          ) : null}
+        </View>
 
-      <View
-        style={{ flexGrow: narrow ? 1.4 : 2, flexShrink: 1, flexBasis: 0, maxWidth: 722, minWidth: 240, alignItems: 'center', gap: 4 }}
-        testID={id('center')}
-      >
-        <TransportControls
-          {...transport}
-          subject={transport.subject ?? track.title}
-          size="sm"
-          testID={id('transport')}
-        />
-        <PlaybackProgress
-          value={position}
-          duration={duration}
-          buffered={buffered}
-          onSeek={onSeek}
-          onSeekPreview={onSeekPreview}
-          showTimes={!narrow}
-          disabled={transport.disabled}
-          style={{ alignSelf: 'stretch' }}
-          testID={id('progress')}
-        />
-      </View>
+        <View
+          style={{
+            flexGrow: narrow ? 1.4 : 2,
+            flexShrink: 1,
+            flexBasis: 0,
+            maxWidth: 722,
+            minWidth: 240,
+            alignItems: 'center',
+            gap: 4,
+          }}
+          testID={id('center')}
+        >
+          <TransportControls
+            {...transport}
+            subject={transport.subject ?? track.title}
+            size="sm"
+            testID={id('transport')}
+          />
+          <PlaybackProgress
+            value={position}
+            duration={duration}
+            buffered={buffered}
+            onSeek={onSeek}
+            onSeekPreview={onSeekPreview}
+            showTimes={!narrow}
+            disabled={transport.disabled}
+            style={{ alignSelf: 'stretch' }}
+            testID={id('progress')}
+          />
+        </View>
 
-      <View
-        style={{
-          // Narrow: the actions take only what they draw, so the track keeps the room.
-          flexGrow: narrow ? 0 : 1,
-          flexShrink: narrow ? 0 : 1,
-          flexBasis: narrow ? 'auto' : 0,
-          minWidth: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: 4,
-        }}
-        testID={id('actions')}
-      >
-        {onLyricsChange && !narrow ? (
-          <PlayerIconButton
-            icon={RiMicLine}
-            glyph={20}
-            box={32}
-            pressed={lyricsActive}
-            accessibilityLabel={labels.lyrics}
-            onPress={() => onLyricsChange(!lyricsActive)}
-            testID={id('lyrics')}
-          />
-        ) : null}
-        {onQueueChange ? (
-          <PlayerIconButton
-            icon={RiPlayListLine}
-            glyph={20}
-            box={32}
-            pressed={queueActive}
-            accessibilityLabel={labels.queue}
-            onPress={() => onQueueChange(!queueActive)}
-            testID={id('queue')}
-          />
-        ) : null}
-        {showDevice ? (
-          devicePicker ? (
-            <Popover open={devicePickerOpen} onOpenChange={onDevicePickerOpenChange}>
-              <PopoverTrigger asChild label={labels.devices}>
-                {deviceButton}
-              </PopoverTrigger>
-              <PopoverContent label={labels.devices} side="top" align="end" style={{ width: 320 }}>
-                {devicePicker}
-              </PopoverContent>
-            </Popover>
-          ) : (
-            deviceButton
-          )
-        ) : null}
-        {onVolumeChange && !narrow ? (
-          <VolumeControl
-            volume={volume}
-            onVolumeChange={onVolumeChange}
-            muted={muted}
-            onMutedChange={onMutedChange}
-            sliderWidth={layout === 'wide' ? 96 : 64}
-            testID={id('volume')}
-          />
-        ) : null}
-        {onFullscreenPress && layout === 'wide' ? (
-          <PlayerIconButton
-            icon={RiFullscreenLine}
-            glyph={20}
-            box={32}
-            accessibilityLabel={labels.fullscreen}
-            onPress={onFullscreenPress}
-            testID={id('fullscreen')}
-          />
-        ) : null}
+        <View
+          style={{
+            // Narrow: the actions take only what they draw, so the track keeps the room.
+            flexGrow: narrow ? 0 : 1,
+            flexShrink: narrow ? 0 : 1,
+            flexBasis: narrow ? 'auto' : 0,
+            minWidth: 0,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 4,
+          }}
+          testID={id('actions')}
+        >
+          {onLyricsChange && !narrow ? (
+            <PlayerIconButton
+              icon={RiMicLine}
+              glyph={20}
+              box={32}
+              pressed={lyricsActive}
+              accessibilityLabel={labels.lyrics}
+              onPress={() => onLyricsChange(!lyricsActive)}
+              testID={id('lyrics')}
+            />
+          ) : null}
+          {onQueueChange ? (
+            <PlayerIconButton
+              icon={RiPlayListLine}
+              glyph={20}
+              box={32}
+              pressed={queueActive}
+              accessibilityLabel={labels.queue}
+              onPress={() => onQueueChange(!queueActive)}
+              testID={id('queue')}
+            />
+          ) : null}
+          {showDevice ? (
+            devicePicker ? (
+              <Popover open={devicePickerOpen} onOpenChange={onDevicePickerOpenChange}>
+                <PopoverTrigger asChild label={labels.devices}>
+                  {deviceButton}
+                </PopoverTrigger>
+                <PopoverContent
+                  label={labels.devices}
+                  side="top"
+                  align="end"
+                  style={{ width: 320 }}
+                >
+                  {devicePicker}
+                </PopoverContent>
+              </Popover>
+            ) : (
+              deviceButton
+            )
+          ) : null}
+          {onVolumeChange && !narrow ? (
+            <VolumeControl
+              volume={volume}
+              onVolumeChange={onVolumeChange}
+              muted={muted}
+              onMutedChange={onMutedChange}
+              sliderWidth={layout === 'wide' ? 96 : 64}
+              testID={id('volume')}
+            />
+          ) : null}
+          {onFullscreenPress && layout === 'wide' ? (
+            <PlayerIconButton
+              icon={RiFullscreenLine}
+              glyph={20}
+              box={32}
+              accessibilityLabel={labels.fullscreen}
+              onPress={onFullscreenPress}
+              testID={id('fullscreen')}
+            />
+          ) : null}
+        </View>
       </View>
-    </View>
     </SurfaceLevelProvider>
   );
 }

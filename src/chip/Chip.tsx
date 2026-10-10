@@ -1,20 +1,18 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
 import React, { forwardRef, memo, useMemo } from 'react';
-import {
-  View,
-  Platform,
-  Pressable,
-  type ViewStyle,
-  type TextStyle,
-} from 'react-native';
+import { View, Platform, Pressable, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
-import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import {
+  NOT_DISABLED,
+  interactiveWebCss,
+  useInteractiveWebCss,
+} from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CHIP_GEOMETRY, resolveChipPaint, resolveChipRing } from './shared';
 import type { ChipProps } from './types';
@@ -147,7 +145,15 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   ref,
 ) {
   const theme = useTheme();
-  const scoped = useBloomAppearance({ size: ['xs','sm','md','lg'].includes(sizeProp ?? '') ? sizeProp as import('../appearance').BloomSize : undefined, tone: toneProp ?? (color ? normalizeTagTone(color) : undefined) }, {size: 'md', tone: 'neutral'});
+  const scoped = useBloomAppearance(
+    {
+      size: ['xs', 'sm', 'md', 'lg'].includes(sizeProp ?? '')
+        ? (sizeProp as import('../appearance').BloomSize)
+        : undefined,
+      tone: toneProp ?? (color ? normalizeTagTone(color) : undefined),
+    },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = sizeProp ?? scoped.size;
   const tone = scoped.tone;
   const variant = appearance ?? variantProp;
@@ -170,38 +176,46 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   const ring = useMemo(() => resolveChipRing(theme), [theme]);
   const geometry = CHIP_GEOMETRY[size];
 
-  const containerStyle = useMemo((): WebCssStyle => ({
-    ...(className ? {} : {
-    height: geometry.height,
-    borderRadius: borderRadius.full,
-    paddingHorizontal: geometry.paddingHorizontal,
-    backgroundColor: paint.background,
-    borderWidth: paint.borderWidth,
-    borderColor: paint.border,
+  const containerStyle = useMemo(
+    (): WebCssStyle => ({
+      ...(className
+        ? {}
+        : {
+            height: geometry.height,
+            borderRadius: borderRadius.full,
+            paddingHorizontal: geometry.paddingHorizontal,
+            backgroundColor: paint.background,
+            borderWidth: paint.borderWidth,
+            borderColor: paint.border,
+          }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      ...(className ? {} : { gap: geometry.iconGap }),
+      alignSelf: 'flex-start',
+      ...(geometry.minWidth ? { minWidth: geometry.minWidth, justifyContent: 'center' } : null),
+      // A pill is a fixed-size token. In a flex row of chips (a filter bar, a tag
+      // list) the default `flexShrink: 1` lets a long label squeeze its
+      // neighbours into ellipsis. `overflow: hidden` keeps the content inside the
+      // radius.
+      flexShrink: 0,
+      ...(className ? {} : { overflow: 'hidden' as const }),
+      // The `:focus-visible` ring colour, read by the adopted sheet. A custom
+      // property because the value is a resolved theme token the static sheet
+      // cannot know; native has no such style key and ignores it.
+      '--bloom-chip-ring': ring,
     }),
-    flexDirection: 'row',
-    alignItems: 'center',
-    ...(className ? {} : { gap: geometry.iconGap }),
-    alignSelf: 'flex-start',
-    ...(geometry.minWidth ? { minWidth: geometry.minWidth, justifyContent: 'center' } : null),
-    // A pill is a fixed-size token. In a flex row of chips (a filter bar, a tag
-    // list) the default `flexShrink: 1` lets a long label squeeze its
-    // neighbours into ellipsis. `overflow: hidden` keeps the content inside the
-    // radius.
-    flexShrink: 0,
-    ...(className ? {} : { overflow: 'hidden' as const }),
-    // The `:focus-visible` ring colour, read by the adopted sheet. A custom
-    // property because the value is a resolved theme token the static sheet
-    // cannot know; native has no such style key and ignores it.
-    '--bloom-chip-ring': ring,
-  }), [className, geometry, paint, ring]);
+    [className, geometry, paint, ring],
+  );
 
-  const labelStyle = useMemo((): TextStyle => ({
-    ...(className ? {} : { color: paint.foreground }),
-    // The label yields before the pill does: a chip narrower than its text
-    // ellipsises rather than overflowing its own radius.
-    flexShrink: 1,
-  }), [className, paint]);
+  const labelStyle = useMemo(
+    (): TextStyle => ({
+      ...(className ? {} : { color: paint.foreground }),
+      // The label yields before the pill does: a chip narrower than its text
+      // ellipsises rather than overflowing its own radius.
+      flexShrink: 1,
+    }),
+    [className, paint],
+  );
 
   // Icons inside the pill are sized to the RUNG, not to whatever the caller
   // happened to pass. A slot with a fixed box does that without reaching into
@@ -220,10 +234,14 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   // and a screen reader reading them in sequence says the same word five times
   // with no way to tell which pill goes. The chip names it from its own label
   // when that label is words; `closeLabel` is for the rest.
-  const removeLabel = closeLabel ?? (typeof children === 'string' ? `Remove ${children}` : 'Remove');
+  const removeLabel =
+    closeLabel ?? (typeof children === 'string' ? `Remove ${children}` : 'Remove');
   const closeButton = onClose ? (
     <Pressable
-      onPress={(event) => { event.stopPropagation(); onClose(); }}
+      onPress={(event) => {
+        event.stopPropagation();
+        onClose();
+      }}
       disabled={disabled}
       aria-disabled={disabled || undefined}
       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
@@ -239,7 +257,18 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     <>
       {startIcon != null ? <View style={iconSlotStyle}>{startIcon}</View> : null}
       {typeof children === 'string' ? (
-        <Text className={textClassName ?? className?.split(/\s+/).filter(token => /^(text-|font-|leading-|tracking-|whitespace-)/.test(token)).join(" ")} variant={geometry.type} numberOfLines={1} style={[labelStyle, textStyle]}>
+        <Text
+          className={
+            textClassName ??
+            className
+              ?.split(/\s+/)
+              .filter((token) => /^(text-|font-|leading-|tracking-|whitespace-)/.test(token))
+              .join(' ')
+          }
+          variant={geometry.type}
+          numberOfLines={1}
+          style={[labelStyle, textStyle]}
+        >
           {children}
         </Text>
       ) : (
@@ -296,14 +325,31 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
               ...(onKeyDown ? { onKeyDown } : null),
             } as Record<string, unknown>)
           : {})}
-        style={onClose ? { flexGrow: 1, flexShrink: 1, alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', gap: geometry.iconGap, borderWidth: 0, backgroundColor: 'transparent', padding: 0, minWidth: 0 } : [
-          containerStyle,
-          disabled && { opacity: 0.5 },
-          hovered && !disabled && paint.hoveredBorder ? { borderColor: paint.hoveredBorder } : null,
-          // Before the caller's `style`, so `style` still wins the array.
-          pressed && !disabled && { backgroundColor: paint.pressedBackground },
-          style,
-        ]}
+        style={
+          onClose
+            ? {
+                flexGrow: 1,
+                flexShrink: 1,
+                alignSelf: 'stretch',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: geometry.iconGap,
+                borderWidth: 0,
+                backgroundColor: 'transparent',
+                padding: 0,
+                minWidth: 0,
+              }
+            : [
+                containerStyle,
+                disabled && { opacity: 0.5 },
+                hovered && !disabled && paint.hoveredBorder
+                  ? { borderColor: paint.hoveredBorder }
+                  : null,
+                // Before the caller's `style`, so `style` still wins the array.
+                pressed && !disabled && { backgroundColor: paint.pressedBackground },
+                style,
+              ]
+        }
         onPress={(event) => {
           if (disabled) return;
           onCheckedChange?.(!selected);
@@ -325,13 +371,22 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     if (!onClose) return button;
     // Selection and removal are sibling controls, never nested buttons.
     // The shared outer pill owns layout classes and paint; the ref still targets selection.
-    return <StyledView
-      className={className}
-      {...(IS_WEB ? { dataSet: { bloomChipGroup: '' } } : {})}
-      style={[containerStyle, disabled && { opacity: 0.5 },
-        hovered && !disabled && paint.hoveredBorder ? { borderColor: paint.hoveredBorder } : null,
-        pressed && !disabled && { backgroundColor: paint.pressedBackground }, style]}
-    >{button}{closeButton}</StyledView>;
+    return (
+      <StyledView
+        className={className}
+        {...(IS_WEB ? { dataSet: { bloomChipGroup: '' } } : {})}
+        style={[
+          containerStyle,
+          disabled && { opacity: 0.5 },
+          hovered && !disabled && paint.hoveredBorder ? { borderColor: paint.hoveredBorder } : null,
+          pressed && !disabled && { backgroundColor: paint.pressedBackground },
+          style,
+        ]}
+      >
+        {button}
+        {closeButton}
+      </StyledView>
+    );
   }
 
   return (

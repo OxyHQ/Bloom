@@ -97,23 +97,53 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
   const solo = [showList, showDetail, showInfo].filter(Boolean).length === 1;
 
   if (transition === 'slide') {
-    return <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row' }}>
-      {(showList || showDetail) && <AppShellSplitMotion
-        list={list} detail={detail} showList={showList} showDetail={showDetail}
-        width={width} gap={divider.width} paneScroll={paneScroll}
-        listErrorBoundary={listErrorBoundary} detailErrorBoundary={detailErrorBoundary}
-        dividerStyle={divider} testID={testID}
-        resizeHandle={resizable ? <AiChatResizeHandle label={resizeLabel}
-          onResizeStart={onResizeStart} onResize={onResize} onNudge={onNudge}
-          testID={testID ? `${testID}-divider` : undefined} /> : null}
-      />}
-      {showInfo && (showList || showDetail) ? <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} /> : null}
-      {showInfo ? <Pane testID={testID ? `${testID}-pane-info` : undefined}
-        errorBoundary={infoErrorBoundary} scroll={paneScroll}
-        style={solo ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 } : { width: infoWidth, flexShrink: 0 }}>
-        {info}
-      </Pane> : null}
-    </View>;
+    return (
+      <View style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, flexDirection: 'row' }}>
+        {(showList || showDetail) && (
+          <AppShellSplitMotion
+            list={list}
+            detail={detail}
+            showList={showList}
+            showDetail={showDetail}
+            width={width}
+            gap={divider.width}
+            paneScroll={paneScroll}
+            listErrorBoundary={listErrorBoundary}
+            detailErrorBoundary={detailErrorBoundary}
+            dividerStyle={divider}
+            testID={testID}
+            resizeHandle={
+              resizable ? (
+                <AiChatResizeHandle
+                  label={resizeLabel}
+                  onResizeStart={onResizeStart}
+                  onResize={onResize}
+                  onNudge={onNudge}
+                  testID={testID ? `${testID}-divider` : undefined}
+                />
+              ) : null
+            }
+          />
+        )}
+        {showInfo && (showList || showDetail) ? (
+          <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} />
+        ) : null}
+        {showInfo ? (
+          <Pane
+            testID={testID ? `${testID}-pane-info` : undefined}
+            errorBoundary={infoErrorBoundary}
+            scroll={paneScroll}
+            style={
+              solo
+                ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
+                : { width: infoWidth, flexShrink: 0 }
+            }
+          >
+            {info}
+          </Pane>
+        ) : null}
+      </View>
+    );
   }
 
   return (
@@ -134,7 +164,11 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
             <View
               pointerEvents="box-none"
               testID={testID ? `${testID}-resize-anchor` : undefined}
-              style={separated ? { position: 'absolute', top: 0, bottom: 0, left: '50%', right: '50%', width: 0 } : { flex: 1 }}
+              style={
+                separated
+                  ? { position: 'absolute', top: 0, bottom: 0, left: '50%', right: '50%', width: 0 }
+                  : { flex: 1 }
+              }
             >
               <AiChatResizeHandle
                 label={resizeLabel}
@@ -157,13 +191,19 @@ const AppShellSplitPanesComponent: React.FC<AppShellSplitPanesProps> = ({
           {detail}
         </Pane>
       ) : null}
-      {showInfo && showDetail && !solo ? <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} /> : null}
+      {showInfo && showDetail && !solo ? (
+        <View style={divider} testID={testID ? `${testID}-info-gap` : undefined} />
+      ) : null}
       {showInfo ? (
         <Pane
           testID={testID ? `${testID}-pane-info` : undefined}
           errorBoundary={infoErrorBoundary}
           scroll={paneScroll}
-          style={solo ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 } : { width: infoWidth, flexShrink: 0 }}
+          style={
+            solo
+              ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
+              : { width: infoWidth, flexShrink: 0 }
+          }
         >
           {info}
         </Pane>

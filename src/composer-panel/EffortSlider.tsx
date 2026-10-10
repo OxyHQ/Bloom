@@ -1,5 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { PanResponder, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
+import {
+  PanResponder,
+  View,
+  type GestureResponderEvent,
+  type LayoutChangeEvent,
+} from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { ComposerPalette } from './shared';
@@ -40,14 +45,27 @@ interface EffortSliderProps {
  * starfield, with the ticks blown off the track) has no native counterpart,
  * so at Max the slider simply rests at its last stop.
  */
-export function EffortSlider({ value, onChange, levels, label, unsetLabel, palette, testID }: EffortSliderProps) {
+export function EffortSlider({
+  value,
+  onChange,
+  levels,
+  label,
+  unsetLabel,
+  palette,
+  testID,
+}: EffortSliderProps) {
   const [width, setWidth] = useState(0);
   const max = Math.max(0, levels.length - 1);
   const chosen = value === null ? null : Math.min(Math.max(value, 0), max);
   const fraction = chosen !== null && max > 0 ? chosen / max : 0;
   const rail = Math.max(0, width - THUMB_WIDTH);
 
-  const stateRef = useRef<{ value: number | null; rail: number; max: number; onChange: (next: number) => void }>({
+  const stateRef = useRef<{
+    value: number | null;
+    rail: number;
+    max: number;
+    onChange: (next: number) => void;
+  }>({
     value: chosen,
     rail,
     max,
@@ -145,10 +163,13 @@ export function EffortSlider({ value, onChange, levels, label, unsetLabel, palet
       aria-valuetext={chosen === null ? unsetLabel : levels[chosen]}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === 'increment') commit(chosen === null ? 0 : Math.min(max, chosen + 1));
-        if (event.nativeEvent.actionName === 'decrement') commit(chosen === null ? 0 : Math.max(0, chosen - 1));
+        if (event.nativeEvent.actionName === 'increment')
+          commit(chosen === null ? 0 : Math.min(max, chosen + 1));
+        if (event.nativeEvent.actionName === 'decrement')
+          commit(chosen === null ? 0 : Math.max(0, chosen - 1));
       }}
-      style={{ width: '100%' }}>
+      style={{ width: '100%' }}
+    >
       <View
         {...responder.panHandlers}
         onLayout={onLayout}
@@ -160,7 +181,8 @@ export function EffortSlider({ value, onChange, levels, label, unsetLabel, palet
           borderRadius: 8,
           backgroundColor: palette.secondary,
           cursor: 'pointer',
-        }}>
+        }}
+      >
         <View
           pointerEvents="none"
           {...dataHook('bloomComposerFill')}
@@ -185,7 +207,8 @@ export function EffortSlider({ value, onChange, levels, label, unsetLabel, palet
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-          }}>
+          }}
+        >
           {levels.map((level, index) => (
             <View
               key={level}
@@ -200,7 +223,12 @@ export function EffortSlider({ value, onChange, levels, label, unsetLabel, palet
             />
           ))}
         </View>
-        <View pointerEvents="none" {...dataHook('bloomComposerThumb')} {...webThumb} style={thumbStyle} />
+        <View
+          pointerEvents="none"
+          {...dataHook('bloomComposerThumb')}
+          {...webThumb}
+          style={thumbStyle}
+        />
       </View>
     </View>
   );

@@ -67,7 +67,8 @@ function PanelRow({
         padding: 8,
         borderRadius: 10,
         backgroundColor: hovered || pressed ? palette.rowHighlight : 'transparent',
-      })}>
+      })}
+    >
       <Icon width={20} height={20} fill={palette.textSecondary} />
       <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text, flex: 1 }}>
         {label}
@@ -87,7 +88,12 @@ export const Basic: Story = {
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
         <PopoverTrigger asChild label="What is this?">
-          <Button leadingIcon={RiInformationLine} testID="popover-trigger" appearance="outline" tone="neutral">
+          <Button
+            leadingIcon={RiInformationLine}
+            testID="popover-trigger"
+            appearance="outline"
+            tone="neutral"
+          >
             What is this?
           </Button>
         </PopoverTrigger>
@@ -115,7 +121,9 @@ export const WithHeaderAndFooter: Story = {
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
         <PopoverTrigger asChild label="Design team">
-          <Button appearance="outline" tone="neutral">Design team</Button>
+          <Button appearance="outline" tone="neutral">
+            Design team
+          </Button>
         </PopoverTrigger>
         <PopoverContent label="Design team menu" align="start" testID="popover-header-footer">
           <View style={{ gap: 7 }}>
@@ -153,7 +161,9 @@ export const RowList: Story = {
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
         <PopoverTrigger asChild label="Account">
-          <Button appearance="outline" tone="neutral">Account</Button>
+          <Button appearance="outline" tone="neutral">
+            Account
+          </Button>
         </PopoverTrigger>
         <PopoverContent label="Account menu" align="start" testID="popover-row-list">
           <View style={{ gap: 6, paddingTop: 5 }}>
@@ -168,10 +178,22 @@ export const RowList: Story = {
           </View>
           <PopoverSeparator style={{ marginTop: 14, marginBottom: 14 }} />
           <PopoverFooter>
-            <Button size="sm" leadingIcon={RiAddFill} style={{ flex: 1 }} appearance="outline" tone="neutral">
+            <Button
+              size="sm"
+              leadingIcon={RiAddFill}
+              style={{ flex: 1 }}
+              appearance="outline"
+              tone="neutral"
+            >
               Add user
             </Button>
-            <Button size="sm" leadingIcon={RiEqualizer3Line} style={{ flex: 1 }} appearance="outline" tone="neutral">
+            <Button
+              size="sm"
+              leadingIcon={RiEqualizer3Line}
+              style={{ flex: 1 }}
+              appearance="outline"
+              tone="neutral"
+            >
               Manage
             </Button>
           </PopoverFooter>
@@ -191,7 +213,9 @@ export const FormContent: Story = {
       <View style={{ padding: 80, alignItems: 'flex-start' }}>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild label="Rename">
-            <Button appearance="outline" tone="neutral">Rename</Button>
+            <Button appearance="outline" tone="neutral">
+              Rename
+            </Button>
           </PopoverTrigger>
           <PopoverContent label="Rename board" align="start" testID="popover-form">
             <PopoverHeader>
@@ -266,9 +290,16 @@ export const ClassNameOverride: Story = {
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
         <PopoverTrigger asChild label="More">
-          <Button appearance="outline" tone="neutral">More</Button>
+          <Button appearance="outline" tone="neutral">
+            More
+          </Button>
         </PopoverTrigger>
-        <PopoverContent label="More actions" align="start" className="w-[200px] p-2" testID="popover-classname">
+        <PopoverContent
+          label="More actions"
+          align="start"
+          className="w-[200px] p-2"
+          testID="popover-classname"
+        >
           <PanelRow icon={RiSettings3Line} label="Settings" />
           <PanelRow icon={RiLogoutBoxRLine} label="Sign out" />
         </PopoverContent>
@@ -303,7 +334,8 @@ function ForwardingTrigger(props: InjectedTriggerProps) {
       accessibilityLabel={props.accessibilityLabel}
       accessibilityRole={props.accessibilityRole}
       aria-expanded={props['aria-expanded']}
-      style={{ paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderRadius: 8 }}>
+      style={{ paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderRadius: 8 }}
+    >
       <Text>{props.children}</Text>
     </Pressable>
   );
@@ -331,7 +363,9 @@ function ForwardingTrigger(props: InjectedTriggerProps) {
 export const AsChildDisabled: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 24, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
+    <View
+      style={{ padding: 24, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}
+    >
       <Popover>
         <PopoverTrigger asChild label="Enabled" testID="popover-forwarding-enabled">
           <ForwardingTrigger>Enabled</ForwardingTrigger>
@@ -359,10 +393,22 @@ export const AsChildDisabled: Story = {
           so this stays closed even with the guard removed — the browser cannot
           gate the defect through it (formerly `Combobox`'s disabled story). */}
       <Popover>
-        <PopoverTrigger asChild disabled label="Pressable disabled" testID="popover-pressable-disabled">
+        <PopoverTrigger
+          asChild
+          disabled
+          label="Pressable disabled"
+          testID="popover-pressable-disabled"
+        >
           <Pressable
             disabled
-            style={{ paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderRadius: 8, opacity: 0.5 }}>
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+              borderWidth: 1,
+              borderRadius: 8,
+              opacity: 0.5,
+            }}
+          >
             <Text>Pressable disabled</Text>
           </Pressable>
         </PopoverTrigger>
@@ -389,7 +435,9 @@ export const Controlled: Story = {
         <Text>open: {String(open)}</Text>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild label="Toggle">
-            <Button appearance="outline" tone="neutral">Toggle</Button>
+            <Button appearance="outline" tone="neutral">
+              Toggle
+            </Button>
           </PopoverTrigger>
           <PopoverContent label="Controlled panel" align="start">
             <PopoverHeader style={{ paddingBottom: 4 }}>
@@ -409,17 +457,40 @@ export const Playground: StoryObj<typeof Popover> = {
   argTypes: { open: { control: 'boolean' } },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 520, maxWidth: '100%' }}><Popover {...args} onOpenChange={open => updateArgs({ open })}><PopoverTrigger asChild><Button>Open details</Button></PopoverTrigger><PopoverContent><PopoverHeader><PopoverTitle>Shared controls</PopoverTitle><PopoverDescription>Change the open control or use the trigger.</PopoverDescription></PopoverHeader></PopoverContent></Popover></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <Popover {...args} onOpenChange={(open) => updateArgs({ open })}>
+          <PopoverTrigger asChild>
+            <Button>Open details</Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverHeader>
+              <PopoverTitle>Shared controls</PopoverTitle>
+              <PopoverDescription>Change the open control or use the trigger.</PopoverDescription>
+            </PopoverHeader>
+          </PopoverContent>
+        </Popover>
+      </View>
+    );
   },
 };
 
 export const FlatMaterial: Story = {
-  render: () => <Popover>
-    <PopoverTrigger asChild><Button>Open flat popover</Button></PopoverTrigger>
-    <PopoverContent material="flat" label="Flat content" style={{ backgroundColor: '#f3d7b6', width: 280 }} testID="flat-popover">
-      <Text>Opaque floating content</Text>
-    </PopoverContent>
-  </Popover>,
+  render: () => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button>Open flat popover</Button>
+      </PopoverTrigger>
+      <PopoverContent
+        material="flat"
+        label="Flat content"
+        style={{ backgroundColor: '#f3d7b6', width: 280 }}
+        testID="flat-popover"
+      >
+        <Text>Opaque floating content</Text>
+      </PopoverContent>
+    </Popover>
+  ),
 };
 
 /** Focus ownership across an anchored form and its parent dialog. */
@@ -429,26 +500,40 @@ export const NestedFocusReturn: Story = {
     const [open, setOpen] = useState(false);
     const [conditional, setConditional] = useState(false);
     const outside = React.useRef<React.ElementRef<typeof Button>>(null);
-    return <>
-      <Button onPress={() => control.open()}>Open parent</Button>
-      <Dialog control={control} title="Parent dialog">
-        <View style={{ gap: 24 }}>
-          <Button pressed={conditional} onPress={() => setConditional(!conditional)}>Conditional content</Button>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild><Button>Filter</Button></PopoverTrigger>
-            {(!conditional || open) && <PopoverContent label="Filter options" side="bottom" align="start">
-              <View style={{ gap: 12 }}>
-                <Button onPress={() => setOpen(false)}>Apply</Button>
-                <Button onPress={() => {
-                  outside.current?.focus();
-                  setOpen(false);
-                }}>Move focus outside</Button>
-              </View>
-            </PopoverContent>}
-          </Popover>
-          <Button ref={outside} onPress={() => setOpen(false)}>Outside control</Button>
-        </View>
-      </Dialog>
-    </>;
+    return (
+      <>
+        <Button onPress={() => control.open()}>Open parent</Button>
+        <Dialog control={control} title="Parent dialog">
+          <View style={{ gap: 24 }}>
+            <Button pressed={conditional} onPress={() => setConditional(!conditional)}>
+              Conditional content
+            </Button>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button>Filter</Button>
+              </PopoverTrigger>
+              {(!conditional || open) && (
+                <PopoverContent label="Filter options" side="bottom" align="start">
+                  <View style={{ gap: 12 }}>
+                    <Button onPress={() => setOpen(false)}>Apply</Button>
+                    <Button
+                      onPress={() => {
+                        outside.current?.focus();
+                        setOpen(false);
+                      }}
+                    >
+                      Move focus outside
+                    </Button>
+                  </View>
+                </PopoverContent>
+              )}
+            </Popover>
+            <Button ref={outside} onPress={() => setOpen(false)}>
+              Outside control
+            </Button>
+          </View>
+        </Dialog>
+      </>
+    );
   },
 };

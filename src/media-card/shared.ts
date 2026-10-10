@@ -101,12 +101,16 @@ export function resolveArtworkUri(
 
 /** Joins the non-empty parts with ", " — the card's accessible name. */
 export function composeName(parts: ReadonlyArray<string | false | null | undefined>): string {
-  return parts.filter((part): part is string => typeof part === 'string' && part.trim() !== '').join(', ');
+  return parts
+    .filter((part): part is string => typeof part === 'string' && part.trim() !== '')
+    .join(', ');
 }
 
 /** Joins the non-empty parts with " · " — a meta line. */
 export function joinMeta(parts: ReadonlyArray<string | false | null | undefined>): string {
-  return parts.filter((part): part is string => typeof part === 'string' && part.trim() !== '').join(' · ');
+  return parts
+    .filter((part): part is string => typeof part === 'string' && part.trim() !== '')
+    .join(' · ');
 }
 
 // ---------------------------------------------------------------------------
@@ -156,7 +160,11 @@ export function resolveCoverTint(theme: Theme, color?: string): CoverTint {
       textMuted,
     };
   }
-  const top = darkenUntilContrast(theme.colors.background, [text, textMuted], AA_TEXT_CONTRAST)!.color;
+  const top = darkenUntilContrast(
+    theme.colors.background,
+    [text, textMuted],
+    AA_TEXT_CONTRAST,
+  )!.color;
   return { top, bottom: darken(top, COVER_GRADIENT_FALLOFF) as string, text, textMuted };
 }
 

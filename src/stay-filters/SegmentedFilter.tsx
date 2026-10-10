@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import type { SegmentedFilterProps } from './types';
 
 /**

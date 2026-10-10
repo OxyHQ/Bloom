@@ -37,7 +37,13 @@ const SCHEMES: CardScheme[] = [
     securityCodeLength: 4,
     securityCodeLabel: 'Card code',
   },
-  { id: 'northwind', name: 'Northwind', prefixes: ['90', '91'], lengths: [16, 19], groups: [4, 4, 4, 4, 3] },
+  {
+    id: 'northwind',
+    name: 'Northwind',
+    prefixes: ['90', '91'],
+    lengths: [16, 19],
+    groups: [4, 4, 4, 4, 3],
+  },
 ];
 
 const COUNTRIES = [
@@ -59,9 +65,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Page({ children }: { children: React.ReactNode }) {
-  return (
-    <View style={{ width: '100%', padding: 16, gap: 32, maxWidth: 560 }}>{children}</View>
-  );
+  return <View style={{ width: '100%', padding: 16, gap: 32, maxWidth: 560 }}>{children}</View>;
 }
 
 function BasicForm() {
@@ -138,7 +142,12 @@ export const Errors: Story = {
       </Section>
       <Section title="Disabled, while the charge is in flight">
         <CardForm
-          value={{ number: '7000 1111 2222 3339', expiry: '09/29', securityCode: '123', name: 'Nil Abella' }}
+          value={{
+            number: '7000 1111 2222 3339',
+            expiry: '09/29',
+            securityCode: '123',
+            name: 'Nil Abella',
+          }}
           schemes={SCHEMES}
           disabled
           accessibilityLabel="Card details"
@@ -172,7 +181,11 @@ function PairInAField() {
             value={expiry}
             onValueChange={setExpiry}
             label="Expiry date"
-            error={expiry.length === 5 && !cardExpiryIsWellFormed(expiry) ? 'Check the month.' : undefined}
+            error={
+              expiry.length === 5 && !cardExpiryIsWellFormed(expiry)
+                ? 'Check the month.'
+                : undefined
+            }
           />
         </View>
         <View style={{ flexBasis: 0, flexGrow: 1, minWidth: 0 }}>
@@ -197,7 +210,12 @@ export const Parts: Story = {
           <CardBody>
             <View style={{ gap: 16 }}>
               <CardForm
-                value={{ number: '8100 111111 22229', expiry: '03/27', securityCode: '4417', name: 'Mireia Ferrer' }}
+                value={{
+                  number: '8100 111111 22229',
+                  expiry: '03/27',
+                  securityCode: '4417',
+                  name: 'Mireia Ferrer',
+                }}
                 schemes={SCHEMES}
                 accessibilityLabel="Card details"
               />

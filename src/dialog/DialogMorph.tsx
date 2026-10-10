@@ -245,12 +245,7 @@ export interface DialogMorphOptions {
  * out WITHOUT a key change, so the animation never re-runs) still settles at the
  * declared size instead of falling back to natural.
  */
-export function useDialogMorph({
-  enabled,
-  measurable,
-  maxHeight,
-  maxWidth,
-}: DialogMorphOptions) {
+export function useDialogMorph({ enabled, measurable, maxHeight, maxWidth }: DialogMorphOptions) {
   const channel = useMemo(() => createFrameChannel(), []);
 
   /** 1 while the panel height is driven by an in-flight morph animation. */
@@ -339,10 +334,7 @@ export function useDialogMorph({
         return;
       }
       const from = height.value;
-      const to = Math.max(
-        0,
-        Math.min(naturalContentHeight + chrome.current, maxHeightRef.current),
-      );
+      const to = Math.max(0, Math.min(naturalContentHeight + chrome.current, maxHeightRef.current));
       if (Math.abs(to - from) < 1) {
         release();
         return;
@@ -442,17 +434,7 @@ export function useDialogMorph({
       clearReleaseTimer();
       releaseTimer.current = setTimeout(release, MORPH_MEASURE_TIMEOUT_MS);
     });
-  }, [
-    channel,
-    clearReleaseTimer,
-    fade,
-    height,
-    maxWidth,
-    pinned,
-    release,
-    width,
-    widthPinned,
-  ]);
+  }, [channel, clearReleaseTimer, fade, height, maxWidth, pinned, release, width, widthPinned]);
 
   useEffect(
     () => () => {
@@ -509,11 +491,7 @@ export function useDialogMorph({
     // active frame's `declaredHeight` when it has one (survives a placement swap),
     // else natural (`'auto'`).
     const resolvedHeight: ViewStyle['height'] =
-      pinned.value === 1
-        ? height.value
-        : declaredHeight.value > 0
-          ? declaredHeight.value
-          : 'auto';
+      pinned.value === 1 ? height.value : declaredHeight.value > 0 ? declaredHeight.value : 'auto';
     // Width only varies on a placement that HAS a `maxWidth` (the centered card).
     // A full-bleed placement (bottom sheet, `maxWidth === undefined`) is never
     // width-capped — only height matters there. On the centered card the width is
@@ -531,10 +509,7 @@ export function useDialogMorph({
     // must be listed here or it runs once and freezes at the first frame.
   }, [pinned, height, declaredHeight, widthPinned, width, declaredMaxWidth, maxWidth]);
 
-  const contentStyle = useAnimatedStyle<ViewStyle>(
-    () => ({ opacity: fade.value }),
-    [fade],
-  );
+  const contentStyle = useAnimatedStyle<ViewStyle>(() => ({ opacity: fade.value }), [fade]);
 
   return {
     channel,

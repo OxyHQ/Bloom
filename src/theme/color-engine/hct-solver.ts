@@ -182,7 +182,8 @@ function bisectToLimit(y: number, targetHue: number): Vec3 {
         if (Math.abs(rPlane - lPlane) <= 1) break;
         const mPlane = Math.floor((lPlane + rPlane) / 2.0);
         const midPlaneCoordinate = CRITICAL_PLANES[mPlane];
-        if (midPlaneCoordinate === undefined) throw new RangeError(`critical plane ${mPlane} out of range`);
+        if (midPlaneCoordinate === undefined)
+          throw new RangeError(`critical plane ${mPlane} out of range`);
         const mid = setCoordinate(left, midPlaneCoordinate, right, axis);
         const midHue = hueOf(mid);
         if (areInCyclicOrder(leftHue, targetHue, midHue)) {

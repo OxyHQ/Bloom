@@ -4,7 +4,11 @@ import { Platform, Pressable, View } from 'react-native';
 
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { RiStarLine } from '../icons/remix/RiStarLine';
-import { focusRingShadow, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import {
+  focusRingShadow,
+  interactiveWebCss,
+  useInteractiveWebCss,
+} from '../styles/interactive-web-css';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
@@ -92,7 +96,10 @@ function RatingInputComponent({
   style,
   testID,
 }: RatingInputProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
 
   const theme = useTheme();
@@ -215,7 +222,12 @@ function RatingInputComponent({
           >
             {/* Hover swaps the glyph. Keep the press target on the radio so
                 replacing a decorative SVG between down/up cannot lose a click. */}
-            <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <View
+              pointerEvents="none"
+              aria-hidden
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
               <Glyph
                 width={config.star}
                 height={config.star}

@@ -27,7 +27,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 /** The card at 480 wide: a 460 × 200 ring area. */
 function layout(getByTestId: (id: string) => unknown, width = 460, height = 200) {
   act(() => {
-    fireEvent(getByTestId('activity-plot') as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height } } });
+    fireEvent(getByTestId('activity-plot') as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height } },
+    });
   });
 }
 
@@ -35,7 +37,9 @@ type Node = { props: Record<string, unknown> };
 
 describe('ActivityRingsCard', () => {
   it('keeps the card geometry: 330 tall, radius 20, padding 10, tiles 57 tall with radius 10', () => {
-    const { getByTestId, getByText } = renderCard(<ActivityRingsCard testID="activity" rings={RINGS} />);
+    const { getByTestId, getByText } = renderCard(
+      <ActivityRingsCard testID="activity" rings={RINGS} />,
+    );
     expect(cardLayout(getByTestId('activity'))).toMatchObject({
       height: 330,
       borderRadius: 20,
@@ -45,7 +49,11 @@ describe('ActivityRingsCard', () => {
       paddingLeft: 10,
       gap: 16,
     });
-    expect(resolvedStyle(getByTestId('activity-title').props.style)).toMatchObject({ paddingTop: 6, paddingLeft: 6, paddingRight: 6 });
+    expect(resolvedStyle(getByTestId('activity-title').props.style)).toMatchObject({
+      paddingTop: 6,
+      paddingLeft: 6,
+      paddingRight: 6,
+    });
     expect(resolvedStyle(getByTestId('activity-tile-0').props.style)).toMatchObject({
       borderRadius: 10,
       paddingTop: 8,
@@ -54,13 +62,23 @@ describe('ActivityRingsCard', () => {
       paddingRight: 10,
       justifyContent: 'flex-end',
     });
-    for (const text of ['Activity', 'Move', '1,592 kcal', 'Exercise', '1h 45m', 'Running', '5.2 km']) {
+    for (const text of [
+      'Activity',
+      'Move',
+      '1,592 kcal',
+      'Exercise',
+      '1h 45m',
+      'Running',
+      '5.2 km',
+    ]) {
       expect(getByText(text)).toBeTruthy();
     }
   });
 
   it('draws three 18-wide rings from twelve o’clock over a 16% track, in chart-3 / 2 / 4', () => {
-    const { getByTestId, UNSAFE_getAllByType } = renderCard(<ActivityRingsCard testID="activity" rings={RINGS} />);
+    const { getByTestId, UNSAFE_getAllByType } = renderCard(
+      <ActivityRingsCard testID="activity" rings={RINGS} />,
+    );
     layout(getByTestId);
     const circles = UNSAFE_getAllByType('Circle' as never) as unknown as Node[];
     expect(circles).toHaveLength(6);
@@ -80,7 +98,11 @@ describe('ActivityRingsCard', () => {
   it('hovers a ring band: darkens it, dims the other rings, tracks and tiles; the gap keeps it', () => {
     const onActiveIndexChange = jest.fn();
     const { getByTestId, UNSAFE_getAllByType } = renderCard(
-      <ActivityRingsCard testID="activity" rings={RINGS} onActiveIndexChange={onActiveIndexChange} />,
+      <ActivityRingsCard
+        testID="activity"
+        rings={RINGS}
+        onActiveIndexChange={onActiveIndexChange}
+      />,
     );
     layout(getByTestId);
     const surface = getByTestId('activity-plot-surface');
@@ -92,7 +114,9 @@ describe('ActivityRingsCard', () => {
     const theme = buildTheme('teal', 'light');
     expect(getByTestId('activity-ring-1').props.stroke).toBe(chartHueTone(theme, 2).activeColor);
     expect(getByTestId('activity-ring-0').props.opacity).toBe(0.5);
-    const tracks = (UNSAFE_getAllByType('Circle' as never) as unknown as Node[]).filter((c) => c.props.strokeDasharray === undefined);
+    const tracks = (UNSAFE_getAllByType('Circle' as never) as unknown as Node[]).filter(
+      (c) => c.props.strokeDasharray === undefined,
+    );
     expect(tracks.map((c) => c.props.opacity)).toEqual([0.06, 0.16, 0.06]);
     expect(resolvedStyle(getByTestId('activity-tile-0').props.style).opacity).toBe(0.5);
     expect(resolvedStyle(getByTestId('activity-tile-1').props.style).opacity).toBe(1);
@@ -109,7 +133,9 @@ describe('ActivityRingsCard', () => {
   });
 
   it('caps the drawing at 210 tall and centres it in a taller area', () => {
-    const { getByTestId, UNSAFE_getByType } = renderCard(<ActivityRingsCard testID="activity" rings={RINGS} height={420} />);
+    const { getByTestId, UNSAFE_getByType } = renderCard(
+      <ActivityRingsCard testID="activity" rings={RINGS} height={420} />,
+    );
     layout(getByTestId, 460, 290);
     const svg = getByTestId('activity-plot').findByType('Svg' as never) as unknown as Node;
     expect(svg.props.height).toBe(210);
@@ -117,8 +143,13 @@ describe('ActivityRingsCard', () => {
   });
 
   it('paints the dark tiles in background-inner', () => {
-    const { getByTestId } = renderCard(<ActivityRingsCard testID="activity" rings={RINGS} />, 'dark');
+    const { getByTestId } = renderCard(
+      <ActivityRingsCard testID="activity" rings={RINGS} />,
+      'dark',
+    );
     const palette = resolveChartCardPalette(buildTheme('teal', 'dark'));
-    expect(resolvedStyle(getByTestId('activity-tile-0').props.style).backgroundColor).toBe(palette.inner);
+    expect(resolvedStyle(getByTestId('activity-tile-0').props.style).backgroundColor).toBe(
+      palette.inner,
+    );
   });
 });

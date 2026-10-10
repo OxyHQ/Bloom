@@ -9,25 +9,18 @@ export type LegacyRecipe = {
   points?: Point[];
   shape?: string;
   eyes: string;
-  selections?: Pick<
-    NonNullable<AvatarCharacterConfig['selections']>,
-    'eyewear' | 'accessory'
-  >;
+  selections?: Pick<NonNullable<AvatarCharacterConfig['selections']>, 'eyewear' | 'accessory'>;
   patch: { bodyColor: string };
 };
 
 /** Saved unsupported artwork stays readable without pretending it was migrated. */
 export function legacyRecipeUnsupported(config: AvatarConfig): boolean {
-  return (
-    config.family === 'alien' || config.family === 'mascot' || !config.face
-  );
+  return config.family === 'alien' || config.family === 'mascot' || !config.face;
 }
 
 /** Reuse actual beta geometry for equivalent shapes, per the unified catalog. */
 export function legacyNativeShape(config: AvatarConfig): string | undefined {
-  const shared: Partial<
-    Record<AvatarConfig['shape'] | AvatarConfig['foldShape'], string>
-  > = {
+  const shared: Partial<Record<AvatarConfig['shape'] | AvatarConfig['foldShape'], string>> = {
     circle: 'circle',
     triangle: 'rounded_triangle',
     flower: 'six_lobed_flower',
@@ -63,8 +56,7 @@ export function radialContour(polygons: Point[][], samples = 256): Point[] {
         if (Math.abs(denominator) < 1e-10) continue;
         const distance = (ax * ey - ay * ex) / denominator;
         const segment = (ax * dy - ay * dx) / denominator;
-        if (distance > radius && segment >= -1e-8 && segment <= 1 + 1e-8)
-          radius = distance;
+        if (distance > radius && segment >= -1e-8 && segment <= 1 + 1e-8) radius = distance;
       }
     if (!Number.isFinite(radius) || radius <= 0)
       throw new Error('Legacy contour does not enclose its origin');
@@ -74,16 +66,13 @@ export function radialContour(polygons: Point[][], samples = 256): Point[] {
 
 /** Shared capability identity for the editor and the legacy engine adapter. */
 export function legacyCharacterRecipe(config: AvatarConfig) {
-  const customization =
-    config.character?.preset === 'bloom' ? config.character : undefined;
+  const customization = config.character?.preset === 'bloom' ? config.character : undefined;
   return {
     preset: 'legacy',
     selections: {
       shape: legacyNativeShape(config) ?? 'circle',
       eyes: customization?.selections?.eyes ?? 'oval',
-      ...(customization?.selections?.eyewear
-        ? { eyewear: customization.selections.eyewear }
-        : {}),
+      ...(customization?.selections?.eyewear ? { eyewear: customization.selections.eyewear } : {}),
       ...(customization?.selections?.accessory
         ? { accessory: customization.selections.accessory }
         : {}),
@@ -96,19 +85,13 @@ export function legacyCharacterRecipe(config: AvatarConfig) {
  * Historical expression, spacing and tilt fields remain readable but no longer
  * alter the migrated face. The engine owns eye geometry and animation.
  */
-export function legacyRecipe(
-  config: AvatarConfig,
-  samples = 256,
-): LegacyRecipe {
-  if (legacyRecipeUnsupported(config))
-    throw new Error('Unsupported legacy 3D recipe');
+export function legacyRecipe(config: AvatarConfig, samples = 256): LegacyRecipe {
+  if (legacyRecipeUnsupported(config)) throw new Error('Unsupported legacy 3D recipe');
   const shape = legacyNativeShape(config);
   const recipe = legacyCharacterRecipe(config);
   const { eyewear, accessory } = recipe.selections;
   return {
-    ...(shape
-      ? { shape }
-      : { points: radialContour(legacyContours(config), samples) }),
+    ...(shape ? { shape } : { points: radialContour(legacyContours(config), samples) }),
     eyes: recipe.selections.eyes,
     ...(eyewear || accessory
       ? {

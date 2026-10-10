@@ -1,6 +1,5 @@
 import { Platform } from 'react-native';
 
-
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { MediaArtist, RepeatMode, SleepTimerValue, TransportControlsSize } from './types';
 import {
@@ -48,7 +47,6 @@ export function artistNames(artists: string | MediaArtist[]): string {
   return typeof artists === 'string' ? artists : artists.map((a) => a.name).join(', ');
 }
 
-
 // ---------------------------------------------------------------------------
 //  Sizes
 // ---------------------------------------------------------------------------
@@ -74,10 +72,6 @@ export const TRANSPORT_GEOMETRY: Record<TransportControlsSize, TransportGeometry
 //  Contrast — artwork colours arrive from the backend and can be anything.
 // ---------------------------------------------------------------------------
 
-
-
-
-
 export interface ArtworkTint {
   /** The background to paint, or `null` when the artwork colour is absent / unparseable. */
   background: string | null;
@@ -99,7 +93,9 @@ export function resolveArtworkTint(
   const shade = artworkColor
     ? darkenUntilContrast(artworkColor, [text, textMuted], AA_TEXT_CONTRAST)
     : null;
-  return shade ? { background: shade.color, darkened: shade.amount } : { background: null, darkened: 0 };
+  return shade
+    ? { background: shade.color, darkened: shade.amount }
+    : { background: null, darkened: 0 };
 }
 
 /** Legacy text-only helper: a dark theme-linked artwork fallback. New players use background directly. */
@@ -108,7 +104,10 @@ export function immersiveBase(themeText: string): string {
 }
 
 /** A top-to-bottom gradient: `background-image` on web, the native CSS-gradient style elsewhere. */
-export function verticalGradient(stops: readonly string[], positions?: readonly number[]): WebCssStyle {
+export function verticalGradient(
+  stops: readonly string[],
+  positions?: readonly number[],
+): WebCssStyle {
   const list = stops
     .map((c, i) => (positions?.[i] !== undefined ? `${c} ${positions[i]}%` : c))
     .join(', ');

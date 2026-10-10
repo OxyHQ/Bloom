@@ -42,15 +42,19 @@ const LabelComponent = function Label({
   style,
   testID,
 }: LabelProps) {
-  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'sm', tone: 'neutral'});
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'sm', tone: 'neutral' },
+  );
   const size: NonNullable<LabelProps['size']> = inheritedSize === 'lg' ? 'md' : inheritedSize;
   const palette = useTextFieldPalette();
   const { messages } = useMessages(LABEL_MESSAGES);
 
   // `null` is DISTINCT from omitted: omitted falls back to the control's id,
   // `null` says the label names a group and points at nothing.
-  const webProps: Record<string, unknown> =
-    IS_WEB ? { htmlFor: htmlFor === null ? undefined : (htmlFor ?? nativeID) } : {};
+  const webProps: Record<string, unknown> = IS_WEB
+    ? { htmlFor: htmlFor === null ? undefined : (htmlFor ?? nativeID) }
+    : {};
 
   return (
     <Text
@@ -64,7 +68,8 @@ const LabelComponent = function Label({
           color: disabled ? palette.placeholder : palette.text,
         },
         style,
-      ]}>
+      ]}
+    >
       {children}
       {required ? (
         <Text
@@ -72,7 +77,8 @@ const LabelComponent = function Label({
           accessibilityLabel={requiredLabel ?? messages.required}
           // `gap-0.5`: an inline margin on web; a nested native
           // `Text` ignores margins, so a thin space stands in for it there.
-          style={[{ color: palette.error }, IS_WEB ? { marginLeft: TEXT_FIELD_LEADING_GAP } : null]}>
+          style={[{ color: palette.error }, IS_WEB ? { marginLeft: TEXT_FIELD_LEADING_GAP } : null]}
+        >
           {IS_WEB ? '*' : ' *'}
         </Text>
       ) : null}

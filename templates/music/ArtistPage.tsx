@@ -102,7 +102,13 @@ export function ArtistPage({ id }: { id: string }) {
             {(pageWidth) => {
               const side = pageWidth >= 900;
               return (
-                <View style={{ flexDirection: side ? 'row' : 'column', gap: 32, alignItems: 'flex-start' }}>
+                <View
+                  style={{
+                    flexDirection: side ? 'row' : 'column',
+                    gap: 32,
+                    alignItems: 'flex-start',
+                  }}
+                >
                   <PopularTracks
                     style={{ flex: side ? 1 : undefined, alignSelf: 'stretch' }}
                     tracks={popular.map((t) => ({
@@ -139,7 +145,11 @@ export function ArtistPage({ id }: { id: string }) {
           </WithPageWidth>
 
           <View style={{ gap: 16 }}>
-            <DiscographyFilter value={discography} onValueChange={setDiscography} onShowAll={() => {}} />
+            <DiscographyFilter
+              value={discography}
+              onValueChange={setDiscography}
+              onShowAll={() => {}}
+            />
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -147,7 +157,9 @@ export function ArtistPage({ id }: { id: string }) {
               contentContainerStyle={{ paddingLeft: gutter, paddingRight: gutter, gap: 16 }}
             >
               {releases.length > 0 ? (
-                releases.map((album) => <AlbumTile key={album.id} id={album.id} size={tileSize} showArtist={false} />)
+                releases.map((album) => (
+                  <AlbumTile key={album.id} id={album.id} size={tileSize} showArtist={false} />
+                ))
               ) : (
                 <SectionTitle>Nothing here yet</SectionTitle>
               )}

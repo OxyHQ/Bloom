@@ -8,12 +8,13 @@ import type { NoteCardLabels } from './types';
  */
 export type NoteCardMessages = Required<NoteCardLabels>;
 
-export const NOTE_CARD_MESSAGES: MessageCatalog<NoteCardMessages> = defineMessages<NoteCardMessages>('NOTE_CARD_MESSAGES', {
-  pinned: 'Pinned',
-  locked: 'Protected',
-  attachments: (n) => plural('en', n, { one: '{n} attachment', other: '{n} attachments' }),
-  select: 'Select note',
-  checklistDone: 'Done',
-  checklistTodo: 'To do',
-  more: (n) => `${n} more`,
-});
+export const NOTE_CARD_MESSAGES: MessageCatalog<NoteCardMessages> =
+  defineMessages<NoteCardMessages>('NOTE_CARD_MESSAGES', {
+    pinned: 'Pinned',
+    locked: 'Protected',
+    attachments: (n) => plural('en', n, { one: '{n} attachment', other: '{n} attachments' }),
+    select: 'Select note',
+    checklistDone: 'Done',
+    checklistTodo: 'To do',
+    more: (n) => `${n} more`,
+  });

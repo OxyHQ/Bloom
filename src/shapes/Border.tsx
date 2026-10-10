@@ -1,13 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import Svg, {
-  Circle,
-  ClipPath,
-  Defs,
-  LinearGradient,
-  Path,
-  Stop,
-} from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import { resolve } from './resolve';
 import { assertSize, assertWidth } from './validation';
 import { useSvgId } from './use-svg-id';

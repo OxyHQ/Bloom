@@ -69,8 +69,11 @@ export default function HomeDashboardDetail() {
 
 /** A blue gradient, standing in for generated artwork. */
 const ARTWORK = {
-  uri: 'data:image/svg+xml;utf8,' +
-    encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="250"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f7cc9"/><stop offset="1" stop-color="#9ab7e8"/></linearGradient></defs><rect width="200" height="250" fill="url(#g)"/></svg>'),
+  uri:
+    'data:image/svg+xml;utf8,' +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="250"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f7cc9"/><stop offset="1" stop-color="#9ab7e8"/></linearGradient></defs><rect width="200" height="250" fill="url(#g)"/></svg>',
+    ),
 };
 
 /** Turns in a thread: the user card, and replies built from lines, bullets, a link chip and a code card. */
@@ -81,24 +84,38 @@ export const Messages: Story = {
       <AiChatUserMessage>
         <AiChatMessageLine>
           make detail screens like this for the home and medical templates:{' '}
-          <AiChatLinkChip>figma.com/project/hse82s...</AiChatLinkChip> you can increase the max width of the detail page
+          <AiChatLinkChip>figma.com/project/hse82s...</AiChatLinkChip> you can increase the max
+          width of the detail page
         </AiChatMessageLine>
       </AiChatUserMessage>
       <AiChatAssistantMessage>
         <AiChatMessageLine tone="secondary">Worked for 5m 32s</AiChatMessageLine>
-        <AiChatMessageLine>Both template detail pages are live, in the style defined in Figma.</AiChatMessageLine>
+        <AiChatMessageLine>
+          Both template detail pages are live, in the style defined in Figma.
+        </AiChatMessageLine>
         <AiChatBulletList>
           <AiChatBullet>
-            <AiChatStrong>New pages</AiChatStrong> — /components/home-dashboard and /components/medical-profile.
+            <AiChatStrong>New pages</AiChatStrong> — /components/home-dashboard and
+            /components/medical-profile.
           </AiChatBullet>
           <AiChatBullet>
-            <AiChatStrong>Wider layout</AiChatStrong> — the detail shell grows from 1200px to 1560px.
+            <AiChatStrong>Wider layout</AiChatStrong> — the detail shell grows from 1200px to
+            1560px.
           </AiChatBullet>
         </AiChatBulletList>
       </AiChatAssistantMessage>
       <AiChatAssistantMessage>
-        <AiChatMessageLine>The toggle updates the root theme from one place and persists the selection:</AiChatMessageLine>
-        <CodeBlock code={SNIPPET} language="tsx" filename="theme-toggle.tsx" additions={156} deletions={23} highlight={['nextTheme']} />
+        <AiChatMessageLine>
+          The toggle updates the root theme from one place and persists the selection:
+        </AiChatMessageLine>
+        <CodeBlock
+          code={SNIPPET}
+          language="tsx"
+          filename="theme-toggle.tsx"
+          additions={156}
+          deletions={23}
+          highlight={['nextTheme']}
+        />
       </AiChatAssistantMessage>
     </View>
   ),
@@ -127,14 +144,21 @@ export const TurnActions: Story = {
           actions={[
             { key: 'copy', label: 'Copy message', icon: RiFileCopyLine, onPress: () => {} },
             { key: 'edit', label: 'Edit message', icon: RiPencilLine, onPress: () => {} },
-          ]}>
+          ]}
+        >
           what changed in the theme tokens?
         </AiChatUserMessage>
         <AiChatAssistantMessage
           feedbackProps={{
             onCopy: () => new Promise<void>((resolve) => setTimeout(resolve, 600)),
             actions: [
-              { key: 'speak', label: speaking ? 'Stop reading' : 'Read aloud', icon: RiVolumeUpLine, onPress: () => setSpeaking((on) => !on), active: speaking },
+              {
+                key: 'speak',
+                label: speaking ? 'Stop reading' : 'Read aloud',
+                icon: RiVolumeUpLine,
+                onPress: () => setSpeaking((on) => !on),
+                active: speaking,
+              },
               {
                 key: 'regenerate',
                 label: 'Regenerate',
@@ -146,7 +170,8 @@ export const TurnActions: Story = {
                 },
               },
             ],
-          }}>
+          }}
+        >
           The surface tokens moved to one ladder; every card now reads its parent fill.
         </AiChatAssistantMessage>
       </View>
@@ -181,7 +206,8 @@ export const CodePanel: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ height: 640, width: 410, maxWidth: '100%' }}>
-      <AiChatCodePanel width="100%"
+      <AiChatCodePanel
+        width="100%"
         code={PANEL_CODE}
         language="tsx"
         changeCount={12}
@@ -217,13 +243,32 @@ export const GalleryPanel: Story = {
     const [generated, setGenerated] = useState<AiChatGeneration[]>([]);
     return (
       <View style={{ gap: 16 }}>
-        <Button size="sm" onPress={() =>
-            setGenerated((list) => [{ id: `new-${list.length}`, prompt: 'Fresh generation', source: ARTWORK, aspectRatio: 449 / 600 }, ...list])
-          } appearance="outline" tone="neutral">
+        <Button
+          size="sm"
+          onPress={() =>
+            setGenerated((list) => [
+              {
+                id: `new-${list.length}`,
+                prompt: 'Fresh generation',
+                source: ARTWORK,
+                aspectRatio: 449 / 600,
+              },
+              ...list,
+            ])
+          }
+          appearance="outline"
+          tone="neutral"
+        >
           Land a generation
         </Button>
         <View style={{ height: 640, width: 410, maxWidth: '100%' }}>
-          <AiChatGalleryPanel width="100%" generations={WALL} generated={generated} onDownload={() => {}} onMore={() => {}} />
+          <AiChatGalleryPanel
+            width="100%"
+            generations={WALL}
+            generated={generated}
+            onDownload={() => {}}
+            onMore={() => {}}
+          />
         </View>
       </View>
     );
@@ -240,7 +285,8 @@ export const PanelsWithoutBackend: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
       <View style={{ height: 480, width: 410, maxWidth: '100%' }}>
-        <AiChatCodePanel width="100%"
+        <AiChatCodePanel
+          width="100%"
           code={PANEL_CODE}
           language="tsx"
           changeCount={1}
@@ -275,7 +321,11 @@ export const Container: Story = {
             composer={
               <>
                 <ComposerLoader active={working}>
-                  <ComposerPill surface={false} glass={working} models={['Composer 2.5', 'Fable 5', 'Sonnet 5']} />
+                  <ComposerPill
+                    surface={false}
+                    glass={working}
+                    models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
+                  />
                 </ComposerLoader>
                 <View style={{ paddingLeft: 6, paddingRight: 6 }}>
                   <ComposerStatusBar
@@ -289,10 +339,12 @@ export const Container: Story = {
                   />
                 </View>
               </>
-            }>
+            }
+          >
             <AiChatThread>
               <AiChatUserMessage>
-                update our colour tokens for dark mode and add a reusable theme toggle to the registry.
+                update our colour tokens for dark mode and add a reusable theme toggle to the
+                registry.
               </AiChatUserMessage>
             </AiChatThread>
           </AiChatContainer>
@@ -311,7 +363,16 @@ export const ResizeHandle: Story = {
     return (
       <View style={{ gap: 12 }}>
         <Text variant="body-medium">{`dx: ${Math.round(dx)}`}</Text>
-        <View style={{ maxWidth: '100%', position: 'relative', width: 320, height: 240, borderRadius: 24, backgroundColor: colors.backgroundSecondary }}>
+        <View
+          style={{
+            maxWidth: '100%',
+            position: 'relative',
+            width: 320,
+            height: 240,
+            borderRadius: 24,
+            backgroundColor: colors.backgroundSecondary,
+          }}
+        >
           <AiChatResizeHandle onResize={setDx} onResizeEnd={() => {}} />
         </View>
       </View>
@@ -339,7 +400,9 @@ export const BackgroundLayer: Story = {
           background={
             // Any node at all: a host's animated field, a video, a canvas. Here,
             // two washes so the layering is visible.
-            <View style={{ width: '100%', height: '100%', backgroundColor: colors.backgroundSecondary }}>
+            <View
+              style={{ width: '100%', height: '100%', backgroundColor: colors.backgroundSecondary }}
+            >
               <View
                 style={{
                   position: 'absolute',
@@ -354,11 +417,14 @@ export const BackgroundLayer: Story = {
               />
             </View>
           }
-          composer={<ComposerPill surface={false} />}>
+          composer={<ComposerPill surface={false} />}
+        >
           <AiChatThread>
             <AiChatUserMessage>what is behind this chat?</AiChatUserMessage>
             <AiChatAssistantMessage feedback={false}>
-              <AiChatMessageLine>Your own layer — the container never paints over it.</AiChatMessageLine>
+              <AiChatMessageLine>
+                Your own layer — the container never paints over it.
+              </AiChatMessageLine>
             </AiChatAssistantMessage>
           </AiChatThread>
         </AiChatContainer>
@@ -381,10 +447,20 @@ export const FloatingChrome: Story = {
     return (
       <View style={{ gap: 16 }}>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button size="sm" onPress={() => setWorking((w) => !w)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setWorking((w) => !w)}
+            appearance="outline"
+            tone="neutral"
+          >
             {working ? 'Stop working' : 'Start working'}
           </Button>
-          <Button size="sm" onPress={() => setTurns((n) => n + 1)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setTurns((n) => n + 1)}
+            appearance="outline"
+            tone="neutral"
+          >
             Add a turn
           </Button>
         </View>
@@ -397,7 +473,14 @@ export const FloatingChrome: Story = {
             onShare={() => {}}
             onMore={() => {}}
             working={working}
-            composer={<ComposerPill surface={false} glass={working} models={['Composer 2.5', 'Fable 5', 'Sonnet 5']} />}>
+            composer={
+              <ComposerPill
+                surface={false}
+                glass={working}
+                models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
+              />
+            }
+          >
             <AiChatThread>
               {Array.from({ length: turns }, (_, i) =>
                 i % 2 === 0 ? (
@@ -409,7 +492,8 @@ export const FloatingChrome: Story = {
                     <AiChatMessageLine>{`Turn ${i + 1}: the toggle updates the root theme from one place and persists the selection.`}</AiChatMessageLine>
                     <AiChatBulletList>
                       <AiChatBullet>
-                        <AiChatStrong>Tokens</AiChatStrong> — dark surfaces now come from the semantic ramp.
+                        <AiChatStrong>Tokens</AiChatStrong> — dark surfaces now come from the
+                        semantic ramp.
                       </AiChatBullet>
                       <AiChatBullet>
                         <AiChatStrong>Toggle</AiChatStrong> — one component, registered once.
@@ -430,12 +514,20 @@ export const FloatingChrome: Story = {
 export const EmptyNavigationFocus: Story = {
   render: function EmptyNavigationFocusStory() {
     const [open, setOpen] = useState(false);
-    return <View style={{ height: 600 }}>
-      <Button style={{ flexShrink: 0 }} onPress={() => setOpen(true)}>Open empty navigation</Button>
-      <AiChatShell sidebar={null} mobileSidebar={<Text testID="empty-navigation-content">Loading navigation</Text>}
-        navOpen={open} onNavOpenChange={setOpen}>
-        <Text>Workspace</Text>
-      </AiChatShell>
-    </View>;
+    return (
+      <View style={{ height: 600 }}>
+        <Button style={{ flexShrink: 0 }} onPress={() => setOpen(true)}>
+          Open empty navigation
+        </Button>
+        <AiChatShell
+          sidebar={null}
+          mobileSidebar={<Text testID="empty-navigation-content">Loading navigation</Text>}
+          navOpen={open}
+          onNavOpenChange={setOpen}
+        >
+          <Text>Workspace</Text>
+        </AiChatShell>
+      </View>
+    );
   },
 };

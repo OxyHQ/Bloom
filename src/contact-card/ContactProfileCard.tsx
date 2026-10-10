@@ -255,7 +255,8 @@ function ContactProfileCardComponent({
         return (
           <Button
             key={channel.kind + String(index)}
-            appearance="solid" tone="neutral"
+            appearance="solid"
+            tone="neutral"
             size="sm"
             iconOnly={!labelled}
             leadingIcon={channel.icon ?? spec.icon}
@@ -323,225 +324,243 @@ function ContactProfileCardComponent({
     );
   }
   for (const fact of facts ?? []) {
-    if (fact !== '') chips.push(<Chip key={`fact-${fact}`} size="medium" variant="outlined">{fact}</Chip>);
+    if (fact !== '')
+      chips.push(
+        <Chip key={`fact-${fact}`} size="medium" variant="outlined">
+          {fact}
+        </Chip>,
+      );
   }
   for (const tag of tags ?? []) {
-    chips.push(<Chip key={`tag-${tag}`} size="medium" variant="outlined">{tag}</Chip>);
+    chips.push(
+      <Chip key={`tag-${tag}`} size="medium" variant="outlined">
+        {tag}
+      </Chip>,
+    );
   }
 
   const coverWash = contactCoverWash(theme, coverTone);
 
   return (
-      <Card
-        clipContent
-        elevation="none"
-        radius="radius-20"
-        // The inner clip follows the card corners and draws no padding, so the
-        // cover band can run to the edge and the content block owns the inset.
-        style={style}
-        testID={testID}
+    <Card
+      clipContent
+      elevation="none"
+      radius="radius-20"
+      // The inner clip follows the card corners and draws no padding, so the
+      // cover band can run to the edge and the content block owns the inset.
+      style={style}
+      testID={testID}
+    >
+      <View
+        testID={id('cover')}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: CONTACT_COVER_HEIGHT,
+          overflow: 'hidden',
+          backgroundColor: coverWash,
+        }}
       >
-        <View
-          testID={id('cover')}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: CONTACT_COVER_HEIGHT,
-            overflow: 'hidden',
-            backgroundColor: coverWash,
-          }}
-        >
-          {coverSource ? (
-            <Image
-              source={typeof coverSource === 'string' ? { uri: coverSource } : coverSource}
-              resizeMode="cover"
-              accessibilityIgnoresInvertColors
-              aria-hidden
-              style={StyleSheet.absoluteFill}
-              testID={id('cover-image')}
-            />
-          ) : null}
+        {coverSource ? (
+          <Image
+            source={typeof coverSource === 'string' ? { uri: coverSource } : coverSource}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+            aria-hidden
+            style={StyleSheet.absoluteFill}
+            testID={id('cover-image')}
+          />
+        ) : null}
+      </View>
+
+      <View
+        testID={id('content')}
+        // The card measures ITSELF, not the window: this same card is 358
+        // wide in a phone column and 900 in a record pane, and the window
+        // cannot tell those apart. The content block spans the card's full
+        // inner width, so its layout IS the measurement.
+        onLayout={onLayout}
+        style={{
+          paddingTop: CONTACT_CONTENT_TOP,
+          paddingBottom: CONTACT_PROFILE_PADDING,
+          paddingLeft: CONTACT_PROFILE_PADDING,
+          paddingRight: CONTACT_PROFILE_PADDING,
+          gap: 16,
+        }}
+      >
+        {/* The mark and the actions share one row, so the buttons land on the
+              mark's baseline rather than floating over the band. */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }}>
+          {mark}
+          <View style={{ flex: 1, minWidth: 0 }} />
+          {channelRow}
+          {actionSlot}
         </View>
 
-        <View
-          testID={id('content')}
-          // The card measures ITSELF, not the window: this same card is 358
-          // wide in a phone column and 900 in a record pane, and the window
-          // cannot tell those apart. The content block spans the card's full
-          // inner width, so its layout IS the measurement.
-          onLayout={onLayout}
-          style={{
-            paddingTop: CONTACT_CONTENT_TOP,
-            paddingBottom: CONTACT_PROFILE_PADDING,
-            paddingLeft: CONTACT_PROFILE_PADDING,
-            paddingRight: CONTACT_PROFILE_PADDING,
-            gap: 16,
-          }}
-        >
-          {/* The mark and the actions share one row, so the buttons land on the
-              mark's baseline rather than floating over the band. */}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }}>
-            {mark}
-            <View style={{ flex: 1, minWidth: 0 }} />
-            {channelRow}
-            {actionSlot}
-          </View>
+        {subject}
 
-          {subject}
-
-          {headline || stats?.length ? (
-            <View style={{ gap: 12 }}>
-              {headline ? (
-                <View style={{ gap: 2 }} testID={id('headline')}>
-                  <Text
-                    variant="body-medium"
-                    numberOfLines={1}
-                    style={{ color: paint.textSecondary }}
-                  >
-                    {headline.label}
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text
-                      variant="title-1-medium"
-                      numberOfLines={1}
-                      style={[{ flexShrink: 1, color: paint.text }, TABULAR]}
-                      testID={id('headline-value')}
-                    >
-                      {headline.value}
-                    </Text>
-                    {headline.delta ? (
-                      <Chip
-                        size="medium"
-                        variant="subtle"
-                        color={headline.deltaTone ?? 'success'}
-                        style={{ alignSelf: 'center' }}
-                        testID={id('delta')}
-                      >
-                        {headline.delta}
-                      </Chip>
-                    ) : null}
-                  </View>
-                </View>
-              ) : null}
-
-              {stats?.length ? (
-                <View style={{ gap: 8 }} testID={id('stats')}>
-                  {contactStatRows(stats.length, labelled).map((row) => (
-                    <View
-                      key={`tile-row-${row[0]}`}
-                      style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}
-                    >
-                      {row.map((index) => {
-                        const stat = stats[index]!;
-                        return (
-                          <View
-                            key={`${index}-${stat.label}`}
-                            style={[styles.tile, { backgroundColor: paint.tile }]}
-                            testID={id(`stat-${index}`)}
-                          >
-                            <Text
-                              variant="body-medium"
-                              numberOfLines={1}
-                              style={[
-                                { width: '100%', color: paint.tileText.text },
-                                TABULAR,
-                              ]}
-                            >
-                              {stat.value}
-                            </Text>
-                            <Text
-                              variant="body-2-medium"
-                              numberOfLines={1}
-                              style={{ width: '100%', color: paint.tileText.textSecondary }}
-                            >
-                              {stat.label}
-                            </Text>
-                          </View>
-                        );
-                      })}
-                      {/* An odd tile keeps its half of the two-column grid. */}
-                      {row.length === 1 && !labelled ? <View style={styles.tileSpacer} /> : null}
-                    </View>
-                  ))}
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-
-          {chips.length > 0 ? (
-            <ChipRow
-              gap={8}
-              fadeColor={paint.surface}
-              accessibilityLabel={messages.labelsFor(name)}
-              testID={id('chips')}
-            >
-              {chips}
-            </ChipRow>
-          ) : null}
-
-          {people?.length || owner ? (
-            <View
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-              testID={id('footer')}
-            >
-              {people?.length ? (
-                <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, minWidth: 0 }}
-                  testID={id('people')}
+        {headline || stats?.length ? (
+          <View style={{ gap: 12 }}>
+            {headline ? (
+              <View style={{ gap: 2 }} testID={id('headline')}>
+                <Text
+                  variant="body-medium"
+                  numberOfLines={1}
+                  style={{ color: paint.textSecondary }}
                 >
-                  <AvatarGroup
-                    items={people.map((person) => ({
-                      id: person.id,
-                      uri: person.avatar,
-                      name: person.name,
-                    }))}
-                    size={24}
-                    max={4}
-                    total={peopleTotal}
-                    ringColor={paint.surface}
-                    // Named people, not anonymous discs: without this a facepile
-                    // of colleagues with no photo is four identical grey
-                    // placeholders.
-                    showInitials
-                  />
-                  {peopleLabel ? (
-                    <Text
-                      variant="body-2-regular"
-                      numberOfLines={1}
-                      style={{ flexShrink: 1, color: paint.textSecondary }}
+                  {headline.label}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text
+                    variant="title-1-medium"
+                    numberOfLines={1}
+                    style={[{ flexShrink: 1, color: paint.text }, TABULAR]}
+                    testID={id('headline-value')}
+                  >
+                    {headline.value}
+                  </Text>
+                  {headline.delta ? (
+                    <Chip
+                      size="medium"
+                      variant="subtle"
+                      color={headline.deltaTone ?? 'success'}
+                      style={{ alignSelf: 'center' }}
+                      testID={id('delta')}
                     >
-                      {peopleLabel}
-                    </Text>
+                      {headline.delta}
+                    </Chip>
                   ) : null}
                 </View>
-              ) : null}
-              {people?.length && owner ? <View style={{ flex: 1 }} /> : null}
-              {owner ? (
-                <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, minWidth: 0 }}
-                >
-                  <Avatar
-                    size={CONTACT_OWNER_AVATAR_SIZE}
-                    source={owner.avatar}
-                    name={owner.name}
-                    color="neutral"
-                  />
+              </View>
+            ) : null}
+
+            {stats?.length ? (
+              <View style={{ gap: 8 }} testID={id('stats')}>
+                {contactStatRows(stats.length, labelled).map((row) => (
+                  <View
+                    key={`tile-row-${row[0]}`}
+                    style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}
+                  >
+                    {row.map((index) => {
+                      const stat = stats[index]!;
+                      return (
+                        <View
+                          key={`${index}-${stat.label}`}
+                          style={[styles.tile, { backgroundColor: paint.tile }]}
+                          testID={id(`stat-${index}`)}
+                        >
+                          <Text
+                            variant="body-medium"
+                            numberOfLines={1}
+                            style={[{ width: '100%', color: paint.tileText.text }, TABULAR]}
+                          >
+                            {stat.value}
+                          </Text>
+                          <Text
+                            variant="body-2-medium"
+                            numberOfLines={1}
+                            style={{ width: '100%', color: paint.tileText.textSecondary }}
+                          >
+                            {stat.label}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                    {/* An odd tile keeps its half of the two-column grid. */}
+                    {row.length === 1 && !labelled ? <View style={styles.tileSpacer} /> : null}
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {chips.length > 0 ? (
+          <ChipRow
+            gap={8}
+            fadeColor={paint.surface}
+            accessibilityLabel={messages.labelsFor(name)}
+            testID={id('chips')}
+          >
+            {chips}
+          </ChipRow>
+        ) : null}
+
+        {people?.length || owner ? (
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+            testID={id('footer')}
+          >
+            {people?.length ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  flexShrink: 1,
+                  minWidth: 0,
+                }}
+                testID={id('people')}
+              >
+                <AvatarGroup
+                  items={people.map((person) => ({
+                    id: person.id,
+                    uri: person.avatar,
+                    name: person.name,
+                  }))}
+                  size={24}
+                  max={4}
+                  total={peopleTotal}
+                  ringColor={paint.surface}
+                  // Named people, not anonymous discs: without this a facepile
+                  // of colleagues with no photo is four identical grey
+                  // placeholders.
+                  showInitials
+                />
+                {peopleLabel ? (
                   <Text
                     variant="body-2-regular"
                     numberOfLines={1}
                     style={{ flexShrink: 1, color: paint.textSecondary }}
-                    testID={id('owner')}
                   >
-                    {`${owner.label ?? messages.owner} · ${owner.name}`}
+                    {peopleLabel}
                   </Text>
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-        </View>
-      </Card>
+                ) : null}
+              </View>
+            ) : null}
+            {people?.length && owner ? <View style={{ flex: 1 }} /> : null}
+            {owner ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  flexShrink: 1,
+                  minWidth: 0,
+                }}
+              >
+                <Avatar
+                  size={CONTACT_OWNER_AVATAR_SIZE}
+                  source={owner.avatar}
+                  name={owner.name}
+                  color="neutral"
+                />
+                <Text
+                  variant="body-2-regular"
+                  numberOfLines={1}
+                  style={{ flexShrink: 1, color: paint.textSecondary }}
+                  testID={id('owner')}
+                >
+                  {`${owner.label ?? messages.owner} · ${owner.name}`}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+      </View>
+    </Card>
   );
 }
 

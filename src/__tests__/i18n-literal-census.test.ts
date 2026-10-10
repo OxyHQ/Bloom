@@ -55,7 +55,8 @@ const TEXT_ATTRIBUTES = new Set([
 ]);
 
 /** Parameter names whose default is copy. */
-const TEXT_PARAMETER = /(label|Label|placeholder|Placeholder|title|Title|hint|Hint|text|Text|message|Message|description|Description|caption|Caption|subtitle|Subtitle|suffix|Suffix)$/;
+const TEXT_PARAMETER =
+  /(label|Label|placeholder|Placeholder|title|Title|hint|Hint|text|Text|message|Message|description|Description|caption|Caption|subtitle|Subtitle|suffix|Suffix)$/;
 
 /** Variables whose object literal holds copy. */
 const COPY_OBJECT = /(labels?|LABELS?|copy|COPY|strings|STRINGS)$/;
@@ -91,14 +92,26 @@ interface Finding {
 function scanSource(rel: string, text: string): { findings: Finding[]; exemptions: number } {
   const findings: Finding[] = [];
   let exemptions = 0;
-  const family = rel.split(sep)[0]!.split('/')[0]!.replace(/\.tsx?$/, '');
+  const family = rel
+    .split(sep)[0]!
+    .split('/')[0]!
+    .replace(/\.tsx?$/, '');
   const lines = text.split('\n');
-  const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.ESNext, true, rel.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const sf = ts.createSourceFile(
+    rel,
+    text,
+    ts.ScriptTarget.ESNext,
+    true,
+    rel.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
 
   const record = (node: ts.Node, value: string) => {
     if (!HAS_WORD.test(value)) return;
     const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line;
-    if (/i18n-exempt:\s*\S/.test(lines[line] ?? '') || /i18n-exempt:\s*\S/.test(lines[line - 1] ?? '')) {
+    if (
+      /i18n-exempt:\s*\S/.test(lines[line] ?? '') ||
+      /i18n-exempt:\s*\S/.test(lines[line - 1] ?? '')
+    ) {
       exemptions += 1;
       return;
     }
@@ -127,25 +140,45 @@ function scanSource(rel: string, text: string): { findings: Finding[]; exemption
   };
 
   const parameterName = (node: ts.ParameterDeclaration | ts.BindingElement): string =>
-    (ts.isBindingElement(node) && node.propertyName && ts.isIdentifier(node.propertyName) ? node.propertyName : node.name).getText(sf);
+    (ts.isBindingElement(node) && node.propertyName && ts.isIdentifier(node.propertyName)
+      ? node.propertyName
+      : node.name
+    ).getText(sf);
 
   const visit = (node: ts.Node) => {
     if (ts.isJsxText(node)) {
       record(node, node.text);
-    } else if (ts.isJsxExpression(node) && node.parent && (ts.isJsxElement(node.parent) || ts.isJsxFragment(node.parent))) {
+    } else if (
+      ts.isJsxExpression(node) &&
+      node.parent &&
+      (ts.isJsxElement(node.parent) || ts.isJsxFragment(node.parent))
+    ) {
       const value = literalText(node.expression);
       if (value !== null) record(node, value);
-    } else if (ts.isJsxAttribute(node) && ts.isIdentifier(node.name) && TEXT_ATTRIBUTES.has(node.name.text)) {
+    } else if (
+      ts.isJsxAttribute(node) &&
+      ts.isIdentifier(node.name) &&
+      TEXT_ATTRIBUTES.has(node.name.text)
+    ) {
       const value = literalText(node.initializer);
       if (value !== null) record(node, value);
-    } else if ((ts.isParameter(node) || ts.isBindingElement(node)) && node.initializer && TEXT_PARAMETER.test(parameterName(node))) {
+    } else if (
+      (ts.isParameter(node) || ts.isBindingElement(node)) &&
+      node.initializer &&
+      TEXT_PARAMETER.test(parameterName(node))
+    ) {
       const value = literalText(node.initializer);
       if (value !== null) record(node.initializer, value);
-    } else if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken) {
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken
+    ) {
       const value = literalText(node.right);
       if (value !== null && /^[A-Z]/.test(value)) record(node.right, value);
     } else if (
-      (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateExpression(node)) &&
+      (ts.isStringLiteral(node) ||
+        ts.isNoSubstitutionTemplateLiteral(node) ||
+        ts.isTemplateExpression(node)) &&
       node.parent &&
       (ts.isPropertyAssignment(node.parent) || ts.isArrowFunction(node.parent)) &&
       inCopyObject(node)
@@ -174,8 +207,7 @@ function scan(): { findings: Finding[]; exemptions: number } {
  * Families not yet on catalogs, and how many English literals each still has.
  * Remove a family when it migrates; never add one.
  */
-const PENDING: Record<string, number> = {
-};
+const PENDING: Record<string, number> = {};
 
 /** `// i18n-exempt:` lines, counted so a new one is a reviewed decision. */
 // The creator keeps its original proper-name example placeholder.
@@ -196,7 +228,9 @@ describe('English literal census', () => {
     if (JSON.stringify(actual) !== JSON.stringify(PENDING)) {
       const unlisted = [...byFamily.entries()]
         .filter(([family, list]) => PENDING[family] !== list.length)
-        .flatMap(([family, list]) => list.slice(0, 5).map((f) => `  ${family}  ${f.where}  "${f.text}"`));
+        .flatMap(([family, list]) =>
+          list.slice(0, 5).map((f) => `  ${family}  ${f.where}  "${f.text}"`),
+        );
       // The first few literals of each family whose count moved, to act on.
       console.log(unlisted.join('\n'));
     }
@@ -214,19 +248,27 @@ describe('English literal census', () => {
       "export function X({ closeLabel = 'Close', size = 'md' }) {",
       "  const labels = { back: 'Back', count: (n: number) => `${n} items` };",
       "  const name = props.name ?? 'Untitled';",
-      "  return (",
-      "    <View accessibilityLabel=\"Dismiss\" testID=\"x-close\">",
-      "      <Text>Loading</Text>",
+      '  return (',
+      '    <View accessibilityLabel="Dismiss" testID="x-close">',
+      '      <Text>Loading</Text>',
       "      <Text>{'Retry'}</Text>",
-      "      <Text>{count} · {name}</Text>",
-      "      {/* i18n-exempt: a brand name */}",
-      "      <Text>Google</Text>",
-      "    </View>",
-      "  );",
-      "}",
+      '      <Text>{count} · {name}</Text>',
+      '      {/* i18n-exempt: a brand name */}',
+      '      <Text>Google</Text>',
+      '    </View>',
+      '  );',
+      '}',
     ].join('\n');
     const { findings: found, exemptions: exempt } = scanSource('sample/Sample.tsx', sample);
-    expect(found.map((f) => f.text)).toEqual(['Close', 'Back', 'items', 'Untitled', 'Dismiss', 'Loading', 'Retry']);
+    expect(found.map((f) => f.text)).toEqual([
+      'Close',
+      'Back',
+      'items',
+      'Untitled',
+      'Dismiss',
+      'Loading',
+      'Retry',
+    ]);
     expect(exempt).toBe(1);
   });
 });

@@ -40,7 +40,11 @@ const PEOPLE = [
 ];
 
 const SAVED: PlaceListPlace[] = [
-  { id: 'a', note: 'Sourdough before ten.', place: { name: 'Forner de la Plaça', category: 'Bakery' } },
+  {
+    id: 'a',
+    note: 'Sourdough before ten.',
+    place: { name: 'Forner de la Plaça', category: 'Bakery' },
+  },
   { id: 'b', place: { name: 'Cafè del Roure', category: 'Coffee shop' } },
   { id: 'c', place: { name: 'Parc del Bosc Vell', category: 'Park' } },
 ];
@@ -73,7 +77,14 @@ describe('PlaceListCard: one press target, one sentence', () => {
   });
 
   it('takes an explicit name over the composed one', () => {
-    mount(<PlaceListCard name="Vull anar-hi" accessibilityLabel="Una llista" onPress={noop} testID="l" />);
+    mount(
+      <PlaceListCard
+        name="Vull anar-hi"
+        accessibilityLabel="Una llista"
+        onPress={noop}
+        testID="l"
+      />,
+    );
     expect(byTestId('l').getAttribute('aria-label')).toBe('Una llista');
   });
 
@@ -111,14 +122,20 @@ describe('PlaceListCard: one press target, one sentence', () => {
   });
 
   it('hides the collaborators from the announcement, which already names them', () => {
-    mount(
-      <PlaceListCard name="Want to go" collaborators={PEOPLE} onPress={noop} testID="l" />,
-    );
+    mount(<PlaceListCard name="Want to go" collaborators={PEOPLE} onPress={noop} testID="l" />);
     expect(byTestId('l-people').getAttribute('aria-hidden')).toBe('true');
   });
 
   it("draws the glyph in the list's own colour without deriving anything from it", () => {
-    mount(<PlaceListCard name="Favourites" icon={RiFlagLine} color="#C2456B" onPress={noop} testID="l" />);
+    mount(
+      <PlaceListCard
+        name="Favourites"
+        icon={RiFlagLine}
+        color="#C2456B"
+        onPress={noop}
+        testID="l"
+      />,
+    );
     const glyph = root$().querySelector('svg path') as SVGElement;
     expect(glyph.getAttribute('fill')).toBe('#C2456B');
   });
@@ -174,9 +191,7 @@ describe('PlaceList: the place is a PlaceCard row and the note is its sibling', 
     mount(<Editable />);
     expect(byTestId('s-status').textContent).toBe('');
     click(byTestId('s-item-0-down'));
-    expect(byTestId('s-status').textContent).toBe(
-      'Forner de la Plaça moved to position 2 of 3',
-    );
+    expect(byTestId('s-status').textContent).toBe('Forner de la Plaça moved to position 2 of 3');
     expect(byTestId('s-status').getAttribute('aria-live')).toBe('polite');
   });
 
@@ -207,9 +222,7 @@ describe('PlaceList: the place is a PlaceCard row and the note is its sibling', 
   });
 
   it('keeps the controls but stops them while disabled', () => {
-    mount(
-      <PlaceList places={SAVED} onReorder={noop} onRemove={noop} disabled testID="s" />,
-    );
+    mount(<PlaceList places={SAVED} onReorder={noop} onRemove={noop} disabled testID="s" />);
     expect(byTestId('s-item-1-down').getAttribute('aria-disabled')).toBe('true');
     expect(byTestId('s-item-1-remove').getAttribute('aria-disabled')).toBe('true');
   });

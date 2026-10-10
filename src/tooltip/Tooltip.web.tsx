@@ -99,7 +99,9 @@ export function Tooltip({
   useEffect(() => {
     if (!visible || typeof document === 'undefined') return;
     const onPointerDown = (event: PointerEvent) => {
-      const trigger = triggerRef.current as unknown as { contains?: (node: unknown) => boolean } | null;
+      const trigger = triggerRef.current as unknown as {
+        contains?: (node: unknown) => boolean;
+      } | null;
       if (typeof trigger?.contains === 'function' && trigger.contains(event.target)) return;
       onVisibleChange(false);
     };
@@ -107,11 +109,7 @@ export function Tooltip({
     return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, [visible, onVisibleChange]);
 
-  return (
-    <TooltipContext.Provider value={ctx}>
-      {children}
-    </TooltipContext.Provider>
-  );
+  return <TooltipContext.Provider value={ctx}>{children}</TooltipContext.Provider>;
 }
 
 export function TooltipTrigger({ children }: { children: React.ReactNode }) {
@@ -145,8 +143,15 @@ export function TooltipContent({
 }) {
   const parentFill = useSurfaceFill();
   const palette = useMenuPalette();
-  const publishedFill = resolveSurfaceMaterial({ fill: palette.surface, parentFill: parentFill }).publishedFill;
-  const materialStyle = useSurfaceMaterial('[data-bloom-tooltip]', 'bloom-tooltip-surface-css', palette.surface);
+  const publishedFill = resolveSurfaceMaterial({
+    fill: palette.surface,
+    parentFill: parentFill,
+  }).publishedFill;
+  const materialStyle = useSurfaceMaterial(
+    '[data-bloom-tooltip]',
+    'bloom-tooltip-surface-css',
+    palette.surface,
+  );
   const { position, visible, triggerRef } = useContext(TooltipContext);
 
   // `visible` drives an `open` → `closing` → unmounted cycle, so the exit has
@@ -232,13 +237,22 @@ export function TooltipContent({
             position === 'top'
               ? { bottom: viewportHeight - anchor.top + TOOLTIP_OFFSET }
               : { top: anchor.bottom + TOOLTIP_OFFSET },
-          ]}>
+          ]}
+        >
           <View
             {...({
               dataSet: { bloomTooltip: '', state: visible ? 'open' : 'closed' },
             } as Record<string, unknown>)}
-            style={[bubbleStyle, { transformOrigin: `${caretLeft + ARROW_HALF_SIZE}px ${position === 'top' ? '100%' : '0%'}` } as WebCssStyle]}>
-            <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider>
+            style={[
+              bubbleStyle,
+              {
+                transformOrigin: `${caretLeft + ARROW_HALF_SIZE}px ${position === 'top' ? '100%' : '0%'}`,
+              } as WebCssStyle,
+            ]}
+          >
+            <SurfaceLevelProvider level={1} fill={publishedFill}>
+              {children}
+            </SurfaceLevelProvider>
             {/* Outside the padding box, overlapping the border by its 1px. */}
             <TooltipCaret
               position={position}

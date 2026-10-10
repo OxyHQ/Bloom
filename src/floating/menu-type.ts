@@ -42,9 +42,6 @@ export function menuType(variant: TypeScaleVariant, callerClassName?: string): T
 }
 
 /** The class half of the same contract: the step's utilities, only under a caller class. */
-export function menuTypeClass(
-  variant: TypeScaleVariant,
-  callerClassName?: string,
-): string | false {
+export function menuTypeClass(variant: TypeScaleVariant, callerClassName?: string): string | false {
   return Boolean(callerClassName?.trim()) && (MENU_TYPE_CLASS[variant] ?? false);
 }

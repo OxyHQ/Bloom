@@ -84,7 +84,7 @@ function PlaceTransitComponent({
     const departures =
       departureLimit != null && departureLimit >= 0
         ? (stop.departures ?? []).slice(0, departureLimit)
-        : stop.departures ?? [];
+        : (stop.departures ?? []);
     const stopTestID = testID ? `${testID}-stop-${index}` : undefined;
 
     const header = (
@@ -138,7 +138,9 @@ function PlaceTransitComponent({
             {header}
           </Pressable>
         ) : (
-          <View accessible accessibilityLabel={describeTransitStop(stop, messages)}>{header}</View>
+          <View accessible accessibilityLabel={describeTransitStop(stop, messages)}>
+            {header}
+          </View>
         )}
 
         {stop.lines && stop.lines.length > 0 ? (

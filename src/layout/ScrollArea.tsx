@@ -11,13 +11,26 @@ export interface ScrollAreaProps extends ScrollViewProps {
 }
 
 // Preserve the native instance type so styled forwards the imperative ref.
-const StyledScrollView: ComponentType<ScrollAreaProps & { ref?: Ref<ScrollView> }> = styled(ScrollView, {
-  className: 'style',
-  contentContainerClassName: 'contentContainerStyle',
-});
+const StyledScrollView: ComponentType<ScrollAreaProps & { ref?: Ref<ScrollView> }> = styled(
+  ScrollView,
+  {
+    className: 'style',
+    contentContainerClassName: 'contentContainerStyle',
+  },
+);
 
 /** A ScrollView that publishes its measurements to surrounding page chrome. */
-export const ScrollArea = forwardRef<ScrollView, ScrollAreaProps>(function ScrollArea({ onScroll, onLayout, onContentSizeChange, scrollEventThrottle, ...props }, ref) {
+export const ScrollArea = forwardRef<ScrollView, ScrollAreaProps>(function ScrollArea(
+  { onScroll, onLayout, onContentSizeChange, scrollEventThrottle, ...props },
+  ref,
+) {
   const binding = useScrollMetricsBinding({ onScroll, onLayout, onContentSizeChange });
-  return <StyledScrollView {...props} {...binding} scrollEventThrottle={scrollEventThrottle ?? binding.scrollEventThrottle} ref={ref} />;
+  return (
+    <StyledScrollView
+      {...props}
+      {...binding}
+      scrollEventThrottle={scrollEventThrottle ?? binding.scrollEventThrottle}
+      ref={ref}
+    />
+  );
 });

@@ -31,8 +31,8 @@ import {
 
 const meta: Meta = {
   argTypes: {
-    "open": { control: 'boolean' },
-    "defaultOpen": { control: 'boolean' }
+    open: { control: 'boolean' },
+    defaultOpen: { control: 'boolean' },
   },
   component: DropdownMenu,
   parameters: { controls: { disable: true } },
@@ -69,7 +69,8 @@ export const Basic: Story = {
             <DropdownMenuItem
               testID="menu-profile"
               leading={<SecondaryPersonIcon />}
-              trailing={<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>}>
+              trailing={<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>}
+            >
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem trailing={<DropdownMenuShortcut>⌘,</DropdownMenuShortcut>}>
@@ -103,20 +104,16 @@ export const Selection: Story = {
         </Text>
         <DropdownMenu>
           <DropdownMenuTrigger asChild label="View options">
-            <Button appearance="outline" tone="neutral">View options</Button>
+            <Button appearance="outline" tone="neutral">
+              View options
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>Show</DropdownMenuLabel>
-            <DropdownMenuCheckboxItem
-              checked={showGrid}
-              onCheckedChange={setShowGrid}
-              keepOpen>
+            <DropdownMenuCheckboxItem checked={showGrid} onCheckedChange={setShowGrid} keepOpen>
               Grid
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={showRuler}
-              onCheckedChange={setShowRuler}
-              keepOpen>
+            <DropdownMenuCheckboxItem checked={showRuler} onCheckedChange={setShowRuler} keepOpen>
               Ruler
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
@@ -146,7 +143,9 @@ export const Submenu: Story = {
     <View style={{ padding: 80 }}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Share">
-          <Button appearance="outline" tone="neutral">Share</Button>
+          <Button appearance="outline" tone="neutral">
+            Share
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem testID="plain-item">Copy link</DropdownMenuItem>
@@ -187,7 +186,9 @@ export const SiblingSubmenus: Story = {
     <View style={{ padding: 80 }}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Share">
-          <Button appearance="outline" tone="neutral">Share</Button>
+          <Button appearance="outline" tone="neutral">
+            Share
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuSub>
@@ -225,13 +226,16 @@ export const SubmenuLayoutShiftDoesNotOpen: Story = {
       <View style={{ minHeight: 420, padding: 80 }}>
         <DropdownMenu defaultOpen>
           <DropdownMenuTrigger asChild label="Layout intent fixture">
-            <Button appearance="outline" tone="neutral">Layout intent fixture</Button>
+            <Button appearance="outline" tone="neutral">
+              Layout intent fixture
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem
               keepOpen
               onPress={() => setShifted(true)}
-              testID="layout-shift-control">
+              testID="layout-shift-control"
+            >
               Move submenu row
             </DropdownMenuItem>
             <div
@@ -277,10 +281,13 @@ export const SubmenuWithNoRoomToTheRight: Story = {
         flexDirection: 'row',
         justifyContent: 'flex-end',
         paddingVertical: 24,
-      }}>
+      }}
+    >
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Share">
-          <Button appearance="outline" tone="neutral">Share</Button>
+          <Button appearance="outline" tone="neutral">
+            Share
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem testID="plain-item">Copy link</DropdownMenuItem>
@@ -304,7 +311,9 @@ export const AlignEnd: Story = {
     <View style={{ padding: 80, alignItems: 'flex-end' }}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Actions">
-          <Button appearance="outline" tone="neutral">Actions</Button>
+          <Button appearance="outline" tone="neutral">
+            Actions
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem>Rename</DropdownMenuItem>

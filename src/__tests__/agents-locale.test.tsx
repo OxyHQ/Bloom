@@ -13,7 +13,13 @@ jest.mock('react-native-svg', () => {
     C.displayName = name;
     return C;
   };
-  return { ...actual, __esModule: true, default: actual.Svg, Filter: stub('Filter'), FeGaussianBlur: stub('FeGaussianBlur') };
+  return {
+    ...actual,
+    __esModule: true,
+    default: actual.Svg,
+    Filter: stub('Filter'),
+    FeGaussianBlur: stub('FeGaussianBlur'),
+  };
 });
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual('../../__mocks__/react-native-reanimated');
@@ -23,7 +29,10 @@ jest.mock('react-native-reanimated', () => {
     useFrameCallback: () => ({ setActive: jest.fn(), isActive: false, callbackId: 0 }),
   };
 });
-jest.mock('../styles/adopt-style-sheet', () => ({ adoptStyleSheet: jest.fn(), dropStyleSheet: jest.fn() }));
+jest.mock('../styles/adopt-style-sheet', () => ({
+  adoptStyleSheet: jest.fn(),
+  dropStyleSheet: jest.fn(),
+}));
 
 import { AgentChat, AgentChatComposer, AgentChatHistory, AgentChatMessage } from '../agent-chat';
 import { AGENT_CHAT_MESSAGES } from '../agent-chat/messages';
@@ -68,7 +77,9 @@ describe('agent-chat speaks the locale', () => {
   });
 
   it('draws the empty state, suggestions and composer in Spanish', () => {
-    const { getByText, getAllByText, getByLabelText } = renderIn(<AgentChat messages={[]} onSubmit={jest.fn()} />);
+    const { getByText, getAllByText, getByLabelText } = renderIn(
+      <AgentChat messages={[]} onSubmit={jest.fn()} />,
+    );
     expect(getByText('¿En qué puedo ayudarte?')).toBeTruthy();
     expect(getByText('Dame cinco nombres para una app de citas')).toBeTruthy();
     expect(getByLabelText('Enviar mensaje')).toBeTruthy();
@@ -77,7 +88,13 @@ describe('agent-chat speaks the locale', () => {
 
   it('dates a message and names its actions in Spanish; a label prop still wins', () => {
     const { getByText, getByLabelText, queryByLabelText } = renderIn(
-      <AgentChatMessage role="assistant" text="Hola" at={NOW - 3 * 60_000} onCopy={jest.fn()} labels={{ copy: 'Copy it' }} />,
+      <AgentChatMessage
+        role="assistant"
+        text="Hola"
+        at={NOW - 3 * 60_000}
+        onCopy={jest.fn()}
+        labels={{ copy: 'Copy it' }}
+      />,
     );
     expect(getByText('hace 3 minutos')).toBeTruthy();
     expect(getByLabelText('Copy it')).toBeTruthy();
@@ -110,7 +127,12 @@ describe('agent-chat speaks the locale', () => {
 describe('agent-limits-card speaks the locale', () => {
   it('titles the plan section in Spanish, and labels win', () => {
     const { getByText, getByLabelText } = renderIn(
-      <AgentLimitsCard plan="Max" limits={[]} onPlanPress={jest.fn()} labels={{ managePlan: 'Billing' }} />,
+      <AgentLimitsCard
+        plan="Max"
+        limits={[]}
+        onPlanPress={jest.fn()}
+        labels={{ managePlan: 'Billing' }}
+      />,
     );
     expect(getByText('Límites de uso del plan · Max')).toBeTruthy();
     expect(getByLabelText('Billing')).toBeTruthy();
@@ -133,7 +155,9 @@ describe('agent-progress speaks the locale', () => {
     const empty = renderIn(<AgentProgress steps={[]} />);
     expect(empty.getAllByText('Leer los archivos del proyecto', HIDDEN).length).toBeGreaterThan(0);
     empty.unmount();
-    const custom = renderIn(<AgentProgress steps={['A', 'B']} labels={{ stepsLeft: (n) => `${n} to go` }} />);
+    const custom = renderIn(
+      <AgentProgress steps={['A', 'B']} labels={{ stepsLeft: (n) => `${n} to go` }} />,
+    );
     expect(custom.getByText('2 to go')).toBeTruthy();
   });
 });
@@ -146,14 +170,22 @@ describe('agent-thinking speaks the locale', () => {
     const view = renderIn(<AgentThinking showTimer={false} />);
     expect(view.getByText('Pensando')).toBeTruthy();
     view.unmount();
-    expect(renderIn(<AgentThinking showTimer={false} label="Buscando" />).getByText('Buscando')).toBeTruthy();
+    expect(
+      renderIn(<AgentThinking showTimer={false} label="Buscando" />).getByText('Buscando'),
+    ).toBeTruthy();
   });
 });
 
 describe('ai-profile-card speaks the locale', () => {
   it('labels the headline, heatmap and switcher in Spanish; label props win', () => {
     const { getByText } = renderIn(
-      <AiProfileCard name="Maya" contributions={10} countUpDuration={0} cells={CELLS} contributionsLabel="Aportes" />,
+      <AiProfileCard
+        name="Maya"
+        contributions={10}
+        countUpDuration={0}
+        cells={CELLS}
+        contributionsLabel="Aportes"
+      />,
     );
     expect(getByText('Aportes')).toBeTruthy();
     expect(getByText('Actividad')).toBeTruthy();
@@ -171,7 +203,9 @@ describe('web-search speaks the locale', () => {
     const view = renderIn(<WebSearch steps={steps} revealed={99} reduce />);
     expect(view.getAllByText('Fuentes', HIDDEN).length).toBeGreaterThan(0);
     view.unmount();
-    const custom = renderIn(<WebSearch steps={steps} revealed={99} reduce labels={{ sources: 'Links' }} />);
+    const custom = renderIn(
+      <WebSearch steps={steps} revealed={99} reduce labels={{ sources: 'Links' }} />,
+    );
     expect(custom.getAllByText('Links', HIDDEN).length).toBeGreaterThan(0);
   });
 });
@@ -179,7 +213,10 @@ describe('web-search speaks the locale', () => {
 describe('composer-panel speaks the locale', () => {
   it('names the controls and the placeholder in Spanish; labels win', () => {
     const view = renderIn(
-      <ComposerPanel attachments={[{ id: 'a', name: 'Brief.docx', kind: 'document' }]} onRemoveAttachment={jest.fn()} />,
+      <ComposerPanel
+        attachments={[{ id: 'a', name: 'Brief.docx', kind: 'document' }]}
+        onRemoveAttachment={jest.fn()}
+      />,
     );
     expect(view.getByLabelText('Enviar mensaje')).toBeTruthy();
     expect(view.getByPlaceholderText('Hola, ¿qué necesitas hoy?')).toBeTruthy();
@@ -189,17 +226,25 @@ describe('composer-panel speaks the locale', () => {
   });
 
   it('names the context meter in the locale', () => {
-    expect(renderIn(<ComposerPanelStatusTab context={57} />).getByLabelText('Contexto 57 %')).toBeTruthy();
+    expect(
+      renderIn(<ComposerPanelStatusTab context={57} />).getByLabelText('Contexto 57 %'),
+    ).toBeTruthy();
   });
 });
 
 describe('ai-chat speaks the locale', () => {
   it('names the feedback row in Spanish; labels win', () => {
-    const view = renderIn(<AiChatFeedbackRow onLike={jest.fn()} onDislike={jest.fn()} onCopy={jest.fn()} />);
+    const view = renderIn(
+      <AiChatFeedbackRow onLike={jest.fn()} onDislike={jest.fn()} onCopy={jest.fn()} />,
+    );
     expect(view.getByLabelText('Buena respuesta')).toBeTruthy();
     expect(view.getByLabelText('Copiar respuesta')).toBeTruthy();
     view.unmount();
-    expect(renderIn(<AiChatFeedbackRow onLike={jest.fn()} labels={{ like: 'Nice' }} />).getByLabelText('Nice')).toBeTruthy();
+    expect(
+      renderIn(<AiChatFeedbackRow onLike={jest.fn()} labels={{ like: 'Nice' }} />).getByLabelText(
+        'Nice',
+      ),
+    ).toBeTruthy();
   });
 
   it('counts uncommitted changes with plurals', () => {

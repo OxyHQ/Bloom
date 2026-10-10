@@ -87,7 +87,10 @@ export function loadLottiePlayer(): ComponentType<LottiePlayerProps> | null {
   if (typeof require === 'undefined') return loadedPlayer;
 
   try {
-    const loaded = require('@lottiefiles/dotlottie-react') as { DotLottieReact?: unknown } | null | undefined;
+    const loaded = require('@lottiefiles/dotlottie-react') as
+      | { DotLottieReact?: unknown }
+      | null
+      | undefined;
     if (isComponent(loaded?.DotLottieReact)) loadedPlayer = adapt(loaded.DotLottieReact);
   } catch {
     loadedPlayer = null;

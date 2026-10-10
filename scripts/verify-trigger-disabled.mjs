@@ -146,7 +146,10 @@ async function probe(page, { story, testId }) {
 
   if (target.error !== undefined) return { verdict: 'UNPROVEN', why: target.error };
   if (!target.hitsTrigger) {
-    return { verdict: 'UNPROVEN', why: `elementFromPoint gave <${target.hitTag}>, not the trigger` };
+    return {
+      verdict: 'UNPROVEN',
+      why: `elementFromPoint gave <${target.hitTag}>, not the trigger`,
+    };
   }
 
   await page.mouse.click(target.x, target.y);

@@ -21,9 +21,7 @@ export function useCollapsibleMotion(
   const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
   const [hidden, setHidden] = useState(!open);
   if (open && hidden) setHidden(false);
-  const resolved = resolveSurfaceTransition(
-    transition === 'spring' ? undefined : transition,
-  );
+  const resolved = resolveSurfaceTransition(transition === 'spring' ? undefined : transition);
   const duration = transition === 'spring' ? undefined : resolved.duration;
   const [x1, y1, x2, y2] = resolved.easing;
   const easing = useMemo(() => Easing.bezier(x1, y1, x2, y2), [x1, y1, x2, y2]);

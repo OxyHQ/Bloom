@@ -9,10 +9,7 @@
  * imports it to render video, so it has expo-video installed, while an app that
  * renders none never loads these declarations.
  */
-import type {
-  VideoView as ExpoVideoView,
-  VideoViewProps as ExpoVideoViewProps,
-} from 'expo-video';
+import type { VideoView as ExpoVideoView, VideoViewProps as ExpoVideoViewProps } from 'expo-video';
 
 import type { VideoPlayerLike } from '../media-flight/expo-video-module';
 

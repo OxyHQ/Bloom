@@ -1,6 +1,15 @@
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import type { LinkButtonProps } from './types';
-import React, { forwardRef, useMemo, useRef, useEffect, memo, type ComponentType, createContext, useContext } from 'react';
+import React, {
+  forwardRef,
+  useMemo,
+  useRef,
+  useEffect,
+  memo,
+  type ComponentType,
+  createContext,
+  useContext,
+} from 'react';
 import { resolveIconSlot } from '../icons/render-icon';
 import {
   ActivityIndicator,
@@ -21,18 +30,42 @@ import { useBloomAppearance } from '../appearance/context';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { BUTTON_RADIUS, BUTTON_SHADOW, ICON_BUTTON_ICON_SIZE, LINK_BUTTON_GAP, isIconComponent, resolveLinkButtonPalette, resolveButtonGeometry, resolveButtonPalette, resolveButtonUnderline, type ButtonResolvedSize } from './shared';
+import {
+  BUTTON_RADIUS,
+  BUTTON_SHADOW,
+  ICON_BUTTON_ICON_SIZE,
+  LINK_BUTTON_GAP,
+  isIconComponent,
+  resolveLinkButtonPalette,
+  resolveButtonGeometry,
+  resolveButtonPalette,
+  resolveButtonUnderline,
+  type ButtonResolvedSize,
+} from './shared';
 import type { ButtonProps } from './types';
 
 /** Raw text descendants need a native Text host; layout content stays unwrapped. */
 function isTextContent(node: React.ReactNode): boolean {
-  if (node == null || typeof node === 'boolean' || typeof node === 'string' || typeof node === 'number') return true;
+  if (
+    node == null ||
+    typeof node === 'boolean' ||
+    typeof node === 'string' ||
+    typeof node === 'number'
+  )
+    return true;
   if (Array.isArray(node)) return node.every(isTextContent);
-  return React.isValidElement<{ children?: React.ReactNode }>(node) && node.type === React.Fragment && isTextContent(node.props.children);
+  return (
+    React.isValidElement<{ children?: React.ReactNode }>(node) &&
+    node.type === React.Fragment &&
+    isTextContent(node.props.children)
+  );
 }
 
 /** Keep contiguous labels together so the button's gap only separates layout nodes. */
-function renderTextContent(node: React.ReactNode, wrap: (text: React.ReactNode) => React.ReactNode): React.ReactNode {
+function renderTextContent(
+  node: React.ReactNode,
+  wrap: (text: React.ReactNode) => React.ReactNode,
+): React.ReactNode {
   if (isTextContent(node)) return wrap(node);
   const result: React.ReactNode[] = [];
   let run: React.ReactNode[] = [];
@@ -43,8 +76,11 @@ function renderTextContent(node: React.ReactNode, wrap: (text: React.ReactNode) 
   };
   const visit = (children: React.ReactNode, path: string) => {
     React.Children.toArray(children).forEach((child, index) => {
-      const key = `${path}/${React.isValidElement(child) ? child.key ?? index : index}`;
-      if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.type === React.Fragment) {
+      const key = `${path}/${React.isValidElement(child) ? (child.key ?? index) : index}`;
+      if (
+        React.isValidElement<{ children?: React.ReactNode }>(child) &&
+        child.type === React.Fragment
+      ) {
         visit(child.props.children, key);
       } else if (typeof child === 'string' || typeof child === 'number') {
         if (!run.length) runKey = key;
@@ -61,7 +97,8 @@ function renderTextContent(node: React.ReactNode, wrap: (text: React.ReactNode) 
 }
 
 export type {
-  ButtonProps, LinkButtonProps,
+  ButtonProps,
+  LinkButtonProps,
   ButtonSize,
   ButtonFocusEvent,
   ButtonHoverEvent,
@@ -116,7 +153,11 @@ type HitSlop = { top: number; bottom: number; left: number; right: number };
 const ANDROID_TARGET_EXTRA = 2;
 
 function growVertical(slop: HitSlop): HitSlop {
-  return { ...slop, top: slop.top + ANDROID_TARGET_EXTRA, bottom: slop.bottom + ANDROID_TARGET_EXTRA };
+  return {
+    ...slop,
+    top: slop.top + ANDROID_TARGET_EXTRA,
+    bottom: slop.bottom + ANDROID_TARGET_EXTRA,
+  };
 }
 
 function growAllRound(slop: HitSlop): HitSlop {
@@ -171,18 +212,36 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { children?: React.ReactNode; style?: StyleProp<ViewStyle>; baseStyle?: StyleProp<ViewStyle>; 'aria-hidden'?: boolean; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean; 'aria-current'?: ButtonProps['aria-current'] };
+> & {
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  baseStyle?: StyleProp<ViewStyle>;
+  'aria-hidden'?: boolean;
+  'aria-expanded'?: boolean;
+  'aria-pressed'?: boolean;
+  'aria-current'?: ButtonProps['aria-current'];
+};
 
-const CONTENT_TEXT_KEYS = ['color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
-  'lineHeight', 'letterSpacing', 'textAlign', 'textDecorationLine'] as const;
+const CONTENT_TEXT_KEYS = [
+  'color',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'fontStyle',
+  'lineHeight',
+  'letterSpacing',
+  'textAlign',
+  'textDecorationLine',
+] as const;
 
 const ContentStyleContext = createContext<{ text?: TextStyle; layout?: ViewStyle }>({});
 
 // Resolve utilities without mixing Bloom's defaults into their input. The
 // defaults are merged only after interop, so caller classes have final say.
-const ButtonPressable = forwardRef<View, ButtonPressableProps>(function ButtonPressable({
-  baseStyle, style, children, ...props
-}, ref) {
+const ButtonPressable = forwardRef<View, ButtonPressableProps>(function ButtonPressable(
+  { baseStyle, style, children, ...props },
+  ref,
+) {
   const resolved = StyleSheet.flatten(style) as TextStyle | undefined;
   const layout: TextStyle = { ...resolved };
   const text: TextStyle = {};
@@ -197,17 +256,35 @@ const ButtonPressable = forwardRef<View, ButtonPressableProps>(function ButtonPr
   // wrapper horizontally makes RN's compatibility Yoga mode measure a wrapped
   // row as one full-width button per line, despite correct final positions.
   // Caller direction/alignment belong to the content slots below.
-  return <Pressable {...props} ref={ref} style={[baseStyle, layout, {
-    flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-  }]}>
-    <ContentStyleContext.Provider value={{ text, layout }}>
-      {children}
-    </ContentStyleContext.Provider>
-  </Pressable>;
+  return (
+    <Pressable
+      {...props}
+      ref={ref}
+      style={[
+        baseStyle,
+        layout,
+        {
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      ]}
+    >
+      <ContentStyleContext.Provider value={{ text, layout }}>
+        {children}
+      </ContentStyleContext.Provider>
+    </Pressable>
+  );
 });
 
-function ButtonContent({ loading, gap, children }: {
-  loading: boolean; gap: number; children: (style: TextStyle) => React.ReactNode;
+function ButtonContent({
+  loading,
+  gap,
+  children,
+}: {
+  loading: boolean;
+  gap: number;
+  children: (style: TextStyle) => React.ReactNode;
 }) {
   const { text, layout } = useContext(ContentStyleContext);
   const contentLayout = layout && {
@@ -219,88 +296,115 @@ function ButtonContent({ loading, gap, children }: {
     ...(layout.rowGap !== undefined && { rowGap: layout.rowGap }),
     ...(layout.columnGap !== undefined && { columnGap: layout.columnGap }),
   };
-  return <View pointerEvents={loading ? 'none' : undefined}
-    style={[styles.content, { gap }, contentLayout, loading && { opacity: 0 }]}>
-    {/* Preserve the original descendants as the accessible name while busy. */}
-    {children(text ?? {})}
-  </View>;
+  return (
+    <View
+      pointerEvents={loading ? 'none' : undefined}
+      style={[styles.content, { gap }, contentLayout, loading && { opacity: 0 }]}
+    >
+      {/* Preserve the original descendants as the accessible name while busy. */}
+      {children(text ?? {})}
+    </View>
+  );
 }
 
 function ButtonLoading({ color, fallback }: { color?: string; fallback: string }) {
   const { text } = useContext(ContentStyleContext);
-  return <View pointerEvents="none" style={styles.loadingOverlay}
-    accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-    <ActivityIndicator size="small" color={color ?? text?.color ?? fallback} />
-  </View>;
+  return (
+    <View
+      pointerEvents="none"
+      style={styles.loadingOverlay}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <ActivityIndicator size="small" color={color ?? text?.color ?? fallback} />
+    </View>
+  );
 }
 
 const ButtonInterop: ComponentType<ButtonPressableProps> = ButtonPressable;
-const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<View>> = styled(ButtonInterop, {
-  className: 'style',
-});
+const StyledPressable: ComponentType<ButtonPressableProps & React.RefAttributes<View>> = styled(
+  ButtonInterop,
+  {
+    className: 'style',
+  },
+);
 
-const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
-  onPress,
-  onFocus,
-  onBlur,
-  onHoverIn,
-  onHoverOut,
-  onLayout,
-  'aria-hidden': ariaHidden,
-  accessibilityElementsHidden,
-  importantForAccessibility,
-  colors,
-  material = 'surface',
-  onLongPress,
-  onPressIn,
-  onPressOut,
-  children,
-  disabled = false,
-  pressed: togglePressed,
-  stopPropagation = false,
-  appearance: appearanceProp,
-  tone: toneProp,
-  size: sizeProp,
-  style,
-  textStyle,
-  icon,
-  iconSize: iconSizeProp,
-  leading,
-  trailing,
-  leadingIcon: LeadingIcon,
-  trailingIcon: TrailingIcon,
-  renderLeadingIcon,
-  renderTrailingIcon,
-  iconOnly = false,
-  linkTone,
-  underline,
-  textVariant,
-  numberOfLines,
-  href,
-  loading = false,
-  loadingColor,
-  accessibilityLabel,
-  accessibilityHint,
-  accessibilityRole,
-  hitSlop,
-  testID,
-  className,
-  'aria-current': ariaCurrent,
-  'aria-expanded': ariaExpanded,
-  'aria-haspopup': ariaHasPopup,
-}, ref) {
+const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent(
+  {
+    onPress,
+    onFocus,
+    onBlur,
+    onHoverIn,
+    onHoverOut,
+    onLayout,
+    'aria-hidden': ariaHidden,
+    accessibilityElementsHidden,
+    importantForAccessibility,
+    colors,
+    material = 'surface',
+    onLongPress,
+    onPressIn,
+    onPressOut,
+    children,
+    disabled = false,
+    pressed: togglePressed,
+    stopPropagation = false,
+    appearance: appearanceProp,
+    tone: toneProp,
+    size: sizeProp,
+    style,
+    textStyle,
+    icon,
+    iconSize: iconSizeProp,
+    leading,
+    trailing,
+    leadingIcon: LeadingIcon,
+    trailingIcon: TrailingIcon,
+    renderLeadingIcon,
+    renderTrailingIcon,
+    iconOnly = false,
+    linkTone,
+    underline,
+    textVariant,
+    numberOfLines,
+    href,
+    loading = false,
+    loadingColor,
+    accessibilityLabel,
+    accessibilityHint,
+    accessibilityRole,
+    hitSlop,
+    testID,
+    className,
+    'aria-current': ariaCurrent,
+    'aria-expanded': ariaExpanded,
+    'aria-haspopup': ariaHasPopup,
+  },
+  ref,
+) {
   const theme = useTheme();
   const layer = useSurfaceLayer();
   const appearance = appearanceProp ?? 'solid';
-  const { size, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
+  const { size, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
   const geometry = resolveButtonGeometry(size, textVariant);
   const isSquare = iconOnly || (icon != null && children == null);
   const isIconVariant = isSquare;
   const isLink = appearance === 'plain' && (href != null || linkTone != null);
   const isInteractionBlocked = disabled || loading;
-  const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
+  const iconSize =
+    typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0
+      ? iconSizeProp
+      : isIconVariant
+        ? ICON_BUTTON_ICON_SIZE[size]
+        : geometry.iconSize;
   const palette = useMemo(
-    () => isLink && linkTone != null && toneProp == null ? resolveLinkButtonPalette(theme, linkTone) : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
+    () =>
+      isLink && linkTone != null && toneProp == null
+        ? resolveLinkButtonPalette(theme, linkTone)
+        : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
     [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill, material],
   );
   const underlineMode = resolveButtonUnderline(isLink, underline);
@@ -308,28 +412,34 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   // Pressed state drives the ACTIVE palette. Tracked through state rather than
   // Pressable's function-form `style`, which NativeWind's css-interop swallows
   // (dropping every base style with it).
-  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
-    useInteractionState();
+  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
   // Hover exists on this fork too: a react-native-web (Metro-web) consumer
   // renders THIS file, and `linkTone="text"` is the first tone whose hover
   // changes the foreground rather than only a background the web fork's
   // stylesheet owned. On a real device no hover event is ever dispatched, so
   // `hovered` stays false and nothing about native changes.
-  const { state: hovered, onIn: onHoveredIn, onOut: onHoveredOut } =
-    useInteractionState();
+  const { state: hovered, onIn: onHoveredIn, onOut: onHoveredOut } = useInteractionState();
 
   // No press scale: a 0.98 scale-down was deliberately left out, so a press is
   // the active paint alone.
   const previewActive = useRef(false);
   const pressOutCallback = useRef(onPressOut);
   pressOutCallback.current = onPressOut;
-  const handlePressIn = isInteractionBlocked ? undefined : () => {
-    onPressedIn();
-    if (!previewActive.current) { previewActive.current = true; onPressIn?.(); }
-  };
+  const handlePressIn = isInteractionBlocked
+    ? undefined
+    : () => {
+        onPressedIn();
+        if (!previewActive.current) {
+          previewActive.current = true;
+          onPressIn?.();
+        }
+      };
   const handlePressOut = () => {
     onPressedOut();
-    if (previewActive.current) { previewActive.current = false; pressOutCallback.current?.(); }
+    if (previewActive.current) {
+      previewActive.current = false;
+      pressOutCallback.current?.();
+    }
   };
   useEffect(() => {
     if (isInteractionBlocked && previewActive.current) {
@@ -338,9 +448,15 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       pressOutCallback.current?.();
     }
   }, [isInteractionBlocked, onPressedOut]);
-  useEffect(() => () => {
-    if (previewActive.current) { previewActive.current = false; pressOutCallback.current?.(); }
-  }, []);
+  useEffect(
+    () => () => {
+      if (previewActive.current) {
+        previewActive.current = false;
+        pressOutCallback.current?.();
+      }
+    },
+    [],
+  );
 
   // A loading button keeps its rest paint under the spinner, like the web fork.
   const paint = disabled
@@ -403,7 +519,9 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   const defaultHitSlop = isSquare
     ? (android ? ANDROID_SQUARE_HIT_SLOP : SQUARE_HIT_SLOP)[size]
     : isLink
-      ? (android ? ANDROID_LINK_HIT_SLOP : LINK_HIT_SLOP)
+      ? android
+        ? ANDROID_LINK_HIT_SLOP
+        : LINK_HIT_SLOP
       : (android ? ANDROID_SIZE_HIT_SLOP : SIZE_HIT_SLOP)[size];
 
   const IconFromProp = icon != null && isIconComponent(icon) ? icon : null;
@@ -412,24 +530,27 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
     const iconNode = IconFromProp ? (
       <IconFromProp width={iconSize} height={iconSize} fill={foreground} />
     ) : (
-      (icon as React.ReactNode) ?? null
+      ((icon as React.ReactNode) ?? null)
     );
 
     return (
       <>
         {resolveIconSlot(renderLeadingIcon, iconSize, foreground, () =>
-          LeadingIcon ? (
-            <LeadingIcon width={iconSize} height={iconSize} fill={foreground} />
-          ) : null,
+          LeadingIcon ? <LeadingIcon width={iconSize} height={iconSize} fill={foreground} /> : null,
         )}
         {leading}
         {iconNode}
         {children != null && (!isSquare || (!renderLeadingIcon && !LeadingIcon && !iconNode))
-          ? renderTextContent(children, text => (
-            <Text variant={textVariant ?? geometry.type} numberOfLines={numberOfLines} style={[computedTextStyle, classText, textStyle]}>
-              {text}
-            </Text>
-          )) : null}
+          ? renderTextContent(children, (text) => (
+              <Text
+                variant={textVariant ?? geometry.type}
+                numberOfLines={numberOfLines}
+                style={[computedTextStyle, classText, textStyle]}
+              >
+                {text}
+              </Text>
+            ))
+          : null}
         {trailing}
         {!isSquare
           ? resolveIconSlot(renderTrailingIcon, iconSize, foreground, () =>
@@ -443,10 +564,12 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
   };
 
   // Native has no current-destination trait; selected is its equivalent.
-  const selected = togglePressed ?? (ariaCurrent === undefined ? undefined : ariaCurrent !== false && ariaCurrent !== 'false');
+  const selected =
+    togglePressed ??
+    (ariaCurrent === undefined ? undefined : ariaCurrent !== false && ariaCurrent !== 'false');
   const handlePress = isInteractionBlocked
     ? undefined
-    : onPress ?? (href != null ? () => void Linking.openURL(href) : undefined);
+    : (onPress ?? (href != null ? () => void Linking.openURL(href) : undefined));
 
   return (
     <StyledPressable
@@ -459,16 +582,30 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       baseStyle={baseStyles}
       style={style}
       onLongPress={isInteractionBlocked ? undefined : onLongPress}
-      onPress={handlePress ? event => {
-        if (stopPropagation) event.stopPropagation();
-        handlePress(event);
-      } : undefined}
+      onPress={
+        handlePress
+          ? (event) => {
+              if (stopPropagation) event.stopPropagation();
+              handlePress(event);
+            }
+          : undefined
+      }
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onFocus={onFocus}
       onBlur={onBlur}
-      onHoverIn={isInteractionBlocked ? undefined : event => { onHoveredIn(); onHoverIn?.(event); }}
-      onHoverOut={event => { onHoveredOut(); onHoverOut?.(event); }}
+      onHoverIn={
+        isInteractionBlocked
+          ? undefined
+          : (event) => {
+              onHoveredIn();
+              onHoverIn?.(event);
+            }
+      }
+      onHoverOut={(event) => {
+        onHoveredOut();
+        onHoverOut?.(event);
+      }}
       disabled={isInteractionBlocked}
       hitSlop={hitSlop ?? defaultHitSlop}
       accessibilityLabel={accessibilityLabel}
@@ -479,7 +616,11 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       aria-busy={loading || undefined}
       aria-pressed={togglePressed}
       aria-current={Platform.OS === 'web' ? ariaCurrent : undefined}
-      accessibilityState={{ disabled: isInteractionBlocked, busy: loading, ...(selected === undefined ? {} : { selected }) }}
+      accessibilityState={{
+        disabled: isInteractionBlocked,
+        busy: loading,
+        ...(selected === undefined ? {} : { selected }),
+      }}
       // Forwarded from an anchored family's `asChild` trigger — see
       // `ButtonProps['aria-expanded']`.
       aria-expanded={ariaExpanded}
@@ -487,9 +628,14 @@ const ButtonComponent = forwardRef<View, ButtonProps>(function ButtonComponent({
       testID={testID}
     >
       {paint.surface ? (
-        <SurfacePaint fill={paint.background} radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS} />
+        <SurfacePaint
+          fill={paint.background}
+          radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
+        />
       ) : null}
-      <ButtonContent loading={loading} gap={geometry.gap}>{content}</ButtonContent>
+      <ButtonContent loading={loading} gap={geometry.gap}>
+        {content}
+      </ButtonContent>
       {loading ? <ButtonLoading color={loadingColor} fallback={paint.foreground} /> : null}
     </StyledPressable>
   );
@@ -537,7 +683,18 @@ GhostButton.displayName = 'GhostButton';
 
 export const InverseButton = memo((props: ButtonProps) => {
   const theme = useTheme();
-  return <Button appearance="solid" tone="neutral" colors={props.appearance == null && props.tone == null ? { background: theme.colors.text, foreground: theme.colors.background } : undefined} {...props} />;
+  return (
+    <Button
+      appearance="solid"
+      tone="neutral"
+      colors={
+        props.appearance == null && props.tone == null
+          ? { background: theme.colors.text, foreground: theme.colors.background }
+          : undefined
+      }
+      {...props}
+    />
+  );
 });
 InverseButton.displayName = 'InverseButton';
 

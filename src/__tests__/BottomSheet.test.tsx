@@ -26,15 +26,30 @@ function renderWithDarkTheme(ui: React.ReactElement) {
 describe('BottomSheet', () => {
   it('uses one shared material and keeps a custom background authoritative', () => {
     const ref = createRef<BottomSheetRef>();
-    const screen = renderWithTheme(<BottomSheet ref={ref}><Text>Material</Text></BottomSheet>);
+    const screen = renderWithTheme(
+      <BottomSheet ref={ref}>
+        <Text>Material</Text>
+      </BottomSheet>,
+    );
     act(() => ref.current?.present());
-    const materials = () => hostNodes(screen.toJSON()).filter(n => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)));
+    const materials = () =>
+      hostNodes(screen.toJSON()).filter(
+        (n) => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)),
+      );
     expect(materials()).toHaveLength(1);
-    const panel = hostNodes(screen.toJSON()).find(n => resolvedStyle(n.props.style).maxWidth === 800);
+    const panel = hostNodes(screen.toJSON()).find(
+      (n) => resolvedStyle(n.props.style).maxWidth === 800,
+    );
     expect(resolvedStyle(panel?.props.style).backgroundColor).toBe('transparent');
     expect(resolvedStyle(panel?.props.style).overflow).toBeUndefined();
     const background = jest.fn(() => <View testID="custom-background" />);
-    screen.rerender(<BloomThemeProvider mode="light" colorPreset="teal"><BottomSheet ref={ref} backgroundComponent={background}><Text>Material</Text></BottomSheet></BloomThemeProvider>);
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <BottomSheet ref={ref} backgroundComponent={background}>
+          <Text>Material</Text>
+        </BottomSheet>
+      </BloomThemeProvider>,
+    );
     expect(screen.getByTestId('custom-background')).toBeTruthy();
     expect(background).toHaveBeenCalled();
     expect(materials()).toHaveLength(0);
@@ -43,12 +58,23 @@ describe('BottomSheet', () => {
   it('publishes and paints the exact flat fill without an optical layer', () => {
     const ref = createRef<BottomSheetRef>();
     let published: string | undefined;
-    function Probe() { published = useSurfaceFill(); return <Text>Flat content</Text>; }
-    const screen = renderWithTheme(<BottomSheet ref={ref} material="flat" backgroundFill="#f3d7b6"><Probe /></BottomSheet>);
+    function Probe() {
+      published = useSurfaceFill();
+      return <Text>Flat content</Text>;
+    }
+    const screen = renderWithTheme(
+      <BottomSheet ref={ref} material="flat" backgroundFill="#f3d7b6">
+        <Probe />
+      </BottomSheet>,
+    );
     act(() => ref.current?.present());
     const nodes = hostNodes(screen.toJSON());
-    expect(nodes.filter(n => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)))).toHaveLength(0);
-    const panel = nodes.find(n => resolvedStyle(n.props.style).maxWidth === 800);
+    expect(
+      nodes.filter(
+        (n) => n.type === 'LinearGradient' && /^bloom-surface.*-sheen$/.test(String(n.props.id)),
+      ),
+    ).toHaveLength(0);
+    const panel = nodes.find((n) => resolvedStyle(n.props.style).maxWidth === 800);
     expect(resolvedStyle(panel?.props.style).backgroundColor).toBe('#f3d7b6');
     expect(published).toBe('#f3d7b6');
   });
@@ -219,10 +245,7 @@ describe('BottomSheet', () => {
     it('renders a custom handle when handleComponent is provided', () => {
       const ref = createRef<BottomSheetRef>();
       const { getByText } = renderWithTheme(
-        <BottomSheet
-          ref={ref}
-          handleComponent={() => <Text>Custom Handle</Text>}
-        >
+        <BottomSheet ref={ref} handleComponent={() => <Text>Custom Handle</Text>}>
           <Text>Sheet body</Text>
         </BottomSheet>,
       );
@@ -253,8 +276,8 @@ describe('BottomSheet', () => {
     });
   });
 
-  describe('keyboard provider: the app\'s one, never a second inside the Modal', () => {
-    it('adds no KeyboardProvider of its own and tracks the keyboard through the app\'s', () => {
+  describe("keyboard provider: the app's one, never a second inside the Modal", () => {
+    it("adds no KeyboardProvider of its own and tracks the keyboard through the app's", () => {
       // Every keyboard-controller provider suspends its main-window callback
       // when a <Modal> shows and relies on `dialog.setOnDismissListener` to
       // resume it; a dialog keeps only the last listener, so a provider added
@@ -265,10 +288,11 @@ describe('BottomSheet', () => {
       // events itself, so the sheet uses that one.
       // The same module instance the sheet `require`s (moduleNameMapper'd to
       // `__mocks__/`); `jest.requireMock` would hand back a separate automock.
-      const { KeyboardProvider, useKeyboardHandler } = require('react-native-keyboard-controller') as {
-        KeyboardProvider: React.ComponentType<{ children?: React.ReactNode }>;
-        useKeyboardHandler: jest.Mock;
-      };
+      const { KeyboardProvider, useKeyboardHandler } =
+        require('react-native-keyboard-controller') as {
+          KeyboardProvider: React.ComponentType<{ children?: React.ReactNode }>;
+          useKeyboardHandler: jest.Mock;
+        };
       useKeyboardHandler.mockClear();
       const ref = createRef<BottomSheetRef>();
       const { getByText, UNSAFE_getAllByType } = renderWithTheme(
@@ -368,25 +392,40 @@ describe('BottomSheet', () => {
   });
 });
 
-
 it('publishes declared custom background at the sheet level reset', () => {
-  function Probe() { return <Text testID="surface-probe">{useSurfaceFill()}|{useSurfaceLevelValue()}</Text>; }
+  function Probe() {
+    return (
+      <Text testID="surface-probe">
+        {useSurfaceFill()}|{useSurfaceLevelValue()}
+      </Text>
+    );
+  }
   const ref = createRef<BottomSheetRef>();
-  const screen = renderWithTheme(<BottomSheet ref={ref} backgroundFill="#123456" backgroundComponent={() => <View />}><Probe /></BottomSheet>);
+  const screen = renderWithTheme(
+    <BottomSheet ref={ref} backgroundFill="#123456" backgroundComponent={() => <View />}>
+      <Probe />
+    </BottomSheet>,
+  );
   act(() => ref.current?.present());
   expect(screen.getByTestId('surface-probe').props.children.join('')).toBe('#123456|0');
 });
 
-
 describe('protected sheet dismissal lifecycle', () => {
   beforeEach(() => jest.useFakeTimers());
-  afterEach(() => { jest.runOnlyPendingTimers(); jest.useRealTimers(); });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
 
   it('keeps a protected native modal visible when Android Back is requested', () => {
     const ref = createRef<BottomSheetRef>();
     const onDismiss = jest.fn();
     const guard = jest.fn(() => false);
-    const screen = renderWithTheme(<BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}><Text>Protected</Text></BottomSheet>);
+    const screen = renderWithTheme(
+      <BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}>
+        <Text>Protected</Text>
+      </BottomSheet>,
+    );
     act(() => ref.current?.present());
     act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
     act(() => jest.advanceTimersByTime(400));
@@ -399,7 +438,11 @@ describe('protected sheet dismissal lifecycle', () => {
     const ref = createRef<BottomSheetRef>();
     const onDismiss = jest.fn();
     const guard = jest.fn(() => false);
-    const screen = renderWithTheme(<BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}><Text>Protected</Text></BottomSheet>);
+    const screen = renderWithTheme(
+      <BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}>
+        <Text>Protected</Text>
+      </BottomSheet>,
+    );
     act(() => ref.current?.present());
     act(() => ref.current?.dismiss());
     act(() => jest.advanceTimersByTime(400));
@@ -413,7 +456,11 @@ describe('protected sheet dismissal lifecycle', () => {
     const ref = createRef<BottomSheetRef>();
     const onDismiss = jest.fn();
     const guard = jest.fn(() => true);
-    const screen = renderWithTheme(<BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}><Text>Allowed</Text></BottomSheet>);
+    const screen = renderWithTheme(
+      <BottomSheet ref={ref} onDismiss={onDismiss} onDismissAttempt={guard}>
+        <Text>Allowed</Text>
+      </BottomSheet>,
+    );
     act(() => ref.current?.present());
     act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
     act(() => jest.advanceTimersByTime(400));

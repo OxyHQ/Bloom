@@ -140,10 +140,7 @@ function ContactListComponent({
   }
 
   return (
-    <View
-      style={[{ backgroundColor: paint.surface, position: 'relative' }, style]}
-      testID={testID}
-    >
+    <View style={[{ backgroundColor: paint.surface, position: 'relative' }, style]} testID={testID}>
       <ScrollView
         ref={scroller}
         style={height === undefined ? undefined : { height }}

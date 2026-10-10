@@ -33,8 +33,6 @@ function renderProgress(ui: React.ReactElement, mode: 'light' | 'dark' = 'light'
   );
 }
 
-
-
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => {
   jest.useRealTimers();
@@ -58,7 +56,11 @@ describe('AgentProgress', () => {
       backgroundColor: 'transparent',
       boxShadow: BUTTON_SHADOW.light,
     });
-    expect(getByTestId('agent-progress').findAll(n => n.props.fill === resolveSurfaceTint(theme.colors.card) && n.props.radius === 16).length).toBeGreaterThan(0);
+    expect(
+      getByTestId('agent-progress').findAll(
+        (n) => n.props.fill === resolveSurfaceTint(theme.colors.card) && n.props.radius === 16,
+      ).length,
+    ).toBeGreaterThan(0);
     expect(card.borderWidth).toBeUndefined();
     expect(agentProgressExpandedHeight(0)).toBe(45);
     expect(agentProgressExpandedHeight(3)).toBe(159);
@@ -71,12 +73,17 @@ describe('AgentProgress', () => {
       backgroundColor: 'transparent',
       boxShadow: BUTTON_SHADOW.dark,
     });
-    expect(getByTestId('agent-progress').findAll(n => n.props.fill === resolveSurfaceTint(theme.colors.card) && n.props.radius === 16).length).toBeGreaterThan(0);
+    expect(
+      getByTestId('agent-progress').findAll(
+        (n) => n.props.fill === resolveSurfaceTint(theme.colors.card) && n.props.radius === 16,
+      ).length,
+    ).toBeGreaterThan(0);
   });
 
   it('lists every step and counts the ones left', () => {
     const { getByText, getAllByText } = renderProgress(<AgentProgress />);
-    for (const step of DEFAULT_AGENT_PROGRESS_STEPS) expect(getAllByText(step).length).toBeGreaterThan(0);
+    for (const step of DEFAULT_AGENT_PROGRESS_STEPS)
+      expect(getAllByText(step).length).toBeGreaterThan(0);
     expect(getByText('5 steps left')).toBeTruthy();
   });
 
@@ -84,7 +91,12 @@ describe('AgentProgress', () => {
     const onFinished = jest.fn();
     const steps = ['One', 'Two'];
     const { getByText, queryByText } = renderProgress(
-      <AgentProgress steps={steps} stepDuration={1000} completionDelay={500} onFinished={onFinished} />,
+      <AgentProgress
+        steps={steps}
+        stepDuration={1000}
+        completionDelay={500}
+        onFinished={onFinished}
+      />,
     );
     expect(getByText('2 steps left')).toBeTruthy();
     // Separate acts: each timer is scheduled by an effect the previous one's
@@ -105,7 +117,13 @@ describe('AgentProgress', () => {
   it('holds everything while paused', () => {
     const onFinished = jest.fn();
     const { getByText } = renderProgress(
-      <AgentProgress steps={['One']} stepDuration={100} completionDelay={0} onFinished={onFinished} paused />,
+      <AgentProgress
+        steps={['One']}
+        stepDuration={100}
+        completionDelay={0}
+        onFinished={onFinished}
+        paused
+      />,
     );
     act(() => jest.advanceTimersByTime(10_000));
     expect(getByText('1 step left')).toBeTruthy();
@@ -114,7 +132,9 @@ describe('AgentProgress', () => {
 
   it('follows a controlled completedCount instead of its clock', () => {
     const steps = ['Plan', 'Edit', 'Test'];
-    const view = renderProgress(<AgentProgress steps={steps} completedCount={1} stepDuration={100} />);
+    const view = renderProgress(
+      <AgentProgress steps={steps} completedCount={1} stepDuration={100} />,
+    );
     act(() => jest.advanceTimersByTime(10_000));
     expect(view.getByText('2 steps left')).toBeTruthy();
     view.rerender(
@@ -228,9 +248,13 @@ describe('AgentProgressLoadingText', () => {
     );
     expect(css).toContain('background-size: 300% 100%;');
     expect(css).toContain('background-clip: text;');
-    expect(css).toMatch(/from \{ background-position: 200% center; \}\s*to \{ background-position: -100% center; \}/);
+    expect(css).toMatch(
+      /from \{ background-position: 200% center; \}\s*to \{ background-position: -100% center; \}/,
+    );
     expect(css).toContain('3.4s linear infinite');
-    expect(css).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*color: rgb\(1 2 3\) !important;[\s\S]*animation: none;/);
+    expect(css).toMatch(
+      /prefers-reduced-motion: reduce\)[\s\S]*color: rgb\(1 2 3\) !important;[\s\S]*animation: none;/,
+    );
     expect(SHIMMER_PERIOD_MS).toBe(3400);
   });
 
@@ -244,7 +268,9 @@ describe('AgentProgressLoadingText', () => {
   });
 
   it('names itself with its text and splits into per-glyph spans on native', () => {
-    const { getByLabelText } = renderProgress(<AgentProgressLoadingText>Hi</AgentProgressLoadingText>);
+    const { getByLabelText } = renderProgress(
+      <AgentProgressLoadingText>Hi</AgentProgressLoadingText>,
+    );
     const node = getByLabelText('Hi');
     act(() => jest.advanceTimersByTime(100));
     expect(node.props.numberOfLines).toBe(1);

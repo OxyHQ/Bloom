@@ -16,7 +16,15 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
-import { SELECT_CHEVRON_SIZE, SELECT_ITEM_CLASS, SELECT_ITEM_SIZE_CLASS, SELECT_TRIGGER_CLASS, SELECT_TRIGGER_POPUP, SELECT_TRIGGER_SIZE_CLASS, SELECT_VALUE_CLASS } from '../floating/constants';
+import {
+  SELECT_CHEVRON_SIZE,
+  SELECT_ITEM_CLASS,
+  SELECT_ITEM_SIZE_CLASS,
+  SELECT_TRIGGER_CLASS,
+  SELECT_TRIGGER_POPUP,
+  SELECT_TRIGGER_SIZE_CLASS,
+  SELECT_VALUE_CLASS,
+} from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
 import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
@@ -24,11 +32,7 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
-import {
-  StyledPressable,
-  StyledText,
-  StyledView,
-} from '../styles/styled-primitives';
+import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
 import {
   defaultExtractLabel,
@@ -40,7 +44,15 @@ import {
   useSelectItemContext,
   VALUE_TYPE,
 } from './shared';
-import type { SelectContentProps, SelectIconProps, SelectItemProps, SelectProps, SelectItemContextValue, SelectTriggerProps, SelectValueProps } from './types';
+import type {
+  SelectContentProps,
+  SelectIconProps,
+  SelectItemProps,
+  SelectProps,
+  SelectItemContextValue,
+  SelectTriggerProps,
+  SelectValueProps,
+} from './types';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
@@ -57,9 +69,10 @@ type SelectContextValue = {
 const SelectContext = createContext<SelectContextValue | null>(null);
 SelectContext.displayName = 'SelectContext';
 
-const ValueStoreContext = createContext<
-  [unknown, React.Dispatch<React.SetStateAction<unknown>>]
->([undefined, () => {}]);
+const ValueStoreContext = createContext<[unknown, React.Dispatch<React.SetStateAction<unknown>>]>([
+  undefined,
+  () => {},
+]);
 ValueStoreContext.displayName = 'SelectValueStoreContext';
 
 function useSelectContext(): SelectContextValue {
@@ -75,13 +88,32 @@ function useSelectContext(): SelectContextValue {
 // ---------------------------------------------------------------------------
 
 export function Select(props: SelectProps) {
-  const { children, value: valueProp, defaultValue, onValueChange: onValueChangeProp, disabled, size: sizeProp } = props;
-  const [value, onValueChange] = useControllableState<string | undefined>({ value: valueProp, defaultValue, controlled: Object.prototype.hasOwnProperty.call(props, 'value'), onChange: next => { if (next !== undefined) onValueChangeProp?.(next); } });
-  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const {
+    children,
+    value: valueProp,
+    defaultValue,
+    onValueChange: onValueChangeProp,
+    disabled,
+    size: sizeProp,
+  } = props;
+  const [value, onValueChange] = useControllableState<string | undefined>({
+    value: valueProp,
+    defaultValue,
+    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    onChange: (next) => {
+      if (next !== undefined) onValueChangeProp?.(next);
+    },
+  });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const control = useDialogControl();
   const visible = useCollapsibleVisibility();
-  useLayoutEffect(() => { if (!visible) control.close(); }, [visible, control]);
+  useLayoutEffect(() => {
+    if (!visible) control.close();
+  }, [visible, control]);
   const valueStoreState = useState<unknown>(undefined);
 
   const ctx = useMemo<SelectContextValue>(
@@ -91,9 +123,7 @@ export function Select(props: SelectProps) {
 
   return (
     <SelectContext.Provider value={ctx}>
-      <ValueStoreContext.Provider value={valueStoreState}>
-        {children}
-      </ValueStoreContext.Provider>
+      <ValueStoreContext.Provider value={valueStoreState}>{children}</ValueStoreContext.Provider>
     </SelectContext.Provider>
   );
 }
@@ -153,7 +183,8 @@ export function SelectTrigger({
           boxShadow: isDisabled ? undefined : t.shadow,
         },
         fieldStyle,
-      ]}>
+      ]}
+    >
       {children}
     </StyledView>
   );
@@ -180,7 +211,8 @@ export function SelectTrigger({
           'aria-describedby': requiredDescription.describedBy,
           accessibilityHint: requiredDescription.hint,
           'aria-invalid': membership.invalid || undefined,
-        }}>
+        }}
+      >
         {asChild ? children : field}
       </TriggerSlot>
       {requiredDescription.description}
@@ -229,7 +261,10 @@ export function SelectValue({
   );
   if (leading === undefined) return text;
   return (
-    <SelectValueRow size={trigger.size} leading={typeof leading === 'function' ? leading(storedValue) : leading}>
+    <SelectValueRow
+      size={trigger.size}
+      leading={typeof leading === 'function' ? leading(storedValue) : leading}
+    >
       {text}
     </SelectValueRow>
   );
@@ -267,9 +302,7 @@ export function SelectContent<T>({
   const [, setStoredValue] = useContext(ValueStoreContext);
 
   useLayoutEffect(() => {
-    const item = items.find(
-      (candidate) => valueExtractor(candidate) === context.value,
-    );
+    const item = items.find((candidate) => valueExtractor(candidate) === context.value);
     // Cleared too, so a value reset to `undefined` shows the placeholder again
     // instead of the last item it matched.
     setStoredValue(() => item);
@@ -369,11 +402,7 @@ export function SelectItem({
   const { value: selectedValue, onValueChange, size } = useSelectContext();
   const palette = useMenuPalette();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
-  const {
-    state: pressed,
-    onIn: onPressIn,
-    onOut: onPressOut,
-  } = useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   const isSelected = value === selectedValue;
 

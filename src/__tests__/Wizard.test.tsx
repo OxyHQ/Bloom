@@ -95,7 +95,9 @@ describe('WizardProgress', () => {
     // one of three bars in the tree painting itself that way; asserted against
     // `resolveMeterColors` so the two cannot drift apart silently.
     const meter = resolveMeterColors(theme);
-    expect(normalise(byTestId('wp-segment-0-fill').style.backgroundColor)).toBe(normalise(meter.fill));
+    expect(normalise(byTestId('wp-segment-0-fill').style.backgroundColor)).toBe(
+      normalise(meter.fill),
+    );
     expect(normalise(byTestId('wp-segment-0').style.backgroundColor)).toBe(normalise(meter.track));
     // Each segment is DECORATIVE: the whole bar carries the one progressbar.
     expect(byTestId('wp-segment-0').getAttribute('role')).toBeNull();
@@ -152,7 +154,15 @@ describe('WizardFooter', () => {
 
   it('labels the primary action and blocks it while disabled', () => {
     const onNext = jest.fn();
-    mount(<WizardFooter onBack={() => undefined} onNext={onNext} nextLabel="Publish" nextDisabled testID="wf" />);
+    mount(
+      <WizardFooter
+        onBack={() => undefined}
+        onNext={onNext}
+        nextLabel="Publish"
+        nextDisabled
+        testID="wf"
+      />,
+    );
     const next = byTestId('wf-next');
     expect(next.textContent).toContain('Publish');
     act(() => next.click());

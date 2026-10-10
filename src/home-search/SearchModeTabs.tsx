@@ -3,7 +3,11 @@ import { Platform, Pressable, View } from 'react-native';
 
 import { resolveCategoryBarPaint, type CategoryBarPaint } from '../category-bar/CategoryBar';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useMessages } from '../locale/messages';
 import { HOME_SEARCH_MESSAGES } from './messages';
@@ -63,10 +67,21 @@ interface TabProps {
   testID?: string;
 }
 
-function ModeTab({ label, selected, tabbable, paint, onSelect, onKey, registerRef, testID }: TabProps) {
+function ModeTab({
+  label,
+  selected,
+  tabbable,
+  paint,
+  onSelect,
+  onKey,
+  registerRef,
+  testID,
+}: TabProps) {
   const hover = useInteractionState();
   const color = selected || hover.state ? paint.active : paint.rest;
-  const webProps: Record<string, unknown> = IS_WEB ? { tabIndex: tabbable ? 0 : -1, onKeyDown: onKey } : {};
+  const webProps: Record<string, unknown> = IS_WEB
+    ? { tabIndex: tabbable ? 0 : -1, onKeyDown: onKey }
+    : {};
 
   return (
     <Pressable
@@ -93,7 +108,12 @@ function ModeTab({ label, selected, tabbable, paint, onSelect, onKey, registerRe
       </Text>
       <View
         testID={testID ? `${testID}-bar` : undefined}
-        style={{ marginTop: 10, height: 2, borderRadius: 1, backgroundColor: selected ? paint.active : 'transparent' }}
+        style={{
+          marginTop: 10,
+          height: 2,
+          borderRadius: 1,
+          backgroundColor: selected ? paint.active : 'transparent',
+        }}
       />
     </Pressable>
   );
@@ -167,7 +187,11 @@ export function SearchModeTabs<K extends string = HomeSearchMode>({
         style={[{ alignSelf: 'stretch' }, style]}
       >
         {keys.map((key) => (
-          <SegmentedControlItem key={key} value={key} testID={testID ? `${testID}-${key}` : undefined}>
+          <SegmentedControlItem
+            key={key}
+            value={key}
+            testID={testID ? `${testID}-${key}` : undefined}
+          >
             <SegmentedControlItemText>{labelOf(key)}</SegmentedControlItemText>
           </SegmentedControlItem>
         ))}
@@ -185,7 +209,12 @@ export function SearchModeTabs<K extends string = HomeSearchMode>({
   };
 
   return (
-    <View testID={testID} role="tablist" accessibilityLabel={accessibilityLabel} style={[rowStyle, style]}>
+    <View
+      testID={testID}
+      role="tablist"
+      accessibilityLabel={accessibilityLabel}
+      style={[rowStyle, style]}
+    >
       {keys.map((key, index) => (
         <ModeTab
           key={key}

@@ -39,10 +39,27 @@ describe('Avatar — size rungs and initials', () => {
   });
 
   it('sets the initials type per rung', () => {
-    expect(avatarInitialsType(20)).toMatchObject({ fontSize: 10, lineHeight: 15, fontWeight: '600' });
-    expect(avatarInitialsType(24)).toMatchObject({ fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0 });
-    expect(avatarInitialsType(32)).toMatchObject({ fontSize: 16, lineHeight: 22, fontWeight: '600' });
-    expect(avatarInitialsType(36)).toMatchObject({ fontSize: 18, lineHeight: 24, fontWeight: '600' });
+    expect(avatarInitialsType(20)).toMatchObject({
+      fontSize: 10,
+      lineHeight: 15,
+      fontWeight: '600',
+    });
+    expect(avatarInitialsType(24)).toMatchObject({
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '600',
+      letterSpacing: 0,
+    });
+    expect(avatarInitialsType(32)).toMatchObject({
+      fontSize: 16,
+      lineHeight: 22,
+      fontWeight: '600',
+    });
+    expect(avatarInitialsType(36)).toMatchObject({
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: '600',
+    });
     expect(avatarInitialsType(40)).toMatchObject({ fontSize: 18, lineHeight: 24 });
   });
 

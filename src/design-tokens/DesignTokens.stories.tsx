@@ -37,7 +37,9 @@ export const Colors: Story = {
       (entry): entry is [string, string] => typeof entry[1] === 'string',
     );
     return (
-      <View style={{ maxWidth: '100%', width: 820, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View
+        style={{ maxWidth: '100%', width: 820, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+      >
         {entries.map(([name, value]) => (
           <View key={name} style={{ width: 160, gap: 4 }}>
             <View

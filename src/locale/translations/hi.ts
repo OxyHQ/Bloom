@@ -8,71 +8,129 @@ import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'ऊपर बाएं', 'top-right': 'ऊपर दाएं', 'bottom-left': 'नीचे बाएं', 'bottom-right': 'नीचे दाएं' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': 'ऊपर बाएं',
+  'top-right': 'ऊपर दाएं',
+  'bottom-left': 'नीचे बाएं',
+  'bottom-right': 'नीचे दाएं',
+};
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "प्रतिक्रिया दें",
-  working: "काम करें",
-  avatarStyle: "अवतार शैली",
-  proceduralAvatar: "वर्तमान अवतार",
-  betaPreset: "तैयार पात्र (बीटा)",
-  betaEyes: "आँखों की शैली",
-  eyewear: "चश्मा",
-  accessory: "सहायक वस्तु",
+  reaction: 'प्रतिक्रिया दें',
+  working: 'काम करें',
+  avatarStyle: 'अवतार शैली',
+  proceduralAvatar: 'वर्तमान अवतार',
+  betaPreset: 'तैयार पात्र (बीटा)',
+  betaEyes: 'आँखों की शैली',
+  eyewear: 'चश्मा',
+  accessory: 'सहायक वस्तु',
   characterOption: (_category, _id, title) => String(title),
-  editor: "एजेंट संपादक",
-  newBot: "नया बॉट",
-  closeEditor: "एजेंट संपादक बंद करें",
-  details: "एजेंट का रूप और विवरण",
-  color: "अवतार का रंग",
-  customColor: "अवतार का कस्टम रंग",
-  name: "नाम",
-  label: "लेबल",
-  description: "विवरण",
-  nameInput: "एजेंट का नाम",
-  labelInput: "एजेंट का लेबल",
-  descriptionInput: "एजेंट का विवरण",
-  labelPlaceholder: "प्रबंधक, मार्केटिंग, चित्रकार",
-  descriptionPlaceholder: "एजेंट का विवरण",
-  language: "भाषा",
-  languageInput: "एजेंट की भाषा",
-  notifications: "सूचनाएँ",
-  notificationsDescription: "जवाब तैयार होने पर सूचना दिखाएँ।",
-  notifyFinished: "इस एजेंट के पूरा होने पर सूचित करें",
-  voice: "आवाज़",
-  voiceInput: "एजेंट की आवाज़",
-  previewVoice: "आवाज़ सुनें",
-  savedVoice: "सहेजी गई आवाज़",
-  systemVoice: "सिस्टम की आवाज़",
-  off: "बंद",
-  playbackSpeed: "प्लेबैक गति",
-  emotion: "एजेंट की भावना",
-  shape: "अवतार का आकार",
-  hexColor: "हेक्स रंग",
-  hue: "रंगत",
-  saturationBrightness: "संतृप्ति और चमक",
-  increaseBrightness: "चमक बढ़ाएँ",
-  decreaseBrightness: "चमक घटाएँ",
-  increaseHue: "रंगत बढ़ाएँ",
-  decreaseHue: "रंगत घटाएँ",
-  nextShape: "अगला आकार",
-  previousShape: "पिछला आकार",
-  newAgent: "नया एजेंट",
-  emotions: { "neutral": "सामान्य", "happy": "खुश", "angry": "नाराज़", "thinking": "विचारशील", "shook": "हैरान", "curious": "जिज्ञासु", "wink": "आँख मारता", "sleepy": "उनींदा", "sad": "उदास", "worried": "चिंतित", "skeptical": "संदेहशील", "focused": "केंद्रित", "excited": "उत्साहित", "calm": "शांत", "shy": "शर्मीला", "confused": "उलझन में" },
-  shapes: { "slender": "पतला", "pocket": "जेब", "petal": "पंखुड़ी", "flower": "फूल", "star": "तारा", "heart": "दिल", "cloud": "बादल", "diamond": "हीरा", "shield": "ढाल" },
-  colors: { "Blue": "नीला", "Teal": "नीलहरित", "Violet": "बैंगनी", "Pink": "गुलाबी", "Red": "लाल", "Orange": "नारंगी", "Cyan": "सियान", "Lime": "नींबू हरा", "Green": "हरा" },
-  languages: { "auto": "स्वतः पहचानें", "en": "अंग्रेज़ी", "tr": "तुर्की", "es": "स्पेनिश", "fr": "फ़्रेंच", "de": "जर्मन", "ja": "जापानी", "pt": "पुर्तगाली" },
-  avatarColorLabel: (name) => "{name} अवतार".replace("{name}", name),
-  shapeLabel: (name) => "{name} आकार".replace("{name}", name),
-  silhouetteLabel: (name) => "{name} सिल्हूट".replace("{name}", name),
-  livePreview: (name) => "{name}, अवतार का लाइव पूर्वावलोकन".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "संतृप्ति {s}%, चमक {v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "प्लेबैक गति {speed} गुना".replace("{speed}", String(speed)),
+  editor: 'एजेंट संपादक',
+  newBot: 'नया बॉट',
+  closeEditor: 'एजेंट संपादक बंद करें',
+  details: 'एजेंट का रूप और विवरण',
+  color: 'अवतार का रंग',
+  customColor: 'अवतार का कस्टम रंग',
+  name: 'नाम',
+  label: 'लेबल',
+  description: 'विवरण',
+  nameInput: 'एजेंट का नाम',
+  labelInput: 'एजेंट का लेबल',
+  descriptionInput: 'एजेंट का विवरण',
+  labelPlaceholder: 'प्रबंधक, मार्केटिंग, चित्रकार',
+  descriptionPlaceholder: 'एजेंट का विवरण',
+  language: 'भाषा',
+  languageInput: 'एजेंट की भाषा',
+  notifications: 'सूचनाएँ',
+  notificationsDescription: 'जवाब तैयार होने पर सूचना दिखाएँ।',
+  notifyFinished: 'इस एजेंट के पूरा होने पर सूचित करें',
+  voice: 'आवाज़',
+  voiceInput: 'एजेंट की आवाज़',
+  previewVoice: 'आवाज़ सुनें',
+  savedVoice: 'सहेजी गई आवाज़',
+  systemVoice: 'सिस्टम की आवाज़',
+  off: 'बंद',
+  playbackSpeed: 'प्लेबैक गति',
+  emotion: 'एजेंट की भावना',
+  shape: 'अवतार का आकार',
+  hexColor: 'हेक्स रंग',
+  hue: 'रंगत',
+  saturationBrightness: 'संतृप्ति और चमक',
+  increaseBrightness: 'चमक बढ़ाएँ',
+  decreaseBrightness: 'चमक घटाएँ',
+  increaseHue: 'रंगत बढ़ाएँ',
+  decreaseHue: 'रंगत घटाएँ',
+  nextShape: 'अगला आकार',
+  previousShape: 'पिछला आकार',
+  newAgent: 'नया एजेंट',
+  emotions: {
+    neutral: 'सामान्य',
+    happy: 'खुश',
+    angry: 'नाराज़',
+    thinking: 'विचारशील',
+    shook: 'हैरान',
+    curious: 'जिज्ञासु',
+    wink: 'आँख मारता',
+    sleepy: 'उनींदा',
+    sad: 'उदास',
+    worried: 'चिंतित',
+    skeptical: 'संदेहशील',
+    focused: 'केंद्रित',
+    excited: 'उत्साहित',
+    calm: 'शांत',
+    shy: 'शर्मीला',
+    confused: 'उलझन में',
+  },
+  shapes: {
+    slender: 'पतला',
+    pocket: 'जेब',
+    petal: 'पंखुड़ी',
+    flower: 'फूल',
+    star: 'तारा',
+    heart: 'दिल',
+    cloud: 'बादल',
+    diamond: 'हीरा',
+    shield: 'ढाल',
+  },
+  colors: {
+    Blue: 'नीला',
+    Teal: 'नीलहरित',
+    Violet: 'बैंगनी',
+    Pink: 'गुलाबी',
+    Red: 'लाल',
+    Orange: 'नारंगी',
+    Cyan: 'सियान',
+    Lime: 'नींबू हरा',
+    Green: 'हरा',
+  },
+  languages: {
+    auto: 'स्वतः पहचानें',
+    en: 'अंग्रेज़ी',
+    tr: 'तुर्की',
+    es: 'स्पेनिश',
+    fr: 'फ़्रेंच',
+    de: 'जर्मन',
+    ja: 'जापानी',
+    pt: 'पुर्तगाली',
+  },
+  avatarColorLabel: (name) => '{name} अवतार'.replace('{name}', name),
+  shapeLabel: (name) => '{name} आकार'.replace('{name}', name),
+  silhouetteLabel: (name) => '{name} सिल्हूट'.replace('{name}', name),
+  livePreview: (name) => '{name}, अवतार का लाइव पूर्वावलोकन'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'संतृप्ति {s}%, चमक {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) => 'प्लेबैक गति {speed} गुना'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -126,7 +184,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'ड्राफ़्ट:', pinned: 'पिन किया गया', muted: 'म्यूट किया गया', verified: 'सत्यापित', channel: 'चैनल', bot: 'बॉट', group: 'समूह' },
+  item: {
+    draft: 'ड्राफ़्ट:',
+    pinned: 'पिन किया गया',
+    muted: 'म्यूट किया गया',
+    verified: 'सत्यापित',
+    channel: 'चैनल',
+    bot: 'बॉट',
+    group: 'समूह',
+  },
   search: { chat: 'चैट', message: 'संदेश', contact: 'संपर्क', empty: 'कोई परिणाम नहीं' },
   list: 'चैट',
   emptyTitle: 'अभी तक कोई बातचीत नहीं',
@@ -184,10 +250,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `${team} मेन्यू`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'KB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'कार्ड नंबर', expiry: 'समाप्ति तिथि', securityCode: 'सुरक्षा कोड', name: 'कार्ड पर नाम', postcode: 'पिन कोड', country: 'देश' },
+  labels: {
+    number: 'कार्ड नंबर',
+    expiry: 'समाप्ति तिथि',
+    securityCode: 'सुरक्षा कोड',
+    name: 'कार्ड पर नाम',
+    postcode: 'पिन कोड',
+    country: 'देश',
+  },
   selectCountry: 'देश चुनें',
 };
 
@@ -220,8 +298,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'लोग', command: 'कमांड', emoji: 'इमोजी' },
   suggestionVerified: 'सत्यापित',
   searchingSuggestions: 'खोज रहे हैं…',
-  noSuggestions: { mention: 'कोई व्यक्ति नहीं मिला', command: 'कोई कमांड नहीं मिला', emoji: 'कोई इमोजी नहीं मिला' },
-  attachmentItems: { gallery: 'गैलरी', camera: 'कैमरा', file: 'फ़ाइल', location: 'लोकेशन', contact: 'संपर्क', poll: 'पोल', music: 'संगीत' },
+  noSuggestions: {
+    mention: 'कोई व्यक्ति नहीं मिला',
+    command: 'कोई कमांड नहीं मिला',
+    emoji: 'कोई इमोजी नहीं मिला',
+  },
+  attachmentItems: {
+    gallery: 'गैलरी',
+    camera: 'कैमरा',
+    file: 'फ़ाइल',
+    location: 'लोकेशन',
+    contact: 'संपर्क',
+    poll: 'पोल',
+    music: 'संगीत',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -272,7 +362,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: 'बोल दिखाएं',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'यहाँ अभी कुछ नहीं है', addresses: 'पते' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'यहाँ अभी कुछ नहीं है',
+  addresses: 'पते',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'सिंगल', ep: 'EP', album: 'एल्बम' },
@@ -327,7 +420,12 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   tracks: (n) => plural('hi', n, { one: '{n} ट्रैक', other: '{n} ट्रैक' }),
   timeline: {
-    states: { complete: 'पूरा हुआ', current: 'जारी है', upcoming: 'शुरू नहीं हुआ', error: 'ध्यान देने की ज़रूरत' },
+    states: {
+      complete: 'पूरा हुआ',
+      current: 'जारी है',
+      upcoming: 'शुरू नहीं हुआ',
+      error: 'ध्यान देने की ज़रूरत',
+    },
     label: 'रिलीज़ की प्रगति',
   },
   upload: {
@@ -351,7 +449,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     role: 'भूमिका',
     name: 'नाम',
     add: 'क्रेडिट जोड़ें',
-    remove: (index, name) => (name ? `क्रेडिट ${index + 1} निकालें, ${name}` : `क्रेडिट ${index + 1} निकालें`),
+    remove: (index, name) =>
+      name ? `क्रेडिट ${index + 1} निकालें, ${name}` : `क्रेडिट ${index + 1} निकालें`,
     empty: 'इस ट्रैक के गीत-लेखकों, प्रोड्यूसरों और परफ़ॉर्मरों को क्रेडिट दें।',
     field: (field, n) => `${field}, क्रेडिट ${n}`,
   },
@@ -395,7 +494,11 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     pitchPlaceholder: 'इस रिलीज़ को क्या खास बनाता है? यह किसके लिए है, और इसके पीछे की कहानी क्या है?',
     submit: 'पिच भेजें',
     tagLimit: (max) => `अधिकतम ${max} चुनें`,
-    statuses: { submitted: 'पिच भेज दी गई', accepted: 'समीक्षा के लिए चुनी गई', declined: 'इस बार नहीं चुनी गई' },
+    statuses: {
+      submitted: 'पिच भेज दी गई',
+      accepted: 'समीक्षा के लिए चुनी गई',
+      declined: 'इस बार नहीं चुनी गई',
+    },
     statusDescriptions: {
       submitted: 'संपादक हर पिच पढ़ते हैं। रिलीज़ की तारीख से पहले आपको जवाब मिलेगा।',
       accepted: 'आपकी रिलीज़ पर संपादकीय प्लेलिस्ट के लिए विचार किया जा रहा है।',
@@ -482,7 +585,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'आपका आवेदन',
   applicationProgress: 'आवेदन की प्रगति',
   progressReady: (done, total) => `${total} में से ${done} तैयार`,
-  applicationStatus: { missing: 'अनुपलब्ध', uploaded: 'समीक्षा में', verified: 'सत्यापित', rejected: 'अस्वीकृत' },
+  applicationStatus: {
+    missing: 'अनुपलब्ध',
+    uploaded: 'समीक्षा में',
+    verified: 'सत्यापित',
+    rejected: 'अस्वीकृत',
+  },
   applicationAction: { upload: 'अपलोड करें', view: 'देखें', replace: 'बदलें' },
   itemAction: (action, title) => `${title}: ${action}`,
   mortgage: {
@@ -546,8 +654,10 @@ const LISTING_DETAILS_MESSAGES: Translations['LISTING_DETAILS_MESSAGES'] = {
   ratedOutOf5: (r) => `5 में से ${r} रेटिंग`,
   overallRating: 'कुल रेटिंग',
   unavailable: 'उपलब्ध नहीं',
-  showAllAmenities: (n) => plural('hi', n, { one: '{n} सुविधा दिखाएँ', other: 'सभी {n} सुविधाएँ दिखाएँ' }),
-  showAllFeatures: (n) => plural('hi', n, { one: '{n} विशेषता दिखाएँ', other: 'सभी {n} विशेषताएँ दिखाएँ' }),
+  showAllAmenities: (n) =>
+    plural('hi', n, { one: '{n} सुविधा दिखाएँ', other: 'सभी {n} सुविधाएँ दिखाएँ' }),
+  showAllFeatures: (n) =>
+    plural('hi', n, { one: '{n} विशेषता दिखाएँ', other: 'सभी {n} विशेषताएँ दिखाएँ' }),
   propertyFeatures: 'संपत्ति की विशेषताएँ',
   showAllPhotos: 'सभी फ़ोटो दिखाएँ',
   listingPhotos: 'लिस्टिंग की फ़ोटो',
@@ -658,11 +768,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'इस सामान के लिए उपलब्ध नहीं',
   vehicle: 'वाहन',
   vehicles: {
-    bike: { label: 'कार्गो बाइक', capacity: '25 kg तक · 60 × 40 × 40 cm', fits: ['दस्तावेज़', 'खाने का ऑर्डर', 'एक छोटा डिब्बा'] },
-    car: { label: 'कार', capacity: '150 kg तक · 100 × 80 × 60 cm', fits: ['दो सूटकेस', 'चार डिब्बे', 'एक साइकिल'] },
-    van: { label: 'वैन', capacity: '800 kg तक · 240 × 150 × 140 cm', fits: ['एक सोफ़ा', 'स्टूडियो फ़्लैट की शिफ़्टिंग', 'आधा पैलेट'] },
-    boxTruck: { label: 'बॉक्स ट्रक', capacity: '3,500 kg तक · 420 × 200 × 210 cm', fits: ['दो पैलेट', '2BHK की शिफ़्टिंग', 'टेल लिफ़्ट'] },
-    refrigerated: { label: 'रेफ़्रिजरेटेड वैन', capacity: '700 kg तक · 2–8 °C पर', fits: ['ताज़ी उपज', 'ठंडा कैटरिंग', 'फूल'] },
+    bike: {
+      label: 'कार्गो बाइक',
+      capacity: '25 kg तक · 60 × 40 × 40 cm',
+      fits: ['दस्तावेज़', 'खाने का ऑर्डर', 'एक छोटा डिब्बा'],
+    },
+    car: {
+      label: 'कार',
+      capacity: '150 kg तक · 100 × 80 × 60 cm',
+      fits: ['दो सूटकेस', 'चार डिब्बे', 'एक साइकिल'],
+    },
+    van: {
+      label: 'वैन',
+      capacity: '800 kg तक · 240 × 150 × 140 cm',
+      fits: ['एक सोफ़ा', 'स्टूडियो फ़्लैट की शिफ़्टिंग', 'आधा पैलेट'],
+    },
+    boxTruck: {
+      label: 'बॉक्स ट्रक',
+      capacity: '3,500 kg तक · 420 × 200 × 210 cm',
+      fits: ['दो पैलेट', '2BHK की शिफ़्टिंग', 'टेल लिफ़्ट'],
+    },
+    refrigerated: {
+      label: 'रेफ़्रिजरेटेड वैन',
+      capacity: '700 kg तक · 2–8 °C पर',
+      fits: ['ताज़ी उपज', 'ठंडा कैटरिंग', 'फूल'],
+    },
   },
 };
 
@@ -739,7 +869,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'अधिकृत किया जा रहा है', paid: 'भुगतान हो गया', failed: 'भुगतान विफल', refunded: 'रिफ़ंड हो गया', pending: 'भुगतान लंबित' },
+  states: {
+    authorising: 'अधिकृत किया जा रहा है',
+    paid: 'भुगतान हो गया',
+    failed: 'भुगतान विफल',
+    refunded: 'रिफ़ंड हो गया',
+    pending: 'भुगतान लंबित',
+  },
   reference: 'संदर्भ',
 };
 
@@ -758,13 +894,26 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `5 में से ${value} रेटिंग`,
-      reviews === undefined ? undefined : placeCard_countOf('hi', reviews, { one: '{n} समीक्षा', other: '{n} समीक्षाएँ' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('hi', reviews, { one: '{n} समीक्षा', other: '{n} समीक्षाएँ' }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `${b} के साथ जारी रखें`, signIn: (b) => `${b} से साइन इन करें`, signUp: (b) => `${b} से साइन अप करें` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `${b} के साथ जारी रखें`,
+    signIn: (b) => `${b} से साइन इन करें`,
+    signUp: (b) => `${b} से साइन अप करें`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'अन्य', otherPlaceholder: 'अपना जवाब यहाँ लिखें', steps: 'चरण', step: (n) => `चरण ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'अन्य',
+  otherPlaceholder: 'अपना जवाब यहाँ लिखें',
+  steps: 'चरण',
+  step: (n) => `चरण ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'मानचित्र नियंत्रण',
@@ -781,9 +930,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'ओवरले',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'समाप्त', declined: 'अस्वीकृत' }, default: 'डिफ़ॉल्ट', add: 'भुगतान का तरीका जोड़ें', emptyTitle: 'कोई सहेजा गया भुगतान तरीका नहीं', paymentMethods: 'भुगतान के तरीके' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'समाप्त', declined: 'अस्वीकृत' },
+  default: 'डिफ़ॉल्ट',
+  add: 'भुगतान का तरीका जोड़ें',
+  emptyTitle: 'कोई सहेजा गया भुगतान तरीका नहीं',
+  paymentMethods: 'भुगतान के तरीके',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `${n} और लोग`, profile: 'प्रोफ़ाइल' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => `${n} और लोग`,
+  profile: 'प्रोफ़ाइल',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'मेन्यू बार',
@@ -792,7 +950,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'सोच रहा है' };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
-  feedback: { like: 'अच्छा जवाब', dislike: 'खराब जवाब', copy: 'जवाब कॉपी करें', copied: 'कॉपी हो गया!' },
+  feedback: {
+    like: 'अच्छा जवाब',
+    dislike: 'खराब जवाब',
+    copy: 'जवाब कॉपी करें',
+    copied: 'कॉपी हो गया!',
+  },
   imageGeneration: {
     generated: 'इमेज बन गई',
     generating: 'इमेज बन रही है',
@@ -804,7 +967,8 @@ const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   codePanel: {
     changes: 'बदलाव',
     browser: 'ब्राउज़र',
-    uncommitted: (n) => plural('hi', n, { one: '{n} बदलाव कमिट नहीं हुआ', other: '{n} बदलाव कमिट नहीं हुए' }),
+    uncommitted: (n) =>
+      plural('hi', n, { one: '{n} बदलाव कमिट नहीं हुआ', other: '{n} बदलाव कमिट नहीं हुए' }),
     undo: 'बदलाव पहले जैसे करें',
     browserPreview: 'ब्राउज़र प्रीव्यू',
   },
@@ -898,12 +1062,20 @@ const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
 };
 
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
-  statuses: { reserved: 'आरक्षित', sold: 'बिक गया', rented: 'किराये पर दिया गया', unavailable: 'उपलब्ध नहीं' },
+  statuses: {
+    reserved: 'आरक्षित',
+    sold: 'बिक गया',
+    rented: 'किराये पर दिया गया',
+    unavailable: 'उपलब्ध नहीं',
+  },
   originally: (p) => `पहले ${p}`,
   approximateLocation: 'अनुमानित स्थान',
   rated: (r) => `5 में से ${r} रेटिंग`,
   ratedWithReviews: (r, c) =>
-    plural('hi', c, { one: `5 में से ${r} रेटिंग, ${c} समीक्षा`, other: `5 में से ${r} रेटिंग, ${c} समीक्षाएँ` }),
+    plural('hi', c, {
+      one: `5 में से ${r} रेटिंग, ${c} समीक्षा`,
+      other: `5 में से ${r} रेटिंग, ${c} समीक्षाएँ`,
+    }),
   newListing: 'नया',
   previousPhoto: 'पिछली फ़ोटो',
   nextPhoto: 'अगली फ़ोटो',
@@ -928,7 +1100,11 @@ const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
 };
 
 const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
-  states: { locating: 'आपकी लोकेशन ढूँढी जा रही है', located: 'आपकी लोकेशन', stale: 'आपकी आख़िरी ज्ञात लोकेशन' },
+  states: {
+    locating: 'आपकी लोकेशन ढूँढी जा रही है',
+    located: 'आपकी लोकेशन',
+    stale: 'आपकी आख़िरी ज्ञात लोकेशन',
+  },
   facing: (state, degrees) => `${state}, ${degrees} डिग्री की दिशा में`,
 };
 
@@ -941,7 +1117,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'स्लाइड',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'जारी है', upcoming: 'अभी नहीं', failed: 'विफल' }, status: 'स्थिति' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'जारी है', upcoming: 'अभी नहीं', failed: 'विफल' },
+  status: 'स्थिति',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'नया',
@@ -1002,7 +1181,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     },
   },
   addressPrecisionLabel: 'पते की सटीकता',
-  addressPrecisionFootnote: 'प्रकाशित नक्शा इसी चुनाव का पालन करता है। आपका सटीक पता सिर्फ़ उन्हीं लोगों से साझा होता है जिनकी आप पुष्टि करते हैं।',
+  addressPrecisionFootnote:
+    'प्रकाशित नक्शा इसी चुनाव का पालन करता है। आपका सटीक पता सिर्फ़ उन्हीं लोगों से साझा होता है जिनकी आप पुष्टि करते हैं।',
   qualityTitle: 'लिस्टिंग की गुणवत्ता',
   qualityScore: 'लिस्टिंग गुणवत्ता स्कोर',
   tips: 'सुझाव',
@@ -1015,7 +1195,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   card: 'कार्ड',
   page: 'पेज',
   previewAs: 'इस रूप में देखें',
-  reviews: (n, shown) => plural('hi', n, { one: '{s} समीक्षा', other: '{s} समीक्षाएँ' }).replace('{s}', shown),
+  reviews: (n, shown) =>
+    plural('hi', n, { one: '{s} समीक्षा', other: '{s} समीक्षाएँ' }).replace('{s}', shown),
 };
 
 const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
@@ -1049,7 +1230,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'शाकाहारी', vegan: 'वीगन', 'gluten-free': 'ग्लूटेन-मुक्त', 'dairy-free': 'डेयरी-मुक्त', halal: 'हलाल', kosher: 'कोशर' },
+  diets: {
+    vegetarian: 'शाकाहारी',
+    vegan: 'वीगन',
+    'gluten-free': 'ग्लूटेन-मुक्त',
+    'dairy-free': 'डेयरी-मुक्त',
+    halal: 'हलाल',
+    kosher: 'कोशर',
+  },
   spicy: 'तीखा',
   spiceOf: (label, level, max) => `${label} ${max} में से ${level}`,
   originally: (price, original) => `${price}, पहले ${original}`,
@@ -1070,7 +1258,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `पेज ${page} पर जाएं`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'लीड स्कोर', factors: 'यह किससे बना है', bands: { cold: 'ठंडा', warm: 'गर्म', hot: 'बहुत गर्म' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'लीड स्कोर',
+  factors: 'यह किससे बना है',
+  bands: { cold: 'ठंडा', warm: 'गर्म', hot: 'बहुत गर्म' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'गाड़ी', transit: 'सार्वजनिक परिवहन', walk: 'पैदल', cycle: 'साइकिल' },
@@ -1244,7 +1436,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   age: { now: 'अभी', minutes: (n) => `${n} मि॰`, hours: (n) => `${n} घं॰`, days: (n) => `${n} दि॰` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'स्रोत', working: 'काम चल रहा है' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'स्रोत',
+  working: 'काम चल रहा है',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'प्रति',
@@ -1331,12 +1526,21 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   ringItem: (label, value, pct) => `${label} ${value}, लक्ष्य का ${pct}%`,
   scoreOf: (score, max) => `${max} में से ${score}`,
   activityFor: (name, day) => `${day} ${name} की गतिविधि`,
-  contributions: (n, date) => { const on = date ? `${date} को ` : ''; return n === 0 ? `${on}कोई योगदान नहीं` : `${on}${n} योगदान`; },
+  contributions: (n, date) => {
+    const on = date ? `${date} को ` : '';
+    return n === 0 ? `${on}कोई योगदान नहीं` : `${on}${n} योगदान`;
+  },
 };
 
-const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'कोड कॉपी करें', copied: 'कोड कॉपी हो गया' };
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
+  copy: 'कोड कॉपी करें',
+  copied: 'कोड कॉपी हो गया',
+};
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'इस पेज पर', progress: (at, of) => `${of} में से शीर्षक ${at}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'इस पेज पर',
+  progress: (at, of) => `${of} में से शीर्षक ${at}`,
+};
 
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'घटाएँ', increase: 'बढ़ाएँ' };
 
@@ -1395,7 +1599,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, म्यूट`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'हाल की भर्तियाँ' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'हाल की भर्तियाँ',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'ड्राफ़्ट:',
@@ -1416,9 +1622,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'मेल',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'महत्वपूर्ण अलर्ट', thisWeek: 'इस सप्ताह' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'महत्वपूर्ण अलर्ट',
+  thisWeek: 'इस सप्ताह',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `${label} के बारे में`, fromLastMonth: 'पिछले महीने से' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `${label} के बारे में`,
+  fromLastMonth: 'पिछले महीने से',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1466,8 +1678,18 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'हीटिंग',
     other: 'अन्य',
   },
-  maintenancePriority: { low: 'कम प्राथमिकता', medium: 'मध्यम प्राथमिकता', high: 'उच्च प्राथमिकता', urgent: 'अत्यावश्यक' },
-  maintenanceStage: { reported: 'रिपोर्ट किया गया', acknowledged: 'स्वीकार किया गया', scheduled: 'निर्धारित', resolved: 'हल हो गया' },
+  maintenancePriority: {
+    low: 'कम प्राथमिकता',
+    medium: 'मध्यम प्राथमिकता',
+    high: 'उच्च प्राथमिकता',
+    urgent: 'अत्यावश्यक',
+  },
+  maintenanceStage: {
+    reported: 'रिपोर्ट किया गया',
+    acknowledged: 'स्वीकार किया गया',
+    scheduled: 'निर्धारित',
+    resolved: 'हल हो गया',
+  },
   documentStatus: { signed: 'हस्ताक्षरित', pending: 'हस्ताक्षर लंबित', expired: 'समाप्त' },
   timelineState: { complete: 'पूरा', current: 'जारी है', upcoming: 'अभी नहीं' },
   leasePeriod: 'लीज़ अवधि',
@@ -1497,7 +1719,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'सामान्य', sm: 'संक्षिप्त' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'कुछ गलत हो गया', message: 'एक अनपेक्षित त्रुटि हुई', retry: 'फिर से कोशिश करें' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'कुछ गलत हो गया',
+  message: 'एक अनपेक्षित त्रुटि हुई',
+  retry: 'फिर से कोशिश करें',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'इस साल के योगदान',
@@ -1676,7 +1902,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'कॉल', email: 'ईमेल', meeting: 'मीटिंग', note: 'नोट', 'stage-change': 'चरण बदला', task: 'कार्य पूरा' },
+  kinds: {
+    call: 'कॉल',
+    email: 'ईमेल',
+    meeting: 'मीटिंग',
+    note: 'नोट',
+    'stage-change': 'चरण बदला',
+    task: 'कार्य पूरा',
+  },
   empty: 'अभी तक कुछ दर्ज नहीं हुआ',
   loggedBy: (name) => `${name} द्वारा दर्ज`,
   filterActivity: 'गतिविधि फ़िल्टर करें',
@@ -1690,8 +1923,7 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   helpful: 'मददगार',
   report: 'रिपोर्ट करें',
   promptTitle: 'क्या आप यहाँ रहे हैं?',
-  promptDescription: (building) =>
-    `${building} के भावी किरायेदारों की मदद करें। समीक्षाएँ गुमनाम होती हैं।`,
+  promptDescription: (building) => `${building} के भावी किरायेदारों की मदद करें। समीक्षाएँ गुमनाम होती हैं।`,
   writeReview: 'समीक्षा लिखें',
   reviewCount: (n) => plural('hi', n, { one: '{n} समीक्षा', other: '{n} समीक्षाएँ' }),
   depositRate: (percent) => `${percent}% किरायेदारियों में जमा राशि लौटाई गई`,
@@ -1711,7 +1943,8 @@ const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'निजी', shared: 'शेयर की गई', public: 'सार्वजनिक' },
   places: (n) => plural('hi', n, { one: '{n} जगह', other: '{n} जगहें' }),
-  sharedWith: (n) => plural('hi', n, { one: '{n} व्यक्ति के साथ शेयर की गई', other: '{n} लोगों के साथ शेयर की गई' }),
+  sharedWith: (n) =>
+    plural('hi', n, { one: '{n} व्यक्ति के साथ शेयर की गई', other: '{n} लोगों के साथ शेयर की गई' }),
   labels: {
     moveEarlier: (position) => `स्थान ${position - 1} पर ले जाएँ`,
     moveLater: (position) => `स्थान ${position + 1} पर ले जाएँ`,
@@ -1760,13 +1993,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${subject}: ${action}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'किराए पर', sale: 'बिक्री के लिए', short_term_rent: 'छुट्टियों का किराया', exchange: 'अदला-बदली' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'किराए पर',
+    sale: 'बिक्री के लिए',
+    short_term_rent: 'छुट्टियों का किराया',
+    exchange: 'अदला-बदली',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'पैमाना', mapData: 'मानचित्र डेटा' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'पैमाना',
+  mapData: 'मानचित्र डेटा',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'न्यूनतम', maximum: 'अधिकतम', value: (n) => `मान ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'न्यूनतम',
+  maximum: 'अधिकतम',
+  value: (n) => `मान ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'कोई विकल्प चुनें', scrollUp: 'ऊपर स्क्रॉल करें', scrollDown: 'नीचे स्क्रॉल करें' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'कोई विकल्प चुनें',
+  scrollUp: 'ऊपर स्क्रॉल करें',
+  scrollDown: 'नीचे स्क्रॉल करें',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'मीडिया व्यूअर बंद करें',
@@ -1778,10 +2029,18 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
 
 const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'सूचना हटाएँ' };
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'फ़ोन नंबर', countryCode: 'देश कोड' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'फ़ोन नंबर',
+  countryCode: 'देश कोड',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: 'डिलीवरी का समय', deliveryFee: 'डिलीवरी', distance: 'दूरी', minimumOrder: 'न्यूनतम ऑर्डर' },
+  facts: {
+    deliveryTime: 'डिलीवरी का समय',
+    deliveryFee: 'डिलीवरी',
+    distance: 'दूरी',
+    minimumOrder: 'न्यूनतम ऑर्डर',
+  },
   availability: { paused: 'रुका हुआ', closed: 'बंद' },
   new: 'नया',
   rated: (value, reviews) =>
@@ -1790,7 +2049,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'ऑनलाइन', idle: 'दूर', offline: 'ऑफ़लाइन', busy: 'व्यस्त' },
-  status: { sending: 'भेजा जा रहा है…', sent: 'भेजा गया', delivered: 'डिलीवर हुआ', read: 'पढ़ा गया', failed: 'नहीं भेजा गया' },
+  status: {
+    sending: 'भेजा जा रहा है…',
+    sent: 'भेजा गया',
+    delivered: 'डिलीवर हुआ',
+    read: 'पढ़ा गया',
+    failed: 'नहीं भेजा गया',
+  },
   unread: 'अपठित',
   unreadCount: (n) => plural('hi', n, { one: '{n} अपठित संदेश', other: '{n} अपठित संदेश' }),
 };
@@ -1871,7 +2136,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'खोज क्वेरी साफ़ करें' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `${t} हटाएँ`, full: (n) => `अधिकतम ${n}`, suggestions: 'सुझाव' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `${t} हटाएँ`,
+  full: (n) => `अधिकतम ${n}`,
+  suggestions: 'सुझाव',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1939,7 +2208,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'फ़ाइल का नाम',
     uploadedOn: 'अपलोड की तारीख',
     fileSize: 'फ़ाइल का साइज़',
-    sortBy: { name: 'फ़ाइल के नाम के हिसाब से क्रमबद्ध करें', uploadedAt: 'अपलोड की तारीख के हिसाब से क्रमबद्ध करें', size: 'फ़ाइल के साइज़ के हिसाब से क्रमबद्ध करें' },
+    sortBy: {
+      name: 'फ़ाइल के नाम के हिसाब से क्रमबद्ध करें',
+      uploadedAt: 'अपलोड की तारीख के हिसाब से क्रमबद्ध करें',
+      size: 'फ़ाइल के साइज़ के हिसाब से क्रमबद्ध करें',
+    },
     selectFile: (name) => `${name} चुनें`,
     deleteFile: 'फ़ाइल हटाएं',
     deleteNamed: (name) => `${name} हटाएं`,
@@ -2008,25 +2281,47 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   notChargedYet: 'अभी आपसे कोई शुल्क नहीं लिया जाएगा',
   total: 'कुल',
   tripStatus: { confirmed: 'पुष्ट', pending: 'लंबित', cancelled: 'रद्द', completed: 'पूरा हुआ' },
-  priceName: booking_priceName((p, u) => `${p} प्रति ${u}`, (s, o) => `${s}, पहले ${o}`),
+  priceName: booking_priceName(
+    (p, u) => `${p} प्रति ${u}`,
+    (s, o) => `${s}, पहले ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'कॉन्टेक्स्ट विंडो', freeSpace: 'खाली जगह', planUsageLimits: 'प्लान की उपयोग सीमाएं', managePlan: 'प्लान प्रबंधित करें' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'कॉन्टेक्स्ट विंडो',
+  freeSpace: 'खाली जगह',
+  planUsageLimits: 'प्लान की उपयोग सीमाएं',
+  managePlan: 'प्लान प्रबंधित करें',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'कार्रवाइयां बंद करें',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'प्रोफ़ाइल फ़ोटो जोड़ें' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'प्रोफ़ाइल फ़ोटो जोड़ें',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'थीम', darkMode: 'डार्क मोड', lightMode: 'लाइट मोड', useDarkMode: 'डार्क मोड इस्तेमाल करें', useLightMode: 'लाइट मोड इस्तेमाल करें' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'थीम',
+  darkMode: 'डार्क मोड',
+  lightMode: 'लाइट मोड',
+  useDarkMode: 'डार्क मोड इस्तेमाल करें',
+  useLightMode: 'लाइट मोड इस्तेमाल करें',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'कमाई',
   period: 'कमाई की अवधि',
   breakdown: 'कहाँ से आई',
   payout: 'अगला भुगतान',
-  payoutState: { scheduled: 'निर्धारित', processing: 'रास्ते में', paid: 'भुगतान हो गया', held: 'रोका गया', failed: 'विफल' },
+  payoutState: {
+    scheduled: 'निर्धारित',
+    processing: 'रास्ते में',
+    paid: 'भुगतान हो गया',
+    held: 'रोका गया',
+    failed: 'विफल',
+  },
   chart: (label) => `${label} की कमाई, अवधि के अनुसार`,
   empty: 'अभी तक कोई कमाई नहीं',
   earnings: 'कमाई',
@@ -2052,7 +2347,8 @@ const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
     submit: 'डिलीवरी की पुष्टि करें',
     required: 'ज़रूरी',
     missing: 'पुष्टि करने से पहले यह ज़रूरी है।',
-    missingSummary: (n) => plural('hi', n, { one: 'अभी {n} चीज़ बाकी है', other: 'अभी {n} चीज़ें बाकी हैं' }),
+    missingSummary: (n) =>
+      plural('hi', n, { one: 'अभी {n} चीज़ बाकी है', other: 'अभी {n} चीज़ें बाकी हैं' }),
   },
   proofOfDelivery: 'डिलीवरी का प्रमाण',
 };
@@ -2111,9 +2407,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'और फ़ॉर्मैटिंग', moreMenu: 'और फ़ॉर्मैटिंग' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'फ़िल्टर', showAll: 'सभी दिखाएं' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'फ़िल्टर',
+  showAll: 'सभी दिखाएं',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'पिछली श्रेणियाँ', next: 'अगली श्रेणियाँ' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'पिछली श्रेणियाँ',
+  next: 'अगली श्रेणियाँ',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2140,7 +2442,11 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   priceDetailsFor: (name) => `${name} की कीमत का विवरण`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'पासवर्ड दिखाएँ', hidePassword: 'पासवर्ड छिपाएँ', required: 'आवश्यक' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'पासवर्ड दिखाएँ',
+  hidePassword: 'पासवर्ड छिपाएँ',
+  required: 'आवश्यक',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'कॉल करें',
@@ -2238,252 +2544,263 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "बदलाव सहेजें" : "चैट शुरू करें" + (count ? ' · ' + plural('hi', count, {"one": "{n} एजेंट", "other": "{n} एजेंट"}) : ''),
-  you: "आप",
-  responseFailed: "{0} जवाब नहीं दे सका। कृपया फिर से प्रयास करें।",
-  editAgentTitle: "एजेंट संपादित करें",
-  aLittleHelp: "थोड़ी मदद",
-  aFewMindsOneConversation: "कुछ मन। एक बातचीत.",
-  aLittleRoomForSomethingNew: "कुछ नया करने के लिए थोड़ी सी जगह",
-  accountDetails: "खाता विवरण",
-  add: "जोड़ें",
-  add2: "जोड़ें {0}",
-  added: "जोड़ा गया",
-  addedToYourWorkspace: "आपके कार्यक्षेत्र में जोड़ा गया",
-  agent: "एजेंट",
-  agentConversation: "एजेंट बातचीत",
-  appearance: "उपस्थिति",
-  apps: "ऐप्स · {0}",
-  availability: "उपलब्धता",
-  backToMarketplace: "बाज़ार पर वापस",
-  billing: "बिलिंग",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "बॉट",
-  bringYourAgentsIntoOneChat: "अपने एजेंटों को एक चैट में लाएँ।",
-  category: "श्रेणी",
-  chatActions: "चैट क्रियाएँ",
-  chatList: "चैट सूची",
-  chatName: "चैट नाम",
-  chatRemoved: "चैट हटा दी गई",
-  chatWithYourAgents: "अपने एजेंटों के साथ चैट करें",
-  chooseAnAgentOrCreateYourOwn: "बातचीत शुरू करने के लिए एक एजेंट चुनें या अपना एजेंट बनाएं।",
-  chooseWhoSJoiningTheConversation: "चुनें कि बातचीत में कौन शामिल हो रहा है।",
-  chooseYourTeammates: "अपने साथियों को चुनें",
-  closeMarketplace: "बाज़ार बंद करें",
-  closeSearch: "खोज बंद करें",
-  company: "कंपनी",
-  companyDetails: "कंपनी विवरण",
-  completionSound: "समापन ध्वनि",
-  connectedAccount: "कनेक्टेड खाता",
-  connector: "कनेक्टर",
-  conversationIDCopied: "वार्तालाप आईडी कॉपी की गई",
-  conversationCopied: "बातचीत कॉपी की गई",
-  conversationOptions: "बातचीत के विकल्प",
-  conversations: "बातचीत",
-  copied: "कॉपी हो गया",
-  copyConversation: "बातचीत की प्रतिलिपि बनाएँ",
-  copyConversationID: "वार्तालाप आईडी कॉपी करें",
-  copyResponse: "जवाब कॉपी करें",
-  couldnTCopyPleaseTryAgain: "कॉपी नहीं किया जा सका. कृपया पुन: प्रयास करें।",
-  create: "बनाएं",
-  createANewBot: "एक नया बॉट बनाएं",
-  createBotOrChat: "बॉट बनाएं या चैट करें",
-  criticalRequests: "महत्वपूर्ण अनुरोध",
-  customize: "अनुकूलित करें",
-  customizeANewTeammate: "एक नए साथी को अनुकूलित करें।",
-  dateOfBirth: "जन्मतिथि",
-  demoIntegrationAddingSavesItToThis: "डेमो एकीकरण. जोड़ने से यह इस ब्राउज़र में सहेजा जाता है; कोई बाहरी खाता जुड़ा नहीं है.",
-  desktopApp: "डेस्कटॉप ऐप",
-  details: "विवरण",
-  developer: "डेवलपर",
-  deviceID: "डिवाइस आईडी",
-  discover: "डिस्कवर",
-  dispatchAlerts: "चेतावनियाँ भेजें",
-  editConversationAgents: "वार्तालाप एजेंटों को संपादित करें",
-  editBot: "बॉट संपादित करें",
-  editGroup: "समूह संपादित करें",
-  editAgent: "संपादित करें {0}",
-  email: "ईमेल",
-  everydayEssentials: "रोजमर्रा की आवश्यक वस्तुएं",
-  exploreMarketplace: "बाज़ार का अन्वेषण करें",
-  explorePlugins: "प्लगइन्स एक्सप्लोर करें",
-  explorePluginsAndBotsToBuildYour: "अपनी टीम बनाने के लिए प्लगइन्स और बॉट का अन्वेषण करें।",
-  findYourNextTeammate: "अपना अगला साथी ढूंढें",
-  findYourNextToolOrTeammate: "अपना अगला टूल या टीम-साथी ढूंढें",
-  firstName: "पहला नाम",
-  folders: "फ़ोल्डर्स",
-  general: "सामान्य",
-  getNotifiedWhenTheModeNeedsTo: "जब मोड को कोई महत्वपूर्ण निर्णय लेने की आवश्यकता हो तो सूचित करें",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "उपयोगी प्रतिक्रिया",
-  inTheBrowser: "ब्राउज़र में",
-  inThisConversation: "इस बातचीत में",
-  includes: "शामिल है",
-  insideTheApp: "ऐप के अंदर",
-  installed: "स्थापित",
-  integrations: "एकीकरण",
-  iLlApproachThisFromThePerspective: "मैं इसे {0} के परिप्रेक्ष्य से देखूंगा।",
-  lastName: "अंतिम नाम",
-  limits: "सीमाएं",
-  logOutFromAllDevices: "सभी डिवाइस से लॉग आउट करें",
-  logout: "लॉग आउट",
-  manage: "मैनेज करें",
-  manageLimits: "सीमाएँ प्रबंधित करें",
-  marketplace: "बाज़ार",
-  marketplaceLinkCopied: "मार्केटप्लेस लिंक कॉपी किया गया",
-  marketplaceListings: "मार्केटप्लेस लिस्टिंग",
-  meetYourNextTeammate: "अपने अगले साथी से मिलें",
-  messages: "संदेश",
-  noConversationsFound: "कोई बातचीत नहीं मिली.",
-  noMatchesYet: "अभी तक कोई मिलान नहीं",
-  notifications: "सूचनाएँ",
-  openConversations: "खुली बातचीत",
-  openPullRequestLinksInsideYourApp: "अपने ऐप के अंदर पुल अनुरोध लिंक खोलें",
-  openTheMarketplaceToExplorePluginsAnd: "प्लगइन्स और बॉट्स का पता लगाने के लिए मार्केटप्लेस खोलें। किसी वार्तालाप के बॉट की उपस्थिति और विवरण को संपादित करने के लिए उसके मेनू का उपयोग करें। भावना चक्र से एक अभिव्यक्ति चुनें. आकृतियों का पता लगाने के लिए आकृति चाप को स्क्रॉल करें या खींचें, या इसकी तीर कुंजियों का उपयोग करें।",
-  prDestination: "पीआर गंतव्य",
-  people: "लोग",
-  personal: "व्यक्तिगत",
-  pinChat: "चैट पिन करें",
-  pinnedChat: "पिन की गई चैट",
-  plugins: "प्लगइन",
-  profile: "प्रोफ़ाइल",
-  public: "सार्वजनिक",
-  publicProfile: "सार्वजनिक प्रोफ़ाइल",
-  pullRequests: "पुल अनुरोध",
-  pushNotificationOnYourPhoneWhenThe: "जब ऐप आपको संदेश भेजता है तो आपके फ़ोन पर अधिसूचना पुश करें",
-  remove: "निकालें",
-  removeChat: "चैट हटाएं",
-  renameChat: "चैट का नाम बदलें",
-  responseCopied: "प्रतिक्रिया कॉपी की गई",
-  reviewProvider: "समीक्षा प्रदाता",
-  rulesAndWorkflows: "नियम और कार्यप्रवाह",
-  saveName: "नाम सहेजें",
-  sayHelloTo: "{0} को नमस्ते कहें",
-  searchConversations: "वार्तालाप खोजें",
-  searchConversations2: "वार्तालाप खोजें...",
-  searchMarketplace: "बाज़ार खोजें",
-  selectGithubOrOtherProvidersForReviews: "समीक्षाओं के लिए जीथब या अन्य प्रदाताओं का चयन करें",
-  selectedAgents: "चयनित एजेंट: {0}",
-  sendWithEnterUseShiftEnterFor: "एंटर के साथ भेजें। नई लाइन के लिए Shift + Enter का उपयोग करें। आपके परिवर्तन इस ब्राउज़र में रहते हैं.",
-  settings: "सेटिंग्स",
-  share: "शेयर करें",
-  showFundamentalNotificationsWhenAnAgentCompletes: "जब कोई एजेंट कोई कार्य पूरा कर लेता है तो मूलभूत सूचनाएं दिखाएं",
-  signOut: "साइन आउट करें",
-  skills: "कौशल",
-  skills2: "कौशल · {0}",
-  soundEffectATaskIsCompleted: "ध्वनि प्रभाव से कोई कार्य पूरा हो जाता है",
-  startAConversation: "बातचीत शुरू करें",
-  startAGroupChat: "समूह चैट प्रारंभ करें",
-  startChat: "चैट प्रारंभ करें",
-  storage: "भंडारण",
-  support: "समर्थन",
-  systemNotifications: "सिस्टम सूचनाएं",
-  thinkingTogether: "साथ मिलकर सोचना...",
-  thinking: "सोच रहा हूँ...",
-  today: "आज",
-  tools: "उपकरण",
-  toolsForYourWorkflow: "आपके वर्कफ़्लो के लिए उपकरण",
-  tryAnotherNameCategoryOrKeyword: "कोई अन्य नाम, श्रेणी, या कीवर्ड आज़माएँ।",
-  ultra149Mo: "अल्ट्रा $149/माह",
-  unhelpfulResponse: "अनुपयोगी प्रतिक्रिया",
-  unpinChat: "चैट को अनपिन करें",
-  upgradeToMax: "Max में अपग्रेड करें",
-  useToCreateABotOrStart: "बॉट बनाने या कई एजेंटों के साथ बातचीत शुरू करने के लिए + का उपयोग करें।",
-  viewAdded: "जोड़ा गया दृश्य {0}",
-  viewAll: "सभी देखें",
-  viewTeamProfile: "टीम प्रोफ़ाइल देखें",
-  viewItem: "देखें {0}",
-  website: "वेबसाइट",
-  whenEnabledYourProfilePageWillBe: "सक्षम होने पर आपका प्रोफ़ाइल पृष्ठ किसी को भी दिखाई देगा",
-  youAreOn7xMoreUsageThan: "आप प्रीमियम से 7 गुना अधिक उपयोग कर रहे हैं",
-  youAreOn7xMoreUsageThan2: "आप नियमित की तुलना में 7 गुना अधिक उपयोग कर रहे हैं।",
-  areHereSendAMessageToGet: "{0} यहाँ हैं। सभी का दृष्टिकोण जानने के लिए एक संदेश भेजें।",
-  itemDetails: "{0} विवरण",
-  agentThinking: "{0} सोच रहा है",
-  by: "{0} · {1} द्वारा",
-  results: (count: number) => plural('hi', count, {"other": "{n} परिणाम"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('hi', apps, {"one": "{n} ऐप", "other": "{n} ऐप"}) + ", " : '') + plural('hi', skills, {"one": "{n} कौशल", "other": "{n} कौशल"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'बदलाव सहेजें'
+      : 'चैट शुरू करें' +
+        (count ? ' · ' + plural('hi', count, { one: '{n} एजेंट', other: '{n} एजेंट' }) : ''),
+  you: 'आप',
+  responseFailed: '{0} जवाब नहीं दे सका। कृपया फिर से प्रयास करें।',
+  editAgentTitle: 'एजेंट संपादित करें',
+  aLittleHelp: 'थोड़ी मदद',
+  aFewMindsOneConversation: 'कुछ मन। एक बातचीत.',
+  aLittleRoomForSomethingNew: 'कुछ नया करने के लिए थोड़ी सी जगह',
+  accountDetails: 'खाता विवरण',
+  add: 'जोड़ें',
+  add2: 'जोड़ें {0}',
+  added: 'जोड़ा गया',
+  addedToYourWorkspace: 'आपके कार्यक्षेत्र में जोड़ा गया',
+  agent: 'एजेंट',
+  agentConversation: 'एजेंट बातचीत',
+  appearance: 'उपस्थिति',
+  apps: 'ऐप्स · {0}',
+  availability: 'उपलब्धता',
+  backToMarketplace: 'बाज़ार पर वापस',
+  billing: 'बिलिंग',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'बॉट',
+  bringYourAgentsIntoOneChat: 'अपने एजेंटों को एक चैट में लाएँ।',
+  category: 'श्रेणी',
+  chatActions: 'चैट क्रियाएँ',
+  chatList: 'चैट सूची',
+  chatName: 'चैट नाम',
+  chatRemoved: 'चैट हटा दी गई',
+  chatWithYourAgents: 'अपने एजेंटों के साथ चैट करें',
+  chooseAnAgentOrCreateYourOwn: 'बातचीत शुरू करने के लिए एक एजेंट चुनें या अपना एजेंट बनाएं।',
+  chooseWhoSJoiningTheConversation: 'चुनें कि बातचीत में कौन शामिल हो रहा है।',
+  chooseYourTeammates: 'अपने साथियों को चुनें',
+  closeMarketplace: 'बाज़ार बंद करें',
+  closeSearch: 'खोज बंद करें',
+  company: 'कंपनी',
+  companyDetails: 'कंपनी विवरण',
+  completionSound: 'समापन ध्वनि',
+  connectedAccount: 'कनेक्टेड खाता',
+  connector: 'कनेक्टर',
+  conversationIDCopied: 'वार्तालाप आईडी कॉपी की गई',
+  conversationCopied: 'बातचीत कॉपी की गई',
+  conversationOptions: 'बातचीत के विकल्प',
+  conversations: 'बातचीत',
+  copied: 'कॉपी हो गया',
+  copyConversation: 'बातचीत की प्रतिलिपि बनाएँ',
+  copyConversationID: 'वार्तालाप आईडी कॉपी करें',
+  copyResponse: 'जवाब कॉपी करें',
+  couldnTCopyPleaseTryAgain: 'कॉपी नहीं किया जा सका. कृपया पुन: प्रयास करें।',
+  create: 'बनाएं',
+  createANewBot: 'एक नया बॉट बनाएं',
+  createBotOrChat: 'बॉट बनाएं या चैट करें',
+  criticalRequests: 'महत्वपूर्ण अनुरोध',
+  customize: 'अनुकूलित करें',
+  customizeANewTeammate: 'एक नए साथी को अनुकूलित करें।',
+  dateOfBirth: 'जन्मतिथि',
+  demoIntegrationAddingSavesItToThis:
+    'डेमो एकीकरण. जोड़ने से यह इस ब्राउज़र में सहेजा जाता है; कोई बाहरी खाता जुड़ा नहीं है.',
+  desktopApp: 'डेस्कटॉप ऐप',
+  details: 'विवरण',
+  developer: 'डेवलपर',
+  deviceID: 'डिवाइस आईडी',
+  discover: 'डिस्कवर',
+  dispatchAlerts: 'चेतावनियाँ भेजें',
+  editConversationAgents: 'वार्तालाप एजेंटों को संपादित करें',
+  editBot: 'बॉट संपादित करें',
+  editGroup: 'समूह संपादित करें',
+  editAgent: 'संपादित करें {0}',
+  email: 'ईमेल',
+  everydayEssentials: 'रोजमर्रा की आवश्यक वस्तुएं',
+  exploreMarketplace: 'बाज़ार का अन्वेषण करें',
+  explorePlugins: 'प्लगइन्स एक्सप्लोर करें',
+  explorePluginsAndBotsToBuildYour: 'अपनी टीम बनाने के लिए प्लगइन्स और बॉट का अन्वेषण करें।',
+  findYourNextTeammate: 'अपना अगला साथी ढूंढें',
+  findYourNextToolOrTeammate: 'अपना अगला टूल या टीम-साथी ढूंढें',
+  firstName: 'पहला नाम',
+  folders: 'फ़ोल्डर्स',
+  general: 'सामान्य',
+  getNotifiedWhenTheModeNeedsTo: 'जब मोड को कोई महत्वपूर्ण निर्णय लेने की आवश्यकता हो तो सूचित करें',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'उपयोगी प्रतिक्रिया',
+  inTheBrowser: 'ब्राउज़र में',
+  inThisConversation: 'इस बातचीत में',
+  includes: 'शामिल है',
+  insideTheApp: 'ऐप के अंदर',
+  installed: 'स्थापित',
+  integrations: 'एकीकरण',
+  iLlApproachThisFromThePerspective: 'मैं इसे {0} के परिप्रेक्ष्य से देखूंगा।',
+  lastName: 'अंतिम नाम',
+  limits: 'सीमाएं',
+  logOutFromAllDevices: 'सभी डिवाइस से लॉग आउट करें',
+  logout: 'लॉग आउट',
+  manage: 'मैनेज करें',
+  manageLimits: 'सीमाएँ प्रबंधित करें',
+  marketplace: 'बाज़ार',
+  marketplaceLinkCopied: 'मार्केटप्लेस लिंक कॉपी किया गया',
+  marketplaceListings: 'मार्केटप्लेस लिस्टिंग',
+  meetYourNextTeammate: 'अपने अगले साथी से मिलें',
+  messages: 'संदेश',
+  noConversationsFound: 'कोई बातचीत नहीं मिली.',
+  noMatchesYet: 'अभी तक कोई मिलान नहीं',
+  notifications: 'सूचनाएँ',
+  openConversations: 'खुली बातचीत',
+  openPullRequestLinksInsideYourApp: 'अपने ऐप के अंदर पुल अनुरोध लिंक खोलें',
+  openTheMarketplaceToExplorePluginsAnd:
+    'प्लगइन्स और बॉट्स का पता लगाने के लिए मार्केटप्लेस खोलें। किसी वार्तालाप के बॉट की उपस्थिति और विवरण को संपादित करने के लिए उसके मेनू का उपयोग करें। भावना चक्र से एक अभिव्यक्ति चुनें. आकृतियों का पता लगाने के लिए आकृति चाप को स्क्रॉल करें या खींचें, या इसकी तीर कुंजियों का उपयोग करें।',
+  prDestination: 'पीआर गंतव्य',
+  people: 'लोग',
+  personal: 'व्यक्तिगत',
+  pinChat: 'चैट पिन करें',
+  pinnedChat: 'पिन की गई चैट',
+  plugins: 'प्लगइन',
+  profile: 'प्रोफ़ाइल',
+  public: 'सार्वजनिक',
+  publicProfile: 'सार्वजनिक प्रोफ़ाइल',
+  pullRequests: 'पुल अनुरोध',
+  pushNotificationOnYourPhoneWhenThe: 'जब ऐप आपको संदेश भेजता है तो आपके फ़ोन पर अधिसूचना पुश करें',
+  remove: 'निकालें',
+  removeChat: 'चैट हटाएं',
+  renameChat: 'चैट का नाम बदलें',
+  responseCopied: 'प्रतिक्रिया कॉपी की गई',
+  reviewProvider: 'समीक्षा प्रदाता',
+  rulesAndWorkflows: 'नियम और कार्यप्रवाह',
+  saveName: 'नाम सहेजें',
+  sayHelloTo: '{0} को नमस्ते कहें',
+  searchConversations: 'वार्तालाप खोजें',
+  searchConversations2: 'वार्तालाप खोजें...',
+  searchMarketplace: 'बाज़ार खोजें',
+  selectGithubOrOtherProvidersForReviews: 'समीक्षाओं के लिए जीथब या अन्य प्रदाताओं का चयन करें',
+  selectedAgents: 'चयनित एजेंट: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'एंटर के साथ भेजें। नई लाइन के लिए Shift + Enter का उपयोग करें। आपके परिवर्तन इस ब्राउज़र में रहते हैं.',
+  settings: 'सेटिंग्स',
+  share: 'शेयर करें',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'जब कोई एजेंट कोई कार्य पूरा कर लेता है तो मूलभूत सूचनाएं दिखाएं',
+  signOut: 'साइन आउट करें',
+  skills: 'कौशल',
+  skills2: 'कौशल · {0}',
+  soundEffectATaskIsCompleted: 'ध्वनि प्रभाव से कोई कार्य पूरा हो जाता है',
+  startAConversation: 'बातचीत शुरू करें',
+  startAGroupChat: 'समूह चैट प्रारंभ करें',
+  startChat: 'चैट प्रारंभ करें',
+  storage: 'भंडारण',
+  support: 'समर्थन',
+  systemNotifications: 'सिस्टम सूचनाएं',
+  thinkingTogether: 'साथ मिलकर सोचना...',
+  thinking: 'सोच रहा हूँ...',
+  today: 'आज',
+  tools: 'उपकरण',
+  toolsForYourWorkflow: 'आपके वर्कफ़्लो के लिए उपकरण',
+  tryAnotherNameCategoryOrKeyword: 'कोई अन्य नाम, श्रेणी, या कीवर्ड आज़माएँ।',
+  ultra149Mo: 'अल्ट्रा $149/माह',
+  unhelpfulResponse: 'अनुपयोगी प्रतिक्रिया',
+  unpinChat: 'चैट को अनपिन करें',
+  upgradeToMax: 'Max में अपग्रेड करें',
+  useToCreateABotOrStart: 'बॉट बनाने या कई एजेंटों के साथ बातचीत शुरू करने के लिए + का उपयोग करें।',
+  viewAdded: 'जोड़ा गया दृश्य {0}',
+  viewAll: 'सभी देखें',
+  viewTeamProfile: 'टीम प्रोफ़ाइल देखें',
+  viewItem: 'देखें {0}',
+  website: 'वेबसाइट',
+  whenEnabledYourProfilePageWillBe: 'सक्षम होने पर आपका प्रोफ़ाइल पृष्ठ किसी को भी दिखाई देगा',
+  youAreOn7xMoreUsageThan: 'आप प्रीमियम से 7 गुना अधिक उपयोग कर रहे हैं',
+  youAreOn7xMoreUsageThan2: 'आप नियमित की तुलना में 7 गुना अधिक उपयोग कर रहे हैं।',
+  areHereSendAMessageToGet: '{0} यहाँ हैं। सभी का दृष्टिकोण जानने के लिए एक संदेश भेजें।',
+  itemDetails: '{0} विवरण',
+  agentThinking: '{0} सोच रहा है',
+  by: '{0} · {1} द्वारा',
+  results: (count: number) => plural('hi', count, { other: '{n} परिणाम' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('hi', apps, { one: '{n} ऐप', other: '{n} ऐप' }) + ', ' : '') +
+    plural('hi', skills, { one: '{n} कौशल', other: '{n} कौशल' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Bloom डिज़ाइन कार्य", defaultTeam: "Bloom टीम",
+    defaultTitle: 'Bloom डिज़ाइन कार्य',
+    defaultTeam: 'Bloom टीम',
     openTicket: (code, title) => `खोलें ${code}: ${title}`,
-    addTicketTo: column => `कार्य जोड़ें ${column}`,
-    "board": "परियोजना बोर्ड",
-    "controls": "बोर्ड नियंत्रण",
-    "navigation": "नेविगेशन खोलें",
-    "inbox": "परियोजना इनबॉक्स खोलें",
-    "newTicket": "नया कार्य",
-    "columns": "परियोजना बोर्ड के स्तंभ",
-    "sortTickets": "कार्य क्रमबद्ध करें",
-    "filterTickets": "कार्य फ़िल्टर करें",
-    "displayOptions": "प्रदर्शन विकल्प",
-    "sort": "क्रमबद्ध करें",
-    "filter": "फ़िल्टर",
-    "display": "प्रदर्शन",
-    "manualOrder": "मैन्युअल क्रम",
-    "priority": "प्राथमिकता",
-    "title": "शीर्षक",
-    "project": "परियोजना",
-    "allPriorities": "सभी प्राथमिकताएँ",
-    "allProjects": "सभी परियोजनाएँ",
-    "clearFilters": "फ़िल्टर साफ़ करें",
-    "showDone": "पूर्ण स्तंभ दिखाएँ",
-    "fillScreens": "चौड़ी स्क्रीन भरें",
-    "createTicket": "कार्य बनाएँ",
-    "closeCreate": "कार्य निर्माण बंद करें",
-    "ticketTitle": "कार्य का शीर्षक",
-    "enterTitle": "कार्य का शीर्षक दर्ज करें",
-    "description": "विवरण",
-    "descriptionArea": "विवरण क्षेत्र",
-    "status": "स्थिति",
-    "urgency": "तात्कालिकता",
-    "assignee": "ज़िम्मेदार",
-    "unassigned": "अनिर्धारित",
-    "keepCreating": "बनाते रहें",
-    "cancel": "रद्द करें",
-    "addTicket": "कार्य जोड़ें",
-    "sortTitle": "शीर्षक से क्रमबद्ध करें",
-    "noTickets": "यहाँ कोई समस्या नहीं है",
-    "favoriteAdd": "पसंदीदा में जोड़ें",
-    "favoriteRemove": "पसंदीदा से हटाएँ",
-    "copyLink": "कार्य का लिंक कॉपी करें",
-    "actions": "कार्य की कार्रवाइयाँ",
-    "editDescription": "विवरण संपादित करें",
-    "copyId": "कार्य ID कॉपी करें",
-    "reopen": "कार्य फिर खोलें",
-    "markDone": "पूर्ण चिह्नित करें",
-    "closeDetails": "कार्य विवरण बंद करें",
-    "linkCopied": "कार्य का लिंक कॉपी हुआ",
-    "idCopied": "कार्य ID कॉपी हुआ",
-    "copyFailed": "कॉपी नहीं हो सका। फिर कोशिश करें।",
-    "createdBy": "निर्माता",
-    "saveDescription": "विवरण सहेजें",
-    "ticketDescription": "कार्य का विवरण",
-    "properties": "गुण",
-    "editAssignees": "ज़िम्मेदार संपादित करें",
-    "resources": "संसाधन",
-    "tokens": "खर्च किए गए टोकन",
-    "comments": "टिप्पणियाँ",
-    "you": "आप",
-    "justNow": "अभी",
-    "addComment": "टिप्पणी जोड़ें",
-    "enterComment": "अपनी टिप्पणी दर्ज करें",
-    "postComment": "टिप्पणी पोस्ट करें",
-    "moveUp": "ऊपर ले जाएँ",
-    "moveDown": "नीचे ले जाएँ",
-    "nextColumn": "अगले स्तंभ में ले जाएँ",
-    "previousColumn": "पिछले स्तंभ में ले जाएँ",
-    "keyboardHint": "Enter खोलता है। स्पेस चुनता है, तीर स्थान बदलते हैं, स्पेस छोड़ता है और Escape रद्द करता है।"
-},
+    addTicketTo: (column) => `कार्य जोड़ें ${column}`,
+    board: 'परियोजना बोर्ड',
+    controls: 'बोर्ड नियंत्रण',
+    navigation: 'नेविगेशन खोलें',
+    inbox: 'परियोजना इनबॉक्स खोलें',
+    newTicket: 'नया कार्य',
+    columns: 'परियोजना बोर्ड के स्तंभ',
+    sortTickets: 'कार्य क्रमबद्ध करें',
+    filterTickets: 'कार्य फ़िल्टर करें',
+    displayOptions: 'प्रदर्शन विकल्प',
+    sort: 'क्रमबद्ध करें',
+    filter: 'फ़िल्टर',
+    display: 'प्रदर्शन',
+    manualOrder: 'मैन्युअल क्रम',
+    priority: 'प्राथमिकता',
+    title: 'शीर्षक',
+    project: 'परियोजना',
+    allPriorities: 'सभी प्राथमिकताएँ',
+    allProjects: 'सभी परियोजनाएँ',
+    clearFilters: 'फ़िल्टर साफ़ करें',
+    showDone: 'पूर्ण स्तंभ दिखाएँ',
+    fillScreens: 'चौड़ी स्क्रीन भरें',
+    createTicket: 'कार्य बनाएँ',
+    closeCreate: 'कार्य निर्माण बंद करें',
+    ticketTitle: 'कार्य का शीर्षक',
+    enterTitle: 'कार्य का शीर्षक दर्ज करें',
+    description: 'विवरण',
+    descriptionArea: 'विवरण क्षेत्र',
+    status: 'स्थिति',
+    urgency: 'तात्कालिकता',
+    assignee: 'ज़िम्मेदार',
+    unassigned: 'अनिर्धारित',
+    keepCreating: 'बनाते रहें',
+    cancel: 'रद्द करें',
+    addTicket: 'कार्य जोड़ें',
+    sortTitle: 'शीर्षक से क्रमबद्ध करें',
+    noTickets: 'यहाँ कोई समस्या नहीं है',
+    favoriteAdd: 'पसंदीदा में जोड़ें',
+    favoriteRemove: 'पसंदीदा से हटाएँ',
+    copyLink: 'कार्य का लिंक कॉपी करें',
+    actions: 'कार्य की कार्रवाइयाँ',
+    editDescription: 'विवरण संपादित करें',
+    copyId: 'कार्य ID कॉपी करें',
+    reopen: 'कार्य फिर खोलें',
+    markDone: 'पूर्ण चिह्नित करें',
+    closeDetails: 'कार्य विवरण बंद करें',
+    linkCopied: 'कार्य का लिंक कॉपी हुआ',
+    idCopied: 'कार्य ID कॉपी हुआ',
+    copyFailed: 'कॉपी नहीं हो सका। फिर कोशिश करें।',
+    createdBy: 'निर्माता',
+    saveDescription: 'विवरण सहेजें',
+    ticketDescription: 'कार्य का विवरण',
+    properties: 'गुण',
+    editAssignees: 'ज़िम्मेदार संपादित करें',
+    resources: 'संसाधन',
+    tokens: 'खर्च किए गए टोकन',
+    comments: 'टिप्पणियाँ',
+    you: 'आप',
+    justNow: 'अभी',
+    addComment: 'टिप्पणी जोड़ें',
+    enterComment: 'अपनी टिप्पणी दर्ज करें',
+    postComment: 'टिप्पणी पोस्ट करें',
+    moveUp: 'ऊपर ले जाएँ',
+    moveDown: 'नीचे ले जाएँ',
+    nextColumn: 'अगले स्तंभ में ले जाएँ',
+    previousColumn: 'पिछले स्तंभ में ले जाएँ',
+    keyboardHint: 'Enter खोलता है। स्पेस चुनता है, तीर स्थान बदलते हैं, स्पेस छोड़ता है और Escape रद्द करता है।',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "एजेंट अवतार", unavailable: "अवतार उपलब्ध नहीं है", },
+  AGENT_AVATAR_MESSAGES: { label: 'एजेंट अवतार', unavailable: 'अवतार उपलब्ध नहीं है' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

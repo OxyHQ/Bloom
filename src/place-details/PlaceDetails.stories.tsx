@@ -5,16 +5,30 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BottomSheet } from '../bottom-sheet';
 import { Button } from '../button';
 import { ContentPanel } from '../content-panel';
-import { RiBankCardLine, RiBookmarkLine, RiGlobalLine, RiLeafLine, RiMapPinLine, RiParkingBoxLine, RiPencilLine, RiPhoneLine, RiQrCodeLine, RiRouteLine, RiShare2Line, RiSunLine, RiVolumeUpLine, RiWheelchairLine, RiWifiLine } from '../icons/remix';
+import {
+  RiBankCardLine,
+  RiBookmarkLine,
+  RiGlobalLine,
+  RiLeafLine,
+  RiMapPinLine,
+  RiParkingBoxLine,
+  RiPencilLine,
+  RiPhoneLine,
+  RiQrCodeLine,
+  RiRouteLine,
+  RiShare2Line,
+  RiSunLine,
+  RiVolumeUpLine,
+  RiWheelchairLine,
+  RiWifiLine,
+} from '../icons/remix';
 import { ListingPhotoGrid, ListingSection } from '../listing-details';
 import { PlaceCard } from '../place-card';
 import { PlaceReviewCard, PlaceReviewSummary } from '../place-reviews';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import ZoomableMediaGallery, {
-  type ZoomableMediaGalleryHandle,
-} from '../zoomable-media-gallery';
+import ZoomableMediaGallery, { type ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
 import { PlaceAmenities } from './PlaceAmenities';
 import { PlaceHours } from './PlaceHours';
 import { PlaceInfoList } from './PlaceInfoList';
@@ -64,7 +78,14 @@ const INFO: PlaceInfoItem[] = [
     action: 'copy',
     onPress: noop,
   },
-  { id: 'phone', icon: RiPhoneLine, label: 'Phone', value: '+34 938 55 41 20', action: 'call', onPress: noop },
+  {
+    id: 'phone',
+    icon: RiPhoneLine,
+    label: 'Phone',
+    value: '+34 938 55 41 20',
+    action: 'call',
+    onPress: noop,
+  },
   {
     id: 'website',
     icon: RiGlobalLine,
@@ -134,7 +155,24 @@ function hours(shape: readonly number[], labels: readonly string[]) {
   }));
 }
 
-const HOUR_LABELS = ['6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'];
+const HOUR_LABELS = [
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
+  '12',
+  '13',
+  '14',
+  '15',
+  '16',
+  '17',
+  '18',
+  '19',
+  '20',
+  '21',
+];
 
 const POPULAR: PlacePopularTimesDay[] = [
   {
@@ -185,14 +223,22 @@ const STOPS: PlaceTransitStop[] = [
     mode: 'bus',
     distance: '120 m · 2 min',
     note: 'Step-free access',
-    lines: [
-      { name: '12', color: '#1F6FB2' },
-      { name: '34', color: '#B24F1F' },
-      { name: 'N2' },
-    ],
+    lines: [{ name: '12', color: '#1F6FB2' }, { name: '34', color: '#B24F1F' }, { name: 'N2' }],
     departures: [
-      { id: 'a', line: { name: '12', color: '#1F6FB2' }, headsign: 'Pla del Bosc', time: '4 min', realtime: true },
-      { id: 'b', line: { name: '34', color: '#B24F1F' }, headsign: 'Estació Vella', time: '9 min', realtime: true },
+      {
+        id: 'a',
+        line: { name: '12', color: '#1F6FB2' },
+        headsign: 'Pla del Bosc',
+        time: '4 min',
+        realtime: true,
+      },
+      {
+        id: 'b',
+        line: { name: '34', color: '#B24F1F' },
+        headsign: 'Estació Vella',
+        time: '9 min',
+        realtime: true,
+      },
       { id: 'c', line: { name: '12', color: '#1F6FB2' }, headsign: 'Pla del Bosc', time: '18:42' },
     ],
   },
@@ -206,7 +252,13 @@ const STOPS: PlaceTransitStop[] = [
       { name: 'L7', color: '#5A4FB2' },
     ],
     departures: [
-      { id: 'd', line: { name: 'L4', color: '#E0A526' }, headsign: 'Port Antic', time: '2 min', realtime: true },
+      {
+        id: 'd',
+        line: { name: 'L4', color: '#E0A526' },
+        headsign: 'Port Antic',
+        time: '2 min',
+        realtime: true,
+      },
       { id: 'e', line: { name: 'L7', color: '#5A4FB2' }, headsign: 'Camp Gran', time: '7 min' },
     ],
   },
@@ -252,12 +304,7 @@ export const InfoList: Story = {
 export const Hours: Story = {
   render: () => (
     <Frame>
-      <PlaceHours
-        state="open"
-        summary="Open until 20:00"
-        days={WEEK}
-        testID="hours-closed"
-      />
+      <PlaceHours state="open" summary="Open until 20:00" days={WEEK} testID="hours-closed" />
       <PlaceHours
         state="closing-soon"
         summary="Closes at 20:00"
@@ -391,7 +438,7 @@ function PlaceScreenBody() {
           onPressStop={noop}
           footer={
             <View style={{ flexDirection: 'row' }}>
-              <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
+              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
                 All nearby stops
               </Button>
             </View>

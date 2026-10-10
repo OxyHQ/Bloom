@@ -133,13 +133,7 @@ function TypingDotsComponent({
         }}
       >
         {[0, 1, 2].map((index) => (
-          <Dot
-            key={index}
-            size={size}
-            color={dotColor}
-            delay={index * STAGGER}
-            animate={animate}
-          />
+          <Dot key={index} size={size} color={dotColor} delay={index * STAGGER} animate={animate} />
         ))}
       </View>
       {named ? (

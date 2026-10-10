@@ -75,7 +75,11 @@ function IndeterminateBar({ paint, testID }: { paint: CreatorStudioPaint; testID
   useEffect(() => {
     if (IS_WEB || reducedMotion || width === 0) return;
     x.value = 0;
-    x.value = withRepeat(withTiming(1, { duration: SWEEP_MS, easing: Easing.inOut(Easing.ease) }), -1, false);
+    x.value = withRepeat(
+      withTiming(1, { duration: SWEEP_MS, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      false,
+    );
     return () => cancelAnimation(x);
   }, [reducedMotion, width, x]);
 
@@ -126,7 +130,12 @@ function Waveform({ seed, color, testID }: { seed: string; color: string; testID
       {bars.map((h, i) => (
         <View
           key={i}
-          style={{ width: WAVE_BAR, height: Math.max(3, Math.round(h * WAVE_HEIGHT)), borderRadius: 1, backgroundColor: color }}
+          style={{
+            width: WAVE_BAR,
+            height: Math.max(3, Math.round(h * WAVE_HEIGHT)),
+            borderRadius: 1,
+            backgroundColor: color,
+          }}
         />
       ))}
     </View>
@@ -152,7 +161,11 @@ function TrackUploadRowComponent({
   const theme = useTheme();
   useInteractiveWebCss(CREATOR_STUDIO_STYLE_ID, CREATOR_STUDIO_CSS);
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
-  const labels: TrackUploadRowLabels = { ...messages.upload, retry: common.retry, ...labelOverrides };
+  const labels: TrackUploadRowLabels = {
+    ...messages.upload,
+    retry: common.retry,
+    ...labelOverrides,
+  };
   const bar = uploadBarKind(status);
   const percent = clampProgress(progress);
   const sizeLabel = typeof size === 'number' ? formatFileSize(size, locale) : size;
@@ -175,7 +188,11 @@ function TrackUploadRowComponent({
   let statusLine: React.ReactNode;
   if (status === 'uploading') {
     statusLine = (
-      <Text variant="caption-1-regular" numberOfLines={1} style={[styles.tabular, { color: paint.textSecondary }]}>
+      <Text
+        variant="caption-1-regular"
+        numberOfLines={1}
+        style={[styles.tabular, { color: paint.textSecondary }]}
+      >
         {remaining ? `${percent}% · ${remaining}` : `${percent}%`}
       </Text>
     );
@@ -187,7 +204,11 @@ function TrackUploadRowComponent({
     );
   } else if (status === 'ready') {
     statusLine = (
-      <Text variant="caption-1-regular" numberOfLines={1} style={[styles.tabular, { color: paint.textSecondary }]}>
+      <Text
+        variant="caption-1-regular"
+        numberOfLines={1}
+        style={[styles.tabular, { color: paint.textSecondary }]}
+      >
         {duration ? `${labels.ready} · ${duration}` : labels.ready}
       </Text>
     );
@@ -214,10 +235,18 @@ function TrackUploadRowComponent({
       {tile}
       <View style={styles.body}>
         <View style={styles.nameRow}>
-          <Text variant="body-medium" numberOfLines={1} style={[styles.name, { color: paint.text }]}>
+          <Text
+            variant="body-medium"
+            numberOfLines={1}
+            style={[styles.name, { color: paint.text }]}
+          >
             {fileName}
           </Text>
-          <Text variant="caption-1-regular" numberOfLines={1} style={[styles.tabular, styles.size, { color: paint.textTertiary }]}>
+          <Text
+            variant="caption-1-regular"
+            numberOfLines={1}
+            style={[styles.tabular, styles.size, { color: paint.textTertiary }]}
+          >
             {sizeLabel}
           </Text>
         </View>
@@ -235,7 +264,11 @@ function TrackUploadRowComponent({
         ) : bar === 'indeterminate' ? (
           <IndeterminateBar paint={paint} testID={testID ? `${testID}-processing` : undefined} />
         ) : status === 'ready' ? (
-          <Waveform seed={fileName} color={paint.textTertiary} testID={testID ? `${testID}-waveform` : undefined} />
+          <Waveform
+            seed={fileName}
+            color={paint.textTertiary}
+            testID={testID ? `${testID}-waveform` : undefined}
+          />
         ) : null}
         <View testID={testID ? `${testID}-status` : undefined} aria-live="polite">
           {statusLine}
@@ -244,24 +277,26 @@ function TrackUploadRowComponent({
       <View style={styles.actions}>
         {status === 'failed' && onRetry ? (
           <Button
-
             size="xs"
             leadingIcon={RiRefreshLine}
             onPress={onRetry}
-            testID={testID ? `${testID}-retry` : undefined} tone="neutral" appearance="outline"
+            testID={testID ? `${testID}-retry` : undefined}
+            tone="neutral"
+            appearance="outline"
           >
             {labels.retry}
           </Button>
         ) : null}
         {onRemove ? (
           <Button
-
             size="sm"
             iconOnly
             leadingIcon={RiCloseLine}
             accessibilityLabel={labels.remove(fileName)}
             onPress={onRemove}
-            testID={testID ? `${testID}-remove` : undefined} tone="neutral" appearance="outline"
+            testID={testID ? `${testID}-remove` : undefined}
+            tone="neutral"
+            appearance="outline"
           />
         ) : null}
       </View>
@@ -299,7 +334,21 @@ const styles = StyleSheet.create({
   tabular: { fontVariant: ['tabular-nums'] },
   bar: { width: '100%', height: BAR_HEIGHT, borderRadius: BAR_HEIGHT / 2, overflow: 'hidden' },
   fill: { height: BAR_HEIGHT, borderRadius: BAR_HEIGHT / 2 },
-  segment: { position: 'absolute', top: 0, bottom: 0, left: 0, width: '40%', borderRadius: BAR_HEIGHT / 2 },
-  wave: { width: '100%', height: WAVE_HEIGHT, flexDirection: 'row', alignItems: 'center', gap: WAVE_GAP, overflow: 'hidden' },
+  segment: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: '40%',
+    borderRadius: BAR_HEIGHT / 2,
+  },
+  wave: {
+    width: '100%',
+    height: WAVE_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: WAVE_GAP,
+    overflow: 'hidden',
+  },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 0 },
 });

@@ -60,7 +60,11 @@ function themeColors() {
 }
 
 describe('Loading', () => {
-  it.each([['sm', 20], ['md', 24], ['lg', 44]] as const)('retains the %s public size geometry', (size, pixels) => {
+  it.each([
+    ['sm', 20],
+    ['md', 24],
+    ['lg', 44],
+  ] as const)('retains the %s public size geometry', (size, pixels) => {
     const view = renderWithTheme(<Loading size={size} />);
     expect(view.UNSAFE_getByType(SpinnerIcon).props.size).toBe(pixels);
   });
@@ -95,9 +99,7 @@ describe('Loading', () => {
   });
 
   it('accepts a caller-supplied spinner in place of its own', () => {
-    const { getByText } = renderWithTheme(
-      <Loading spinnerIcon={<Text>custom</Text>} testID="l" />,
-    );
+    const { getByText } = renderWithTheme(<Loading spinnerIcon={<Text>custom</Text>} testID="l" />);
     expect(getByText('custom')).toBeTruthy();
   });
 });
@@ -114,7 +116,9 @@ describe('Admonition', () => {
       const colors = themeColors();
       const expected = type === 'warning' ? colors.warning : colors.error;
       const outer = subjectRoot(<Admonition type={type}>x</Admonition>);
-      const border = hostNodes(outer).find(node => resolvedStyle(node.props.style).borderWidth === 1);
+      const border = hostNodes(outer).find(
+        (node) => resolvedStyle(node.props.style).borderWidth === 1,
+      );
       expect(resolvedStyle(border?.props.style).borderColor).toBe(expected);
       expect(resolvedStyle(border?.props.style).borderColor).not.toBe(colors.border);
       expect(resolvedStyle(border?.props.style).opacity).toBe(0.3);
@@ -125,7 +129,9 @@ describe('Admonition', () => {
     const colors = themeColors();
     const outer = subjectRoot(<Admonition type="info">x</Admonition>);
     expect(resolvedStyle(outer.props.style).backgroundColor).toBe(colors.infoSubtle);
-    const border = hostNodes(outer).find(node => resolvedStyle(node.props.style).borderWidth === 1);
+    const border = hostNodes(outer).find(
+      (node) => resolvedStyle(node.props.style).borderWidth === 1,
+    );
     expect(resolvedStyle(border?.props.style).borderColor).toBe(colors.info);
   });
 

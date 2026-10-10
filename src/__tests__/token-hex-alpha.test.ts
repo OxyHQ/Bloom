@@ -109,7 +109,10 @@ function findings(sf: ts.SourceFile, label: string, lineOffset = 0): Finding[] {
     if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken) {
       const left = unwrap(node.left);
       const right = unwrap(node.right);
-      if ((isColourToken(left) && isHexLiteral(right)) || (isColourToken(right) && isHexLiteral(left))) {
+      if (
+        (isColourToken(left) && isHexLiteral(right)) ||
+        (isColourToken(right) && isHexLiteral(left))
+      ) {
         record(node);
       }
     }
@@ -166,7 +169,13 @@ function testFiles(dir: string, out: string[] = []): string[] {
 }
 
 const parseFile = (file: string): ts.SourceFile =>
-  ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  ts.createSourceFile(
+    file,
+    readFileSync(file, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
 
 const SOURCES = sourceFiles(SRC);
 
@@ -223,7 +232,13 @@ describe('the scan can see what it is looking for', () => {
       (n, block) =>
         n +
         colourTokenCount(
-          ts.createSourceFile('block.tsx', block.code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX),
+          ts.createSourceFile(
+            'block.tsx',
+            block.code,
+            ts.ScriptTarget.Latest,
+            true,
+            ts.ScriptKind.TSX,
+          ),
         ),
       0,
     );
@@ -260,7 +275,13 @@ describe('no colour token is given hex alpha', () => {
   it('not in a documented example, where a consumer would copy it', () => {
     const offenders = DOC_BLOCKS.flatMap((block) =>
       findings(
-        ts.createSourceFile('block.tsx', block.code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX),
+        ts.createSourceFile(
+          'block.tsx',
+          block.code,
+          ts.ScriptTarget.Latest,
+          true,
+          ts.ScriptKind.TSX,
+        ),
         block.file,
         block.line,
       ),

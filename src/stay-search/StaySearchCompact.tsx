@@ -106,7 +106,11 @@ function StaySearchCompactComponent({
             {title}
           </Text>
           {summary ? (
-            <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+            <Text
+              variant="caption-1-regular"
+              numberOfLines={1}
+              style={{ color: palette.textSecondary }}
+            >
               {summary}
             </Text>
           ) : null}
@@ -114,14 +118,15 @@ function StaySearchCompactComponent({
       </Pressable>
       {onFilterPress ? (
         <Button
-
           size="md"
           iconOnly
           icon={filterIcon}
           onPress={onFilterPress}
           accessibilityLabel={filterLabel}
           testID={testID ? `${testID}-filter` : undefined}
-          style={{ marginRight: 9, flexShrink: 0 }} tone="neutral" appearance="outline"
+          style={{ marginRight: 9, flexShrink: 0 }}
+          tone="neutral"
+          appearance="outline"
         />
       ) : null}
     </View>

@@ -82,7 +82,8 @@ function AttachButton({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={style}>
+      style={style}
+    >
       <RiAttachment2 width={20} height={20} fill={palette.iconPrimary} />
     </Pressable>
   );
@@ -115,7 +116,8 @@ function StopButton({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={style}>
+      style={style}
+    >
       <RiStopFill width={20} height={20} fill={palette.iconSecondary} />
     </Pressable>
   );
@@ -241,19 +243,29 @@ export function AgentChatComposerBase({
                 paddingBottom: 6,
                 paddingLeft: 8,
                 paddingRight: 8,
-              }}>
+              }}
+            >
               <RiSparklingLine width={16} height={16} fill={palette.iconSecondary} />
               {showModelName ? (
                 <Text
                   variant="body-2-medium"
                   numberOfLines={1}
-                  style={{ maxWidth: MODEL_MAX_WIDTH, color: palette.textSecondary }}>
+                  style={{ maxWidth: MODEL_MAX_WIDTH, color: palette.textSecondary }}
+                >
                   {shortModel(model)}
                 </Text>
               ) : null}
             </View>
           ) : null}
-          <View style={{ flexDirection: 'row', flexShrink: 0, alignItems: 'center', gap: 8, paddingLeft: 6 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexShrink: 0,
+              alignItems: 'center',
+              gap: 8,
+              paddingLeft: 6,
+            }}
+          >
             {busy ? (
               <StopButton label={l.stop} onPress={onStop} palette={palette} />
             ) : (
@@ -263,7 +275,8 @@ export function AgentChatComposerBase({
                 size={COMPOSER_CONTROL}
                 disabled={empty || disabled}
                 onPress={submit}
-                palette={palette}>
+                palette={palette}
+              >
                 <RiArrowUpLine width={20} height={20} fill="#ffffff" />
               </PrimaryDisc>
             )}
@@ -278,7 +291,8 @@ export function AgentChatComposerBase({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-        }}>
+        }}
+      >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <StatusItem icon={RiInfinityLine} label={provider ?? l.notConfigured} palette={palette} />
         </View>

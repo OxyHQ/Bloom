@@ -3,7 +3,14 @@ import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { RiCalendarLine, RiChat3Line, RiFileTextLine, RiHome4Line, RiKey2Line, RiBankCardLine } from '../icons/remix';
+import {
+  RiCalendarLine,
+  RiChat3Line,
+  RiFileTextLine,
+  RiHome4Line,
+  RiKey2Line,
+  RiBankCardLine,
+} from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { DocumentList } from './DocumentList';
@@ -41,31 +48,149 @@ const PHOTOS = [
 ];
 
 const PAYMENTS: RentPayment[] = [
-  { id: 'sep', month: 'September 2026', dueDate: '1 Sep 2026', amount: '€1,150', method: 'Bank transfer', status: 'pending' },
-  { id: 'aug', month: 'August 2026', dueDate: '1 Aug 2026', amount: '€1,150', method: 'Bank transfer', status: 'paid', onDownloadReceipt: noop },
-  { id: 'jul', month: 'July 2026', dueDate: '1 Jul 2026', amount: '€600 of €1,150', method: 'Card ending 4417', status: 'partial', statusLabel: 'Partial', onDownloadReceipt: noop },
-  { id: 'jun', month: 'June 2026', dueDate: '1 Jun 2026', amount: '€1,150', method: 'Bank transfer', status: 'paid', onDownloadReceipt: noop },
-  { id: 'may', month: 'May 2026', dueDate: '1 May 2026', amount: '€1,150', method: 'Bank transfer', status: 'paid', onDownloadReceipt: noop },
+  {
+    id: 'sep',
+    month: 'September 2026',
+    dueDate: '1 Sep 2026',
+    amount: '€1,150',
+    method: 'Bank transfer',
+    status: 'pending',
+  },
+  {
+    id: 'aug',
+    month: 'August 2026',
+    dueDate: '1 Aug 2026',
+    amount: '€1,150',
+    method: 'Bank transfer',
+    status: 'paid',
+    onDownloadReceipt: noop,
+  },
+  {
+    id: 'jul',
+    month: 'July 2026',
+    dueDate: '1 Jul 2026',
+    amount: '€600 of €1,150',
+    method: 'Card ending 4417',
+    status: 'partial',
+    statusLabel: 'Partial',
+    onDownloadReceipt: noop,
+  },
+  {
+    id: 'jun',
+    month: 'June 2026',
+    dueDate: '1 Jun 2026',
+    amount: '€1,150',
+    method: 'Bank transfer',
+    status: 'paid',
+    onDownloadReceipt: noop,
+  },
+  {
+    id: 'may',
+    month: 'May 2026',
+    dueDate: '1 May 2026',
+    amount: '€1,150',
+    method: 'Bank transfer',
+    status: 'paid',
+    onDownloadReceipt: noop,
+  },
 ];
 
 const LANDLORD_PAYMENTS: RentPayment[] = [
-  { id: 'sep', month: 'September 2026', dueDate: '1 Sep 2026', amount: '€1,150', method: 'Bank transfer', status: 'overdue', statusLabel: 'Overdue 12 days' },
-  { id: 'aug', month: 'August 2026', dueDate: '1 Aug 2026', amount: '€1,150', method: 'Bank transfer', status: 'paid', onDownloadReceipt: noop },
-  { id: 'jul', month: 'July 2026', dueDate: '1 Jul 2026', amount: '€1,150', method: 'Bank transfer', status: 'paid', statusLabel: 'Paid 3 days late', onDownloadReceipt: noop },
+  {
+    id: 'sep',
+    month: 'September 2026',
+    dueDate: '1 Sep 2026',
+    amount: '€1,150',
+    method: 'Bank transfer',
+    status: 'overdue',
+    statusLabel: 'Overdue 12 days',
+  },
+  {
+    id: 'aug',
+    month: 'August 2026',
+    dueDate: '1 Aug 2026',
+    amount: '€1,150',
+    method: 'Bank transfer',
+    status: 'paid',
+    onDownloadReceipt: noop,
+  },
+  {
+    id: 'jul',
+    month: 'July 2026',
+    dueDate: '1 Jul 2026',
+    amount: '€1,150',
+    method: 'Bank transfer',
+    status: 'paid',
+    statusLabel: 'Paid 3 days late',
+    onDownloadReceipt: noop,
+  },
 ];
 
 const DOCUMENTS: TenancyDocument[] = [
-  { id: 'lease', name: 'Tenancy agreement.pdf', type: 'pdf', size: '412 KB', date: 'Signed 28 Aug 2025', status: 'signed', onView: noop, onDownload: noop },
-  { id: 'renewal', name: 'Rent review addendum 2026.pdf', type: 'pdf', size: '96 KB', date: 'Sent 10 Sep 2026', status: 'pending', onSign: noop, onView: noop },
-  { id: 'inventory', name: 'Move-in inventory photos', type: 'image', size: '38 photos', date: '1 Sep 2025', onView: noop, onDownload: noop },
-  { id: 'energy', name: 'Energy certificate.docx', type: 'document', size: '1.2 MB', date: 'Valid until 3 Jun 2026', status: 'expired', onView: noop, onDownload: noop },
+  {
+    id: 'lease',
+    name: 'Tenancy agreement.pdf',
+    type: 'pdf',
+    size: '412 KB',
+    date: 'Signed 28 Aug 2025',
+    status: 'signed',
+    onView: noop,
+    onDownload: noop,
+  },
+  {
+    id: 'renewal',
+    name: 'Rent review addendum 2026.pdf',
+    type: 'pdf',
+    size: '96 KB',
+    date: 'Sent 10 Sep 2026',
+    status: 'pending',
+    onSign: noop,
+    onView: noop,
+  },
+  {
+    id: 'inventory',
+    name: 'Move-in inventory photos',
+    type: 'image',
+    size: '38 photos',
+    date: '1 Sep 2025',
+    onView: noop,
+    onDownload: noop,
+  },
+  {
+    id: 'energy',
+    name: 'Energy certificate.docx',
+    type: 'document',
+    size: '1.2 MB',
+    date: 'Valid until 3 Jun 2026',
+    status: 'expired',
+    onView: noop,
+    onDownload: noop,
+  },
 ];
 
 const LEASE_TIMELINE: TenancyTimelineEvent[] = [
-  { title: 'Lease signed', date: '28 Aug 2025', actor: 'Lucía Ferrer and Tomás Aranda', icon: RiFileTextLine },
+  {
+    title: 'Lease signed',
+    date: '28 Aug 2025',
+    actor: 'Lucía Ferrer and Tomás Aranda',
+    icon: RiFileTextLine,
+  },
   { title: 'Moved in', date: '1 Sep 2025', actor: 'Keys handed over by Tomás', icon: RiKey2Line },
-  { title: 'Deposit registered', date: '15 Sep 2025', actor: 'Regional housing office', icon: RiBankCardLine, tone: 'success' },
-  { title: 'Rent review', date: '1 Sep 2026', description: 'The addendum is waiting for your signature.', icon: RiCalendarLine, state: 'current', tone: 'warning' },
+  {
+    title: 'Deposit registered',
+    date: '15 Sep 2025',
+    actor: 'Regional housing office',
+    icon: RiBankCardLine,
+    tone: 'success',
+  },
+  {
+    title: 'Rent review',
+    date: '1 Sep 2026',
+    description: 'The addendum is waiting for your signature.',
+    icon: RiCalendarLine,
+    state: 'current',
+    tone: 'warning',
+  },
   { title: 'Lease ends', date: '31 Aug 2027', icon: RiHome4Line, state: 'upcoming' },
 ];
 
@@ -77,7 +202,14 @@ function Page({ width, children }: { width: number; children: React.ReactNode })
   width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
-    <View style={{ width: '100%', minHeight: '100%', alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        width: '100%',
+        minHeight: '100%',
+        alignItems: 'flex-start',
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <View
         style={{
           width,
@@ -98,7 +230,12 @@ function Page({ width, children }: { width: number; children: React.ReactNode })
 function SectionTitle({ children }: { children: string }) {
   const theme = useTheme();
   return (
-    <Text role="heading" aria-level={2} variant="title-3-semibold" style={{ color: theme.colors.text }}>
+    <Text
+      role="heading"
+      aria-level={2}
+      variant="title-3-semibold"
+      style={{ color: theme.colors.text }}
+    >
       {children}
     </Text>
   );
@@ -107,10 +244,16 @@ function SectionTitle({ children }: { children: string }) {
 function LeaseActions() {
   return (
     <>
-      <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
+      <Button size="sm" onPress={noop} tone="accent" appearance="solid">
         Pay rent
       </Button>
-      <Button  size="sm" leadingIcon={RiChat3Line} onPress={noop} tone="neutral" appearance="outline">
+      <Button
+        size="sm"
+        leadingIcon={RiChat3Line}
+        onPress={noop}
+        tone="neutral"
+        appearance="outline"
+      >
         Message landlord
       </Button>
     </>
@@ -145,7 +288,12 @@ function TenantDashboard({ width }: { width: number }) {
     />
   );
   const payments = (
-    <RentPaymentList paidThisYear="€9,800" outstanding="€550" outstandingTone="error" payments={PAYMENTS} />
+    <RentPaymentList
+      paidThisYear="€9,800"
+      outstanding="€550"
+      outstandingTone="error"
+      payments={PAYMENTS}
+    />
   );
   const requests = (
     <View style={{ gap: 16 }}>
@@ -166,7 +314,7 @@ function TenantDashboard({ width }: { width: number }) {
         commentCount={4}
         onPressComments={noop}
         actions={
-          <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
             Reschedule
           </Button>
         }
@@ -191,7 +339,12 @@ function TenantDashboard({ width }: { width: number }) {
 
   return (
     <Page width={width}>
-      <Text role="heading" aria-level={1} variant={wide ? 'title-1-semibold' : 'title-2-semibold'} style={{ color: theme.colors.text }}>
+      <Text
+        role="heading"
+        aria-level={1}
+        variant={wide ? 'title-1-semibold' : 'title-2-semibold'}
+        style={{ color: theme.colors.text }}
+      >
         Your home
       </Text>
       {wide ? (
@@ -259,7 +412,9 @@ function LandlordView({ width }: { width: number }) {
   const wide = width >= 1000;
   return (
     <Page width={width}>
-      <View style={wide ? { flexDirection: 'row', alignItems: 'flex-start', gap: 24 } : { gap: 24 }}>
+      <View
+        style={wide ? { flexDirection: 'row', alignItems: 'flex-start', gap: 24 } : { gap: 24 }}
+      >
         <View style={{ flex: wide ? 1 : undefined, gap: 24, minWidth: 0 }}>
           <LeaseSummaryCard
             title="Calle de los Tilos 27, 3º B"
@@ -279,10 +434,10 @@ function LandlordView({ width }: { width: number }) {
             nextPaymentLabel="Last payment"
             actions={
               <>
-                <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
+                <Button size="sm" onPress={noop} tone="accent" appearance="solid">
                   Send reminder
                 </Button>
-                <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
+                <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
                   Renew lease
                 </Button>
               </>
@@ -311,10 +466,10 @@ function LandlordView({ width }: { width: number }) {
             commentCount={0}
             actions={
               <>
-                <Button  size="sm" onPress={noop} tone="neutral" appearance="outline">
+                <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
                   Acknowledge
                 </Button>
-                <Button  size="sm" onPress={noop} tone="accent" appearance="solid">
+                <Button size="sm" onPress={noop} tone="accent" appearance="solid">
                   Schedule visit
                 </Button>
               </>
@@ -335,7 +490,16 @@ function LandlordView({ width }: { width: number }) {
           />
           <DocumentList
             documents={[
-              { id: 'renewal', name: 'Rent review addendum 2026.pdf', type: 'pdf', size: '96 KB', date: 'Sent 10 Sep 2026', status: 'pending', statusLabel: 'Awaiting tenant', onView: noop },
+              {
+                id: 'renewal',
+                name: 'Rent review addendum 2026.pdf',
+                type: 'pdf',
+                size: '96 KB',
+                date: 'Sent 10 Sep 2026',
+                status: 'pending',
+                statusLabel: 'Awaiting tenant',
+                onView: noop,
+              },
               DOCUMENTS[0]!,
             ]}
           />
@@ -371,7 +535,14 @@ export const MaintenanceStages: Story = {
         {STAGES.map((stage, index) => (
           <View key={stage} style={{ width: 280, maxWidth: '100%' }}>
             <MaintenanceRequestCard
-              title={['No power in the hallway', 'Washing machine drains slowly', 'Boiler pressure keeps dropping', 'Dripping shower tap'][index]!}
+              title={
+                [
+                  'No power in the hallway',
+                  'Washing machine drains slowly',
+                  'Boiler pressure keeps dropping',
+                  'Dripping shower tap',
+                ][index]!
+              }
               category={(['electrical', 'appliances', 'heating', 'plumbing'] as const)[index]!}
               priority={(['urgent', 'medium', 'high', 'low'] as const)[index]}
               stage={stage}
@@ -395,7 +566,12 @@ export const Payments: Story = {
     <Page width={1280}>
       <RentPaymentList paidThisYear="€9,800" outstanding="€0" payments={PAYMENTS} />
       <View style={{ width: 375, maxWidth: '100%' }}>
-        <RentPaymentList paidThisYear="€9,800" outstanding="€550" outstandingTone="error" payments={PAYMENTS} />
+        <RentPaymentList
+          paidThisYear="€9,800"
+          outstanding="€550"
+          outstandingTone="error"
+          payments={PAYMENTS}
+        />
       </View>
       <View style={{ width: 375, maxWidth: '100%' }}>
         <RentPaymentList title="Rent payments" payments={[]} />
@@ -422,7 +598,7 @@ function TimelineDemo() {
   const [compact, setCompact] = useState(false);
   return (
     <View style={{ width: 420, maxWidth: '100%', gap: 16 }}>
-      <Button  size="sm" onPress={() => setCompact((c) => !c)} tone="neutral" appearance="outline">
+      <Button size="sm" onPress={() => setCompact((c) => !c)} tone="neutral" appearance="outline">
         {compact ? 'Comfortable' : 'Compact'}
       </Button>
       <TenancyTimeline

@@ -32,12 +32,10 @@ type CardStyle = Omit<
   ViewStyle,
   Extract<
     keyof ViewStyle,
-    | `border${string}Radius`
-    | `border${string}Width`
-    | 'borderCurve'
-    | 'overflow'
+    `border${string}Radius` | `border${string}Width` | 'borderCurve' | 'overflow'
   >
-> & Pick<ViewStyle, 'borderRadius'>;
+> &
+  Pick<ViewStyle, 'borderRadius'>;
 
 export interface CardProps {
   children?: React.ReactNode;

@@ -40,10 +40,7 @@ const COMPOSITE_KEY_SEPARATOR = '\0';
  * is not inside a navigator, or the adapter cannot answer), which every caller
  * treats as "do not persist and do not restore".
  */
-export function deriveScrollKey(
-  contentId: string | null,
-  subKey?: string,
-): string | null {
+export function deriveScrollKey(contentId: string | null, subKey?: string): string | null {
   if (!contentId) return null;
   return [contentId, subKey ?? ''].join(COMPOSITE_KEY_SEPARATOR);
 }

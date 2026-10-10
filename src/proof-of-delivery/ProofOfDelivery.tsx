@@ -18,12 +18,7 @@ import type { SortablePhoto } from '../sortable-media';
 import { PROOF_GEOMETRY, PROOF_ORDER } from './constants';
 import { PROOF_OF_DELIVERY_MESSAGES } from './messages';
 import { SignaturePad } from './SignaturePad';
-import {
-  completeProofValue,
-  missingProofs,
-  orderProofs,
-  resolveProofPaint,
-} from './shared';
+import { completeProofValue, missingProofs, orderProofs, resolveProofPaint } from './shared';
 import type { ProofKind, ProofOfDeliveryProps, ProofOfDeliveryValue } from './types';
 
 /**
@@ -99,7 +94,10 @@ function ProofOfDeliveryComponent({
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveProofPaint(theme, surface), [theme, surface]);
-  const labels = useMemo(() => ({ ...messages.labels, ...labelOverrides }), [messages, labelOverrides]);
+  const labels = useMemo(
+    () => ({ ...messages.labels, ...labelOverrides }),
+    [messages, labelOverrides],
+  );
 
   const [partial, setPartial] = useControllableState<Partial<ProofOfDeliveryValue>>({
     value: valueProp,
@@ -296,7 +294,6 @@ function ProofOfDeliveryComponent({
         <InteractionBoundary disabled={disabled || submitting}>{actions}</InteractionBoundary>
       ) : (
         <Button
-
           size="lg"
           fullWidth
           onPress={submit}
@@ -305,7 +302,9 @@ function ProofOfDeliveryComponent({
           // does not stop it — it answers it.
           disabled={disabled || submitting}
           accessibilityLabel={labels.submit}
-          testID={id('submit')} tone="accent" appearance="solid"
+          testID={id('submit')}
+          tone="accent"
+          appearance="solid"
         >
           {labels.submit}
         </Button>

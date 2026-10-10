@@ -8,71 +8,129 @@ import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': '左上', 'top-right': '右上', 'bottom-left': '左下', 'bottom-right': '右下' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': '左上',
+  'top-right': '右上',
+  'bottom-left': '左下',
+  'bottom-right': '右下',
+};
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "リアクション",
-  working: "作業する",
-  avatarStyle: "アバターのスタイル",
-  proceduralAvatar: "現在のアバター",
-  betaPreset: "キャラクタープリセット（ベータ）",
-  betaEyes: "目のスタイル",
-  eyewear: "眼鏡",
-  accessory: "アクセサリー",
+  reaction: 'リアクション',
+  working: '作業する',
+  avatarStyle: 'アバターのスタイル',
+  proceduralAvatar: '現在のアバター',
+  betaPreset: 'キャラクタープリセット（ベータ）',
+  betaEyes: '目のスタイル',
+  eyewear: '眼鏡',
+  accessory: 'アクセサリー',
   characterOption: (_category, _id, title) => String(title),
-  editor: "エージェント編集",
-  newBot: "新しいボット",
-  closeEditor: "エージェント編集を閉じる",
-  details: "エージェントの外観と詳細",
-  color: "アバターの色",
-  customColor: "アバターのカスタム色",
-  name: "名前",
-  label: "ラベル",
-  description: "説明",
-  nameInput: "エージェント名",
-  labelInput: "エージェントのラベル",
-  descriptionInput: "エージェントの説明",
-  labelPlaceholder: "マネージャー、マーケティング、画家",
-  descriptionPlaceholder: "エージェントの詳細",
-  language: "言語",
-  languageInput: "エージェントの言語",
-  notifications: "通知",
-  notificationsDescription: "返信の準備ができたら通知する。",
-  notifyFinished: "このエージェントが完了したら通知する",
-  voice: "音声",
-  voiceInput: "エージェントの音声",
-  previewVoice: "音声を試聴",
-  savedVoice: "保存済み音声",
-  systemVoice: "システム音声",
-  off: "オフ",
-  playbackSpeed: "再生速度",
-  emotion: "エージェントの感情",
-  shape: "アバターの形",
-  hexColor: "16進カラー",
-  hue: "色相",
-  saturationBrightness: "彩度と明るさ",
-  increaseBrightness: "明るさを上げる",
-  decreaseBrightness: "明るさを下げる",
-  increaseHue: "色相を上げる",
-  decreaseHue: "色相を下げる",
-  nextShape: "次の形",
-  previousShape: "前の形",
-  newAgent: "新しいエージェント",
-  emotions: { "neutral": "普通", "happy": "幸せ", "angry": "怒り", "thinking": "考え中", "shook": "驚き", "curious": "好奇心", "wink": "ウインク", "sleepy": "眠い", "sad": "悲しい", "worried": "心配", "skeptical": "懐疑的", "focused": "集中", "excited": "興奮", "calm": "穏やか", "shy": "恥ずかしい", "confused": "困惑" },
-  shapes: { "slender": "細長い", "pocket": "ポケット", "petal": "花びら", "flower": "花", "star": "星", "heart": "ハート", "cloud": "雲", "diamond": "ダイヤモンド", "shield": "盾" },
-  colors: { "Blue": "青", "Teal": "青緑", "Violet": "紫", "Pink": "ピンク", "Red": "赤", "Orange": "オレンジ", "Cyan": "シアン", "Lime": "黄緑", "Green": "緑" },
-  languages: { "auto": "自動検出", "en": "英語", "tr": "トルコ語", "es": "スペイン語", "fr": "フランス語", "de": "ドイツ語", "ja": "日本語", "pt": "ポルトガル語" },
-  avatarColorLabel: (name) => "{name}のアバター".replace("{name}", name),
-  shapeLabel: (name) => "{name}の形".replace("{name}", name),
-  silhouetteLabel: (name) => "{name}のシルエット".replace("{name}", name),
-  livePreview: (name) => "{name}、アバターのライブプレビュー".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "彩度{s}%、明るさ{v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "再生速度{speed}倍".replace("{speed}", String(speed)),
+  editor: 'エージェント編集',
+  newBot: '新しいボット',
+  closeEditor: 'エージェント編集を閉じる',
+  details: 'エージェントの外観と詳細',
+  color: 'アバターの色',
+  customColor: 'アバターのカスタム色',
+  name: '名前',
+  label: 'ラベル',
+  description: '説明',
+  nameInput: 'エージェント名',
+  labelInput: 'エージェントのラベル',
+  descriptionInput: 'エージェントの説明',
+  labelPlaceholder: 'マネージャー、マーケティング、画家',
+  descriptionPlaceholder: 'エージェントの詳細',
+  language: '言語',
+  languageInput: 'エージェントの言語',
+  notifications: '通知',
+  notificationsDescription: '返信の準備ができたら通知する。',
+  notifyFinished: 'このエージェントが完了したら通知する',
+  voice: '音声',
+  voiceInput: 'エージェントの音声',
+  previewVoice: '音声を試聴',
+  savedVoice: '保存済み音声',
+  systemVoice: 'システム音声',
+  off: 'オフ',
+  playbackSpeed: '再生速度',
+  emotion: 'エージェントの感情',
+  shape: 'アバターの形',
+  hexColor: '16進カラー',
+  hue: '色相',
+  saturationBrightness: '彩度と明るさ',
+  increaseBrightness: '明るさを上げる',
+  decreaseBrightness: '明るさを下げる',
+  increaseHue: '色相を上げる',
+  decreaseHue: '色相を下げる',
+  nextShape: '次の形',
+  previousShape: '前の形',
+  newAgent: '新しいエージェント',
+  emotions: {
+    neutral: '普通',
+    happy: '幸せ',
+    angry: '怒り',
+    thinking: '考え中',
+    shook: '驚き',
+    curious: '好奇心',
+    wink: 'ウインク',
+    sleepy: '眠い',
+    sad: '悲しい',
+    worried: '心配',
+    skeptical: '懐疑的',
+    focused: '集中',
+    excited: '興奮',
+    calm: '穏やか',
+    shy: '恥ずかしい',
+    confused: '困惑',
+  },
+  shapes: {
+    slender: '細長い',
+    pocket: 'ポケット',
+    petal: '花びら',
+    flower: '花',
+    star: '星',
+    heart: 'ハート',
+    cloud: '雲',
+    diamond: 'ダイヤモンド',
+    shield: '盾',
+  },
+  colors: {
+    Blue: '青',
+    Teal: '青緑',
+    Violet: '紫',
+    Pink: 'ピンク',
+    Red: '赤',
+    Orange: 'オレンジ',
+    Cyan: 'シアン',
+    Lime: '黄緑',
+    Green: '緑',
+  },
+  languages: {
+    auto: '自動検出',
+    en: '英語',
+    tr: 'トルコ語',
+    es: 'スペイン語',
+    fr: 'フランス語',
+    de: 'ドイツ語',
+    ja: '日本語',
+    pt: 'ポルトガル語',
+  },
+  avatarColorLabel: (name) => '{name}のアバター'.replace('{name}', name),
+  shapeLabel: (name) => '{name}の形'.replace('{name}', name),
+  silhouetteLabel: (name) => '{name}のシルエット'.replace('{name}', name),
+  livePreview: (name) => '{name}、アバターのライブプレビュー'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    '彩度{s}%、明るさ{v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) => '再生速度{speed}倍'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -126,7 +184,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: '下書き:', pinned: 'ピン留め', muted: 'ミュート中', verified: '認証済み', channel: 'チャンネル', bot: 'ボット', group: 'グループ' },
+  item: {
+    draft: '下書き:',
+    pinned: 'ピン留め',
+    muted: 'ミュート中',
+    verified: '認証済み',
+    channel: 'チャンネル',
+    bot: 'ボット',
+    group: 'グループ',
+  },
   search: { chat: 'トーク', message: 'メッセージ', contact: '連絡先', empty: '結果はありません' },
   list: 'トーク',
   emptyTitle: 'まだトークはありません',
@@ -184,10 +250,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `${team}のメニュー`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'KB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'KB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'カード番号', expiry: '有効期限', securityCode: 'セキュリティコード', name: 'カード名義人', postcode: '郵便番号', country: '国' },
+  labels: {
+    number: 'カード番号',
+    expiry: '有効期限',
+    securityCode: 'セキュリティコード',
+    name: 'カード名義人',
+    postcode: '郵便番号',
+    country: '国',
+  },
   selectCountry: '国を選択',
 };
 
@@ -220,8 +298,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'ユーザー', command: 'コマンド', emoji: '絵文字' },
   suggestionVerified: '認証済み',
   searchingSuggestions: '検索中…',
-  noSuggestions: { mention: 'ユーザーが見つかりません', command: 'コマンドが見つかりません', emoji: '絵文字が見つかりません' },
-  attachmentItems: { gallery: 'ギャラリー', camera: 'カメラ', file: 'ファイル', location: '位置情報', contact: '連絡先', poll: 'アンケート', music: '音楽' },
+  noSuggestions: {
+    mention: 'ユーザーが見つかりません',
+    command: 'コマンドが見つかりません',
+    emoji: '絵文字が見つかりません',
+  },
+  attachmentItems: {
+    gallery: 'ギャラリー',
+    camera: 'カメラ',
+    file: 'ファイル',
+    location: '位置情報',
+    contact: '連絡先',
+    poll: 'アンケート',
+    music: '音楽',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -272,7 +362,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: '歌詞を表示',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'まだ何もありません', addresses: '住所' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'まだ何もありません',
+  addresses: '住所',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'シングル', ep: 'EP', album: 'アルバム' },
@@ -309,7 +402,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   streams: {
     metrics: 'グラフの指標',
-    summary: (metric, releases) => (releases ? `${metric}の推移、リリース: ${releases}` : `${metric}の推移`),
+    summary: (metric, releases) =>
+      releases ? `${metric}の推移、リリース: ${releases}` : `${metric}の推移`,
   },
   topTracks: {
     title: '人気の曲',
@@ -395,7 +489,11 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     pitchPlaceholder: 'このリリースの魅力は？誰に向けた作品で、どんな背景がありますか？',
     submit: 'ピッチを送信',
     tagLimit: (max) => `${max}個まで選択`,
-    statuses: { submitted: 'ピッチを送信しました', accepted: '審査対象に選ばれました', declined: '今回は選ばれませんでした' },
+    statuses: {
+      submitted: 'ピッチを送信しました',
+      accepted: '審査対象に選ばれました',
+      declined: '今回は選ばれませんでした',
+    },
     statusDescriptions: {
       submitted: '編集部はすべてのピッチを読んでいます。リリース日までに返答があります。',
       accepted: 'あなたのリリースは編集部プレイリストの候補になっています。',
@@ -481,7 +579,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'あなたの申込書類',
   applicationProgress: '申込の進捗',
   progressReady: (done, total) => `${total}件中${done}件完了`,
-  applicationStatus: { missing: '未提出', uploaded: '審査中', verified: '確認済み', rejected: '差し戻し' },
+  applicationStatus: {
+    missing: '未提出',
+    uploaded: '審査中',
+    verified: '確認済み',
+    rejected: '差し戻し',
+  },
   applicationAction: { upload: 'アップロード', view: '表示', replace: '差し替え' },
   itemAction: (action, title) => `${title}を${action}`,
   mortgage: {
@@ -657,11 +760,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'この荷物には利用できません',
   vehicle: '車両',
   vehicles: {
-    bike: { label: 'カーゴバイク', capacity: '最大 25 kg · 60 × 40 × 40 cm', fits: ['書類', 'フードの注文', '小さな箱'] },
-    car: { label: '乗用車', capacity: '最大 150 kg · 100 × 80 × 60 cm', fits: ['スーツケース2個', '段ボール4箱', '自転車1台'] },
-    van: { label: 'バン', capacity: '最大 800 kg · 240 × 150 × 140 cm', fits: ['ソファ', 'ワンルームの引っ越し', 'パレット半分'] },
-    boxTruck: { label: '箱型トラック', capacity: '最大 3,500 kg · 420 × 200 × 210 cm', fits: ['パレット2枚', '2LDKの引っ越し', 'パワーゲート'] },
-    refrigerated: { label: '冷蔵バン', capacity: '最大 700 kg · 2〜8 °C を維持', fits: ['生鮮食品', '冷蔵ケータリング', '花'] },
+    bike: {
+      label: 'カーゴバイク',
+      capacity: '最大 25 kg · 60 × 40 × 40 cm',
+      fits: ['書類', 'フードの注文', '小さな箱'],
+    },
+    car: {
+      label: '乗用車',
+      capacity: '最大 150 kg · 100 × 80 × 60 cm',
+      fits: ['スーツケース2個', '段ボール4箱', '自転車1台'],
+    },
+    van: {
+      label: 'バン',
+      capacity: '最大 800 kg · 240 × 150 × 140 cm',
+      fits: ['ソファ', 'ワンルームの引っ越し', 'パレット半分'],
+    },
+    boxTruck: {
+      label: '箱型トラック',
+      capacity: '最大 3,500 kg · 420 × 200 × 210 cm',
+      fits: ['パレット2枚', '2LDKの引っ越し', 'パワーゲート'],
+    },
+    refrigerated: {
+      label: '冷蔵バン',
+      capacity: '最大 700 kg · 2〜8 °C を維持',
+      fits: ['生鮮食品', '冷蔵ケータリング', '花'],
+    },
   },
 };
 
@@ -738,7 +861,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: '承認中', paid: '支払い済み', failed: '支払いに失敗しました', refunded: '返金済み', pending: '支払い保留中' },
+  states: {
+    authorising: '承認中',
+    paid: '支払い済み',
+    failed: '支払いに失敗しました',
+    refunded: '返金済み',
+    pending: '支払い保留中',
+  },
   reference: '参照番号',
 };
 
@@ -757,13 +886,26 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `5点中${value}点の評価`,
-      reviews === undefined ? undefined : placeCard_countOf('ja', reviews, { other: '{n}件のレビュー' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('ja', reviews, { other: '{n}件のレビュー' }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `${b}で続行`, signIn: (b) => `${b}でサインイン`, signUp: (b) => `${b}で登録` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `${b}で続行`,
+    signIn: (b) => `${b}でサインイン`,
+    signUp: (b) => `${b}で登録`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'その他', otherPlaceholder: '回答を入力してください', steps: 'ステップ', step: (n) => `ステップ ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'その他',
+  otherPlaceholder: '回答を入力してください',
+  steps: 'ステップ',
+  step: (n) => `ステップ ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: '地図の操作',
@@ -780,9 +922,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'オーバーレイ',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: '有効期限切れ', declined: '拒否されました' }, default: 'デフォルト', add: '支払い方法を追加', emptyTitle: '保存された支払い方法はありません', paymentMethods: '支払い方法' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: '有効期限切れ', declined: '拒否されました' },
+  default: 'デフォルト',
+  add: '支払い方法を追加',
+  emptyTitle: '保存された支払い方法はありません',
+  paymentMethods: '支払い方法',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => `他${n}人`, profile: 'プロフィール' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => `他${n}人`,
+  profile: 'プロフィール',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'メニューバー',
@@ -791,7 +942,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: '考え中' };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
-  feedback: { like: '良い回答', dislike: '良くない回答', copy: '回答をコピー', copied: 'コピーしました！' },
+  feedback: {
+    like: '良い回答',
+    dislike: '良くない回答',
+    copy: '回答をコピー',
+    copied: 'コピーしました！',
+  },
   imageGeneration: {
     generated: '画像を生成しました',
     generating: '画像を生成中',
@@ -901,8 +1057,7 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   originally: (p) => `元の価格 ${p}`,
   approximateLocation: 'おおよその位置',
   rated: (r) => `5段階中${r}の評価`,
-  ratedWithReviews: (r, c) =>
-    plural('ja', c, { other: `5段階中${r}の評価、レビュー${c}件` }),
+  ratedWithReviews: (r, c) => plural('ja', c, { other: `5段階中${r}の評価、レビュー${c}件` }),
   newListing: '新着',
   previousPhoto: '前の写真',
   nextPhoto: '次の写真',
@@ -927,7 +1082,11 @@ const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
 };
 
 const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
-  states: { locating: '現在地を取得しています', located: '現在地', stale: '最後に確認された現在地' },
+  states: {
+    locating: '現在地を取得しています',
+    located: '現在地',
+    stale: '最後に確認された現在地',
+  },
   facing: (state, degrees) => `${state}、${degrees}度の方向`,
 };
 
@@ -940,7 +1099,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'スライド',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: '進行中', upcoming: '未着手', failed: '失敗' }, status: 'ステータス' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: '進行中', upcoming: '未着手', failed: '失敗' },
+  status: 'ステータス',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: '新着',
@@ -1000,7 +1162,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     },
   },
   addressPrecisionLabel: '住所の表示精度',
-  addressPrecisionFootnote: '公開される地図はこの設定に従います。正確な住所は、あなたが承認した人にのみ共有されます。',
+  addressPrecisionFootnote:
+    '公開される地図はこの設定に従います。正確な住所は、あなたが承認した人にのみ共有されます。',
   qualityTitle: '掲載の品質',
   qualityScore: '掲載の品質スコア',
   tips: 'ヒント',
@@ -1047,7 +1210,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'ベジタリアン', vegan: 'ヴィーガン', 'gluten-free': 'グルテンフリー', 'dairy-free': '乳製品不使用', halal: 'ハラール', kosher: 'コーシャ' },
+  diets: {
+    vegetarian: 'ベジタリアン',
+    vegan: 'ヴィーガン',
+    'gluten-free': 'グルテンフリー',
+    'dairy-free': '乳製品不使用',
+    halal: 'ハラール',
+    kosher: 'コーシャ',
+  },
   spicy: '辛さ',
   spiceOf: (label, level, max) => `${label} ${level}/${max}`,
   originally: (price, original) => `${price}（通常 ${original}）`,
@@ -1068,7 +1238,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `${page}ページへ移動`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'リードスコア', factors: 'スコアの内訳', bands: { cold: 'コールド', warm: 'ウォーム', hot: 'ホット' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'リードスコア',
+  factors: 'スコアの内訳',
+  bands: { cold: 'コールド', warm: 'ウォーム', hot: 'ホット' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: '車', transit: '公共交通機関', walk: '徒歩', cycle: '自転車' },
@@ -1166,7 +1340,8 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     loading: '仕事を読み込み中',
   },
   emptyTitle: '現在、仕事はありません',
-  emptyDescription: '条件に合う仕事がありません。フィルターを広げるか、1分後にもう一度更新してください。',
+  emptyDescription:
+    '条件に合う仕事がありません。フィルターを広げるか、1分後にもう一度更新してください。',
   list: '仕事',
   payDetailsFor: (load) => `${load}の報酬`,
   route: (pickup, dropoff) => `${pickup}と${dropoff}`,
@@ -1188,7 +1363,8 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   chat: {
     newChat: '新しいチャット',
     emptyTitle: '何をお手伝いしましょうか？',
-    emptyDescription: 'このチャットはご自身の API キーで動作します。履歴はこのブラウザに保存されます。',
+    emptyDescription:
+      'このチャットはご自身の API キーで動作します。履歴はこのブラウザに保存されます。',
     thinking: '考え中',
     error: '問題が発生しました。サーバーログを確認してから、もう一度お試しください。',
     suggestions: [
@@ -1217,7 +1393,9 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     markUnread: '未読にする',
     unread: '未読',
     exportCount: (n) =>
-      n === 0 ? 'エクスポートするチャットがありません' : plural('ja', n, { other: '{n}件のチャットをエクスポート' }),
+      n === 0
+        ? 'エクスポートするチャットがありません'
+        : plural('ja', n, { other: '{n}件のチャットをエクスポート' }),
     accountMenu: (name) => `${name}のアカウントメニュー`,
     usageLeft: '残りの利用量',
     upgrade: 'Max にアップグレード',
@@ -1242,7 +1420,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   age: { now: '今', minutes: (n) => `${n}分`, hours: (n) => `${n}時間`, days: (n) => `${n}日` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: '情報源', working: '作業中' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: '情報源',
+  working: '作業中',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: '宛先',
@@ -1329,14 +1510,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   ringItem: (label, value, pct) => `${label} ${value}、目標の${pct}%`,
   scoreOf: (score, max) => `${score}/${max}`,
   activityFor: (name, day) => `${name}${day}日のアクティビティ`,
-  contributions: (n, date) => { const on = date ? `${date}の` : ''; return n === 0 ? `${on}コントリビューションなし` : `${on}コントリビューション${n}件`; },
+  contributions: (n, date) => {
+    const on = date ? `${date}の` : '';
+    return n === 0 ? `${on}コントリビューションなし` : `${on}コントリビューション${n}件`;
+  },
 };
 
-const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'コードをコピー', copied: 'コードをコピーしました' };
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
+  copy: 'コードをコピー',
+  copied: 'コードをコピーしました',
+};
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'このページの内容', progress: (at, of) => `見出し ${at}/${of}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'このページの内容',
+  progress: (at, of) => `見出し ${at}/${of}`,
+};
 
-const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: '減らす', increase: '増やす' };
+const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
+  decrease: '減らす',
+  increase: '増やす',
+};
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   status: {
@@ -1393,7 +1586,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}、ミュート中`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: '最近の採用' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: '最近の採用',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: '下書き:',
@@ -1414,9 +1609,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'メール',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: '重要なアラート', thisWeek: '今週' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: '重要なアラート',
+  thisWeek: '今週',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `${label}について`, fromLastMonth: '先月比' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `${label}について`,
+  fromLastMonth: '先月比',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1455,8 +1656,18 @@ const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
 };
 
 const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
-  leasePaymentStatus: { upcoming: '予定', due: 'まもなく期限', overdue: '期限超過', paid: '支払い済み' },
-  rentPaymentStatus: { paid: '支払い済み', pending: '保留中', overdue: '期限超過', partial: '一部支払い' },
+  leasePaymentStatus: {
+    upcoming: '予定',
+    due: 'まもなく期限',
+    overdue: '期限超過',
+    paid: '支払い済み',
+  },
+  rentPaymentStatus: {
+    paid: '支払い済み',
+    pending: '保留中',
+    overdue: '期限超過',
+    partial: '一部支払い',
+  },
   maintenanceCategory: {
     plumbing: '水回り',
     electrical: '電気',
@@ -1464,8 +1675,18 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: '暖房',
     other: 'その他',
   },
-  maintenancePriority: { low: '優先度: 低', medium: '優先度: 中', high: '優先度: 高', urgent: '緊急' },
-  maintenanceStage: { reported: '報告済み', acknowledged: '受付済み', scheduled: '日程確定', resolved: '対応完了' },
+  maintenancePriority: {
+    low: '優先度: 低',
+    medium: '優先度: 中',
+    high: '優先度: 高',
+    urgent: '緊急',
+  },
+  maintenanceStage: {
+    reported: '報告済み',
+    acknowledged: '受付済み',
+    scheduled: '日程確定',
+    resolved: '対応完了',
+  },
   documentStatus: { signed: '署名済み', pending: '署名待ち', expired: '期限切れ' },
   timelineState: { complete: '完了', current: '進行中', upcoming: '未着手' },
   leasePeriod: '契約期間',
@@ -1475,7 +1696,13 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
   paidThisYear: '今年の支払い済み額',
   outstanding: '未払い額',
   noPayments: 'まだ支払いはありません',
-  columns: { month: '月', dueDate: '支払期日', method: '支払方法', amount: '金額', status: 'ステータス' },
+  columns: {
+    month: '月',
+    dueDate: '支払期日',
+    method: '支払方法',
+    amount: '金額',
+    status: 'ステータス',
+  },
   downloadReceipt: (month) => `${month}の領収書をダウンロード`,
   dueOn: (date) => `期日 ${date}`,
   comments: (n) => plural('ja', n, { other: 'コメント {n} 件' }),
@@ -1495,7 +1722,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: '標準', sm: 'コンパクト' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: '問題が発生しました', message: '予期しないエラーが発生しました', retry: 'もう一度試す' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: '問題が発生しました',
+  message: '予期しないエラーが発生しました',
+  retry: 'もう一度試す',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: '今年のコントリビューション',
@@ -1674,7 +1905,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: '通話', email: 'メール', meeting: 'ミーティング', note: 'メモ', 'stage-change': 'ステージ変更', task: 'タスク完了' },
+  kinds: {
+    call: '通話',
+    email: 'メール',
+    meeting: 'ミーティング',
+    note: 'メモ',
+    'stage-change': 'ステージ変更',
+    task: 'タスク完了',
+  },
   empty: 'まだ記録はありません',
   loggedBy: (name) => `記録者: ${name}`,
   filterActivity: 'アクティビティを絞り込む',
@@ -1758,13 +1996,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `「${subject}」を${action}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: '賃貸', sale: '売買', short_term_rent: 'バケーションレンタル', exchange: '交換' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: '賃貸',
+    sale: '売買',
+    short_term_rent: 'バケーションレンタル',
+    exchange: '交換',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: '縮尺', mapData: '地図データ' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: '縮尺',
+  mapData: '地図データ',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: '最小値', maximum: '最大値', value: (n) => `値 ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: '最小値',
+  maximum: '最大値',
+  value: (n) => `値 ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'オプションを選択', scrollUp: '上にスクロール', scrollDown: '下にスクロール' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'オプションを選択',
+  scrollUp: '上にスクロール',
+  scrollDown: '下にスクロール',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'メディアビューアを閉じる',
@@ -1776,10 +2032,18 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
 
 const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: '通知を閉じる' };
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: '電話番号', countryCode: '国番号' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: '電話番号',
+  countryCode: '国番号',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: '配達時間', deliveryFee: '配達料', distance: '距離', minimumOrder: '最低注文金額' },
+  facts: {
+    deliveryTime: '配達時間',
+    deliveryFee: '配達料',
+    distance: '距離',
+    minimumOrder: '最低注文金額',
+  },
   availability: { paused: '一時停止中', closed: '営業時間外' },
   new: '新着',
   rated: (value, reviews) =>
@@ -1788,7 +2052,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'オンライン', idle: '退席中', offline: 'オフライン', busy: '取り込み中' },
-  status: { sending: '送信中…', sent: '送信済み', delivered: '配信済み', read: '既読', failed: '未送信' },
+  status: {
+    sending: '送信中…',
+    sent: '送信済み',
+    delivered: '配信済み',
+    read: '既読',
+    failed: '未送信',
+  },
   unread: '未読',
   unreadCount: (n) => `未読メッセージ ${n} 件`,
 };
@@ -1869,7 +2139,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: '検索語句をクリア' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `「${t}」を削除`, full: (n) => `最大${n}個`, suggestions: '候補' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `「${t}」を削除`,
+  full: (n) => `最大${n}個`,
+  suggestions: '候補',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1937,7 +2211,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'ファイル名',
     uploadedOn: 'アップロード日',
     fileSize: 'ファイルサイズ',
-    sortBy: { name: 'ファイル名で並べ替え', uploadedAt: 'アップロード日で並べ替え', size: 'ファイルサイズで並べ替え' },
+    sortBy: {
+      name: 'ファイル名で並べ替え',
+      uploadedAt: 'アップロード日で並べ替え',
+      size: 'ファイルサイズで並べ替え',
+    },
     selectFile: (name) => `${name} を選択`,
     deleteFile: 'ファイルを削除',
     deleteNamed: (name) => `${name} を削除`,
@@ -1974,7 +2252,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     teamServersDescription: 'ダッシュボードで設定',
     manage: '管理',
     noTeamServers: 'チームの MCP サーバーはありません',
-    noTeamServersBody: 'ダッシュボードで MCP サーバーを設定すると、デスクトップとクラウドで利用できるようになります。',
+    noTeamServersBody:
+      'ダッシュボードで MCP サーバーを設定すると、デスクトップとクラウドで利用できるようになります。',
     configureTeam: 'チームの MCP サーバーを設定',
     pluginServers: 'プラグインの MCP サーバー',
   },
@@ -2005,26 +2284,53 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   checkAvailability: '空室状況を確認',
   notChargedYet: 'まだ料金は発生しません',
   total: '合計',
-  tripStatus: { confirmed: '確定', pending: '保留中', cancelled: 'キャンセル済み', completed: '完了' },
-  priceName: booking_priceName((p, u) => `${u}あたり${p}`, (s, o) => `${s}（元の価格 ${o}）`),
+  tripStatus: {
+    confirmed: '確定',
+    pending: '保留中',
+    cancelled: 'キャンセル済み',
+    completed: '完了',
+  },
+  priceName: booking_priceName(
+    (p, u) => `${u}あたり${p}`,
+    (s, o) => `${s}（元の価格 ${o}）`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'コンテキストウィンドウ', freeSpace: '空き容量', planUsageLimits: 'プランの利用上限', managePlan: 'プランを管理' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'コンテキストウィンドウ',
+  freeSpace: '空き容量',
+  planUsageLimits: 'プランの利用上限',
+  managePlan: 'プランを管理',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'アクションを閉じる',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'プロフィール写真を追加' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'プロフィール写真を追加',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'テーマ', darkMode: 'ダークモード', lightMode: 'ライトモード', useDarkMode: 'ダークモードにする', useLightMode: 'ライトモードにする' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'テーマ',
+  darkMode: 'ダークモード',
+  lightMode: 'ライトモード',
+  useDarkMode: 'ダークモードにする',
+  useLightMode: 'ライトモードにする',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: '収益',
   period: '収益の期間',
   breakdown: '内訳',
   payout: '次回の支払い',
-  payoutState: { scheduled: '予定', processing: '送金中', paid: '支払い済み', held: '保留中', failed: '失敗' },
+  payoutState: {
+    scheduled: '予定',
+    processing: '送金中',
+    paid: '支払い済み',
+    held: '保留中',
+    failed: '失敗',
+  },
   chart: (label) => `${label}の収益（期間別）`,
   empty: 'まだ収益はありません',
   earnings: '収益',
@@ -2109,9 +2415,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'その他の書式', moreMenu: 'その他の書式' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'フィルター', showAll: 'すべて表示' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'フィルター',
+  showAll: 'すべて表示',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: '前のカテゴリ', next: '次のカテゴリ' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: '前のカテゴリ',
+  next: '次のカテゴリ',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2133,12 +2445,17 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     loading: '見積もりを読み込み中',
   },
   emptyTitle: 'まだ見積もりはありません',
-  emptyDescription: '運送業者があなたの依頼を確認しています。最初の見積もりは通常数分以内に届きます。',
+  emptyDescription:
+    '運送業者があなたの依頼を確認しています。最初の見積もりは通常数分以内に届きます。',
   list: '見積もり',
   priceDetailsFor: (name) => `${name}の料金の内訳`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'パスワードを表示', hidePassword: 'パスワードを非表示', required: '必須' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'パスワードを表示',
+  hidePassword: 'パスワードを非表示',
+  required: '必須',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: '音声通話',
@@ -2236,252 +2553,272 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "変更を保存" : "チャットを開始" + (count ? ' · ' + plural('ja', count, {"other": "{n}人のエージェント"}) : ''),
-  you: "あなた",
-  responseFailed: "{0}は応答できませんでした。もう一度お試しください。",
-  editAgentTitle: "エージェントを編集",
-  aLittleHelp: "ちょっとしたヘルプ",
-  aFewMindsOneConversation: "いくつかの考え。会話がひとつ。",
-  aLittleRoomForSomethingNew: "新しいものを入れる小さな余地",
-  accountDetails: "アカウントの詳細",
-  add: "追加",
-  add2: "{0} を追加",
-  added: "追加済み",
-  addedToYourWorkspace: "ワークスペースに追加されました",
-  agent: "エージェント",
-  agentConversation: "エージェントの会話",
-  appearance: "外観",
-  apps: "アプリ · {0}",
-  availability: "可用性",
-  backToMarketplace: "マーケットプレイスに戻る",
-  billing: "請求",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "ボット",
-  bringYourAgentsIntoOneChat: "エージェントを 1 つのチャットに参加させます。",
-  category: "カテゴリ",
-  chatActions: "チャットアクション",
-  chatList: "チャットリスト",
-  chatName: "チャット名",
-  chatRemoved: "チャットが削除されました",
-  chatWithYourAgents: "エージェントとチャットする",
-  chooseAnAgentOrCreateYourOwn: "エージェントを選択するか、独自のエージェントを作成して会話を開始します。",
-  chooseWhoSJoiningTheConversation: "会話に参加する人を選択します。",
-  chooseYourTeammates: "チームメイトを選択してください",
-  closeMarketplace: "マーケットプレイスを閉じる",
-  closeSearch: "検索を閉じる",
-  company: "会社",
-  companyDetails: "会社概要",
-  completionSound: "完了音",
-  connectedAccount: "接続されたアカウント",
-  connector: "コネクタ",
-  conversationIDCopied: "会話 ID がコピーされました",
-  conversationCopied: "会話がコピーされました",
-  conversationOptions: "会話オプション",
-  conversations: "会話",
-  copied: "コピーしました",
-  copyConversation: "会話をコピーする",
-  copyConversationID: "会話 ID をコピー",
-  copyResponse: "回答をコピー",
-  couldnTCopyPleaseTryAgain: "コピーできませんでした。もう一度試してください。",
-  create: "作成する",
-  createANewBot: "新しいボットを作成する",
-  createBotOrChat: "ボットまたはチャットを作成する",
-  criticalRequests: "重要なリクエスト",
-  customize: "カスタマイズ",
-  customizeANewTeammate: "新しいチームメイトをカスタマイズします。",
-  dateOfBirth: "生年月日",
-  demoIntegrationAddingSavesItToThis: "デモの統合。追加すると、このブラウザに保存されます。外部アカウントは接続されていません。",
-  desktopApp: "デスクトップ アプリ",
-  details: "詳細",
-  developer: "開発者",
-  deviceID: "デバイス ID",
-  discover: "発見する",
-  dispatchAlerts: "アラートを送信する",
-  editConversationAgents: "会話エージェントを編集する",
-  editBot: "ボットを編集",
-  editGroup: "グループの編集",
-  editAgent: "{0} を編集",
-  email: "メール",
-  everydayEssentials: "日常の必需品",
-  exploreMarketplace: "マーケットプレイスを探索する",
-  explorePlugins: "プラグインを探索する",
-  explorePluginsAndBotsToBuildYour: "プラグインとボットを調べてチームを構築します。",
-  findYourNextTeammate: "次のチームメイトを見つけよう",
-  findYourNextToolOrTeammate: "次のツールまたはチームメイトを見つける",
-  firstName: "名",
-  folders: "フォルダー",
-  general: "一般",
-  getNotifiedWhenTheModeNeedsTo: "モードが重要な決定を下す必要があるときに通知を受け取る",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "役立つ回答",
-  inTheBrowser: "ブラウザ内",
-  inThisConversation: "この会話では",
-  includes: "含まれるもの",
-  insideTheApp: "アプリ内",
-  installed: "インストールされました",
-  integrations: "統合",
-  iLlApproachThisFromThePerspective: "{0} の観点からこれにアプローチします。",
-  lastName: "姓",
-  limits: "制限",
-  logOutFromAllDevices: "すべてのデバイスからログアウトします",
-  logout: "ログアウト",
-  manage: "管理",
-  manageLimits: "制限を管理する",
-  marketplace: "マーケットプレイス",
-  marketplaceLinkCopied: "マーケットプレイスのリンクがコピーされました",
-  marketplaceListings: "マーケットプレイスの出品",
-  meetYourNextTeammate: "次のチームメイトに会いましょう",
-  messages: "メッセージ",
-  noConversationsFound: "会話が見つかりませんでした。",
-  noMatchesYet: "まだ一致はありません",
-  notifications: "通知",
-  openConversations: "オープンな会話",
-  openPullRequestLinksInsideYourApp: "アプリ内でプル リクエスト リンクを開く",
-  openTheMarketplaceToExplorePluginsAnd: "マーケットプレイスを開いてプラグインやボットを調べてください。会話のメニューを使用して、ボットの外観と詳細を編集します。感情ホイールから表情を選択します。図形の円弧をスクロールまたはドラッグするか、矢印キーを使用して、図形を探索します。",
-  prDestination: "PR先",
-  people: "ユーザー",
-  personal: "個人",
-  pinChat: "チャットをピン留めする",
-  pinnedChat: "固定チャット",
-  plugins: "プラグイン",
-  profile: "プロフィール",
-  public: "公開",
-  publicProfile: "公開プロフィール",
-  pullRequests: "プルリクエスト",
-  pushNotificationOnYourPhoneWhenThe: "アプリからメッセージが送信されると、携帯電話にプッシュ通知が送信されます",
-  remove: "取り除く",
-  removeChat: "チャットを削除",
-  renameChat: "チャット名を変更",
-  responseCopied: "応答がコピーされました",
-  reviewProvider: "プロバイダーのレビュー",
-  rulesAndWorkflows: "ルールとワークフロー",
-  saveName: "名前を保存",
-  sayHelloTo: "{0} に挨拶してください",
-  searchConversations: "会話を検索する",
-  searchConversations2: "会話を検索…",
-  searchMarketplace: "マーケットプレイスを検索",
-  selectGithubOrOtherProvidersForReviews: "レビュー用に Github またはその他のプロバイダーを選択します",
-  selectedAgents: "選択されたエージェント: {0}",
-  sendWithEnterUseShiftEnterFor: "Enter で送信します。新しい行を作成するには Shift + Enter を使用します。変更はこのブラウザに残ります。",
-  settings: "設定",
-  share: "共有",
-  showFundamentalNotificationsWhenAnAgentCompletes: "エージェントがタスクを完了したときに基本的な通知を表示する",
-  signOut: "サインアウト",
-  skills: "スキル",
-  skills2: "スキル · {0}",
-  soundEffectATaskIsCompleted: "タスクが完了したときの効果音",
-  startAConversation: "会話を開始する",
-  startAGroupChat: "グループチャットを開始する",
-  startChat: "チャットを開始する",
-  storage: "ストレージ",
-  support: "サポート",
-  systemNotifications: "システム通知",
-  thinkingTogether: "一緒に考えて…",
-  thinking: "考え中…",
-  today: "今日",
-  tools: "ツール",
-  toolsForYourWorkflow: "ワークフローのためのツール",
-  tryAnotherNameCategoryOrKeyword: "別の名前、カテゴリ、またはキーワードを試してください。",
-  ultra149Mo: "ウルトラ $149/月",
-  unhelpfulResponse: "役に立たない応答",
-  unpinChat: "チャットの固定を解除する",
-  upgradeToMax: "Max にアップグレード",
-  useToCreateABotOrStart: "+ を使用してボットを作成するか、複数のエージェントとの会話を開始します。",
-  viewAdded: "ビューが追加されました {0}",
-  viewAll: "すべて表示",
-  viewTeamProfile: "チームプロフィールを見る",
-  viewItem: "{0} を見る",
-  website: "ウェブサイト",
-  whenEnabledYourProfilePageWillBe: "有効にすると、プロフィール ページが誰にでも表示されます",
-  youAreOn7xMoreUsageThan: "プレミアムの 7 倍の使用量です",
-  youAreOn7xMoreUsageThan2: "通常の 7 倍の使用量です。",
-  areHereSendAMessageToGet: "{0} がここにいます。メッセージを送信して全員の視点を取得してください。",
-  itemDetails: "{0}の詳細",
-  agentThinking: "{0} は考えています",
-  by: "{0} · {1} 著",
-  results: (count: number) => plural('ja', count, {"other": "{n}件の結果"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('ja', apps, {"other": "{n}個のアプリ"}) + "、" : '') + plural('ja', skills, {"other": "{n}個のスキル"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? '変更を保存'
+      : 'チャットを開始' +
+        (count ? ' · ' + plural('ja', count, { other: '{n}人のエージェント' }) : ''),
+  you: 'あなた',
+  responseFailed: '{0}は応答できませんでした。もう一度お試しください。',
+  editAgentTitle: 'エージェントを編集',
+  aLittleHelp: 'ちょっとしたヘルプ',
+  aFewMindsOneConversation: 'いくつかの考え。会話がひとつ。',
+  aLittleRoomForSomethingNew: '新しいものを入れる小さな余地',
+  accountDetails: 'アカウントの詳細',
+  add: '追加',
+  add2: '{0} を追加',
+  added: '追加済み',
+  addedToYourWorkspace: 'ワークスペースに追加されました',
+  agent: 'エージェント',
+  agentConversation: 'エージェントの会話',
+  appearance: '外観',
+  apps: 'アプリ · {0}',
+  availability: '可用性',
+  backToMarketplace: 'マーケットプレイスに戻る',
+  billing: '請求',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'ボット',
+  bringYourAgentsIntoOneChat: 'エージェントを 1 つのチャットに参加させます。',
+  category: 'カテゴリ',
+  chatActions: 'チャットアクション',
+  chatList: 'チャットリスト',
+  chatName: 'チャット名',
+  chatRemoved: 'チャットが削除されました',
+  chatWithYourAgents: 'エージェントとチャットする',
+  chooseAnAgentOrCreateYourOwn:
+    'エージェントを選択するか、独自のエージェントを作成して会話を開始します。',
+  chooseWhoSJoiningTheConversation: '会話に参加する人を選択します。',
+  chooseYourTeammates: 'チームメイトを選択してください',
+  closeMarketplace: 'マーケットプレイスを閉じる',
+  closeSearch: '検索を閉じる',
+  company: '会社',
+  companyDetails: '会社概要',
+  completionSound: '完了音',
+  connectedAccount: '接続されたアカウント',
+  connector: 'コネクタ',
+  conversationIDCopied: '会話 ID がコピーされました',
+  conversationCopied: '会話がコピーされました',
+  conversationOptions: '会話オプション',
+  conversations: '会話',
+  copied: 'コピーしました',
+  copyConversation: '会話をコピーする',
+  copyConversationID: '会話 ID をコピー',
+  copyResponse: '回答をコピー',
+  couldnTCopyPleaseTryAgain: 'コピーできませんでした。もう一度試してください。',
+  create: '作成する',
+  createANewBot: '新しいボットを作成する',
+  createBotOrChat: 'ボットまたはチャットを作成する',
+  criticalRequests: '重要なリクエスト',
+  customize: 'カスタマイズ',
+  customizeANewTeammate: '新しいチームメイトをカスタマイズします。',
+  dateOfBirth: '生年月日',
+  demoIntegrationAddingSavesItToThis:
+    'デモの統合。追加すると、このブラウザに保存されます。外部アカウントは接続されていません。',
+  desktopApp: 'デスクトップ アプリ',
+  details: '詳細',
+  developer: '開発者',
+  deviceID: 'デバイス ID',
+  discover: '発見する',
+  dispatchAlerts: 'アラートを送信する',
+  editConversationAgents: '会話エージェントを編集する',
+  editBot: 'ボットを編集',
+  editGroup: 'グループの編集',
+  editAgent: '{0} を編集',
+  email: 'メール',
+  everydayEssentials: '日常の必需品',
+  exploreMarketplace: 'マーケットプレイスを探索する',
+  explorePlugins: 'プラグインを探索する',
+  explorePluginsAndBotsToBuildYour: 'プラグインとボットを調べてチームを構築します。',
+  findYourNextTeammate: '次のチームメイトを見つけよう',
+  findYourNextToolOrTeammate: '次のツールまたはチームメイトを見つける',
+  firstName: '名',
+  folders: 'フォルダー',
+  general: '一般',
+  getNotifiedWhenTheModeNeedsTo: 'モードが重要な決定を下す必要があるときに通知を受け取る',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: '役立つ回答',
+  inTheBrowser: 'ブラウザ内',
+  inThisConversation: 'この会話では',
+  includes: '含まれるもの',
+  insideTheApp: 'アプリ内',
+  installed: 'インストールされました',
+  integrations: '統合',
+  iLlApproachThisFromThePerspective: '{0} の観点からこれにアプローチします。',
+  lastName: '姓',
+  limits: '制限',
+  logOutFromAllDevices: 'すべてのデバイスからログアウトします',
+  logout: 'ログアウト',
+  manage: '管理',
+  manageLimits: '制限を管理する',
+  marketplace: 'マーケットプレイス',
+  marketplaceLinkCopied: 'マーケットプレイスのリンクがコピーされました',
+  marketplaceListings: 'マーケットプレイスの出品',
+  meetYourNextTeammate: '次のチームメイトに会いましょう',
+  messages: 'メッセージ',
+  noConversationsFound: '会話が見つかりませんでした。',
+  noMatchesYet: 'まだ一致はありません',
+  notifications: '通知',
+  openConversations: 'オープンな会話',
+  openPullRequestLinksInsideYourApp: 'アプリ内でプル リクエスト リンクを開く',
+  openTheMarketplaceToExplorePluginsAnd:
+    'マーケットプレイスを開いてプラグインやボットを調べてください。会話のメニューを使用して、ボットの外観と詳細を編集します。感情ホイールから表情を選択します。図形の円弧をスクロールまたはドラッグするか、矢印キーを使用して、図形を探索します。',
+  prDestination: 'PR先',
+  people: 'ユーザー',
+  personal: '個人',
+  pinChat: 'チャットをピン留めする',
+  pinnedChat: '固定チャット',
+  plugins: 'プラグイン',
+  profile: 'プロフィール',
+  public: '公開',
+  publicProfile: '公開プロフィール',
+  pullRequests: 'プルリクエスト',
+  pushNotificationOnYourPhoneWhenThe:
+    'アプリからメッセージが送信されると、携帯電話にプッシュ通知が送信されます',
+  remove: '取り除く',
+  removeChat: 'チャットを削除',
+  renameChat: 'チャット名を変更',
+  responseCopied: '応答がコピーされました',
+  reviewProvider: 'プロバイダーのレビュー',
+  rulesAndWorkflows: 'ルールとワークフロー',
+  saveName: '名前を保存',
+  sayHelloTo: '{0} に挨拶してください',
+  searchConversations: '会話を検索する',
+  searchConversations2: '会話を検索…',
+  searchMarketplace: 'マーケットプレイスを検索',
+  selectGithubOrOtherProvidersForReviews:
+    'レビュー用に Github またはその他のプロバイダーを選択します',
+  selectedAgents: '選択されたエージェント: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'Enter で送信します。新しい行を作成するには Shift + Enter を使用します。変更はこのブラウザに残ります。',
+  settings: '設定',
+  share: '共有',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'エージェントがタスクを完了したときに基本的な通知を表示する',
+  signOut: 'サインアウト',
+  skills: 'スキル',
+  skills2: 'スキル · {0}',
+  soundEffectATaskIsCompleted: 'タスクが完了したときの効果音',
+  startAConversation: '会話を開始する',
+  startAGroupChat: 'グループチャットを開始する',
+  startChat: 'チャットを開始する',
+  storage: 'ストレージ',
+  support: 'サポート',
+  systemNotifications: 'システム通知',
+  thinkingTogether: '一緒に考えて…',
+  thinking: '考え中…',
+  today: '今日',
+  tools: 'ツール',
+  toolsForYourWorkflow: 'ワークフローのためのツール',
+  tryAnotherNameCategoryOrKeyword: '別の名前、カテゴリ、またはキーワードを試してください。',
+  ultra149Mo: 'ウルトラ $149/月',
+  unhelpfulResponse: '役に立たない応答',
+  unpinChat: 'チャットの固定を解除する',
+  upgradeToMax: 'Max にアップグレード',
+  useToCreateABotOrStart:
+    '+ を使用してボットを作成するか、複数のエージェントとの会話を開始します。',
+  viewAdded: 'ビューが追加されました {0}',
+  viewAll: 'すべて表示',
+  viewTeamProfile: 'チームプロフィールを見る',
+  viewItem: '{0} を見る',
+  website: 'ウェブサイト',
+  whenEnabledYourProfilePageWillBe: '有効にすると、プロフィール ページが誰にでも表示されます',
+  youAreOn7xMoreUsageThan: 'プレミアムの 7 倍の使用量です',
+  youAreOn7xMoreUsageThan2: '通常の 7 倍の使用量です。',
+  areHereSendAMessageToGet:
+    '{0} がここにいます。メッセージを送信して全員の視点を取得してください。',
+  itemDetails: '{0}の詳細',
+  agentThinking: '{0} は考えています',
+  by: '{0} · {1} 著',
+  results: (count: number) => plural('ja', count, { other: '{n}件の結果' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('ja', apps, { other: '{n}個のアプリ' }) + '、' : '') +
+    plural('ja', skills, { other: '{n}個のスキル' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Bloomのデザインタスク", defaultTeam: "Bloomチーム",
+    defaultTitle: 'Bloomのデザインタスク',
+    defaultTeam: 'Bloomチーム',
     openTicket: (code, title) => `開く ${code}: ${title}`,
-    addTicketTo: column => `タスクを追加 ${column}`,
-    "board": "プロジェクトボード",
-    "controls": "ボード操作",
-    "navigation": "ナビゲーションを開く",
-    "inbox": "プロジェクトの受信箱を開く",
-    "newTicket": "新しいタスク",
-    "columns": "プロジェクトボードの列",
-    "sortTickets": "タスクを並べ替え",
-    "filterTickets": "タスクを絞り込み",
-    "displayOptions": "表示オプション",
-    "sort": "並べ替え",
-    "filter": "絞り込み",
-    "display": "表示",
-    "manualOrder": "手動順序",
-    "priority": "優先度",
-    "title": "タイトル",
-    "project": "プロジェクト",
-    "allPriorities": "すべての優先度",
-    "allProjects": "すべてのプロジェクト",
-    "clearFilters": "絞り込みを解除",
-    "showDone": "完了列を表示",
-    "fillScreens": "広い画面を埋める",
-    "createTicket": "タスクを作成",
-    "closeCreate": "タスク作成を閉じる",
-    "ticketTitle": "タスクのタイトル",
-    "enterTitle": "タスクのタイトルを入力",
-    "description": "説明",
-    "descriptionArea": "説明欄",
-    "status": "状態",
-    "urgency": "緊急度",
-    "assignee": "担当者",
-    "unassigned": "未割り当て",
-    "keepCreating": "続けて作成",
-    "cancel": "キャンセル",
-    "addTicket": "タスクを追加",
-    "sortTitle": "タイトル順に並べ替え",
-    "noTickets": "ここに問題はありません",
-    "favoriteAdd": "お気に入りに追加",
-    "favoriteRemove": "お気に入りから削除",
-    "copyLink": "タスクのリンクをコピー",
-    "actions": "タスク操作",
-    "editDescription": "説明を編集",
-    "copyId": "タスクIDをコピー",
-    "reopen": "タスクを再開",
-    "markDone": "完了にする",
-    "closeDetails": "タスクの詳細を閉じる",
-    "linkCopied": "タスクのリンクをコピーしました",
-    "idCopied": "タスクIDをコピーしました",
-    "copyFailed": "コピーできませんでした。再試行してください。",
-    "createdBy": "作成者",
-    "saveDescription": "説明を保存",
-    "ticketDescription": "タスクの説明",
-    "properties": "プロパティ",
-    "editAssignees": "担当者を編集",
-    "resources": "リソース",
-    "tokens": "消費トークン",
-    "comments": "コメント",
-    "you": "あなた",
-    "justNow": "たった今",
-    "addComment": "コメントを追加",
-    "enterComment": "コメントを入力",
-    "postComment": "コメントを投稿",
-    "moveUp": "上に移動",
-    "moveDown": "下に移動",
-    "nextColumn": "次の列に移動",
-    "previousColumn": "前の列に移動",
-    "keyboardHint": "Enterで開きます。スペースで選択、矢印で移動、スペースで配置、Escapeでキャンセルします。"
-},
+    addTicketTo: (column) => `タスクを追加 ${column}`,
+    board: 'プロジェクトボード',
+    controls: 'ボード操作',
+    navigation: 'ナビゲーションを開く',
+    inbox: 'プロジェクトの受信箱を開く',
+    newTicket: '新しいタスク',
+    columns: 'プロジェクトボードの列',
+    sortTickets: 'タスクを並べ替え',
+    filterTickets: 'タスクを絞り込み',
+    displayOptions: '表示オプション',
+    sort: '並べ替え',
+    filter: '絞り込み',
+    display: '表示',
+    manualOrder: '手動順序',
+    priority: '優先度',
+    title: 'タイトル',
+    project: 'プロジェクト',
+    allPriorities: 'すべての優先度',
+    allProjects: 'すべてのプロジェクト',
+    clearFilters: '絞り込みを解除',
+    showDone: '完了列を表示',
+    fillScreens: '広い画面を埋める',
+    createTicket: 'タスクを作成',
+    closeCreate: 'タスク作成を閉じる',
+    ticketTitle: 'タスクのタイトル',
+    enterTitle: 'タスクのタイトルを入力',
+    description: '説明',
+    descriptionArea: '説明欄',
+    status: '状態',
+    urgency: '緊急度',
+    assignee: '担当者',
+    unassigned: '未割り当て',
+    keepCreating: '続けて作成',
+    cancel: 'キャンセル',
+    addTicket: 'タスクを追加',
+    sortTitle: 'タイトル順に並べ替え',
+    noTickets: 'ここに問題はありません',
+    favoriteAdd: 'お気に入りに追加',
+    favoriteRemove: 'お気に入りから削除',
+    copyLink: 'タスクのリンクをコピー',
+    actions: 'タスク操作',
+    editDescription: '説明を編集',
+    copyId: 'タスクIDをコピー',
+    reopen: 'タスクを再開',
+    markDone: '完了にする',
+    closeDetails: 'タスクの詳細を閉じる',
+    linkCopied: 'タスクのリンクをコピーしました',
+    idCopied: 'タスクIDをコピーしました',
+    copyFailed: 'コピーできませんでした。再試行してください。',
+    createdBy: '作成者',
+    saveDescription: '説明を保存',
+    ticketDescription: 'タスクの説明',
+    properties: 'プロパティ',
+    editAssignees: '担当者を編集',
+    resources: 'リソース',
+    tokens: '消費トークン',
+    comments: 'コメント',
+    you: 'あなた',
+    justNow: 'たった今',
+    addComment: 'コメントを追加',
+    enterComment: 'コメントを入力',
+    postComment: 'コメントを投稿',
+    moveUp: '上に移動',
+    moveDown: '下に移動',
+    nextColumn: '次の列に移動',
+    previousColumn: '前の列に移動',
+    keyboardHint:
+      'Enterで開きます。スペースで選択、矢印で移動、スペースで配置、Escapeでキャンセルします。',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "エージェントのアバター", unavailable: "アバターを表示できません", },
+  AGENT_AVATAR_MESSAGES: {
+    label: 'エージェントのアバター',
+    unavailable: 'アバターを表示できません',
+  },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

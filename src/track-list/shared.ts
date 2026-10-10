@@ -5,11 +5,7 @@ import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import type { Theme } from '../theme/types';
-import type {
-  TrackListColumn,
-  TrackListDensity,
-  TrackListLabels,
-} from './types';
+import type { TrackListColumn, TrackListDensity, TrackListLabels } from './types';
 import { COMMON_MESSAGES, type CommonMessages } from '../locale/common-messages';
 import { TRACK_LIST_MESSAGES, type TrackListMessages } from './messages';
 
@@ -115,7 +111,10 @@ export interface TrackListPaint {
   panelShadow: string;
 }
 
-export function resolveTrackListPaint(theme: Theme, backing = theme.colors.background): TrackListPaint {
+export function resolveTrackListPaint(
+  theme: Theme,
+  backing = theme.colors.background,
+): TrackListPaint {
   const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const menu = resolveMenuPalette(theme);
@@ -143,7 +142,10 @@ export function resolveTrackListPaint(theme: Theme, backing = theme.colors.backg
 }
 
 /** Every `TrackListLabels` entry in one language. */
-export function trackListLabels(messages: TrackListMessages, common: CommonMessages): Required<TrackListLabels> {
+export function trackListLabels(
+  messages: TrackListMessages,
+  common: CommonMessages,
+): Required<TrackListLabels> {
   return {
     index: '#',
     title: messages.title,
@@ -161,7 +163,10 @@ export function trackListLabels(messages: TrackListMessages, common: CommonMessa
 }
 
 /** The English labels; the rows speak the locale's (`BloomProvider locale`). */
-export const DEFAULT_LABELS: Required<TrackListLabels> = trackListLabels(TRACK_LIST_MESSAGES.en, COMMON_MESSAGES.en);
+export const DEFAULT_LABELS: Required<TrackListLabels> = trackListLabels(
+  TRACK_LIST_MESSAGES.en,
+  COMMON_MESSAGES.en,
+);
 
 // ---------------------------------------------------------------------------
 //  Selection
@@ -274,7 +279,10 @@ ${ROW}:focus-visible [data-bloom-track-number] {
  * "45 min", "1 hr", "1 hr 12 min". Under a minute rounds up to "1 min". The
  * words are `messages`' (English unless given).
  */
-export function formatEpisodeLength(seconds: number, messages: TrackListMessages = TRACK_LIST_MESSAGES.en): string {
+export function formatEpisodeLength(
+  seconds: number,
+  messages: TrackListMessages = TRACK_LIST_MESSAGES.en,
+): string {
   const total = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
   const minutes = Math.max(total > 0 ? 1 : 0, Math.round(total / 60));
   const h = Math.floor(minutes / 60);
@@ -284,6 +292,9 @@ export function formatEpisodeLength(seconds: number, messages: TrackListMessages
 }
 
 /** "12 min left". */
-export function formatEpisodeRemaining(seconds: number, messages: TrackListMessages = TRACK_LIST_MESSAGES.en): string {
+export function formatEpisodeRemaining(
+  seconds: number,
+  messages: TrackListMessages = TRACK_LIST_MESSAGES.en,
+): string {
   return messages.remaining(formatEpisodeLength(seconds, messages));
 }

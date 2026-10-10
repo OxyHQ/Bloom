@@ -26,13 +26,7 @@
  * falls back to painting its own `MediaSurface`, which is what every flight did
  * before hosts existed.
  */
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
 import { StyleSheet, type View } from 'react-native';
 import { createPortal } from 'react-dom';
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
@@ -89,7 +83,8 @@ MediaFlightLayer.displayName = 'MediaFlightLayer';
 
 /** One media element, painted into the wrapper its id owns, and never again. */
 function SharedMediaNode({ node }: { node: MediaNodeView }) {
-  const { content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId } = node.render;
+  const { content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId } =
+    node.render;
 
   // DOES THE MEDIA ACTUALLY FILL ITS BOX?
   //
@@ -155,7 +150,8 @@ function warnIfNotFilling(wrapper: HTMLElement): void {
  * rather than scaled.
  */
 function MediaFlightSurface({ flight, shared }: { flight: MediaFlight; shared: boolean }) {
-  const { id, from, to, progress, content, cornerRadius, contentFit, surfaceType, unbinding } = flight;
+  const { id, from, to, progress, content, cornerRadius, contentFit, surfaceType, unbinding } =
+    flight;
 
   useEffect(() => {
     notifySurfaceMounted(id);

@@ -114,7 +114,15 @@ function sequence(values: readonly number[]) {
   return withSequence(...steps);
 }
 
-function HighlightRing({ color, radius, onEnd }: { color: string; radius: number; onEnd: () => void }) {
+function HighlightRing({
+  color,
+  radius,
+  onEnd,
+}: {
+  color: string;
+  radius: number;
+  onEnd: () => void;
+}) {
   const reducedMotion = useReducedMotion();
   const opacity = useSharedValue<number>(reducedMotion ? 1 : 0);
   const scale = useSharedValue<number>(1);
@@ -305,7 +313,11 @@ const DayCell = memo(function DayCell({
   return (
     <View role="cell" style={outer} testID={testID}>
       {highlighted ? (
-        <HighlightRing color={palette.ring} radius={dense ? 0 : CARD_RADIUS} onEnd={onHighlightEnd} />
+        <HighlightRing
+          color={palette.ring}
+          radius={dense ? 0 : CARD_RADIUS}
+          onEnd={onHighlightEnd}
+        />
       ) : null}
       <View ref={card} style={cardStyle}>
         <Text

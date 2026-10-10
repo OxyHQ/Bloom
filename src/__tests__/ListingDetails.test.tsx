@@ -105,7 +105,9 @@ describe('ListingPhotoGrid — grid', () => {
 
   it('names each photo as a button and reports its index on press', () => {
     const onPressPhoto = jest.fn();
-    mount(<ListingPhotoGrid photos={PHOTOS} layout="grid" onPressPhoto={onPressPhoto} testID="g" />);
+    mount(
+      <ListingPhotoGrid photos={PHOTOS} layout="grid" onPressPhoto={onPressPhoto} testID="g" />,
+    );
     const third = byTestId('g-photo-2');
     expect(third.getAttribute('role')).toBe('button');
     expect(third.getAttribute('aria-label')).toBe('Room 3, photo 3 of 7');
@@ -118,7 +120,15 @@ describe('ListingPhotoGrid — grid', () => {
     mount(<ListingPhotoGrid photos={PHOTOS} layout="grid" testID="g" />);
     expect(queryTestId('g-show-all')).toBeNull();
     const onShowAll = jest.fn();
-    mount(<ListingPhotoGrid photos={PHOTOS} layout="grid" onShowAll={onShowAll} showAllLabel="All 7" testID="g" />);
+    mount(
+      <ListingPhotoGrid
+        photos={PHOTOS}
+        layout="grid"
+        onShowAll={onShowAll}
+        showAllLabel="All 7"
+        testID="g"
+      />,
+    );
     const button = byTestId('g-show-all');
     expect(button.textContent).toContain('All 7');
     expect(button.querySelector('svg')).not.toBeNull();
@@ -127,7 +137,14 @@ describe('ListingPhotoGrid — grid', () => {
   });
 
   it.each([1, 2, 3, 4])('degrades to %i tile(s) for %i photo(s)', (count) => {
-    mount(<ListingPhotoGrid photos={PHOTOS.slice(0, count)} layout="grid" onPressPhoto={() => {}} testID="g" />);
+    mount(
+      <ListingPhotoGrid
+        photos={PHOTOS.slice(0, count)}
+        layout="grid"
+        onPressPhoto={() => {}}
+        testID="g"
+      />,
+    );
     for (let i = 0; i < count; i++) expect(queryTestId(`g-photo-${i}`)).not.toBeNull();
     expect(queryTestId(`g-photo-${count}`)).toBeNull();
   });
@@ -143,14 +160,18 @@ describe('ListingPhotoGrid — grid', () => {
     mount(<ListingPhotoGrid photos={PHOTOS} layout="grid" onPressPhoto={() => {}} testID="g" />);
     const scrim = byTestId('g-photo-0-scrim');
     expect(getComputedStyle(scrim).opacity).toBe('0');
-    expect(getComputedStyle(scrim).backgroundColor).toBe(normalise(resolveListingPalette(theme).scrim));
+    expect(getComputedStyle(scrim).backgroundColor).toBe(
+      normalise(resolveListingPalette(theme).scrim),
+    );
     expect(scrim.getAttribute('data-bloom-listing-scrim')).toBe('');
   });
 });
 
 describe('ListingPhotoGrid — carousel', () => {
   it('pages the photos in a named carousel with an aria-hidden "1 / N" pill', () => {
-    mount(<ListingPhotoGrid photos={PHOTOS} layout="carousel" onPressPhoto={() => {}} testID="g" />);
+    mount(
+      <ListingPhotoGrid photos={PHOTOS} layout="carousel" onPressPhoto={() => {}} testID="g" />,
+    );
     const carousel = byTestId('g-carousel');
     expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
     expect(carousel.getAttribute('aria-label')).toBe('Listing photos');
@@ -164,7 +185,12 @@ describe('ListingPhotoGrid — carousel', () => {
 
   it('formatCounter translates the pill; one photo draws none', () => {
     mount(
-      <ListingPhotoGrid photos={PHOTOS} layout="carousel" formatCounter={(n, t) => `${n} de ${t}`} testID="g" />,
+      <ListingPhotoGrid
+        photos={PHOTOS}
+        layout="carousel"
+        formatCounter={(n, t) => `${n} de ${t}`}
+        testID="g"
+      />,
     );
     expect(byTestId('g-counter').textContent).toBe('1 de 7');
     mount(<ListingPhotoGrid photos={PHOTOS.slice(0, 1)} layout="carousel" testID="g" />);
@@ -190,7 +216,9 @@ describe('ListingHeader', () => {
     expect(title.tagName).toBe('H1');
     expect(title.getAttribute('role')).toBe('heading');
     expect(getComputedStyle(title).fontSize).toBe('24px');
-    expect(byTestId('h-subtitle').textContent).toBe('Entire rental unit in Porto · 4 guests · 1 bath');
+    expect(byTestId('h-subtitle').textContent).toBe(
+      'Entire rental unit in Porto · 4 guests · 1 bath',
+    );
     expect(byTestId('h-rating').getAttribute('aria-label')).toBe('Rated 4.92 out of 5');
 
     const reviews = byTestId('h-reviews');
@@ -209,7 +237,9 @@ describe('ListingHeader', () => {
   });
 
   it('a toggled action carries aria-pressed and its name', () => {
-    mount(<ListingHeaderAction label="Save" icon={RiShareLine} pressed onPress={() => {}} testID="a" />);
+    mount(
+      <ListingHeaderAction label="Save" icon={RiShareLine} pressed onPress={() => {}} testID="a" />,
+    );
     const action = byTestId('a');
     expect(action.getAttribute('role')).toBe('button');
     expect(action.getAttribute('aria-label')).toBe('Save');
@@ -249,18 +279,31 @@ describe('AmenityList', () => {
     mount(<AmenityList items={items} columns={1} testID="am" />);
     const palette = surfaceTextOn(theme, theme.colors.background);
     const label = byTestId('am-item-2-label');
-    expect(getComputedStyle(label).textDecorationLine || getComputedStyle(label).textDecoration).toContain(
-      'line-through',
-    );
+    expect(
+      getComputedStyle(label).textDecorationLine || getComputedStyle(label).textDecoration,
+    ).toContain('line-through');
     expect(byTestId('am-item-2').getAttribute('aria-label')).toBe('Unavailable: Air conditioning');
-    expect(byTestId('am-item-2').querySelector('svg path')?.getAttribute('fill')).toBe(palette.textTertiary);
+    expect(byTestId('am-item-2').querySelector('svg path')?.getAttribute('fill')).toBe(
+      palette.textTertiary,
+    );
     expect(byTestId('am-item-0').getAttribute('aria-label')).toBe('Wifi');
-    expect(byTestId('am-item-0').querySelector('svg path')?.getAttribute('fill')).toBe(palette.text);
+    expect(byTestId('am-item-0').querySelector('svg path')?.getAttribute('fill')).toBe(
+      palette.text,
+    );
   });
 
   it('limit hides the rest and "Show all N amenities" counts `total`', () => {
     const onShowAll = jest.fn();
-    mount(<AmenityList items={items} columns={1} limit={2} total={42} onShowAll={onShowAll} testID="am" />);
+    mount(
+      <AmenityList
+        items={items}
+        columns={1}
+        limit={2}
+        total={42}
+        onShowAll={onShowAll}
+        testID="am"
+      />,
+    );
     expect(queryTestId('am-item-2')).toBeNull();
     const button = byTestId('am-show-all');
     expect(button.textContent).toContain('Show all 42 amenities');
@@ -288,7 +331,16 @@ describe('HostCard', () => {
 
   it('a verified badge, hairlines between the stats, and a message button', () => {
     const onMessage = jest.fn();
-    mount(<HostCard name="Marta" verified label="Top host" stats={stats} onMessage={onMessage} testID="host" />);
+    mount(
+      <HostCard
+        name="Marta"
+        verified
+        label="Top host"
+        stats={stats}
+        onMessage={onMessage}
+        testID="host"
+      />,
+    );
     const badge = byTestId('host-verified');
     expect(badge.getAttribute('aria-label')).toBe('Verified');
     expect(getComputedStyle(badge).backgroundColor).toBe(normalise(theme.colors.primary));
@@ -308,10 +360,20 @@ describe('HostCard', () => {
   });
 
   it('a pressable card reads as one button naming the host and the stats', () => {
-    mount(<HostCard name="Marta" label="Top host" stats={stats} onPressProfile={() => {}} testID="host" />);
+    mount(
+      <HostCard
+        name="Marta"
+        label="Top host"
+        stats={stats}
+        onPressProfile={() => {}}
+        testID="host"
+      />,
+    );
     const card = byTestId('host-card');
     expect(card.getAttribute('role')).toBe('button');
-    expect(card.getAttribute('aria-label')).toBe('Marta, Top host, 214 Reviews, 4.92 Rating, 7 Years hosting');
+    expect(card.getAttribute('aria-label')).toBe(
+      'Marta, Top host, 214 Reviews, 4.92 Rating, 7 Years hosting',
+    );
   });
 
   it('without a handler the card is not a control and there is no button', () => {
@@ -374,7 +436,13 @@ describe('ReviewCard', () => {
     expect(stars.getAttribute('aria-label')).toBe('Rated 4 out of 5');
     const palette = resolveListingPalette(theme);
     const fills = Array.from(stars.querySelectorAll('svg path')).map((p) => p.getAttribute('fill'));
-    expect(fills).toEqual([palette.text, palette.text, palette.text, palette.text, palette.starEmpty]);
+    expect(fills).toEqual([
+      palette.text,
+      palette.text,
+      palette.text,
+      palette.text,
+      palette.starEmpty,
+    ]);
     expect(byTestId('rv-response').textContent).toBe('Response from MartaThank you!');
     expect(getComputedStyle(byTestId('rv-response')).borderTopLeftRadius).toBe('12px');
   });

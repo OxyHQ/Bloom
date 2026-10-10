@@ -1,11 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-import {
-  BottomEdgeProvider,
-  useBottomEdgeInset,
-  useClaimBottomEdge,
-} from '../layout/bottom-edge';
+import { BottomEdgeProvider, useBottomEdgeInset, useClaimBottomEdge } from '../layout/bottom-edge';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton } from '../tab-bar';

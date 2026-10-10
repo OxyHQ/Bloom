@@ -102,7 +102,9 @@ describe('web barrels are generated, never hand-written', () => {
     // `dialog` is the single case: `BLOOM_DIALOG_CSS` has no native counterpart.
     // Keeping it as generator DATA is what keeps "no hand-written web barrel" a
     // property of the tree rather than a convention with one exception.
-    expect(rendered['dialog/index.ts']).toContain("export { BLOOM_DIALOG_CSS } from './Dialog.web';");
+    expect(rendered['dialog/index.ts']).toContain(
+      "export { BLOOM_DIALOG_CSS } from './Dialog.web';",
+    );
     expect(readFileSync(join(SRC, 'dialog/index.ts'), 'utf8')).not.toContain('BLOOM_DIALOG_CSS');
     // And nothing else smuggles an extra in.
     expect(rendered['popover/index.ts']).not.toContain('BLOOM_DIALOG_CSS');

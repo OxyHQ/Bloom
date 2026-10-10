@@ -120,7 +120,8 @@ function OutlineRow({
                   shiftKey?: boolean;
                   button?: number;
                 };
-                if (click.metaKey || click.ctrlKey || click.shiftKey || (click.button ?? 0) !== 0) return;
+                if (click.metaKey || click.ctrlKey || click.shiftKey || (click.button ?? 0) !== 0)
+                  return;
                 event.preventDefault();
               }
               onSelect(heading);
@@ -148,7 +149,9 @@ function OutlineRow({
  * react-native-web would emit unchanged, so each travels as the spelling its own
  * platform reads.
  */
-const LIST_ROLE: Record<string, unknown> = IS_WEB ? { role: 'list' } : { accessibilityRole: 'list' };
+const LIST_ROLE: Record<string, unknown> = IS_WEB
+  ? { role: 'list' }
+  : { accessibilityRole: 'list' };
 const LIST_ITEM_ROLE: Record<string, unknown> = IS_WEB ? { role: 'listitem' } : {};
 
 function OutlineList({
@@ -238,16 +241,15 @@ export function OutlineNav({
   }, [theme, surface]);
 
   const value = progress ?? outlineProgress(shown, activeId);
-  const at = Math.max(0, shown.findIndex((heading) => heading.id === activeId)) + 1;
+  const at =
+    Math.max(
+      0,
+      shown.findIndex((heading) => heading.id === activeId),
+    ) + 1;
   const name = accessibilityLabel ?? labels.outline;
 
   return (
-    <View
-      role="navigation"
-      accessibilityLabel={name}
-      style={style}
-      testID={testID}
-    >
+    <View role="navigation" accessibilityLabel={name} style={style} testID={testID}>
       {!compact && (title ?? labels.outline) !== undefined ? (
         <Text
           variant="caption-1-medium"

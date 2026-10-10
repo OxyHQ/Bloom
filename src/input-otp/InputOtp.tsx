@@ -10,9 +10,7 @@ import {
 
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import {
-  BUTTON_SHADOW,
-} from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import {
   MONO_FONT_FAMILY,
   TEXT_FIELD_RADIUS,
@@ -153,10 +151,13 @@ export function resolveInputOtpBoxPaint(
 
 /** The characters `type` accepts, in order; everything else is dropped. Pure. */
 export function cleanInputOtpValue(raw: string, type: InputOtpType = 'numeric'): string {
-  return type === 'alphanumeric' ? raw.replace(NOT_ALPHANUMERIC, '').toUpperCase() : raw.replace(NOT_DIGIT, '');
+  return type === 'alphanumeric'
+    ? raw.replace(NOT_ALPHANUMERIC, '').toUpperCase()
+    : raw.replace(NOT_DIGIT, '');
 }
 
-const clean = (raw: string, length: number, type: InputOtpType) => cleanInputOtpValue(raw, type).slice(0, length);
+const clean = (raw: string, length: number, type: InputOtpType) =>
+  cleanInputOtpValue(raw, type).slice(0, length);
 
 /**
  * Keyboard and input hints per `type`. The one-time-code autofill hint is
@@ -298,10 +299,12 @@ export function InputOtp({
       testID={testID}
       // No `aria-invalid` here: `group` does not support it. Each box carries
       // its own, which is where a screen reader looks anyway.
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: BOX_GAP }, style]}>
+      style={[{ flexDirection: 'row', alignItems: 'center', gap: BOX_GAP }, style]}
+    >
       {Array.from({ length }, (_, index) => {
         const digit = code[index] ?? '';
-        const gapBefore = groupEvery !== undefined && groupEvery > 0 && index > 0 && index % groupEvery === 0;
+        const gapBefore =
+          groupEvery !== undefined && groupEvery > 0 && index > 0 && index % groupEvery === 0;
         const paint = resolveInputOtpBoxPaint(palette, {
           hovered: hoveredIndex === index,
           focused: focusedIndex === index,
@@ -319,7 +322,8 @@ export function InputOtp({
               ? ({
                   disabled,
                   onMouseEnter: () => setHoveredIndex(index),
-                  onMouseLeave: () => setHoveredIndex((current) => (current === index ? null : current)),
+                  onMouseLeave: () =>
+                    setHoveredIndex((current) => (current === index ? null : current)),
                 } as Record<string, unknown>)
               : {})}
             testID={testID ? `${testID}-${index}` : undefined}
@@ -352,7 +356,8 @@ export function InputOtp({
             onKeyPress={(event) => onKeyPress(event, index)}
             onFocus={() => {
               setFocusedIndex(index);
-              if (!IS_WEB && digit !== '' && digit !== ' ') inputsRef.current[index]?.setSelection(0, 1);
+              if (!IS_WEB && digit !== '' && digit !== ' ')
+                inputsRef.current[index]?.setSelection(0, 1);
             }}
             onBlur={() => setFocusedIndex((current) => (current === index ? null : current))}
             keyboardAppearance={theme.isDark ? 'dark' : 'light'}

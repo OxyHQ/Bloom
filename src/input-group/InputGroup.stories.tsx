@@ -9,9 +9,9 @@ import { Kbd } from '../kbd';
 
 const meta: Meta = {
   argTypes: {
-    "invalid": { control: 'boolean' },
-    "disabled": { control: 'boolean' },
-    "size": { control: 'select', options: ["xs","sm","md","lg"] }
+    invalid: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
   },
   component: InputGroup,
   parameters: { controls: { disable: true } },

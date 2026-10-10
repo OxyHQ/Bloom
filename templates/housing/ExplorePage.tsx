@@ -1,17 +1,26 @@
 import React, { useMemo, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
-import { Button , InverseButton } from '../../src/button';
+import { Button, InverseButton } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
 import { CategoryBar } from '../../src/category-bar';
 import { useDialogControl } from '../../src/dialog';
 import { SaveSearchButton, type HomeSearchMode } from '../../src/home-search';
 import { RiListUnordered, RiMap2Line } from '../../src/icons/remix';
 import { ListingCard, ListingCardGrid } from '../../src/listing-card';
-import { MapAreaCircle, MapListingPreview, MapPriceMarker, type MapMarkerState } from '../../src/map-marker';
+import {
+  MapAreaCircle,
+  MapListingPreview,
+  MapPriceMarker,
+  type MapMarkerState,
+} from '../../src/map-marker';
 import { EnergyBadge } from '../../src/property-insights';
 import { FilterTriggerButton } from '../../src/stay-filters';
-import { WEB_POSITION_FIXED, webViewportHeightMinus, type WebCssStyle } from '../../src/styles/web-view-style';
+import {
+  WEB_POSITION_FIXED,
+  webViewportHeightMinus,
+  type WebCssStyle,
+} from '../../src/styles/web-view-style';
 import { Z_INDEX } from '../../src/styles/z-index';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
@@ -35,7 +44,13 @@ import {
   useHousingNav,
   webSticky,
 } from './HousingHeader';
-import { DesktopModeTabs, DesktopSearchBar, MobileModeTabs, MobileSearch, useHomeSearch } from './HousingSearch';
+import {
+  DesktopModeTabs,
+  DesktopSearchBar,
+  MobileModeTabs,
+  MobileSearch,
+  useHomeSearch,
+} from './HousingSearch';
 import { HousingWidgets } from './HousingWidgets';
 
 // ---------------------------------------------------------------------------
@@ -43,7 +58,17 @@ import { HousingWidgets } from './HousingWidgets';
 // ---------------------------------------------------------------------------
 
 function cardProps(home: Home) {
-  const { id: _id, mode: _mode, short: _short, map: _map, saved: _saved, label, energy, approximate: _approximate, ...card } = home;
+  const {
+    id: _id,
+    mode: _mode,
+    short: _short,
+    map: _map,
+    saved: _saved,
+    label,
+    energy,
+    approximate: _approximate,
+    ...card
+  } = home;
   return {
     ...card,
     badge: energy ? <EnergyBadge rating={energy} size="small" /> : label,
@@ -51,7 +76,9 @@ function cardProps(home: Home) {
 }
 
 function useFavourites() {
-  const [saved, setSaved] = useState<Set<string>>(() => new Set(HOMES.filter((h) => h.saved).map((h) => h.id)));
+  const [saved, setSaved] = useState<Set<string>>(
+    () => new Set(HOMES.filter((h) => h.saved).map((h) => h.id)),
+  );
   const toggle = (id: string, next: boolean) =>
     setSaved((current) => {
       const copy = new Set(current);
@@ -64,7 +91,15 @@ function useFavourites() {
 
 type Favourites = ReturnType<typeof useFavourites>;
 
-function Results({ homes, favourites, columns }: { homes: Home[]; favourites: Favourites; columns?: number }) {
+function Results({
+  homes,
+  favourites,
+  columns,
+}: {
+  homes: Home[];
+  favourites: Favourites;
+  columns?: number;
+}) {
   const go = useHousingNav();
   return (
     <ListingCardGrid columns={columns} testID="housing-results">
@@ -88,7 +123,12 @@ function Results({ homes, favourites, columns }: { homes: Home[]; favourites: Fa
 // ---------------------------------------------------------------------------
 
 const centred = (x: number, y: number) =>
-  ({ position: 'absolute', left: x, top: y, transform: [{ translateX: '-50%' }, { translateY: '-50%' }] }) as const;
+  ({
+    position: 'absolute',
+    left: x,
+    top: y,
+    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+  }) as const;
 
 function MockMap({
   homes,
@@ -120,7 +160,8 @@ function MockMap({
     setActive(id);
   };
 
-  const state = (id: string): MapMarkerState => (active === id ? 'active' : visited.has(id) ? 'visited' : 'default');
+  const state = (id: string): MapMarkerState =>
+    active === id ? 'active' : visited.has(id) ? 'visited' : 'default';
   const previewWidth = Math.min(327, size.width - 24);
   const { width: w, height: h } = size;
 
@@ -128,7 +169,12 @@ function MockMap({
     <View
       onLayout={onLayout}
       style={[
-        { borderRadius: 16, overflow: 'hidden', backgroundColor: theme.isDark ? n[900] : n[200], position: 'relative' },
+        {
+          borderRadius: 16,
+          overflow: 'hidden',
+          backgroundColor: theme.isDark ? n[900] : n[200],
+          position: 'relative',
+        },
         style,
       ]}
       accessibilityLabel="Map of results"
@@ -137,21 +183,72 @@ function MockMap({
       {w > 0 ? (
         <>
           {/* A river and a park, then the streets. */}
-          <View style={{ position: 'absolute', left: -40, right: -40, top: h * 0.56, height: 36, backgroundColor: water, transform: [{ rotate: '-8deg' }] }} />
-          <View style={{ position: 'absolute', left: w * 0.08, top: h * 0.08, width: w * 0.22, height: h * 0.18, borderRadius: 12, backgroundColor: theme.isDark ? n[800] : n[300], opacity: 0.6 }} />
+          <View
+            style={{
+              position: 'absolute',
+              left: -40,
+              right: -40,
+              top: h * 0.56,
+              height: 36,
+              backgroundColor: water,
+              transform: [{ rotate: '-8deg' }],
+            }}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              left: w * 0.08,
+              top: h * 0.08,
+              width: w * 0.22,
+              height: h * 0.18,
+              borderRadius: 12,
+              backgroundColor: theme.isDark ? n[800] : n[300],
+              opacity: 0.6,
+            }}
+          />
           {[0.18, 0.4, 0.66, 0.86].map((top) => (
-            <View key={`h${top}`} style={{ position: 'absolute', left: 0, right: 0, top: h * top, height: 6, backgroundColor: road }} />
+            <View
+              key={`h${top}`}
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: h * top,
+                height: 6,
+                backgroundColor: road,
+              }}
+            />
           ))}
           {[0.14, 0.36, 0.58, 0.8].map((left) => (
-            <View key={`v${left}`} style={{ position: 'absolute', top: 0, bottom: 0, left: w * left, width: 6, backgroundColor: road }} />
+            <View
+              key={`v${left}`}
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: w * left,
+                width: 6,
+                backgroundColor: road,
+              }}
+            />
           ))}
           {area ? (
             <View style={centred(area.map.x * w, area.map.y * h)}>
-              <MapAreaCircle radius={56} accessibilityLabel={`Approximate location of ${area.title}`} testID="housing-map-area" />
+              <MapAreaCircle
+                radius={56}
+                accessibilityLabel={`Approximate location of ${area.title}`}
+                testID="housing-map-area"
+              />
             </View>
           ) : null}
           {homes.map((home) => (
-            <View key={home.id} style={[centred(home.map.x * w, home.map.y * h), { zIndex: active === home.id ? 2 : 1 }]}>
+            <View
+              key={home.id}
+              style={[
+                centred(home.map.x * w, home.map.y * h),
+                { zIndex: active === home.id ? 2 : 1 },
+              ]}
+            >
               <MapPriceMarker
                 price={home.short}
                 size={w < 520 ? 'compact' : 'default'}
@@ -229,8 +326,18 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
     stays: noFilters('stays'),
     swap: noFilters('swap'),
   }));
-  const [category, setCategory] = useState<Record<HomeSearchMode, string>>({ rent: 'all', buy: 'all', stays: 'trending', swap: 'all' });
-  const [savedSearch, setSavedSearch] = useState<Record<HomeSearchMode, boolean>>({ rent: false, buy: true, stays: false, swap: false });
+  const [category, setCategory] = useState<Record<HomeSearchMode, string>>({
+    rent: 'all',
+    buy: 'all',
+    stays: 'trending',
+    swap: 'all',
+  });
+  const [savedSearch, setSavedSearch] = useState<Record<HomeSearchMode, boolean>>({
+    rent: false,
+    buy: true,
+    stays: false,
+    swap: false,
+  });
   const [showMap, setShowMap] = useState(initialMap);
 
   const homes = useMemo(() => HOMES.filter((home) => home.mode === mode), [mode]);
@@ -247,10 +354,7 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
 
   const toolbar = (
     <View
-      style={[
-        { zIndex: Z_INDEX.raised, backgroundColor: theme.colors.background },
-        webSticky(0),
-      ]}
+      style={[{ zIndex: Z_INDEX.raised, backgroundColor: theme.colors.background }, webSticky(0)]}
       testID="housing-toolbar"
     >
       <PageColumn>
@@ -262,7 +366,11 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
           trailing={
             md ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <FilterTriggerButton count={filterCount} onPress={openFilters} testID="housing-filters-trigger" />
+                <FilterTriggerButton
+                  count={filterCount}
+                  onPress={openFilters}
+                  testID="housing-filters-trigger"
+                />
                 {lg ? saveButton : null}
               </View>
             ) : undefined
@@ -290,9 +398,25 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
       />
       {toolbar}
 
-      <PageColumn maxWidth={split ? 1920 : 1280} style={{ paddingTop: 16, paddingBottom: 96, gap: 20 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 36 }}>
-          <Text variant="headline-semibold" style={{ color: theme.colors.text, flexShrink: 1 }} role="heading" aria-level={1}>
+      <PageColumn
+        maxWidth={split ? 1920 : 1280}
+        style={{ paddingTop: 16, paddingBottom: 96, gap: 20 }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            minHeight: 36,
+          }}
+        >
+          <Text
+            variant="headline-semibold"
+            style={{ color: theme.colors.text, flexShrink: 1 }}
+            role="heading"
+            aria-level={1}
+          >
             {RESULT_HEADINGS[mode]}
           </Text>
           {lg ? null : saveButton}
@@ -317,13 +441,16 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
           <MockMap
             homes={homes}
             favourites={favourites}
-            style={{ width: '100%', height: IS_WEB ? webViewportHeightMinus(300) : 560, minHeight: 420 }}
+            style={{
+              width: '100%',
+              height: IS_WEB ? webViewportHeightMinus(300) : 560,
+              minHeight: 420,
+            }}
           />
         ) : (
           <Results homes={homes} favourites={favourites} />
         )}
       </PageColumn>
-
 
       {/* The list / map switch floats over the results. */}
       <View
@@ -338,7 +465,6 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
         }}
       >
         <InverseButton
-
           size="lg"
           leadingIcon={showMap ? RiListUnordered : RiMap2Line}
           onPress={() => setShowMap((s) => !s)}

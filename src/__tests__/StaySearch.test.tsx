@@ -104,7 +104,12 @@ function hover(id: string, type: 'mouseenter' | 'mouseleave' = 'mouseenter') {
   });
 }
 
-function ControlledBar(props: Partial<StaySearchBarProps> & { initial?: StaySearchSegment | null; onChange?: (s: StaySearchSegment | null) => void }) {
+function ControlledBar(
+  props: Partial<StaySearchBarProps> & {
+    initial?: StaySearchSegment | null;
+    onChange?: (s: StaySearchSegment | null) => void;
+  },
+) {
   const { initial = null, onChange, ...rest } = props;
   const [segment, setSegment] = useState<StaySearchSegment | null>(initial);
   return (
@@ -123,7 +128,8 @@ function ControlledBar(props: Partial<StaySearchBarProps> & { initial?: StaySear
 describe('StaySearchBar', () => {
   it('draws four segments in split mode and three in single mode, with labels and placeholders', () => {
     mount(<ControlledBar />);
-    for (const s of ['destination', 'checkIn', 'checkOut', 'guests']) expect(query(`bar-${s}`)).not.toBeNull();
+    for (const s of ['destination', 'checkIn', 'checkOut', 'guests'])
+      expect(query(`bar-${s}`)).not.toBeNull();
     expect(query('bar-dates')).toBeNull();
     expect(byTestId('bar-destination').textContent).toBe('WhereSearch destinations');
     expect(byTestId('bar-guests').textContent).toBe('WhoAdd guests');
@@ -144,7 +150,9 @@ describe('StaySearchBar', () => {
     expect(bar.style.borderTopLeftRadius).toBe('9999px');
     expect(bar.style.backgroundColor).toBe(css(palette.barSurface));
     click('bar-checkIn');
-    expect((byTestId('bar').firstElementChild as HTMLElement).style.backgroundColor).toBe(css(palette.barSurfaceOpen));
+    expect((byTestId('bar').firstElementChild as HTMLElement).style.backgroundColor).toBe(
+      css(palette.barSurfaceOpen),
+    );
     expect(palette.barSurfaceOpen).not.toBe(palette.barSurface);
   });
 
@@ -168,13 +176,23 @@ describe('StaySearchBar', () => {
     mount(<ControlledBar />);
     const palette = resolveStaySearchPalette(theme);
     const sep = (i: number) => byTestId(`bar-separator-${i}`).style.backgroundColor;
-    expect([sep(1), sep(2), sep(3)]).toEqual([css(palette.separator), css(palette.separator), css(palette.separator)]);
+    expect([sep(1), sep(2), sep(3)]).toEqual([
+      css(palette.separator),
+      css(palette.separator),
+      css(palette.separator),
+    ]);
     hover('bar-checkIn');
     expect([sep(1), sep(2), sep(3)]).toEqual([CLEAR, CLEAR, css(palette.separator)]);
-    expect((byTestId('bar-checkIn').parentElement as HTMLElement).style.backgroundColor).toBe(css(palette.segmentHover));
+    expect((byTestId('bar-checkIn').parentElement as HTMLElement).style.backgroundColor).toBe(
+      css(palette.segmentHover),
+    );
     hover('bar-checkIn', 'mouseleave');
     click('bar-guests');
-    expect([sep(1), sep(2), sep(3)]).toEqual([css(palette.separator), css(palette.separator), CLEAR]);
+    expect([sep(1), sep(2), sep(3)]).toEqual([
+      css(palette.separator),
+      css(palette.separator),
+      CLEAR,
+    ]);
   });
 
   it('the search button is icon-only at rest and shows its label while a segment is open', () => {
@@ -206,7 +224,13 @@ describe('StaySearchBar', () => {
 
   it('closes on Escape and on a pointer press outside, not inside', () => {
     const onChange = jest.fn();
-    mount(<ControlledBar initial="guests" onChange={onChange} panel={<StaySearchPanel testID="p">x</StaySearchPanel>} />);
+    mount(
+      <ControlledBar
+        initial="guests"
+        onChange={onChange}
+        panel={<StaySearchPanel testID="p">x</StaySearchPanel>}
+      />,
+    );
     act(() => {
       byTestId('p').dispatchEvent(new Event('pointerdown', { bubbles: true }));
     });
@@ -225,7 +249,13 @@ describe('StaySearchBar', () => {
 
   it('turns the open destination segment into a text field when a query handler is set', () => {
     const onQuery = jest.fn();
-    mount(<ControlledBar initial="destination" destinationQuery="mar" onDestinationQueryChange={onQuery} />);
+    mount(
+      <ControlledBar
+        initial="destination"
+        destinationQuery="mar"
+        onDestinationQueryChange={onQuery}
+      />,
+    );
     const input = byTestId('bar-destination-input') as HTMLInputElement;
     expect(input.tagName).toBe('INPUT');
     expect(input.value).toBe('mar');
@@ -237,7 +267,9 @@ describe('StaySearchBar', () => {
     mount(<ControlledBar initial="guests" />, 'dark');
     const bar = byTestId('bar').firstElementChild as HTMLElement;
     expect(bar.style.backgroundColor).toBe(css(theme.colors.backgroundSecondary));
-    expect((byTestId('bar-guests').parentElement as HTMLElement).style.backgroundColor).toBe(css(theme.colors.card));
+    expect((byTestId('bar-guests').parentElement as HTMLElement).style.backgroundColor).toBe(
+      css(theme.colors.card),
+    );
   });
 });
 
@@ -252,7 +284,10 @@ describe('StaySearchPanel', () => {
     const p = byTestId('p');
     expect(p.style.width).toBe('400px');
     expect(p.style.borderTopLeftRadius).toBe(`${STAY_SEARCH_PANEL_RADIUS}px`);
-    expect(p.style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill);
+    expect(p.style.getPropertyValue('--bloom-surface')).toBe(
+      resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background })
+        .publishedFill,
+    );
     expect(p.style.borderTopWidth).not.toBe('1px');
     expect(p.getAttribute('role')).toBe('dialog');
     expect(p.getAttribute('aria-label')).toBe('Guests');
@@ -268,7 +303,14 @@ describe('DestinationSuggestions', () => {
 
   it('is a named listbox of options; hover and arrows move one highlight, Enter selects', () => {
     const onSelect = jest.fn();
-    mount(<DestinationSuggestions items={items} onSelect={onSelect} heading="Suggested destinations" testID="ds" />);
+    mount(
+      <DestinationSuggestions
+        items={items}
+        onSelect={onSelect}
+        heading="Suggested destinations"
+        testID="ds"
+      />,
+    );
     const list = byTestId('ds');
     expect(list.getAttribute('role')).toBe('listbox');
     expect(list.getAttribute('aria-label')).toBe('Suggested destinations');
@@ -279,7 +321,9 @@ describe('DestinationSuggestions', () => {
 
     hover('ds-1');
     expect(selected()).toEqual(['false', 'true', 'false']);
-    expect(byTestId('ds-1').style.backgroundColor).toBe(css(resolveStaySearchPalette(theme).rowHighlight));
+    expect(byTestId('ds-1').style.backgroundColor).toBe(
+      css(resolveStaySearchPalette(theme).rowHighlight),
+    );
 
     const key = (k: string) =>
       act(() => {
@@ -314,15 +358,31 @@ describe('guest rule', () => {
   it('needs one adult once anyone else is counted', () => {
     expect(minimumAdults(none)).toBe(0);
     expect(minimumAdults({ ...none, pets: 1 })).toBe(1);
-    expect(applyGuestCount(none, 'children', 1)).toEqual({ adults: 1, children: 1, infants: 0, pets: 0 });
-    expect(applyGuestCount({ adults: 3, children: 0, infants: 0, pets: 0 }, 'infants', 2)).toEqual({ adults: 3, children: 0, infants: 2, pets: 0 });
+    expect(applyGuestCount(none, 'children', 1)).toEqual({
+      adults: 1,
+      children: 1,
+      infants: 0,
+      pets: 0,
+    });
+    expect(applyGuestCount({ adults: 3, children: 0, infants: 0, pets: 0 }, 'infants', 2)).toEqual({
+      adults: 3,
+      children: 0,
+      infants: 2,
+      pets: 0,
+    });
     expect(applyGuestCount({ ...none, adults: 1, pets: 1 }, 'adults', 0).adults).toBe(1);
     expect(applyGuestCount(none, 'pets', -3).pets).toBe(0);
   });
 });
 
 describe('GuestPicker', () => {
-  function Harness({ onChange, initial }: { onChange?: (g: GuestCounts) => void; initial: GuestCounts }) {
+  function Harness({
+    onChange,
+    initial,
+  }: {
+    onChange?: (g: GuestCounts) => void;
+    initial: GuestCounts;
+  }) {
     const [value, setValue] = useState(initial);
     return (
       <GuestPicker
@@ -340,14 +400,21 @@ describe('GuestPicker', () => {
   it('renders four named steppers with descriptions and dividers between rows', () => {
     mount(<Harness initial={{ adults: 2, children: 0, infants: 0, pets: 0 }} />);
     const sliders = Array.from(container.querySelectorAll('[role="slider"]'));
-    expect(sliders.map((s) => s.getAttribute('aria-label'))).toEqual(['Adults', 'Children', 'Infants', 'Pets']);
+    expect(sliders.map((s) => s.getAttribute('aria-label'))).toEqual([
+      'Adults',
+      'Children',
+      'Infants',
+      'Pets',
+    ]);
     expect(container.textContent).toContain('Ages 13 or above');
     expect(container.textContent).toContain('Bringing a service animal?');
   });
 
   it('adding a child with no adults sets adults to 1 and disables the adults decrement', () => {
     const onChange = jest.fn();
-    mount(<Harness initial={{ adults: 0, children: 0, infants: 0, pets: 0 }} onChange={onChange} />);
+    mount(
+      <Harness initial={{ adults: 0, children: 0, infants: 0, pets: 0 }} onChange={onChange} />,
+    );
     click('gp-children-increment');
     expect(onChange).toHaveBeenLastCalledWith({ adults: 1, children: 1, infants: 0, pets: 0 });
     expect(byTestId('gp-adults-value').getAttribute('aria-valuemin')).toBe('1');
@@ -380,7 +447,14 @@ describe('StaySearchCompact', () => {
   it('is a 56-tall pill; the trigger and the filter button are sibling named buttons', () => {
     const onPress = jest.fn();
     const onFilter = jest.fn();
-    mount(<StaySearchCompact onPress={onPress} summary="Anywhere · Any week · Add guests" onFilterPress={onFilter} testID="c" />);
+    mount(
+      <StaySearchCompact
+        onPress={onPress}
+        summary="Anywhere · Any week · Add guests"
+        onFilterPress={onFilter}
+        testID="c"
+      />,
+    );
     const trigger = byTestId('c');
     expect(trigger.getAttribute('role')).toBe('button');
     expect(trigger.getAttribute('aria-label')).toBe('Where to?, Anywhere · Any week · Add guests');
@@ -405,7 +479,15 @@ describe('StaySearchCompact', () => {
 describe('StaySearchStep', () => {
   it('collapsed: a button row with label and summary, aria-expanded false', () => {
     const onPress = jest.fn();
-    mount(<StaySearchStep label="Where" summary="I’m flexible" expanded={false} onPress={onPress} testID="s" />);
+    mount(
+      <StaySearchStep
+        label="Where"
+        summary="I’m flexible"
+        expanded={false}
+        onPress={onPress}
+        testID="s"
+      />,
+    );
     const row = byTestId('s');
     expect(row.getAttribute('role')).toBe('button');
     expect(row.getAttribute('aria-expanded')).toBe('false');
@@ -458,7 +540,13 @@ describe('nextSelectable', () => {
 
 describe('DestinationSuggestions — a disabled row', () => {
   const items = [
-    { id: 'here', title: 'Use my location', description: 'Find what’s around you', disabled: true, disabledReason: 'Location is off' },
+    {
+      id: 'here',
+      title: 'Use my location',
+      description: 'Find what’s around you',
+      disabled: true,
+      disabledReason: 'Location is off',
+    },
     { id: 'b', title: 'Old Halden' },
     { id: 'c', title: 'Solvia Bay' },
   ];
@@ -557,10 +645,31 @@ describe('GuestPicker — the stepper button names', () => {
   });
 });
 
-function PanelFillProbe() { return <span data-testid="panel-fill">{useSurfaceFill()}</span>; }
+function PanelFillProbe() {
+  return <span data-testid="panel-fill">{useSurfaceFill()}</span>;
+}
 it('derives a panel from its actual parent and publishes a caller override', () => {
-  mount(<SurfaceLevelProvider level={1} fill="#30343a"><StaySearchPanel testID="nested-panel"><PanelFillProbe /></StaySearchPanel></SurfaceLevelProvider>, 'dark');
-  expect(container.querySelector('[data-testid="panel-fill"]')?.textContent).toBe(resolveSurfaceMaterial({ fill: surfaceFillOn(theme, '#30343a'), parentFill: '#30343a' }).publishedFill);
-  mount(<SurfaceLevelProvider level={1} fill="#30343a"><StaySearchPanel style={{ backgroundColor: '#654321' }}><PanelFillProbe /></StaySearchPanel></SurfaceLevelProvider>, 'dark');
-  expect(container.querySelector('[data-testid="panel-fill"]')?.textContent).toBe(resolveSurfaceMaterial({ fill: '#654321', parentFill: '#30343a' }).publishedFill);
+  mount(
+    <SurfaceLevelProvider level={1} fill="#30343a">
+      <StaySearchPanel testID="nested-panel">
+        <PanelFillProbe />
+      </StaySearchPanel>
+    </SurfaceLevelProvider>,
+    'dark',
+  );
+  expect(container.querySelector('[data-testid="panel-fill"]')?.textContent).toBe(
+    resolveSurfaceMaterial({ fill: surfaceFillOn(theme, '#30343a'), parentFill: '#30343a' })
+      .publishedFill,
+  );
+  mount(
+    <SurfaceLevelProvider level={1} fill="#30343a">
+      <StaySearchPanel style={{ backgroundColor: '#654321' }}>
+        <PanelFillProbe />
+      </StaySearchPanel>
+    </SurfaceLevelProvider>,
+    'dark',
+  );
+  expect(container.querySelector('[data-testid="panel-fill"]')?.textContent).toBe(
+    resolveSurfaceMaterial({ fill: '#654321', parentFill: '#30343a' }).publishedFill,
+  );
 });

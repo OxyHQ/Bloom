@@ -303,7 +303,12 @@ function CarrierQuoteCardComponent({
   // a slot the offer did not fill, which reads as a number that failed to load.
   const tiles: QuoteTile[] = [];
   if (quote.pickupWindow)
-    tiles.push({ key: 'pickup', label: labels.pickup, value: quote.pickupWindow, icon: RiMapPin2Line });
+    tiles.push({
+      key: 'pickup',
+      label: labels.pickup,
+      value: quote.pickupWindow,
+      icon: RiMapPin2Line,
+    });
   if (quote.eta) tiles.push({ key: 'eta', label: labels.eta, value: quote.eta, icon: RiTimeLine });
   if (carrier.vehicle)
     tiles.push({
@@ -328,60 +333,65 @@ function CarrierQuoteCardComponent({
   // its own inset, so nothing inside it moves when it is chosen.
   const inset = CARRIER_QUOTE_GEOMETRY.padding - (selected ? 1 : 0);
 
-  const hasOwnActions = onAccept !== undefined || onMessage !== undefined || onDecline !== undefined;
-  const actionRow = actions ?? (!hasOwnActions ? null : (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} testID={id('actions')}>
-      {onDecline ? (
-        <Button
-
-          size="md"
-          iconOnly={!labelled}
-          leadingIcon={RiCloseLine}
-          onPress={() => onDecline(quote.id)}
-          disabled={disabled}
-          hitSlop={CARRIER_QUOTE_GEOMETRY.actionHit}
-          accessibilityLabel={`${labels.decline} ${carrier.name}`}
-          testID={id('decline')} tone="accent" appearance="plain"
-        >
-          {labelled ? labels.decline : undefined}
-        </Button>
-      ) : null}
-      <View style={{ flex: 1, minWidth: 0 }} />
-      {onMessage ? (
-        <Button
-
-          size="md"
-          iconOnly={!labelled}
-          leadingIcon={RiChat3Line}
-          onPress={() => onMessage(quote.id)}
-          disabled={disabled}
-          hitSlop={CARRIER_QUOTE_GEOMETRY.actionHit}
-          accessibilityLabel={`${labels.message} ${carrier.name}`}
-          testID={id('message')} tone="neutral" appearance="outline"
-        >
-          {labelled ? labels.message : undefined}
-        </Button>
-      ) : null}
-      {onAccept ? (
-        <Button
-
-          size="md"
-          leadingIcon={selected ? RiCheckLine : undefined}
-          onPress={() => onAccept(quote.id)}
-          disabled={disabled}
-          accessibilityLabel={`${labels.accept} ${carrier.name}, ${quote.price}`}
-          testID={id('accept')} tone="accent" appearance="solid"
-        >
-          {labels.accept}
-        </Button>
-      ) : null}
-    </View>
-  ));
+  const hasOwnActions =
+    onAccept !== undefined || onMessage !== undefined || onDecline !== undefined;
+  const actionRow =
+    actions ??
+    (!hasOwnActions ? null : (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} testID={id('actions')}>
+        {onDecline ? (
+          <Button
+            size="md"
+            iconOnly={!labelled}
+            leadingIcon={RiCloseLine}
+            onPress={() => onDecline(quote.id)}
+            disabled={disabled}
+            hitSlop={CARRIER_QUOTE_GEOMETRY.actionHit}
+            accessibilityLabel={`${labels.decline} ${carrier.name}`}
+            testID={id('decline')}
+            tone="accent"
+            appearance="plain"
+          >
+            {labelled ? labels.decline : undefined}
+          </Button>
+        ) : null}
+        <View style={{ flex: 1, minWidth: 0 }} />
+        {onMessage ? (
+          <Button
+            size="md"
+            iconOnly={!labelled}
+            leadingIcon={RiChat3Line}
+            onPress={() => onMessage(quote.id)}
+            disabled={disabled}
+            hitSlop={CARRIER_QUOTE_GEOMETRY.actionHit}
+            accessibilityLabel={`${labels.message} ${carrier.name}`}
+            testID={id('message')}
+            tone="neutral"
+            appearance="outline"
+          >
+            {labelled ? labels.message : undefined}
+          </Button>
+        ) : null}
+        {onAccept ? (
+          <Button
+            size="md"
+            leadingIcon={selected ? RiCheckLine : undefined}
+            onPress={() => onAccept(quote.id)}
+            disabled={disabled}
+            accessibilityLabel={`${labels.accept} ${carrier.name}, ${quote.price}`}
+            testID={id('accept')}
+            tone="accent"
+            appearance="solid"
+          >
+            {labels.accept}
+          </Button>
+        ) : null}
+      </View>
+    ));
 
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
-
         radius="radius-20"
         border={selected ? 'medium' : 'thin'}
         style={[
@@ -390,7 +400,8 @@ function CarrierQuoteCardComponent({
           disabled ? { opacity: DISABLED_OPACITY } : null,
           style,
         ]}
-        testID={testID} appearance="outline"
+        testID={testID}
+        appearance="outline"
       >
         <View
           // The card measures ITSELF, not the window: this same card is 358

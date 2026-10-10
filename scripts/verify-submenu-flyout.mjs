@@ -58,7 +58,16 @@ async function boxOf(page, testId) {
     if (!el) return null;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return null;
-    return { x: r.x, y: r.y, width: r.width, height: r.height, left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+    return {
+      x: r.x,
+      y: r.y,
+      width: r.width,
+      height: r.height,
+      left: r.left,
+      right: r.right,
+      top: r.top,
+      bottom: r.bottom,
+    };
   }, testId);
 }
 
@@ -129,15 +138,17 @@ async function main() {
 
   try {
     const page = await browser.newPage();
-    await page.emulateMediaFeatures([
-      { name: 'prefers-reduced-motion', value: 'no-preference' },
-    ]);
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
 
     // ---------------------------------------------------------------- case 1
     // Hovering the sub-trigger opens a panel that is NOT under it.
     await openMenu(page, STORY);
     const closed = await boxOf(page, 'submenu-item-email');
-    record('sub-panel is closed before any hover', closed === null, closed ? 'it was already open' : '');
+    record(
+      'sub-panel is closed before any hover',
+      closed === null,
+      closed ? 'it was already open' : '',
+    );
 
     const trig = await boxOf(page, 'submenu-trigger');
     if (!trig) throw new Error('no submenu-trigger');
@@ -186,7 +197,11 @@ async function main() {
       record('a diagonal pointer path to the panel does not dismiss it', survived !== null);
       await page.screenshot({ path: `${OUT}/flyout-after-diagonal.png` });
     } else {
-      record('a diagonal pointer path to the panel does not dismiss it', false, 'panel never opened');
+      record(
+        'a diagonal pointer path to the panel does not dismiss it',
+        false,
+        'panel never opened',
+      );
     }
 
     // ---------------------------------------------------------------- case 3
@@ -245,7 +260,9 @@ async function main() {
     const focusedIn = await page.evaluate(() => {
       const active = document.activeElement;
       const first = document.querySelector('[data-testid="submenu-item-email"]');
-      return Boolean(active && first && (active === first || first.contains(active) || active.contains(first)));
+      return Boolean(
+        active && first && (active === first || first.contains(active) || active.contains(first)),
+      );
     });
     record('ArrowRight moves focus INTO the panel', focusedIn);
 

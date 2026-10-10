@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState } from 'react';
-import { ScrollView, View, useWindowDimensions, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import {
+  ScrollView,
+  View,
+  useWindowDimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 
 import { Button } from '../../src/button';
 import { mixColor } from '../../src/button/shared';
@@ -115,7 +121,10 @@ export function PageScroll({ children, onScroll, overlay, back = true, testID }:
           </View>
         ) : null}
         {overlay ? (
-          <View pointerEvents="box-none" style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+          <View
+            pointerEvents="box-none"
+            style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+          >
             {overlay}
           </View>
         ) : null}
@@ -143,7 +152,13 @@ export function PageBody({ children, gap = 32 }: { children: React.ReactNode; ga
   return <View style={{ paddingLeft: gutter, paddingRight: gutter, gap }}>{children}</View>;
 }
 
-export function SectionTitle({ children, trailing }: { children: string; trailing?: React.ReactNode }) {
+export function SectionTitle({
+  children,
+  trailing,
+}: {
+  children: string;
+  trailing?: React.ReactNode;
+}) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
       <Text role="heading" aria-level={2} variant="title-2-bold" style={{ flex: 1 }}>
@@ -160,12 +175,13 @@ export function BackButton() {
   if (!router.canGoBack) return null;
   return (
     <Button
-
       size="sm"
       iconOnly
       icon={RiArrowLeftSLine}
       accessibilityLabel="Back"
-      onPress={router.back} tone="neutral" appearance="outline"
+      onPress={router.back}
+      tone="neutral"
+      appearance="outline"
     />
   );
 }
@@ -175,7 +191,10 @@ export function BackButton() {
 // ---------------------------------------------------------------------------
 
 export function albumPlay(album: DemoAlbum): { items: Playable[]; context: PlayContext } {
-  return { items: playablesFromTrackIds(album.trackIds), context: { id: album.id, name: album.title, type: 'album' } };
+  return {
+    items: playablesFromTrackIds(album.trackIds),
+    context: { id: album.id, name: album.title, type: 'album' },
+  };
 }
 
 export function playlistPlay(playlist: DemoPlaylist, trackIds = playlist.trackIds) {
@@ -221,7 +240,15 @@ export function useContextPlay(play: { items: Playable[]; context: PlayContext }
 //  Wired cards
 // ---------------------------------------------------------------------------
 
-export function AlbumTile({ id, size, showArtist = true }: { id: string; size?: MediaCardSize; showArtist?: boolean }) {
+export function AlbumTile({
+  id,
+  size,
+  showArtist = true,
+}: {
+  id: string;
+  size?: MediaCardSize;
+  showArtist?: boolean;
+}) {
   const album = ALBUM_BY_ID[id]!;
   const router = useMusicRouter();
   const player = usePlayer();
@@ -239,7 +266,10 @@ export function AlbumTile({ id, size, showArtist = true }: { id: string; size?: 
       {...state}
       menuItems={[
         { label: 'Add to queue', onPress: () => player.addToQueue(albumPlay(album).items) },
-        { label: 'Go to artist', onPress: () => router.navigate({ name: 'artist', id: album.artistId }) },
+        {
+          label: 'Go to artist',
+          onPress: () => router.navigate({ name: 'artist', id: album.artistId }),
+        },
       ]}
     />
   );
@@ -359,7 +389,9 @@ export function EpisodeTile({
       artwork={show.artwork}
       artworkColor={show.artworkColor}
       progress={listened !== undefined ? listened / episode.duration : undefined}
-      remaining={listened !== undefined ? `${Math.max(1, Math.round(left / 60))} min left` : undefined}
+      remaining={
+        listened !== undefined ? `${Math.max(1, Math.round(left / 60))} min left` : undefined
+      }
       played={episode.played && !current}
       size={size}
       layout={layout}
@@ -412,7 +444,7 @@ export function EventTile({
       layout={layout}
       action={
         event.soldOut ? undefined : (
-          <Button  size="xs" tone="neutral" appearance="outline">
+          <Button size="xs" tone="neutral" appearance="outline">
             Tickets
           </Button>
         )

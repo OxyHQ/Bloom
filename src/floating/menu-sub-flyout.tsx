@@ -31,14 +31,7 @@
  * clicking a row of the PARENT menu would only dismiss the sub; and a dismissible
  * one would install the competing Escape handler this file exists to order.
  */
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -196,10 +189,7 @@ function focusFirstItem(node: DomNode | null): void {
  * (a row rendered outside a surface, a non-DOM ref), the row's own box is the
  * fallback and behaviour is what it was.
  */
-function useFlyoutAnchor(
-  ref: React.RefObject<View | null>,
-  open: boolean,
-): FloatingAnchor | null {
+function useFlyoutAnchor(ref: React.RefObject<View | null>, open: boolean): FloatingAnchor | null {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
 
   const measure = useCallback(() => {
@@ -215,8 +205,7 @@ function useFlyoutAnchor(
       return;
     }
     const rowBox = row.getBoundingClientRect();
-    const panel =
-      typeof row.closest === 'function' ? row.closest('[role="menu"]') : null;
+    const panel = typeof row.closest === 'function' ? row.closest('[role="menu"]') : null;
     const sideBox = panel ? panel.getBoundingClientRect() : rowBox;
     const next = {
       top: rowBox.top,
@@ -377,7 +366,16 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     }, [cancelTimer, setOpen]);
 
     const context = useMemo<SubFlyoutContextValue>(
-      () => ({ open: isOpen, setOpen, triggerRef, contentRef, keepOpen, closeSoon, closeNow, closeAndRefocus }),
+      () => ({
+        open: isOpen,
+        setOpen,
+        triggerRef,
+        contentRef,
+        keepOpen,
+        closeSoon,
+        closeNow,
+        closeAndRefocus,
+      }),
       [isOpen, setOpen, keepOpen, closeSoon, closeNow, closeAndRefocus],
     );
 
@@ -478,7 +476,8 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
           accessibilityLabel={accessibilityLabel}
           className={cx(SUB_TRIGGER_CLASS, className)}
           style={style}
-          testID={testID}>
+          testID={testID}
+        >
           {body}
         </MenuRowShell>
       </View>
@@ -603,7 +602,8 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         // length.
         className={cx(MENU_SUB_PANEL_CLASS, className)}
         style={style}
-        testID={testID}>
+        testID={testID}
+      >
         {/* `-mx-2.5 px-2.5 max-h-96 overflow-y-auto`: the negative inset bleeds
             the scroller to the panel edge and pads the content back, so the
             scrollbar is not inset by the panel's own `p-2.5`. It doubles as the

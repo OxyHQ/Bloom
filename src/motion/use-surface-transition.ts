@@ -10,5 +10,10 @@ export function useSurfaceTransition(transition: SurfaceTransition | undefined) 
   const resolved = resolveSurfaceTransition(transition);
   const [x1, y1, x2, y2] = resolved.easing;
   const easing = useMemo(() => Easing.bezier(x1, y1, x2, y2), [x1, y1, x2, y2]);
-  return { ...resolved, easing, reducedMotion, duration: reducedMotion ? 0 : transition ? resolved.duration : undefined };
+  return {
+    ...resolved,
+    easing,
+    reducedMotion,
+    duration: reducedMotion ? 0 : transition ? resolved.duration : undefined,
+  };
 }

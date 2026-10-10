@@ -66,7 +66,9 @@ export const Podcast: Story = {
 
 /** One episode, resuming where the listener stopped. */
 export const Episode: Story = {
-  render: () => <MusicApp route={{ name: 'episode', id: 'quiet-cartography-ep-1' }} loaded="episode" />,
+  render: () => (
+    <MusicApp route={{ name: 'episode', id: 'quiet-cartography-ep-1' }} loaded="episode" />
+  ),
 };
 
 /** The full player, playing: immersive on desktop with the lyrics following the clock; the phone's expanded player. */

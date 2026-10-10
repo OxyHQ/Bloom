@@ -125,7 +125,15 @@ function ActionButton({ action }: { action: DialogAction }) {
   // other button in the library: the gradient/secondary/danger recipe,
   // its states and its focus ring, rather than a private pill.
   return (
-    <Button {...ACTION_APPEARANCE[color]} size="lg" disabled={action.disabled} onPress={() => handlePress()} accessibilityLabel={action.label} testID={action.testID} style={{ width: "100%" }}>
+    <Button
+      {...ACTION_APPEARANCE[color]}
+      size="lg"
+      disabled={action.disabled}
+      onPress={() => handlePress()}
+      accessibilityLabel={action.label}
+      testID={action.testID}
+      style={{ width: '100%' }}
+    >
       {action.label}
     </Button>
   );

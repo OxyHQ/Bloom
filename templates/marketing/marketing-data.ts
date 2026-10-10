@@ -35,7 +35,9 @@ import { MONTHS } from '../shared/dashboard';
 export const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
 
 export const compactCurrency = (n: number) =>
-  n >= 1000 ? `$${(Math.round(n / 100) / 10).toLocaleString('en-US')}K`.replace('.0K', 'K') : `$${Math.round(n)}`;
+  n >= 1000
+    ? `$${(Math.round(n / 100) / 10).toLocaleString('en-US')}K`.replace('.0K', 'K')
+    : `$${Math.round(n)}`;
 
 export const compactNumber = (n: number) =>
   n >= 1_000_000
@@ -49,8 +51,20 @@ export const multiplier = (n: number) => `${(Math.round(n * 10) / 10).toFixed(1)
 export const MARKETING_STATS: StatCardsItem[] = [
   { icon: RiCoinsLine, label: 'Ad spend', value: '$24,380', delta: '+8.4%', deltaColor: 'lime' },
   { icon: RiEyeLine, label: 'Impressions', value: '1.94M', delta: '+12.6%', deltaColor: 'lime' },
-  { icon: RiUserFollowLine, label: 'Conversions', value: '1,286', delta: '+5.2%', deltaColor: 'lime' },
-  { icon: RiCursorLine, label: 'Cost per click', value: '$1.24', delta: '-3.1%', deltaColor: 'rose' },
+  {
+    icon: RiUserFollowLine,
+    label: 'Conversions',
+    value: '1,286',
+    delta: '+5.2%',
+    deltaColor: 'lime',
+  },
+  {
+    icon: RiCursorLine,
+    label: 'Cost per click',
+    value: '$1.24',
+    delta: '-3.1%',
+    deltaColor: 'rose',
+  },
 ];
 
 /* ------------------------------------------------------ acquisition funnel */
@@ -65,9 +79,24 @@ const funnelStages = (values: [number, number, number, number]) => [
 ];
 
 export const FUNNEL_RANGES: FunnelRange[] = [
-  { id: '7d', label: 'Last 7 days', stages: funnelStages([21_600, 8_400, 3_050, 1_150]), delta: 0.031 },
-  { id: '30d', label: 'Last 30 days', stages: funnelStages([96_400, 38_600, 14_100, 5_240]), delta: 0.058 },
-  { id: '90d', label: 'Last 90 days', stages: funnelStages([262_000, 104_000, 38_500, 14_800]), delta: -0.021 },
+  {
+    id: '7d',
+    label: 'Last 7 days',
+    stages: funnelStages([21_600, 8_400, 3_050, 1_150]),
+    delta: 0.031,
+  },
+  {
+    id: '30d',
+    label: 'Last 30 days',
+    stages: funnelStages([96_400, 38_600, 14_100, 5_240]),
+    delta: 0.058,
+  },
+  {
+    id: '90d',
+    label: 'Last 90 days',
+    stages: funnelStages([262_000, 104_000, 38_500, 14_800]),
+    delta: -0.021,
+  },
 ];
 
 /* ------------------------------------------------------- spend by channel */
@@ -81,8 +110,18 @@ const spendSplit = (values: [number, number, number, number]): RadialDatum[] => 
 
 export const SPEND_RANGES: RadialRange[] = [
   { id: '7d', label: 'Last 7 days', data: spendSplit([2_840, 1_920, 680, 620]), delta: 0.026 },
-  { id: '30d', label: 'Last 30 days', data: spendSplit([11_400, 7_620, 3_180, 2_680]), delta: 0.084 },
-  { id: '90d', label: 'Last 90 days', data: spendSplit([32_800, 24_100, 9_400, 8_100]), delta: -0.018 },
+  {
+    id: '30d',
+    label: 'Last 30 days',
+    data: spendSplit([11_400, 7_620, 3_180, 2_680]),
+    delta: 0.084,
+  },
+  {
+    id: '90d',
+    label: 'Last 90 days',
+    data: spendSplit([32_800, 24_100, 9_400, 8_100]),
+    delta: -0.018,
+  },
 ];
 
 /* -------------------------------------------------------- traffic sources */
@@ -152,7 +191,10 @@ export const SPEND_ROAS_RANGES: ComboRange[] = [
   {
     id: 'h2',
     label: 'Last 6 months',
-    data: spendRows([17_600, 19_800, 21_400, 20_600, 23_200, 24_380], [3.5, 3.8, 4.0, 3.9, 4.2, 4.3]).map((row, i) => ({
+    data: spendRows(
+      [17_600, 19_800, 21_400, 20_600, 23_200, 24_380],
+      [3.5, 3.8, 4.0, 3.9, 4.2, 4.3],
+    ).map((row, i) => ({
       ...row,
       label: MONTHS[i + 6] ?? '',
     })),

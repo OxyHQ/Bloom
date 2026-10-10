@@ -110,7 +110,6 @@ export function MailComposeHeader({
           trailing={
             copies ? undefined : (
               <LinkButton
-
                 size="xs"
                 linkTone="secondary"
                 onPress={() => setRevealed(true)}

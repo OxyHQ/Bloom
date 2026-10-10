@@ -19,16 +19,17 @@ export interface SortableMediaMessages {
   photos: string;
 }
 
-export const SORTABLE_MEDIA_MESSAGES: MessageCatalog<SortableMediaMessages> = defineMessages<SortableMediaMessages>('SORTABLE_MEDIA_MESSAGES', {
-  photo: (p, t) => `Photo ${p} of ${t}`,
-  cover: 'Cover',
-  moveEarlier: (p) => `Move photo ${p} earlier`,
-  moveLater: (p) => `Move photo ${p} later`,
-  remove: (p) => `Remove photo ${p}`,
-  retry: (p) => `Retry uploading photo ${p}`,
-  uploading: (p) => `Uploading photo ${p}`,
-  failed: 'Upload failed',
-  add: 'Add photos',
-  moved: (p, t) => `Moved to position ${p} of ${t}`,
-  photos: 'Photos',
-});
+export const SORTABLE_MEDIA_MESSAGES: MessageCatalog<SortableMediaMessages> =
+  defineMessages<SortableMediaMessages>('SORTABLE_MEDIA_MESSAGES', {
+    photo: (p, t) => `Photo ${p} of ${t}`,
+    cover: 'Cover',
+    moveEarlier: (p) => `Move photo ${p} earlier`,
+    moveLater: (p) => `Move photo ${p} later`,
+    remove: (p) => `Remove photo ${p}`,
+    retry: (p) => `Retry uploading photo ${p}`,
+    uploading: (p) => `Uploading photo ${p}`,
+    failed: 'Upload failed',
+    add: 'Add photos',
+    moved: (p, t) => `Moved to position ${p} of ${t}`,
+    photos: 'Photos',
+  });

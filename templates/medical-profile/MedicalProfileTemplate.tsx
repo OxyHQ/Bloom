@@ -42,7 +42,13 @@ export function MedicalProfileTemplate() {
   const activity = useMemo(() => activityFor(selectedDay), [selectedDay]);
 
   const cards = [
-    <PatientInfoCard key="patient" testID="medical-patient" name={PATIENT.name} initials={PATIENT.initials} details={PATIENT.details} />,
+    <PatientInfoCard
+      key="patient"
+      testID="medical-patient"
+      name={PATIENT.name}
+      initials={PATIENT.initials}
+      details={PATIENT.details}
+    />,
     <StepsCard
       key="steps"
       testID="medical-steps"
@@ -51,7 +57,12 @@ export function MedicalProfileTemplate() {
       onPrevRange={() => setWeekOffset((o) => o - 1)}
       onNextRange={() => setWeekOffset((o) => o + 1)}
     />,
-    <SleepScoreCard key="sleep" testID="medical-sleep" metrics={SLEEP_METRICS} range={WEEK_RANGE} />,
+    <SleepScoreCard
+      key="sleep"
+      testID="medical-sleep"
+      metrics={SLEEP_METRICS}
+      range={WEEK_RANGE}
+    />,
     <MostActiveDaysCard
       key="days"
       testID="medical-days"
@@ -62,27 +73,44 @@ export function MedicalProfileTemplate() {
       selectedDay={selectedDay}
       onSelectDay={setSelectedDay}
     />,
-    <ActivityRingsCard key="activity" testID="medical-activity" title={activity.title} rings={activity.rings} />,
-    <ImportantAlertsCard key="alerts" testID="medical-alerts" alerts={ALERTS} count={12} rangeLabel={WEEK_RANGE} />,
+    <ActivityRingsCard
+      key="activity"
+      testID="medical-activity"
+      title={activity.title}
+      rings={activity.rings}
+    />,
+    <ImportantAlertsCard
+      key="alerts"
+      testID="medical-alerts"
+      alerts={ALERTS}
+      count={12}
+      rangeLabel={WEEK_RANGE}
+    />,
   ];
 
   const rows: React.ReactNode[][] = [];
   for (let i = 0; i < cards.length; i += columns) rows.push(cards.slice(i, i + columns));
 
   return (
-    <DashboardShell testID="medical" selected="medical" title="Medical Profile" crumbIcon={RiAsterisk} primaryAction="File a report">
-        <View style={{ width: '100%', gap: 16 }} testID="medical-cards">
-          {rows.map((row, r) => (
-            <View key={`row-${r}`} style={{ width: '100%', flexDirection: 'row', gap: 16 }}>
-              {row.map((card, c) => (
-                <View key={`cell-${r}-${c}`} style={{ flex: 1, flexBasis: 0, minWidth: 0 }}>
-                  {card}
-                </View>
-              ))}
-            </View>
-          ))}
-        </View>
-        <PatientsTable testID="medical-patients" />
+    <DashboardShell
+      testID="medical"
+      selected="medical"
+      title="Medical Profile"
+      crumbIcon={RiAsterisk}
+      primaryAction="File a report"
+    >
+      <View style={{ width: '100%', gap: 16 }} testID="medical-cards">
+        {rows.map((row, r) => (
+          <View key={`row-${r}`} style={{ width: '100%', flexDirection: 'row', gap: 16 }}>
+            {row.map((card, c) => (
+              <View key={`cell-${r}-${c}`} style={{ flex: 1, flexBasis: 0, minWidth: 0 }}>
+                {card}
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+      <PatientsTable testID="medical-patients" />
     </DashboardShell>
   );
 }

@@ -7,7 +7,14 @@ import React, {
   useEffect,
   useMemo,
 } from 'react';
-import { Platform, Pressable, ScrollView, View, type TextStyle, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  View,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -91,16 +98,31 @@ const GEOMETRY = {
  * cell, so switching density eases instead of snapping. Web only — a style
  * transition is not something React Native animates.
  */
-const CELL_TRANSITION: WebCssStyle | null = Platform.OS === 'web'
-  ? { transitionProperty: 'padding', transitionDuration: '200ms', transitionTimingFunction: 'ease' }
-  : null;
+const CELL_TRANSITION: WebCssStyle | null =
+  Platform.OS === 'web'
+    ? {
+        transitionProperty: 'padding',
+        transitionDuration: '200ms',
+        transitionTimingFunction: 'ease',
+      }
+    : null;
 /** `tbody tr { transition-colors duration-150 }` — a row's selection wash eases in. */
-const ROW_TRANSITION: WebCssStyle | null = Platform.OS === 'web'
-  ? { transitionProperty: 'background-color', transitionDuration: '150ms', transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }
-  : null;
-const TEXT_TRANSITION: WebCssStyle | null = Platform.OS === 'web'
-  ? { transitionProperty: 'font-size, line-height', transitionDuration: '200ms', transitionTimingFunction: 'ease' }
-  : null;
+const ROW_TRANSITION: WebCssStyle | null =
+  Platform.OS === 'web'
+    ? {
+        transitionProperty: 'background-color',
+        transitionDuration: '150ms',
+        transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      }
+    : null;
+const TEXT_TRANSITION: WebCssStyle | null =
+  Platform.OS === 'web'
+    ? {
+        transitionProperty: 'font-size, line-height',
+        transitionDuration: '200ms',
+        transitionTimingFunction: 'ease',
+      }
+    : null;
 
 /** `size-6` — the sort chevron. */
 const SORT_ICON_SIZE = 24;
@@ -238,8 +260,12 @@ export function Table({
   containerStyle,
   testID,
 }: TableProps) {
-  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
-  const size: NonNullable<TableProps['size']> = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size: NonNullable<TableProps['size']> =
+    inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const palette = useMemo(() => resolveTablePalette(theme), [theme]);
   const columns = readColumns(children);
@@ -309,7 +335,13 @@ export function TableHeader({ children, style, testID }: TableHeaderProps) {
   );
 }
 
-function SortChevron({ direction, color }: { direction: TableColumnProps['sortDirection']; color: string }) {
+function SortChevron({
+  direction,
+  color,
+}: {
+  direction: TableColumnProps['sortDirection'];
+  color: string;
+}) {
   return (
     // `rotate-180` for ascending, on a wrapper: a transform on the `Svg` itself
     // is not honoured by every react-native-svg target.
@@ -362,7 +394,9 @@ export function TableColumn({
           {...sortHook}
           role="button"
           onPress={onSort}
-          accessibilityLabel={accessibilityLabel ?? (isTextLike(children) ? String(children) : undefined)}
+          accessibilityLabel={
+            accessibilityLabel ?? (isTextLike(children) ? String(children) : undefined)
+          }
           style={
             {
               flexDirection: 'row',
@@ -396,9 +430,7 @@ export function TableBody({ children, emptyState, style, testID }: TableBodyProp
           style={{ height: EMPTY_STATE_HEIGHT, alignItems: 'center', justifyContent: 'center' }}
         >
           {isTextLike(emptyState) ? (
-            <Text style={textStyleFor('md', palette.headerText, 'center')}>
-              {emptyState}
-            </Text>
+            <Text style={textStyleFor('md', palette.headerText, 'center')}>{emptyState}</Text>
           ) : (
             emptyState
           )}
@@ -446,7 +478,15 @@ export function TableRow({ children, selected, style, testID }: TableRowProps) {
   );
 }
 
-export function TableCell({ children, width, flex, minWidth, align, style, testID }: TableCellProps) {
+export function TableCell({
+  children,
+  width,
+  flex,
+  minWidth,
+  align,
+  style,
+  testID,
+}: TableCellProps) {
   const { size, palette, columns } = useTableContext();
   const index = useContext(CellIndexContext);
   const layout = cellLayoutStyle(columns[index], { width, flex, minWidth, align }, size);
@@ -454,7 +494,9 @@ export function TableCell({ children, width, flex, minWidth, align, style, testI
   return (
     <View role="cell" testID={testID} style={[layout.style, CELL_TRANSITION, style]}>
       {isTextLike(children) ? (
-        <Text style={[textStyleFor(size, palette.text, layout.align), TEXT_TRANSITION]}>{children}</Text>
+        <Text style={[textStyleFor(size, palette.text, layout.align), TEXT_TRANSITION]}>
+          {children}
+        </Text>
       ) : (
         children
       )}

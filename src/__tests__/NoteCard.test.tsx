@@ -112,9 +112,18 @@ describe('the tone is composited, not appended', () => {
         const paint = resolveNoteCardPaint(t, t.colors.background, tone);
         const where = `${preset} ${mode} ${tone}`;
         expect([where, paint.background]).not.toEqual([where, expect.stringMatching(/^rgba\(/)]);
-        expect([where, contrastRatio(paint.text, paint.background) >= AA_TEXT_STRONG]).toEqual([where, true]);
-        expect([where, contrastRatio(paint.textSecondary, paint.background) >= AA_TEXT_STRONG]).toEqual([where, true]);
-        expect([where, contrastRatio(paint.textTertiary, paint.background) >= AA_TEXT]).toEqual([where, true]);
+        expect([where, contrastRatio(paint.text, paint.background) >= AA_TEXT_STRONG]).toEqual([
+          where,
+          true,
+        ]);
+        expect([
+          where,
+          contrastRatio(paint.textSecondary, paint.background) >= AA_TEXT_STRONG,
+        ]).toEqual([where, true]);
+        expect([where, contrastRatio(paint.textTertiary, paint.background) >= AA_TEXT]).toEqual([
+          where,
+          true,
+        ]);
       }
     }
   });
@@ -144,7 +153,9 @@ describe('the tone is composited, not appended', () => {
 
 describe('the composed accessible name', () => {
   it('drops the absent members rather than leaving their separators', () => {
-    expect(composeNoteName(['Title', false, undefined, '', 'Edited now'])).toBe('Title, Edited now');
+    expect(composeNoteName(['Title', false, undefined, '', 'Edited now'])).toBe(
+      'Title, Edited now',
+    );
   });
 
   it('names the card from what it draws', () => {
@@ -164,7 +175,9 @@ describe('the composed accessible name', () => {
   });
 
   it('lets a caller replace the whole English name', () => {
-    mount(<NoteCard title="Harbour walk" accessibilityLabel="Notiz" onPress={() => {}} testID="note" />);
+    mount(
+      <NoteCard title="Harbour walk" accessibilityLabel="Notiz" onPress={() => {}} testID="note" />,
+    );
     expect(byTestId('note').getAttribute('aria-label')).toBe('Notiz');
   });
 });
@@ -239,7 +252,9 @@ describe('the two densities', () => {
     const surface = surfaceOf('note');
     expect(getComputedStyle(surface).padding).toBe(`${NOTE_CARD_GEOMETRY.grid.padding}px`);
     expect(getComputedStyle(surface).flexDirection).toBe('column');
-    expect(getComputedStyle(byTestId('note')).borderTopLeftRadius).toBe(`${noteCardRadiusPx('grid')}px`);
+    expect(getComputedStyle(byTestId('note')).borderTopLeftRadius).toBe(
+      `${noteCardRadiusPx('grid')}px`,
+    );
   });
 
   it('draws the row geometry, a shorter excerpt and a metadata line that holds the tags', () => {
@@ -270,7 +285,14 @@ describe('the two densities', () => {
 
   it('clamps the grid excerpt to four lines and keeps its tags out of the trail', () => {
     mount(
-      <NoteCard title="A" excerpt="B" tags={['x']} meta={{ edited: 'now' }} onPress={() => {}} testID="note" />,
+      <NoteCard
+        title="A"
+        excerpt="B"
+        tags={['x']}
+        meta={{ edited: 'now' }}
+        onPress={() => {}}
+        testID="note"
+      />,
     );
     expect(getComputedStyle(byTestId('note-excerpt')).webkitLineClamp).toBe(
       String(NOTE_CARD_GEOMETRY.grid.excerptLines),
@@ -290,7 +312,14 @@ describe('a checklist note previews as a checklist', () => {
 
   it('replaces the excerpt, announces each item read-only, and counts the remainder', () => {
     mount(
-      <NoteCard title="List" excerpt="ignored" checklist={ITEMS} checklistTotal={9} onPress={() => {}} testID="note" />,
+      <NoteCard
+        title="List"
+        excerpt="ignored"
+        checklist={ITEMS}
+        checklistTotal={9}
+        onPress={() => {}}
+        testID="note"
+      />,
     );
     expect(maybe('note-excerpt')).toBeNull();
     const rows = byTestId('note-checklist').querySelectorAll('[role="checkbox"]');
@@ -309,7 +338,9 @@ describe('a checklist note previews as a checklist', () => {
   });
 
   it('draws fewer rows at the row density', () => {
-    mount(<NoteCard title="List" checklist={ITEMS} density="row" onPress={() => {}} testID="note" />);
+    mount(
+      <NoteCard title="List" checklist={ITEMS} density="row" onPress={() => {}} testID="note" />,
+    );
     expect(byTestId('note-checklist').querySelectorAll('[role="checkbox"]')).toHaveLength(
       NOTE_CARD_GEOMETRY.row.checklistRows,
     );
@@ -319,7 +350,12 @@ describe('a checklist note previews as a checklist', () => {
 describe('tags, markers and the loading branch', () => {
   it('draws only maxTags chips and counts the rest', () => {
     mount(
-      <NoteCard title="A" tags={['one', 'two', 'three', 'four', 'five']} onPress={() => {}} testID="note" />,
+      <NoteCard
+        title="A"
+        tags={['one', 'two', 'three', 'four', 'five']}
+        onPress={() => {}}
+        testID="note"
+      />,
     );
     expect(byTestId('note-tags').textContent).toBe('onetwothree+2');
   });
@@ -363,7 +399,9 @@ describe('the card paints its own surface in both modes', () => {
     const material = surface.querySelector<HTMLElement>('.bloom-surface-paint');
     expect(material).not.toBeNull();
     const drawn = material!.style.getPropertyValue('--bloom-surface-paint-fill');
-    expect(surface.style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceFill(drawn, theme.colors.background));
+    expect(surface.style.getPropertyValue('--bloom-surface')).toBe(
+      resolveSurfaceFill(drawn, theme.colors.background),
+    );
     const expected = resolveNoteCardPaint(theme, theme.colors.background, 'info').background;
     expect(drawn).toBe(resolveSurfaceTint(expected));
     // Material transmits a little backdrop while descendants receive its composite.

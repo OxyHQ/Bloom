@@ -52,7 +52,13 @@ import {
 } from '../popover/index.web';
 import { useTheme } from '../theme/use-theme';
 
-function Themed({ mode = 'light', children }: { mode?: 'light' | 'dark'; children: React.ReactNode }) {
+function Themed({
+  mode = 'light',
+  children,
+}: {
+  mode?: 'light' | 'dark';
+  children: React.ReactNode;
+}) {
   return (
     <BloomThemeProvider mode={mode} colorPreset="oxy">
       {children}
@@ -70,13 +76,9 @@ describe('classChromeOverrides', () => {
       'width',
     ]);
     // `px-0` claims the SIDES only — the top and bottom defaults stay.
-    expect([...classChromeOverrides('md:!px-0 dark:bg-red-500 rounded-xl shadow-none')].sort()).toEqual([
-      'background',
-      'paddingLeft',
-      'paddingRight',
-      'radius',
-      'shadow',
-    ]);
+    expect(
+      [...classChromeOverrides('md:!px-0 dark:bg-red-500 rounded-xl shadow-none')].sort(),
+    ).toEqual(['background', 'paddingLeft', 'paddingRight', 'radius', 'shadow']);
     expect([...classChromeOverrides('size-80 max-w-sm overflow-visible')].sort()).toEqual([
       'maxWidth',
       'overflow',
@@ -126,8 +128,16 @@ describe('resolvePopoverSurfaceStyle', () => {
       onTheme(resolveMenuPalette(useTheme()));
       return null;
     };
-    render(<Themed><Grab onTheme={(p) => (light = p)} /></Themed>);
-    render(<Themed mode="dark"><Grab onTheme={(p) => (dark = p)} /></Themed>);
+    render(
+      <Themed>
+        <Grab onTheme={(p) => (light = p)} />
+      </Themed>,
+    );
+    render(
+      <Themed mode="dark">
+        <Grab onTheme={(p) => (dark = p)} />
+      </Themed>,
+    );
     return { light: light!, dark: dark! };
   }
 
@@ -147,12 +157,17 @@ describe('resolvePopoverSurfaceStyle', () => {
       boxShadow: palette.shadow,
       overflow: 'hidden',
     });
-    expect([POPOVER_WIDTH, POPOVER_RADIUS, POPOVER_PADDING, POPOVER_SIDE_OFFSET]).toEqual([266, 16, 10, 8]);
+    expect([POPOVER_WIDTH, POPOVER_RADIUS, POPOVER_PADDING, POPOVER_SIDE_OFFSET]).toEqual([
+      266, 16, 10, 8,
+    ]);
   });
 
   it('leaves out exactly the properties the caller’s className names', () => {
     const { light } = palettes();
-    const style = resolvePopoverSurfaceStyle(light, classChromeOverrides('w-auto p-0 bg-transparent'));
+    const style = resolvePopoverSurfaceStyle(
+      light,
+      classChromeOverrides('w-auto p-0 bg-transparent'),
+    );
     expect(style).not.toHaveProperty('width');
     expect(style).not.toHaveProperty('paddingTop');
     expect(style).not.toHaveProperty('backgroundColor');
@@ -219,7 +234,11 @@ describe('panel parts', () => {
       p = resolveMenuPalette(useTheme());
       return null;
     };
-    render(<Themed><Grab /></Themed>);
+    render(
+      <Themed>
+        <Grab />
+      </Themed>,
+    );
     return p!;
   }
 
@@ -233,7 +252,9 @@ describe('panel parts', () => {
         </PopoverHeader>
         <PopoverSeparator testID="separator" />
         <PopoverFooter testID="footer" />
-        <PopoverTitle testID="label" tone="secondary">Users with access</PopoverTitle>
+        <PopoverTitle testID="label" tone="secondary">
+          Users with access
+        </PopoverTitle>
       </Themed>,
     );
 
@@ -251,7 +272,9 @@ describe('panel parts', () => {
       paddingRight: 8,
       paddingBottom: 8,
     });
-    expect(resolvedStyle(screen.getByTestId('separator', { includeHiddenElements: true }).props.style)).toMatchObject({
+    expect(
+      resolvedStyle(screen.getByTestId('separator', { includeHiddenElements: true }).props.style),
+    ).toMatchObject({
       height: 1,
       marginLeft: -10,
       marginRight: -10,
@@ -271,7 +294,9 @@ describe('panel parts', () => {
     const screen = render(
       <Themed>
         <PopoverHeader testID="header" className="px-4">
-          <PopoverTitle testID="title" className="mt-1">Title</PopoverTitle>
+          <PopoverTitle testID="title" className="mt-1">
+            Title
+          </PopoverTitle>
         </PopoverHeader>
         <PopoverSeparator testID="separator" className="bg-red-500" />
       </Themed>,
@@ -301,10 +326,17 @@ describe('panel parts', () => {
   it('applies no text colour default under a caller className', () => {
     const screen = render(
       <Themed>
-        <PopoverTitle testID="title" className="text-red-500">Title</PopoverTitle>
+        <PopoverTitle testID="title" className="text-red-500">
+          Title
+        </PopoverTitle>
       </Themed>,
     );
-    const entries = [screen.getByTestId('title').props.style].flat(Infinity) as Array<Record<string, unknown> | null>;
-    expect(entries.some((e) => e && typeof e === 'object' && 'color' in e && !('$$css' in e))).toBe(false);
+    const entries = [screen.getByTestId('title').props.style].flat(Infinity) as Array<Record<
+      string,
+      unknown
+    > | null>;
+    expect(entries.some((e) => e && typeof e === 'object' && 'color' in e && !('$$css' in e))).toBe(
+      false,
+    );
   });
 });

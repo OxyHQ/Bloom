@@ -725,7 +725,11 @@ function discoverWebBarrels() {
   // Bootstrap a newly published fork as well as refreshing existing barrels.
   // The generator owns their creation; no empty hand-written barrel is needed.
   for (const [name, source] of SUBPATHS) {
-    if (WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source) && !found.includes(source)) {
+    if (
+      WEB_FORKED_SUBPATHS.has(name) &&
+      /(?:^|\/)index\.ts$/.test(source) &&
+      !found.includes(source)
+    ) {
       found.push(source);
     }
   }
@@ -758,12 +762,18 @@ function resolveSpecifier(fromDir, specifier) {
 }
 
 /** Whether a resolved stem has a `.web` fork beside it. */
-const publishedWebBarrelStems = new Set(SUBPATHS
-  .filter(([name, source]) => WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source))
-  .map(([, source]) => join(SRC, source.slice(0, -3))));
+const publishedWebBarrelStems = new Set(
+  SUBPATHS.filter(
+    ([name, source]) => WEB_FORKED_SUBPATHS.has(name) && /(?:^|\/)index\.ts$/.test(source),
+  ).map(([, source]) => join(SRC, source.slice(0, -3))),
+);
 
 function hasWebFork(stem) {
-  return publishedWebBarrelStems.has(stem) || existsSync(`${stem}.web.ts`) || existsSync(`${stem}.web.tsx`);
+  return (
+    publishedWebBarrelStems.has(stem) ||
+    existsSync(`${stem}.web.ts`) ||
+    existsSync(`${stem}.web.tsx`)
+  );
 }
 
 /**
@@ -857,9 +867,7 @@ function main() {
   );
 
   // 3. Stat package.json so the size shows up in CI logs.
-  console.log(
-    `[generate-platform-exports] package.json is now ${statSync(PKG_PATH).size} bytes`,
-  );
+  console.log(`[generate-platform-exports] package.json is now ${statSync(PKG_PATH).size} bytes`);
 }
 
 main();

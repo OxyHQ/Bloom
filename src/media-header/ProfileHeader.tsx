@@ -4,7 +4,14 @@ import { View } from 'react-native';
 import { Button } from '../button';
 import { Text } from '../typography';
 import { FollowButton, MediaMoreButton } from './MediaActionBar';
-import { Cover, Dot, HeaderTitle, InlineLink, MediaHeaderFrame, useMediaHeaderPaint } from './parts';
+import {
+  Cover,
+  Dot,
+  HeaderTitle,
+  InlineLink,
+  MediaHeaderFrame,
+  useMediaHeaderPaint,
+} from './parts';
 import { selectTitleVariant } from './shared';
 import type { ProfileHeaderProps } from './types';
 import { useMessages } from '../locale/messages';
@@ -51,11 +58,19 @@ function ProfileHeaderComponent({
         />
       ) : null}
       {onEditPress ? (
-        <Button  size="md" onPress={onEditPress} testID={testID ? `${testID}-edit` : undefined} tone="neutral" appearance="outline">
+        <Button
+          size="md"
+          onPress={onEditPress}
+          testID={testID ? `${testID}-edit` : undefined}
+          tone="neutral"
+          appearance="outline"
+        >
           {editLabel}
         </Button>
       ) : null}
-      {onMorePress ? <MediaMoreButton onPress={onMorePress} testID={testID ? `${testID}-more` : undefined} /> : null}
+      {onMorePress ? (
+        <MediaMoreButton onPress={onMorePress} testID={testID ? `${testID}-more` : undefined} />
+      ) : null}
       {actions}
     </View>
   ) : undefined;
@@ -68,7 +83,13 @@ function ProfileHeaderComponent({
       actions={row}
       coverWidth={(wide) => (wide ? 232 : 160)}
       cover={({ wide }) => (
-        <Cover source={avatar} size={wide ? 232 : 160} shape="round" paint={paint} testID={testID ? `${testID}-avatar` : undefined} />
+        <Cover
+          source={avatar}
+          size={wide ? 232 : 160}
+          shape="round"
+          paint={paint}
+          testID={testID ? `${testID}-avatar` : undefined}
+        />
       )}
     >
       {({ textWidth }) => (
@@ -87,7 +108,13 @@ function ProfileHeaderComponent({
           </HeaderTitle>
           {stats && stats.length > 0 ? (
             <View
-              style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 4, marginTop: 4 }}
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                columnGap: 4,
+                marginTop: 4,
+              }}
               testID={testID ? `${testID}-stats` : undefined}
             >
               {stats.map((stat, i) => (

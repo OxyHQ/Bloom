@@ -40,7 +40,9 @@ function renderPlot() {
     </BloomThemeProvider>,
   );
   act(() => {
-    fireEvent(utils.getByTestId('plot'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 326, height: 200 } } });
+    fireEvent(utils.getByTestId('plot'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 326, height: 200 } },
+    });
   });
   return utils;
 }
@@ -50,7 +52,14 @@ describe('CartesianPlot x-axis labels', () => {
     const { getByTestId } = renderPlot();
     const layer = getByTestId('plot-x-labels');
     const style = flat(layer.props.style);
-    expect(style).toMatchObject({ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflow: 'hidden' });
+    expect(style).toMatchObject({
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      overflow: 'hidden',
+    });
     for (const month of MONTHS) expect(within(layer).getByText(month)).toBeTruthy();
   });
 

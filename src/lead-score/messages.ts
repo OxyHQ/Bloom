@@ -13,4 +13,9 @@ export interface LeadScoreMessages {
   bands: Record<LeadScoreBand, string>;
 }
 
-export const LEAD_SCORE_MESSAGES: MessageCatalog<LeadScoreMessages> = defineMessages<LeadScoreMessages>('LEAD_SCORE_MESSAGES', { title: 'Lead score', factors: 'What it is made of', bands: { cold: 'Cold', warm: 'Warm', hot: 'Hot' } });
+export const LEAD_SCORE_MESSAGES: MessageCatalog<LeadScoreMessages> =
+  defineMessages<LeadScoreMessages>('LEAD_SCORE_MESSAGES', {
+    title: 'Lead score',
+    factors: 'What it is made of',
+    bands: { cold: 'Cold', warm: 'Warm', hot: 'Hot' },
+  });

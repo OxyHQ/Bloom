@@ -27,11 +27,17 @@ function Profile(args: React.ComponentProps<typeof CoverHeader>) {
   return (
     <View style={{ maxWidth: 600 }}>
       <CoverHeader {...args} contentStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}
+        >
           <Avatar size={90} source={AVATAR} initials="MC" />
-          <Button size="sm" appearance="subtle" tone="neutral">Follow</Button>
+          <Button size="sm" appearance="subtle" tone="neutral">
+            Follow
+          </Button>
         </View>
-        <Text variant="title-2-medium" style={{ marginTop: 10 }}>Maya Collins</Text>
+        <Text variant="title-2-medium" style={{ marginTop: 10 }}>
+          Maya Collins
+        </Text>
         <Text variant="body-medium">@maya</Text>
       </CoverHeader>
     </View>

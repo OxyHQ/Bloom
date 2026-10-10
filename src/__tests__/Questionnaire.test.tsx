@@ -138,7 +138,12 @@ describe('Questionnaire', () => {
   it('submits a single-select free-text answer with Enter only when non-empty', () => {
     const onStepChange = jest.fn();
     const { getByTestId } = renderQ(
-      <Questionnaire testID="q" questions={QUESTIONS} defaultStep={1} onStepChange={onStepChange} />,
+      <Questionnaire
+        testID="q"
+        questions={QUESTIONS}
+        defaultStep={1}
+        onStepChange={onStepChange}
+      />,
     );
     const input = getByTestId('q-other-input');
     expect(input.props.placeholder).toBe('Describe it');
@@ -196,7 +201,6 @@ describe('Questionnaire', () => {
     }
   });
 });
-
 
 it('resolves choice chrome against the actual custom backing', () => {
   const theme = buildTheme('teal', 'dark');

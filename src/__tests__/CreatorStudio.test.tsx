@@ -155,7 +155,14 @@ function press(el: Element) {
 
 describe('release status mapping', () => {
   it('gives every status a label and a distinct tone recipe', () => {
-    const statuses: ReleaseStatus[] = ['draft', 'in-review', 'scheduled', 'live', 'rejected', 'takedown'];
+    const statuses: ReleaseStatus[] = [
+      'draft',
+      'in-review',
+      'scheduled',
+      'live',
+      'rejected',
+      'takedown',
+    ];
     expect(Object.keys(RELEASE_STATUS_TONES).sort()).toEqual([...statuses].sort());
     expect(RELEASE_STATUS_TONES).toEqual({
       draft: { tone: 'default', fill: 'subtle' },
@@ -165,7 +172,9 @@ describe('release status mapping', () => {
       rejected: { tone: 'error', fill: 'subtle' },
       takedown: { tone: 'error', fill: 'outlined' },
     });
-    const recipes = statuses.map((s) => `${RELEASE_STATUS_TONES[s].tone}/${RELEASE_STATUS_TONES[s].fill}`);
+    const recipes = statuses.map(
+      (s) => `${RELEASE_STATUS_TONES[s].tone}/${RELEASE_STATUS_TONES[s].fill}`,
+    );
     expect(new Set(recipes).size).toBe(statuses.length);
     expect(RELEASE_STATUS_LABELS['in-review']).toBe('In review');
     expect(RELEASE_STATUS_LABELS.takedown).toBe('Taken down');
@@ -174,7 +183,8 @@ describe('release status mapping', () => {
   it('shows a reason only for rejected and taken-down releases', () => {
     expect(releaseStatusNeedsReason('rejected')).toBe(true);
     expect(releaseStatusNeedsReason('takedown')).toBe(true);
-    for (const s of ['draft', 'in-review', 'scheduled', 'live'] as const) expect(releaseStatusNeedsReason(s)).toBe(false);
+    for (const s of ['draft', 'in-review', 'scheduled', 'live'] as const)
+      expect(releaseStatusNeedsReason(s)).toBe(false);
   });
 });
 
@@ -274,7 +284,14 @@ describe('ReleaseCard', () => {
 
   it('names the pressable by the title, the menu by the release, and shows the reason', () => {
     const onPress = jest.fn();
-    mount(<ReleaseCard release={release} onPress={onPress} actions={[{ label: 'Delete', destructive: true }]} testID="c" />);
+    mount(
+      <ReleaseCard
+        release={release}
+        onPress={onPress}
+        actions={[{ label: 'Delete', destructive: true }]}
+        testID="c"
+      />,
+    );
     const open = byTestId('c-open');
     expect(open.getAttribute('role')).toBe('button');
     expect(open.getAttribute('aria-label')).toBe('Northbound');
@@ -336,7 +353,14 @@ describe('ReleaseTimeline', () => {
 describe('TrackUploadRow', () => {
   it('uploading: a named progressbar with flat aria values, busy, percent and time left', () => {
     mount(
-      <TrackUploadRow fileName="Low Tide.wav" size={46_300_000} status="uploading" progress={41.6} remaining="About 20 s left" testID="u" />,
+      <TrackUploadRow
+        fileName="Low Tide.wav"
+        size={46_300_000}
+        status="uploading"
+        progress={41.6}
+        remaining="About 20 s left"
+        testID="u"
+      />,
     );
     const bar = byTestId('u-progress');
     expect(bar.getAttribute('role')).toBe('progressbar');
@@ -362,7 +386,9 @@ describe('TrackUploadRow', () => {
     mount(<TrackUploadRow fileName="a.wav" size="1 MB" status="queued" testID="u" />);
     expect(byTestId('u-status').textContent).toBe('Queued');
     expect(byTestId('u').getAttribute('aria-busy')).not.toBe('true');
-    mount(<TrackUploadRow fileName="a.wav" size="1 MB" status="ready" duration="3:42" testID="u" />);
+    mount(
+      <TrackUploadRow fileName="a.wav" size="1 MB" status="ready" duration="3:42" testID="u" />,
+    );
     expect(byTestId('u-status').textContent).toBe('Ready · 3:42');
     expect(maybe('u-waveform')).not.toBeNull();
     expect(maybe('u-retry')).toBeNull();
@@ -372,7 +398,15 @@ describe('TrackUploadRow', () => {
     const onRetry = jest.fn();
     const onRemove = jest.fn();
     mount(
-      <TrackUploadRow fileName="Live.aiff" size="1 MB" status="failed" error="Connection dropped." onRetry={onRetry} onRemove={onRemove} testID="u" />,
+      <TrackUploadRow
+        fileName="Live.aiff"
+        size="1 MB"
+        status="failed"
+        error="Connection dropped."
+        onRetry={onRetry}
+        onRemove={onRemove}
+        testID="u"
+      />,
     );
     const message = byTestId('u-status').firstElementChild as HTMLElement;
     expect(message.textContent).toBe('Connection dropped.');
@@ -390,7 +424,13 @@ describe('TrackUploadRow', () => {
 //  Metadata
 // ---------------------------------------------------------------------------
 
-function CreditsHarness({ initial, onChange }: { initial: TrackCredit[]; onChange?: (c: TrackCredit[]) => void }) {
+function CreditsHarness({
+  initial,
+  onChange,
+}: {
+  initial: TrackCredit[];
+  onChange?: (c: TrackCredit[]) => void;
+}) {
   const [credits, setCredits] = useState(initial);
   let n = 0;
   return (
@@ -432,7 +472,9 @@ describe('CreditsEditor', () => {
     expect(byTestId('cr-remove-2').getAttribute('aria-label')).toBe('Remove credit 3');
     press(remove);
     expect(container.querySelectorAll('[data-testid^="cr-row-"]').length).toBe(2);
-    expect(onChange.mock.calls[onChange.mock.calls.length - 1]![0].map((c: TrackCredit) => c.id)).toEqual(['b', 'new-0']);
+    expect(
+      onChange.mock.calls[onChange.mock.calls.length - 1]![0].map((c: TrackCredit) => c.id),
+    ).toEqual(['b', 'new-0']);
   });
 
   it('shows the empty line with no credits and names each input and role', () => {
@@ -449,7 +491,14 @@ describe('CreditsEditor', () => {
 describe('ArtistChipsInput', () => {
   it('names each remove glyph and removes that name', () => {
     const onValuesChange = jest.fn();
-    mount(<ArtistChipsInput label="Featured artists" values={['Ilse Marrow', 'Pim']} onValuesChange={onValuesChange} testID="a" />);
+    mount(
+      <ArtistChipsInput
+        label="Featured artists"
+        values={['Ilse Marrow', 'Pim']}
+        onValuesChange={onValuesChange}
+        testID="a"
+      />,
+    );
     const remove = byTestId('a-remove-Pim');
     expect(remove.getAttribute('role')).toBe('button');
     expect(remove.getAttribute('aria-label')).toBe('Remove Pim');
@@ -458,7 +507,15 @@ describe('ArtistChipsInput', () => {
   });
 
   it('disables input and add at the cap', () => {
-    mount(<ArtistChipsInput label="Artists" values={['A', 'B']} max={2} onValuesChange={() => {}} testID="a" />);
+    mount(
+      <ArtistChipsInput
+        label="Artists"
+        values={['A', 'B']}
+        max={2}
+        onValuesChange={() => {}}
+        testID="a"
+      />,
+    );
     expect(byTestId('a-add').getAttribute('aria-disabled')).toBe('true');
   });
 });
@@ -469,10 +526,21 @@ describe('ArtistChipsInput', () => {
 
 describe('StatCard accessory', () => {
   it('renders the accessory beside the tile only when given', () => {
-    const stat = { icon: RiGroupLine, label: 'Listeners', value: '1', delta: '+1%', deltaColor: 'lime' as const };
+    const stat = {
+      icon: RiGroupLine,
+      label: 'Listeners',
+      value: '1',
+      delta: '+1%',
+      deltaColor: 'lime' as const,
+    };
     mount(<StatCard stat={stat} testID="s" />);
     expect(maybe('s-accessory')).toBeNull();
-    mount(<StatCard stat={{ ...stat, accessory: <Sparkline data={[1, 2, 3]} testID="sp" /> }} testID="s" />);
+    mount(
+      <StatCard
+        stat={{ ...stat, accessory: <Sparkline data={[1, 2, 3]} testID="sp" /> }}
+        testID="s"
+      />,
+    );
     expect(byTestId('s-accessory').contains(byTestId('sp'))).toBe(true);
     // Decorative unless named.
     expect(byTestId('sp').getAttribute('aria-hidden')).toBe('true');
@@ -488,7 +556,14 @@ describe('AudienceOverview', () => {
     mount(
       <AudienceOverview
         metrics={[
-          { kind: 'listeners', label: 'Listeners', value: '48,210', delta: '+12%', trend: 'up', series: [1, 2, 3] },
+          {
+            kind: 'listeners',
+            label: 'Listeners',
+            value: '48,210',
+            delta: '+12%',
+            trend: 'up',
+            series: [1, 2, 3],
+          },
           { kind: 'saves', label: 'Saves', value: '6,120', delta: '-3%', trend: 'down' },
         ]}
         period="28d"
@@ -511,12 +586,19 @@ describe('AudienceOverview', () => {
 describe('StreamsChart', () => {
   it('names the plot with the metric and its releases, and switches metric', async () => {
     const onMetricChange = jest.fn();
-    const data = Array.from({ length: 5 }, (_, i) => ({ label: `${i + 1} Mar`, value: 100 * (i + 1) }));
+    const data = Array.from({ length: 5 }, (_, i) => ({
+      label: `${i + 1} Mar`,
+      value: 100 * (i + 1),
+    }));
     mount(
       <StreamsChart
         metrics={[
           { id: 'streams', label: 'Streams', data },
-          { id: 'listeners', label: 'Listeners', data: data.map((d) => ({ ...d, value: d.value / 10 })) },
+          {
+            id: 'listeners',
+            label: 'Listeners',
+            data: data.map((d) => ({ ...d, value: d.value / 10 })),
+          },
         ]}
         events={[{ index: 2, label: 'Low Tide · Single' }]}
         onMetricChange={onMetricChange}
@@ -525,7 +607,9 @@ describe('StreamsChart', () => {
     );
     await flushLayout();
     expect(byTestId('sc-plot-surface').getAttribute('role')).toBe('img');
-    expect(byTestId('sc-plot-surface').getAttribute('aria-label')).toBe('Streams over time; releases: Low Tide · Single (3 Mar)');
+    expect(byTestId('sc-plot-surface').getAttribute('aria-label')).toBe(
+      'Streams over time; releases: Low Tide · Single (3 Mar)',
+    );
     expect(byTestId('sc-event-2').textContent).toBe('Low Tide · Single');
     expect(byTestId('sc-headline').textContent).toBeTruthy();
     press(byTestId('sc-range-listeners'));
@@ -538,7 +622,14 @@ describe('StreamsChart', () => {
 describe('TopTracksTable', () => {
   const tracks = [
     { id: 'a', title: 'Low Tide', streams: 1200, listeners: 300, saves: 40, trend: 'up' as const },
-    { id: 'b', title: 'Glass Orchard', streams: 800, listeners: 200, saves: 10, trend: 'new' as const },
+    {
+      id: 'b',
+      title: 'Glass Orchard',
+      streams: 800,
+      listeners: 200,
+      saves: 10,
+      trend: 'new' as const,
+    },
   ];
 
   it('names the trend glyphs and drops listeners and saves when narrow', async () => {
@@ -579,7 +670,9 @@ describe('PayoutSummaryCard', () => {
     expect(byTestId('p-delta').textContent).toBe('+14.7%');
     expect(container.textContent).toContain('$1,120.00 · 28 Aug');
     expect(container.textContent).toContain('28 Sep 2026');
-    expect(byTestId('p-plot-surface').getAttribute('aria-label')).toBe('Monthly earnings: Aug $1,120, Sep $1,285');
+    expect(byTestId('p-plot-surface').getAttribute('aria-label')).toBe(
+      'Monthly earnings: Aug $1,120, Sep $1,285',
+    );
     press(byTestId('p-statements'));
     expect(onViewStatements).toHaveBeenCalledTimes(1);
   });
@@ -600,7 +693,14 @@ describe('PitchCard', () => {
   it('toggles mood chips with aria-pressed, caps them, and gates submit', () => {
     const onSelectedMoodsChange = jest.fn();
     mount(
-      <PitchCard {...base} maxTags={2} selectedMoods={['Dreamy', 'Calm']} onSelectedMoodsChange={onSelectedMoodsChange} pitch="" testID="pc" />,
+      <PitchCard
+        {...base}
+        maxTags={2}
+        selectedMoods={['Dreamy', 'Calm']}
+        onSelectedMoodsChange={onSelectedMoodsChange}
+        pitch=""
+        testID="pc"
+      />,
     );
     expect(byTestId('pc-moods').getAttribute('aria-label')).toBe('Mood');
     expect(byTestId('pc-moods-Dreamy').getAttribute('aria-pressed')).toBe('true');
@@ -613,13 +713,33 @@ describe('PitchCard', () => {
 
   it('replaces the form with a status panel once sent', () => {
     const onEdit = jest.fn();
-    mount(<PitchCard {...base} release="r" selectedMoods={[]} pitch="x" status="submitted" submittedAt="Sent 2 Mar" onEdit={onEdit} testID="pc" />);
+    mount(
+      <PitchCard
+        {...base}
+        release="r"
+        selectedMoods={[]}
+        pitch="x"
+        status="submitted"
+        submittedAt="Sent 2 Mar"
+        onEdit={onEdit}
+        testID="pc"
+      />,
+    );
     expect(maybe('pc-submit')).toBeNull();
     expect(byTestId('pc-status').textContent).toContain('Pitch sent');
     expect(byTestId('pc-status').textContent).toContain('Glass Orchard · Sent 2 Mar');
     press(byTestId('pc-edit'));
     expect(onEdit).toHaveBeenCalledTimes(1);
-    mount(<PitchCard {...base} release="r" selectedMoods={[]} pitch="x" status="accepted" testID="pc" />);
+    mount(
+      <PitchCard
+        {...base}
+        release="r"
+        selectedMoods={[]}
+        pitch="x"
+        status="accepted"
+        testID="pc"
+      />,
+    );
     expect(byTestId('pc-status').textContent).toContain('Picked for review');
     expect(maybe('pc-edit')).toBeNull();
   });
@@ -632,11 +752,20 @@ describe('ArtworkUploader', () => {
     expect(container.textContent).toContain('3000×3000 px, JPG or PNG');
 
     const onRemove = jest.fn();
-    mount(<ArtworkUploader artwork="https://example.test/cover.png" onRemove={onRemove} error="Artwork is too small." testID="art" />);
+    mount(
+      <ArtworkUploader
+        artwork="https://example.test/cover.png"
+        onRemove={onRemove}
+        error="Artwork is too small."
+        testID="art"
+      />,
+    );
     expect(maybe('art-dropzone')).toBeNull();
     expect(container.querySelector('[aria-label="Release artwork"]')).not.toBeNull();
     expect(byTestId('art-error').textContent).toBe('Artwork is too small.');
-    expect(byTestId('art-error-ring').style.borderTopColor).toBe(normalise(resolveCreatorStudioPaint(theme).error));
+    expect(byTestId('art-error-ring').style.borderTopColor).toBe(
+      normalise(resolveCreatorStudioPaint(theme).error),
+    );
     expect(byTestId('art-remove').getAttribute('aria-label')).toBe('Remove artwork');
     press(byTestId('art-remove'));
     expect(onRemove).toHaveBeenCalledTimes(1);

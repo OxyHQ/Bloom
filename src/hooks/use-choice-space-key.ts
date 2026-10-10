@@ -24,6 +24,8 @@ export function useChoiceSpaceKey(disabled: boolean, activate: () => void) {
       event.stopPropagation();
       activate();
     },
-    onBlur() { armed.current = false; },
+    onBlur() {
+      armed.current = false;
+    },
   };
 }

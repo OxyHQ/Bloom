@@ -20,7 +20,11 @@ import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader, TABULAR } from './primitives/ChartHeader';
 import { describeDeltaRatio, formatNumber } from './primitives/format';
 import { useActiveIndex } from './primitives/use-active-index';
-import { useChartCardSurfacePalette, useChartTones, useMonoTone } from './primitives/use-chart-palette';
+import {
+  useChartCardSurfacePalette,
+  useChartTones,
+  useMonoTone,
+} from './primitives/use-chart-palette';
 import { useChartRange, type ChartRange } from './primitives/use-chart-range';
 import { useWebTransition } from './primitives/use-web-transition';
 import { useSvgEase } from './medical-parts';
@@ -120,7 +124,14 @@ const n = (v: number) => String(v);
 /**
  * One column band from height `hL` at `x0` to `hR` at `x1`, centred on `cy`.
  */
-export function funnelBandPath(x0: number, x1: number, cy: number, hL: number, hR: number, shape: FunnelShape): string {
+export function funnelBandPath(
+  x0: number,
+  x1: number,
+  cy: number,
+  hL: number,
+  hR: number,
+  shape: FunnelShape,
+): string {
   const topL = cy - hL / 2;
   const botL = cy + hL / 2;
   const topR = cy - hR / 2;
@@ -142,7 +153,14 @@ export function funnelBandPath(x0: number, x1: number, cy: number, hL: number, h
 }
 
 /** Half the band's height at `x` inside its column (for hit testing). */
-function bandHalfHeightAt(x: number, x0: number, x1: number, hL: number, hR: number, shape: FunnelShape): number {
+function bandHalfHeightAt(
+  x: number,
+  x0: number,
+  x1: number,
+  hL: number,
+  hR: number,
+  shape: FunnelShape,
+): number {
   if (shape === 'sharp') {
     const t = x1 > x0 ? (x - x0) / (x1 - x0) : 0;
     return (hL + (hR - hL) * t) / 2;
@@ -197,7 +215,11 @@ export function funnelGeometry(
 }
 
 /** Pill label and width for a stage; `null` when it does not fit its column. */
-export function funnelPill(value: number, top: number, colW: number): { label: string; width: number } | null {
+export function funnelPill(
+  value: number,
+  top: number,
+  colW: number,
+): { label: string; width: number } | null {
   const label = `${Math.round((value / top) * 100)}%`;
   const width = label.length * PILL_CHAR + PILL_PAD * 2;
   return width > colW + FUNNEL_COL_GAP ? null : { label, width };
@@ -236,7 +258,11 @@ export function FunnelChartCard({
   const headline = selected?.headline ?? headlineProp;
   const delta = selected?.delta ?? deltaProp;
 
-  const [activeIndex, setActiveIndex] = useActiveIndex(stages.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    stages.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const selectRange = useCallback(
     (id: string) => {
       setActiveIndex(null);
@@ -245,7 +271,9 @@ export function FunnelChartCard({
     [select, setActiveIndex],
   );
 
-  const tones: ChartSeriesTone[] = stages.map((s, i) => (mono ? monoTone : resolveTone(palettes, i, s.color, s.activeColor)));
+  const tones: ChartSeriesTone[] = stages.map((s, i) =>
+    mono ? monoTone : resolveTone(palettes, i, s.color, s.activeColor),
+  );
   const top = Math.max(1, stages[0]?.value ?? 1);
   const hovering = activeIndex !== null;
   const headerLabel = hovering ? stages[activeIndex]!.label : title;
@@ -256,7 +284,9 @@ export function FunnelChartCard({
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
 
   const geo = size ? funnelGeometry(size.width, size.height, stages.length, top, shape) : null;
@@ -273,7 +303,8 @@ export function FunnelChartCard({
       const { x0, x1 } = geo.columnX(i);
       const pill = funnelPill(stages[i]!.value, top, geo.colW);
       const mid = (x0 + x1) / 2;
-      if (pill && Math.abs(px - mid) <= pill.width / 2 && Math.abs(py - geo.cy) <= PILL_H / 2) return i;
+      if (pill && Math.abs(px - mid) <= pill.width / 2 && Math.abs(py - geo.cy) <= PILL_H / 2)
+        return i;
     }
     for (let i = 0; i < stages.length; i++) {
       const { x0, x1 } = geo.columnX(i);
@@ -298,8 +329,10 @@ export function FunnelChartCard({
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => setActiveIndex(null),
           onResponderTerminate: () => setActiveIndex(null),
         }),
@@ -325,10 +358,20 @@ export function FunnelChartCard({
         testID={testID}
       />
 
-      <View {...svgEase} style={{ width: '100%', flex: 1, minHeight: 0 }} onLayout={onLayout} testID={testID ? `${testID}-plot` : undefined}>
+      <View
+        {...svgEase}
+        style={{ width: '100%', flex: 1, minHeight: 0 }}
+        onLayout={onLayout}
+        testID={testID ? `${testID}-plot` : undefined}
+      >
         {size && geo && size.width > 0 && size.height > 0 ? (
           <>
-            <Svg width={size.width} height={size.height} style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Svg
+              width={size.width}
+              height={size.height}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            >
               {!layered
                 ? stages.map((stage, i) => {
                     const { x0, x1 } = geo.columnX(i);
@@ -354,11 +397,18 @@ export function FunnelChartCard({
                       return (
                         <Path
                           key={`layer-${layer.pad}-${stage.label}-${i}`}
-                          d={funnelBandPath(x0, x1, geo.cy, hL + layer.pad * 2, hR + layer.pad * 2, shape)}
+                          d={funnelBandPath(
+                            x0,
+                            x1,
+                            geo.cy,
+                            hL + layer.pad * 2,
+                            hR + layer.pad * 2,
+                            shape,
+                          )}
                           fill={tones[i]!.color}
                           fillOpacity={layer.opacity}
                           opacity={dimOf(i)}
-                          />
+                        />
                       );
                     }),
                   )
@@ -400,7 +450,8 @@ export function FunnelChartCard({
                       opacity: dimOf(i),
                     },
                     dimEase,
-                  ]}>
+                  ]}
+                >
                   <Text numberOfLines={1} style={[PILL_TYPE, { color: palette.text }, TABULAR]}>
                     {pill.label}
                   </Text>

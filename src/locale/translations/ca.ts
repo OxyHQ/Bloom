@@ -7,11 +7,20 @@ import { compactDuration as calendar_compactDuration } from '../../calendar/mess
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
-import { words as navigationBanner_words, midSentence as navigationBanner_midSentence } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  words as navigationBanner_words,
+  midSentence as navigationBanner_midSentence,
+} from '../../navigation-banner/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
 const CALL_UI_MESSAGES__CORNERS = {
   'top-left': "a dalt a l'esquerra",
@@ -20,66 +29,115 @@ const CALL_UI_MESSAGES__CORNERS = {
   'bottom-right': 'a baix a la dreta',
 };
 
-const MESSAGE_MEDIA_MESSAGES__items = (n: number) => plural('ca', n, { one: '{n} element', other: '{n} elements' });
+const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
+  plural('ca', n, { one: '{n} element', other: '{n} elements' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "Reacció",
-  working: "Treballa",
-  avatarStyle: "Estil de l’avatar",
-  proceduralAvatar: "Avatar actual",
-  betaPreset: "Personatge predefinit (beta)",
-  betaEyes: "Estil dels ulls",
-  eyewear: "Ulleres",
-  accessory: "Accessori",
+  reaction: 'Reacció',
+  working: 'Treballa',
+  avatarStyle: 'Estil de l’avatar',
+  proceduralAvatar: 'Avatar actual',
+  betaPreset: 'Personatge predefinit (beta)',
+  betaEyes: 'Estil dels ulls',
+  eyewear: 'Ulleres',
+  accessory: 'Accessori',
   characterOption: (_category, _id, title) => String(title),
-  editor: "Editor de l’agent",
-  newBot: "Bot nou",
-  closeEditor: "Tanca l’editor de l’agent",
-  details: "Aparença i detalls de l’agent",
-  color: "Color de l’avatar",
-  customColor: "Color personalitzat de l’avatar",
-  name: "Nom",
-  label: "Etiqueta",
-  description: "Descripció",
-  nameInput: "Nom de l’agent",
-  labelInput: "Etiqueta de l’agent",
-  descriptionInput: "Descripció de l’agent",
-  labelPlaceholder: "Gerent, màrqueting, pintor",
-  descriptionPlaceholder: "Detalls de l’agent",
-  language: "Idioma",
-  languageInput: "Idioma de l’agent",
-  notifications: "Notificacions",
-  notificationsDescription: "Mostra un avís quan la resposta estigui llesta.",
-  notifyFinished: "Avisa quan aquest agent acabi",
-  voice: "Veu",
-  voiceInput: "Veu de l’agent",
-  previewVoice: "Escolta la veu",
-  savedVoice: "Veu desada",
-  systemVoice: "Veu del sistema",
-  off: "Desactivada",
-  playbackSpeed: "Velocitat de reproducció",
-  emotion: "Emoció de l’agent",
-  shape: "Forma de l’avatar",
-  hexColor: "Color hexadecimal",
-  hue: "To",
-  saturationBrightness: "Saturació i brillantor",
-  increaseBrightness: "Augmenta la brillantor",
-  decreaseBrightness: "Redueix la brillantor",
-  increaseHue: "Augmenta el to",
-  decreaseHue: "Redueix el to",
-  nextShape: "Forma següent",
-  previousShape: "Forma anterior",
-  newAgent: "Agent nou",
-  emotions: { "neutral": "Neutral", "happy": "Feliç", "angry": "Enfadat", "thinking": "Pensatiu", "shook": "Sorprès", "curious": "Curiós", "wink": "Picada d’ullet", "sleepy": "Adormit", "sad": "Trist", "worried": "Preocupat", "skeptical": "Escèptic", "focused": "Concentrat", "excited": "Entusiasmat", "calm": "Tranquil", "shy": "Tímid", "confused": "Confós" },
-  shapes: { "slender": "Esvelta", "pocket": "Butxaca", "petal": "Pètal", "flower": "Flor", "star": "Estrella", "heart": "Cor", "cloud": "Núvol", "diamond": "Diamant", "shield": "Escut" },
-  colors: { "Blue": "Blau", "Teal": "Verd blavós", "Violet": "Violeta", "Pink": "Rosa", "Red": "Vermell", "Orange": "Taronja", "Cyan": "Cian", "Lime": "Llima", "Green": "Verd" },
-  languages: { "auto": "Detecció automàtica", "en": "Anglès", "tr": "Turc", "es": "Castellà", "fr": "Francès", "de": "Alemany", "ja": "Japonès", "pt": "Portuguès" },
-  avatarColorLabel: (name) => "Avatar {name}".replace("{name}", name),
-  shapeLabel: (name) => "Forma {name}".replace("{name}", name),
-  silhouetteLabel: (name) => "Silueta {name}".replace("{name}", name),
-  livePreview: (name) => "{name}, previsualització de l’avatar".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "saturació {s}%, brillantor {v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "Velocitat de reproducció {speed} vegades".replace("{speed}", String(speed)),
+  editor: 'Editor de l’agent',
+  newBot: 'Bot nou',
+  closeEditor: 'Tanca l’editor de l’agent',
+  details: 'Aparença i detalls de l’agent',
+  color: 'Color de l’avatar',
+  customColor: 'Color personalitzat de l’avatar',
+  name: 'Nom',
+  label: 'Etiqueta',
+  description: 'Descripció',
+  nameInput: 'Nom de l’agent',
+  labelInput: 'Etiqueta de l’agent',
+  descriptionInput: 'Descripció de l’agent',
+  labelPlaceholder: 'Gerent, màrqueting, pintor',
+  descriptionPlaceholder: 'Detalls de l’agent',
+  language: 'Idioma',
+  languageInput: 'Idioma de l’agent',
+  notifications: 'Notificacions',
+  notificationsDescription: 'Mostra un avís quan la resposta estigui llesta.',
+  notifyFinished: 'Avisa quan aquest agent acabi',
+  voice: 'Veu',
+  voiceInput: 'Veu de l’agent',
+  previewVoice: 'Escolta la veu',
+  savedVoice: 'Veu desada',
+  systemVoice: 'Veu del sistema',
+  off: 'Desactivada',
+  playbackSpeed: 'Velocitat de reproducció',
+  emotion: 'Emoció de l’agent',
+  shape: 'Forma de l’avatar',
+  hexColor: 'Color hexadecimal',
+  hue: 'To',
+  saturationBrightness: 'Saturació i brillantor',
+  increaseBrightness: 'Augmenta la brillantor',
+  decreaseBrightness: 'Redueix la brillantor',
+  increaseHue: 'Augmenta el to',
+  decreaseHue: 'Redueix el to',
+  nextShape: 'Forma següent',
+  previousShape: 'Forma anterior',
+  newAgent: 'Agent nou',
+  emotions: {
+    neutral: 'Neutral',
+    happy: 'Feliç',
+    angry: 'Enfadat',
+    thinking: 'Pensatiu',
+    shook: 'Sorprès',
+    curious: 'Curiós',
+    wink: 'Picada d’ullet',
+    sleepy: 'Adormit',
+    sad: 'Trist',
+    worried: 'Preocupat',
+    skeptical: 'Escèptic',
+    focused: 'Concentrat',
+    excited: 'Entusiasmat',
+    calm: 'Tranquil',
+    shy: 'Tímid',
+    confused: 'Confós',
+  },
+  shapes: {
+    slender: 'Esvelta',
+    pocket: 'Butxaca',
+    petal: 'Pètal',
+    flower: 'Flor',
+    star: 'Estrella',
+    heart: 'Cor',
+    cloud: 'Núvol',
+    diamond: 'Diamant',
+    shield: 'Escut',
+  },
+  colors: {
+    Blue: 'Blau',
+    Teal: 'Verd blavós',
+    Violet: 'Violeta',
+    Pink: 'Rosa',
+    Red: 'Vermell',
+    Orange: 'Taronja',
+    Cyan: 'Cian',
+    Lime: 'Llima',
+    Green: 'Verd',
+  },
+  languages: {
+    auto: 'Detecció automàtica',
+    en: 'Anglès',
+    tr: 'Turc',
+    es: 'Castellà',
+    fr: 'Francès',
+    de: 'Alemany',
+    ja: 'Japonès',
+    pt: 'Portuguès',
+  },
+  avatarColorLabel: (name) => 'Avatar {name}'.replace('{name}', name),
+  shapeLabel: (name) => 'Forma {name}'.replace('{name}', name),
+  silhouetteLabel: (name) => 'Silueta {name}'.replace('{name}', name),
+  livePreview: (name) => '{name}, previsualització de l’avatar'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'saturació {s}%, brillantor {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) =>
+    'Velocitat de reproducció {speed} vegades'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -133,7 +191,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'Esborrany:', pinned: 'Fixat', muted: 'Silenciat', verified: 'Verificat', channel: 'Canal', bot: 'Bot', group: 'Grup' },
+  item: {
+    draft: 'Esborrany:',
+    pinned: 'Fixat',
+    muted: 'Silenciat',
+    verified: 'Verificat',
+    channel: 'Canal',
+    bot: 'Bot',
+    group: 'Grup',
+  },
   search: { chat: 'Xats', message: 'Missatges', contact: 'Contactes', empty: 'Cap resultat' },
   list: 'Xats',
   emptyTitle: 'Encara no hi ha converses',
@@ -191,10 +257,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `Menú de ${team}`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'B', kilobyte: 'kB', megabyte: 'MB', gigabyte: 'GB' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'B',
+  kilobyte: 'kB',
+  megabyte: 'MB',
+  gigabyte: 'GB',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'Número de targeta', expiry: 'Data de caducitat', securityCode: 'Codi de seguretat', name: 'Nom a la targeta', postcode: 'Codi postal', country: 'País' },
+  labels: {
+    number: 'Número de targeta',
+    expiry: 'Data de caducitat',
+    securityCode: 'Codi de seguretat',
+    name: 'Nom a la targeta',
+    postcode: 'Codi postal',
+    country: 'País',
+  },
   selectCountry: 'Selecciona un país',
 };
 
@@ -227,8 +305,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'Persones', command: 'Ordres', emoji: 'Emoji' },
   suggestionVerified: 'Verificat',
   searchingSuggestions: 'Cercant…',
-  noSuggestions: { mention: "No s'ha trobat ningú", command: "No s'han trobat ordres", emoji: "No s'han trobat emojis" },
-  attachmentItems: { gallery: 'Galeria', camera: 'Càmera', file: 'Fitxer', location: 'Ubicació', contact: 'Contacte', poll: 'Enquesta', music: 'Música' },
+  noSuggestions: {
+    mention: "No s'ha trobat ningú",
+    command: "No s'han trobat ordres",
+    emoji: "No s'han trobat emojis",
+  },
+  attachmentItems: {
+    gallery: 'Galeria',
+    camera: 'Càmera',
+    file: 'Fitxer',
+    location: 'Ubicació',
+    contact: 'Contacte',
+    poll: 'Enquesta',
+    music: 'Música',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -279,7 +369,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: 'Mostra la lletra',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'Encara no hi ha res', addresses: 'Adreces' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'Encara no hi ha res',
+  addresses: 'Adreces',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'Senzill', ep: 'EP', album: 'Àlbum' },
@@ -317,7 +410,9 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   streams: {
     metrics: 'Mètrica del gràfic',
     summary: (metric, releases) =>
-      releases ? `${metric} al llarg del temps; llançaments: ${releases}` : `${metric} al llarg del temps`,
+      releases
+        ? `${metric} al llarg del temps; llançaments: ${releases}`
+        : `${metric} al llarg del temps`,
   },
   topTracks: {
     title: 'Cançons principals',
@@ -334,7 +429,12 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   tracks: (n) => plural('ca', n, { one: '{n} cançó', other: '{n} cançons' }),
   timeline: {
-    states: { complete: 'completat', current: 'en curs', upcoming: 'no començat', error: 'requereix atenció' },
+    states: {
+      complete: 'completat',
+      current: 'en curs',
+      upcoming: 'no començat',
+      error: 'requereix atenció',
+    },
     label: 'Progrés del llançament',
   },
   upload: {
@@ -358,7 +458,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     role: 'Rol',
     name: 'Nom',
     add: 'Afegeix un crèdit',
-    remove: (index, name) => (name ? `Treu el crèdit ${index + 1}, ${name}` : `Treu el crèdit ${index + 1}`),
+    remove: (index, name) =>
+      name ? `Treu el crèdit ${index + 1}, ${name}` : `Treu el crèdit ${index + 1}`,
     empty: "Acredita els autors, productors i intèrprets d'aquesta cançó.",
     field: (field, n) => `${field}, crèdit ${n}`,
   },
@@ -399,14 +500,21 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     moods: "Estat d'ànim",
     genres: 'Gènere',
     pitch: 'La teva proposta',
-    pitchPlaceholder: 'Què fa especial aquest llançament? Per a qui és i quina història hi ha al darrere?',
+    pitchPlaceholder:
+      'Què fa especial aquest llançament? Per a qui és i quina història hi ha al darrere?',
     submit: 'Envia la proposta',
     tagLimit: (max) => `Tria'n fins a ${max}`,
-    statuses: { submitted: 'Proposta enviada', accepted: 'Seleccionada per a revisió', declined: 'No seleccionada aquesta vegada' },
+    statuses: {
+      submitted: 'Proposta enviada',
+      accepted: 'Seleccionada per a revisió',
+      declined: 'No seleccionada aquesta vegada',
+    },
     statusDescriptions: {
-      submitted: 'Els editors llegeixen totes les propostes. Rebràs resposta abans de la data de llançament.',
+      submitted:
+        'Els editors llegeixen totes les propostes. Rebràs resposta abans de la data de llançament.',
       accepted: "El teu llançament s'està considerant per a llistes editorials.",
-      declined: "Aquest llançament no s'ha seleccionat. Podràs proposar el següent tan aviat com estigui programat.",
+      declined:
+        "Aquest llançament no s'ha seleccionat. Podràs proposar el següent tan aviat com estigui programat.",
     },
     edit: 'Edita la proposta',
   },
@@ -437,7 +545,10 @@ const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   noVerdict: 'No hi ha prou dades per valorar-ho',
   whyThisEstimate: 'Per què aquesta estimació',
   comparables: (n) =>
-    plural('ca', n, { one: 'Basat en {n} habitatge comparable', other: 'Basat en {n} habitatges comparables' }),
+    plural('ca', n, {
+      one: 'Basat en {n} habitatge comparable',
+      other: 'Basat en {n} habitatges comparables',
+    }),
   currentPrice: 'Preu actual',
   now: 'Ara',
   noPriceHistory: 'Encara no hi ha historial de preus',
@@ -489,7 +600,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'La teva sol·licitud',
   applicationProgress: 'Progrés de la sol·licitud',
   progressReady: (done, total) => `${done} de ${total} a punt`,
-  applicationStatus: { missing: 'Falta', uploaded: 'En revisió', verified: 'Verificat', rejected: 'Rebutjat' },
+  applicationStatus: {
+    missing: 'Falta',
+    uploaded: 'En revisió',
+    verified: 'Verificat',
+    rejected: 'Rebutjat',
+  },
   applicationAction: { upload: 'Puja', view: 'Mostra', replace: 'Substitueix' },
   itemAction: (action, title) => `${action}: ${title}`,
   mortgage: {
@@ -553,7 +669,8 @@ const LISTING_DETAILS_MESSAGES: Translations['LISTING_DETAILS_MESSAGES'] = {
   ratedOutOf5: (r) => `Valoració: ${r} de 5`,
   overallRating: 'Valoració general',
   unavailable: 'No disponible',
-  showAllAmenities: (n) => plural('ca', n, { one: 'Mostra {n} servei', other: 'Mostra els {n} serveis' }),
+  showAllAmenities: (n) =>
+    plural('ca', n, { one: 'Mostra {n} servei', other: 'Mostra els {n} serveis' }),
   showAllFeatures: (n) =>
     plural('ca', n, { one: 'Mostra {n} característica', other: 'Mostra les {n} característiques' }),
   propertyFeatures: 'Característiques de l’immoble',
@@ -592,7 +709,8 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   rangeLabel: 'Interval de dates',
   startDate: "Data d'inici",
   endDate: 'Data de fi',
-  daysSelected: (n) => plural('ca', n, { one: '{n} dia seleccionat', other: '{n} dies seleccionats' }),
+  daysSelected: (n) =>
+    plural('ca', n, { one: '{n} dia seleccionat', other: '{n} dies seleccionats' }),
   presets: {
     today: 'Avui',
     yesterday: 'Ahir',
@@ -614,9 +732,12 @@ const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
   kinds: {
     envelope: { label: 'Sobre', description: 'Documents, claus, qualsevol cosa plana.' },
     parcel: { label: 'Paquet', description: 'Una caixa o bossa que pugui portar una persona.' },
-    furniture: { label: 'Mobles', description: 'Un sofà, una taula, un matalàs: dues persones a cada punt.' },
+    furniture: {
+      label: 'Mobles',
+      description: 'Un sofà, una taula, un matalàs: dues persones a cada punt.',
+    },
     pallet: { label: 'Palet', description: 'Embalat i apilat, amb plataforma elevadora.' },
-    food: { label: 'Menjar', description: "Una comanda de restaurant, a la temperatura adequada." },
+    food: { label: 'Menjar', description: 'Una comanda de restaurant, a la temperatura adequada.' },
   },
   sizes: {
     small: 'Fins a una capsa de sabates: 35 × 25 × 20 cm.',
@@ -631,10 +752,14 @@ const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
     weight: 'Pes',
     quantity: 'Quantitat',
     quantityValue: (n) => plural('ca', n, { one: '{n} article', other: '{n} articles' }),
-    notes: "Alguna cosa més que hagi de saber el transportista?",
+    notes: 'Alguna cosa més que hagi de saber el transportista?',
     notesPlaceholder: "Fràgil, un codi d'ascensor, on deixar-ho…",
   },
-  options: { extras: 'Extres', access: 'Accés a origen i destinació', window: "Quan s'ha de recollir?" },
+  options: {
+    extras: 'Extres',
+    access: 'Accés a origen i destinació',
+    window: "Quan s'ha de recollir?",
+  },
   form: {
     route: 'Recorregut',
     routeDescription: 'Primer la recollida, al final el lliurament.',
@@ -666,11 +791,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'No disponible per a aquesta càrrega',
   vehicle: 'Vehicle',
   vehicles: {
-    bike: { label: 'Bicicleta de càrrega', capacity: 'Fins a 25 kg · 60 × 40 × 40 cm', fits: ['Documents', 'Una comanda de menjar', 'Una caixa petita'] },
-    car: { label: 'Cotxe', capacity: 'Fins a 150 kg · 100 × 80 × 60 cm', fits: ['Dues maletes', 'Quatre caixes', 'Una bicicleta'] },
-    van: { label: 'Furgoneta', capacity: 'Fins a 800 kg · 240 × 150 × 140 cm', fits: ['Un sofà', "La mudança d'un estudi", 'Mig palet'] },
-    boxTruck: { label: 'Camió caixa', capacity: 'Fins a 3.500 kg · 420 × 200 × 210 cm', fits: ['Dos palets', "La mudança d'un pis de dues habitacions", 'Una plataforma elevadora'] },
-    refrigerated: { label: 'Furgoneta frigorífica', capacity: 'Fins a 700 kg · entre 2 i 8 °C', fits: ['Productes frescos', 'Càtering refrigerat', 'Flors'] },
+    bike: {
+      label: 'Bicicleta de càrrega',
+      capacity: 'Fins a 25 kg · 60 × 40 × 40 cm',
+      fits: ['Documents', 'Una comanda de menjar', 'Una caixa petita'],
+    },
+    car: {
+      label: 'Cotxe',
+      capacity: 'Fins a 150 kg · 100 × 80 × 60 cm',
+      fits: ['Dues maletes', 'Quatre caixes', 'Una bicicleta'],
+    },
+    van: {
+      label: 'Furgoneta',
+      capacity: 'Fins a 800 kg · 240 × 150 × 140 cm',
+      fits: ['Un sofà', "La mudança d'un estudi", 'Mig palet'],
+    },
+    boxTruck: {
+      label: 'Camió caixa',
+      capacity: 'Fins a 3.500 kg · 420 × 200 × 210 cm',
+      fits: ['Dos palets', "La mudança d'un pis de dues habitacions", 'Una plataforma elevadora'],
+    },
+    refrigerated: {
+      label: 'Furgoneta frigorífica',
+      capacity: 'Fins a 700 kg · entre 2 i 8 °C',
+      fits: ['Productes frescos', 'Càtering refrigerat', 'Flors'],
+    },
   },
 };
 
@@ -747,7 +892,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'Autoritzant', paid: 'Pagat', failed: 'El pagament ha fallat', refunded: 'Reemborsat', pending: 'Pagament pendent' },
+  states: {
+    authorising: 'Autoritzant',
+    paid: 'Pagat',
+    failed: 'El pagament ha fallat',
+    refunded: 'Reemborsat',
+    pending: 'Pagament pendent',
+  },
   reference: 'Referència',
 };
 
@@ -766,13 +917,26 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `Valoració de ${value} sobre 5`,
-      reviews === undefined ? undefined : placeCard_countOf('ca', reviews, { one: '{n} ressenya', other: '{n} ressenyes' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('ca', reviews, { one: '{n} ressenya', other: '{n} ressenyes' }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `Continua amb ${b}`, signIn: (b) => `Inicia la sessió amb ${b}`, signUp: (b) => `Registra't amb ${b}` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `Continua amb ${b}`,
+    signIn: (b) => `Inicia la sessió amb ${b}`,
+    signUp: (b) => `Registra't amb ${b}`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'Una altra', otherPlaceholder: 'Escriu aquí la teva resposta', steps: 'Passos', step: (n) => `Pas ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'Una altra',
+  otherPlaceholder: 'Escriu aquí la teva resposta',
+  steps: 'Passos',
+  step: (n) => `Pas ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Controls del mapa',
@@ -789,9 +953,18 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'Capes superposades',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'Caducada', declined: 'Rebutjada' }, default: 'Predeterminada', add: 'Afegeix un mètode de pagament', emptyTitle: 'No hi ha mètodes de pagament desats', paymentMethods: 'Mètodes de pagament' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'Caducada', declined: 'Rebutjada' },
+  default: 'Predeterminada',
+  add: 'Afegeix un mètode de pagament',
+  emptyTitle: 'No hi ha mètodes de pagament desats',
+  paymentMethods: 'Mètodes de pagament',
+};
 
-const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = { more: (n) => plural('ca', n, { one: '{n} persona més', other: '{n} persones més' }), profile: 'Perfil' };
+const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
+  more: (n) => plural('ca', n, { one: '{n} persona més', other: '{n} persones més' }),
+  profile: 'Perfil',
+};
 
 const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'Barra de menús',
@@ -800,7 +973,12 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Pensant' };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
-  feedback: { like: 'Bona resposta', dislike: 'Mala resposta', copy: 'Copia la resposta', copied: 'Copiat!' },
+  feedback: {
+    like: 'Bona resposta',
+    dislike: 'Mala resposta',
+    copy: 'Copia la resposta',
+    copied: 'Copiat!',
+  },
   imageGeneration: {
     generated: 'Imatge generada',
     generating: "S'està generant la imatge",
@@ -812,7 +990,8 @@ const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   codePanel: {
     changes: 'Canvis',
     browser: 'Navegador',
-    uncommitted: (n) => plural('ca', n, { one: '{n} canvi sense confirmar', other: '{n} canvis sense confirmar' }),
+    uncommitted: (n) =>
+      plural('ca', n, { one: '{n} canvi sense confirmar', other: '{n} canvis sense confirmar' }),
     undo: 'Desfés els canvis',
     browserPreview: 'Previsualització del navegador',
   },
@@ -911,7 +1090,10 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   approximateLocation: 'Ubicació aproximada',
   rated: (r) => `Valoració: ${r} de 5`,
   ratedWithReviews: (r, c) =>
-    plural('ca', c, { one: `Valoració: ${r} de 5, ${c} ressenya`, other: `Valoració: ${r} de 5, ${c} ressenyes` }),
+    plural('ca', c, {
+      one: `Valoració: ${r} de 5, ${c} ressenya`,
+      other: `Valoració: ${r} de 5, ${c} ressenyes`,
+    }),
   newListing: 'Nou',
   previousPhoto: 'Foto anterior',
   nextPhoto: 'Foto següent',
@@ -921,7 +1103,8 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
 
 const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
   states: { 'off-route': 'Fora de la ruta', rerouting: "S'està cercant una ruta nova" },
-  thenLine: (street, maneuver) => navigationBanner_words('després', navigationBanner_midSentence(maneuver), street),
+  thenLine: (street, maneuver) =>
+    navigationBanner_words('després', navigationBanner_midSentence(maneuver), street),
   laneGuidance: 'Indicació de carrils',
   laneCount: (n) => plural('ca', n, { one: '{n} carril', other: '{n} carrils' }),
   laneNumber: (n) => `carril ${n}`,
@@ -936,7 +1119,11 @@ const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
 };
 
 const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
-  states: { locating: "S'està cercant la teva ubicació", located: 'La teva ubicació', stale: 'La teva darrera ubicació coneguda' },
+  states: {
+    locating: "S'està cercant la teva ubicació",
+    located: 'La teva ubicació',
+    stale: 'La teva darrera ubicació coneguda',
+  },
   facing: (state, degrees) => `${state}, orientat a ${degrees} graus`,
 };
 
@@ -949,7 +1136,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'diapositiva',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'En curs', upcoming: 'Pendent', failed: 'Fallit' }, status: 'Estat' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'En curs', upcoming: 'Pendent', failed: 'Fallit' },
+  status: 'Estat',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'Nou',
@@ -964,10 +1154,14 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     rent: { title: 'De lloguer', description: 'Lloguer de llarga durada, amb preu mensual.' },
     sale: { title: 'En venda', description: "Ven l'habitatge en propietat." },
     stay: { title: 'Lloguer vacacional', description: 'Estades curtes, amb preu per nit.' },
-    swap: { title: 'Intercanvi de casa', description: 'Intercanvia la teva casa amb altres membres.' },
+    swap: {
+      title: 'Intercanvi de casa',
+      description: 'Intercanvia la teva casa amb altres membres.',
+    },
     monthlyRent: 'Lloguer mensual',
     deposit: 'Fiança',
-    depositOption: (months) => (months === 0 ? 'Cap' : plural('ca', months, { one: '{n} mes', other: '{n} mesos' })),
+    depositOption: (months) =>
+      months === 0 ? 'Cap' : plural('ca', months, { one: '{n} mes', other: '{n} mesos' }),
     availableFrom: 'Disponible des de',
     minimumStay: 'Estada mínima',
     months: (months) => plural('ca', months, { one: '{n} mes', other: '{n} mesos' }),
@@ -997,11 +1191,13 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   addressPrecision: {
     exact: {
       title: 'Adreça exacta',
-      description: "El marcador se situa a l'edifici. Ideal per a habitatges fàcils de trobar igualment.",
+      description:
+        "El marcador se situa a l'edifici. Ideal per a habitatges fàcils de trobar igualment.",
     },
     street: {
       title: 'Només el carrer',
-      description: "Mostra el carrer, no el número. L'adreça exacta es comparteix després de la reserva o la signatura.",
+      description:
+        "Mostra el carrer, no el número. L'adreça exacta es comparteix després de la reserva o la signatura.",
     },
     approximate: {
       title: 'Zona aproximada',
@@ -1010,7 +1206,7 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   },
   addressPrecisionLabel: "Precisió de l'adreça",
   addressPrecisionFootnote:
-    "El mapa publicat segueix aquesta elecció. La teva adreça exacta només es comparteix amb les persones que confirmis.",
+    'El mapa publicat segueix aquesta elecció. La teva adreça exacta només es comparteix amb les persones que confirmis.',
   qualityTitle: "Qualitat de l'anunci",
   qualityScore: "Puntuació de qualitat de l'anunci",
   tips: 'Consells',
@@ -1023,7 +1219,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   card: 'Targeta',
   page: 'Pàgina',
   previewAs: 'Mostra com a',
-  reviews: (n, shown) => plural('ca', n, { one: '{s} ressenya', other: '{s} ressenyes' }).replace('{s}', shown),
+  reviews: (n, shown) =>
+    plural('ca', n, { one: '{s} ressenya', other: '{s} ressenyes' }).replace('{s}', shown),
 };
 
 const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
@@ -1057,7 +1254,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'Vegetarià', vegan: 'Vegà', 'gluten-free': 'Sense gluten', 'dairy-free': 'Sense lactis', halal: 'Halal', kosher: 'Caixer' },
+  diets: {
+    vegetarian: 'Vegetarià',
+    vegan: 'Vegà',
+    'gluten-free': 'Sense gluten',
+    'dairy-free': 'Sense lactis',
+    halal: 'Halal',
+    kosher: 'Caixer',
+  },
   spicy: 'Picant',
   spiceOf: (label, level, max) => `${label} ${level} de ${max}`,
   originally: (price, original) => `${price}, abans ${original}`,
@@ -1078,7 +1282,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Ves a la pàgina ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'Puntuació del lead', factors: 'De què es compon', bands: { cold: 'Fred', warm: 'Tebi', hot: 'Calent' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'Puntuació del lead',
+  factors: 'De què es compon',
+  bands: { cold: 'Fred', warm: 'Tebi', hot: 'Calent' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Cotxe', transit: 'Transport públic', walk: 'A peu', cycle: 'Bicicleta' },
@@ -1086,15 +1294,15 @@ const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   maneuvers: {
     depart: 'Sortida',
     straight: 'Continua recte',
-    'slight-left': 'Gira lleugerament a l\'esquerra',
-    left: 'Gira a l\'esquerra',
-    'sharp-left': 'Gira bruscament a l\'esquerra',
+    'slight-left': "Gira lleugerament a l'esquerra",
+    left: "Gira a l'esquerra",
+    'sharp-left': "Gira bruscament a l'esquerra",
     'slight-right': 'Gira lleugerament a la dreta',
     right: 'Gira a la dreta',
     'sharp-right': 'Gira bruscament a la dreta',
     uturn: 'Fes un canvi de sentit',
     roundabout: 'A la rotonda',
-    merge: 'Incorpora\'t',
+    merge: "Incorpora't",
     arrive: 'Arribada',
     board: 'Puja',
     alight: 'Baixa',
@@ -1173,10 +1381,11 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     clearFilters: 'Treu els filtres',
     refresh: 'Actualitza la llista',
     count: (n) => plural('ca', n, { one: '{n} feina', other: '{n} feines' }),
-    loading: 'S\'estan carregant les feines',
+    loading: "S'estan carregant les feines",
   },
   emptyTitle: 'Ara no hi ha feines',
-  emptyDescription: 'No hi ha res que coincideixi amb el que busques. Amplia un filtre o torna a actualitzar d’aquí a un minut.',
+  emptyDescription:
+    'No hi ha res que coincideixi amb el que busques. Amplia un filtre o torna a actualitzar d’aquí a un minut.',
   list: 'Feines',
   payDetailsFor: (load) => `Pagament per ${load}`,
   route: (pickup, dropoff) => `${pickup} i ${dropoff}`,
@@ -1198,7 +1407,8 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   chat: {
     newChat: 'Xat nou',
     emptyTitle: 'En què et puc ajudar?',
-    emptyDescription: 'Aquest xat funciona amb la teva pròpia clau d’API. L’historial es queda en aquest navegador.',
+    emptyDescription:
+      'Aquest xat funciona amb la teva pròpia clau d’API. L’historial es queda en aquest navegador.',
     thinking: 'Pensant',
     error: 'Alguna cosa ha fallat. Revisa els registres del servidor i torna-ho a provar.',
     suggestions: [
@@ -1217,7 +1427,11 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     markUnread: 'Marca com a no llegit',
     deleteChat: 'Suprimeix el xat',
   },
-  message: { copy: 'Copia el missatge', readAloud: 'Llegeix en veu alta', stopReading: 'Deixa de llegir en veu alta' },
+  message: {
+    copy: 'Copia el missatge',
+    readAloud: 'Llegeix en veu alta',
+    stopReading: 'Deixa de llegir en veu alta',
+  },
   history: {
     region: 'Historial de xats',
     recent: 'Recents',
@@ -1227,7 +1441,9 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     markUnread: 'Marca com a no llegit',
     unread: 'No llegit',
     exportCount: (n) =>
-      n === 0 ? 'No hi ha xats per exportar' : plural('ca', n, { one: 'Exporta {n} xat', other: 'Exporta {n} xats' }),
+      n === 0
+        ? 'No hi ha xats per exportar'
+        : plural('ca', n, { one: 'Exporta {n} xat', other: 'Exporta {n} xats' }),
     accountMenu: (name) => `Menú del compte de ${name}`,
     usageLeft: 'Ús restant',
     upgrade: 'Passa a Max',
@@ -1252,7 +1468,10 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   age: { now: 'ara', minutes: (n) => `${n} min`, hours: (n) => `${n} h`, days: (n) => `${n} d` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'Fonts', working: 'Treballant' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'Fonts',
+  working: 'Treballant',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'Per a',
@@ -1263,14 +1482,16 @@ const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   forward: 'Reenvia',
   more: COMMON_MESSAGES.more,
   moreAddresses: (n) => `${n} més`,
-  earlierMessages: (n) => plural('ca', n, { one: '{n} missatge anterior', other: '{n} missatges anteriors' }),
+  earlierMessages: (n) =>
+    plural('ca', n, { one: '{n} missatge anterior', other: '{n} missatges anteriors' }),
   showTrimmed: 'Mostra el contingut retallat',
   hideTrimmed: 'Amaga el contingut retallat',
   unread: 'No llegit',
   starred: 'Destacat',
   star: 'Destaca',
   attachments: 'Fitxers adjunts',
-  attachmentCount: (n) => plural('ca', n, { one: '{n} fitxer adjunt', other: '{n} fitxers adjunts' }),
+  attachmentCount: (n) =>
+    plural('ca', n, { one: '{n} fitxer adjunt', other: '{n} fitxers adjunts' }),
   expand: 'Desplega el missatge',
   collapse: 'Plega el missatge',
 };
@@ -1314,8 +1535,8 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   stepsSuffix: 'passos',
   today: 'Avui',
   thisYear: 'Aquest any',
-  lastYear: 'L\'any passat',
-  sinceLastYear: 'l\'any passat',
+  lastYear: "L'any passat",
+  sinceLastYear: "l'any passat",
   aYearEarlier: 'un any abans',
   earningsPeriod: 'Període de guanys',
   changePeriod: 'Canvia el període',
@@ -1323,30 +1544,46 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   total: 'total',
   average: 'mitjana',
   thisMonth: 'aquest mes',
-  ofGoal: 'de l\'objectiu',
+  ofGoal: "de l'objectiu",
   totalSteps: 'passos en total',
   gaugeChart: (title, reading) => `Indicador de ${title.toLowerCase()}: ${reading}`,
   halfGaugeChart: (title, items) => `Semicercle de ${title.toLowerCase()}: ${items}`,
   radialChart: (title, items) => `Gràfic radial de ${title.toLowerCase()}: ${items}`,
   percentOfGoal: (pct) => `${pct} % de l'objectiu`,
   periodOf: (label) => `Període d'${label.toLowerCase()}`,
-  chartVs: (title, current, previous) => `Gràfic de ${title.toLowerCase()}: ${current.toLowerCase()} davant ${previous.toLowerCase()}`,
+  chartVs: (title, current, previous) =>
+    `Gràfic de ${title.toLowerCase()}: ${current.toLowerCase()} davant ${previous.toLowerCase()}`,
   lineChart: (title) => `Gràfic de línies de ${title.toLowerCase()}`,
   barChart: (title, items) => `Gràfic de barres de ${title.toLowerCase()}: ${items}`,
-  comboChart: (title, bar, line) => `Gràfic de ${title.toLowerCase()}: barres de ${bar} davant línia de ${line}`,
+  comboChart: (title, bar, line) =>
+    `Gràfic de ${title.toLowerCase()}: barres de ${bar} davant línia de ${line}`,
   scatterChart: (title, series) => `Gràfic de dispersió de ${title.toLowerCase()}: ${series}`,
   bubbleChart: (title, series) => `Gràfic de bombolles de ${title.toLowerCase()}: ${series}`,
   ringItem: (label, value, pct) => `${label} ${value}, ${pct} % de l'objectiu`,
   scoreOf: (score, max) => `${score} de ${max}`,
   activityFor: (name, day) => `Activitat del ${day} de ${name}`,
-  contributions: (n, date) => { const on = date ? ` el ${date}` : ''; return n === 0 ? `Cap contribució${on}` : plural('ca', n, { one: `{n} contribució${on}`, other: `{n} contribucions${on}` }); },
+  contributions: (n, date) => {
+    const on = date ? ` el ${date}` : '';
+    return n === 0
+      ? `Cap contribució${on}`
+      : plural('ca', n, { one: `{n} contribució${on}`, other: `{n} contribucions${on}` });
+  },
 };
 
-const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'Copia el codi', copied: 'Codi copiat' };
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
+  copy: 'Copia el codi',
+  copied: 'Codi copiat',
+};
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'En aquesta pàgina', progress: (at, of) => `Encapçalament ${at} de ${of}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'En aquesta pàgina',
+  progress: (at, of) => `Encapçalament ${at} de ${of}`,
+};
 
-const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'Redueix', increase: 'Augmenta' };
+const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
+  decrease: 'Redueix',
+  increase: 'Augmenta',
+};
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   status: {
@@ -1403,7 +1640,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, silenciat`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'Incorporacions recents' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'Incorporacions recents',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Esborrany:',
@@ -1424,9 +1663,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'Correu',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'Alertes importants', thisWeek: 'aquesta setmana' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'Alertes importants',
+  thisWeek: 'aquesta setmana',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `Quant a ${label}`, fromLastMonth: 'Respecte al mes passat' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `Quant a ${label}`,
+  fromLastMonth: 'Respecte al mes passat',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1474,8 +1719,18 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'Calefacció',
     other: 'Altres',
   },
-  maintenancePriority: { low: 'Prioritat baixa', medium: 'Prioritat mitjana', high: 'Prioritat alta', urgent: 'Urgent' },
-  maintenanceStage: { reported: 'Notificada', acknowledged: 'Rebuda', scheduled: 'Programada', resolved: 'Resolta' },
+  maintenancePriority: {
+    low: 'Prioritat baixa',
+    medium: 'Prioritat mitjana',
+    high: 'Prioritat alta',
+    urgent: 'Urgent',
+  },
+  maintenanceStage: {
+    reported: 'Notificada',
+    acknowledged: 'Rebuda',
+    scheduled: 'Programada',
+    resolved: 'Resolta',
+  },
   documentStatus: { signed: 'Signat', pending: 'Pendent de signatura', expired: 'Caducat' },
   timelineState: { complete: 'Completat', current: 'En curs', upcoming: 'Pendent' },
   leasePeriod: 'Durada del contracte',
@@ -1485,7 +1740,13 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
   paidThisYear: 'Pagat aquest any',
   outstanding: 'Pendent',
   noPayments: 'Encara no hi ha pagaments',
-  columns: { month: 'Mes', dueDate: 'Venciment', method: 'Mètode', amount: 'Import', status: 'Estat' },
+  columns: {
+    month: 'Mes',
+    dueDate: 'Venciment',
+    method: 'Mètode',
+    amount: 'Import',
+    status: 'Estat',
+  },
   downloadReceipt: (month) => `Baixa el rebut de ${month}`,
   dueOn: (date) => `Venç el ${date}`,
   comments: (n) => plural('ca', n, { one: '{n} comentari', other: '{n} comentaris' }),
@@ -1505,7 +1766,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normal', sm: 'Compacta' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'Alguna cosa ha anat malament', message: "S'ha produït un error inesperat", retry: 'Torna-ho a provar' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'Alguna cosa ha anat malament',
+  message: "S'ha produït un error inesperat",
+  retry: 'Torna-ho a provar',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'Contribucions aquest any',
@@ -1580,7 +1845,8 @@ const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
   stalledFor: (duration) => `Encallat des de fa ${duration}`,
   move: (title) => `Mou ${title}`,
   stages: "Etapes de l'embut",
-  stageWithCount: (name, n) => `${name}, ${plural('ca', n, { one: '{n} oportunitat', other: '{n} oportunitats' })}`,
+  stageWithCount: (name, n) =>
+    `${name}, ${plural('ca', n, { one: '{n} oportunitat', other: '{n} oportunitats' })}`,
   empty: 'No hi ha oportunitats en aquesta etapa',
   loadMore: "Carrega'n més",
 };
@@ -1633,7 +1899,8 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
       switchAction: "Envia'n un altre",
     },
   },
-  codeSentTo: (email) => `Introdueix el codi que hem enviat a ${email} per acabar d'iniciar la sessió.`,
+  codeSentTo: (email) =>
+    `Introdueix el codi que hem enviat a ${email} per acabar d'iniciar la sessió.`,
   verificationCode: 'Codi de verificació',
   fullName: 'Nom complet',
   namePlaceholder: 'Laia Puig',
@@ -1647,7 +1914,8 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   confirmPasswordPlaceholder: 'Repeteix la contrasenya',
   rememberMe: "Recorda'm",
   forgotPassword: 'Has oblidat la contrasenya?',
-  terms: "En crear un compte, acceptes les nostres Condicions del servei i la nostra Política de privadesa.",
+  terms:
+    'En crear un compte, acceptes les nostres Condicions del servei i la nostra Política de privadesa.',
   orContinueWith: 'o continua amb',
 };
 
@@ -1684,7 +1952,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'Trucada', email: 'Correu', meeting: 'Reunió', note: 'Nota', 'stage-change': "Canvi d'etapa", task: 'Tasca completada' },
+  kinds: {
+    call: 'Trucada',
+    email: 'Correu',
+    meeting: 'Reunió',
+    note: 'Nota',
+    'stage-change': "Canvi d'etapa",
+    task: 'Tasca completada',
+  },
   empty: 'Encara no hi ha activitat registrada',
   loggedBy: (name) => `Registrat per ${name}`,
   filterActivity: "Filtra l'activitat",
@@ -1698,7 +1973,8 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   helpful: 'Útil',
   report: 'Denuncia',
   promptTitle: 'Hi has viscut?',
-  promptDescription: (building) => `Ajuda els futurs llogaters de ${building}. Les ressenyes són anònimes.`,
+  promptDescription: (building) =>
+    `Ajuda els futurs llogaters de ${building}. Les ressenyes són anònimes.`,
   writeReview: 'Escriu una ressenya',
   reviewCount: (n) => plural('ca', n, { one: '{n} ressenya', other: '{n} ressenyes' }),
   depositRate: (percent) => `Fiança retornada en el ${percent}% dels lloguers`,
@@ -1718,7 +1994,8 @@ const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'Privada', shared: 'Compartida', public: 'Pública' },
   places: (n) => plural('ca', n, { one: '{n} lloc', other: '{n} llocs' }),
-  sharedWith: (n) => plural('ca', n, { one: 'Compartida amb {n} persona', other: 'Compartida amb {n} persones' }),
+  sharedWith: (n) =>
+    plural('ca', n, { one: 'Compartida amb {n} persona', other: 'Compartida amb {n} persones' }),
   labels: {
     moveEarlier: (position) => `Mou a la posició ${position - 1}`,
     moveLater: (position) => `Mou a la posició ${position + 1}`,
@@ -1759,7 +2036,12 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
     asap: 'Com més aviat millor',
     contractLength: 'Durada del contracte',
   },
-  contractLengths: { any: 'Qualsevol', short: '1–6 mesos', medium: '6–12 mesos', long: "Més d'1 any" },
+  contractLengths: {
+    any: 'Qualsevol',
+    short: '1–6 mesos',
+    medium: '6–12 mesos',
+    long: "Més d'1 any",
+  },
   saveSearch: 'Desa la cerca',
   saved: 'Desada',
   newCount: (n) => plural('ca', n, { one: '{n} nou', other: '{n} nous' }),
@@ -1767,13 +2049,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${action}: ${subject}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'En lloguer', sale: 'En venda', short_term_rent: 'Lloguer turístic', exchange: 'Intercanvi' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'En lloguer',
+    sale: 'En venda',
+    short_term_rent: 'Lloguer turístic',
+    exchange: 'Intercanvi',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'Escala', mapData: 'Dades del mapa' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'Escala',
+  mapData: 'Dades del mapa',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'Mínim', maximum: 'Màxim', value: (n) => `Valor ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'Mínim',
+  maximum: 'Màxim',
+  value: (n) => `Valor ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'Selecciona una opció', scrollUp: 'Desplaça amunt', scrollDown: 'Desplaça avall' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'Selecciona una opció',
+  scrollUp: 'Desplaça amunt',
+  scrollDown: 'Desplaça avall',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'Tanca el visualitzador multimèdia',
@@ -1783,12 +2083,22 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
   share: 'Comparteix el contingut',
 };
 
-const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'Descarta la notificació' };
+const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = {
+  dismiss: 'Descarta la notificació',
+};
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'Número de telèfon', countryCode: 'Codi de país' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'Número de telèfon',
+  countryCode: 'Codi de país',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: "Temps d'entrega", deliveryFee: 'Enviament', distance: 'Distància', minimumOrder: 'Comanda mínima' },
+  facts: {
+    deliveryTime: "Temps d'entrega",
+    deliveryFee: 'Enviament',
+    distance: 'Distància',
+    minimumOrder: 'Comanda mínima',
+  },
   availability: { paused: 'En pausa', closed: 'Tancat' },
   new: 'Nou',
   rated: (value, reviews) =>
@@ -1797,9 +2107,16 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'En línia', idle: 'Absent', offline: 'Desconnectat', busy: 'Ocupat' },
-  status: { sending: "S'està enviant…", sent: 'Enviat', delivered: 'Lliurat', read: 'Llegit', failed: 'No enviat' },
+  status: {
+    sending: "S'està enviant…",
+    sent: 'Enviat',
+    delivered: 'Lliurat',
+    read: 'Llegit',
+    failed: 'No enviat',
+  },
   unread: 'No llegit',
-  unreadCount: (n) => plural('ca', n, { one: '{n} missatge no llegit', other: '{n} missatges no llegits' }),
+  unreadCount: (n) =>
+    plural('ca', n, { one: '{n} missatge no llegit', other: '{n} missatges no llegits' }),
 };
 
 const MEDIA_CONTROLS_MESSAGES: Translations['MEDIA_CONTROLS_MESSAGES'] = {
@@ -1832,7 +2149,7 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
     quieter: 'Menys concorregut del que és habitual',
   },
   transitModes: {
-    bus: 'Parada d\'autobús',
+    bus: "Parada d'autobús",
     metro: 'Estació de metro',
     train: 'Estació de tren',
     tram: 'Parada de tramvia',
@@ -1844,7 +2161,7 @@ const PLACE_DETAILS_MESSAGES: Translations['PLACE_DETAILS_MESSAGES'] = {
   closed: 'Tancat',
   openingHours: 'Horari',
   day: 'Dia',
-  noDataForDay: 'No hi ha dades d\'aquest dia',
+  noDataForDay: "No hi ha dades d'aquest dia",
   chartNoData: (day) => `${day}, sense dades`,
   chartClosed: (day) => `${day}, tancat tot el dia`,
   chartPeak: (day, hour) => `${day}, més concorregut a les ${hour}`,
@@ -1878,7 +2195,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'Esborra la cerca' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `Treu ${t}`, full: (n) => `Màxim ${n}`, suggestions: 'Suggeriments' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `Treu ${t}`,
+  full: (n) => `Màxim ${n}`,
+  suggestions: 'Suggeriments',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1917,8 +2238,9 @@ const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   ratingOnly: (r) => `Només ${r}`,
   ratingAndBetter: (r) => `${r} o millor`,
   filters: 'Filtres',
-  filtersApplied: (label, n) => `${label}, ${plural('ca', n, { one: '{n} aplicat', other: '{n} aplicats' })}`,
-  clearAll: "Esborra-ho tot",
+  filtersApplied: (label, n) =>
+    `${label}, ${plural('ca', n, { one: '{n} aplicat', other: '{n} aplicats' })}`,
+  clearAll: 'Esborra-ho tot',
   any: 'Qualsevol',
   availableNow: 'Disponible ara',
   availableNowDescription: 'A punt per entrar a viure avui',
@@ -1946,7 +2268,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'Nom del fitxer',
     uploadedOn: 'Data de pujada',
     fileSize: 'Mida del fitxer',
-    sortBy: { name: 'Ordena per nom del fitxer', uploadedAt: 'Ordena per data de pujada', size: 'Ordena per mida del fitxer' },
+    sortBy: {
+      name: 'Ordena per nom del fitxer',
+      uploadedAt: 'Ordena per data de pujada',
+      size: 'Ordena per mida del fitxer',
+    },
     selectFile: (name) => `Selecciona ${name}`,
     deleteFile: 'Suprimeix el fitxer',
     deleteNamed: (name) => `Suprimeix ${name}`,
@@ -1983,7 +2309,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     teamServersDescription: 'Configurats al tauler',
     manage: 'Gestiona',
     noTeamServers: "No hi ha servidors MCP de l'equip",
-    noTeamServersBody: "Configura servidors MCP al tauler perquè estiguin disponibles a l'escriptori i al núvol.",
+    noTeamServersBody:
+      "Configura servidors MCP al tauler perquè estiguin disponibles a l'escriptori i al núvol.",
     configureTeam: "Configura els servidors MCP de l'equip",
     pluginServers: 'Servidors MCP de connectors',
   },
@@ -2014,26 +2341,53 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   checkAvailability: 'Consulta la disponibilitat',
   notChargedYet: 'Encara no se’t cobrarà res',
   total: 'Total',
-  tripStatus: { confirmed: 'Confirmada', pending: 'Pendent', cancelled: 'Cancel·lada', completed: 'Completada' },
-  priceName: booking_priceName((p, u) => `${p} per ${u}`, (s, o) => `${s}, abans ${o}`),
+  tripStatus: {
+    confirmed: 'Confirmada',
+    pending: 'Pendent',
+    cancelled: 'Cancel·lada',
+    completed: 'Completada',
+  },
+  priceName: booking_priceName(
+    (p, u) => `${p} per ${u}`,
+    (s, o) => `${s}, abans ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'Finestra de context', freeSpace: 'Espai lliure', planUsageLimits: 'Límits d’ús del pla', managePlan: 'Gestiona el pla' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'Finestra de context',
+  freeSpace: 'Espai lliure',
+  planUsageLimits: 'Límits d’ús del pla',
+  managePlan: 'Gestiona el pla',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'Tanca les accions',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'Afegeix una foto de perfil' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'Afegeix una foto de perfil',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'Tema', darkMode: 'Mode fosc', lightMode: 'Mode clar', useDarkMode: 'Utilitza el mode fosc', useLightMode: 'Utilitza el mode clar' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'Tema',
+  darkMode: 'Mode fosc',
+  lightMode: 'Mode clar',
+  useDarkMode: 'Utilitza el mode fosc',
+  useLightMode: 'Utilitza el mode clar',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'Guanyat',
   period: 'Període de guanys',
   breakdown: "D'on ve",
   payout: 'Proper pagament',
-  payoutState: { scheduled: 'Programat', processing: 'En camí', paid: 'Pagat', held: 'Retingut', failed: 'Fallit' },
+  payoutState: {
+    scheduled: 'Programat',
+    processing: 'En camí',
+    paid: 'Pagat',
+    held: 'Retingut',
+    failed: 'Fallit',
+  },
   chart: (label) => `Guanys: ${label}, per període`,
   empty: 'Encara no has guanyat res',
   earnings: 'Guanys',
@@ -2051,7 +2405,7 @@ const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
     photo: 'Foto',
     photoHint: "On l'has deixat, o el paquet amb el destinatari.",
     code: "Codi d'entrega",
-    codeHint: "Demana al destinatari que llegeixi el codi de la seva app.",
+    codeHint: 'Demana al destinatari que llegeixi el codi de la seva app.',
     recipient: "Qui l'ha rebut",
     recipientPlaceholder: 'Nom',
     note: 'Nota',
@@ -2059,7 +2413,8 @@ const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
     submit: "Confirma l'entrega",
     required: 'Obligatori',
     missing: 'Cal això per poder confirmar.',
-    missingSummary: (n) => plural('ca', n, { one: 'Encara falta una cosa', other: 'Encara falten {n} coses' }),
+    missingSummary: (n) =>
+      plural('ca', n, { one: 'Encara falta una cosa', other: 'Encara falten {n} coses' }),
   },
   proofOfDelivery: "Prova d'entrega",
 };
@@ -2118,9 +2473,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'Més format', moreMenu: 'Més format' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'Filtres', showAll: 'Mostra-ho tot' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'Filtres',
+  showAll: 'Mostra-ho tot',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'Categories anteriors', next: 'Categories següents' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'Categories anteriors',
+  next: 'Categories següents',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2139,15 +2500,20 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     sort: 'Ordena les ofertes',
     sortOptions: { price: 'Més barat', eta: 'Més ràpid', rating: 'Més ben valorat' },
     count: (n) => plural('ca', n, { one: '{n} oferta', other: '{n} ofertes' }),
-    loading: 'S\'estan carregant les ofertes',
+    loading: "S'estan carregant les ofertes",
   },
   emptyTitle: 'Encara no hi ha ofertes',
-  emptyDescription: 'Els transportistes estan mirant el teu enviament. Les primeres ofertes solen arribar en pocs minuts.',
+  emptyDescription:
+    'Els transportistes estan mirant el teu enviament. Les primeres ofertes solen arribar en pocs minuts.',
   list: 'Ofertes',
   priceDetailsFor: (name) => `Desglossament del preu de ${name}`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'Mostra la contrasenya', hidePassword: 'Amaga la contrasenya', required: 'obligatori' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'Mostra la contrasenya',
+  hidePassword: 'Amaga la contrasenya',
+  required: 'obligatori',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'Truca',
@@ -2245,252 +2611,270 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "Desa els canvis" : "Inicia el xat" + (count ? ' · ' + plural('ca', count, {"one": "{n} agent", "other": "{n} agents"}) : ''),
-  you: "Tu",
-  responseFailed: "{0} no ha pogut respondre. Torna-ho a provar.",
-  editAgentTitle: "Edita l’agent",
-  aLittleHelp: "Una mica d’ajuda",
-  aFewMindsOneConversation: "Unes quantes ments. Una conversa.",
-  aLittleRoomForSomethingNew: "Un petit espai per a alguna cosa nova",
-  accountDetails: "Detalls del compte",
-  add: "Afegeix",
-  add2: "Afegeix {0}",
-  added: "Afegit",
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'Desa els canvis'
+      : 'Inicia el xat' +
+        (count ? ' · ' + plural('ca', count, { one: '{n} agent', other: '{n} agents' }) : ''),
+  you: 'Tu',
+  responseFailed: '{0} no ha pogut respondre. Torna-ho a provar.',
+  editAgentTitle: 'Edita l’agent',
+  aLittleHelp: 'Una mica d’ajuda',
+  aFewMindsOneConversation: 'Unes quantes ments. Una conversa.',
+  aLittleRoomForSomethingNew: 'Un petit espai per a alguna cosa nova',
+  accountDetails: 'Detalls del compte',
+  add: 'Afegeix',
+  add2: 'Afegeix {0}',
+  added: 'Afegit',
   addedToYourWorkspace: "S'ha afegit al vostre espai de treball",
-  agent: "Agent immobiliari",
+  agent: 'Agent immobiliari',
   agentConversation: "Conversa de l'agent",
-  appearance: "Aparença",
-  apps: "Aplicacions · {0}",
-  availability: "Disponibilitat",
-  backToMarketplace: "Tornar al mercat",
-  billing: "Facturació",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "Bots",
-  bringYourAgentsIntoOneChat: "Porta els teus agents en un sol xat.",
-  category: "Categoria",
-  chatActions: "Accions de xat",
-  chatList: "Llista de xat",
-  chatName: "Nom del xat",
+  appearance: 'Aparença',
+  apps: 'Aplicacions · {0}',
+  availability: 'Disponibilitat',
+  backToMarketplace: 'Tornar al mercat',
+  billing: 'Facturació',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'Bots',
+  bringYourAgentsIntoOneChat: 'Porta els teus agents en un sol xat.',
+  category: 'Categoria',
+  chatActions: 'Accions de xat',
+  chatList: 'Llista de xat',
+  chatName: 'Nom del xat',
   chatRemoved: "S'ha eliminat el xat",
-  chatWithYourAgents: "Xateja amb els teus agents",
-  chooseAnAgentOrCreateYourOwn: "Tria un agent o crea el teu propi per iniciar una conversa.",
+  chatWithYourAgents: 'Xateja amb els teus agents',
+  chooseAnAgentOrCreateYourOwn: 'Tria un agent o crea el teu propi per iniciar una conversa.',
   chooseWhoSJoiningTheConversation: "Tria qui s'uneix a la conversa.",
-  chooseYourTeammates: "Tria els teus companys",
-  closeMarketplace: "Tancar el mercat",
-  closeSearch: "Tanca la cerca",
-  company: "Empresa",
+  chooseYourTeammates: 'Tria els teus companys',
+  closeMarketplace: 'Tancar el mercat',
+  closeSearch: 'Tanca la cerca',
+  company: 'Empresa',
   companyDetails: "Dades de l'empresa",
-  completionSound: "So de finalització",
-  connectedAccount: "Compte connectat",
-  connector: "Connector",
+  completionSound: 'So de finalització',
+  connectedAccount: 'Compte connectat',
+  connector: 'Connector',
   conversationIDCopied: "S'ha copiat l'identificador de la conversa",
   conversationCopied: "S'ha copiat la conversa",
-  conversationOptions: "Opcions de conversa",
-  conversations: "Converses",
-  copied: "Copiat",
-  copyConversation: "Copia la conversa",
+  conversationOptions: 'Opcions de conversa',
+  conversations: 'Converses',
+  copied: 'Copiat',
+  copyConversation: 'Copia la conversa',
   copyConversationID: "Copia l'identificador de conversa",
-  copyResponse: "Copia la resposta",
+  copyResponse: 'Copia la resposta',
   couldnTCopyPleaseTryAgain: "No s'ha pogut copiar. Si us plau, torna-ho a provar.",
-  create: "Crear",
-  createANewBot: "Crea un bot nou",
-  createBotOrChat: "Crea bot o xat",
-  criticalRequests: "Sol·licituds crítiques",
-  customize: "Personalitza",
+  create: 'Crear',
+  createANewBot: 'Crea un bot nou',
+  createBotOrChat: 'Crea bot o xat',
+  criticalRequests: 'Sol·licituds crítiques',
+  customize: 'Personalitza',
   customizeANewTeammate: "Personalitza un nou company d'equip.",
-  dateOfBirth: "Data de naixement",
-  demoIntegrationAddingSavesItToThis: "Integració de demostració. Afegir-lo es desa en aquest navegador; no hi ha cap compte extern connectat.",
+  dateOfBirth: 'Data de naixement',
+  demoIntegrationAddingSavesItToThis:
+    'Integració de demostració. Afegir-lo es desa en aquest navegador; no hi ha cap compte extern connectat.',
   desktopApp: "Aplicació d'escriptori",
-  details: "Detalls",
-  developer: "Desenvolupador",
-  deviceID: "ID del dispositiu",
-  discover: "Descobreix",
+  details: 'Detalls',
+  developer: 'Desenvolupador',
+  deviceID: 'ID del dispositiu',
+  discover: 'Descobreix',
   dispatchAlerts: "Alertes d'enviament",
-  editConversationAgents: "Edita els agents de conversa",
-  editBot: "Edita el bot",
-  editGroup: "Edita el grup",
-  editAgent: "Edita {0}",
-  email: "Correu",
-  everydayEssentials: "Elements imprescindibles per al dia a dia",
-  exploreMarketplace: "Exploreu el mercat",
-  explorePlugins: "Exploreu els connectors",
-  explorePluginsAndBotsToBuildYour: "Exploreu connectors i bots per crear el vostre equip.",
+  editConversationAgents: 'Edita els agents de conversa',
+  editBot: 'Edita el bot',
+  editGroup: 'Edita el grup',
+  editAgent: 'Edita {0}',
+  email: 'Correu',
+  everydayEssentials: 'Elements imprescindibles per al dia a dia',
+  exploreMarketplace: 'Exploreu el mercat',
+  explorePlugins: 'Exploreu els connectors',
+  explorePluginsAndBotsToBuildYour: 'Exploreu connectors i bots per crear el vostre equip.',
   findYourNextTeammate: "Troba el teu proper company d'equip",
   findYourNextToolOrTeammate: "Troba la teva propera eina o company d'equip",
-  firstName: "Nom",
-  folders: "Carpetes",
-  general: "General",
-  getNotifiedWhenTheModeNeedsTo: "Rebeu una notificació quan el mode hagi de prendre una decisió crítica",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "Resposta útil",
-  inTheBrowser: "Al navegador",
-  inThisConversation: "En aquesta conversa",
-  includes: "Inclou",
+  firstName: 'Nom',
+  folders: 'Carpetes',
+  general: 'General',
+  getNotifiedWhenTheModeNeedsTo:
+    'Rebeu una notificació quan el mode hagi de prendre una decisió crítica',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'Resposta útil',
+  inTheBrowser: 'Al navegador',
+  inThisConversation: 'En aquesta conversa',
+  includes: 'Inclou',
   insideTheApp: "Dins de l'aplicació",
-  installed: "Instal·lat",
-  integrations: "Integracions",
-  iLlApproachThisFromThePerspective: "Ho abordaré des de la perspectiva de {0}.",
-  lastName: "Cognoms",
-  limits: "Límits",
-  logOutFromAllDevices: "Tanqueu la sessió de tots els dispositius",
-  logout: "Tanca la sessió",
-  manage: "Gestiona",
-  manageLimits: "Gestiona els límits",
-  marketplace: "Mercat",
+  installed: 'Instal·lat',
+  integrations: 'Integracions',
+  iLlApproachThisFromThePerspective: 'Ho abordaré des de la perspectiva de {0}.',
+  lastName: 'Cognoms',
+  limits: 'Límits',
+  logOutFromAllDevices: 'Tanqueu la sessió de tots els dispositius',
+  logout: 'Tanca la sessió',
+  manage: 'Gestiona',
+  manageLimits: 'Gestiona els límits',
+  marketplace: 'Mercat',
   marketplaceLinkCopied: "S'ha copiat l'enllaç del mercat",
-  marketplaceListings: "Llistes del mercat",
+  marketplaceListings: 'Llistes del mercat',
   meetYourNextTeammate: "Coneix el teu proper company d'equip",
-  messages: "Missatges",
+  messages: 'Missatges',
   noConversationsFound: "No s'han trobat converses.",
-  noMatchesYet: "Encara no hi ha cap coincidència",
-  notifications: "Notificacions",
-  openConversations: "Converses obertes",
-  openPullRequestLinksInsideYourApp: "Obriu els enllaços de sol·licitud d'extracció dins de la vostra aplicació",
-  openTheMarketplaceToExplorePluginsAnd: "Obriu el Marketplace per explorar connectors i bots. Utilitzeu el menú d'una conversa per editar l'aparença i els detalls del bot. Trieu una expressió de la roda de les emocions. Desplaceu-vos o arrossegueu l'arc de forma, o utilitzeu les tecles de fletxa per explorar les formes.",
-  prDestination: "PR destinació",
-  people: "Persones",
-  personal: "Personal",
-  pinChat: "Fixa el xat",
-  pinnedChat: "Xat fixat",
-  plugins: "Complements",
-  profile: "Perfil",
-  public: "Pública",
-  publicProfile: "Perfil públic",
+  noMatchesYet: 'Encara no hi ha cap coincidència',
+  notifications: 'Notificacions',
+  openConversations: 'Converses obertes',
+  openPullRequestLinksInsideYourApp:
+    "Obriu els enllaços de sol·licitud d'extracció dins de la vostra aplicació",
+  openTheMarketplaceToExplorePluginsAnd:
+    "Obriu el Marketplace per explorar connectors i bots. Utilitzeu el menú d'una conversa per editar l'aparença i els detalls del bot. Trieu una expressió de la roda de les emocions. Desplaceu-vos o arrossegueu l'arc de forma, o utilitzeu les tecles de fletxa per explorar les formes.",
+  prDestination: 'PR destinació',
+  people: 'Persones',
+  personal: 'Personal',
+  pinChat: 'Fixa el xat',
+  pinnedChat: 'Xat fixat',
+  plugins: 'Complements',
+  profile: 'Perfil',
+  public: 'Pública',
+  publicProfile: 'Perfil públic',
   pullRequests: "Sol·licituds d'extracció",
-  pushNotificationOnYourPhoneWhenThe: "Envia una notificació al teu telèfon quan l'aplicació t'envia un missatge",
-  remove: "Treu",
-  removeChat: "Elimina el xat",
-  renameChat: "Canvia el nom del xat",
+  pushNotificationOnYourPhoneWhenThe:
+    "Envia una notificació al teu telèfon quan l'aplicació t'envia un missatge",
+  remove: 'Treu',
+  removeChat: 'Elimina el xat',
+  renameChat: 'Canvia el nom del xat',
   responseCopied: "S'ha copiat la resposta",
-  reviewProvider: "Revisa el proveïdor",
-  rulesAndWorkflows: "Regles i fluxos de treball",
-  saveName: "Desa el nom",
-  sayHelloTo: "Saludeu a {0}",
-  searchConversations: "Cerca converses",
-  searchConversations2: "Cerca converses...",
-  searchMarketplace: "Cerca al mercat",
-  selectGithubOrOtherProvidersForReviews: "Seleccioneu Github o altres proveïdors per obtenir ressenyes",
-  selectedAgents: "Agents seleccionats: {0}",
-  sendWithEnterUseShiftEnterFor: "Envia amb Intro. Utilitzeu Maj + Retorn per a una línia nova. Els vostres canvis es mantenen en aquest navegador.",
-  settings: "Configuració",
-  share: "Comparteix",
-  showFundamentalNotificationsWhenAnAgentCompletes: "Mostra les notificacions fonamentals quan un agent completa una tasca",
-  signOut: "Tanca la sessió",
-  skills: "Habilitats",
-  skills2: "Habilitats · {0}",
+  reviewProvider: 'Revisa el proveïdor',
+  rulesAndWorkflows: 'Regles i fluxos de treball',
+  saveName: 'Desa el nom',
+  sayHelloTo: 'Saludeu a {0}',
+  searchConversations: 'Cerca converses',
+  searchConversations2: 'Cerca converses...',
+  searchMarketplace: 'Cerca al mercat',
+  selectGithubOrOtherProvidersForReviews:
+    'Seleccioneu Github o altres proveïdors per obtenir ressenyes',
+  selectedAgents: 'Agents seleccionats: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'Envia amb Intro. Utilitzeu Maj + Retorn per a una línia nova. Els vostres canvis es mantenen en aquest navegador.',
+  settings: 'Configuració',
+  share: 'Comparteix',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'Mostra les notificacions fonamentals quan un agent completa una tasca',
+  signOut: 'Tanca la sessió',
+  skills: 'Habilitats',
+  skills2: 'Habilitats · {0}',
   soundEffectATaskIsCompleted: "Efecte de so una tasca s'ha completat",
-  startAConversation: "Inicia una conversa",
-  startAGroupChat: "Inicia un xat de grup",
-  startChat: "Inicia el xat",
-  storage: "Emmagatzematge",
-  support: "Suport",
-  systemNotifications: "Notificacions del sistema",
-  thinkingTogether: "Pensant junts...",
-  thinking: "Pensant...",
-  today: "Avui",
-  tools: "Eines",
-  toolsForYourWorkflow: "Eines per al vostre flux de treball",
-  tryAnotherNameCategoryOrKeyword: "Prova amb un altre nom, categoria o paraula clau.",
-  ultra149Mo: "Ultra 149 $/mes",
-  unhelpfulResponse: "Resposta poc útil",
-  unpinChat: "Deixa de fixar el xat",
-  upgradeToMax: "Passa a Max",
-  useToCreateABotOrStart: "Utilitzeu + per crear un bot o iniciar una conversa amb diversos agents.",
-  viewAdded: "Visualització afegida {0}",
-  viewAll: "Mostra-ho tot",
+  startAConversation: 'Inicia una conversa',
+  startAGroupChat: 'Inicia un xat de grup',
+  startChat: 'Inicia el xat',
+  storage: 'Emmagatzematge',
+  support: 'Suport',
+  systemNotifications: 'Notificacions del sistema',
+  thinkingTogether: 'Pensant junts...',
+  thinking: 'Pensant...',
+  today: 'Avui',
+  tools: 'Eines',
+  toolsForYourWorkflow: 'Eines per al vostre flux de treball',
+  tryAnotherNameCategoryOrKeyword: 'Prova amb un altre nom, categoria o paraula clau.',
+  ultra149Mo: 'Ultra 149 $/mes',
+  unhelpfulResponse: 'Resposta poc útil',
+  unpinChat: 'Deixa de fixar el xat',
+  upgradeToMax: 'Passa a Max',
+  useToCreateABotOrStart:
+    'Utilitzeu + per crear un bot o iniciar una conversa amb diversos agents.',
+  viewAdded: 'Visualització afegida {0}',
+  viewAll: 'Mostra-ho tot',
   viewTeamProfile: "Veure el perfil de l'equip",
-  viewItem: "Mostra {0}",
-  website: "Lloc web",
-  whenEnabledYourProfilePageWillBe: "Quan estigui activat, la teva pàgina de perfil serà visible per a tothom",
-  youAreOn7xMoreUsageThan: "Utilitzeu 7 vegades més que Premium",
-  youAreOn7xMoreUsageThan2: "Esteu fent servir 7 vegades més que el normal.",
-  areHereSendAMessageToGet: "{0} són aquí. Envia un missatge per obtenir la perspectiva de tothom.",
-  itemDetails: "{0} detalls",
-  agentThinking: "{0} està pensant",
-  by: "{0} · per {1}",
-  results: (count: number) => plural('ca', count, {"one": "{n} resultat", "other": "{n} resultats"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('ca', apps, {"one": "{n} aplicació", "other": "{n} aplicacions"}) + ", " : '') + plural('ca', skills, {"one": "{n} habilitat", "other": "{n} habilitats"}),
+  viewItem: 'Mostra {0}',
+  website: 'Lloc web',
+  whenEnabledYourProfilePageWillBe:
+    'Quan estigui activat, la teva pàgina de perfil serà visible per a tothom',
+  youAreOn7xMoreUsageThan: 'Utilitzeu 7 vegades més que Premium',
+  youAreOn7xMoreUsageThan2: 'Esteu fent servir 7 vegades més que el normal.',
+  areHereSendAMessageToGet: '{0} són aquí. Envia un missatge per obtenir la perspectiva de tothom.',
+  itemDetails: '{0} detalls',
+  agentThinking: '{0} està pensant',
+  by: '{0} · per {1}',
+  results: (count: number) => plural('ca', count, { one: '{n} resultat', other: '{n} resultats' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps ? plural('ca', apps, { one: '{n} aplicació', other: '{n} aplicacions' }) + ', ' : '') +
+    plural('ca', skills, { one: '{n} habilitat', other: '{n} habilitats' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Tasques de disseny de Bloom", defaultTeam: "Equip Bloom",
+    defaultTitle: 'Tasques de disseny de Bloom',
+    defaultTeam: 'Equip Bloom',
     openTicket: (code, title) => `Obrir ${code}: ${title}`,
-    addTicketTo: column => `Afegir tasca a ${column}`,
-    "board": "Tauler del projecte",
-    "controls": "Controls del tauler",
-    "navigation": "Obrir navegació",
-    "inbox": "Obrir safata del projecte",
-    "newTicket": "Nova tasca",
-    "columns": "Columnes del tauler del projecte",
-    "sortTickets": "Ordenar tasques",
-    "filterTickets": "Filtrar tasques",
-    "displayOptions": "Opcions de visualització",
-    "sort": "Ordenar",
-    "filter": "Filtrar",
-    "display": "Visualització",
-    "manualOrder": "Ordre manual",
-    "priority": "Prioritat",
-    "title": "Títol",
-    "project": "Projecte",
-    "allPriorities": "Totes les prioritats",
-    "allProjects": "Tots els projectes",
-    "clearFilters": "Esborrar filtres",
-    "showDone": "Mostrar columna completades",
-    "fillScreens": "Omplir pantalles amples",
-    "createTicket": "Crear tasca",
-    "closeCreate": "Tancar creació de tasca",
-    "ticketTitle": "Títol de la tasca",
-    "enterTitle": "Introdueix el títol de la tasca",
-    "description": "Descripció",
-    "descriptionArea": "Àrea de descripció",
-    "status": "Estat",
-    "urgency": "Urgència",
-    "assignee": "Responsable",
-    "unassigned": "Sense assignar",
-    "keepCreating": "Continuar creant",
-    "cancel": "Cancel·lar",
-    "addTicket": "Afegir tasca",
-    "sortTitle": "Ordenar per títol",
-    "noTickets": "No hi ha incidències aquí",
-    "favoriteAdd": "Afegir als preferits",
-    "favoriteRemove": "Treure dels preferits",
-    "copyLink": "Copiar enllaç de la tasca",
-    "actions": "Accions de la tasca",
-    "editDescription": "Editar descripció",
-    "copyId": "Copiar ID de la tasca",
-    "reopen": "Reobrir tasca",
-    "markDone": "Marcar com a completada",
-    "closeDetails": "Tancar detalls de la tasca",
-    "linkCopied": "Enllaç de la tasca copiat",
-    "idCopied": "ID de la tasca copiat",
-    "copyFailed": "No s’ha pogut copiar. Torna-ho a provar.",
-    "createdBy": "Creada per",
-    "saveDescription": "Desar descripció",
-    "ticketDescription": "Descripció de la tasca",
-    "properties": "Propietats",
-    "editAssignees": "Editar responsables",
-    "resources": "Recursos",
-    "tokens": "Tokens consumits",
-    "comments": "Comentaris",
-    "you": "Tu",
-    "justNow": "Ara mateix",
-    "addComment": "Afegir un comentari",
-    "enterComment": "Introdueix el teu comentari",
-    "postComment": "Publicar comentari",
-    "moveUp": "Moure amunt",
-    "moveDown": "Moure avall",
-    "nextColumn": "Moure a la columna següent",
-    "previousColumn": "Moure a la columna anterior",
-    "keyboardHint": "Prem Retorn per obrir. Espai recull, les fletxes mouen, espai deixa anar i Esc cancel·la."
-},
+    addTicketTo: (column) => `Afegir tasca a ${column}`,
+    board: 'Tauler del projecte',
+    controls: 'Controls del tauler',
+    navigation: 'Obrir navegació',
+    inbox: 'Obrir safata del projecte',
+    newTicket: 'Nova tasca',
+    columns: 'Columnes del tauler del projecte',
+    sortTickets: 'Ordenar tasques',
+    filterTickets: 'Filtrar tasques',
+    displayOptions: 'Opcions de visualització',
+    sort: 'Ordenar',
+    filter: 'Filtrar',
+    display: 'Visualització',
+    manualOrder: 'Ordre manual',
+    priority: 'Prioritat',
+    title: 'Títol',
+    project: 'Projecte',
+    allPriorities: 'Totes les prioritats',
+    allProjects: 'Tots els projectes',
+    clearFilters: 'Esborrar filtres',
+    showDone: 'Mostrar columna completades',
+    fillScreens: 'Omplir pantalles amples',
+    createTicket: 'Crear tasca',
+    closeCreate: 'Tancar creació de tasca',
+    ticketTitle: 'Títol de la tasca',
+    enterTitle: 'Introdueix el títol de la tasca',
+    description: 'Descripció',
+    descriptionArea: 'Àrea de descripció',
+    status: 'Estat',
+    urgency: 'Urgència',
+    assignee: 'Responsable',
+    unassigned: 'Sense assignar',
+    keepCreating: 'Continuar creant',
+    cancel: 'Cancel·lar',
+    addTicket: 'Afegir tasca',
+    sortTitle: 'Ordenar per títol',
+    noTickets: 'No hi ha incidències aquí',
+    favoriteAdd: 'Afegir als preferits',
+    favoriteRemove: 'Treure dels preferits',
+    copyLink: 'Copiar enllaç de la tasca',
+    actions: 'Accions de la tasca',
+    editDescription: 'Editar descripció',
+    copyId: 'Copiar ID de la tasca',
+    reopen: 'Reobrir tasca',
+    markDone: 'Marcar com a completada',
+    closeDetails: 'Tancar detalls de la tasca',
+    linkCopied: 'Enllaç de la tasca copiat',
+    idCopied: 'ID de la tasca copiat',
+    copyFailed: 'No s’ha pogut copiar. Torna-ho a provar.',
+    createdBy: 'Creada per',
+    saveDescription: 'Desar descripció',
+    ticketDescription: 'Descripció de la tasca',
+    properties: 'Propietats',
+    editAssignees: 'Editar responsables',
+    resources: 'Recursos',
+    tokens: 'Tokens consumits',
+    comments: 'Comentaris',
+    you: 'Tu',
+    justNow: 'Ara mateix',
+    addComment: 'Afegir un comentari',
+    enterComment: 'Introdueix el teu comentari',
+    postComment: 'Publicar comentari',
+    moveUp: 'Moure amunt',
+    moveDown: 'Moure avall',
+    nextColumn: 'Moure a la columna següent',
+    previousColumn: 'Moure a la columna anterior',
+    keyboardHint:
+      'Prem Retorn per obrir. Espai recull, les fletxes mouen, espai deixa anar i Esc cancel·la.',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Avatar de l’agent", unavailable: "Avatar no disponible", },
+  AGENT_AVATAR_MESSAGES: { label: 'Avatar de l’agent', unavailable: 'Avatar no disponible' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

@@ -63,7 +63,10 @@ function CallControlButtonComponent({
   style,
   testID,
 }: CallControlButtonProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'lg', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'lg', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
 
   const theme = useTheme();
@@ -178,7 +181,10 @@ function CallControlsComponent({
   style,
   testID,
 }: CallControlsProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'lg', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'lg', tone: 'neutral' },
+  );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
 
   const { messages } = useMessages(CALL_UI_MESSAGES);
@@ -241,7 +247,9 @@ function CallControlsComponent({
   const order = controls ?? CALL_CONTROL_ORDER;
   const buttons = order
     .map((key) => [key, byKey[key]] as const)
-    .filter((entry): entry is readonly [CallControlKey, CallControlButtonProps] => entry[1] !== undefined);
+    .filter(
+      (entry): entry is readonly [CallControlKey, CallControlButtonProps] => entry[1] !== undefined,
+    );
 
   return (
     <View

@@ -13,9 +13,7 @@ export interface MultiAgentChatComponents {
   ComposerPanel: ComponentType<ComposerPanelProps>;
   AgentCreator: ComponentType<AgentCreatorProps>;
 }
-export const ComponentsContext = createContext<MultiAgentChatComponents | null>(
-  null,
-);
+export const ComponentsContext = createContext<MultiAgentChatComponents | null>(null);
 export function useChatComponents() {
   const components = useContext(ComponentsContext);
   if (!components) throw new Error('MultiAgentChat component bindings missing');

@@ -19,18 +19,21 @@ export interface EvictionMessages {
   source: (source: string) => string;
 }
 
-export const EVICTION_MESSAGES: MessageCatalog<EvictionMessages> = defineMessages<EvictionMessages>('EVICTION_MESSAGES', {
-  status: {
-    scheduled: 'Scheduled',
-    postponed: 'Postponed',
-    suspended: 'Suspended',
-    executed: 'Executed',
-    cancelled: 'Cancelled',
+export const EVICTION_MESSAGES: MessageCatalog<EvictionMessages> = defineMessages<EvictionMessages>(
+  'EVICTION_MESSAGES',
+  {
+    status: {
+      scheduled: 'Scheduled',
+      postponed: 'Postponed',
+      suspended: 'Suspended',
+      executed: 'Executed',
+      cancelled: 'Cancelled',
+    },
+    attend: "I'll be there",
+    share: 'Share',
+    contactSupport: 'Contact support group',
+    verified: 'Community verified',
+    caseHistory: 'Case history',
+    source: (source) => `Source: ${source}`,
   },
-  attend: "I'll be there",
-  share: 'Share',
-  contactSupport: 'Contact support group',
-  verified: 'Community verified',
-  caseHistory: 'Case history',
-  source: (source) => `Source: ${source}`,
-});
+);

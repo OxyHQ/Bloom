@@ -293,15 +293,14 @@ function SliderBase({
           if (IS_WEB) {
             setPointerFocusIndex(index);
             setTimeout(() => {
-              (thumbRefs.current[index] as unknown as HTMLElement | null)?.focus?.({ preventScroll: true });
+              (thumbRefs.current[index] as unknown as HTMLElement | null)?.focus?.({
+                preventScroll: true,
+              });
             }, 0);
           }
           commit(next);
         },
-        onPanResponderMove: (
-          _e: GestureResponderEvent,
-          g: PanResponderGestureState,
-        ) => {
+        onPanResponderMove: (_e: GestureResponderEvent, g: PanResponderGestureState) => {
           const s = stateRef.current;
           if (s.disabled) return;
           const { index, startValue } = gestureRef.current;
@@ -441,8 +440,7 @@ function SliderBase({
             top: (TRACK_REGION - trackHeight) / 2,
             height: trackHeight,
             borderRadius: borderRadius.full,
-            backgroundColor:
-              maximumTrackTintColor ?? (trackHovered ? paint.railHover : paint.rail),
+            backgroundColor: maximumTrackTintColor ?? (trackHovered ? paint.railHover : paint.rail),
             boxShadow: 'inset 0 1px 1px rgba(0, 0, 0, 0.06)',
             ...webTransition('background-color'),
           }}
@@ -548,7 +546,8 @@ function SliderBase({
                     accessibilityRole: 'adjustable' as const,
                     accessibilityLabel: thumbLabels[index] ?? messages.value(index + 1),
                     'aria-valuemin': index > 0 ? (values[index - 1] as number) : min,
-                    'aria-valuemax': index < values.length - 1 ? (values[index + 1] as number) : max,
+                    'aria-valuemax':
+                      index < values.length - 1 ? (values[index + 1] as number) : max,
                     'aria-valuenow': value,
                     'aria-disabled': disabled || undefined,
                   }
@@ -661,11 +660,15 @@ const SliderComponent = function Slider({
   testID,
 }: SliderProps) {
   const theme = useTheme();
-  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
-  const geometry = {xs: [4, 14], sm: [4, 16], md: [6, 20], lg: [8, 24]} as const;
+  const { size, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
+  const geometry = { xs: [4, 14], sm: [4, 16], md: [6, 20], lg: [8, 24] } as const;
   const trackHeight = trackHeightProp ?? geometry[size][0];
   const thumbSize = thumbSizeProp ?? geometry[size][1];
-  const toneColor = tone === 'accent' ? undefined : resolveBloomColors(theme.colors, tone, 'solid').background;
+  const toneColor =
+    tone === 'accent' ? undefined : resolveBloomColors(theme.colors, tone, 'solid').background;
   useAccessibleNameWarning('Slider', accessibilityLabel ?? label);
   const values = useMemo(() => [value], [value]);
   const format = useMemo(
@@ -676,7 +679,9 @@ const SliderComponent = function Slider({
     <SliderBase
       values={values}
       onValuesChange={(next) => onValueChange(next[0] as number)}
-      onSlidingComplete={onSlidingComplete ? (next) => onSlidingComplete(next[0] as number) : undefined}
+      onSlidingComplete={
+        onSlidingComplete ? (next) => onSlidingComplete(next[0] as number) : undefined
+      }
       min={min}
       max={max}
       step={step}
@@ -726,11 +731,15 @@ const RangeSliderComponent = function RangeSlider({
   const theme = useTheme();
   const { messages } = useMessages(SLIDER_MESSAGES);
   const thumbLabels = thumbLabelsProp ?? [messages.minimum, messages.maximum];
-  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
-  const geometry = {xs: [4, 14], sm: [4, 16], md: [6, 20], lg: [8, 24]} as const;
+  const { size, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
+  const geometry = { xs: [4, 14], sm: [4, 16], md: [6, 20], lg: [8, 24] } as const;
   const trackHeight = trackHeightProp ?? geometry[size][0];
   const thumbSize = thumbSizeProp ?? geometry[size][1];
-  const toneColor = tone === 'accent' ? undefined : resolveBloomColors(theme.colors, tone, 'solid').background;
+  const toneColor =
+    tone === 'accent' ? undefined : resolveBloomColors(theme.colors, tone, 'solid').background;
   const values = useMemo(() => [value[0], value[1]], [value]);
   return (
     <SliderBase

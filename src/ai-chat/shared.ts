@@ -1,11 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
 
-import {
-  BUTTON_SHADOW,
-  resolveButtonRamps,
-  type Ramp,
-} from '../button/shared';
+import { BUTTON_SHADOW, resolveButtonRamps, type Ramp } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import {

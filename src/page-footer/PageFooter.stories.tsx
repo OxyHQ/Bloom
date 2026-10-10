@@ -22,7 +22,11 @@ const meta: Meta<typeof PageFooter> = {
 export default meta;
 type Story = StoryObj<typeof PageFooter>;
 
-function MessagePane({ footer, navigation, longLabels }: {
+function MessagePane({
+  footer,
+  navigation,
+  longLabels,
+}: {
   footer: PageFooterProps;
   navigation: boolean;
   longLabels: boolean;
@@ -33,59 +37,109 @@ function MessagePane({ footer, navigation, longLabels }: {
   const [lastAction, setLastAction] = useState('None');
   const [showActions, setShowActions] = useState(true);
   const [destination, setDestination] = useState('inbox');
-  return <View style={{ flex: 1, minHeight: 0 }}>
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: clearance || occupied }}>
-      <View style={{ padding: 24, gap: 20 }}>
-        <Text variant="headline-semibold">The next chapter</Text>
-        <Text>Last action: {lastAction}</Text>
-        <Button onPress={() => setShowActions(value => !value)}>
-          {showActions ? 'Hide page actions' : 'Show page actions'}
-        </Button>
-        {Array.from({ length: 12 }, (_, index) => <View key={index} style={{ gap: 8 }}>
-          <Text variant="body-medium">Message paragraph {index + 1}</Text>
-          <Text style={{ color: colors.textSecondary }}>
-            The conversation continues behind the floating controls. Scroll to the end:
-            the final paragraph can move fully above the actions and navigation.
-          </Text>
-        </View>)}
-        <Text variant="body-medium">End of message — this line remains reachable.</Text>
-      </View>
-    </ScrollView>
-    {showActions ? <PageFooter {...footer} actions={footer.actions ?? <>
-      <Button onPress={() => setLastAction('Reply')}>{longLabels ? 'Reply to this message' : 'Reply'}</Button>
-      <Button onPress={() => setLastAction('Reply all')}>{longLabels ? 'Reply to all participants' : 'Reply all'}</Button>
-      <Button onPress={() => setLastAction('Forward')}>{longLabels ? 'Forward this message' : 'Forward'}</Button>
-    </>} /> : null}
-    {navigation ? <BottomBar
-      style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
-      items={[{ name: 'inbox', label: 'Inbox', icon: <RiInbox2Line /> }, { name: 'search', label: 'Search', icon: <RiSearchLine /> }]}
-      value={destination}
-      onValueChange={setDestination}
-    /> : null}
-  </View>;
+  return (
+    <View style={{ flex: 1, minHeight: 0 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: clearance || occupied }}
+      >
+        <View style={{ padding: 24, gap: 20 }}>
+          <Text variant="headline-semibold">The next chapter</Text>
+          <Text>Last action: {lastAction}</Text>
+          <Button onPress={() => setShowActions((value) => !value)}>
+            {showActions ? 'Hide page actions' : 'Show page actions'}
+          </Button>
+          {Array.from({ length: 12 }, (_, index) => (
+            <View key={index} style={{ gap: 8 }}>
+              <Text variant="body-medium">Message paragraph {index + 1}</Text>
+              <Text style={{ color: colors.textSecondary }}>
+                The conversation continues behind the floating controls. Scroll to the end: the
+                final paragraph can move fully above the actions and navigation.
+              </Text>
+            </View>
+          ))}
+          <Text variant="body-medium">End of message — this line remains reachable.</Text>
+        </View>
+      </ScrollView>
+      {showActions ? (
+        <PageFooter
+          {...footer}
+          actions={
+            footer.actions ?? (
+              <>
+                <Button onPress={() => setLastAction('Reply')}>
+                  {longLabels ? 'Reply to this message' : 'Reply'}
+                </Button>
+                <Button onPress={() => setLastAction('Reply all')}>
+                  {longLabels ? 'Reply to all participants' : 'Reply all'}
+                </Button>
+                <Button onPress={() => setLastAction('Forward')}>
+                  {longLabels ? 'Forward this message' : 'Forward'}
+                </Button>
+              </>
+            )
+          }
+        />
+      ) : null}
+      {navigation ? (
+        <BottomBar
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
+          items={[
+            { name: 'inbox', label: 'Inbox', icon: <RiInbox2Line /> },
+            { name: 'search', label: 'Search', icon: <RiSearchLine /> },
+          ]}
+          value={destination}
+          onValueChange={setDestination}
+        />
+      ) : null}
+    </View>
+  );
 }
 
-function Preview({ footer, width = 600, navigation = false, longLabels = false }: {
+function Preview({
+  footer,
+  width = 600,
+  navigation = false,
+  longLabels = false,
+}: {
   footer: PageFooterProps;
   width?: number;
   navigation?: boolean;
   longLabels?: boolean;
 }) {
   const { colors } = useTheme();
-  return <SafeAreaInsetsContext.Provider value={{ top: 0, left: 0, right: 0, bottom: navigation ? 34 : 0 }}>
-    <BottomEdgeProvider><PageFooterProvider>
-      <SurfaceLevelProvider level={1} fill={colors.card}>
-        <View style={{ width, maxWidth: '100%', height: 560, overflow: 'hidden', backgroundColor: colors.card }}>
-          <MessagePane footer={footer} navigation={navigation} longLabels={longLabels} />
-        </View>
-      </SurfaceLevelProvider>
-    </PageFooterProvider></BottomEdgeProvider>
-  </SafeAreaInsetsContext.Provider>;
+  return (
+    <SafeAreaInsetsContext.Provider
+      value={{ top: 0, left: 0, right: 0, bottom: navigation ? 34 : 0 }}
+    >
+      <BottomEdgeProvider>
+        <PageFooterProvider>
+          <SurfaceLevelProvider level={1} fill={colors.card}>
+            <View
+              style={{
+                width,
+                maxWidth: '100%',
+                height: 560,
+                overflow: 'hidden',
+                backgroundColor: colors.card,
+              }}
+            >
+              <MessagePane footer={footer} navigation={navigation} longLabels={longLabels} />
+            </View>
+          </SurfaceLevelProvider>
+        </PageFooterProvider>
+      </BottomEdgeProvider>
+    </SafeAreaInsetsContext.Provider>
+  );
 }
 
-export const FloatingOverMessage: Story = { render: args => <Preview footer={args} /> };
-export const AboveNavigation: Story = { render: args => <Preview footer={args} width={390} navigation /> };
-export const WrappedActions: Story = { render: args => <Preview footer={args} width={320} longLabels navigation /> };
+export const FloatingOverMessage: Story = { render: (args) => <Preview footer={args} /> };
+export const AboveNavigation: Story = {
+  render: (args) => <Preview footer={args} width={390} navigation />,
+};
+export const WrappedActions: Story = {
+  render: (args) => <Preview footer={args} width={320} longLabels navigation />,
+};
 
 /** Document scrolling and a focus-controlled composer in a resizable column. */
 function DocumentComposerPage() {
@@ -95,28 +149,47 @@ function DocumentComposerPage() {
   const [draft, setDraft] = useState('');
   const [picked, setPicked] = useState('');
   const clearance = usePageFooterInset();
-  return <View style={{ flexDirection: rtl ? 'row-reverse' : 'row', minHeight: 1800 }}>
-    <View style={{ width: wideRail ? 160 : 56, flexShrink: 0 }} testID="document-rail">
-      <Button onPress={() => setWideRail(value => !value)}>Resize rail</Button>
-      <Button onPress={() => setRtl(value => !value)}>Mirror layout</Button>
-    </View>
-    <View style={{ flex: 1, minWidth: 0 }} testID="document-column">
-      <View style={{ minHeight: 1800, paddingBottom: clearance }}>
-        <Text>Selected: {picked}</Text>
-        <Text testID="document-clearance">{clearance}</Text>
+  return (
+    <View style={{ flexDirection: rtl ? 'row-reverse' : 'row', minHeight: 1800 }}>
+      <View style={{ width: wideRail ? 160 : 56, flexShrink: 0 }} testID="document-rail">
+        <Button onPress={() => setWideRail((value) => !value)}>Resize rail</Button>
+        <Button onPress={() => setRtl((value) => !value)}>Mirror layout</Button>
       </View>
-      <PageFooter position="document" scrim="none" testID="document-footer">
-        <ChatComposer testID="document-composer" value={draft} onValueChange={setDraft}
-          barStyle={{ borderRadius: 32, minHeight: 64, paddingLeft: 16, paddingRight: 16 }}
-          inputStyle={{ fontSize: 16, lineHeight: 24 }} maxLines={4} sendIcon={RiSearchLine}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          onSend={setPicked} suggestions={focused ? [{ id: 'one', label: 'First choice' }] : []}
-          onSelectSuggestion={suggestion => { setPicked(suggestion.label); setDraft(suggestion.label); }} />
-      </PageFooter>
+      <View style={{ flex: 1, minWidth: 0 }} testID="document-column">
+        <View style={{ minHeight: 1800, paddingBottom: clearance }}>
+          <Text>Selected: {picked}</Text>
+          <Text testID="document-clearance">{clearance}</Text>
+        </View>
+        <PageFooter position="document" scrim="none" testID="document-footer">
+          <ChatComposer
+            testID="document-composer"
+            value={draft}
+            onValueChange={setDraft}
+            barStyle={{ borderRadius: 32, minHeight: 64, paddingLeft: 16, paddingRight: 16 }}
+            inputStyle={{ fontSize: 16, lineHeight: 24 }}
+            maxLines={4}
+            sendIcon={RiSearchLine}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onSend={setPicked}
+            suggestions={focused ? [{ id: 'one', label: 'First choice' }] : []}
+            onSelectSuggestion={(suggestion) => {
+              setPicked(suggestion.label);
+              setDraft(suggestion.label);
+            }}
+          />
+        </PageFooter>
+      </View>
     </View>
-  </View>;
+  );
 }
 export const DocumentComposer: Story = {
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  render: () => <BottomEdgeProvider><PageFooterProvider><DocumentComposerPage /></PageFooterProvider></BottomEdgeProvider>,
+  render: () => (
+    <BottomEdgeProvider>
+      <PageFooterProvider>
+        <DocumentComposerPage />
+      </PageFooterProvider>
+    </BottomEdgeProvider>
+  ),
 };

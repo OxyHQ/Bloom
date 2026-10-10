@@ -1,8 +1,4 @@
-import type {
-  PresentOptions,
-  SurfaceEntry,
-  SurfaceRenderFn,
-} from './types';
+import type { PresentOptions, SurfaceEntry, SurfaceRenderFn } from './types';
 
 /**
  * The shared, content-agnostic SURFACE STACK.
@@ -97,9 +93,7 @@ export function requestDismiss(id: string, result?: unknown): void {
   if (entry.status === 'closing') return;
 
   surfaces = surfaces.map((e) =>
-    e.id === id
-      ? { ...e, settled: true, status: 'closing', generation: e.generation + 1 }
-      : e,
+    e.id === id ? { ...e, settled: true, status: 'closing', generation: e.generation + 1 } : e,
   );
   emit();
 }

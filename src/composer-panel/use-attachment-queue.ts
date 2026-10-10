@@ -8,7 +8,8 @@ const TICK_MS = 50;
  * Anything carrying a progress value — the closed ring at 100 included — is
  * still the queue's, unless it failed: a failed file is done with.
  */
-const inFlight = (attachment: ComposerPanelAttachment) => attachment.progress !== undefined && !attachment.error;
+const inFlight = (attachment: ComposerPanelAttachment) =>
+  attachment.progress !== undefined && !attachment.error;
 
 /** Keep the parent's order; keep our progress for files we already know. */
 function reconcile(
@@ -36,7 +37,12 @@ export function useAttachmentQueue({
   onAllUploaded,
 }: Pick<
   ComposerAttachmentsProps,
-  'attachments' | 'uploadDuration' | 'uploadGap' | 'onAttachmentsChange' | 'onUploadComplete' | 'onAllUploaded'
+  | 'attachments'
+  | 'uploadDuration'
+  | 'uploadGap'
+  | 'onAttachmentsChange'
+  | 'onUploadComplete'
+  | 'onAllUploaded'
 >): { visible: ComposerPanelAttachment[]; remove: (id: string) => void } {
   const [items, setItems] = useState(() => reconcile([], attachments));
   const [synced, setSynced] = useState(attachments);
@@ -69,7 +75,9 @@ export function useAttachmentQueue({
 
     const id = activeId;
     const patch = (progress: number | undefined) =>
-      setItems((prev) => prev.map((attachment) => (attachment.id === id ? { ...attachment, progress } : attachment)));
+      setItems((prev) =>
+        prev.map((attachment) => (attachment.id === id ? { ...attachment, progress } : attachment)),
+      );
 
     let value = itemsRef.current.find((attachment) => attachment.id === id)?.progress ?? 0;
     const step = 100 / Math.max(1, uploadDuration / TICK_MS);

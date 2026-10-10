@@ -7,75 +7,142 @@ import { compactDuration as calendar_compactDuration } from '../../calendar/mess
 import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
-import { words as navigationBanner_words, midSentence as navigationBanner_midSentence } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  words as navigationBanner_words,
+  midSentence as navigationBanner_midSentence,
+} from '../../navigation-banner/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'вверху слева', 'top-right': 'вверху справа', 'bottom-left': 'внизу слева', 'bottom-right': 'внизу справа' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': 'вверху слева',
+  'top-right': 'вверху справа',
+  'bottom-left': 'внизу слева',
+  'bottom-right': 'внизу справа',
+};
 
 const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
-  plural('ru', n, { one: '{n} элемент', few: '{n} элемента', many: '{n} элементов', other: '{n} элемента' });
+  plural('ru', n, {
+    one: '{n} элемент',
+    few: '{n} элемента',
+    many: '{n} элементов',
+    other: '{n} элемента',
+  });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "Реакция",
-  working: "Работать",
-  avatarStyle: "Стиль аватара",
-  proceduralAvatar: "Текущий аватар",
-  betaPreset: "Готовый персонаж (бета)",
-  betaEyes: "Стиль глаз",
-  eyewear: "Очки",
-  accessory: "Аксессуар",
+  reaction: 'Реакция',
+  working: 'Работать',
+  avatarStyle: 'Стиль аватара',
+  proceduralAvatar: 'Текущий аватар',
+  betaPreset: 'Готовый персонаж (бета)',
+  betaEyes: 'Стиль глаз',
+  eyewear: 'Очки',
+  accessory: 'Аксессуар',
   characterOption: (_category, _id, title) => String(title),
-  editor: "Редактор агента",
-  newBot: "Новый бот",
-  closeEditor: "Закрыть редактор агента",
-  details: "Внешний вид и сведения об агенте",
-  color: "Цвет аватара",
-  customColor: "Свой цвет аватара",
-  name: "Имя",
-  label: "Метка",
-  description: "Описание",
-  nameInput: "Имя агента",
-  labelInput: "Метка агента",
-  descriptionInput: "Описание агента",
-  labelPlaceholder: "Менеджер, маркетинг, художник",
-  descriptionPlaceholder: "Сведения об агенте",
-  language: "Язык",
-  languageInput: "Язык агента",
-  notifications: "Уведомления",
-  notificationsDescription: "Показать уведомление, когда ответ готов.",
-  notifyFinished: "Уведомить, когда этот агент завершит работу",
-  voice: "Голос",
-  voiceInput: "Голос агента",
-  previewVoice: "Прослушать голос",
-  savedVoice: "Сохранённый голос",
-  systemVoice: "Системный голос",
-  off: "Выкл.",
-  playbackSpeed: "Скорость воспроизведения",
-  emotion: "Эмоция агента",
-  shape: "Форма аватара",
-  hexColor: "Цвет HEX",
-  hue: "Оттенок",
-  saturationBrightness: "Насыщенность и яркость",
-  increaseBrightness: "Увеличить яркость",
-  decreaseBrightness: "Уменьшить яркость",
-  increaseHue: "Увеличить оттенок",
-  decreaseHue: "Уменьшить оттенок",
-  nextShape: "Следующая форма",
-  previousShape: "Предыдущая форма",
-  newAgent: "Новый агент",
-  emotions: { "neutral": "Нейтральный", "happy": "Радостный", "angry": "Сердитый", "thinking": "Задумчивый", "shook": "Потрясённый", "curious": "Любопытный", "wink": "Подмигивающий", "sleepy": "Сонный", "sad": "Грустный", "worried": "Обеспокоенный", "skeptical": "Скептический", "focused": "Сосредоточенный", "excited": "Взволнованный", "calm": "Спокойный", "shy": "Застенчивый", "confused": "Растерянный" },
-  shapes: { "slender": "Узкая", "pocket": "Карман", "petal": "Лепесток", "flower": "Цветок", "star": "Звезда", "heart": "Сердце", "cloud": "Облако", "diamond": "Ромб", "shield": "Щит" },
-  colors: { "Blue": "Синий", "Teal": "Бирюзовый", "Violet": "Фиолетовый", "Pink": "Розовый", "Red": "Красный", "Orange": "Оранжевый", "Cyan": "Голубой", "Lime": "Лаймовый", "Green": "Зелёный" },
-  languages: { "auto": "Автоопределение", "en": "Английский", "tr": "Турецкий", "es": "Испанский", "fr": "Французский", "de": "Немецкий", "ja": "Японский", "pt": "Португальский" },
-  avatarColorLabel: (name) => "Аватар: {name}".replace("{name}", name),
-  shapeLabel: (name) => "Форма: {name}".replace("{name}", name),
-  silhouetteLabel: (name) => "Силуэт: {name}".replace("{name}", name),
-  livePreview: (name) => "{name}, предпросмотр аватара".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "насыщенность {s}%, яркость {v}%".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "Скорость воспроизведения {speed}".replace("{speed}", String(speed)),
+  editor: 'Редактор агента',
+  newBot: 'Новый бот',
+  closeEditor: 'Закрыть редактор агента',
+  details: 'Внешний вид и сведения об агенте',
+  color: 'Цвет аватара',
+  customColor: 'Свой цвет аватара',
+  name: 'Имя',
+  label: 'Метка',
+  description: 'Описание',
+  nameInput: 'Имя агента',
+  labelInput: 'Метка агента',
+  descriptionInput: 'Описание агента',
+  labelPlaceholder: 'Менеджер, маркетинг, художник',
+  descriptionPlaceholder: 'Сведения об агенте',
+  language: 'Язык',
+  languageInput: 'Язык агента',
+  notifications: 'Уведомления',
+  notificationsDescription: 'Показать уведомление, когда ответ готов.',
+  notifyFinished: 'Уведомить, когда этот агент завершит работу',
+  voice: 'Голос',
+  voiceInput: 'Голос агента',
+  previewVoice: 'Прослушать голос',
+  savedVoice: 'Сохранённый голос',
+  systemVoice: 'Системный голос',
+  off: 'Выкл.',
+  playbackSpeed: 'Скорость воспроизведения',
+  emotion: 'Эмоция агента',
+  shape: 'Форма аватара',
+  hexColor: 'Цвет HEX',
+  hue: 'Оттенок',
+  saturationBrightness: 'Насыщенность и яркость',
+  increaseBrightness: 'Увеличить яркость',
+  decreaseBrightness: 'Уменьшить яркость',
+  increaseHue: 'Увеличить оттенок',
+  decreaseHue: 'Уменьшить оттенок',
+  nextShape: 'Следующая форма',
+  previousShape: 'Предыдущая форма',
+  newAgent: 'Новый агент',
+  emotions: {
+    neutral: 'Нейтральный',
+    happy: 'Радостный',
+    angry: 'Сердитый',
+    thinking: 'Задумчивый',
+    shook: 'Потрясённый',
+    curious: 'Любопытный',
+    wink: 'Подмигивающий',
+    sleepy: 'Сонный',
+    sad: 'Грустный',
+    worried: 'Обеспокоенный',
+    skeptical: 'Скептический',
+    focused: 'Сосредоточенный',
+    excited: 'Взволнованный',
+    calm: 'Спокойный',
+    shy: 'Застенчивый',
+    confused: 'Растерянный',
+  },
+  shapes: {
+    slender: 'Узкая',
+    pocket: 'Карман',
+    petal: 'Лепесток',
+    flower: 'Цветок',
+    star: 'Звезда',
+    heart: 'Сердце',
+    cloud: 'Облако',
+    diamond: 'Ромб',
+    shield: 'Щит',
+  },
+  colors: {
+    Blue: 'Синий',
+    Teal: 'Бирюзовый',
+    Violet: 'Фиолетовый',
+    Pink: 'Розовый',
+    Red: 'Красный',
+    Orange: 'Оранжевый',
+    Cyan: 'Голубой',
+    Lime: 'Лаймовый',
+    Green: 'Зелёный',
+  },
+  languages: {
+    auto: 'Автоопределение',
+    en: 'Английский',
+    tr: 'Турецкий',
+    es: 'Испанский',
+    fr: 'Французский',
+    de: 'Немецкий',
+    ja: 'Японский',
+    pt: 'Португальский',
+  },
+  avatarColorLabel: (name) => 'Аватар: {name}'.replace('{name}', name),
+  shapeLabel: (name) => 'Форма: {name}'.replace('{name}', name),
+  silhouetteLabel: (name) => 'Силуэт: {name}'.replace('{name}', name),
+  livePreview: (name) => '{name}, предпросмотр аватара'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'насыщенность {s}%, яркость {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) =>
+    'Скорость воспроизведения {speed}'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -130,7 +197,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'Черновик:', pinned: 'Закреплён', muted: 'Без звука', verified: 'Подтверждён', channel: 'Канал', bot: 'Бот', group: 'Группа' },
+  item: {
+    draft: 'Черновик:',
+    pinned: 'Закреплён',
+    muted: 'Без звука',
+    verified: 'Подтверждён',
+    channel: 'Канал',
+    bot: 'Бот',
+    group: 'Группа',
+  },
   search: { chat: 'Чаты', message: 'Сообщения', contact: 'Контакты', empty: 'Ничего не найдено' },
   list: 'Чаты',
   emptyTitle: 'Чатов пока нет',
@@ -140,7 +215,8 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   clearSearch: 'Очистить поиск',
   newChat: 'Новый чат',
   archived: 'Архив',
-  archivedName: (label, n) => `${label}, ${plural('ru', n, { one: '{n} чат', few: '{n} чата', many: '{n} чатов', other: '{n} чата' })}`,
+  archivedName: (label, n) =>
+    `${label}, ${plural('ru', n, { one: '{n} чат', few: '{n} чата', many: '{n} чатов', other: '{n} чата' })}`,
   folderName: (label, n) => `${label}, непрочитанных: ${n}`,
   stories: 'Истории',
   ownStory: 'Ваша история',
@@ -152,7 +228,12 @@ const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
   pinned: 'Закреплено',
   locked: 'Защищено',
   attachments: (n) =>
-    plural('ru', n, { one: '{n} вложение', few: '{n} вложения', many: '{n} вложений', other: '{n} вложения' }),
+    plural('ru', n, {
+      one: '{n} вложение',
+      few: '{n} вложения',
+      many: '{n} вложений',
+      other: '{n} вложения',
+    }),
   select: 'Выбрать заметку',
   checklistDone: 'Выполнено',
   checklistTodo: 'Не выполнено',
@@ -189,10 +270,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `Меню ${team}`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'Б', kilobyte: 'КБ', megabyte: 'МБ', gigabyte: 'ГБ' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'Б',
+  kilobyte: 'КБ',
+  megabyte: 'МБ',
+  gigabyte: 'ГБ',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'Номер карты', expiry: 'Срок действия', securityCode: 'Код безопасности', name: 'Имя на карте', postcode: 'Почтовый индекс', country: 'Страна' },
+  labels: {
+    number: 'Номер карты',
+    expiry: 'Срок действия',
+    securityCode: 'Код безопасности',
+    name: 'Имя на карте',
+    postcode: 'Почтовый индекс',
+    country: 'Страна',
+  },
   selectCountry: 'Выберите страну',
 };
 
@@ -225,8 +318,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'Люди', command: 'Команды', emoji: 'Эмодзи' },
   suggestionVerified: 'Подтверждён',
   searchingSuggestions: 'Поиск…',
-  noSuggestions: { mention: 'Никого не найдено', command: 'Команды не найдены', emoji: 'Эмодзи не найдены' },
-  attachmentItems: { gallery: 'Галерея', camera: 'Камера', file: 'Файл', location: 'Геопозиция', contact: 'Контакт', poll: 'Опрос', music: 'Музыка' },
+  noSuggestions: {
+    mention: 'Никого не найдено',
+    command: 'Команды не найдены',
+    emoji: 'Эмодзи не найдены',
+  },
+  attachmentItems: {
+    gallery: 'Галерея',
+    camera: 'Камера',
+    file: 'Файл',
+    location: 'Геопозиция',
+    contact: 'Контакт',
+    poll: 'Опрос',
+    music: 'Музыка',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -265,21 +370,40 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   sleepOff: 'Выкл.',
   endOfEpisode: 'Конец выпуска',
   oneHour: '1 час',
-  minutes: (n) => plural('ru', n, { one: '{n} минута', few: '{n} минуты', many: '{n} минут', other: '{n} минуты' }),
+  minutes: (n) =>
+    plural('ru', n, {
+      one: '{n} минута',
+      few: '{n} минуты',
+      many: '{n} минут',
+      other: '{n} минуты',
+    }),
   stopsIn: (r) => `Остановится через ${r}`,
   shuffle: 'Перемешать',
   repeat: 'Повторять',
   repeatOne: 'Повторять трек',
   skipBack: (n) =>
-    plural('ru', n, { one: 'Назад на {n} секунду', few: 'Назад на {n} секунды', many: 'Назад на {n} секунд', other: 'Назад на {n} секунды' }),
+    plural('ru', n, {
+      one: 'Назад на {n} секунду',
+      few: 'Назад на {n} секунды',
+      many: 'Назад на {n} секунд',
+      other: 'Назад на {n} секунды',
+    }),
   skipForward: (n) =>
-    plural('ru', n, { one: 'Вперёд на {n} секунду', few: 'Вперёд на {n} секунды', many: 'Вперёд на {n} секунд', other: 'Вперёд на {n} секунды' }),
+    plural('ru', n, {
+      one: 'Вперёд на {n} секунду',
+      few: 'Вперёд на {n} секунды',
+      many: 'Вперёд на {n} секунд',
+      other: 'Вперёд на {n} секунды',
+    }),
   closePlayer: 'Закрыть плеер',
   share: 'Поделиться',
   showLyrics: 'Показать текст',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'Здесь пока ничего нет', addresses: 'Адреса' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'Здесь пока ничего нет',
+  addresses: 'Адреса',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'Сингл', ep: 'Мини-альбом', album: 'Альбом' },
@@ -316,7 +440,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   },
   streams: {
     metrics: 'Показатель графика',
-    summary: (metric, releases) => (releases ? `${metric} в динамике; релизы: ${releases}` : `${metric} в динамике`),
+    summary: (metric, releases) =>
+      releases ? `${metric} в динамике; релизы: ${releases}` : `${metric} в динамике`,
   },
   topTracks: {
     title: 'Популярные треки',
@@ -331,9 +456,15 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     newBadge: 'Новый',
     empty: 'За этот период прослушиваний пока нет.',
   },
-  tracks: (n) => plural('ru', n, { one: '{n} трек', few: '{n} трека', many: '{n} треков', other: '{n} трека' }),
+  tracks: (n) =>
+    plural('ru', n, { one: '{n} трек', few: '{n} трека', many: '{n} треков', other: '{n} трека' }),
   timeline: {
-    states: { complete: 'завершено', current: 'выполняется', upcoming: 'не начато', error: 'требует внимания' },
+    states: {
+      complete: 'завершено',
+      current: 'выполняется',
+      upcoming: 'не начато',
+      error: 'требует внимания',
+    },
     label: 'Ход релиза',
   },
   upload: {
@@ -357,7 +488,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     role: 'Роль',
     name: 'Имя',
     add: 'Добавить участника',
-    remove: (index, name) => (name ? `Убрать участника ${index + 1}, ${name}` : `Убрать участника ${index + 1}`),
+    remove: (index, name) =>
+      name ? `Убрать участника ${index + 1}, ${name}` : `Убрать участника ${index + 1}`,
     empty: 'Укажите авторов, продюсеров и исполнителей этого трека.',
     field: (field, n) => `${field}, участник ${n}`,
   },
@@ -401,11 +533,16 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     pitchPlaceholder: 'Чем выделяется этот релиз? Для кого он и какая история за ним стоит?',
     submit: 'Отправить питч',
     tagLimit: (max) => `Выберите до ${max}`,
-    statuses: { submitted: 'Питч отправлен', accepted: 'Отобран для рассмотрения', declined: 'На этот раз не выбран' },
+    statuses: {
+      submitted: 'Питч отправлен',
+      accepted: 'Отобран для рассмотрения',
+      declined: 'На этот раз не выбран',
+    },
     statusDescriptions: {
       submitted: 'Редакция читает каждый питч. Вы получите ответ до даты релиза.',
       accepted: 'Ваш релиз рассматривается для редакционных плейлистов.',
-      declined: 'Этот релиз не выбран. Вы сможете предложить следующий, как только он будет запланирован.',
+      declined:
+        'Этот релиз не выбран. Вы сможете предложить следующий, как только он будет запланирован.',
     },
     edit: 'Изменить питч',
   },
@@ -427,7 +564,11 @@ const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   pricePerSquareMetre: 'Цена за квадратный метр',
   rentHistory: 'История аренды',
   rentHistoryEmpty: 'Для этого жилья пока нет истории',
-  confidence: { low: 'Низкая достоверность', medium: 'Средняя достоверность', high: 'Высокая достоверность' },
+  confidence: {
+    low: 'Низкая достоверность',
+    medium: 'Средняя достоверность',
+    high: 'Высокая достоверность',
+  },
   aboveEstimate: (p) => `На ${p} выше оценки`,
   belowEstimate: (p) => `На ${p} ниже оценки`,
   fairPrice: 'Справедливая цена',
@@ -453,7 +594,13 @@ const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
 const MAP_MARKER_MESSAGES: Translations['MAP_MARKER_MESSAGES'] = {
   searchAsMapMoves: 'Искать при перемещении карты',
   searchThisArea: 'Искать в этой области',
-  stays: (n) => mapMarker_countOf('ru', n, { one: '{n} вариант жилья', few: '{n} варианта жилья', many: '{n} вариантов жилья', other: '{n} варианта жилья' }),
+  stays: (n) =>
+    mapMarker_countOf('ru', n, {
+      one: '{n} вариант жилья',
+      few: '{n} варианта жилья',
+      many: '{n} вариантов жилья',
+      other: '{n} варианта жилья',
+    }),
 };
 
 const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
@@ -493,7 +640,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'Ваша заявка',
   applicationProgress: 'Готовность заявки',
   progressReady: (done, total) => `Готово: ${done} из ${total}`,
-  applicationStatus: { missing: 'Отсутствует', uploaded: 'На проверке', verified: 'Проверено', rejected: 'Отклонено' },
+  applicationStatus: {
+    missing: 'Отсутствует',
+    uploaded: 'На проверке',
+    verified: 'Проверено',
+    rejected: 'Отклонено',
+  },
   applicationAction: { upload: 'Загрузить', view: 'Открыть', replace: 'Заменить' },
   itemAction: (action, title) => `${action}: ${title}`,
   mortgage: {
@@ -512,14 +664,20 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
     totalInterest: 'Переплата по процентам',
     totalCost: 'Общая стоимость',
   },
-  termYears: (n) => plural('ru', n, { one: '{n} год', few: '{n} года', many: '{n} лет', other: '{n} года' }),
+  termYears: (n) =>
+    plural('ru', n, { one: '{n} год', few: '{n} года', many: '{n} лет', other: '{n} года' }),
   mortgageDisclaimer:
     'Это оценка, а не предложение. Без учёта комиссий, налогов и страховки; ставка считается фиксированной на весь срок.',
 };
 
 const AGENT_PROGRESS_MESSAGES: Translations['AGENT_PROGRESS_MESSAGES'] = {
   stepsLeft: (n) =>
-    plural('ru', n, { one: 'Остался {n} шаг', few: 'Осталось {n} шага', many: 'Осталось {n} шагов', other: 'Осталось {n} шага' }),
+    plural('ru', n, {
+      one: 'Остался {n} шаг',
+      few: 'Осталось {n} шага',
+      many: 'Осталось {n} шагов',
+      other: 'Осталось {n} шага',
+    }),
   allCompleted: 'Все шаги выполнены',
   minimize: 'Свернуть шаги',
   expand: 'Развернуть шаги',
@@ -615,7 +773,12 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   startDate: 'Дата начала',
   endDate: 'Дата окончания',
   daysSelected: (n) =>
-    plural('ru', n, { one: 'Выбран {n} день', few: 'Выбрано {n} дня', many: 'Выбрано {n} дней', other: 'Выбрано {n} дня' }),
+    plural('ru', n, {
+      one: 'Выбран {n} день',
+      few: 'Выбрано {n} дня',
+      many: 'Выбрано {n} дней',
+      other: 'Выбрано {n} дня',
+    }),
   presets: {
     today: 'Сегодня',
     yesterday: 'Вчера',
@@ -630,14 +793,23 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   meetingLabel: 'Запланировать встречу',
   send: 'Отправить приглашение',
   selectTime: 'Выберите время',
-  duration: (n) => plural('ru', n, { one: '{n} минута', few: '{n} минуты', many: '{n} минут', other: '{n} минуты' }),
+  duration: (n) =>
+    plural('ru', n, {
+      one: '{n} минута',
+      few: '{n} минуты',
+      many: '{n} минут',
+      other: '{n} минуты',
+    }),
 };
 
 const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
   kinds: {
     envelope: { label: 'Конверт', description: 'Документы, ключи, всё плоское.' },
     parcel: { label: 'Посылка', description: 'Коробка или сумка, которую унесёт один человек.' },
-    furniture: { label: 'Мебель', description: 'Диван, стол, матрас — по два человека с каждой стороны.' },
+    furniture: {
+      label: 'Мебель',
+      description: 'Диван, стол, матрас — по два человека с каждой стороны.',
+    },
     pallet: { label: 'Паллета', description: 'Упакованная и уложенная, грузится гидробортом.' },
     food: { label: 'Еда', description: 'Заказ из ресторана с нужной температурой.' },
   },
@@ -653,7 +825,8 @@ const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
     size: 'Размер',
     weight: 'Вес',
     quantity: 'Количество',
-    quantityValue: (n) => plural('ru', n, { one: '{n} место', few: '{n} места', many: '{n} мест', other: '{n} места' }),
+    quantityValue: (n) =>
+      plural('ru', n, { one: '{n} место', few: '{n} места', many: '{n} мест', other: '{n} места' }),
     notes: 'Что ещё нужно знать перевозчику?',
     notesPlaceholder: 'Хрупкое, код лифта, где оставить…',
   },
@@ -689,11 +862,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'Не подходит для этого груза',
   vehicle: 'Транспорт',
   vehicles: {
-    bike: { label: 'Грузовой велосипед', capacity: 'До 25 кг · 60 × 40 × 40 см', fits: ['Документы', 'Заказ еды', 'Небольшая коробка'] },
-    car: { label: 'Легковой автомобиль', capacity: 'До 150 кг · 100 × 80 × 60 см', fits: ['Два чемодана', 'Четыре коробки', 'Велосипед'] },
-    van: { label: 'Фургон', capacity: 'До 800 кг · 240 × 150 × 140 см', fits: ['Диван', 'Переезд из студии', 'Полпаллеты'] },
-    boxTruck: { label: 'Грузовик с кузовом', capacity: 'До 3500 кг · 420 × 200 × 210 см', fits: ['Две паллеты', 'Переезд из двухкомнатной квартиры', 'Гидроборт'] },
-    refrigerated: { label: 'Рефрижератор', capacity: 'До 700 кг · при 2–8 °C', fits: ['Свежие продукты', 'Охлаждённый кейтеринг', 'Цветы'] },
+    bike: {
+      label: 'Грузовой велосипед',
+      capacity: 'До 25 кг · 60 × 40 × 40 см',
+      fits: ['Документы', 'Заказ еды', 'Небольшая коробка'],
+    },
+    car: {
+      label: 'Легковой автомобиль',
+      capacity: 'До 150 кг · 100 × 80 × 60 см',
+      fits: ['Два чемодана', 'Четыре коробки', 'Велосипед'],
+    },
+    van: {
+      label: 'Фургон',
+      capacity: 'До 800 кг · 240 × 150 × 140 см',
+      fits: ['Диван', 'Переезд из студии', 'Полпаллеты'],
+    },
+    boxTruck: {
+      label: 'Грузовик с кузовом',
+      capacity: 'До 3500 кг · 420 × 200 × 210 см',
+      fits: ['Две паллеты', 'Переезд из двухкомнатной квартиры', 'Гидроборт'],
+    },
+    refrigerated: {
+      label: 'Рефрижератор',
+      capacity: 'До 700 кг · при 2–8 °C',
+      fits: ['Свежие продукты', 'Охлаждённый кейтеринг', 'Цветы'],
+    },
   },
 };
 
@@ -729,7 +922,14 @@ const COMPOSER_PANEL_MESSAGES: Translations['COMPOSER_PANEL_MESSAGES'] = {
   providerModels: (provider) => `Модели ${provider}`,
   localFolders: 'Локальные папки',
   context: (percent) => `Контекст ${percent}%`,
-  effortLevels: ['Низкий', 'Средний', 'Сбалансированный', 'Высокий', 'Очень высокий', 'Максимальный'],
+  effortLevels: [
+    'Низкий',
+    'Средний',
+    'Сбалансированный',
+    'Высокий',
+    'Очень высокий',
+    'Максимальный',
+  ],
   permissionModes: {
     auto: { label: 'Авто', description: 'Агент решает сам' },
     manual: { label: 'Вручную', description: 'Всегда спрашивать перед изменением' },
@@ -770,7 +970,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'Авторизация', paid: 'Оплачено', failed: 'Платёж не прошёл', refunded: 'Возвращено', pending: 'Платёж в обработке' },
+  states: {
+    authorising: 'Авторизация',
+    paid: 'Оплачено',
+    failed: 'Платёж не прошёл',
+    refunded: 'Возвращено',
+    pending: 'Платёж в обработке',
+  },
   reference: 'Номер',
 };
 
@@ -789,13 +995,31 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `Оценка ${value} из 5`,
-      reviews === undefined ? undefined : placeCard_countOf('ru', reviews, { one: '{n} отзыв', few: '{n} отзыва', many: '{n} отзывов', other: '{n} отзыва' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('ru', reviews, {
+            one: '{n} отзыв',
+            few: '{n} отзыва',
+            many: '{n} отзывов',
+            other: '{n} отзыва',
+          }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `Продолжить через ${b}`, signIn: (b) => `Войти через ${b}`, signUp: (b) => `Зарегистрироваться через ${b}` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `Продолжить через ${b}`,
+    signIn: (b) => `Войти через ${b}`,
+    signUp: (b) => `Зарегистрироваться через ${b}`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'Другое', otherPlaceholder: 'Введите свой ответ', steps: 'Шаги', step: (n) => `Шаг ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'Другое',
+  otherPlaceholder: 'Введите свой ответ',
+  steps: 'Шаги',
+  step: (n) => `Шаг ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'Управление картой',
@@ -812,10 +1036,22 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'Наложения',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'Срок истёк', declined: 'Отклонено' }, default: 'Основной', add: 'Добавить способ оплаты', emptyTitle: 'Нет сохранённых способов оплаты', paymentMethods: 'Способы оплаты' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'Срок истёк', declined: 'Отклонено' },
+  default: 'Основной',
+  add: 'Добавить способ оплаты',
+  emptyTitle: 'Нет сохранённых способов оплаты',
+  paymentMethods: 'Способы оплаты',
+};
 
 const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
-  more: (n) => plural('ru', n, { one: 'ещё {n} человек', few: 'ещё {n} человека', many: 'ещё {n} человек', other: 'ещё {n} человека' }),
+  more: (n) =>
+    plural('ru', n, {
+      one: 'ещё {n} человек',
+      few: 'ещё {n} человека',
+      many: 'ещё {n} человек',
+      other: 'ещё {n} человека',
+    }),
   profile: 'Профиль',
 };
 
@@ -826,12 +1062,22 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
 const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'Думаю' };
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
-  feedback: { like: 'Хороший ответ', dislike: 'Плохой ответ', copy: 'Копировать ответ', copied: 'Скопировано!' },
+  feedback: {
+    like: 'Хороший ответ',
+    dislike: 'Плохой ответ',
+    copy: 'Копировать ответ',
+    copied: 'Скопировано!',
+  },
   imageGeneration: {
     generated: 'Изображение создано',
     generating: 'Создание изображения',
     remaining: (n) =>
-      plural('ru', n, { one: 'Осталась {n} секунда', few: 'Осталось {n} секунды', many: 'Осталось {n} секунд', other: 'Осталось {n} секунды' }),
+      plural('ru', n, {
+        one: 'Осталась {n} секунда',
+        few: 'Осталось {n} секунды',
+        many: 'Осталось {n} секунд',
+        other: 'Осталось {n} секунды',
+      }),
     likeToast: 'Спасибо за отзыв',
     dislikeToast: 'Спасибо, это поможет нам стать лучше',
   },
@@ -939,12 +1185,22 @@ const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
 };
 
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
-  statuses: { reserved: 'Забронировано', sold: 'Продано', rented: 'Сдано', unavailable: 'Недоступно' },
+  statuses: {
+    reserved: 'Забронировано',
+    sold: 'Продано',
+    rented: 'Сдано',
+    unavailable: 'Недоступно',
+  },
   originally: (p) => `ранее ${p}`,
   approximateLocation: 'Примерное местоположение',
   rated: (r) => `Оценка ${r} из 5`,
   ratedWithReviews: (r, c) =>
-    plural('ru', c, { one: `Оценка ${r} из 5, ${c} отзыв`, few: `Оценка ${r} из 5, ${c} отзыва`, many: `Оценка ${r} из 5, ${c} отзывов`, other: `Оценка ${r} из 5, ${c} отзыва` }),
+    plural('ru', c, {
+      one: `Оценка ${r} из 5, ${c} отзыв`,
+      few: `Оценка ${r} из 5, ${c} отзыва`,
+      many: `Оценка ${r} из 5, ${c} отзывов`,
+      other: `Оценка ${r} из 5, ${c} отзыва`,
+    }),
   newListing: 'Новое',
   previousPhoto: 'Предыдущее фото',
   nextPhoto: 'Следующее фото',
@@ -954,9 +1210,16 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
 
 const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
   states: { 'off-route': 'Вы сошли с маршрута', rerouting: 'Поиск нового маршрута' },
-  thenLine: (street, maneuver) => navigationBanner_words('затем', navigationBanner_midSentence(maneuver, 'ru'), street),
+  thenLine: (street, maneuver) =>
+    navigationBanner_words('затем', navigationBanner_midSentence(maneuver, 'ru'), street),
   laneGuidance: 'Подсказка по полосам',
-  laneCount: (n) => plural('ru', n, { one: '{n} полоса', few: '{n} полосы', many: '{n} полос', other: '{n} полосы' }),
+  laneCount: (n) =>
+    plural('ru', n, {
+      one: '{n} полоса',
+      few: '{n} полосы',
+      many: '{n} полос',
+      other: '{n} полосы',
+    }),
   laneNumber: (n) => `полосу ${n}`,
   and: (a, b) => `${a} и ${b}`,
   useLanes: (lanes) => `займите ${lanes}`,
@@ -969,7 +1232,11 @@ const NAVIGATION_BANNER_MESSAGES: Translations['NAVIGATION_BANNER_MESSAGES'] = {
 };
 
 const LOCATION_PUCK_MESSAGES: Translations['LOCATION_PUCK_MESSAGES'] = {
-  states: { locating: 'Определение вашего местоположения', located: 'Ваше местоположение', stale: 'Ваше последнее известное местоположение' },
+  states: {
+    locating: 'Определение вашего местоположения',
+    located: 'Ваше местоположение',
+    stale: 'Ваше последнее известное местоположение',
+  },
   facing: (state, degrees) => `${state}, направление ${degrees}°`,
 };
 
@@ -982,15 +1249,29 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'слайд',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'В процессе', upcoming: 'Ещё не начато', failed: 'Ошибка' }, status: 'Статус' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'В процессе', upcoming: 'Ещё не начато', failed: 'Ошибка' },
+  status: 'Статус',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'Новое',
   reviews: (c) =>
-    rating_countForms('ru', c, { one: '{n} отзыв', few: '{n} отзыва', many: '{n} отзывов', other: '{n} отзыва' }),
+    rating_countForms('ru', c, {
+      one: '{n} отзыв',
+      few: '{n} отзыва',
+      many: '{n} отзывов',
+      other: '{n} отзыва',
+    }),
   rated: (v) => `Оценка ${v} из 5`,
   ratedWithReviews: (v, r) => `Оценка ${v} из 5, ${r}`,
-  star: (n) => plural('ru', n, { one: '{n} звезда', few: '{n} звезды', many: '{n} звёзд', other: '{n} звезды' }),
+  star: (n) =>
+    plural('ru', n, {
+      one: '{n} звезда',
+      few: '{n} звезды',
+      many: '{n} звёзд',
+      other: '{n} звезды',
+    }),
 };
 
 const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
@@ -1004,18 +1285,34 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     depositOption: (months) =>
       months === 0
         ? 'Нет'
-        : plural('ru', months, { one: '{n} месяц', few: '{n} месяца', many: '{n} месяцев', other: '{n} месяца' }),
+        : plural('ru', months, {
+            one: '{n} месяц',
+            few: '{n} месяца',
+            many: '{n} месяцев',
+            other: '{n} месяца',
+          }),
     availableFrom: 'Доступно с',
     minimumStay: 'Минимальный срок',
     months: (months) =>
-      plural('ru', months, { one: '{n} месяц', few: '{n} месяца', many: '{n} месяцев', other: '{n} месяца' }),
+      plural('ru', months, {
+        one: '{n} месяц',
+        few: '{n} месяца',
+        many: '{n} месяцев',
+        other: '{n} месяца',
+      }),
     askingPrice: 'Цена продажи',
     pricePerArea: 'Цена за м²',
     pricePerAreaEmpty: 'Укажите цену',
     nightlyRate: 'Цена за ночь',
     cleaningFee: 'Плата за уборку',
     minimumNights: 'Минимум ночей',
-    nights: (nights) => plural('ru', nights, { one: '{n} ночь', few: '{n} ночи', many: '{n} ночей', other: '{n} ночи' }),
+    nights: (nights) =>
+      plural('ru', nights, {
+        one: '{n} ночь',
+        few: '{n} ночи',
+        many: '{n} ночей',
+        other: '{n} ночи',
+      }),
     swapMode: 'Как вы хотите обмениваться?',
     swapModes: { swap: 'Обмен жильём', host: 'Только принимать гостей', both: 'Любой вариант' },
     group: 'Как предлагается жильё?',
@@ -1039,7 +1336,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     },
     street: {
       title: 'Только улица',
-      description: 'Показывает улицу без номера дома. Точный адрес сообщается после бронирования или подписания.',
+      description:
+        'Показывает улицу без номера дома. Точный адрес сообщается после бронирования или подписания.',
     },
     approximate: {
       title: 'Примерный район',
@@ -1061,7 +1359,13 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
   card: 'Карточка',
   page: 'Страница',
   previewAs: 'Показать как',
-  reviews: (n, shown) => plural('ru', n, { one: '{s} отзыв', few: '{s} отзыва', many: '{s} отзывов', other: '{s} отзыва' }).replace('{s}', shown),
+  reviews: (n, shown) =>
+    plural('ru', n, {
+      one: '{s} отзыв',
+      few: '{s} отзыва',
+      many: '{s} отзывов',
+      other: '{s} отзыва',
+    }).replace('{s}', shown),
 };
 
 const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
@@ -1095,7 +1399,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'Вегетарианское', vegan: 'Веганское', 'gluten-free': 'Без глютена', 'dairy-free': 'Без лактозы', halal: 'Халяль', kosher: 'Кошерное' },
+  diets: {
+    vegetarian: 'Вегетарианское',
+    vegan: 'Веганское',
+    'gluten-free': 'Без глютена',
+    'dairy-free': 'Без лактозы',
+    halal: 'Халяль',
+    kosher: 'Кошерное',
+  },
   spicy: 'Острота',
   spiceOf: (label, level, max) => `${label}: ${level} из ${max}`,
   originally: (price, original) => `${price}, вместо ${original}`,
@@ -1116,7 +1427,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Перейти на страницу ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'Оценка лида', factors: 'Из чего складывается', bands: { cold: 'Холодный', warm: 'Тёплый', hot: 'Горячий' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'Оценка лида',
+  factors: 'Из чего складывается',
+  bands: { cold: 'Холодный', warm: 'Тёплый', hot: 'Горячий' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Авто', transit: 'Транспорт', walk: 'Пешком', cycle: 'Велосипед' },
@@ -1210,11 +1525,18 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     filters: { distance: 'Расстояние', pay: 'Оплата', when: 'Когда', vehicle: 'Транспорт' },
     clearFilters: 'Сбросить фильтры',
     refresh: 'Обновить список',
-    count: (n) => plural('ru', n, { one: '{n} заказ', few: '{n} заказа', many: '{n} заказов', other: '{n} заказа' }),
+    count: (n) =>
+      plural('ru', n, {
+        one: '{n} заказ',
+        few: '{n} заказа',
+        many: '{n} заказов',
+        other: '{n} заказа',
+      }),
     loading: 'Загрузка заказов',
   },
   emptyTitle: 'Сейчас заказов нет',
-  emptyDescription: 'Ничего не подходит под ваш запрос. Расширьте фильтр или обновите список через минуту.',
+  emptyDescription:
+    'Ничего не подходит под ваш запрос. Расширьте фильтр или обновите список через минуту.',
   list: 'Заказы',
   payDetailsFor: (load) => `Оплата: ${load}`,
   route: (pickup, dropoff) => `${pickup} и ${dropoff}`,
@@ -1223,7 +1545,8 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     underKm: (km) => `До ${km} км`,
     anyTime: 'В любое время',
     withinHour: 'В течение часа',
-    nextHours: (hours) => `В ближайшие ${hours} ${plural('ru', hours, { one: 'час', few: 'часа', many: 'часов', other: 'часа' })}`,
+    nextHours: (hours) =>
+      `В ближайшие ${hours} ${plural('ru', hours, { one: 'час', few: 'часа', many: 'часов', other: 'часа' })}`,
     today: 'Сегодня',
   },
 };
@@ -1236,7 +1559,8 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   chat: {
     newChat: 'Новый чат',
     emptyTitle: 'Чем могу помочь?',
-    emptyDescription: 'Этот чат работает с вашим собственным API-ключом. История хранится в этом браузере.',
+    emptyDescription:
+      'Этот чат работает с вашим собственным API-ключом. История хранится в этом браузере.',
     thinking: 'Думаю',
     error: 'Что-то пошло не так. Проверьте журналы сервера и повторите попытку.',
     suggestions: [
@@ -1255,7 +1579,11 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     markUnread: 'Отметить как непрочитанный',
     deleteChat: 'Удалить чат',
   },
-  message: { copy: 'Копировать сообщение', readAloud: 'Прочитать вслух', stopReading: 'Остановить чтение вслух' },
+  message: {
+    copy: 'Копировать сообщение',
+    readAloud: 'Прочитать вслух',
+    stopReading: 'Остановить чтение вслух',
+  },
   history: {
     region: 'История чатов',
     recent: 'Недавние',
@@ -1286,22 +1614,45 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     stop: 'Остановить генерацию',
     notConfigured: 'Не настроено',
     messageCount: (n) =>
-      plural('ru', n, { one: '{n} сообщение', few: '{n} сообщения', many: '{n} сообщений', other: '{n} сообщения' }),
+      plural('ru', n, {
+        one: '{n} сообщение',
+        few: '{n} сообщения',
+        many: '{n} сообщений',
+        other: '{n} сообщения',
+      }),
     answeringWith: (model) => `Отвечает ${model}`,
   },
   ago: {
     justNow: 'только что',
     minutes: (n) =>
-      plural('ru', n, { one: '{n} минуту назад', few: '{n} минуты назад', many: '{n} минут назад', other: '{n} минуты назад' }),
+      plural('ru', n, {
+        one: '{n} минуту назад',
+        few: '{n} минуты назад',
+        many: '{n} минут назад',
+        other: '{n} минуты назад',
+      }),
     hours: (n) =>
-      plural('ru', n, { one: '{n} час назад', few: '{n} часа назад', many: '{n} часов назад', other: '{n} часа назад' }),
+      plural('ru', n, {
+        one: '{n} час назад',
+        few: '{n} часа назад',
+        many: '{n} часов назад',
+        other: '{n} часа назад',
+      }),
     days: (n) =>
-      plural('ru', n, { one: '{n} день назад', few: '{n} дня назад', many: '{n} дней назад', other: '{n} дня назад' }),
+      plural('ru', n, {
+        one: '{n} день назад',
+        few: '{n} дня назад',
+        many: '{n} дней назад',
+        other: '{n} дня назад',
+      }),
   },
   age: { now: 'сейчас', minutes: (n) => `${n} мин`, hours: (n) => `${n} ч`, days: (n) => `${n} д` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'Источники', working: 'Работаю' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'Источники',
+  working: 'Работаю',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'Кому',
@@ -1326,7 +1677,12 @@ const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   star: 'Пометить',
   attachments: 'Вложения',
   attachmentCount: (n) =>
-    plural('ru', n, { one: '{n} вложение', few: '{n} вложения', many: '{n} вложений', other: '{n} вложения' }),
+    plural('ru', n, {
+      one: '{n} вложение',
+      few: '{n} вложения',
+      many: '{n} вложений',
+      other: '{n} вложения',
+    }),
   expand: 'Развернуть сообщение',
   collapse: 'Свернуть сообщение',
 };
@@ -1336,7 +1692,13 @@ const NOTIFICATION_CENTER_MESSAGES: Translations['NOTIFICATION_CENTER_MESSAGES']
   emptyMessage: 'Вы всё просмотрели.',
   emptyDescription: 'Новые события появятся здесь, как только они произойдут.',
   noUnread: 'Нет непрочитанных уведомлений',
-  unread: (n) => plural('ru', n, { one: '{n} непрочитанное', few: '{n} непрочитанных', many: '{n} непрочитанных', other: '{n} непрочитанных' }),
+  unread: (n) =>
+    plural('ru', n, {
+      one: '{n} непрочитанное',
+      few: '{n} непрочитанных',
+      many: '{n} непрочитанных',
+      other: '{n} непрочитанных',
+    }),
   markAllRead: 'Отметить все как прочитанные',
   category: 'Категория уведомлений',
   tabs: { all: 'Все', mentions: 'Упоминания', system: 'Система' },
@@ -1386,23 +1748,44 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   radialChart: (title, items) => `Радиальная диаграмма «${title}»: ${items}`,
   percentOfGoal: (pct) => `${pct} % от цели`,
   periodOf: (label) => `Период: ${label.toLowerCase()}`,
-  chartVs: (title, current, previous) => `Диаграмма «${title}»: ${current.toLowerCase()} в сравнении с ${previous.toLowerCase()}`,
+  chartVs: (title, current, previous) =>
+    `Диаграмма «${title}»: ${current.toLowerCase()} в сравнении с ${previous.toLowerCase()}`,
   lineChart: (title) => `Линейная диаграмма «${title}»`,
   barChart: (title, items) => `Столбчатая диаграмма «${title}»: ${items}`,
-  comboChart: (title, bar, line) => `Диаграмма «${title}»: столбцы «${bar}» в сравнении с линией «${line}»`,
+  comboChart: (title, bar, line) =>
+    `Диаграмма «${title}»: столбцы «${bar}» в сравнении с линией «${line}»`,
   scatterChart: (title, series) => `Точечная диаграмма «${title}»: ${series}`,
   bubbleChart: (title, series) => `Пузырьковая диаграмма «${title}»: ${series}`,
   ringItem: (label, value, pct) => `${label} ${value}, ${pct} % от цели`,
   scoreOf: (score, max) => `${score} из ${max}`,
   activityFor: (name, day) => `Активность: ${day} ${name}`,
-  contributions: (n, date) => { const on = date ? `, ${date}` : ''; return n === 0 ? `Нет вклада${on}` : plural('ru', n, { one: `{n} вклад${on}`, few: `{n} вклада${on}`, many: `{n} вкладов${on}`, other: `{n} вклада${on}` }); },
+  contributions: (n, date) => {
+    const on = date ? `, ${date}` : '';
+    return n === 0
+      ? `Нет вклада${on}`
+      : plural('ru', n, {
+          one: `{n} вклад${on}`,
+          few: `{n} вклада${on}`,
+          many: `{n} вкладов${on}`,
+          other: `{n} вклада${on}`,
+        });
+  },
 };
 
-const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'Копировать код', copied: 'Код скопирован' };
+const CODE_MESSAGES: Translations['CODE_MESSAGES'] = {
+  copy: 'Копировать код',
+  copied: 'Код скопирован',
+};
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'На этой странице', progress: (at, of) => `Заголовок ${at} из ${of}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'На этой странице',
+  progress: (at, of) => `Заголовок ${at} из ${of}`,
+};
 
-const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'Уменьшить', increase: 'Увеличить' };
+const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = {
+  decrease: 'Уменьшить',
+  increase: 'Увеличить',
+};
 
 const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   status: {
@@ -1431,7 +1814,8 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
     minimise: 'Свернуть звонок',
     chat: 'Открыть чат',
     participants: 'Участники',
-    movePip: (c) => `Переместить своё видео (сейчас ${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)})`,
+    movePip: (c) =>
+      `Переместить своё видео (сейчас ${callUi_corner(CALL_UI_MESSAGES__CORNERS, c)})`,
   },
   pipCorners: CALL_UI_MESSAGES__CORNERS,
   history: {
@@ -1459,7 +1843,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, микрофон выключен`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'Новые сотрудники' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'Новые сотрудники',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Черновик:',
@@ -1469,9 +1855,19 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   attachment: 'Есть вложение',
   select: 'Выбрать',
   threadCount: (n) =>
-    plural('ru', n, { one: '{n} сообщение', few: '{n} сообщения', many: '{n} сообщений', other: '{n} сообщения' }),
+    plural('ru', n, {
+      one: '{n} сообщение',
+      few: '{n} сообщения',
+      many: '{n} сообщений',
+      other: '{n} сообщения',
+    }),
   moreLabels: (n) =>
-    plural('ru', n, { one: 'ещё {n} ярлык', few: 'ещё {n} ярлыка', many: 'ещё {n} ярлыков', other: 'ещё {n} ярлыка' }),
+    plural('ru', n, {
+      one: 'ещё {n} ярлык',
+      few: 'ещё {n} ярлыка',
+      many: 'ещё {n} ярлыков',
+      other: 'ещё {n} ярлыка',
+    }),
   selectedCount: (n) => `Выбрано: ${n}`,
   selectAll: 'Выбрать все',
   clearSelection: 'Снять выделение',
@@ -1482,9 +1878,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'Почта',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'Важные оповещения', thisWeek: 'на этой неделе' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'Важные оповещения',
+  thisWeek: 'на этой неделе',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `Подробнее: ${label}`, fromLastMonth: 'По сравнению с прошлым месяцем' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `Подробнее: ${label}`,
+  fromLastMonth: 'По сравнению с прошлым месяцем',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1523,8 +1925,18 @@ const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
 };
 
 const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
-  leasePaymentStatus: { upcoming: 'Предстоит', due: 'Скоро срок', overdue: 'Просрочено', paid: 'Оплачено' },
-  rentPaymentStatus: { paid: 'Оплачено', pending: 'Ожидается', overdue: 'Просрочено', partial: 'Частично' },
+  leasePaymentStatus: {
+    upcoming: 'Предстоит',
+    due: 'Скоро срок',
+    overdue: 'Просрочено',
+    paid: 'Оплачено',
+  },
+  rentPaymentStatus: {
+    paid: 'Оплачено',
+    pending: 'Ожидается',
+    overdue: 'Просрочено',
+    partial: 'Частично',
+  },
   maintenanceCategory: {
     plumbing: 'Сантехника',
     electrical: 'Электрика',
@@ -1532,8 +1944,18 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'Отопление',
     other: 'Другое',
   },
-  maintenancePriority: { low: 'Низкий приоритет', medium: 'Средний приоритет', high: 'Высокий приоритет', urgent: 'Срочно' },
-  maintenanceStage: { reported: 'Заявлено', acknowledged: 'Принято', scheduled: 'Запланировано', resolved: 'Устранено' },
+  maintenancePriority: {
+    low: 'Низкий приоритет',
+    medium: 'Средний приоритет',
+    high: 'Высокий приоритет',
+    urgent: 'Срочно',
+  },
+  maintenanceStage: {
+    reported: 'Заявлено',
+    acknowledged: 'Принято',
+    scheduled: 'Запланировано',
+    resolved: 'Устранено',
+  },
   documentStatus: { signed: 'Подписан', pending: 'Ожидает подписи', expired: 'Истёк' },
   timelineState: { complete: 'Выполнено', current: 'В процессе', upcoming: 'Ещё не начато' },
   leasePeriod: 'Срок аренды',
@@ -1543,11 +1965,22 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
   paidThisYear: 'Оплачено в этом году',
   outstanding: 'Задолженность',
   noPayments: 'Платежей пока нет',
-  columns: { month: 'Месяц', dueDate: 'Срок оплаты', method: 'Способ', amount: 'Сумма', status: 'Статус' },
+  columns: {
+    month: 'Месяц',
+    dueDate: 'Срок оплаты',
+    method: 'Способ',
+    amount: 'Сумма',
+    status: 'Статус',
+  },
   downloadReceipt: (month) => `Скачать квитанцию за ${month}`,
   dueOn: (date) => `Срок: ${date}`,
   comments: (n) =>
-    plural('ru', n, { one: '{n} комментарий', few: '{n} комментария', many: '{n} комментариев', other: '{n} комментария' }),
+    plural('ru', n, {
+      one: '{n} комментарий',
+      few: '{n} комментария',
+      many: '{n} комментариев',
+      other: '{n} комментария',
+    }),
   photo: (position, total) => `Фото ${position} из ${total}`,
   photoWithAlt: (alt, position, total) => `${alt}, фото ${position} из ${total}`,
   sign: 'Подписать',
@@ -1564,7 +1997,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Обычная', sm: 'Компактная' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'Что-то пошло не так', message: 'Произошла непредвиденная ошибка', retry: 'Повторить попытку' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'Что-то пошло не так',
+  message: 'Произошла непредвиденная ошибка',
+  retry: 'Повторить попытку',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'Вклад за этот год',
@@ -1633,7 +2070,12 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   votes: (n) =>
     n === 0
       ? 'Нет голосов'
-      : plural('ru', n, { one: '{n} голос', few: '{n} голоса', many: '{n} голосов', other: '{n} голоса' }),
+      : plural('ru', n, {
+          one: '{n} голос',
+          few: '{n} голоса',
+          many: '{n} голосов',
+          other: '{n} голоса',
+        }),
   sticker: 'Стикер',
 };
 
@@ -1666,7 +2108,13 @@ const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
   },
   dateFlexibility: 'Гибкость дат',
   exactDates: 'Точные даты',
-  plusMinusDays: (n) => plural('ru', n, { one: '± {n} день', few: '± {n} дня', many: '± {n} дней', other: '± {n} дня' }),
+  plusMinusDays: (n) =>
+    plural('ru', n, {
+      one: '± {n} день',
+      few: '± {n} дня',
+      many: '± {n} дней',
+      other: '± {n} дня',
+    }),
   destinations: 'Направления',
   whereTo: 'Куда едем?',
   filters: 'Фильтры',
@@ -1710,7 +2158,8 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   confirmPasswordPlaceholder: 'Повторите пароль',
   rememberMe: 'Запомнить меня',
   forgotPassword: 'Забыли пароль?',
-  terms: 'Создавая аккаунт, вы принимаете наши Условия использования и Политику конфиденциальности.',
+  terms:
+    'Создавая аккаунт, вы принимаете наши Условия использования и Политику конфиденциальности.',
   orContinueWith: 'или продолжите с',
 };
 
@@ -1727,7 +2176,13 @@ const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
   unavailable: 'Недоступно',
   tracks: 'Треки',
   episodes: 'Выпуски',
-  selected: (n) => plural('ru', n, { one: 'Выбран {n} трек', few: 'Выбрано {n} трека', many: 'Выбрано {n} треков', other: 'Выбрано {n} трека' }),
+  selected: (n) =>
+    plural('ru', n, {
+      one: 'Выбран {n} трек',
+      few: 'Выбрано {n} трека',
+      many: 'Выбрано {n} треков',
+      other: 'Выбрано {n} трека',
+    }),
   clearSelection: 'Снять выделение',
   played: 'Прослушано',
   listened: 'Прослушано',
@@ -1747,7 +2202,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'Звонок', email: 'Письмо', meeting: 'Встреча', note: 'Заметка', 'stage-change': 'Смена этапа', task: 'Задача выполнена' },
+  kinds: {
+    call: 'Звонок',
+    email: 'Письмо',
+    meeting: 'Встреча',
+    note: 'Заметка',
+    'stage-change': 'Смена этапа',
+    task: 'Задача выполнена',
+  },
   empty: 'Пока ничего не записано',
   loggedBy: (name) => `Записал(а): ${name}`,
   filterActivity: 'Фильтр активности',
@@ -1761,10 +2223,15 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   helpful: 'Полезно',
   report: 'Пожаловаться',
   promptTitle: 'Вы жили здесь?',
-  promptDescription: (building) =>
-    `Помогите будущим жильцам дома «${building}». Отзывы анонимны.`,
+  promptDescription: (building) => `Помогите будущим жильцам дома «${building}». Отзывы анонимны.`,
   writeReview: 'Написать отзыв',
-  reviewCount: (n) => plural('ru', n, { one: '{n} отзыв', few: '{n} отзыва', many: '{n} отзывов', other: '{n} отзыва' }),
+  reviewCount: (n) =>
+    plural('ru', n, {
+      one: '{n} отзыв',
+      few: '{n} отзыва',
+      many: '{n} отзывов',
+      other: '{n} отзыва',
+    }),
   depositRate: (percent) => `Залог возвращён в ${percent}% случаев аренды`,
   recommendRate: (percent) => `${percent}% рекомендуют здесь жить`,
 };
@@ -1781,8 +2248,15 @@ const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
 
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'Личный', shared: 'Общий', public: 'Публичный' },
-  places: (n) => plural('ru', n, { one: '{n} место', few: '{n} места', many: '{n} мест', other: '{n} места' }),
-  sharedWith: (n) => plural('ru', n, { one: 'Доступ открыт {n} человеку', few: 'Доступ открыт {n} людям', many: 'Доступ открыт {n} людям', other: 'Доступ открыт {n} людям' }),
+  places: (n) =>
+    plural('ru', n, { one: '{n} место', few: '{n} места', many: '{n} мест', other: '{n} места' }),
+  sharedWith: (n) =>
+    plural('ru', n, {
+      one: 'Доступ открыт {n} человеку',
+      few: 'Доступ открыт {n} людям',
+      many: 'Доступ открыт {n} людям',
+      other: 'Доступ открыт {n} людям',
+    }),
   labels: {
     moveEarlier: (position) => `Переместить на позицию ${position - 1}`,
     moveLater: (position) => `Переместить на позицию ${position + 1}`,
@@ -1823,21 +2297,45 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
     asap: 'Как можно скорее',
     contractLength: 'Срок договора',
   },
-  contractLengths: { any: 'Любой', short: '1–6 месяцев', medium: '6–12 месяцев', long: 'Больше года' },
+  contractLengths: {
+    any: 'Любой',
+    short: '1–6 месяцев',
+    medium: '6–12 месяцев',
+    long: 'Больше года',
+  },
   saveSearch: 'Сохранить поиск',
   saved: 'Сохранено',
-  newCount: (n) => plural('ru', n, { one: '{n} новый', few: '{n} новых', many: '{n} новых', other: '{n} новых' }),
+  newCount: (n) =>
+    plural('ru', n, { one: '{n} новый', few: '{n} новых', many: '{n} новых', other: '{n} новых' }),
   alertsOff: 'Уведомления выключены',
   actionOn: (action, subject) => `${action}: ${subject}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'Аренда', sale: 'Продажа', short_term_rent: 'Посуточно', exchange: 'Обмен' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'Аренда',
+    sale: 'Продажа',
+    short_term_rent: 'Посуточно',
+    exchange: 'Обмен',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'Масштаб', mapData: 'Картографические данные' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'Масштаб',
+  mapData: 'Картографические данные',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'Минимум', maximum: 'Максимум', value: (n) => `Значение ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'Минимум',
+  maximum: 'Максимум',
+  value: (n) => `Значение ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'Выберите вариант', scrollUp: 'Прокрутить вверх', scrollDown: 'Прокрутить вниз' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'Выберите вариант',
+  scrollUp: 'Прокрутить вверх',
+  scrollDown: 'Прокрутить вниз',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'Закрыть просмотр',
@@ -1847,12 +2345,22 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
   share: 'Поделиться медиафайлом',
 };
 
-const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'Закрыть уведомление' };
+const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = {
+  dismiss: 'Закрыть уведомление',
+};
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'Номер телефона', countryCode: 'Код страны' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'Номер телефона',
+  countryCode: 'Код страны',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: 'Время доставки', deliveryFee: 'Доставка', distance: 'Расстояние', minimumOrder: 'Минимальный заказ' },
+  facts: {
+    deliveryTime: 'Время доставки',
+    deliveryFee: 'Доставка',
+    distance: 'Расстояние',
+    minimumOrder: 'Минимальный заказ',
+  },
   availability: { paused: 'Приостановлено', closed: 'Закрыто' },
   new: 'Новое',
   rated: (value, reviews) =>
@@ -1861,7 +2369,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'В сети', idle: 'Нет на месте', offline: 'Не в сети', busy: 'Занят' },
-  status: { sending: 'Отправка…', sent: 'Отправлено', delivered: 'Доставлено', read: 'Прочитано', failed: 'Не отправлено' },
+  status: {
+    sending: 'Отправка…',
+    sent: 'Отправлено',
+    delivered: 'Доставлено',
+    read: 'Прочитано',
+    failed: 'Не отправлено',
+  },
   unread: 'Не прочитано',
   unreadCount: (n) =>
     plural('ru', n, {
@@ -1946,9 +2460,15 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
   state: { reached: 'Пройдена', current: 'Текущая остановка', pending: 'Не пройдена' },
 };
 
-const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'Очистить поисковый запрос' };
+const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = {
+  clearQuery: 'Очистить поисковый запрос',
+};
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `Убрать «${t}»`, full: (n) => `Максимум: ${n}`, suggestions: 'Подсказки' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `Убрать «${t}»`,
+  full: (n) => `Максимум: ${n}`,
+  suggestions: 'Подсказки',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -1974,7 +2494,12 @@ const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
     accessible: 'Доступная среда',
     storage: 'Кладовая',
   },
-  floors: { ground: 'Первый этаж', middle: 'Средний этаж', top: 'Последний этаж', elevator: 'С лифтом' },
+  floors: {
+    ground: 'Первый этаж',
+    middle: 'Средний этаж',
+    top: 'Последний этаж',
+    elevator: 'С лифтом',
+  },
   minimum: 'Минимум',
   maximum: 'Максимум',
   priceRange: 'Диапазон цен',
@@ -2007,7 +2532,12 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   storage: {
     storedIn: 'Хранится в',
     fileCount: (n, shown) =>
-      plural('ru', n, { one: `${shown} файл`, few: `${shown} файла`, many: `${shown} файлов`, other: `${shown} файла` }),
+      plural('ru', n, {
+        one: `${shown} файл`,
+        few: `${shown} файла`,
+        many: `${shown} файлов`,
+        other: `${shown} файла`,
+      }),
     filterByType: 'Фильтр по типу файла',
     fileType: 'Тип файла',
     orderBy: 'Сортировка',
@@ -2018,7 +2548,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'Имя файла',
     uploadedOn: 'Дата загрузки',
     fileSize: 'Размер файла',
-    sortBy: { name: 'Сортировать по имени файла', uploadedAt: 'Сортировать по дате загрузки', size: 'Сортировать по размеру файла' },
+    sortBy: {
+      name: 'Сортировать по имени файла',
+      uploadedAt: 'Сортировать по дате загрузки',
+      size: 'Сортировать по размеру файла',
+    },
     selectFile: (name) => `Выбрать ${name}`,
     deleteFile: 'Удалить файл',
     deleteNamed: (name) => `Удалить ${name}`,
@@ -2055,7 +2589,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     teamServersDescription: 'Настраиваются в панели управления',
     manage: 'Управлять',
     noTeamServers: 'Нет MCP-серверов команды',
-    noTeamServersBody: 'Настройте MCP-серверы в панели управления, чтобы они были доступны на компьютере и в облаке.',
+    noTeamServersBody:
+      'Настройте MCP-серверы в панели управления, чтобы они были доступны на компьютере и в облаке.',
     configureTeam: 'Настроить MCP-серверы команды',
     pluginServers: 'MCP-серверы плагинов',
   },
@@ -2086,26 +2621,53 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   checkAvailability: 'Проверить наличие мест',
   notChargedYet: 'Пока с вас ничего не спишут',
   total: 'Итого',
-  tripStatus: { confirmed: 'Подтверждено', pending: 'Ожидает', cancelled: 'Отменено', completed: 'Завершено' },
-  priceName: booking_priceName((p, u) => `${p} за ${u}`, (s, o) => `${s}, раньше ${o}`),
+  tripStatus: {
+    confirmed: 'Подтверждено',
+    pending: 'Ожидает',
+    cancelled: 'Отменено',
+    completed: 'Завершено',
+  },
+  priceName: booking_priceName(
+    (p, u) => `${p} за ${u}`,
+    (s, o) => `${s}, раньше ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'Контекстное окно', freeSpace: 'Свободно', planUsageLimits: 'Лимиты тарифа', managePlan: 'Управление тарифом' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'Контекстное окно',
+  freeSpace: 'Свободно',
+  planUsageLimits: 'Лимиты тарифа',
+  managePlan: 'Управление тарифом',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'Скрыть действия',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'Добавить фото профиля' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'Добавить фото профиля',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'Тема', darkMode: 'Тёмная тема', lightMode: 'Светлая тема', useDarkMode: 'Включить тёмную тему', useLightMode: 'Включить светлую тему' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'Тема',
+  darkMode: 'Тёмная тема',
+  lightMode: 'Светлая тема',
+  useDarkMode: 'Включить тёмную тему',
+  useLightMode: 'Включить светлую тему',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'Заработано',
   period: 'Период заработка',
   breakdown: 'Из чего складывается',
   payout: 'Следующая выплата',
-  payoutState: { scheduled: 'Запланирована', processing: 'В пути', paid: 'Выплачено', held: 'Задержана', failed: 'Не удалась' },
+  payoutState: {
+    scheduled: 'Запланирована',
+    processing: 'В пути',
+    paid: 'Выплачено',
+    held: 'Задержана',
+    failed: 'Не удалась',
+  },
   chart: (label) => `Заработок: ${label}, по периодам`,
   empty: 'Пока ничего не заработано',
   earnings: 'Заработок',
@@ -2132,7 +2694,12 @@ const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
     required: 'Обязательно',
     missing: 'Это нужно заполнить перед подтверждением.',
     missingSummary: (n) =>
-      plural('ru', n, { one: 'Не заполнен {n} пункт', few: 'Не заполнено {n} пункта', many: 'Не заполнено {n} пунктов', other: 'Не заполнено {n} пункта' }),
+      plural('ru', n, {
+        one: 'Не заполнен {n} пункт',
+        few: 'Не заполнено {n} пункта',
+        many: 'Не заполнено {n} пунктов',
+        other: 'Не заполнено {n} пункта',
+      }),
   },
   proofOfDelivery: 'Подтверждение доставки',
 };
@@ -2183,7 +2750,8 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
     saving: 'Сохранение…',
     offline: 'Нет сети — изменения сохранены на устройстве',
     error: 'Не сохранено',
-    words: (n) => plural('ru', n, { one: '{n} слово', few: '{n} слова', many: '{n} слов', other: '{n} слова' }),
+    words: (n) =>
+      plural('ru', n, { one: '{n} слово', few: '{n} слова', many: '{n} слов', other: '{n} слова' }),
     title: 'Заголовок',
   },
   untitled: 'Без названия',
@@ -2191,9 +2759,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'Ещё форматирование', moreMenu: 'Ещё форматирование' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'Фильтры', showAll: 'Показать все' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'Фильтры',
+  showAll: 'Показать все',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'Предыдущие категории', next: 'Следующие категории' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'Предыдущие категории',
+  next: 'Следующие категории',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2211,16 +2785,27 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     priceDetails: 'Детали цены:',
     sort: 'Сортировать предложения',
     sortOptions: { price: 'Сначала дешёвые', eta: 'Сначала быстрые', rating: 'С лучшим рейтингом' },
-    count: (n) => plural('ru', n, { one: '{n} предложение', few: '{n} предложения', many: '{n} предложений', other: '{n} предложения' }),
+    count: (n) =>
+      plural('ru', n, {
+        one: '{n} предложение',
+        few: '{n} предложения',
+        many: '{n} предложений',
+        other: '{n} предложения',
+      }),
     loading: 'Загрузка предложений',
   },
   emptyTitle: 'Предложений пока нет',
-  emptyDescription: 'Перевозчики изучают ваш заказ. Первые предложения обычно приходят в течение нескольких минут.',
+  emptyDescription:
+    'Перевозчики изучают ваш заказ. Первые предложения обычно приходят в течение нескольких минут.',
   list: 'Предложения',
   priceDetailsFor: (name) => `Детали цены: ${name}`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'Показать пароль', hidePassword: 'Скрыть пароль', required: 'обязательно' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'Показать пароль',
+  hidePassword: 'Скрыть пароль',
+  required: 'обязательно',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'Позвонить',
@@ -2282,7 +2867,12 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
     description: 'Описание',
     descriptionPlaceholder: 'Для чего эта группа?',
     members: (n) =>
-      plural('ru', n, { one: '{n} участник', few: '{n} участника', many: '{n} участников', other: '{n} участника' }),
+      plural('ru', n, {
+        one: '{n} участник',
+        few: '{n} участника',
+        many: '{n} участников',
+        other: '{n} участника',
+      }),
     addMembers: 'Добавить участников',
     remove: (name) => `Убрать: ${name}`,
   },
@@ -2331,252 +2921,278 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "Сохранить изменения" : "Начать чат" + (count ? ' · ' + plural('ru', count, {"one": "{n} агент", "few": "{n} агента", "other": "{n} агентов"}) : ''),
-  you: "Вы",
-  responseFailed: "{0} не смог ответить. Попробуйте ещё раз.",
-  editAgentTitle: "Изменить агента",
-  aLittleHelp: "Небольшая помощь",
-  aFewMindsOneConversation: "Несколько умов. Один разговор.",
-  aLittleRoomForSomethingNew: "Немного места для чего-то нового",
-  accountDetails: "Детали учетной записи",
-  add: "Добавить",
-  add2: "Добавить {0}",
-  added: "Добавлено",
-  addedToYourWorkspace: "Добавлено в вашу рабочую область",
-  agent: "Агент",
-  agentConversation: "Разговор с агентом",
-  appearance: "Внешний вид",
-  apps: "Приложения · {0}",
-  availability: "Наличие",
-  backToMarketplace: "Вернуться на торговую площадку",
-  billing: "Биллинг",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "Боты",
-  bringYourAgentsIntoOneChat: "Объедините своих агентов в один чат.",
-  category: "Категория",
-  chatActions: "Действия в чате",
-  chatList: "Список чатов",
-  chatName: "Название чата",
-  chatRemoved: "Чат удален",
-  chatWithYourAgents: "Общайтесь со своими агентами",
-  chooseAnAgentOrCreateYourOwn: "Выберите агента или создайте своего, чтобы начать разговор.",
-  chooseWhoSJoiningTheConversation: "Выберите, кто присоединится к разговору.",
-  chooseYourTeammates: "Выберите товарищей по команде",
-  closeMarketplace: "Закрыть торговую площадку",
-  closeSearch: "Закрыть поиск",
-  company: "Компания",
-  companyDetails: "Подробная информация о компании",
-  completionSound: "Звук завершения",
-  connectedAccount: "Подключенный аккаунт",
-  connector: "Разъем",
-  conversationIDCopied: "Идентификатор беседы скопирован",
-  conversationCopied: "Разговор скопирован",
-  conversationOptions: "Варианты разговора",
-  conversations: "Разговоры",
-  copied: "Скопировано",
-  copyConversation: "Копировать разговор",
-  copyConversationID: "Копировать идентификатор беседы",
-  copyResponse: "Копировать ответ",
-  couldnTCopyPleaseTryAgain: "Не удалось скопировать. Пожалуйста, попробуйте еще раз.",
-  create: "Создать",
-  createANewBot: "Создать нового бота",
-  createBotOrChat: "Создать бота или чат",
-  criticalRequests: "Критические запросы",
-  customize: "Настроить",
-  customizeANewTeammate: "Настройте нового товарища по команде.",
-  dateOfBirth: "Дата рождения",
-  demoIntegrationAddingSavesItToThis: "Демо-интеграция. Добавление сохраняет его в этот браузер; никакая внешняя учетная запись не подключена.",
-  desktopApp: "Приложение для ПК",
-  details: "Подробности",
-  developer: "Разработчик",
-  deviceID: "Идентификатор устройства",
-  discover: "Откройте для себя",
-  dispatchAlerts: "Отправка оповещений",
-  editConversationAgents: "Редактировать агентов беседы",
-  editBot: "Изменить бота",
-  editGroup: "Редактировать группу",
-  editAgent: "Редактировать {0}",
-  email: "Письмо",
-  everydayEssentials: "Все необходимое на каждый день",
-  exploreMarketplace: "Исследуйте торговую площадку",
-  explorePlugins: "Изучите плагины",
-  explorePluginsAndBotsToBuildYour: "Изучите плагины и ботов, чтобы создать свою команду.",
-  findYourNextTeammate: "Найдите своего следующего товарища по команде",
-  findYourNextToolOrTeammate: "Найдите свой следующий инструмент или товарища по команде",
-  firstName: "Имя",
-  folders: "Папки",
-  general: "Общие",
-  getNotifiedWhenTheModeNeedsTo: "Получайте уведомления, когда режиму необходимо принять критическое решение",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "Полезный ответ",
-  inTheBrowser: "В браузере",
-  inThisConversation: "В этом разговоре",
-  includes: "Включает",
-  insideTheApp: "Внутри приложения",
-  installed: "Установлено",
-  integrations: "Интеграции",
-  iLlApproachThisFromThePerspective: "Я подхожу к этому с точки зрения {0}.",
-  lastName: "Фамилия",
-  limits: "Ограничения",
-  logOutFromAllDevices: "Выйти со всех устройств",
-  logout: "Выйти",
-  manage: "Управлять",
-  manageLimits: "Управление лимитами",
-  marketplace: "Торговая площадка",
-  marketplaceLinkCopied: "Ссылка на торговую площадку скопирована.",
-  marketplaceListings: "Объявления на торговой площадке",
-  meetYourNextTeammate: "Познакомьтесь со своим следующим товарищем по команде",
-  messages: "Сообщения",
-  noConversationsFound: "Разговоров не найдено.",
-  noMatchesYet: "Пока совпадений нет",
-  notifications: "Уведомления",
-  openConversations: "Открытые беседы",
-  openPullRequestLinksInsideYourApp: "Откройте ссылки запроса на включение внутри вашего приложения.",
-  openTheMarketplaceToExplorePluginsAnd: "Откройте Marketplace, чтобы изучить плагины и ботов. Используйте меню разговора, чтобы редактировать внешний вид и детали его бота. Выберите выражение из колеса эмоций. Прокрутите или перетащите дугу фигуры или используйте клавиши со стрелками, чтобы изучить фигуры.",
-  prDestination: "PR-направление",
-  people: "Люди",
-  personal: "Персональный",
-  pinChat: "Закрепить чат",
-  pinnedChat: "Закрепленный чат",
-  plugins: "Плагины",
-  profile: "Профиль",
-  public: "Публичный",
-  publicProfile: "Публичный профиль",
-  pullRequests: "Запросы на извлечение",
-  pushNotificationOnYourPhoneWhenThe: "Push-уведомление на телефоне, когда приложение отправляет вам сообщение.",
-  remove: "Убрать",
-  removeChat: "Удалить чат",
-  renameChat: "Переименовать чат",
-  responseCopied: "Ответ скопирован",
-  reviewProvider: "Поставщик отзывов",
-  rulesAndWorkflows: "Правила и рабочие процессы",
-  saveName: "Сохранить имя",
-  sayHelloTo: "Передавай привет {0}",
-  searchConversations: "Поиск бесед",
-  searchConversations2: "Поиск бесед…",
-  searchMarketplace: "Поиск на торговой площадке",
-  selectGithubOrOtherProvidersForReviews: "Выберите Github или других поставщиков для отзывов.",
-  selectedAgents: "Выбранные агенты: {0}",
-  sendWithEnterUseShiftEnterFor: "Отправить с помощью Enter. Используйте Shift + Enter для новой строки. Ваши изменения останутся в этом браузере.",
-  settings: "Настройки",
-  share: "Поделиться",
-  showFundamentalNotificationsWhenAnAgentCompletes: "Показывать основные уведомления, когда агент выполняет задачу",
-  signOut: "Выйти",
-  skills: "Навыки",
-  skills2: "Навыки · {0}",
-  soundEffectATaskIsCompleted: "Звуковой эффект выполнения задания",
-  startAConversation: "Начать разговор",
-  startAGroupChat: "Начать групповой чат",
-  startChat: "Начать чат",
-  storage: "Хранение",
-  support: "Поддержка",
-  systemNotifications: "Системные уведомления",
-  thinkingTogether: "Думаем вместе…",
-  thinking: "Думая…",
-  today: "Сегодня",
-  tools: "Инструменты",
-  toolsForYourWorkflow: "Инструменты для вашего рабочего процесса",
-  tryAnotherNameCategoryOrKeyword: "Попробуйте другое имя, категорию или ключевое слово.",
-  ultra149Mo: "Ультра $149 в месяц",
-  unhelpfulResponse: "Бесполезный ответ",
-  unpinChat: "Открепить чат",
-  upgradeToMax: "Перейти на Max",
-  useToCreateABotOrStart: "Используйте +, чтобы создать бота или начать общение с несколькими агентами.",
-  viewAdded: "Посмотреть добавлено {0}",
-  viewAll: "Посмотреть все",
-  viewTeamProfile: "Посмотреть профиль команды",
-  viewItem: "Посмотреть {0}",
-  website: "Сайт",
-  whenEnabledYourProfilePageWillBe: "Если эта функция включена, страница вашего профиля будет видна всем.",
-  youAreOn7xMoreUsageThan: "Вы используете в 7 раз больше, чем Премиум.",
-  youAreOn7xMoreUsageThan2: "Вы используете в 7 раз больше, чем обычный.",
-  areHereSendAMessageToGet: "{0} здесь. Отправьте сообщение, чтобы узнать мнение каждого.",
-  itemDetails: "{0} подробнее",
-  agentThinking: "{0} думает",
-  by: "{0} · от {1}",
-  results: (count: number) => plural('ru', count, {"one": "{n} результат", "few": "{n} результата", "other": "{n} результатов"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('ru', apps, {"one": "{n} приложение", "few": "{n} приложения", "other": "{n} приложений"}) + ", " : '') + plural('ru', skills, {"one": "{n} навык", "few": "{n} навыка", "other": "{n} навыков"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'Сохранить изменения'
+      : 'Начать чат' +
+        (count
+          ? ' · ' +
+            plural('ru', count, { one: '{n} агент', few: '{n} агента', other: '{n} агентов' })
+          : ''),
+  you: 'Вы',
+  responseFailed: '{0} не смог ответить. Попробуйте ещё раз.',
+  editAgentTitle: 'Изменить агента',
+  aLittleHelp: 'Небольшая помощь',
+  aFewMindsOneConversation: 'Несколько умов. Один разговор.',
+  aLittleRoomForSomethingNew: 'Немного места для чего-то нового',
+  accountDetails: 'Детали учетной записи',
+  add: 'Добавить',
+  add2: 'Добавить {0}',
+  added: 'Добавлено',
+  addedToYourWorkspace: 'Добавлено в вашу рабочую область',
+  agent: 'Агент',
+  agentConversation: 'Разговор с агентом',
+  appearance: 'Внешний вид',
+  apps: 'Приложения · {0}',
+  availability: 'Наличие',
+  backToMarketplace: 'Вернуться на торговую площадку',
+  billing: 'Биллинг',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'Боты',
+  bringYourAgentsIntoOneChat: 'Объедините своих агентов в один чат.',
+  category: 'Категория',
+  chatActions: 'Действия в чате',
+  chatList: 'Список чатов',
+  chatName: 'Название чата',
+  chatRemoved: 'Чат удален',
+  chatWithYourAgents: 'Общайтесь со своими агентами',
+  chooseAnAgentOrCreateYourOwn: 'Выберите агента или создайте своего, чтобы начать разговор.',
+  chooseWhoSJoiningTheConversation: 'Выберите, кто присоединится к разговору.',
+  chooseYourTeammates: 'Выберите товарищей по команде',
+  closeMarketplace: 'Закрыть торговую площадку',
+  closeSearch: 'Закрыть поиск',
+  company: 'Компания',
+  companyDetails: 'Подробная информация о компании',
+  completionSound: 'Звук завершения',
+  connectedAccount: 'Подключенный аккаунт',
+  connector: 'Разъем',
+  conversationIDCopied: 'Идентификатор беседы скопирован',
+  conversationCopied: 'Разговор скопирован',
+  conversationOptions: 'Варианты разговора',
+  conversations: 'Разговоры',
+  copied: 'Скопировано',
+  copyConversation: 'Копировать разговор',
+  copyConversationID: 'Копировать идентификатор беседы',
+  copyResponse: 'Копировать ответ',
+  couldnTCopyPleaseTryAgain: 'Не удалось скопировать. Пожалуйста, попробуйте еще раз.',
+  create: 'Создать',
+  createANewBot: 'Создать нового бота',
+  createBotOrChat: 'Создать бота или чат',
+  criticalRequests: 'Критические запросы',
+  customize: 'Настроить',
+  customizeANewTeammate: 'Настройте нового товарища по команде.',
+  dateOfBirth: 'Дата рождения',
+  demoIntegrationAddingSavesItToThis:
+    'Демо-интеграция. Добавление сохраняет его в этот браузер; никакая внешняя учетная запись не подключена.',
+  desktopApp: 'Приложение для ПК',
+  details: 'Подробности',
+  developer: 'Разработчик',
+  deviceID: 'Идентификатор устройства',
+  discover: 'Откройте для себя',
+  dispatchAlerts: 'Отправка оповещений',
+  editConversationAgents: 'Редактировать агентов беседы',
+  editBot: 'Изменить бота',
+  editGroup: 'Редактировать группу',
+  editAgent: 'Редактировать {0}',
+  email: 'Письмо',
+  everydayEssentials: 'Все необходимое на каждый день',
+  exploreMarketplace: 'Исследуйте торговую площадку',
+  explorePlugins: 'Изучите плагины',
+  explorePluginsAndBotsToBuildYour: 'Изучите плагины и ботов, чтобы создать свою команду.',
+  findYourNextTeammate: 'Найдите своего следующего товарища по команде',
+  findYourNextToolOrTeammate: 'Найдите свой следующий инструмент или товарища по команде',
+  firstName: 'Имя',
+  folders: 'Папки',
+  general: 'Общие',
+  getNotifiedWhenTheModeNeedsTo:
+    'Получайте уведомления, когда режиму необходимо принять критическое решение',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'Полезный ответ',
+  inTheBrowser: 'В браузере',
+  inThisConversation: 'В этом разговоре',
+  includes: 'Включает',
+  insideTheApp: 'Внутри приложения',
+  installed: 'Установлено',
+  integrations: 'Интеграции',
+  iLlApproachThisFromThePerspective: 'Я подхожу к этому с точки зрения {0}.',
+  lastName: 'Фамилия',
+  limits: 'Ограничения',
+  logOutFromAllDevices: 'Выйти со всех устройств',
+  logout: 'Выйти',
+  manage: 'Управлять',
+  manageLimits: 'Управление лимитами',
+  marketplace: 'Торговая площадка',
+  marketplaceLinkCopied: 'Ссылка на торговую площадку скопирована.',
+  marketplaceListings: 'Объявления на торговой площадке',
+  meetYourNextTeammate: 'Познакомьтесь со своим следующим товарищем по команде',
+  messages: 'Сообщения',
+  noConversationsFound: 'Разговоров не найдено.',
+  noMatchesYet: 'Пока совпадений нет',
+  notifications: 'Уведомления',
+  openConversations: 'Открытые беседы',
+  openPullRequestLinksInsideYourApp:
+    'Откройте ссылки запроса на включение внутри вашего приложения.',
+  openTheMarketplaceToExplorePluginsAnd:
+    'Откройте Marketplace, чтобы изучить плагины и ботов. Используйте меню разговора, чтобы редактировать внешний вид и детали его бота. Выберите выражение из колеса эмоций. Прокрутите или перетащите дугу фигуры или используйте клавиши со стрелками, чтобы изучить фигуры.',
+  prDestination: 'PR-направление',
+  people: 'Люди',
+  personal: 'Персональный',
+  pinChat: 'Закрепить чат',
+  pinnedChat: 'Закрепленный чат',
+  plugins: 'Плагины',
+  profile: 'Профиль',
+  public: 'Публичный',
+  publicProfile: 'Публичный профиль',
+  pullRequests: 'Запросы на извлечение',
+  pushNotificationOnYourPhoneWhenThe:
+    'Push-уведомление на телефоне, когда приложение отправляет вам сообщение.',
+  remove: 'Убрать',
+  removeChat: 'Удалить чат',
+  renameChat: 'Переименовать чат',
+  responseCopied: 'Ответ скопирован',
+  reviewProvider: 'Поставщик отзывов',
+  rulesAndWorkflows: 'Правила и рабочие процессы',
+  saveName: 'Сохранить имя',
+  sayHelloTo: 'Передавай привет {0}',
+  searchConversations: 'Поиск бесед',
+  searchConversations2: 'Поиск бесед…',
+  searchMarketplace: 'Поиск на торговой площадке',
+  selectGithubOrOtherProvidersForReviews: 'Выберите Github или других поставщиков для отзывов.',
+  selectedAgents: 'Выбранные агенты: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'Отправить с помощью Enter. Используйте Shift + Enter для новой строки. Ваши изменения останутся в этом браузере.',
+  settings: 'Настройки',
+  share: 'Поделиться',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'Показывать основные уведомления, когда агент выполняет задачу',
+  signOut: 'Выйти',
+  skills: 'Навыки',
+  skills2: 'Навыки · {0}',
+  soundEffectATaskIsCompleted: 'Звуковой эффект выполнения задания',
+  startAConversation: 'Начать разговор',
+  startAGroupChat: 'Начать групповой чат',
+  startChat: 'Начать чат',
+  storage: 'Хранение',
+  support: 'Поддержка',
+  systemNotifications: 'Системные уведомления',
+  thinkingTogether: 'Думаем вместе…',
+  thinking: 'Думая…',
+  today: 'Сегодня',
+  tools: 'Инструменты',
+  toolsForYourWorkflow: 'Инструменты для вашего рабочего процесса',
+  tryAnotherNameCategoryOrKeyword: 'Попробуйте другое имя, категорию или ключевое слово.',
+  ultra149Mo: 'Ультра $149 в месяц',
+  unhelpfulResponse: 'Бесполезный ответ',
+  unpinChat: 'Открепить чат',
+  upgradeToMax: 'Перейти на Max',
+  useToCreateABotOrStart:
+    'Используйте +, чтобы создать бота или начать общение с несколькими агентами.',
+  viewAdded: 'Посмотреть добавлено {0}',
+  viewAll: 'Посмотреть все',
+  viewTeamProfile: 'Посмотреть профиль команды',
+  viewItem: 'Посмотреть {0}',
+  website: 'Сайт',
+  whenEnabledYourProfilePageWillBe:
+    'Если эта функция включена, страница вашего профиля будет видна всем.',
+  youAreOn7xMoreUsageThan: 'Вы используете в 7 раз больше, чем Премиум.',
+  youAreOn7xMoreUsageThan2: 'Вы используете в 7 раз больше, чем обычный.',
+  areHereSendAMessageToGet: '{0} здесь. Отправьте сообщение, чтобы узнать мнение каждого.',
+  itemDetails: '{0} подробнее',
+  agentThinking: '{0} думает',
+  by: '{0} · от {1}',
+  results: (count: number) =>
+    plural('ru', count, { one: '{n} результат', few: '{n} результата', other: '{n} результатов' }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps
+      ? plural('ru', apps, {
+          one: '{n} приложение',
+          few: '{n} приложения',
+          other: '{n} приложений',
+        }) + ', '
+      : '') + plural('ru', skills, { one: '{n} навык', few: '{n} навыка', other: '{n} навыков' }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "Задачи дизайна Bloom", defaultTeam: "Команда Bloom",
+    defaultTitle: 'Задачи дизайна Bloom',
+    defaultTeam: 'Команда Bloom',
     openTicket: (code, title) => `Открыть ${code}: ${title}`,
-    addTicketTo: column => `Добавить задачу в ${column}`,
-    "board": "Доска проекта",
-    "controls": "Управление доской",
-    "navigation": "Открыть навигацию",
-    "inbox": "Открыть входящие проекта",
-    "newTicket": "Новая задача",
-    "columns": "Столбцы доски проекта",
-    "sortTickets": "Сортировать задачи",
-    "filterTickets": "Фильтровать задачи",
-    "displayOptions": "Параметры отображения",
-    "sort": "Сортировать",
-    "filter": "Фильтр",
-    "display": "Отображение",
-    "manualOrder": "Ручной порядок",
-    "priority": "Приоритет",
-    "title": "Название",
-    "project": "Проект",
-    "allPriorities": "Все приоритеты",
-    "allProjects": "Все проекты",
-    "clearFilters": "Сбросить фильтры",
-    "showDone": "Показать завершённые",
-    "fillScreens": "Заполнить широкий экран",
-    "createTicket": "Создать задачу",
-    "closeCreate": "Закрыть создание задачи",
-    "ticketTitle": "Название задачи",
-    "enterTitle": "Введите название задачи",
-    "description": "Описание",
-    "descriptionArea": "Область описания",
-    "status": "Статус",
-    "urgency": "Срочность",
-    "assignee": "Исполнитель",
-    "unassigned": "Не назначен",
-    "keepCreating": "Продолжить создание",
-    "cancel": "Отмена",
-    "addTicket": "Добавить задачу",
-    "sortTitle": "Сортировать по названию",
-    "noTickets": "Здесь нет проблем",
-    "favoriteAdd": "Добавить в избранное",
-    "favoriteRemove": "Убрать из избранного",
-    "copyLink": "Копировать ссылку на задачу",
-    "actions": "Действия с задачей",
-    "editDescription": "Изменить описание",
-    "copyId": "Копировать ID задачи",
-    "reopen": "Открыть задачу заново",
-    "markDone": "Отметить выполненной",
-    "closeDetails": "Закрыть подробности задачи",
-    "linkCopied": "Ссылка на задачу скопирована",
-    "idCopied": "ID задачи скопирован",
-    "copyFailed": "Не удалось скопировать. Попробуйте ещё раз.",
-    "createdBy": "Создано",
-    "saveDescription": "Сохранить описание",
-    "ticketDescription": "Описание задачи",
-    "properties": "Свойства",
-    "editAssignees": "Изменить исполнителей",
-    "resources": "Ресурсы",
-    "tokens": "Использованные токены",
-    "comments": "Комментарии",
-    "you": "Вы",
-    "justNow": "Только что",
-    "addComment": "Добавить комментарий",
-    "enterComment": "Введите комментарий",
-    "postComment": "Опубликовать комментарий",
-    "moveUp": "Переместить вверх",
-    "moveDown": "Переместить вниз",
-    "nextColumn": "В следующий столбец",
-    "previousColumn": "В предыдущий столбец",
-    "keyboardHint": "Enter открывает. Пробел поднимает, стрелки перемещают, пробел опускает, Escape отменяет."
-},
+    addTicketTo: (column) => `Добавить задачу в ${column}`,
+    board: 'Доска проекта',
+    controls: 'Управление доской',
+    navigation: 'Открыть навигацию',
+    inbox: 'Открыть входящие проекта',
+    newTicket: 'Новая задача',
+    columns: 'Столбцы доски проекта',
+    sortTickets: 'Сортировать задачи',
+    filterTickets: 'Фильтровать задачи',
+    displayOptions: 'Параметры отображения',
+    sort: 'Сортировать',
+    filter: 'Фильтр',
+    display: 'Отображение',
+    manualOrder: 'Ручной порядок',
+    priority: 'Приоритет',
+    title: 'Название',
+    project: 'Проект',
+    allPriorities: 'Все приоритеты',
+    allProjects: 'Все проекты',
+    clearFilters: 'Сбросить фильтры',
+    showDone: 'Показать завершённые',
+    fillScreens: 'Заполнить широкий экран',
+    createTicket: 'Создать задачу',
+    closeCreate: 'Закрыть создание задачи',
+    ticketTitle: 'Название задачи',
+    enterTitle: 'Введите название задачи',
+    description: 'Описание',
+    descriptionArea: 'Область описания',
+    status: 'Статус',
+    urgency: 'Срочность',
+    assignee: 'Исполнитель',
+    unassigned: 'Не назначен',
+    keepCreating: 'Продолжить создание',
+    cancel: 'Отмена',
+    addTicket: 'Добавить задачу',
+    sortTitle: 'Сортировать по названию',
+    noTickets: 'Здесь нет проблем',
+    favoriteAdd: 'Добавить в избранное',
+    favoriteRemove: 'Убрать из избранного',
+    copyLink: 'Копировать ссылку на задачу',
+    actions: 'Действия с задачей',
+    editDescription: 'Изменить описание',
+    copyId: 'Копировать ID задачи',
+    reopen: 'Открыть задачу заново',
+    markDone: 'Отметить выполненной',
+    closeDetails: 'Закрыть подробности задачи',
+    linkCopied: 'Ссылка на задачу скопирована',
+    idCopied: 'ID задачи скопирован',
+    copyFailed: 'Не удалось скопировать. Попробуйте ещё раз.',
+    createdBy: 'Создано',
+    saveDescription: 'Сохранить описание',
+    ticketDescription: 'Описание задачи',
+    properties: 'Свойства',
+    editAssignees: 'Изменить исполнителей',
+    resources: 'Ресурсы',
+    tokens: 'Использованные токены',
+    comments: 'Комментарии',
+    you: 'Вы',
+    justNow: 'Только что',
+    addComment: 'Добавить комментарий',
+    enterComment: 'Введите комментарий',
+    postComment: 'Опубликовать комментарий',
+    moveUp: 'Переместить вверх',
+    moveDown: 'Переместить вниз',
+    nextColumn: 'В следующий столбец',
+    previousColumn: 'В предыдущий столбец',
+    keyboardHint:
+      'Enter открывает. Пробел поднимает, стрелки перемещают, пробел опускает, Escape отменяет.',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "Аватар агента", unavailable: "Аватар недоступен", },
+  AGENT_AVATAR_MESSAGES: { label: 'Аватар агента', unavailable: 'Аватар недоступен' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

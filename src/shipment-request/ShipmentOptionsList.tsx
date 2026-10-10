@@ -54,7 +54,10 @@ function ShipmentOptionsListComponent({
 }: ShipmentOptionsListProps) {
   const theme = useTheme();
   const { messages } = useMessages(SHIPMENT_REQUEST_MESSAGES);
-  const labels = useMemo(() => ({ ...messages.options, ...labelOverrides }), [messages, labelOverrides]);
+  const labels = useMemo(
+    () => ({ ...messages.options, ...labelOverrides }),
+    [messages, labelOverrides],
+  );
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const chosen = new Set(selectedExtras);
 

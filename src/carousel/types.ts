@@ -3,8 +3,10 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { ButtonProps } from '../button/types';
 
 /** Visual options only; the carousel retains navigation, names and disabled state. */
-export type CarouselArrowButtonProps = Pick<ButtonProps,
-  'className' | 'material' | 'appearance' | 'tone' | 'size' | 'iconSize'>;
+export type CarouselArrowButtonProps = Pick<
+  ButtonProps,
+  'className' | 'material' | 'appearance' | 'tone' | 'size' | 'iconSize'
+>;
 
 export interface CarouselProps {
   /** `CarouselItem`s. Each is labelled "N of M" for assistive technology. */

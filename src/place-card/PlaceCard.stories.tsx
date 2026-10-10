@@ -242,7 +242,11 @@ export const Edges: Story = {
             openState="opening-soon"
             hours="Opens at 07:00, in 25 minutes"
             address="Plaça de les Bruixes 4, Vall de l’Om, behind the old water tower"
-            facts={[{ icon: RiWalkLine, label: '6 min' }, { label: '450 m' }, { label: 'Step-free' }]}
+            facts={[
+              { icon: RiWalkLine, label: '6 min' },
+              { label: '450 m' },
+              { label: 'Step-free' },
+            ]}
             onPress={noop}
           />
         </View>

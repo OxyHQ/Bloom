@@ -70,9 +70,10 @@ describe('multi-agent reply lifecycle', () => {
       await jest.runAllTimersAsync();
       await task;
     });
-    expect(
-      current.current.chats[0]!.messages.map((message) => message.text),
-    ).toEqual(['Hello', 'Ready']);
+    expect(current.current.chats[0]!.messages.map((message) => message.text)).toEqual([
+      'Hello',
+      'Ready',
+    ]);
     expect(onRespond).toHaveBeenCalledTimes(1);
   });
   it('aborts the host signal and ignores late responses, then accepts a new turn', async () => {
@@ -97,9 +98,7 @@ describe('multi-agent reply lifecycle', () => {
       await jest.runAllTimersAsync();
       await task;
     });
-    expect(current.current.chats[0]!.messages.map((m) => m.text)).toEqual([
-      'First',
-    ]);
+    expect(current.current.chats[0]!.messages.map((m) => m.text)).toEqual(['First']);
     act(() => {
       task = result.current.send('Second', 'group');
     });
@@ -120,9 +119,7 @@ describe('multi-agent reply lifecycle', () => {
         resolve = r;
       });
     });
-    const { result, unmount } = renderHook(() =>
-      useReplies(current, update, onRespond),
-    );
+    const { result, unmount } = renderHook(() => useReplies(current, update, onRespond));
     let task!: Promise<void>;
     act(() => {
       task = result.current.send('Question', 'group');

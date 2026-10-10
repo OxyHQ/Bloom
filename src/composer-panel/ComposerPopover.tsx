@@ -1,5 +1,9 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import { SurfaceLevelProvider, surfaceFillVars, useOptionalSurfaceFill } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useOptionalSurfaceFill,
+} from '../styles/surface-levels';
 /**
  * The composer's anchored panel — NATIVE.
  *
@@ -68,10 +72,22 @@ export function ComposerPopover({
   const panelStyle = StyleSheet.flatten(style);
   const parentFill = useOptionalSurfaceFill() ?? theme?.colors.background ?? 'transparent';
   const fill = panelStyle?.backgroundColor ?? theme?.colors.card;
-  const paintsSurface = Boolean(theme) && typeof fill === 'string' && fill !== 'transparent' && parseRgba(fill)?.a !== 0;
+  const paintsSurface =
+    Boolean(theme) &&
+    typeof fill === 'string' &&
+    fill !== 'transparent' &&
+    parseRgba(fill)?.a !== 0;
 
-  const publishedFill = paintsSurface ? resolveSurfaceMaterial({ fill: fill as string, parentFill: parentFill }).publishedFill : undefined;
-  const content = publishedFill ? <SurfaceLevelProvider level={1} fill={publishedFill}>{children}</SurfaceLevelProvider> : children;
+  const publishedFill = paintsSurface
+    ? resolveSurfaceMaterial({ fill: fill as string, parentFill: parentFill }).publishedFill
+    : undefined;
+  const content = publishedFill ? (
+    <SurfaceLevelProvider level={1} fill={publishedFill}>
+      {children}
+    </SurfaceLevelProvider>
+  ) : (
+    children
+  );
   const common = useCommonMessages();
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -113,7 +129,9 @@ export function ComposerPopover({
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
 
   const animatedStyle = useAnimatedStyle(
@@ -165,11 +183,18 @@ export function ComposerPopover({
           animatedStyle,
           surfaceFillVars(publishedFill),
           placed ? null : { opacity: 0 },
-        ]}>
-        {paintsSurface ? <SurfacePaint fill={fill as string} radius={panelStyle?.borderRadius ?? 16} /> : null}
+        ]}
+      >
+        {paintsSurface ? (
+          <SurfacePaint fill={fill as string} radius={panelStyle?.borderRadius ?? 16} />
+        ) : null}
         {paintsSurface && panelStyle?.overflow === 'hidden' ? (
-          <View style={{ overflow: 'hidden', borderRadius: panelStyle.borderRadius }}>{content}</View>
-        ) : content}
+          <View style={{ overflow: 'hidden', borderRadius: panelStyle.borderRadius }}>
+            {content}
+          </View>
+        ) : (
+          content
+        )}
       </Animated.View>
     </Modal>
   );

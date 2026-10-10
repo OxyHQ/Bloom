@@ -9,7 +9,11 @@ import { RiQuillPenLine } from '../icons/remix/RiQuillPenLine';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
-import { DOCUMENT_LIST_WIDE_MIN_WIDTH, TENANCY_DOCUMENT_ICON, TENANCY_DOCUMENT_STATUS } from './constants';
+import {
+  DOCUMENT_LIST_WIDE_MIN_WIDTH,
+  TENANCY_DOCUMENT_ICON,
+  TENANCY_DOCUMENT_STATUS,
+} from './constants';
 import { TENANCY_MESSAGES } from './messages';
 import { HousingCard, IconTile, useHousingPalette } from './parts';
 import type { DocumentListProps, TenancyDocument } from './types';
@@ -45,13 +49,18 @@ function DocumentListComponent({
   const signLabel = signLabelProp ?? messages.sign;
   // A caller's own verb keeps its old "<verb> <name>" name; Bloom's own is a
   // whole phrase per language, so no language is glued in English order.
-  const signName = (name: string) => (signLabelProp != null ? `${signLabelProp} ${name}` : messages.signDocument(name));
-  const viewLabel = viewLabelProp ?? ((document: TenancyDocument) => messages.viewDocument(document.name));
-  const downloadLabel = downloadLabelProp ?? ((document: TenancyDocument) => messages.downloadDocument(document.name));
+  const signName = (name: string) =>
+    signLabelProp != null ? `${signLabelProp} ${name}` : messages.signDocument(name);
+  const viewLabel =
+    viewLabelProp ?? ((document: TenancyDocument) => messages.viewDocument(document.name));
+  const downloadLabel =
+    downloadLabelProp ?? ((document: TenancyDocument) => messages.downloadDocument(document.name));
   const emptyLabel = emptyLabelProp ?? messages.noDocuments;
   const palette = useHousingPalette();
   const { width, onLayout } = useContainerWidth();
-  const wide = layout === 'wide' || (layout === 'auto' && width != null && width >= DOCUMENT_LIST_WIDE_MIN_WIDTH);
+  const wide =
+    layout === 'wide' ||
+    (layout === 'auto' && width != null && width >= DOCUMENT_LIST_WIDE_MIN_WIDTH);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   return (
@@ -59,7 +68,11 @@ function DocumentListComponent({
       <View onLayout={onLayout}>
         {documents.length === 0 ? (
           <View style={{ paddingTop: 24, paddingBottom: 24, paddingLeft: 20, paddingRight: 20 }}>
-            <Text variant="body-regular" style={{ color: palette.textSecondary }} testID={id('empty')}>
+            <Text
+              variant="body-regular"
+              style={{ color: palette.textSecondary }}
+              testID={id('empty')}
+            >
               {emptyLabel}
             </Text>
           </View>
@@ -70,7 +83,11 @@ function DocumentListComponent({
               const badge =
                 info && document.status ? (
                   <Badge
-                    content={document.statusLabel ?? statusLabels?.[document.status] ?? messages.documentStatus[document.status]}
+                    content={
+                      document.statusLabel ??
+                      statusLabels?.[document.status] ??
+                      messages.documentStatus[document.status]
+                    }
                     color={info.tone}
                     variant="subtle"
                     size="medium"
@@ -110,23 +127,30 @@ function DocumentListComponent({
                       {document.name}
                     </Text>
                     {meta ? (
-                      <Text variant="caption-1-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
+                      <Text
+                        variant="caption-1-regular"
+                        numberOfLines={1}
+                        style={{ color: palette.textSecondary }}
+                      >
                         {meta}
                       </Text>
                     ) : null}
                     {!wide && badge ? <View style={{ marginTop: 4 }}>{badge}</View> : null}
                   </View>
-                  {wide && badge ? <View style={{ width: 144, alignItems: 'flex-start' }}>{badge}</View> : null}
+                  {wide && badge ? (
+                    <View style={{ width: 144, alignItems: 'flex-start' }}>{badge}</View>
+                  ) : null}
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                     {document.onSign ? (
                       <View style={{ marginRight: 6 }}>
                         <Button
-
                           size="sm"
                           leadingIcon={wide ? RiQuillPenLine : undefined}
                           accessibilityLabel={signName(document.name)}
                           onPress={document.onSign}
-                          testID={id(`sign-${index}`)} tone="accent" appearance="solid"
+                          testID={id(`sign-${index}`)}
+                          tone="accent"
+                          appearance="solid"
                         >
                           {signLabel}
                         </Button>
@@ -134,24 +158,26 @@ function DocumentListComponent({
                     ) : null}
                     {document.onView ? (
                       <Button
-
                         size="sm"
                         iconOnly
                         leadingIcon={RiEyeLine}
                         accessibilityLabel={viewLabel(document)}
                         onPress={document.onView}
-                        testID={id(`view-${index}`)} tone="neutral" appearance="outline"
+                        testID={id(`view-${index}`)}
+                        tone="neutral"
+                        appearance="outline"
                       />
                     ) : null}
                     {document.onDownload ? (
                       <Button
-
                         size="sm"
                         iconOnly
                         leadingIcon={RiDownload2Line}
                         accessibilityLabel={downloadLabel(document)}
                         onPress={document.onDownload}
-                        testID={id(`download-${index}`)} tone="neutral" appearance="outline"
+                        testID={id(`download-${index}`)}
+                        tone="neutral"
+                        appearance="outline"
                       />
                     ) : null}
                   </View>

@@ -13,7 +13,12 @@ import { VideoView } from './index';
  * attribute appears only when the prop arrives. Inspect the element: the first
  * story carries `playsinline`, the second does not.
  */
-function StoryExpoVideoView({ style, contentFit, nativeControls, playsInline }: VideoViewLikeProps) {
+function StoryExpoVideoView({
+  style,
+  contentFit,
+  nativeControls,
+  playsInline,
+}: VideoViewLikeProps) {
   return React.createElement('video', {
     src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
     autoPlay: true,
@@ -53,7 +58,12 @@ function Frame({ caption, children }: { caption: string; children: React.ReactNo
 export const PlaysInline: Story = {
   render: () => (
     <Frame caption="Default: the <video> carries playsinline">
-      <VideoView player={PLAYER} contentFit="cover" nativeControls={false} style={{ width: '100%', height: '100%' }} />
+      <VideoView
+        player={PLAYER}
+        contentFit="cover"
+        nativeControls={false}
+        style={{ width: '100%', height: '100%' }}
+      />
     </Frame>
   ),
 };

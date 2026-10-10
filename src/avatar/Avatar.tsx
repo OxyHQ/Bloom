@@ -91,12 +91,7 @@ function ShapeFallback({
               {text}
             </Text>
           ) : (
-            <ShapeImage
-              source={DEFAULT_AVATAR_IMAGE}
-              shape={shape}
-              size={size}
-              alt={alt}
-            />
+            <ShapeImage source={DEFAULT_AVATAR_IMAGE} shape={shape} size={size} alt={alt} />
           ))}
       </View>
     </View>
@@ -116,11 +111,7 @@ function AvatarImageContent({
     primarySource ? 'primary' : fallbackSource ? 'fallback' : 'placeholder',
   );
   const source =
-    stage === 'primary'
-      ? primarySource
-      : stage === 'fallback'
-        ? fallbackSource
-        : undefined;
+    stage === 'primary' ? primarySource : stage === 'fallback' ? fallbackSource : undefined;
   if (!source) return <ShapeFallback {...placeholder} />;
   return (
     <ShapeImage
@@ -169,11 +160,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   // The press dip goes through the shared interaction hook rather than
   // `TouchableOpacity`'s `activeOpacity` — one mechanism across the library, and
   // the one the reduced-motion / pointer-type guards live behind.
-  const {
-    state: pressed,
-    onIn: onPressIn,
-    onOut: onPressOut,
-  } = useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const theme = useTheme();
   const { messages } = useMessages(AVATAR_MESSAGES);
   const liveLabel = liveLabelProp ?? messages.live;
@@ -181,34 +168,26 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const scope = useContext(BloomAppearanceContext);
   const size = resolveAvatarSize(sizeProp ?? scope.size);
   const hasName = typeof name === 'string' && name.trim().length > 0;
-  const hasInitials =
-    typeof initials === 'string' && initials.trim().length > 0;
+  const hasInitials = typeof initials === 'string' && initials.trim().length > 0;
   // The fallback text: explicit `initials` > the first letter of `name`.
-  const fallbackText = hasInitials
-    ? initials.trim()
-    : hasName
-      ? getInitial(name)
-      : undefined;
+  const fallbackText = hasInitials ? initials.trim() : hasName ? getInitial(name) : undefined;
   // The tint: explicit `color` > deterministic from `name` > neutral.
   const tint = useMemo(
     () =>
       resolveAvatarTint(
         theme,
-        color ??
-          (hasName && !hasInitials ? avatarTintForName(name) : 'neutral'),
+        color ?? (hasName && !hasInitials ? avatarTintForName(name) : 'neutral'),
       ),
     [theme, color, hasName, hasInitials, name],
   );
   // Priority: explicit placeholderColor > the tint. A caller's own colour gets
   // a white letter (Bloom cannot know its contrast) unless a tint is also named.
   const fallbackColor = placeholderColor || tint.background;
-  const fallbackTextColor =
-    placeholderColor && !color ? '#FFFFFF' : tint.foreground;
+  const fallbackTextColor = placeholderColor && !color ? '#FFFFFF' : tint.foreground;
   // With fallback text we render it instead of invoking the default
   // placeholder-context icon. Explicit placeholderIcon still wins.
   const resolvedPlaceholderIcon =
-    placeholderIcon ??
-    (fallbackText ? undefined : placeholderConfig?.icon?.(size * 0.6));
+    placeholderIcon ?? (fallbackText ? undefined : placeholderConfig?.icon?.(size * 0.6));
 
   const imageResolver = useImageResolver();
 
@@ -265,9 +244,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   ) : null;
 
   const avatarBox = (
-    <View
-      style={[styles.avatarBox, SIZE_TRANSITION, { width: size, height: size }]}
-    >
+    <View style={[styles.avatarBox, SIZE_TRANSITION, { width: size, height: size }]}>
       <AvatarImageContent
         key={imageSourcesKey(primarySource, fallbackSource)}
         primarySource={primarySource}
@@ -308,10 +285,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   );
 
   const content = (
-    <View
-      style={[styles.container, { width: size, height: size }, style]}
-      testID={testID}
-    >
+    <View style={[styles.container, { width: size, height: size }, style]} testID={testID}>
       {avatarBox}
     </View>
   );

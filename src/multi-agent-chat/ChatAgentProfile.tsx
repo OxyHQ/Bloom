@@ -74,13 +74,7 @@ export function ChatAgentProfile({
                 position: 'absolute',
                 width: size,
                 height: size,
-                insetInlineStart: single
-                  ? 0
-                  : index === 1
-                    ? 20
-                    : index === 2
-                      ? 10
-                      : 0,
+                insetInlineStart: single ? 0 : index === 1 ? 20 : index === 2 ? 10 : 0,
                 top: index === 2 ? 20 : 0,
               }}
             >
@@ -96,9 +90,7 @@ export function ChatAgentProfile({
         <StyledView
           className="absolute inset-0 rounded-[14px] group-focus-visible/chat-profile:ring-2 group-focus-visible/chat-profile:ring-border-focus-ring"
           style={{
-            backgroundColor: hovered
-              ? colors.backgroundTertiary
-              : colors.backgroundSecondary,
+            backgroundColor: hovered ? colors.backgroundTertiary : colors.backgroundSecondary,
             borderWidth: StyleSheet.hairlineWidth,
             borderColor: colors.border,
           }}

@@ -169,8 +169,10 @@ export interface CalendarViewHeaderProps {
 }
 
 export interface CalendarViewProps
-  extends
-    Omit<CalendarViewHeaderProps, 'month' | 'onPreviousMonth' | 'onNextMonth' | 'onSelectDate'>,
+  extends Omit<
+      CalendarViewHeaderProps,
+      'month' | 'onPreviousMonth' | 'onNextMonth' | 'onSelectDate'
+    >,
     CalendarViewEventDetailsHandlers {
   events: readonly CalendarViewEvent[];
   /** The shown month (controlled). Any day of it. */

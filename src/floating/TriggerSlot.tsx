@@ -61,10 +61,7 @@ export interface TriggerSlotProps {
  * in another fragment. So it is rejected here, by name, with the fix in the
  * message.
  */
-function cloneTrigger(
-  children: React.ReactNode,
-  handle: TriggerHandleProps,
-): React.ReactElement {
+function cloneTrigger(children: React.ReactNode, handle: TriggerHandleProps): React.ReactElement {
   const child = Children.only(children);
   if (!isValidElement<TriggerHandleProps>(child)) {
     throw new Error(
@@ -149,7 +146,8 @@ export function TriggerSlot({
       collapsable={false}
       className={className}
       style={[styles.wrap, style]}
-      testID={testID}>
+      testID={testID}
+    >
       {asChild ? (
         cloneTrigger(children, handle)
       ) : (

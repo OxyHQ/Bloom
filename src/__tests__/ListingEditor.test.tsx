@@ -195,9 +195,13 @@ describe('OfferingEditor', () => {
     const sale = byTestId('o-sale');
     const rent = byTestId('o-rent');
     expect(sale.style.borderTopWidth || sale.style.borderWidth).toBe('2px');
-    expect(normalise(sale.style.borderTopColor || sale.style.borderColor)).toBe(normalise(paint.borderSelected));
+    expect(normalise(sale.style.borderTopColor || sale.style.borderColor)).toBe(
+      normalise(paint.borderSelected),
+    );
     expect(rent.style.borderTopWidth || rent.style.borderWidth).toBe('1px');
-    expect(normalise(rent.style.borderTopColor || rent.style.borderColor)).toBe(normalise(paint.border));
+    expect(normalise(rent.style.borderTopColor || rent.style.borderColor)).toBe(
+      normalise(paint.border),
+    );
   });
 
   it('reports the rent fields: digits-only amount and deposit radios', async () => {
@@ -250,8 +254,17 @@ describe('OfferingEditor', () => {
   });
 
   it('restricts the cards to `kinds`', async () => {
-    await mount(<OfferingEditor value={{ kinds: [] }} onValueChange={() => undefined} kinds={['sale', 'rent']} testID="o" />);
-    const names = Array.from(container.querySelectorAll('[role="checkbox"]')).map((el) => el.getAttribute('aria-label'));
+    await mount(
+      <OfferingEditor
+        value={{ kinds: [] }}
+        onValueChange={() => undefined}
+        kinds={['sale', 'rent']}
+        testID="o"
+      />,
+    );
+    const names = Array.from(container.querySelectorAll('[role="checkbox"]')).map((el) =>
+      el.getAttribute('aria-label'),
+    );
     expect(names).toEqual(['For sale', 'For rent']);
   });
 });
@@ -281,7 +294,9 @@ describe('PropertyTypeSelector', () => {
     expect(group?.getAttribute('aria-label')).toBe('Property type');
     const radios = Array.from(container.querySelectorAll('[role="radio"]'));
     expect(radios).toHaveLength(9);
-    expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual(DEFAULT_PROPERTY_TYPES.map((o) => o.label));
+    expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual(
+      DEFAULT_PROPERTY_TYPES.map((o) => o.label),
+    );
     expect(radios.every((r) => r.getAttribute('aria-checked') === 'false')).toBe(true);
   });
 
@@ -310,7 +325,14 @@ describe('PropertyTypeSelector', () => {
   });
 
   it('shows an error line', async () => {
-    await mount(<PropertyTypeSelector value={null} onValueChange={() => undefined} error="Choose one" testID="t" />);
+    await mount(
+      <PropertyTypeSelector
+        value={null}
+        onValueChange={() => undefined}
+        error="Choose one"
+        testID="t"
+      />,
+    );
     expect(container.textContent).toContain('Choose one');
   });
 });
@@ -321,11 +343,17 @@ describe('PropertyTypeSelector', () => {
 
 describe('AddressPrecisionPicker', () => {
   it('is a radiogroup of three radio cards, one checked, with the explanation as a hint', async () => {
-    await mount(<AddressPrecisionPicker value="street" onValueChange={() => undefined} testID="p" />);
+    await mount(
+      <AddressPrecisionPicker value="street" onValueChange={() => undefined} testID="p" />,
+    );
     const group = container.querySelector('[role="radiogroup"]');
     expect(group?.getAttribute('aria-label')).toBe('Address precision');
     const radios = Array.from(container.querySelectorAll('[role="radio"]'));
-    expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual(['Exact address', 'Street only', 'Approximate area']);
+    expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual([
+      'Exact address',
+      'Street only',
+      'Approximate area',
+    ]);
     expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
     expect(container.textContent).toContain('The published map follows this choice.');
   });
@@ -402,7 +430,9 @@ describe('ListingQualityMeter', () => {
     act(() => row.click());
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(row.textContent).toContain('You have 3.');
-    expect(byTestId('q-item-kitchen').getAttribute('aria-label')).toBe('Describe the kitchen, Done');
+    expect(byTestId('q-item-kitchen').getAttribute('aria-label')).toBe(
+      'Describe the kitchen, Done',
+    );
     expect(byTestId('q-tips').textContent).toContain('Shoot in daylight.');
   });
 
@@ -425,7 +455,10 @@ describe('ListingPreviewPane', () => {
     price: '€1450',
     priceUnit: 'month',
     description: 'Light from two sides.',
-    facts: [{ label: '3', accessibilityLabel: '3 bedrooms' }, { label: '2', accessibilityLabel: '2 baths' }],
+    facts: [
+      { label: '3', accessibilityLabel: '3 bedrooms' },
+      { label: '2', accessibilityLabel: '2 baths' },
+    ],
   };
 
   it('starts on the card and switches to the page through tabs', async () => {
@@ -444,7 +477,14 @@ describe('ListingPreviewPane', () => {
   });
 
   it('renders the app page when given', async () => {
-    await mount(<ListingPreviewPane listing={listing} defaultMode="page" renderPage={() => null} testID="v" />);
+    await mount(
+      <ListingPreviewPane
+        listing={listing}
+        defaultMode="page"
+        renderPage={() => null}
+        testID="v"
+      />,
+    );
     expect(byTestId('v-page').textContent).toBe('');
   });
 });

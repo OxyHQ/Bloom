@@ -41,7 +41,7 @@ describe('HoverCard (native)', () => {
     expect(utils.queryByText('Profile card')).not.toBeNull();
   });
 
-  it("leaves a plain press to the child, and does not open", () => {
+  it('leaves a plain press to the child, and does not open', () => {
     const onPress = jest.fn();
     const utils = renderCard({ onPress });
     fireEvent.press(utils.getByText('@nate'));

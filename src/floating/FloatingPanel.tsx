@@ -73,10 +73,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Backdrop, OverlayRoot } from '../overlay';
-import {
-  resolveDropdownPlacement,
-  type DropdownPlacement,
-} from '../overlay/dropdown-placement';
+import { resolveDropdownPlacement, type DropdownPlacement } from '../overlay/dropdown-placement';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
@@ -177,8 +174,7 @@ function samePlacement(a: DropdownPlacement | null, b: DropdownPlacement | null)
 
 /** The corner the panel grows from: the one nearest its trigger. */
 function transformOriginFor(side: FloatingSide, align: string): string {
-  const cross =
-    align === 'end' ? 'end' : align === 'center' ? 'center' : 'start';
+  const cross = align === 'end' ? 'end' : align === 'center' ? 'center' : 'start';
   if (side === 'bottom' || side === 'top') {
     const y = side === 'bottom' ? 'top' : 'bottom';
     const x = cross === 'end' ? 'right' : cross === 'center' ? 'center' : 'left';
@@ -218,8 +214,20 @@ export function FloatingPanel({
   const palette = useMenuPalette();
   const ownFill = StyleSheet.flatten(style)?.backgroundColor ?? palette.surface;
   const parsedFill = typeof ownFill === 'string' ? parseRgba(ownFill) : null;
-  const publishedFill = typeof ownFill === 'string' ? resolveSurfaceMaterial({ fill: ownFill, parentFill: parentFill, paint: surfaceMaterial !== 'flat' }).publishedFill : undefined;
-  const materialStyle = useSurfaceMaterial('.bloom-floating-surface', 'bloom-floating-surface-css', typeof ownFill === 'string' ? ownFill : 'transparent', surfaceMaterial !== 'flat');
+  const publishedFill =
+    typeof ownFill === 'string'
+      ? resolveSurfaceMaterial({
+          fill: ownFill,
+          parentFill: parentFill,
+          paint: surfaceMaterial !== 'flat',
+        }).publishedFill
+      : undefined;
+  const materialStyle = useSurfaceMaterial(
+    '.bloom-floating-surface',
+    'bloom-floating-surface-css',
+    typeof ownFill === 'string' ? ownFill : 'transparent',
+    surfaceMaterial !== 'flat',
+  );
   const transparentFill = ownFill === 'transparent' || parsedFill?.a === 0;
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
   // and `Portal` renders null on its first pass (it resolves its host in its own
@@ -271,10 +279,7 @@ export function FloatingPanel({
     if (phase !== 'closing') return;
     // Deliberately the SAME constant the exit animates over, so the unmount can
     // never land before the animation finishes or long after it.
-    const timer = setTimeout(
-      () => setPhase('closed'),
-      reducedMotion ? 0 : chrome.duration,
-    );
+    const timer = setTimeout(() => setPhase('closed'), reducedMotion ? 0 : chrome.duration);
     return () => clearTimeout(timer);
   }, [phase, reducedMotion, chrome.duration]);
 
@@ -384,11 +389,7 @@ export function FloatingPanel({
   const landed = useMemo(() => {
     if (!placement || !anchor) return null;
     const horizontal = side === 'left' || side === 'right';
-    const resolved = resolvedSide(
-      side,
-      placement,
-      horizontal ? anchor.right : anchor.bottom,
-    );
+    const resolved = resolvedSide(side, placement, horizontal ? anchor.right : anchor.bottom);
     return { side: resolved, origin: transformOriginFor(resolved, align) };
   }, [placement, anchor, side, align]);
 
@@ -397,17 +398,9 @@ export function FloatingPanel({
   const geometry = landed ?? held;
 
   const slideX =
-    geometry?.side === 'right'
-      ? -chrome.slide
-      : geometry?.side === 'left'
-        ? chrome.slide
-        : 0;
+    geometry?.side === 'right' ? -chrome.slide : geometry?.side === 'left' ? chrome.slide : 0;
   const slideY =
-    geometry?.side === 'bottom'
-      ? -chrome.slide
-      : geometry?.side === 'top'
-        ? chrome.slide
-        : 0;
+    geometry?.side === 'bottom' ? -chrome.slide : geometry?.side === 'top' ? chrome.slide : 0;
 
   // The one imperative drive. It only starts once a placement exists, so the
   // panel never paints a frame at the wrong position — before that `progress` is
@@ -417,13 +410,21 @@ export function FloatingPanel({
       if (!placement) return;
       progress.value = reducedMotion
         ? 1
-        : withTiming(1, { ...MOTION_RECIPES.present, duration: chrome.duration, easing: chrome.easing });
+        : withTiming(1, {
+            ...MOTION_RECIPES.present,
+            duration: chrome.duration,
+            easing: chrome.easing,
+          });
       return;
     }
     if (phase === 'closing') {
       progress.value = reducedMotion
         ? 0
-        : withTiming(0, { ...MOTION_RECIPES.dismiss, duration: chrome.duration, easing: chrome.easing });
+        : withTiming(0, {
+            ...MOTION_RECIPES.dismiss,
+            duration: chrome.duration,
+            easing: chrome.easing,
+          });
       return;
     }
     progress.value = 0;
@@ -447,8 +448,7 @@ export function FloatingPanel({
       ],
       ...(blurFrom > 0
         ? {
-            filter:
-              progress.value >= 1 ? 'none' : `blur(${blurFrom * (1 - progress.value)}px)`,
+            filter: progress.value >= 1 ? 'none' : `blur(${blurFrom * (1 - progress.value)}px)`,
           }
         : null),
     }),
@@ -518,7 +518,11 @@ export function FloatingPanel({
           role={role}
           aria-label={label}
           testID={testID}
-          className={cx(surfaceMaterial !== 'flat' && 'bloom-floating-surface', chrome.className, className)}
+          className={cx(
+            surfaceMaterial !== 'flat' && 'bloom-floating-surface',
+            chrome.className,
+            className,
+          )}
           style={[
             styles.panel,
             PANEL_CURVE,
@@ -564,7 +568,8 @@ export function FloatingPanel({
             motionStyle,
             style,
             materialStyle,
-          ]}>
+          ]}
+        >
           {/*
             The panel IS a surface, so it publishes the rung its children sit on.
             Without it a `TextField` inside a menu or popover stepped off the PAGE
@@ -577,7 +582,9 @@ export function FloatingPanel({
             it published level 0 inside a popover, which is the case the ladder
             exists for.
           */}
-          <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>{children}</SurfaceLevelProvider>
+          <SurfaceLevelProvider level={transparentFill ? 0 : 1} fill={publishedFill}>
+            {children}
+          </SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>
     </Portal>

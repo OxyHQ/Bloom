@@ -118,13 +118,7 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
         />
       ))
     : Array.from({ length: count }, (_, i) => (
-        <ShimmerDot
-          key={i}
-          phase={i / count}
-          color={color}
-          size={dotSize}
-          driver={driver}
-        />
+        <ShimmerDot key={i} phase={i / count} color={color} size={dotSize} driver={driver} />
       ));
 
   return (

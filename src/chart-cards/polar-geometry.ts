@@ -22,14 +22,24 @@ export function round4(value: number): number {
 }
 
 /** recharts `polarToCartesian`. */
-export function polarToCartesian(cx: number, cy: number, radius: number, angle: number): PolarPoint {
+export function polarToCartesian(
+  cx: number,
+  cy: number,
+  radius: number,
+  angle: number,
+): PolarPoint {
   return { x: cx + Math.cos(-RADIAN * angle) * radius, y: cy + Math.sin(-RADIAN * angle) * radius };
 }
 
 const sign = (n: number) => (n === 0 ? 0 : n > 0 ? 1 : -1);
 
 /** A pointer's distance from the centre and its angle, 0…360 (recharts `getAngleOfPoint`). */
-export function angleOfPoint(x: number, y: number, cx: number, cy: number): { radius: number; angle: number } {
+export function angleOfPoint(
+  x: number,
+  y: number,
+  cx: number,
+  cy: number,
+): { radius: number; angle: number } {
   const radius = Math.hypot(x - cx, y - cy);
   if (radius <= 0) return { radius, angle: 0 };
   let angle = Math.acos((x - cx) / radius) / RADIAN;
@@ -63,7 +73,13 @@ export interface PolarFrame {
  * (not of the area inside the margin), the max radius is half the smaller side
  * inside the margin.
  */
-export function polarFrame(width: number, height: number, cxFraction = 0.5, cyFraction = 0.5, margin = 0): PolarFrame {
+export function polarFrame(
+  width: number,
+  height: number,
+  cxFraction = 0.5,
+  cyFraction = 0.5,
+  margin = 0,
+): PolarFrame {
   return {
     cx: width * cxFraction,
     cy: height * cyFraction,
@@ -91,7 +107,14 @@ const deltaAngleOf = (startAngle: number, endAngle: number) =>
 
 const n = round4;
 
-function plainSectorPath({ cx, cy, innerRadius, outerRadius, startAngle, endAngle }: SectorShape): string {
+function plainSectorPath({
+  cx,
+  cy,
+  innerRadius,
+  outerRadius,
+  startAngle,
+  endAngle,
+}: SectorShape): string {
   const angle = deltaAngleOf(startAngle, endAngle);
   const tempEndAngle = startAngle + angle;
   const outerStart = polarToCartesian(cx, cy, outerRadius, startAngle);
@@ -153,7 +176,8 @@ export function sectorPath(shape: SectorShape): string | null {
   const { innerRadius, outerRadius, startAngle, endAngle, cornerRadius = 0 } = shape;
   if (outerRadius < innerRadius || startAngle === endAngle) return null;
   const cr = Math.min(cornerRadius, (outerRadius - innerRadius) / 2);
-  if (cr > 0 && Math.abs(startAngle - endAngle) < 360) return cornerSectorPath({ ...shape, cornerRadius: cr });
+  if (cr > 0 && Math.abs(startAngle - endAngle) < 360)
+    return cornerSectorPath({ ...shape, cornerRadius: cr });
   return plainSectorPath(shape);
 }
 
@@ -196,7 +220,7 @@ export function radarIndexAt(
   let best = 0;
   let bestDistance = Infinity;
   for (let i = 0; i < count; i++) {
-    const d = Math.abs((((angle - radarAxisAngle(i, count)) % 360) + 540) % 360 - 180);
+    const d = Math.abs(((((angle - radarAxisAngle(i, count)) % 360) + 540) % 360) - 180);
     if (d < bestDistance) {
       bestDistance = d;
       best = i;
@@ -219,7 +243,12 @@ export interface RingBand {
  * `[inner, outer]`, one band per item; each bar keeps `barCategoryGap` of its
  * band on both sides and a size rounded to whole pixels.
  */
-export function radialBarBands(count: number, inner: number, outer: number, categoryGap: number): RingBand[] {
+export function radialBarBands(
+  count: number,
+  inner: number,
+  outer: number,
+  categoryGap: number,
+): RingBand[] {
   if (count <= 0) return [];
   const band = (outer - inner) / count;
   const offset = band * categoryGap;
@@ -342,7 +371,9 @@ export function animatedPieAngles(
   const out: SectorAngles[] = [];
   target.forEach((t, i) => {
     const direction = sign(t.endAngle - t.startAngle) || -1;
-    const start = i ? out[i - 1]!.endAngle + direction * paddingAngle * (values[i] !== 0 ? 1 : 0) : t.startAngle;
+    const start = i
+      ? out[i - 1]!.endAngle + direction * paddingAngle * (values[i] !== 0 ? 1 : 0)
+      : t.startAngle;
     out.push({ startAngle: start, endAngle: start + (t.endAngle - t.startAngle) * progress });
   });
   return out;

@@ -105,4 +105,3 @@ export function warnLottieUnavailable(): void {
       'lottie-react-native`) to animate stickers.',
   );
 }
-

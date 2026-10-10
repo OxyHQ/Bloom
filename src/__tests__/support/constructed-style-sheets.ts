@@ -37,10 +37,7 @@ export function installConstructedStyleSheets(): ConstructedStyleSheetsHarness {
     }
   }
 
-  const previousConstructor = Object.getOwnPropertyDescriptor(
-    globalThis,
-    'CSSStyleSheet',
-  );
+  const previousConstructor = Object.getOwnPropertyDescriptor(globalThis, 'CSSStyleSheet');
 
   Object.defineProperty(globalThis, 'CSSStyleSheet', {
     value: FakeCSSStyleSheet,
@@ -54,8 +51,7 @@ export function installConstructedStyleSheets(): ConstructedStyleSheetsHarness {
   });
 
   return {
-    adopted: () =>
-      document.adoptedStyleSheets as unknown as readonly FakeStyleSheet[],
+    adopted: () => document.adoptedStyleSheets as unknown as readonly FakeStyleSheet[],
     uninstall: () => {
       Reflect.deleteProperty(document, 'adoptedStyleSheets');
       if (previousConstructor) {

@@ -26,7 +26,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 }
 
 function viewport(width: number) {
-  jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width, height: 900, scale: 2, fontScale: 1 });
+  jest
+    .spyOn(ReactNative, 'useWindowDimensions')
+    .mockReturnValue({ width, height: 900, scale: 2, fontScale: 1 });
 }
 
 afterEach(() => jest.restoreAllMocks());
@@ -35,7 +37,14 @@ describe('AiProfileCard', () => {
   it('keeps the geometry: radius 24 + 1px border, a 165px cover with 23px top corners, content 124 / 16 / 16, 15 apart', () => {
     viewport(1440);
     const { getByTestId } = renderCard(
-      <AiProfileCard testID="card" name="Maya Collins" contributions={7462} countUpDuration={0} cells={CELLS} coverSource="https://example.com/cover.png" />,
+      <AiProfileCard
+        testID="card"
+        name="Maya Collins"
+        contributions={7462}
+        countUpDuration={0}
+        cells={CELLS}
+        coverSource="https://example.com/cover.png"
+      />,
     );
     const theme = buildTheme('teal', 'light');
     expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({
@@ -65,7 +74,14 @@ describe('AiProfileCard', () => {
   it('crops the cover like object-position 50% 45% once the photo reports its size', () => {
     viewport(1440);
     const { getByTestId } = renderCard(
-      <AiProfileCard testID="card" name="Maya" contributions={1} countUpDuration={0} cells={CELLS} coverSource="https://example.com/cover.png" />,
+      <AiProfileCard
+        testID="card"
+        name="Maya"
+        contributions={1}
+        countUpDuration={0}
+        cells={CELLS}
+        coverSource="https://example.com/cover.png"
+      />,
     );
     const image = getByTestId('card-cover-image', { includeHiddenElements: true });
     act(() => {
@@ -77,7 +93,9 @@ describe('AiProfileCard', () => {
       fireEvent(image, 'load', { nativeEvent: { source: { width: 1356, height: 400, uri: 'x' } } });
     });
     // Cover scale max(678/1356, 165/400) = 0.5 → 678 × 200, 35px of overflow, 45% of it above.
-    expect(resolvedStyle(getByTestId('card-cover-image', { includeHiddenElements: true }).props.style)).toMatchObject({
+    expect(
+      resolvedStyle(getByTestId('card-cover-image', { includeHiddenElements: true }).props.style),
+    ).toMatchObject({
       position: 'absolute',
       left: 0,
       width: 678,
@@ -100,14 +118,23 @@ describe('AiProfileCard', () => {
         delta="+14.8%"
         stats={STATS}
         cells={CELLS}
-        actions={<Button size="sm" appearance="outline" tone="neutral">Share</Button>}
+        actions={
+          <Button size="sm" appearance="outline" tone="neutral">
+            Share
+          </Button>
+        }
       />,
     );
     expect(getByText('Maya Collins')).toBeTruthy();
     expect(getByText('@maya')).toBeTruthy();
     expect(getByText('PRO')).toBeTruthy();
     expect(getByText('Share')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('card-actions').props.style)).toMatchObject({ position: 'absolute', top: -34, right: 4, gap: 10 });
+    expect(resolvedStyle(getByTestId('card-actions').props.style)).toMatchObject({
+      position: 'absolute',
+      top: -34,
+      right: 4,
+      gap: 10,
+    });
     expect(getByTestId('card-headline').props.children).toBe('$7,462');
     expect(resolvedStyle(getByTestId('card-delta').props.style).backgroundColor).toBe(
       theme.colors.secondarySubtle,
@@ -126,21 +153,47 @@ describe('AiProfileCard', () => {
 
   it('lays the tiles in one row from 640px and two columns below', () => {
     viewport(1024);
-    const wide = renderCard(<AiProfileCard testID="card" name="M" contributions={1} countUpDuration={0} stats={STATS} cells={CELLS} />);
+    const wide = renderCard(
+      <AiProfileCard
+        testID="card"
+        name="M"
+        contributions={1}
+        countUpDuration={0}
+        stats={STATS}
+        cells={CELLS}
+      />,
+    );
     expect(wide.getByTestId('card-stats').props.children).toHaveLength(1);
     wide.unmount();
     viewport(390);
-    const narrow = renderCard(<AiProfileCard testID="card" name="M" contributions={1} countUpDuration={0} stats={STATS} cells={CELLS} />);
+    const narrow = renderCard(
+      <AiProfileCard
+        testID="card"
+        name="M"
+        contributions={1}
+        countUpDuration={0}
+        stats={STATS}
+        cells={CELLS}
+      />,
+    );
     expect(narrow.getByTestId('card-stats').props.children).toHaveLength(2);
   });
 
   it('lands the mount count-up on the total (jest snaps the roll) and follows a new total', () => {
     viewport(1440);
-    const { getByTestId, rerender } = renderCard(<AiProfileCard testID="card" name="M" contributions={7462} cells={CELLS} />);
+    const { getByTestId, rerender } = renderCard(
+      <AiProfileCard testID="card" name="M" contributions={7462} cells={CELLS} />,
+    );
     expect(getByTestId('card-headline').props.children).toBe('$7,462');
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AiProfileCard testID="card" name="M" contributions={958} cells={CELLS} format={(v) => `${v} PRs`} />
+        <AiProfileCard
+          testID="card"
+          name="M"
+          contributions={958}
+          cells={CELLS}
+          format={(v) => `${v} PRs`}
+        />
       </BloomThemeProvider>,
     );
     expect(getByTestId('card-headline').props.children).toBe('958 PRs');
@@ -150,7 +203,14 @@ describe('AiProfileCard', () => {
     viewport(1440);
     const onPeriodChange = jest.fn();
     const { getByTestId } = renderCard(
-      <AiProfileCard testID="card" name="M" contributions={1} countUpDuration={0} cells={CELLS} onPeriodChange={onPeriodChange} />,
+      <AiProfileCard
+        testID="card"
+        name="M"
+        contributions={1}
+        countUpDuration={0}
+        cells={CELLS}
+        onPeriodChange={onPeriodChange}
+      />,
     );
     fireEvent.press(getByTestId('card-period-monthly'));
     expect(onPeriodChange).toHaveBeenLastCalledWith('monthly');
@@ -160,11 +220,23 @@ describe('AiProfileCard', () => {
     viewport(1440);
     const theme = buildTheme('teal', 'dark');
     const { getByTestId } = renderCard(
-      <AiProfileCard testID="card" name="M" contributions={1} countUpDuration={0} delta="+1%" stats={STATS} cells={CELLS} />,
+      <AiProfileCard
+        testID="card"
+        name="M"
+        contributions={1}
+        countUpDuration={0}
+        delta="+1%"
+        stats={STATS}
+        cells={CELLS}
+      />,
       'dark',
     );
-    expect(resolvedStyle(getByTestId('card').props.style).borderColor).toBe(theme.colors.borderLight);
-    expect(resolvedStyle(getByTestId('card-stat-0').props.style).backgroundColor).toBe(theme.colors.backgroundSecondary);
+    expect(resolvedStyle(getByTestId('card').props.style).borderColor).toBe(
+      theme.colors.borderLight,
+    );
+    expect(resolvedStyle(getByTestId('card-stat-0').props.style).backgroundColor).toBe(
+      theme.colors.backgroundSecondary,
+    );
     expect(resolvedStyle(getByTestId('card-delta').props.style).backgroundColor).toBe(
       theme.colors.secondarySubtle,
     );

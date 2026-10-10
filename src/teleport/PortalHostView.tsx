@@ -4,9 +4,9 @@
  *
  * Changed: import paths only, for this flat directory.
  */
-import { memo, useEffect } from "react";
-import { usePortalRegistryContext } from "./portal-registry";
-import type { PortalHostProps } from "./types";
+import { memo, useEffect } from 'react';
+import { usePortalRegistryContext } from './portal-registry';
+import type { PortalHostProps } from './types';
 
 function PortalHost({ name, children, style }: PortalHostProps) {
   const { registerHost } = usePortalRegistryContext();
@@ -19,7 +19,7 @@ function PortalHost({ name, children, style }: PortalHostProps) {
 
   return (
     <div
-      style={{ ...style, pointerEvents: "none" } as React.CSSProperties}
+      style={{ ...style, pointerEvents: 'none' } as React.CSSProperties}
       ref={(ref) => registerHost(name, ref)}
     >
       {children}

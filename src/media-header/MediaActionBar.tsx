@@ -1,7 +1,13 @@
 import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -237,13 +243,27 @@ function DownloadButtonComponent({
         style={root}
         testID={testID}
       >
-        <View pointerEvents="none" style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          pointerEvents="none"
+          style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
+        >
           {downloaded ? (
             <RiArrowDownCircleFill width={size} height={size} fill={paint.accent} />
           ) : downloading ? (
             <>
-              <Svg width={size} height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}>
-                <Circle cx={size / 2} cy={size / 2} r={r} stroke={paint.border} strokeWidth={stroke} fill="none" />
+              <Svg
+                width={size}
+                height={size}
+                style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}
+              >
+                <Circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={r}
+                  stroke={paint.border}
+                  strokeWidth={stroke}
+                  fill="none"
+                />
                 <Circle
                   cx={size / 2}
                   cy={size / 2}
@@ -307,7 +327,10 @@ function FollowButtonComponent({
   style,
   testID,
 }: FollowButtonProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'sm', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'sm', tone: 'neutral' },
+  );
   const size = inheritedSize;
 
   const { messages } = useMessages(MEDIA_HEADER_MESSAGES);
@@ -318,10 +341,14 @@ function FollowButtonComponent({
   const progress = useSharedValue(Number(following));
   const pressOffset = useSharedValue(0);
   const restoreLabel = useCallback(() => {
-    pressOffset.value = reducedMotion ? 0 : withSpring(0, { stiffness: 320, damping: 22, mass: 0.5 });
+    pressOffset.value = reducedMotion
+      ? 0
+      : withSpring(0, { stiffness: 320, damping: 22, mass: 0.5 });
   }, [pressOffset, reducedMotion]);
   useEffect(() => {
-    progress.value = reducedMotion ? Number(following) : withTiming(Number(following), { duration: 180 });
+    progress.value = reducedMotion
+      ? Number(following)
+      : withTiming(Number(following), { duration: 180 });
     restoreLabel();
   }, [following, progress, reducedMotion, restoreLabel, disabled, loading]);
   const previewLabel = useCallback(() => {
@@ -329,35 +356,108 @@ function FollowButtonComponent({
     // Anticipate the slide while keeping the current label fully legible.
     pressOffset.value = withSpring(following ? 2 : -2, { stiffness: 500, damping: 28, mass: 0.5 });
   }, [disabled, following, loading, pressOffset, reducedMotion]);
-  const idleLabelStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value, transform: [{ translateY: -8 * progress.value + pressOffset.value }] }), [progress, pressOffset]);
-  const followedLabelStyle = useAnimatedStyle(() => ({ opacity: progress.value, transform: [{ translateY: 8 * (1 - progress.value) + pressOffset.value }] }), [progress, pressOffset]);
+  const idleLabelStyle = useAnimatedStyle(
+    () => ({
+      opacity: 1 - progress.value,
+      transform: [{ translateY: -8 * progress.value + pressOffset.value }],
+    }),
+    [progress, pressOffset],
+  );
+  const followedLabelStyle = useAnimatedStyle(
+    () => ({
+      opacity: progress.value,
+      transform: [{ translateY: 8 * (1 - progress.value) + pressOffset.value }],
+    }),
+    [progress, pressOffset],
+  );
   const labelColor = color ?? resolveButtonPalette(appearance, theme, tone).rest.foreground;
   const visual = (
-    <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
-      style={{ height: 24, overflow: 'hidden', ...(iconOnly ? { width: 20 } : {}), justifyContent: 'center' }}>
-      {!iconOnly && <View style={{ height: 0, overflow: 'hidden' }}>
-        <FollowLabel className={labelClassName} style={textStyle}>{label}</FollowLabel>
-        <FollowLabel className={labelClassName} style={textStyle}>{followingLabel}</FollowLabel>
-      </View>}
-      <Animated.View testID={testID ? `${testID}-idle-label` : undefined}
-        style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, idleLabelStyle]}>
-        {iconOnly ? <RiUserAddLine width={20} height={20} fill={labelColor} />
-          : <FollowLabel className={labelClassName} style={[{ color: color ?? (labelClassName?.trim() ? undefined : labelColor) }, textStyle]} numberOfLines={1}>{label}</FollowLabel>}
+    <View
+      pointerEvents="none"
+      aria-hidden
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        height: 24,
+        overflow: 'hidden',
+        ...(iconOnly ? { width: 20 } : {}),
+        justifyContent: 'center',
+      }}
+    >
+      {!iconOnly && (
+        <View style={{ height: 0, overflow: 'hidden' }}>
+          <FollowLabel className={labelClassName} style={textStyle}>
+            {label}
+          </FollowLabel>
+          <FollowLabel className={labelClassName} style={textStyle}>
+            {followingLabel}
+          </FollowLabel>
+        </View>
+      )}
+      <Animated.View
+        testID={testID ? `${testID}-idle-label` : undefined}
+        style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, idleLabelStyle]}
+      >
+        {iconOnly ? (
+          <RiUserAddLine width={20} height={20} fill={labelColor} />
+        ) : (
+          <FollowLabel
+            className={labelClassName}
+            style={[
+              { color: color ?? (labelClassName?.trim() ? undefined : labelColor) },
+              textStyle,
+            ]}
+            numberOfLines={1}
+          >
+            {label}
+          </FollowLabel>
+        )}
       </Animated.View>
-      <Animated.View testID={testID ? `${testID}-following-label` : undefined}
-        style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, followedLabelStyle]}>
-        {iconOnly ? <RiUserFollowLine width={20} height={20} fill={labelColor} />
-          : <FollowLabel className={labelClassName} style={[{ color: color ?? (labelClassName?.trim() ? undefined : labelColor) }, textStyle]} numberOfLines={1}>{followingLabel}</FollowLabel>}
+      <Animated.View
+        testID={testID ? `${testID}-following-label` : undefined}
+        style={[
+          { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
+          followedLabelStyle,
+        ]}
+      >
+        {iconOnly ? (
+          <RiUserFollowLine width={20} height={20} fill={labelColor} />
+        ) : (
+          <FollowLabel
+            className={labelClassName}
+            style={[
+              { color: color ?? (labelClassName?.trim() ? undefined : labelColor) },
+              textStyle,
+            ]}
+            numberOfLines={1}
+          >
+            {followingLabel}
+          </FollowLabel>
+        )}
       </Animated.View>
     </View>
   );
   return (
-    <Button appearance={appearance} material={material} className={className} tone={tone} size={size} iconOnly={iconOnly}
-      pressed={following} stopPropagation accessibilityLabel={accessibilityLabel ?? label}
-      accessibilityHint={accessibilityHint} disabled={disabled} loading={loading}
-      onPressIn={previewLabel} onPressOut={restoreLabel}
-      onPress={() => onFollowChange(!following)} trailing={visual}
-      style={style} testID={testID} />
+    <Button
+      appearance={appearance}
+      material={material}
+      className={className}
+      tone={tone}
+      size={size}
+      iconOnly={iconOnly}
+      pressed={following}
+      stopPropagation
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityHint={accessibilityHint}
+      disabled={disabled}
+      loading={loading}
+      onPressIn={previewLabel}
+      onPressOut={restoreLabel}
+      onPress={() => onFollowChange(!following)}
+      trailing={visual}
+      style={style}
+      testID={testID}
+    />
   );
 }
 
@@ -397,10 +497,21 @@ function MediaActionBarComponent({
   const hasRight = onSearchPress || onViewChange || trailing;
   return (
     <View
-      style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }, style]}
+      style={[
+        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+        style,
+      ]}
       testID={testID}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, flexWrap: 'wrap' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          flexShrink: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         <PlayButton
           playing={playing}
           onPress={onPlayPress}

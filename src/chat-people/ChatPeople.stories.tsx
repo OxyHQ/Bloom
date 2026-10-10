@@ -27,34 +27,57 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-const PHOTO = (seed: string, w = 200, h = 200) =>
-  `https://picsum.photos/seed/${seed}/${w}/${h}`;
+const PHOTO = (seed: string, w = 200, h = 200) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 const SECTIONS: readonly ContactSection[] = [
   {
     letter: 'A',
     contacts: [
-      { id: 'ana', name: 'Ana Restrepo', avatar: PHOTO('ana'), subtitle: 'online', status: 'online' },
+      {
+        id: 'ana',
+        name: 'Ana Restrepo',
+        avatar: PHOTO('ana'),
+        subtitle: 'online',
+        status: 'online',
+      },
       { id: 'ade', name: 'Adeola Bakare', avatar: PHOTO('ade'), subtitle: 'last seen recently' },
     ],
   },
   {
     letter: 'D',
     contacts: [
-      { id: 'dmitri', name: 'Dmitri Volkov', avatar: PHOTO('dmitri'), subtitle: 'last seen 2 h ago', status: 'idle' },
+      {
+        id: 'dmitri',
+        name: 'Dmitri Volkov',
+        avatar: PHOTO('dmitri'),
+        subtitle: 'last seen 2 h ago',
+        status: 'idle',
+      },
     ],
   },
   {
     letter: 'K',
     contacts: [
-      { id: 'kofi', name: 'Kofi Mensah', avatar: PHOTO('kofi'), subtitle: '@kofim', status: 'busy' },
+      {
+        id: 'kofi',
+        name: 'Kofi Mensah',
+        avatar: PHOTO('kofi'),
+        subtitle: '@kofim',
+        status: 'busy',
+      },
       { id: 'kira', name: 'Kira Novak', avatar: PHOTO('kira'), subtitle: 'last seen yesterday' },
     ],
   },
   {
     letter: 'M',
     contacts: [
-      { id: 'marcel', name: 'Marcel Dubé', avatar: PHOTO('marcel'), subtitle: 'online', status: 'online' },
+      {
+        id: 'marcel',
+        name: 'Marcel Dubé',
+        avatar: PHOTO('marcel'),
+        subtitle: 'online',
+        status: 'online',
+      },
     ],
   },
   {
@@ -73,7 +96,13 @@ const SECTIONS: readonly ContactSection[] = [
   {
     letter: 'T',
     contacts: [
-      { id: 'tova', name: 'Tova Lindqvist', avatar: PHOTO('tova'), subtitle: 'online', status: 'online' },
+      {
+        id: 'tova',
+        name: 'Tova Lindqvist',
+        avatar: PHOTO('tova'),
+        subtitle: 'online',
+        status: 'online',
+      },
     ],
   },
 ];
@@ -87,11 +116,36 @@ const PICKED: readonly PersonSummary[] = [
 ];
 
 const MEMBERS: readonly MemberListItem[] = [
-  { id: 'ana', name: 'Ana Restrepo', avatar: PHOTO('ana'), role: 'owner', subtitle: 'online', status: 'online' },
-  { id: 'marcel', name: 'Marcel Dubé', avatar: PHOTO('marcel'), role: 'admin', subtitle: 'last seen recently' },
-  { id: 'nour', name: 'Nour Haddad', avatar: PHOTO('nour'), subtitle: 'last seen 2 h ago', status: 'idle' },
+  {
+    id: 'ana',
+    name: 'Ana Restrepo',
+    avatar: PHOTO('ana'),
+    role: 'owner',
+    subtitle: 'online',
+    status: 'online',
+  },
+  {
+    id: 'marcel',
+    name: 'Marcel Dubé',
+    avatar: PHOTO('marcel'),
+    role: 'admin',
+    subtitle: 'last seen recently',
+  },
+  {
+    id: 'nour',
+    name: 'Nour Haddad',
+    avatar: PHOTO('nour'),
+    subtitle: 'last seen 2 h ago',
+    status: 'idle',
+  },
   { id: 'kofi', name: 'Kofi Mensah', avatar: PHOTO('kofi'), subtitle: 'last seen yesterday' },
-  { id: 'saoirse', name: 'Saoirse Byrne', avatar: PHOTO('saoirse'), subtitle: '@sao', status: 'busy' },
+  {
+    id: 'saoirse',
+    name: 'Saoirse Byrne',
+    avatar: PHOTO('saoirse'),
+    subtitle: '@sao',
+    status: 'busy',
+  },
 ];
 
 function Surface({ children }: { children: React.ReactNode }) {
@@ -277,8 +331,8 @@ export const ChannelPost: Story = {
         }
         testID="post"
       >
-        Swell picks up after midnight along the whole north shore. The harbour road stays open,
-        but the lower car park floods on the high tide at 03:10.
+        Swell picks up after midnight along the whole north shore. The harbour road stays open, but
+        the lower car park floods on the high tide at 03:10.
       </ChannelPostCard>
     </BothModes>
   ),

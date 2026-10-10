@@ -54,7 +54,8 @@ function MapCompassComponent({
   testID,
 }: MapCompassProps) {
   const { messages } = useMessages(MAP_CONTROLS_MESSAGES);
-  const pointsNorth = Math.abs(((heading % 360) + 360) % 360) <= MAP_CONTROLS_GEOMETRY.northTolerance;
+  const pointsNorth =
+    Math.abs(((heading % 360) + 360) % 360) <= MAP_CONTROLS_GEOMETRY.northTolerance;
   if (hideAtNorth && pointsNorth) return null;
 
   const name = accessibilityLabel ?? messages.compass(Math.round(heading));

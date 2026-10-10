@@ -103,7 +103,7 @@ function flush() {
 }
 
 describe('SettingsModal shell', () => {
-  it("keeps the regular geometry: 871×614 panel, radius 24, 274 rail with p 10 and a right hairline", () => {
+  it('keeps the regular geometry: 871×614 panel, radius 24, 274 rail with p 10 and a right hairline', () => {
     const { getByTestId } = renderWithTheme(<Controlled />);
     flush();
     const panel = resolvedStyle(getByTestId('settings').props.style);
@@ -140,7 +140,9 @@ describe('SettingsModal shell', () => {
     const general = getByTestId('settings-nav-general');
     expect(general.props.accessibilityLabel).toBe('General');
     expect(general.props.accessibilityState).toMatchObject({ selected: true });
-    expect(getByTestId('settings-nav-profile').props.accessibilityState).toMatchObject({ selected: false });
+    expect(getByTestId('settings-nav-profile').props.accessibilityState).toMatchObject({
+      selected: false,
+    });
     expect(getByTestId('settings-close').props.accessibilityLabel).toBe('Close settings');
     expect(getByRole('heading').props.children).toBe('General');
   });
@@ -174,10 +176,14 @@ describe('SettingsModal shell', () => {
     expect(getByText('general body')).toBeTruthy();
     pressHost(getByTestId('settings-nav-profile'));
     expect(queryByText('general body')).toBeNull();
-    expect(getByTestId('settings-nav-profile').props.accessibilityState).toMatchObject({ selected: true });
+    expect(getByTestId('settings-nav-profile').props.accessibilityState).toMatchObject({
+      selected: true,
+    });
     // Billing has no page: pressing it leaves Profile selected.
     fireEvent.press(getByTestId('settings-nav-billing'));
-    expect(getByTestId('settings-nav-profile').props.accessibilityState).toMatchObject({ selected: true });
+    expect(getByTestId('settings-nav-profile').props.accessibilityState).toMatchObject({
+      selected: true,
+    });
   });
 
   it('paints the selected row background/secondary/hover (neutral-200 light)', () => {
@@ -186,8 +192,15 @@ describe('SettingsModal shell', () => {
     const theme = buildTheme('teal', 'light');
     const { colors } = theme;
     const row = resolvedStyle(getByTestId('settings-nav-general').props.style);
-    expect(row).toMatchObject({ padding: 8, borderRadius: 10, gap: 8, backgroundColor: colors.backgroundTertiary });
-    expect(resolvedStyle(getByTestId('settings-nav-profile').props.style).backgroundColor).toBe('transparent');
+    expect(row).toMatchObject({
+      padding: 8,
+      borderRadius: 10,
+      gap: 8,
+      backgroundColor: colors.backgroundTertiary,
+    });
+    expect(resolvedStyle(getByTestId('settings-nav-profile').props.style).backgroundColor).toBe(
+      'transparent',
+    );
   });
 
   it('requests close from the close button and unmounts once closed', () => {
@@ -205,7 +218,15 @@ describe('SettingsModal shell', () => {
     let control!: DialogControlProps;
     function Imperative() {
       control = useDialogControl();
-      return <SettingsModal control={control} onClose={onClose} groups={GROUPS} pages={PAGES} testID="settings" />;
+      return (
+        <SettingsModal
+          control={control}
+          onClose={onClose}
+          groups={GROUPS}
+          pages={PAGES}
+          testID="settings"
+        />
+      );
     }
     const { queryByTestId } = renderWithTheme(<Imperative />);
     // Open and close within the same frame: the enter must not win.
@@ -228,13 +249,20 @@ describe('SettingsModal shell', () => {
     const { getByTestId } = renderWithTheme(<Controlled />);
     flush();
     pressHost(getByTestId('settings-nav-profile'));
-    const toast = () => resolvedStyle(getByTestId('settings-saved', { includeHiddenElements: true }).props.style);
+    const toast = () =>
+      resolvedStyle(getByTestId('settings-saved', { includeHiddenElements: true }).props.style);
     expect(toast().opacity).toBe(0);
     act(() => {
       getByTestId('save').props.onPress();
     });
     expect(toast().opacity).toBe(1);
-    expect(toast()).toMatchObject({ borderWidth: 1, paddingLeft: 6, paddingRight: 10, paddingTop: 4, gap: 4 });
+    expect(toast()).toMatchObject({
+      borderWidth: 1,
+      paddingLeft: 6,
+      paddingRight: 10,
+      paddingTop: 4,
+      gap: 4,
+    });
     act(() => {
       jest.advanceTimersByTime(2100);
     });
@@ -245,10 +273,23 @@ describe('SettingsModal shell', () => {
 describe('SettingsModal responsive layout', () => {
   it('lets a full-bleed page own its compact header and return to section navigation', () => {
     setWindow(375, 812);
-    const pages = { general: { title: 'Catalog', fullBleed: true, content: ({ onBack, backLabel }: { onBack?: () => void; backLabel: string }) => <>
-      <RNText>Catalog header</RNText><RNText testID="catalog-back" accessibilityLabel={backLabel} onPress={onBack}>back</RNText>
-    </> } };
-    const { getByTestId, getAllByText, queryByTestId, queryByText } = renderWithTheme(<SettingsModal open initialView="page" groups={GROUPS} pages={pages} testID="settings" />);
+    const pages = {
+      general: {
+        title: 'Catalog',
+        fullBleed: true,
+        content: ({ onBack, backLabel }: { onBack?: () => void; backLabel: string }) => (
+          <>
+            <RNText>Catalog header</RNText>
+            <RNText testID="catalog-back" accessibilityLabel={backLabel} onPress={onBack}>
+              back
+            </RNText>
+          </>
+        ),
+      },
+    };
+    const { getByTestId, getAllByText, queryByTestId, queryByText } = renderWithTheme(
+      <SettingsModal open initialView="page" groups={GROUPS} pages={pages} testID="settings" />,
+    );
     flush();
     expect(getAllByText('Catalog header')).toHaveLength(1);
     expect(queryByTestId('settings-header')).toBeNull();
@@ -258,14 +299,39 @@ describe('SettingsModal responsive layout', () => {
   });
 
   it('supplies no section-back action beside the desktop rail and preserves static compact headers', () => {
-    const content = jest.fn((_navigation: import('../settings-modal').SettingsModalPageNavigation) => <RNText>catalog body</RNText>);
-    const desktop = renderWithTheme(<SettingsModal open groups={GROUPS} pages={{ general: { title: 'Catalog', fullBleed: true, content } }} testID="settings" />);
+    const content = jest.fn(
+      (_navigation: import('../settings-modal').SettingsModalPageNavigation) => (
+        <RNText>catalog body</RNText>
+      ),
+    );
+    const desktop = renderWithTheme(
+      <SettingsModal
+        open
+        groups={GROUPS}
+        pages={{ general: { title: 'Catalog', fullBleed: true, content } }}
+        testID="settings"
+      />,
+    );
     flush();
-    expect(content.mock.calls[content.mock.calls.length - 1]?.[0]).toMatchObject({ onBack: undefined, backLabel: 'Back', closeLabel: 'Close settings' });
+    expect(content.mock.calls[content.mock.calls.length - 1]?.[0]).toMatchObject({
+      onBack: undefined,
+      backLabel: 'Back',
+      closeLabel: 'Close settings',
+    });
     expect(desktop.getByTestId('settings-rail')).toBeTruthy();
     desktop.unmount();
     setWindow(375, 812);
-    const compact = renderWithTheme(<SettingsModal open initialView="page" groups={GROUPS} pages={{ general: { title: 'Catalog', fullBleed: true, content: <RNText>catalog body</RNText> } }} testID="settings" />);
+    const compact = renderWithTheme(
+      <SettingsModal
+        open
+        initialView="page"
+        groups={GROUPS}
+        pages={{
+          general: { title: 'Catalog', fullBleed: true, content: <RNText>catalog body</RNText> },
+        }}
+        testID="settings"
+      />,
+    );
     flush();
     expect(compact.getByLabelText('Back')).toBeTruthy();
   });
@@ -277,7 +343,10 @@ describe('SettingsModal responsive layout', () => {
     expect(resolvedStyle(getByTestId('settings-rail').props.style)).toMatchObject({ width: 220 });
     expect(getByTestId('settings-header')).toBeTruthy();
     // Still a floating panel with the viewport gutter.
-    expect(resolvedStyle(getByTestId('settings').props.style)).toMatchObject({ width: 736, borderRadius: 24 });
+    expect(resolvedStyle(getByTestId('settings').props.style)).toMatchObject({
+      width: 736,
+      borderRadius: 24,
+    });
   });
 
   it('goes full screen on a phone: section list first, then a page with a back button', () => {
@@ -287,7 +356,9 @@ describe('SettingsModal responsive layout', () => {
     const panel = resolvedStyle(getByTestId('settings').props.style);
     expect(panel).toMatchObject({ width: 375, height: 812, borderRadius: 0 });
     // The list: every section, nothing selected, no page body yet, no back button.
-    expect(getByTestId('settings-nav-general').props.accessibilityState).toMatchObject({ selected: false });
+    expect(getByTestId('settings-nav-general').props.accessibilityState).toMatchObject({
+      selected: false,
+    });
     expect(queryByText('general body')).toBeNull();
     expect(queryByTestId('settings-header-back')).toBeNull();
     expect(getByTestId('settings-rail').findByProps({ testID: 'settings-header' })).toBeTruthy();
@@ -375,12 +446,26 @@ describe('SettingsCard rows', () => {
         </SettingsRow>
       </SettingsCard>,
     );
-    expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({ borderRadius: 16, paddingLeft: 12 });
+    expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({
+      borderRadius: 16,
+      paddingLeft: 12,
+    });
     const a = resolvedStyle(getByTestId('a').props.style);
-    expect(a).toMatchObject({ borderBottomWidth: 1, minHeight: 52, paddingTop: 10, paddingBottom: 10, paddingRight: 10, gap: 16 });
+    expect(a).toMatchObject({
+      borderBottomWidth: 1,
+      minHeight: 52,
+      paddingTop: 10,
+      paddingBottom: 10,
+      paddingRight: 10,
+      gap: 16,
+    });
     expect(resolvedStyle(getByTestId('b').props.style).borderBottomWidth).toBe(1);
     expect(resolvedStyle(getByTestId('c').props.style).borderBottomWidth).toBe(0);
-    expect(resolvedStyle(getByTestId('value').props.style)).toMatchObject({ height: 32, width: 202, borderRadius: 10 });
+    expect(resolvedStyle(getByTestId('value').props.style)).toMatchObject({
+      height: 32,
+      width: 202,
+      borderRadius: 10,
+    });
   });
 
   it('commits a text field only when the value changed', () => {
@@ -403,7 +488,13 @@ describe('SettingsServerList', () => {
       <SettingsServerList
         testID="list"
         servers={[
-          { id: 'figma', name: 'Figma', status: 'connected', summary: '26 tools', tools: ['get_metadata'] },
+          {
+            id: 'figma',
+            name: 'Figma',
+            status: 'connected',
+            summary: '26 tools',
+            tools: ['get_metadata'],
+          },
           { id: 'astro', name: 'astro', status: 'error' },
         ]}
       />,
@@ -413,7 +504,9 @@ describe('SettingsServerList', () => {
     expect(expand.props['aria-expanded']).toBe(false);
     pressHost(expand);
     expect(getByTestId('list-figma-expand').props['aria-expanded']).toBe(true);
-    expect(getByTestId('list-figma-expand').props.accessibilityState).toMatchObject({ expanded: true });
+    expect(getByTestId('list-figma-expand').props.accessibilityState).toMatchObject({
+      expanded: true,
+    });
     expect(getByLabelText('Show astro output')).toBeTruthy();
     // The error row is last: no hairline.
     expect(resolvedStyle(getByTestId('list-astro').props.style).borderBottomWidth).toBe(0);
@@ -444,12 +537,28 @@ describe('palette and helpers', () => {
   });
 });
 
-
-it.each(['light', 'dark'] as const)('publishes the actual settings page backing in %s mode', mode => {
-  function Probe() { return <RNText testID="surface-probe">{useSurfaceFill()}</RNText>; }
-  const { getByTestId } = renderWithTheme(<SettingsModal open onClose={() => {}} groups={GROUPS} pages={{general: {title: 'General', content: <Probe />}}} testID="settings" />, mode);
-  flush();
-  const theme = buildTheme('teal', mode);
-  const expected = resolveSurfaceMaterial({ fill: resolveSettingsPalette(theme).full, parentFill: theme.colors.background }).publishedFill;
-  expect(getByTestId('surface-probe').props.children).toBe(expected);
-});
+it.each(['light', 'dark'] as const)(
+  'publishes the actual settings page backing in %s mode',
+  (mode) => {
+    function Probe() {
+      return <RNText testID="surface-probe">{useSurfaceFill()}</RNText>;
+    }
+    const { getByTestId } = renderWithTheme(
+      <SettingsModal
+        open
+        onClose={() => {}}
+        groups={GROUPS}
+        pages={{ general: { title: 'General', content: <Probe /> } }}
+        testID="settings"
+      />,
+      mode,
+    );
+    flush();
+    const theme = buildTheme('teal', mode);
+    const expected = resolveSurfaceMaterial({
+      fill: resolveSettingsPalette(theme).full,
+      parentFill: theme.colors.background,
+    }).publishedFill;
+    expect(getByTestId('surface-probe').props.children).toBe(expected);
+  },
+);

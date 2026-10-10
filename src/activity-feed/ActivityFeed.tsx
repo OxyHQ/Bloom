@@ -152,11 +152,12 @@ function ActivityFeedComponent({
               </Text>
               {long ? (
                 <Button
-
                   size="xs"
                   onPress={() => toggle(entry.id)}
                   accessibilityLabel={`${open ? lessLabel : moreLabel}: ${entry.title}`}
-                  testID={eid('reveal')} tone="accent" appearance="plain"
+                  testID={eid('reveal')}
+                  tone="accent"
+                  appearance="plain"
                 >
                   {open ? lessLabel : moreLabel}
                 </Button>

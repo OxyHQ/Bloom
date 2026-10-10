@@ -24,12 +24,10 @@ export type MockGesture = {
 
 const gestureBuilder = (): MockGesture => {
   const handlers: MockGesture['__handlers'] = {};
-  const record =
-    (name: string) =>
-    (fn: (event: never) => void) => {
-      handlers[name] = fn;
-      return builder;
-    };
+  const record = (name: string) => (fn: (event: never) => void) => {
+    handlers[name] = fn;
+    return builder;
+  };
   const builder = {
     enabled: () => builder,
     simultaneousWithExternalGesture: () => builder,

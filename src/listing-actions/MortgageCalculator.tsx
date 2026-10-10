@@ -135,18 +135,17 @@ function MortgageCalculatorComponent({
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     setWidth(Math.round(e.nativeEvent.layout.width));
   }, []);
-  const split = layout === 'split' || (layout === 'auto' && width != null && width >= MORTGAGE_SPLIT_FROM);
+  const split =
+    layout === 'split' || (layout === 'auto' && width != null && width >= MORTGAGE_SPLIT_FROM);
 
   const result = useMemo(
     () => computeMortgage({ price, downPayment: down, years, annualRate: rate }),
     [price, down, years, rate],
   );
   const percent = price > 0 ? (Math.min(down, price) / price) * 100 : 0;
-  const setPercent = (pct: number) => setDown(Math.round((price * Math.min(100, Math.max(0, pct))) / 100));
-  const shownDisclaimer =
-    disclaimer === undefined
-      ? messages.mortgageDisclaimer
-      : disclaimer;
+  const setPercent = (pct: number) =>
+    setDown(Math.round((price * Math.min(100, Math.max(0, pct))) / 100));
+  const shownDisclaimer = disclaimer === undefined ? messages.mortgageDisclaimer : disclaimer;
 
   const inputs = (
     <View style={{ gap: 16, flex: split ? 1 : undefined, minWidth: 0 }}>
@@ -209,7 +208,9 @@ function MortgageCalculatorComponent({
               shape="slot"
               selected={years === option}
               onPress={() => setYears(option)}
-              accessibilityLabel={labelsProp?.years != null ? `${option} ${labels.years}` : messages.termYears(option)}
+              accessibilityLabel={
+                labelsProp?.years != null ? `${option} ${labels.years}` : messages.termYears(option)
+              }
               style={{ flex: 1, minWidth: 0, paddingLeft: 4, paddingRight: 4 }}
               testID={id(`term-${option}`)}
             >
@@ -248,7 +249,10 @@ function MortgageCalculatorComponent({
           {label}
         </Text>
       </View>
-      <Text variant="body-2-semibold" style={{ color: palette.text, fontVariant: ['tabular-nums'] }}>
+      <Text
+        variant="body-2-semibold"
+        style={{ color: palette.text, fontVariant: ['tabular-nums'] }}
+      >
         {formatCurrency(amount)}
       </Text>
     </View>
@@ -317,7 +321,11 @@ function MortgageCalculatorComponent({
       </View>
       {shownDisclaimer != null ? (
         typeof shownDisclaimer === 'string' ? (
-          <Text variant="caption-1-regular" testID={id('disclaimer')} style={{ color: palette.textSecondary }}>
+          <Text
+            variant="caption-1-regular"
+            testID={id('disclaimer')}
+            style={{ color: palette.textSecondary }}
+          >
             {shownDisclaimer}
           </Text>
         ) : (
@@ -329,10 +337,16 @@ function MortgageCalculatorComponent({
 
   return (
     <ActionCardShell testID={testID} maxWidth={maxWidth} onLayout={onLayout} style={style}>
-      <Text variant="headline-semibold" accessibilityRole="header" style={{ color: palette.text, marginBottom: 20 }}>
+      <Text
+        variant="headline-semibold"
+        accessibilityRole="header"
+        style={{ color: palette.text, marginBottom: 20 }}
+      >
         {labels.title}
       </Text>
-      <View style={split ? { flexDirection: 'row', gap: 32, alignItems: 'flex-start' } : { gap: 24 }}>
+      <View
+        style={split ? { flexDirection: 'row', gap: 32, alignItems: 'flex-start' } : { gap: 24 }}
+      >
         {inputs}
         {output}
       </View>

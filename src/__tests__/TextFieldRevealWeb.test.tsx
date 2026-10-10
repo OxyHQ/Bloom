@@ -47,7 +47,8 @@ function Password({ onBlur }: { onBlur?: () => void }) {
 }
 
 const input = () => container.querySelector('input') as HTMLInputElement;
-const button = (name: string) => container.querySelector(`[role="button"][aria-label="${name}"]`) as HTMLElement | null;
+const button = (name: string) =>
+  container.querySelector(`[role="button"][aria-label="${name}"]`) as HTMLElement | null;
 
 describe('TextFieldInput revealable (web)', () => {
   it('flips the input between password and text, renaming the button', () => {

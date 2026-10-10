@@ -19,11 +19,7 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { PopoverProvider, usePopover } from './context';
-import {
-  classChromeOverrides,
-  POPOVER_SIDE_OFFSET,
-  resolvePopoverSurfaceStyle,
-} from './surface';
+import { classChromeOverrides, POPOVER_SIDE_OFFSET, resolvePopoverSurfaceStyle } from './surface';
 import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { POPOVER_MESSAGES } from './messages';
@@ -38,8 +34,10 @@ export function Popover({ children, open, defaultOpen = false, onOpenChange }: P
   const panelRef = useRef<View | null>(null);
   // The root survives conditionally mounted content, so a caller removing the
   // panel on close still gets the same focus return as an animated exit.
-  useReturnFocusOnClose(anchorRef, isOpen, (element) =>
-    hostElement(panelRef.current)?.contains(element) ?? false,
+  useReturnFocusOnClose(
+    anchorRef,
+    isOpen,
+    (element) => hostElement(panelRef.current)?.contains(element) ?? false,
   );
   const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef, panelRef }), [isOpen, setOpen]);
 
@@ -71,7 +69,8 @@ export function PopoverTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': POPOVER_TRIGGER_POPUP,
         'aria-expanded': popover.open,
-      }}>
+      }}
+    >
       {children}
     </TriggerSlot>
   );
@@ -96,9 +95,12 @@ export function PopoverContent({
   const label = labelProp ?? messages.popover;
   const popover = usePopover();
   const anchor = useAnchorRect(popover.anchorRef, popover.open);
-  const attachPanel = useCallback((node: View | null) => {
-    if (popover.panelRef) popover.panelRef.current = node;
-  }, [popover.panelRef]);
+  const attachPanel = useCallback(
+    (node: View | null) => {
+      if (popover.panelRef) popover.panelRef.current = node;
+    },
+    [popover.panelRef],
+  );
   const close = useCallback(() => popover.setOpen(false), [popover]);
   const palette = useMenuPalette();
   const { width: viewportWidth } = useWindowDimensions();
@@ -133,7 +135,8 @@ export function PopoverContent({
       // The resolved panel FIRST, so the caller's `style` overrides any of it;
       // properties the caller's `className` names were already left out.
       style={[chrome, style]}
-      testID={testID}>
+      testID={testID}
+    >
       {children}
     </FloatingPanel>
   );

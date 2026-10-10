@@ -8,9 +8,12 @@ const meta: Meta<typeof Loading> = {
   title: 'Base/Loading',
   component: Loading,
   argTypes: {
-    "color": { control: 'text' },
-    "tone": { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] },
-    "showLoading": { control: 'boolean' },
+    color: { control: 'text' },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
+    },
+    showLoading: { control: 'boolean' },
     variant: {
       control: 'select',
       options: ['spinner', 'top', 'inline'],

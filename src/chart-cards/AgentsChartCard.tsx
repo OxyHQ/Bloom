@@ -123,7 +123,12 @@ export function agentsBarHeights(
 }
 
 /** Which column is under `x` in a `width`-wide track; `undefined` in a gap. */
-export function agentsColumnAt(x: number, width: number, count: number, gap = AGENTS_BAR_GAP): number | undefined {
+export function agentsColumnAt(
+  x: number,
+  width: number,
+  count: number,
+  gap = AGENTS_BAR_GAP,
+): number | undefined {
   if (count <= 0 || width <= 0) return undefined;
   const column = (width - gap * (count - 1)) / count;
   const pitch = column + gap;
@@ -161,11 +166,17 @@ export function AgentsChartCard({
   const endLabel = endLabelProp ?? chartText.today;
   // The sample range's start (June 14), written the locale's way.
   const startLabel =
-    startLabelProp ?? formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ?? '6/14';
+    startLabelProp ??
+    formatGregorian(new Date(2024, 5, 14), chartLocale, { month: 'short', day: 'numeric' }) ??
+    '6/14';
   const theme = useTheme();
   const palette = useChartCardSurfacePalette(style);
   const reducedMotion = useReducedMotion();
-  const [activeIndex, setActiveIndex] = useActiveIndex(data.length, controlledIndex, onActiveIndexChange);
+  const [activeIndex, setActiveIndex] = useActiveIndex(
+    data.length,
+    controlledIndex,
+    onActiveIndexChange,
+  );
   const [width, setWidth] = useState(0);
 
   const tone = useMemo(() => {
@@ -179,7 +190,10 @@ export function AgentsChartCard({
   }, [theme, color, activeColor, palette.track, palette.cursor]);
 
   const values = useMemo(() => data.map((d) => d.value), [data]);
-  const heights = useMemo(() => agentsBarHeights(values, maxBarHeight, max), [values, maxBarHeight, max]);
+  const heights = useMemo(
+    () => agentsBarHeights(values, maxBarHeight, max),
+    [values, maxBarHeight, max],
+  );
   const resting = headline;
   const hovering = activeIndex !== null;
   const point = hovering ? data[activeIndex]! : null;
@@ -235,11 +249,19 @@ export function AgentsChartCard({
 
   const ease: WebCssStyle | null =
     IS_WEB && !reducedMotion
-      ? { transitionProperty: 'height, background-color', transitionDuration: '300ms', transitionTimingFunction: 'ease' }
+      ? {
+          transitionProperty: 'height, background-color',
+          transitionDuration: '300ms',
+          transitionTimingFunction: 'ease',
+        }
       : null;
 
   const summary =
-    accessibilityLabel ?? chartText.barChart(title, data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', '));
+    accessibilityLabel ??
+    chartText.barChart(
+      title,
+      data.map((d) => `${d.label} ${format(Math.round(d.value))}`).join(', '),
+    );
 
   return (
     <Card
@@ -259,10 +281,23 @@ export function AgentsChartCard({
           paddingRight: 10,
         },
         style,
-      ]}>
-      <View style={{ width: '100%', flexDirection: 'row', paddingLeft: 6, paddingRight: 6, paddingTop: 4 }}>
+      ]}
+    >
+      <View
+        style={{
+          width: '100%',
+          flexDirection: 'row',
+          paddingLeft: 6,
+          paddingRight: 6,
+          paddingTop: 4,
+        }}
+      >
         <View style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: 2 }}>
-          <Text variant="body-medium" numberOfLines={1} style={{ width: '100%', color: palette.textSecondary }}>
+          <Text
+            variant="body-medium"
+            numberOfLines={1}
+            style={{ width: '100%', color: palette.textSecondary }}
+          >
             {label}
           </Text>
           <FadeOnChange fadeKey={`${range ?? ''}:${activeIndex}`}>
@@ -270,7 +305,8 @@ export function AgentsChartCard({
               variant="title-2-medium"
               numberOfLines={1}
               testID={testID ? `${testID}-headline` : undefined}
-              style={[{ color: palette.text }, TABULAR]}>
+              style={[{ color: palette.text }, TABULAR]}
+            >
               {format(display)}
             </Text>
           </FadeOnChange>
@@ -293,7 +329,14 @@ export function AgentsChartCard({
       <View
         onLayout={onLayout}
         testID={testID ? `${testID}-plot` : undefined}
-        style={{ width: '100%', height: trackHeight, flexDirection: 'row', alignItems: 'flex-end', gap: AGENTS_BAR_GAP }}>
+        style={{
+          width: '100%',
+          height: trackHeight,
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          gap: AGENTS_BAR_GAP,
+        }}
+      >
         {heights.map((h, i) => {
           const zero = (values[i] ?? 0) <= 0;
           const on = activeIndex === i;
@@ -307,7 +350,14 @@ export function AgentsChartCard({
           return (
             <View
               key={`${riseKey}:${i}`}
-              style={{ flex: 1, flexBasis: 0, minWidth: 0, height: '100%', justifyContent: 'flex-end' }}>
+              style={{
+                flex: 1,
+                flexBasis: 0,
+                minWidth: 0,
+                height: '100%',
+                justifyContent: 'flex-end',
+              }}
+            >
               <Animated.View
                 testID={testID ? `${testID}-bar-${i}` : undefined}
                 style={[
@@ -315,7 +365,13 @@ export function AgentsChartCard({
                     width: '100%',
                     height: h,
                     borderRadius: BAR_RADIUS,
-                    backgroundColor: zero ? (on ? tone.stubActive : tone.stub) : on ? tone.active : tone.bar,
+                    backgroundColor: zero
+                      ? on
+                        ? tone.stubActive
+                        : tone.stub
+                      : on
+                        ? tone.active
+                        : tone.bar,
                     transformOrigin: 'bottom',
                     transform: [{ scaleY: scale }],
                   },
@@ -342,7 +398,8 @@ export function AgentsChartCard({
           justifyContent: 'space-between',
           paddingLeft: 6,
           paddingRight: 6,
-        }}>
+        }}
+      >
         <Text variant="caption-2-medium" numberOfLines={1} style={{ color: palette.textTertiary }}>
           {startLabel}
         </Text>

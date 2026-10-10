@@ -136,11 +136,12 @@ function NewGroupFormComponent({
           {onAddMembers === undefined ? null : (
             <View style={{ alignItems: 'flex-start' }}>
               <Button
-
                 size="sm"
                 leadingIcon={RiUserAddLine}
                 onPress={onAddMembers}
-                testID={testID ? `${testID}-add` : undefined} tone="accent" appearance="plain"
+                testID={testID ? `${testID}-add` : undefined}
+                tone="accent"
+                appearance="plain"
               >
                 {l.addMembers}
               </Button>

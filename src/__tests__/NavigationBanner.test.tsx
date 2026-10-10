@@ -108,7 +108,12 @@ function glyphPath(maneuver: keyof typeof DIRECTIONS_MANEUVER_ICON): string {
 describe('NavigationBanner', () => {
   it('draws the distance as the figure and the street under it', () => {
     mount(
-      <NavigationBanner maneuver="right" distance="400 m" instruction="Carrer del Roure" testID="b" />,
+      <NavigationBanner
+        maneuver="right"
+        distance="400 m"
+        instruction="Carrer del Roure"
+        testID="b"
+      />,
     );
     expect(byTestId('b-headline').textContent).toBe('400 m');
     expect(byTestId('b-instruction').textContent).toBe('Carrer del Roure');
@@ -139,7 +144,14 @@ describe('NavigationBanner', () => {
 
   it('draws the following maneuver behind a rule, and nothing when there is none', () => {
     mount(
-      <NavigationBanner maneuver="right" distance="400 m" instruction="A" thenManeuver="left" then="onto B" testID="b" />,
+      <NavigationBanner
+        maneuver="right"
+        distance="400 m"
+        instruction="A"
+        thenManeuver="left"
+        then="onto B"
+        testID="b"
+      />,
     );
     expect(byTestId('b-then').textContent).toBe('then turn left onto B');
     expect(byTestId('b-then').style.borderTopWidth).toBe('1px');
@@ -167,7 +179,14 @@ describe('NavigationBanner', () => {
 
   it('is one utterance, with the drawn text hidden so nothing is read twice', () => {
     mount(
-      <NavigationBanner maneuver="right" distance="400 m" instruction="Carrer del Roure" thenManeuver="left" then="onto Om" testID="b" />,
+      <NavigationBanner
+        maneuver="right"
+        distance="400 m"
+        instruction="Carrer del Roure"
+        thenManeuver="left"
+        then="onto Om"
+        testID="b"
+      />,
     );
     const guidance = byTestId('b-guidance');
     expect(guidance.getAttribute('role')).toBe('img');
@@ -180,10 +199,12 @@ describe('NavigationBanner', () => {
   it('names the maneuver aloud — the glyph says it and says nothing', () => {
     // Every maneuver in the vocabulary has a word, so a banner can never
     // announce an arrow nobody can see.
-    for (const maneuver of Object.keys(DIRECTIONS_MANEUVER_ICON) as (keyof typeof DIRECTIONS_MANEUVER_ICON)[]) {
-      expect(
-        describeNavigationBanner({ maneuver, instruction: 'X' }),
-      ).toContain(DIRECTIONS_MANEUVER_LABELS[maneuver]);
+    for (const maneuver of Object.keys(
+      DIRECTIONS_MANEUVER_ICON,
+    ) as (keyof typeof DIRECTIONS_MANEUVER_ICON)[]) {
+      expect(describeNavigationBanner({ maneuver, instruction: 'X' })).toContain(
+        DIRECTIONS_MANEUVER_LABELS[maneuver],
+      );
     }
   });
 
@@ -196,9 +217,13 @@ describe('NavigationBanner', () => {
   });
 
   it('says off route, and is finding a new one', () => {
-    mount(<NavigationBanner state="off-route" maneuver="right" instruction="Head back" testID="b" />);
+    mount(
+      <NavigationBanner state="off-route" maneuver="right" instruction="Head back" testID="b" />,
+    );
     expect(byTestId('b-headline').textContent).toBe('Off route');
-    mount(<NavigationBanner state="rerouting" maneuver="right" instruction="Keep going" testID="b" />);
+    mount(
+      <NavigationBanner state="rerouting" maneuver="right" instruction="Keep going" testID="b" />,
+    );
     expect(byTestId('b-headline').textContent).toBe('Finding a new route');
   });
 
@@ -270,7 +295,9 @@ describe('LaneGuidance', () => {
   it('gives every arrow the accent when an allowed lane names no preference', () => {
     const theme = buildTheme('teal', 'light');
     const accent = resolveAccentColors(theme.colors, 'primary', 'subtle').foreground;
-    mount(<LaneGuidance lanes={[{ directions: ['straight', 'right'], allowed: true }]} testID="l" />);
+    mount(
+      <LaneGuidance lanes={[{ directions: ['straight', 'right'], allowed: true }]} testID="l" />,
+    );
     expect(
       Array.from(byTestId('l-lane-0').querySelectorAll('path')).map((p) =>
         normalise(p.getAttribute('fill')!),
@@ -321,9 +348,14 @@ describe('SpeedLimitPill', () => {
     mount(<SpeedLimitPill limit="50" unit="km/h" exceeded testID="s" />);
     const sign = byTestId('s-sign');
     expect(normalise(sign.style.backgroundColor)).toBe(normalise(solid.background));
-    expect(normalise(sign.querySelector('[dir="auto"]')!.getAttribute('style')!.match(/color: ([^;]+)/)![1]!)).toBe(
-      normalise(solid.foreground),
-    );
+    expect(
+      normalise(
+        sign
+          .querySelector('[dir="auto"]')!
+          .getAttribute('style')!
+          .match(/color: ([^;]+)/)![1]!,
+      ),
+    ).toBe(normalise(solid.foreground));
   });
 
   it('announces the figure, the unit and the fact that it is exceeded', () => {
@@ -377,7 +409,13 @@ describe('ArrivalBar', () => {
     expect(query('a-end')).toBeNull();
 
     mount(
-      <ArrivalBar arrival="1" remainingTime="2" remainingDistance="3" onEnd={() => {}} testID="a" />,
+      <ArrivalBar
+        arrival="1"
+        remainingTime="2"
+        remainingDistance="3"
+        onEnd={() => {}}
+        testID="a"
+      />,
     );
     const end = byTestId('a-end');
     expect(end.getAttribute('role')).toBe('button');
@@ -403,7 +441,9 @@ describe('ArrivalBar', () => {
 
   it('calls back when the way out is pressed', () => {
     const onEnd = jest.fn();
-    mount(<ArrivalBar arrival="1" remainingTime="2" remainingDistance="3" onEnd={onEnd} testID="a" />);
+    mount(
+      <ArrivalBar arrival="1" remainingTime="2" remainingDistance="3" onEnd={onEnd} testID="a" />,
+    );
     act(() => {
       byTestId('a-end').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });

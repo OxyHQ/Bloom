@@ -73,8 +73,8 @@ const MESSAGES: MailThreadMessage[] = [
     preview: 'The surveyor can come on the Tuesday or the Thursday, whichever suits.',
     children: (
       <Body>
-        The surveyor can come on the Tuesday or the Thursday, whichever suits. He wants two
-        hours and a ladder, and he says the north pitch is the only part he is worried about.
+        The surveyor can come on the Tuesday or the Thursday, whichever suits. He wants two hours
+        and a ladder, and he says the north pitch is the only part he is worried about.
       </Body>
     ),
   },
@@ -162,7 +162,7 @@ export const Thread: Story = {
           onStarredChange={setStarred}
           messages={MESSAGES}
           quickReply={
-            <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+            <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
               Reply to Mireia
             </Button>
           }
@@ -237,8 +237,8 @@ export const TrimmedContent: Story = {
         <Body>Sounds good, see you Thursday.</Body>
         <MailQuoteToggle testID="quote">
           <Quoted>
-            On 9 March, Mireia Solans wrote: The surveyor can come on the Tuesday or the
-            Thursday, whichever suits.
+            On 9 March, Mireia Solans wrote: The surveyor can come on the Tuesday or the Thursday,
+            whichever suits.
           </Quoted>
         </MailQuoteToggle>
       </View>

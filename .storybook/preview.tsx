@@ -11,10 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AgentAvatarProvider } from '../src/agent-avatar/AgentAvatarProvider';
 import { BloomThemeProvider } from '../src/theme';
-import {
-  APP_COLOR_PRESETS,
-  type AppColorName,
-} from '../src/theme/color-presets';
+import { APP_COLOR_PRESETS, type AppColorName } from '../src/theme/color-presets';
 import { SurfaceProvider } from '../src/surfaces';
 import { PortalProvider, PortalOutlet } from '../src/portal';
 
@@ -53,15 +50,10 @@ import { PortalProvider, PortalOutlet } from '../src/portal';
  */
 const withProviders: Decorator = (Story, context) => {
   const documentScroll = context.parameters.bloomScroll === 'document';
-  const viewportHeight =
-    context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh';
-  const mode =
-    (context.globals.theme as 'light' | 'dark' | 'system') ?? 'light';
+  const viewportHeight = context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh';
+  const mode = (context.globals.theme as 'light' | 'dark' | 'system') ?? 'light';
   const requestedPreset = context.globals.colorPreset as AppColorName;
-  const colorPreset = Object.prototype.hasOwnProperty.call(
-    APP_COLOR_PRESETS,
-    requestedPreset,
-  )
+  const colorPreset = Object.prototype.hasOwnProperty.call(APP_COLOR_PRESETS, requestedPreset)
     ? requestedPreset
     : 'oxy';
 
@@ -74,24 +66,18 @@ const withProviders: Decorator = (Story, context) => {
               <div
                 data-bloom-story-layout={context.parameters.layout ?? 'padded'}
                 data-bloom-story-view={context.viewMode}
-                data-bloom-story-scroll={
-                  documentScroll ? 'document' : 'contained'
-                }
+                data-bloom-story-scroll={documentScroll ? 'document' : 'contained'}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems:
-                    context.parameters.layout === 'fullscreen'
-                      ? 'stretch'
-                      : 'flex-start',
+                  alignItems: context.parameters.layout === 'fullscreen' ? 'stretch' : 'flex-start',
                   width: '100%',
                   minWidth: 0,
                   minHeight:
                     documentScroll && context.parameters.layout === 'fullscreen'
                       ? viewportHeight
                       : 0,
-                  ...(context.parameters.layout === 'fullscreen' &&
-                  !documentScroll
+                  ...(context.parameters.layout === 'fullscreen' && !documentScroll
                     ? { height: viewportHeight }
                     : {}),
                 }}

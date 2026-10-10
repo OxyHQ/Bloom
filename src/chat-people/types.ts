@@ -195,7 +195,8 @@ export interface MemberRowProps extends PersonSummary {
   testID?: string;
 }
 
-export interface MemberListItem extends Omit<MemberRowProps, 'onPress' | 'onPromote' | 'onRestrict' | 'onRemove'> {
+export interface MemberListItem
+  extends Omit<MemberRowProps, 'onPress' | 'onPromote' | 'onRestrict' | 'onRemove'> {
   id: string;
 }
 
@@ -253,7 +254,11 @@ export interface ChannelPostCardProps {
   onMore?: () => void;
   moreLabel?: string;
   /** Names the two counts for assistive tech. */
-  labels?: Partial<{ views: (count: string) => string; forwards: (count: string) => string; pinned: string }>;
+  labels?: Partial<{
+    views: (count: string) => string;
+    forwards: (count: string) => string;
+    pinned: string;
+  }>;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

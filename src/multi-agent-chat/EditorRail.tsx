@@ -12,13 +12,7 @@ import { useIsRtl } from '../hooks/use-is-rtl';
 import { StyledView } from '../styles/styled-primitives';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 /** Retain the closing editor until its occupied width has eased to zero. */
-export function EditorRail({
-  active,
-  children,
-}: {
-  active: boolean;
-  children: ReactNode;
-}) {
+export function EditorRail({ active, children }: { active: boolean; children: ReactNode }) {
   const sign = useIsRtl() ? -1 : 1,
     reduced = useReducedMotion();
   const progress = useSharedValue(active ? 1 : 0),
@@ -35,10 +29,7 @@ export function EditorRail({
       },
     );
   }, [active, progress, reduced]);
-  const outer = useAnimatedStyle(
-    () => ({ width: 356 * progress.value }),
-    [progress],
-  );
+  const outer = useAnimatedStyle(() => ({ width: 356 * progress.value }), [progress]);
   const inner = useAnimatedStyle(
     () => ({
       opacity: progress.value,
@@ -56,12 +47,7 @@ export function EditorRail({
       style={[{ minHeight: 0, flexShrink: 0, overflow: 'hidden' }, outer]}
     >
       {mounted && (
-        <AnimatedView
-          style={[
-            { height: '100%', width: 356, paddingInlineStart: 16 },
-            inner,
-          ]}
-        >
+        <AnimatedView style={[{ height: '100%', width: 356, paddingInlineStart: 16 }, inner]}>
           {content.current}
         </AnimatedView>
       )}

@@ -64,7 +64,12 @@ function DialogOverSheet() {
       <BottomSheet ref={sheetRef}>
         <View style={{ padding: 24, gap: 12 }}>
           <Text style={{ fontSize: 20, fontWeight: '700' }}>Post options</Text>
-          <Button testID="open-second" onPress={() => dialogControl.open()} appearance="outline" tone="neutral">
+          <Button
+            testID="open-second"
+            onPress={() => dialogControl.open()}
+            appearance="outline"
+            tone="neutral"
+          >
             Delete post
           </Button>
         </View>
@@ -103,7 +108,12 @@ function SheetOverDialog() {
       <Result value={result} />
 
       <Dialog control={dialogControl} testID="outer-dialog" title="Settings">
-        <Button testID="open-second" onPress={() => sheetRef.current?.present()} appearance="outline" tone="neutral">
+        <Button
+          testID="open-second"
+          onPress={() => sheetRef.current?.present()}
+          appearance="outline"
+          tone="neutral"
+        >
           Pick an option
         </Button>
       </Dialog>
@@ -111,7 +121,12 @@ function SheetOverDialog() {
       <BottomSheet ref={sheetRef}>
         <View style={{ padding: 24, gap: 12 }}>
           <Text style={{ fontSize: 20, fontWeight: '700' }}>Options</Text>
-          <Button testID="top-action" onPress={() => setResult('sheet')} appearance="outline" tone="neutral">
+          <Button
+            testID="top-action"
+            onPress={() => setResult('sheet')}
+            appearance="outline"
+            tone="neutral"
+          >
             Choose this
           </Button>
         </View>
@@ -134,13 +149,23 @@ function DialogOverDialog() {
       <Result value={result} />
 
       <Dialog control={first} testID="first-dialog" title="First">
-        <Button testID="open-second" onPress={() => second.open()} appearance="outline" tone="neutral">
+        <Button
+          testID="open-second"
+          onPress={() => second.open()}
+          appearance="outline"
+          tone="neutral"
+        >
           Open second dialog
         </Button>
       </Dialog>
 
       <Dialog control={second} testID="second-dialog" title="Second">
-        <Button testID="top-action" onPress={() => setResult('second')} appearance="outline" tone="neutral">
+        <Button
+          testID="top-action"
+          onPress={() => setResult('second')}
+          appearance="outline"
+          tone="neutral"
+        >
           Act
         </Button>
       </Dialog>
@@ -175,9 +200,7 @@ function MenuOverDialog() {
             <DropdownMenuItem testID="top-action" onPress={() => setResult('menu')}>
               Newest
             </DropdownMenuItem>
-            <DropdownMenuItem onPress={() => setResult('menu-oldest')}>
-              Oldest
-            </DropdownMenuItem>
+            <DropdownMenuItem onPress={() => setResult('menu-oldest')}>Oldest</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </Dialog>

@@ -1,10 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import {
-  resolveButtonPalette,
-  type ButtonPalette,
-} from '../button/shared';
+import { resolveButtonPalette, type ButtonPalette } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';

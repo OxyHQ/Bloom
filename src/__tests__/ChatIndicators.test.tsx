@@ -230,7 +230,13 @@ describe('AvatarPresence', () => {
 
   it('honours presenceSize and forwards the label', () => {
     mount(
-      <AvatarPresence name="Ana" size={56} status="idle" presenceSize="small" presenceLabel="Ausente" />,
+      <AvatarPresence
+        name="Ana"
+        size={56}
+        status="idle"
+        presenceSize="small"
+        presenceLabel="Ausente"
+      />,
     );
     const el = container.querySelector('[role="img"][aria-label="Ausente"]') as HTMLElement;
     expect(getComputedStyle(el.firstElementChild as HTMLElement).width).toBe('8px');
@@ -489,7 +495,11 @@ describe('StoryRing', () => {
       </StoryRing>,
     );
     expect(byTestId('r').querySelector('stop')).toBeNull();
-    expect(parseFloat(getComputedStyle(byTestId('r').firstElementChild as HTMLElement).borderTopWidth || '0')).toBe(0);
+    expect(
+      parseFloat(
+        getComputedStyle(byTestId('r').firstElementChild as HTMLElement).borderTopWidth || '0',
+      ),
+    ).toBe(0);
     expect(byTestId('child')).toBeTruthy();
   });
 
@@ -507,15 +517,21 @@ describe('StoryRing', () => {
       </StoryRing>,
     );
     expect(byTestId('r').querySelector('stop')).toBeNull();
-    expect(normalise(getComputedStyle(byTestId('r').firstElementChild as HTMLElement).borderTopColor)).toBe(
-      'rgb(1, 2, 3)',
-    );
+    expect(
+      normalise(getComputedStyle(byTestId('r').firstElementChild as HTMLElement).borderTopColor),
+    ).toBe('rgb(1, 2, 3)');
   });
 
   it('becomes a named button when it is pressable, and stays decorative otherwise', () => {
     const onPress = jest.fn();
     mount(
-      <StoryRing state="unseen" size={56} onPress={onPress} accessibilityLabel="Ana's story" testID="r">
+      <StoryRing
+        state="unseen"
+        size={56}
+        onPress={onPress}
+        accessibilityLabel="Ana's story"
+        testID="r"
+      >
         <div />
       </StoryRing>,
     );

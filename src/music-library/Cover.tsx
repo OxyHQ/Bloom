@@ -40,10 +40,24 @@ export interface CoverProps {
 }
 
 /** Artwork, decorative (the row names itself). A neutral tile with the kind's glyph when empty. */
-export function Cover({ source, size, round, radius = 4, kind, placeholder, glyphColor, style, testID }: CoverProps) {
+export function Cover({
+  source,
+  size,
+  round,
+  radius = 4,
+  kind,
+  placeholder,
+  glyphColor,
+  style,
+  testID,
+}: CoverProps) {
   const resolver = useImageResolver();
   const [failed, setFailed] = useState(false);
-  const uri = source ? (isImageUrl(source) ? source : resolver?.(source) ?? undefined) : undefined;
+  const uri = source
+    ? isImageUrl(source)
+      ? source
+      : (resolver?.(source) ?? undefined)
+    : undefined;
   const Glyph = KIND_GLYPH[kind];
   const glyph = Math.round(size * 0.45);
   return (

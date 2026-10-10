@@ -10,7 +10,13 @@ import { getByRole, getByText, getByLabelText, fireEvent } from '@testing-librar
 import '@testing-library/jest-dom';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Button, LinkButton, SecondaryButton, InverseButton, BLOOM_BUTTON_CSS } from '../button/Button.web';
+import {
+  Button,
+  LinkButton,
+  SecondaryButton,
+  InverseButton,
+  BLOOM_BUTTON_CSS,
+} from '../button/Button.web';
 import { BUTTON_RADIUS, LINK_BUTTON_UNDERLINE_OFFSET } from '../button/shared';
 
 // react-dom 19 logs a guard unless this flag is set in test environments.
@@ -42,29 +48,62 @@ afterEach(() => {
 });
 
 describe('Button.web', () => {
-  it.each(['link', 'button', 'asChild'] as const)('forwards the current item to its %s host and removes it when omitted', kind => {
-    const draw = (current: React.AriaAttributes['aria-current']) => mount(kind === 'asChild'
-      ? <Button asChild aria-current={current}><a href="/orders">Orders</a></Button>
-      : <Button href={kind === 'link' ? '/orders' : undefined} aria-current={current}>Orders</Button>);
-    const c = draw('page');
-    const host = getByRole(c, kind === 'button' ? 'button' : 'link', { name: 'Orders' });
-    expect(host).toHaveAttribute('aria-current', 'page');
-    expect(host).not.toHaveAttribute('aria-pressed');
-    draw(undefined); expect(host).not.toHaveAttribute('aria-current');
-    draw(false); expect(host).toHaveAttribute('aria-current', 'false');
-  });
+  it.each(['link', 'button', 'asChild'] as const)(
+    'forwards the current item to its %s host and removes it when omitted',
+    (kind) => {
+      const draw = (current: React.AriaAttributes['aria-current']) =>
+        mount(
+          kind === 'asChild' ? (
+            <Button asChild aria-current={current}>
+              <a href="/orders">Orders</a>
+            </Button>
+          ) : (
+            <Button href={kind === 'link' ? '/orders' : undefined} aria-current={current}>
+              Orders
+            </Button>
+          ),
+        );
+      const c = draw('page');
+      const host = getByRole(c, kind === 'button' ? 'button' : 'link', { name: 'Orders' });
+      expect(host).toHaveAttribute('aria-current', 'page');
+      expect(host).not.toHaveAttribute('aria-pressed');
+      draw(undefined);
+      expect(host).not.toHaveAttribute('aria-current');
+      draw(false);
+      expect(host).toHaveAttribute('aria-current', 'false');
+    },
+  );
 
   it('preserves an asChild current value unless Button explicitly overrides it', () => {
-    const c = mount(<Button asChild><a href="/orders" aria-current="step">Orders</a></Button>);
-    const link = getByRole(c, 'link'); expect(link).toHaveAttribute('aria-current', 'step');
-    mount(<Button asChild aria-current={false}><a href="/orders" aria-current="step">Orders</a></Button>);
+    const c = mount(
+      <Button asChild>
+        <a href="/orders" aria-current="step">
+          Orders
+        </a>
+      </Button>,
+    );
+    const link = getByRole(c, 'link');
+    expect(link).toHaveAttribute('aria-current', 'step');
+    mount(
+      <Button asChild aria-current={false}>
+        <a href="/orders" aria-current="step">
+          Orders
+        </a>
+      </Button>,
+    );
     expect(link).toHaveAttribute('aria-current', 'false');
   });
 
   it('announces toggle state and isolates an embedded action when requested', () => {
     const parent = jest.fn();
     const onPress = jest.fn();
-    const c = mount(<div onClick={parent}><Button pressed stopPropagation onPress={onPress}>Follow</Button></div>);
+    const c = mount(
+      <div onClick={parent}>
+        <Button pressed stopPropagation onPress={onPress}>
+          Follow
+        </Button>
+      </div>,
+    );
     const button = getByRole(c, 'button', { name: 'Follow' });
     expect(button).toHaveAttribute('aria-pressed', 'true');
     act(() => fireEvent.click(button));
@@ -100,11 +139,7 @@ describe('Button.web', () => {
 
   it('fires one universal activation on click', () => {
     const onPress = jest.fn();
-    const c = mount(
-      <Button onPress={onPress}>
-        Go
-      </Button>,
-    );
+    const c = mount(<Button onPress={onPress}>Go</Button>);
     act(() => {
       fireEvent.click(getByRole(c, 'button'));
     });
@@ -141,24 +176,46 @@ describe('Button.web', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  it.each(['string', 'composed', 'explicit'] as const)('retains its %s accessible name while busy', kind => {
-    const content = kind === 'composed'
-      ? <><span>Publish </span><strong>draft</strong><span aria-hidden="true"> decoration</span></>
-      : 'Remove variant';
-    const name = kind === 'explicit' ? 'Remove selected variant' : kind === 'composed' ? 'Publish draft' : 'Remove variant';
-    const ui = (loading: boolean) => <Button loading={loading} disabled={false}
-      accessibilityLabel={kind === 'explicit' ? name : undefined}>{content}</Button>;
-    const c = mount(ui(false));
-    const button = getByRole(c, 'button', { name });
-    mount(ui(true));
-    expect(getByRole(c, 'button', { name })).toBe(button);
-    expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(button).toHaveAttribute('aria-busy', 'true');
-    expect(button.firstElementChild).not.toHaveAttribute('aria-hidden');
-    mount(ui(false));
-    expect(getByRole(c, 'button', { name })).toBe(button);
-    expect(button).not.toHaveAttribute('aria-busy');
-  });
+  it.each(['string', 'composed', 'explicit'] as const)(
+    'retains its %s accessible name while busy',
+    (kind) => {
+      const content =
+        kind === 'composed' ? (
+          <>
+            <span>Publish </span>
+            <strong>draft</strong>
+            <span aria-hidden="true"> decoration</span>
+          </>
+        ) : (
+          'Remove variant'
+        );
+      const name =
+        kind === 'explicit'
+          ? 'Remove selected variant'
+          : kind === 'composed'
+            ? 'Publish draft'
+            : 'Remove variant';
+      const ui = (loading: boolean) => (
+        <Button
+          loading={loading}
+          disabled={false}
+          accessibilityLabel={kind === 'explicit' ? name : undefined}
+        >
+          {content}
+        </Button>
+      );
+      const c = mount(ui(false));
+      const button = getByRole(c, 'button', { name });
+      mount(ui(true));
+      expect(getByRole(c, 'button', { name })).toBe(button);
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      expect(button).toHaveAttribute('aria-busy', 'true');
+      expect(button.firstElementChild).not.toHaveAttribute('aria-hidden');
+      mount(ui(false));
+      expect(getByRole(c, 'button', { name })).toBe(button);
+      expect(button).not.toHaveAttribute('aria-busy');
+    },
+  );
 
   it('keeps children mounted while loading so width is preserved', () => {
     const c = mount(<Button loading>Submit</Button>);
@@ -228,17 +285,29 @@ describe('Button.web', () => {
 
   describe('web variants', () => {
     it('OutlineButton renders a button', () => {
-      const c = mount(<Button appearance="outline" tone="neutral">Outline</Button>);
+      const c = mount(
+        <Button appearance="outline" tone="neutral">
+          Outline
+        </Button>,
+      );
       expect(getByRole(c, 'button', { name: 'Outline' }).tagName).toBe('BUTTON');
     });
 
     it('LinkButton renders with the link modifier class', () => {
-      const c = mount(<Button href="#" appearance="plain" tone="accent">Link</Button>);
+      const c = mount(
+        <Button href="#" appearance="plain" tone="accent">
+          Link
+        </Button>,
+      );
       expect(getByRole(c, 'link', { name: 'Link' })).toHaveClass('bloom-btn--link');
     });
 
     it('LinkButton is a bare label: no height, no padding, 4px gap', () => {
-      const c = mount(<Button href="#" appearance="plain" tone="accent">Link</Button>);
+      const c = mount(
+        <Button href="#" appearance="plain" tone="accent">
+          Link
+        </Button>,
+      );
       const el = getByRole(c, 'link', { name: 'Link' });
       expect(el.style.height).toBe('');
       expect(el.style.paddingLeft).toBe('0px');
@@ -248,7 +317,9 @@ describe('Button.web', () => {
     it('href renders a real anchor, and drops the href while disabled', () => {
       const c = mount(
         <>
-          <Button href="/docs" appearance="plain" tone="accent">Docs</Button>
+          <Button href="/docs" appearance="plain" tone="accent">
+            Docs
+          </Button>
           <Button href="/off" disabled appearance="plain" tone="accent">
             Off
           </Button>
@@ -263,7 +334,11 @@ describe('Button.web', () => {
     });
 
     it('DestructiveButton renders a button', () => {
-      const c = mount(<Button appearance="solid" tone="danger">Delete</Button>);
+      const c = mount(
+        <Button appearance="solid" tone="danger">
+          Delete
+        </Button>,
+      );
       expect(getByRole(c, 'button', { name: 'Delete' }).tagName).toBe('BUTTON');
     });
   });
@@ -283,22 +358,14 @@ describe('Button.web', () => {
     });
 
     it('underline="rest" swaps the modifier', () => {
-      const c = mount(
-        <LinkButton  underline="rest">
-          Clear all
-        </LinkButton>,
-      );
+      const c = mount(<LinkButton underline="rest">Clear all</LinkButton>);
       const el = getByRole(c, 'button', { name: 'Clear all' });
       expect(el).toHaveClass('bloom-btn--underline-rest');
       expect(el).not.toHaveClass('bloom-btn--underline-hover');
     });
 
     it('underline="none" removes it from a link', () => {
-      const c = mount(
-        <LinkButton  underline="none">
-          Plain
-        </LinkButton>,
-      );
+      const c = mount(<LinkButton underline="none">Plain</LinkButton>);
       const el = getByRole(c, 'button', { name: 'Plain' });
       expect(el.className).not.toMatch(/bloom-btn--underline/);
     });
@@ -309,7 +376,7 @@ describe('Button.web', () => {
         /bloom-btn--underline/,
       );
       c = mount(
-        <Button underline="rest"  tone="neutral" appearance="outline">
+        <Button underline="rest" tone="neutral" appearance="outline">
           Cancel
         </Button>,
       );
@@ -321,12 +388,14 @@ describe('Button.web', () => {
       // adopts, since jsdom applies neither.
       expect(BLOOM_BUTTON_CSS).toContain('.bloom-btn--underline-rest {');
       expect(BLOOM_BUTTON_CSS).toMatch(/\.bloom-btn--underline-hover[^{]*:hover \{/);
-      expect(BLOOM_BUTTON_CSS).toContain(`text-underline-offset: ${LINK_BUTTON_UNDERLINE_OFFSET}px`);
+      expect(BLOOM_BUTTON_CSS).toContain(
+        `text-underline-offset: ${LINK_BUTTON_UNDERLINE_OFFSET}px`,
+      );
     });
 
     it('linkTone="text" paints the reading colour and hands the hover one to CSS', () => {
       const c = mount(
-        <LinkButton  linkTone="text" underline="rest">
+        <LinkButton linkTone="text" underline="rest">
           Show more
         </LinkButton>,
       );
@@ -343,7 +412,11 @@ describe('Button.web', () => {
     });
 
     it('every OTHER variant keeps its rest colour on hover', () => {
-      const c = mount(<Button  tone="accent" appearance="solid">Save</Button>);
+      const c = mount(
+        <Button tone="accent" appearance="solid">
+          Save
+        </Button>,
+      );
       const el = getByRole(c, 'button', { name: 'Save' });
       expect(el.style.getPropertyValue('--bloom-btn-fg-hover')).toBe(
         el.style.getPropertyValue('--bloom-btn-fg'),
@@ -371,11 +444,7 @@ describe('Button.web', () => {
     });
 
     it('accessibilityRole overrides the role, for a link with no href', () => {
-      const c = mount(
-        <LinkButton  accessibilityRole="link">
-          128 reviews
-        </LinkButton>,
-      );
+      const c = mount(<LinkButton accessibilityRole="link">128 reviews</LinkButton>);
       const el = getByRole(c, 'link', { name: '128 reviews' });
       expect(el.tagName).toBe('BUTTON');
       expect(el).not.toHaveAttribute('href');
@@ -473,7 +542,15 @@ describe('Button.web', () => {
     });
 
     it.each(GEOMETRY)('$size icon variant is an unpadded square', ({ size, height }) => {
-      const c = mount(<Button size={size} icon={() => null} accessibilityLabel="Act" appearance="outline" tone="neutral" />);
+      const c = mount(
+        <Button
+          size={size}
+          icon={() => null}
+          accessibilityLabel="Act"
+          appearance="outline"
+          tone="neutral"
+        />,
+      );
       const btn = getByRole(c, 'button', { name: 'Act' });
       expect(btn.style.width).toBe(height);
       expect(btn.style.height).toBe(height);
@@ -488,27 +565,35 @@ describe('Button.web', () => {
       expect(btn).toHaveClass('bloom-btn--surface');
       expect(BLOOM_BUTTON_CSS).toContain('backdrop-filter:');
       expect(BLOOM_BUTTON_CSS).toContain(SURFACE_RIM);
-      expect(btn.style.getPropertyValue('--bloom-btn-bg-hover')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg'));
-      expect(btn.style.getPropertyValue('--bloom-btn-bg-active')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg'));
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-hover')).not.toBe(
+        btn.style.getPropertyValue('--bloom-btn-bg'),
+      );
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-active')).not.toBe(
+        btn.style.getPropertyValue('--bloom-btn-bg'),
+      );
       expect(btn.style.getPropertyValue('--bloom-btn-bg')).not.toBe('');
       expect(btn.style.backgroundColor).toBe('');
     });
 
     it('has no press scale', () => {
       const c = mount(<Button>Go</Button>);
-      expect(getByRole(c, 'button', { name: 'Go' }).style.getPropertyValue('--bloom-btn-press-scale')).toBe('1');
+      expect(
+        getByRole(c, 'button', { name: 'Go' }).style.getPropertyValue('--bloom-btn-press-scale'),
+      ).toBe('1');
     });
 
     it('gives outline appearances the shared material', () => {
-      const c = mount(<Button appearance="outline" tone="neutral">Cancel</Button>);
+      const c = mount(
+        <Button appearance="outline" tone="neutral">
+          Cancel
+        </Button>,
+      );
       expect(getByRole(c, 'button', { name: 'Cancel' })).toHaveClass('bloom-btn--surface');
     });
 
     it('iconOnly sizes the icon component and drops the label', () => {
       const Glyph = jest.fn((props: { width?: number }) => <svg data-width={props.width} />);
-      const c = mount(
-        <Button size="xs" icon={Glyph} accessibilityLabel="Add" />,
-      );
+      const c = mount(<Button size="xs" icon={Glyph} accessibilityLabel="Add" />);
       const btn = getByRole(c, 'button', { name: 'Add' });
       expect(btn.textContent).toBe('');
       expect(btn.querySelector('svg')?.getAttribute('data-width')).toBe('14');
@@ -516,34 +601,69 @@ describe('Button.web', () => {
   });
 });
 
-
 it('lets explicit axes and colours override named button defaults', () => {
-  const c = mount(<><Button appearance="plain" tone="danger">Reference</Button><SecondaryButton appearance="plain" tone="danger">Secondary</SecondaryButton><LinkButton appearance="solid" tone="danger">Link</LinkButton><Button appearance="solid" tone="danger">Filled</Button><InverseButton appearance="plain" colors={{background:'#123456',foreground:'#abcdef'}}>Inverse</InverseButton></>);
-  const reference = getByRole(c, 'button', {name:'Reference'});
-  const secondary = getByRole(c, 'button', {name:'Secondary'});
+  const c = mount(
+    <>
+      <Button appearance="plain" tone="danger">
+        Reference
+      </Button>
+      <SecondaryButton appearance="plain" tone="danger">
+        Secondary
+      </SecondaryButton>
+      <LinkButton appearance="solid" tone="danger">
+        Link
+      </LinkButton>
+      <Button appearance="solid" tone="danger">
+        Filled
+      </Button>
+      <InverseButton appearance="plain" colors={{ background: '#123456', foreground: '#abcdef' }}>
+        Inverse
+      </InverseButton>
+    </>,
+  );
+  const reference = getByRole(c, 'button', { name: 'Reference' });
+  const secondary = getByRole(c, 'button', { name: 'Secondary' });
   expect(secondary).not.toHaveClass('bloom-btn--surface');
-  expect(secondary.style.getPropertyValue('--bloom-btn-fg')).toBe(reference.style.getPropertyValue('--bloom-btn-fg'));
-  expect(getByRole(c, 'button', {name:'Link'}).style.getPropertyValue('--bloom-btn-bg')).toBe(getByRole(c, 'button', {name:'Filled'}).style.getPropertyValue('--bloom-btn-bg'));
-  const inverse = getByRole(c, 'button', {name:'Inverse'});
+  expect(secondary.style.getPropertyValue('--bloom-btn-fg')).toBe(
+    reference.style.getPropertyValue('--bloom-btn-fg'),
+  );
+  expect(getByRole(c, 'button', { name: 'Link' }).style.getPropertyValue('--bloom-btn-bg')).toBe(
+    getByRole(c, 'button', { name: 'Filled' }).style.getPropertyValue('--bloom-btn-bg'),
+  );
+  const inverse = getByRole(c, 'button', { name: 'Inverse' });
   expect(inverse).not.toHaveClass('bloom-btn--surface');
   expect(inverse.style.getPropertyValue('--bloom-btn-fg')).toBe('#abcdef');
 });
 
-describe.each(['label', 'icon', 'asChild'] as const)('loading preserves %s identity', mode => {
+describe.each(['label', 'icon', 'asChild'] as const)('loading preserves %s identity', (mode) => {
   it('retains a stateful child through loading and back', () => {
     let mounts = 0;
     let increment: () => void = () => {};
     function Counter() {
       const [count, setCount] = React.useState(0);
-      React.useEffect(() => { mounts += 1; }, []);
-      increment = () => setCount(n => n + 1);
+      React.useEffect(() => {
+        mounts += 1;
+      }, []);
+      increment = () => setCount((n) => n + 1);
       return <span data-testid="counter">{count}</span>;
     }
-    const renderButton = (loading: boolean) => mount(
-      <Button loading={loading} iconOnly={mode === 'icon'} asChild={mode === 'asChild'} accessibilityLabel="Save">
-        {mode === 'asChild' ? <a href="#save"><Counter /></a> : <Counter />}
-      </Button>,
-    );
+    const renderButton = (loading: boolean) =>
+      mount(
+        <Button
+          loading={loading}
+          iconOnly={mode === 'icon'}
+          asChild={mode === 'asChild'}
+          accessibilityLabel="Save"
+        >
+          {mode === 'asChild' ? (
+            <a href="#save">
+              <Counter />
+            </a>
+          ) : (
+            <Counter />
+          )}
+        </Button>,
+      );
     renderButton(false);
     const initialNode = container.querySelector('[data-testid="counter"]');
     act(() => increment());

@@ -31,11 +31,7 @@ import { cx } from '../floating/shared';
 import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { RiArrowDownSLine as ChevronDownIcon } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine as ChevronUpIcon } from '../icons/remix/RiArrowUpSLine';
-import {
-  StyledPressable,
-  StyledText,
-  StyledView,
-} from '../styles/styled-primitives';
+import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
 import type {
   SelectGroupProps,
   SelectItemContextValue,
@@ -211,7 +207,8 @@ export function SelectLabel({ children, className, style }: SelectLabelProps) {
         menuType('body-medium', className),
         className ? null : { color: palette.textSecondary },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </StyledText>
   );
@@ -250,13 +247,10 @@ function SelectScrollButton({ direction, className, style }: SelectScrollButtonP
       // `flex cursor-default items-center justify-center py-1`, opaque so the
       // rows scrolling under it do not show through.
       className={cx('items-center justify-center py-space-4', className)}
-      style={[{ backgroundColor: palette.surface }, style]}>
+      style={[{ backgroundColor: palette.surface }, style]}
+    >
       {/* `size-4` — the same 16px glyph the rows use. */}
-      <Chevron
-        width={ROW_ICON_SIZE}
-        height={ROW_ICON_SIZE}
-        fill={palette.textSecondary}
-      />
+      <Chevron width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
     </StyledPressable>
   );
 }
@@ -307,7 +301,8 @@ export function SelectItemText({ children, className, style }: SelectItemTextPro
         menuType(VALUE_TYPE[size], className),
         className ? null : { color: disabled ? palette.textDisabled : palette.text },
         style,
-      ]}>
+      ]}
+    >
       {children}
     </StyledText>
   );
@@ -333,11 +328,7 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
 
   return (
     <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
-      <IconComponent
-        width={ROW_ICON_SIZE}
-        height={ROW_ICON_SIZE}
-        fill={palette.textSecondary}
-      />
+      <IconComponent width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
     </StyledView>
   );
 }

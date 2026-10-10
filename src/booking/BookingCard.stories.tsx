@@ -9,7 +9,7 @@ import type { GuestCounts } from '../stay-search';
 import { PriceBreakdown } from './PriceBreakdown';
 import { TripCard } from './TripCard';
 import type { PriceBreakdownProps } from './types';
-import { Button , LinkButton } from '../button';
+import { Button, LinkButton } from '../button';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -37,7 +37,9 @@ const PHOTOS = {
 function Page({ children, width }: { children: React.ReactNode; width?: number }) {
   const theme = useTheme();
   return (
-    <View style={{ padding: 24, backgroundColor: theme.colors.background, alignItems: 'flex-start' }}>
+    <View
+      style={{ padding: 24, backgroundColor: theme.colors.background, alignItems: 'flex-start' }}
+    >
       <View style={{ width: width ?? '100%', maxWidth: '100%' }}>{children}</View>
     </View>
   );
@@ -54,14 +56,19 @@ const BREAKDOWN: PriceBreakdownProps = {
 
 function ReportLink() {
   return (
-    <LinkButton  linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
+    <LinkButton linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
       Report this listing
     </LinkButton>
   );
 }
 
 function GuestsDemo({ initialOpen = false }: { initialOpen?: boolean }) {
-  const [counts, setCounts] = useState<GuestCounts>({ adults: 2, children: 0, infants: 1, pets: 0 });
+  const [counts, setCounts] = useState<GuestCounts>({
+    adults: 2,
+    children: 0,
+    infants: 1,
+    pets: 0,
+  });
   const [open, setOpen] = useState(initialOpen);
   const guests = counts.adults + counts.children;
   const summary = [
@@ -100,7 +107,13 @@ function GuestsDemo({ initialOpen = false }: { initialOpen?: boolean }) {
 export const NoDates: Story = {
   render: () => (
     <Page width={372}>
-      <BookingCard price="$180" priceUnit="night" rating={4.92} reviewCount={128} guests="1 guest" />
+      <BookingCard
+        price="$180"
+        priceUnit="night"
+        rating={4.92}
+        reviewCount={128}
+        guests="1 guest"
+      />
     </Page>
   ),
 };
@@ -162,13 +175,17 @@ export const Discount: Story = {
               label: 'Weekly stay discount',
               amount: '$126',
               tone: 'discount',
-              details: <DetailsNote text="Stays of 7 nights or more get 10% off the nightly price." />,
+              details: (
+                <DetailsNote text="Stays of 7 nights or more get 10% off the nightly price." />
+              ),
             },
             { label: 'Cleaning fee', amount: '$45' },
             {
               label: 'Service fee',
               amount: '$152',
-              details: <DetailsNote text="This helps run the platform and covers support around the clock." />,
+              details: (
+                <DetailsNote text="This helps run the platform and covers support around the clock." />
+              ),
             },
           ],
           total: '$1,331',
@@ -240,7 +257,14 @@ export const BookingBarPhone: Story = {
   render: function BarDemo() {
     const theme = useTheme();
     return (
-      <View style={{ backgroundColor: theme.colors.background, padding: 24, gap: 24, alignItems: 'flex-start' }}>
+      <View
+        style={{
+          backgroundColor: theme.colors.background,
+          padding: 24,
+          gap: 24,
+          alignItems: 'flex-start',
+        }}
+      >
         <View style={{ width: 375, maxWidth: '100%', gap: 16 }}>
           <BookingBar
             price="$180"
@@ -249,8 +273,20 @@ export const BookingBarPhone: Story = {
             onPressDates={() => undefined}
             testID="bar"
           />
-          <BookingBar price="$162" originalPrice="$180" priceUnit="night" dates="Oct 12 – 19" reserveLabel="Reserve" />
-          <BookingBar price="$180" priceUnit="night" reserveLabel="Check availability" loading bottomInset={34} />
+          <BookingBar
+            price="$162"
+            originalPrice="$180"
+            priceUnit="night"
+            dates="Oct 12 – 19"
+            reserveLabel="Reserve"
+          />
+          <BookingBar
+            price="$180"
+            priceUnit="night"
+            reserveLabel="Check availability"
+            loading
+            bottomInset={34}
+          />
         </View>
       </View>
     );
@@ -260,10 +296,10 @@ export const BookingBarPhone: Story = {
 function TripActions() {
   return (
     <>
-      <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+      <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
         Message host
       </Button>
-      <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+      <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
         Get directions
       </Button>
     </>
@@ -305,7 +341,7 @@ export const TripCards: Story = {
               dates="Aug 2 – 9, 2026"
               status="completed"
               actions={
-                <Button  size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+                <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
                   Write a review
                 </Button>
               }
@@ -332,8 +368,23 @@ export const Dark: Story = {
   render: function DarkDemo() {
     const theme = useTheme();
     return (
-      <View style={{ backgroundColor: theme.colors.background, padding: 24, gap: 24, alignItems: 'flex-start' }}>
-        <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
+      <View
+        style={{
+          backgroundColor: theme.colors.background,
+          padding: 24,
+          gap: 24,
+          alignItems: 'flex-start',
+        }}
+      >
+        <View
+          style={{
+            width: '100%',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 24,
+            alignItems: 'flex-start',
+          }}
+        >
           <View style={{ width: 372, maxWidth: '100%' }}>
             <BookingCard
               price="$162"
@@ -348,7 +399,12 @@ export const Dark: Story = {
               breakdown={{
                 rows: [
                   { label: '$180 x 7 nights', amount: '$1,260' },
-                  { label: 'Weekly stay discount', amount: '$126', tone: 'discount', onPressLabel: () => undefined },
+                  {
+                    label: 'Weekly stay discount',
+                    amount: '$126',
+                    tone: 'discount',
+                    onPressLabel: () => undefined,
+                  },
                   { label: 'Service fee', amount: '$152' },
                 ],
                 total: '$1,286',
@@ -370,7 +426,12 @@ export const Dark: Story = {
           </View>
         </View>
         <View style={{ width: 375, maxWidth: '100%' }}>
-          <BookingBar price="$180" priceUnit="night" dates="Oct 12 – 17" onPressDates={() => undefined} />
+          <BookingBar
+            price="$180"
+            priceUnit="night"
+            dates="Oct 12 – 17"
+            onPressDates={() => undefined}
+          />
         </View>
       </View>
     );

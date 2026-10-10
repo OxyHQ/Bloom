@@ -13,9 +13,7 @@ import { InputGroup } from '../input-group';
 import { TextField, TextFieldInput } from '../text-field';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
-(
-  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
-).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement;
 let root: Root;
 let direction: string;
@@ -49,7 +47,6 @@ it.each(['ltr', 'rtl'])(
     expect(clear.parentElement).toBe(input.parentElement);
     expect(getComputedStyle(clear).position).not.toBe('absolute');
     expect(clear.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
-
   },
 );
 
@@ -59,10 +56,7 @@ it('still lets consumers override physical padding longhands', () => {
     root.render(
       <BloomThemeProvider fonts={false}>
         <TextField>
-          <TextFieldInput
-            label="Custom"
-            style={{ paddingLeft: 11, paddingRight: 29 }}
-          />
+          <TextFieldInput label="Custom" style={{ paddingLeft: 11, paddingRight: 29 }} />
         </TextField>
       </BloomThemeProvider>,
     ),
@@ -72,36 +66,44 @@ it('still lets consumers override physical padding longhands', () => {
   expect(style.paddingRight).toBe('29px');
 });
 
-it.each(['ltr', 'rtl'])(
-  'keeps the leading addon gap next to the input in %s',
-  (dir) => {
-    document.documentElement.dir = dir;
-    act(() =>
-      root.render(
-        <BloomThemeProvider fonts={false}>
-          <TextField leadingAddon={<span data-testid="prefix">+34</span>}>
-            <TextFieldInput label="Phone" />
-          </TextField>
-        </BloomThemeProvider>,
-      ),
-    );
-    const slot = container.querySelector(
-      '[data-testid="prefix"]',
-    )!.parentElement!;
-    const style = getComputedStyle(slot);
-    expect(dir === 'rtl' ? style.marginLeft : style.marginRight).toBe('2px');
-    expect(dir === 'rtl' ? style.marginRight : style.marginLeft).not.toBe(
-      '2px',
-    );
-  },
-);
+it.each(['ltr', 'rtl'])('keeps the leading addon gap next to the input in %s', (dir) => {
+  document.documentElement.dir = dir;
+  act(() =>
+    root.render(
+      <BloomThemeProvider fonts={false}>
+        <TextField leadingAddon={<span data-testid="prefix">+34</span>}>
+          <TextFieldInput label="Phone" />
+        </TextField>
+      </BloomThemeProvider>,
+    ),
+  );
+  const slot = container.querySelector('[data-testid="prefix"]')!.parentElement!;
+  const style = getComputedStyle(slot);
+  expect(dir === 'rtl' ? style.marginLeft : style.marginRight).toBe('2px');
+  expect(dir === 'rtl' ? style.marginRight : style.marginLeft).not.toBe('2px');
+});
 
-it.each(['field', 'group'])('disables both input and clear inside a disabled %s', kind => {
+it.each(['field', 'group'])('disables both input and clear inside a disabled %s', (kind) => {
   const change = jest.fn();
   const search = <Search value="Query" disabled={false} onClearText={change} />;
-  act(() => root.render(<BloomThemeProvider>{kind === 'field' ? <Field disabled label="Find">{search}</Field> : <InputGroup disabled>{search}</InputGroup>}</BloomThemeProvider>));
+  act(() =>
+    root.render(
+      <BloomThemeProvider>
+        {kind === 'field' ? (
+          <Field disabled label="Find">
+            {search}
+          </Field>
+        ) : (
+          <InputGroup disabled>{search}</InputGroup>
+        )}
+      </BloomThemeProvider>,
+    ),
+  );
   expect(container.querySelector('input')!.disabled).toBe(true);
-  const clear = container.querySelector<HTMLButtonElement>('[data-testid="searchTextInputClearBtn"]')!;
+  const clear = container.querySelector<HTMLButtonElement>(
+    '[data-testid="searchTextInputClearBtn"]',
+  )!;
   expect(clear.disabled).toBe(true);
-  act(() => clear.click()); expect(change).not.toHaveBeenCalled();
+  act(() => clear.click());
+  expect(change).not.toHaveBeenCalled();
 });

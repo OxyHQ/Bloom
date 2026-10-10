@@ -97,12 +97,14 @@ import { surfaceStyle as resolveShapeStyle } from '../shapes/surface-style';
 import { StyledView } from '../styles/styled-primitives';
 
 import { useOptionalPanelChrome, usePanelShape } from '../styles/panel-chrome';
-import { SurfaceLevelProvider, surfaceFillVars, useOptionalSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
-import { useTheme } from '../theme/use-theme';
 import {
-  ContentPanelNestingContext,
-  useContentPanelNestingGuard,
-} from './context';
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useOptionalSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
+import { useTheme } from '../theme/use-theme';
+import { ContentPanelNestingContext, useContentPanelNestingGuard } from './context';
 import { usePanelSurfaceFill } from './shared';
 import type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
 
@@ -205,7 +207,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const radius = StyleSheet.flatten(surfaceStyle)?.borderRadius ?? panelShape.radius;
   const curveStyle = resolveShapeStyle({ curve: panelShape.curve });
   const panelStyle = { ...curveStyle, borderRadius: radius };
-  const panelVars: WebCssStyle = { '--bloom-panel-radius': typeof radius === 'string' ? radius : `${typeof radius === 'number' ? radius : panelShape.radius}px` };
+  const panelVars: WebCssStyle = {
+    '--bloom-panel-radius':
+      typeof radius === 'string'
+        ? radius
+        : `${typeof radius === 'number' ? radius : panelShape.radius}px`,
+  };
   const panelChrome = useOptionalPanelChrome();
   // What the panel tells its subtree it is painted in (`./shared.ts`).
   const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
@@ -214,9 +221,22 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const parentFill = useOptionalSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
   const isPlain = appearance === 'plain';
-  const paintsSurface = !isPlain && Boolean(defaultFill) && parentFill !== undefined && (framed ?? width >= framedFrom) && chrome !== 'none';
-  const publishedFill = isPlain ? parentFill : rawFill && paintsSurface ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill : rawFill;
-  const materialStyle = useSurfaceMaterial('[data-bloom-panel-material]', 'bloom-content-panel-material', defaultFill ?? 'transparent');
+  const paintsSurface =
+    !isPlain &&
+    Boolean(defaultFill) &&
+    parentFill !== undefined &&
+    (framed ?? width >= framedFrom) &&
+    chrome !== 'none';
+  const publishedFill = isPlain
+    ? parentFill
+    : rawFill && paintsSurface
+      ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill
+      : rawFill;
+  const materialStyle = useSurfaceMaterial(
+    '[data-bloom-panel-material]',
+    'bloom-content-panel-material',
+    defaultFill ?? 'transparent',
+  );
 
   // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
   // `false` → never framed (full-bleed).
@@ -260,8 +280,20 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const gridStackClass = boundToPanel
     ? 'web:grid web:[grid-template-columns:minmax(0,1fr)] web:[grid-template-rows:minmax(0,1fr)]'
     : '';
-  const surfaceClass = [surfaceBase, fillSurface, gridStackClass, surfaceClassName ?? (isPlain || paintsSurface ? 'bg-transparent' : 'bg-card')].filter(Boolean).join(' ');
-  const contentClass = [contentBase, fillContent, boundToPanel ? 'web:[grid-area:1/1]' : '', contentClassName]
+  const surfaceClass = [
+    surfaceBase,
+    fillSurface,
+    gridStackClass,
+    surfaceClassName ?? (isPlain || paintsSurface ? 'bg-transparent' : 'bg-card'),
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const contentClass = [
+    contentBase,
+    fillContent,
+    boundToPanel ? 'web:[grid-area:1/1]' : '',
+    contentClassName,
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -281,29 +313,43 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // type is shared with native where `calc()` does not exist. This file is
   // web-only, where it is a real value react-native-web passes straight
   // through.
-  const insetTop = typeof overlayInset === 'number' ? overlayInset : (overlayInset?.top ?? PANEL_TOP_INSET);
+  const insetTop =
+    typeof overlayInset === 'number' ? overlayInset : (overlayInset?.top ?? PANEL_TOP_INSET);
   const insetBottom =
     typeof overlayInset === 'number' ? overlayInset : (overlayInset?.bottom ?? PANEL_BOTTOM_INSET);
   const customInset = insetTop !== PANEL_TOP_INSET || insetBottom !== PANEL_BOTTOM_INSET;
-  const insetStyle = !boundToPanel && customInset
-    ? ({
-        top: insetTop,
-        height: `calc(100dvh - ${insetTop + insetBottom}px)`,
-        marginBottom: `calc(-100dvh + ${insetTop + insetBottom}px)`,
-      } as unknown as ViewStyle)
-    : undefined;
+  const insetStyle =
+    !boundToPanel && customInset
+      ? ({
+          top: insetTop,
+          height: `calc(100dvh - ${insetTop + insetBottom}px)`,
+          marginBottom: `calc(-100dvh + ${insetTop + insetBottom}px)`,
+        } as unknown as ViewStyle)
+      : undefined;
 
   const insetVars: WebCssStyle = {
     '--bloom-panel-inset-top': `${insetTop}px`,
     '--bloom-panel-inset-bottom': `${insetBottom}px`,
   };
-  const maskSpread = boundToPanel ? GUTTER_MASK_SPREAD : Math.max(GUTTER_MASK_SPREAD, insetTop, insetBottom);
+  const maskSpread = boundToPanel
+    ? GUTTER_MASK_SPREAD
+    : Math.max(GUTTER_MASK_SPREAD, insetTop, insetBottom);
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
       <StyledView
         testID="content-panel-surface"
-        {...{ dataSet: { bloomPanelMaterial: paintsSurface ? 'framed' : undefined, bloomPanel: boundToPanel || framed === false ? 'none' : responsive ? String(framedFrom) : 'framed' } }}
+        {...{
+          dataSet: {
+            bloomPanelMaterial: paintsSurface ? 'framed' : undefined,
+            bloomPanel:
+              boundToPanel || framed === false
+                ? 'none'
+                : responsive
+                  ? String(framedFrom)
+                  : 'framed',
+          },
+        }}
         className={surfaceClass}
         style={[
           // `--bloom-surface` rides the element that carries the fill, so CSS
@@ -313,7 +359,11 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           insetVars,
           panelVars,
           curveStyle,
-          framed === true ? { borderRadius: radius } : framed === false ? { borderRadius: 0 } : null,
+          framed === true
+            ? { borderRadius: radius }
+            : framed === false
+              ? { borderRadius: 0 }
+              : null,
           surfaceStyle,
           paintsSurface ? materialStyle : null,
           isPlain ? { backgroundColor: 'transparent' } : null,
@@ -335,7 +385,11 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
                   ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-[var(--bloom-panel-radius)] ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)]`
                   : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-[var(--bloom-panel-radius)] web:[margin-bottom:calc(-100dvh+16px)]'
             }
-            style={{ ...panelStyle, ...insetStyle, boxShadow: `0 0 0 ${maskSpread}px ${maskColor ?? (isPlain ? parentFill : undefined) ?? colors.background}` }}
+            style={{
+              ...panelStyle,
+              ...insetStyle,
+              boxShadow: `0 0 0 ${maskSpread}px ${maskColor ?? (isPlain ? parentFill : undefined) ?? colors.background}`,
+            }}
           />
         )}
         {/* (2) Border-frame overlay — one continuous rounded border, above all.
@@ -348,9 +402,13 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             // The shadow rides the SAME element as the hairline, so the lift and
             // the edge can never disagree about where the panel ends. It paints
             // outward, into the gutter the page background shows.
-            style={[panelStyle, insetStyle, chrome === 'elevated' && (shadow || panelChrome)
+            style={[
+              panelStyle,
+              insetStyle,
+              chrome === 'elevated' && (shadow || panelChrome)
                 ? { boxShadow: shadow ?? panelChrome?.shadow }
-                : null]}
+                : null,
+            ]}
             className={
               boundToPanel
                 ? `web:[grid-area:1/1] z-[120] h-full w-full rounded-[var(--bloom-panel-radius)] border border-border ${responsive ? bp.overlayHidden : ''}`
@@ -364,11 +422,30 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             in place instead of remounting `{children}` (which would reset feed
             scroll/virtualizer + refetch on a breakpoint cross). Clipped to the
             rounded panel shape on web when framed. */}
-        <StyledView key="content" testID="content-panel-content" className={contentClass} style={[curveStyle, framed === true ? { borderRadius: radius } : framed === false ? { borderRadius: 0 } : null, contentStyle]}>
+        <StyledView
+          key="content"
+          testID="content-panel-content"
+          className={contentClass}
+          style={[
+            curveStyle,
+            framed === true
+              ? { borderRadius: radius }
+              : framed === false
+                ? { borderRadius: 0 }
+                : null,
+            contentStyle,
+          ]}
+        >
           {/* Solid panels publish their painted surface. Plain panels preserve
               the enclosing surface so descendant scrims follow its real fill. */}
           <SurfaceLevelProvider level={isPlain ? parentLevel : 1} fill={publishedFill}>
-            {errorBoundary === false ? children : <PanelErrorBoundary {...(errorBoundary === true ? {} : errorBoundary)}>{children}</PanelErrorBoundary>}
+            {errorBoundary === false ? (
+              children
+            ) : (
+              <PanelErrorBoundary {...(errorBoundary === true ? {} : errorBoundary)}>
+                {children}
+              </PanelErrorBoundary>
+            )}
           </SurfaceLevelProvider>
         </StyledView>
       </StyledView>

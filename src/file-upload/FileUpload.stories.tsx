@@ -10,9 +10,9 @@ import type { FileUploadFile } from './types';
 
 const meta: Meta<typeof FileUpload> = {
   argTypes: {
-    "progress": { control: 'number' },
-    "maxBytes": { control: 'number' },
-    "disabled": { control: 'boolean' }
+    progress: { control: 'number' },
+    maxBytes: { control: 'number' },
+    disabled: { control: 'boolean' },
   },
   title: 'Base/File Upload',
   component: FileUpload,
@@ -24,12 +24,24 @@ type Story = StoryObj<typeof FileUpload>;
 
 const REPORT: FileUploadFile = { name: 'quarterly-report.pdf', size: 2.4 * 1024 * 1024 };
 const SHEET: FileUploadFile = { name: 'budget-2026.xlsx', size: 312 * 1024 };
-const PHOTO: FileUploadFile = { name: 'team-offsite-photo-with-a-very-long-file-name.png', size: 14 * 1024 * 1024 };
+const PHOTO: FileUploadFile = {
+  name: 'team-offsite-photo-with-a-very-long-file-name.png',
+  size: 14 * 1024 * 1024,
+};
 
 function Frame({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   return (
-    <View testID="frame" style={{ maxWidth: 533, gap: 32, width: '100%', minWidth: 0, backgroundColor: theme.colors.background }}>
+    <View
+      testID="frame"
+      style={{
+        maxWidth: 533,
+        gap: 32,
+        width: '100%',
+        minWidth: 0,
+        backgroundColor: theme.colors.background,
+      }}
+    >
       {children}
     </View>
   );
@@ -102,9 +114,12 @@ export const Controlled: Story = {
     const [progress, setProgress] = useState(0);
     const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    useEffect(() => () => {
-      if (timer.current) clearInterval(timer.current);
-    }, []);
+    useEffect(
+      () => () => {
+        if (timer.current) clearInterval(timer.current);
+      },
+      [],
+    );
 
     return (
       <Frame>
@@ -141,18 +156,28 @@ export const Controlled: Story = {
 /** Edit the props in Controls; interactive state stays in sync. */
 export const Playground: Story = {
   args: { disabled: false },
-  render: (args) => <View style={{ width: 420, maxWidth: '100%' }}><FileUpload {...args} /></View>,
+  render: (args) => (
+    <View style={{ width: 420, maxWidth: '100%' }}>
+      <FileUpload {...args} />
+    </View>
+  ),
 };
 
 /** Controlled phase changes expose only the current status to assistive technology. */
 export const AccessibleStatus: Story = {
   render: function AccessibleStatusStory() {
     const [progress, setProgress] = useState<number | null>(null);
-    return <Frame>
-      <Button onPress={() => setProgress(0)}>Start upload</Button>
-      <Button onPress={() => setProgress(100)}>Complete upload</Button>
-      <Button onPress={() => setProgress(null)}>Reset upload</Button>
-      <FileUpload testID="status-upload" file={progress === null ? null : REPORT} progress={progress ?? 0} />
-    </Frame>;
+    return (
+      <Frame>
+        <Button onPress={() => setProgress(0)}>Start upload</Button>
+        <Button onPress={() => setProgress(100)}>Complete upload</Button>
+        <Button onPress={() => setProgress(null)}>Reset upload</Button>
+        <FileUpload
+          testID="status-upload"
+          file={progress === null ? null : REPORT}
+          progress={progress ?? 0}
+        />
+      </Frame>
+    );
   },
 };

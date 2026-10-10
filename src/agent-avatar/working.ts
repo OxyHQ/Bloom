@@ -8,10 +8,7 @@ const smooth = (value: number) => {
 /** One little hop and a full turn, then back to the existing gaze and pose. */
 export function workingPose(seconds: number, cycles = 1) {
   const duration = WORKING_SECONDS * cycles;
-  const elapsed =
-    seconds >= duration
-      ? WORKING_SECONDS
-      : Math.max(0, seconds) % WORKING_SECONDS;
+  const elapsed = seconds >= duration ? WORKING_SECONDS : Math.max(0, seconds) % WORKING_SECONDS;
   const t = Math.max(0, Math.min(1, elapsed / WORKING_SECONDS));
   const turn = smooth((t - 0.08) / 0.84) * Math.PI * 2;
   const lift = Math.sin(Math.PI * smooth((t - 0.12) / 0.72)) ** 2;

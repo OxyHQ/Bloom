@@ -167,7 +167,13 @@ function DesktopPlayer({ initialDevicePickerOpen = false }: { initialDevicePicke
         onFullscreenPress={noop}
         testID="bar"
       />
-      {remote ? <ConnectBanner deviceName={device.name} kind={device.kind} onPress={() => setPickerOpen(true)} /> : null}
+      {remote ? (
+        <ConnectBanner
+          deviceName={device.name}
+          kind={device.kind}
+          onPress={() => setPickerOpen(true)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -188,7 +194,10 @@ export const Collapsing: Story = {
     const theme = useTheme();
     const p = useFakePlayback(227);
     return (
-      <ScrollView horizontal contentContainerStyle={{ gap: 24, padding: 16, flexDirection: 'column' }}>
+      <ScrollView
+        horizontal
+        contentContainerStyle={{ gap: 24, padding: 16, flexDirection: 'column' }}
+      >
         {[1280, 900, 700].map((w) => (
           <View key={w} style={{ width: w, gap: 6 }}>
             <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
@@ -369,7 +378,9 @@ function MenusDemo({ openMenu }: { openMenu?: 'speed' | 'sleep' }) {
   const [rate, setRate] = useState(1.25);
   const [sleep, setSleep] = useState<SleepTimerValue>(15);
   return (
-    <View style={{ padding: 24, minHeight: 520, backgroundColor: theme.colors.background, gap: 12 }}>
+    <View
+      style={{ padding: 24, minHeight: 520, backgroundColor: theme.colors.background, gap: 12 }}
+    >
       <Caption>{`speed ${rate}× · sleep ${String(sleep)}`}</Caption>
       <View style={{ flexDirection: 'row', gap: 160, alignItems: 'center' }}>
         <PlaybackSpeedMenu
@@ -416,9 +427,15 @@ function MockTabBar() {
       }}
     >
       {tabs.map(({ label, Icon }, i) => (
-        <View key={label} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <View
+          key={label}
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }}
+        >
           <Icon width={22} height={22} fill={i === 0 ? theme.colors.text : neutral[500]} />
-          <Text variant="caption-2-medium" style={{ color: i === 0 ? theme.colors.text : neutral[500] }}>
+          <Text
+            variant="caption-2-medium"
+            style={{ color: i === 0 ? theme.colors.text : neutral[500] }}
+          >
             {label}
           </Text>
         </View>
@@ -430,7 +447,15 @@ function MockTabBar() {
 function Phone({ children, height = 844 }: { children: React.ReactNode; height?: number }) {
   const theme = useTheme();
   return (
-    <View style={{ width: '100%', maxWidth: 390, height, overflow: 'hidden', backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        width: '100%',
+        maxWidth: 390,
+        height,
+        overflow: 'hidden',
+        backgroundColor: theme.colors.background,
+      }}
+    >
       {children}
     </View>
   );
@@ -453,7 +478,15 @@ function AboutArtistDemo() {
   );
 }
 
-function FullPlayer({ width, height, onCollapse = noop }: { width: number; height: number; onCollapse?: () => void }) {
+function FullPlayer({
+  width,
+  height,
+  onCollapse = noop,
+}: {
+  width: number;
+  height: number;
+  onCollapse?: () => void;
+}) {
   const duration = 227;
   const p = useFakePlayback(duration);
   const [liked, setLiked] = useState(true);
@@ -527,9 +560,23 @@ export const MobileMiniPlayer: Story = {
     const p = useFakePlayback(227);
     const [liked, setLiked] = useState(false);
     const [expanded, setExpanded] = useState(false);
-    const variants: { key: string; artworkColor?: string; deviceName?: string; track: MediaPlayerTrack }[] = [
+    const variants: {
+      key: string;
+      artworkColor?: string;
+      deviceName?: string;
+      track: MediaPlayerTrack;
+    }[] = [
       { key: 'tinted', artworkColor: '#3A6EA5', track: TRACK },
-      { key: 'pale', artworkColor: '#F4E3A1', track: { ...TRACK, title: 'Lemon Static', artists: 'Juniper Holt', artwork: cover('lemon-static') } },
+      {
+        key: 'pale',
+        artworkColor: '#F4E3A1',
+        track: {
+          ...TRACK,
+          title: 'Lemon Static',
+          artists: 'Juniper Holt',
+          artwork: cover('lemon-static'),
+        },
+      },
       { key: 'neutral', track: EPISODE },
       { key: 'casting', artworkColor: '#8B3A62', deviceName: 'Living Room Speaker', track: TRACK },
     ];
@@ -574,10 +621,18 @@ export const Devices: Story = {
     const palette = resolveMenuPalette(theme);
     const [device, setDevice] = useState<PlaybackDevice>(DEVICES[0] as PlaybackDevice);
     return (
-      <View style={{ padding: 24, gap: 24, backgroundColor: theme.colors.background, alignItems: 'flex-start' }}>
+      <View
+        style={{
+          padding: 24,
+          gap: 24,
+          backgroundColor: theme.colors.background,
+          alignItems: 'flex-start',
+        }}
+      >
         <View
           style={{
-            width: '100%', maxWidth: 320,
+            width: '100%',
+            maxWidth: 320,
             padding: 10,
             borderRadius: 16,
             borderWidth: 1,
@@ -585,7 +640,12 @@ export const Devices: Story = {
             backgroundColor: palette.surface,
           }}
         >
-          <DevicePicker current={device} devices={DEVICES} onSelect={setDevice} onHelpPress={noop} />
+          <DevicePicker
+            current={device}
+            devices={DEVICES}
+            onSelect={setDevice}
+            onHelpPress={noop}
+          />
         </View>
         <View style={{ width: '100%', maxWidth: 390, gap: 8 }}>
           <ConnectBanner deviceName="Living Room Speaker" onPress={noop} />

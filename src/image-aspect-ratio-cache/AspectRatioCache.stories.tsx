@@ -41,7 +41,11 @@ const WIDTH = 260;
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Card appearance="outline" radius="radius-16" style={{ padding: 16, gap: 10, width: WIDTH + 32, maxWidth: '100%' }}>
+    <Card
+      appearance="outline"
+      radius="radius-16"
+      style={{ padding: 16, gap: 10, width: WIDTH + 32, maxWidth: '100%' }}
+    >
       <Text style={{ fontWeight: '600' }}>{label}</Text>
       {children}
     </Card>
@@ -53,7 +57,12 @@ function Unreserved({ uris }: { uris: string[] }) {
   return (
     <View style={{ gap: 8 }}>
       {uris.map((uri) => (
-        <Image key={uri} source={{ uri }} style={{ width: WIDTH, maxWidth: '100%' }} resizeMode="cover" />
+        <Image
+          key={uri}
+          source={{ uri }}
+          style={{ width: WIDTH, maxWidth: '100%' }}
+          resizeMode="cover"
+        />
       ))}
       <Text style={{ fontSize: 12, opacity: 0.7 }}>
         Nothing below these images can hold its position.
@@ -107,7 +116,15 @@ export const ReflowVersusReserved: Story = {
     return (
       <View style={{ gap: 12 }}>
         <Button onPress={() => setRun((n) => n + 1)}>Load again (new, uncached images)</Button>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'flex-start' }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            maxWidth: '100%',
+            gap: 16,
+            alignItems: 'flex-start',
+          }}
+        >
           <Row label="No reservation — reflows">
             <Unreserved key={run} uris={uris} />
           </Row>
@@ -133,7 +150,11 @@ export const KnownVersusGuessed: Story = {
     const uris = photos('known', 3);
     return (
       <View style={{ maxWidth: '100%', gap: 8, width: 420 }}>
-        <Button onPress={() => { for (const u of uris) void fetchAspectRatio(u).then(() => force((n) => n + 1)); }}>
+        <Button
+          onPress={() => {
+            for (const u of uris) void fetchAspectRatio(u).then(() => force((n) => n + 1));
+          }}
+        >
           Measure them
         </Button>
         {uris.map((uri) => {
@@ -175,7 +196,13 @@ export const SeededFromTheApi: Story = {
         <Text style={{ fontSize: 12, opacity: 0.7 }}>
           Ratio seeded before render: {getAspectRatio(uri)?.toFixed(3)}
         </Text>
-        <View style={{ maxWidth: '100%', width: 400, aspectRatio: getAspectRatio(uri) ?? DEFAULT_ASPECT_RATIO }}>
+        <View
+          style={{
+            maxWidth: '100%',
+            width: 400,
+            aspectRatio: getAspectRatio(uri) ?? DEFAULT_ASPECT_RATIO,
+          }}
+        >
           <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         </View>
       </View>

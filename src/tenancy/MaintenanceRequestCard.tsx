@@ -70,7 +70,9 @@ function MaintenanceRequestCardComponent({
   const photoLabel =
     photoLabelProp ??
     ((photo: MaintenancePhoto, position: number, total: number) =>
-      photo.alt ? messages.photoWithAlt(photo.alt, position, total) : messages.photo(position, total));
+      photo.alt
+        ? messages.photoWithAlt(photo.alt, position, total)
+        : messages.photo(position, total));
   useHousingWebCss();
   const palette = useHousingPalette();
   const resolver = useImageResolver();
@@ -110,7 +112,10 @@ function MaintenanceRequestCardComponent({
         style={[{ flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 6 }, ring]}
       >
         <RiChat3Line width={16} height={16} fill={palette.textSecondary} />
-        <Text variant="body-2-medium" style={{ color: palette.text, textDecorationLine: 'underline' }}>
+        <Text
+          variant="body-2-medium"
+          style={{ color: palette.text, textDecorationLine: 'underline' }}
+        >
           {commentText}
         </Text>
       </Pressable>
@@ -140,7 +145,9 @@ function MaintenanceRequestCardComponent({
             {title}
           </Text>
           <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
-            {[categoryLabel ?? messages.maintenanceCategory[category], reference].filter(Boolean).join(' · ')}
+            {[categoryLabel ?? messages.maintenanceCategory[category], reference]
+              .filter(Boolean)
+              .join(' · ')}
           </Text>
         </View>
         <Badge
@@ -167,7 +174,12 @@ function MaintenanceRequestCardComponent({
       ) : null}
 
       {description ? (
-        <Text variant="body-regular" numberOfLines={3} style={{ color: palette.text }} testID={id('description')}>
+        <Text
+          variant="body-regular"
+          numberOfLines={3}
+          style={{ color: palette.text }}
+          testID={id('description')}
+        >
           {description}
         </Text>
       ) : null}
@@ -189,7 +201,11 @@ function MaintenanceRequestCardComponent({
               backgroundColor: palette.tile,
             };
             const image = uri ? (
-              <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
+              <Image
+                source={{ uri }}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
             ) : null;
             const name = photoLabel(photo, index + 1, photos.length);
             return onPressPhoto ? (

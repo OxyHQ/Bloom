@@ -8,12 +8,23 @@ import { corner as callUi_corner } from '../../call-ui/message-helpers';
 import { plural } from '../plural';
 import { countOf as mapMarker_countOf } from '../../map-marker/message-helpers';
 import { words as navigationBanner_words } from '../../navigation-banner/message-helpers';
-import { withReviews as placeCard_withReviews, countOf as placeCard_countOf } from '../../place-card/message-helpers';
+import {
+  withReviews as placeCard_withReviews,
+  countOf as placeCard_countOf,
+} from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import { has as vendorCard_has, counted as vendorCard_counted } from '../../vendor-card/message-helpers';
+import {
+  has as vendorCard_has,
+  counted as vendorCard_counted,
+} from '../../vendor-card/message-helpers';
 
-const CALL_UI_MESSAGES__CORNERS = { 'top-left': 'أعلى اليسار', 'top-right': 'أعلى اليمين', 'bottom-left': 'أسفل اليسار', 'bottom-right': 'أسفل اليمين' };
+const CALL_UI_MESSAGES__CORNERS = {
+  'top-left': 'أعلى اليسار',
+  'top-right': 'أعلى اليمين',
+  'bottom-left': 'أسفل اليسار',
+  'bottom-right': 'أسفل اليمين',
+};
 
 const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   plural('ar', n, {
@@ -26,63 +37,110 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
-  reaction: "تفاعل",
-  working: "اعمل",
-  avatarStyle: "نمط الصورة الرمزية",
-  proceduralAvatar: "الصورة الرمزية الحالية",
-  betaPreset: "شخصية جاهزة (تجريبية)",
-  betaEyes: "نمط العيون",
-  eyewear: "نظارات",
-  accessory: "إكسسوار",
+  reaction: 'تفاعل',
+  working: 'اعمل',
+  avatarStyle: 'نمط الصورة الرمزية',
+  proceduralAvatar: 'الصورة الرمزية الحالية',
+  betaPreset: 'شخصية جاهزة (تجريبية)',
+  betaEyes: 'نمط العيون',
+  eyewear: 'نظارات',
+  accessory: 'إكسسوار',
   characterOption: (_category, _id, title) => String(title),
-  editor: "محرر الوكيل",
-  newBot: "روبوت جديد",
-  closeEditor: "إغلاق محرر الوكيل",
-  details: "مظهر الوكيل وتفاصيله",
-  color: "لون الصورة الرمزية",
-  customColor: "لون مخصص للصورة الرمزية",
-  name: "الاسم",
-  label: "التسمية",
-  description: "الوصف",
-  nameInput: "اسم الوكيل",
-  labelInput: "تسمية الوكيل",
-  descriptionInput: "وصف الوكيل",
-  labelPlaceholder: "مدير، تسويق، رسام",
-  descriptionPlaceholder: "تفاصيل الوكيل",
-  language: "اللغة",
-  languageInput: "لغة الوكيل",
-  notifications: "الإشعارات",
-  notificationsDescription: "عرض إشعار عندما يصبح الرد جاهزًا.",
-  notifyFinished: "الإشعار عند انتهاء هذا الوكيل",
-  voice: "الصوت",
-  voiceInput: "صوت الوكيل",
-  previewVoice: "معاينة الصوت",
-  savedVoice: "صوت محفوظ",
-  systemVoice: "صوت النظام",
-  off: "متوقف",
-  playbackSpeed: "سرعة التشغيل",
-  emotion: "تعبير الوكيل",
-  shape: "شكل الصورة الرمزية",
-  hexColor: "لون سداسي عشري",
-  hue: "درجة اللون",
-  saturationBrightness: "التشبع والسطوع",
-  increaseBrightness: "زيادة السطوع",
-  decreaseBrightness: "تقليل السطوع",
-  increaseHue: "زيادة درجة اللون",
-  decreaseHue: "تقليل درجة اللون",
-  nextShape: "الشكل التالي",
-  previousShape: "الشكل السابق",
-  newAgent: "وكيل جديد",
-  emotions: { "neutral": "محايد", "happy": "سعيد", "angry": "غاضب", "thinking": "يفكر", "shook": "مندهش", "curious": "فضولي", "wink": "غمزة", "sleepy": "نعسان", "sad": "حزين", "worried": "قلق", "skeptical": "متشكك", "focused": "مركز", "excited": "متحمس", "calm": "هادئ", "shy": "خجول", "confused": "حائر" },
-  shapes: { "slender": "نحيف", "pocket": "جيب", "petal": "بتلة", "flower": "زهرة", "star": "نجمة", "heart": "قلب", "cloud": "سحابة", "diamond": "معين", "shield": "درع" },
-  colors: { "Blue": "أزرق", "Teal": "أخضر مزرق", "Violet": "بنفسجي", "Pink": "وردي", "Red": "أحمر", "Orange": "برتقالي", "Cyan": "سماوي", "Lime": "أخضر ليموني", "Green": "أخضر" },
-  languages: { "auto": "اكتشاف تلقائي", "en": "الإنجليزية", "tr": "التركية", "es": "الإسبانية", "fr": "الفرنسية", "de": "الألمانية", "ja": "اليابانية", "pt": "البرتغالية" },
-  avatarColorLabel: (name) => "صورة رمزية {name}".replace("{name}", name),
-  shapeLabel: (name) => "شكل {name}".replace("{name}", name),
-  silhouetteLabel: (name) => "صورة ظلية {name}".replace("{name}", name),
-  livePreview: (name) => "{name}، معاينة مباشرة للصورة الرمزية".replace("{name}", name),
-  saturationBrightnessValue: (s, v) => "التشبع {s}٪، السطوع {v}٪".replace("{s}", String(s)).replace("{v}", String(v)),
-  playbackSpeedLabel: (speed) => "سرعة التشغيل {speed} مرة".replace("{speed}", String(speed)),
+  editor: 'محرر الوكيل',
+  newBot: 'روبوت جديد',
+  closeEditor: 'إغلاق محرر الوكيل',
+  details: 'مظهر الوكيل وتفاصيله',
+  color: 'لون الصورة الرمزية',
+  customColor: 'لون مخصص للصورة الرمزية',
+  name: 'الاسم',
+  label: 'التسمية',
+  description: 'الوصف',
+  nameInput: 'اسم الوكيل',
+  labelInput: 'تسمية الوكيل',
+  descriptionInput: 'وصف الوكيل',
+  labelPlaceholder: 'مدير، تسويق، رسام',
+  descriptionPlaceholder: 'تفاصيل الوكيل',
+  language: 'اللغة',
+  languageInput: 'لغة الوكيل',
+  notifications: 'الإشعارات',
+  notificationsDescription: 'عرض إشعار عندما يصبح الرد جاهزًا.',
+  notifyFinished: 'الإشعار عند انتهاء هذا الوكيل',
+  voice: 'الصوت',
+  voiceInput: 'صوت الوكيل',
+  previewVoice: 'معاينة الصوت',
+  savedVoice: 'صوت محفوظ',
+  systemVoice: 'صوت النظام',
+  off: 'متوقف',
+  playbackSpeed: 'سرعة التشغيل',
+  emotion: 'تعبير الوكيل',
+  shape: 'شكل الصورة الرمزية',
+  hexColor: 'لون سداسي عشري',
+  hue: 'درجة اللون',
+  saturationBrightness: 'التشبع والسطوع',
+  increaseBrightness: 'زيادة السطوع',
+  decreaseBrightness: 'تقليل السطوع',
+  increaseHue: 'زيادة درجة اللون',
+  decreaseHue: 'تقليل درجة اللون',
+  nextShape: 'الشكل التالي',
+  previousShape: 'الشكل السابق',
+  newAgent: 'وكيل جديد',
+  emotions: {
+    neutral: 'محايد',
+    happy: 'سعيد',
+    angry: 'غاضب',
+    thinking: 'يفكر',
+    shook: 'مندهش',
+    curious: 'فضولي',
+    wink: 'غمزة',
+    sleepy: 'نعسان',
+    sad: 'حزين',
+    worried: 'قلق',
+    skeptical: 'متشكك',
+    focused: 'مركز',
+    excited: 'متحمس',
+    calm: 'هادئ',
+    shy: 'خجول',
+    confused: 'حائر',
+  },
+  shapes: {
+    slender: 'نحيف',
+    pocket: 'جيب',
+    petal: 'بتلة',
+    flower: 'زهرة',
+    star: 'نجمة',
+    heart: 'قلب',
+    cloud: 'سحابة',
+    diamond: 'معين',
+    shield: 'درع',
+  },
+  colors: {
+    Blue: 'أزرق',
+    Teal: 'أخضر مزرق',
+    Violet: 'بنفسجي',
+    Pink: 'وردي',
+    Red: 'أحمر',
+    Orange: 'برتقالي',
+    Cyan: 'سماوي',
+    Lime: 'أخضر ليموني',
+    Green: 'أخضر',
+  },
+  languages: {
+    auto: 'اكتشاف تلقائي',
+    en: 'الإنجليزية',
+    tr: 'التركية',
+    es: 'الإسبانية',
+    fr: 'الفرنسية',
+    de: 'الألمانية',
+    ja: 'اليابانية',
+    pt: 'البرتغالية',
+  },
+  avatarColorLabel: (name) => 'صورة رمزية {name}'.replace('{name}', name),
+  shapeLabel: (name) => 'شكل {name}'.replace('{name}', name),
+  silhouetteLabel: (name) => 'صورة ظلية {name}'.replace('{name}', name),
+  livePreview: (name) => '{name}، معاينة مباشرة للصورة الرمزية'.replace('{name}', name),
+  saturationBrightnessValue: (s, v) =>
+    'التشبع {s}٪، السطوع {v}٪'.replace('{s}', String(s)).replace('{v}', String(v)),
+  playbackSpeedLabel: (speed) => 'سرعة التشغيل {speed} مرة'.replace('{speed}', String(speed)),
 };
 
 const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
@@ -136,7 +194,15 @@ const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
 };
 
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
-  item: { draft: 'مسودة:', pinned: 'مثبّت', muted: 'مكتوم', verified: 'موثّق', channel: 'قناة', bot: 'بوت', group: 'مجموعة' },
+  item: {
+    draft: 'مسودة:',
+    pinned: 'مثبّت',
+    muted: 'مكتوم',
+    verified: 'موثّق',
+    channel: 'قناة',
+    bot: 'بوت',
+    group: 'مجموعة',
+  },
   search: { chat: 'الدردشات', message: 'الرسائل', contact: 'جهات الاتصال', empty: 'لا توجد نتائج' },
   list: 'الدردشات',
   emptyTitle: 'لا توجد محادثات بعد',
@@ -146,7 +212,8 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   clearSearch: 'مسح البحث',
   newChat: 'دردشة جديدة',
   archived: 'المؤرشفة',
-  archivedName: (label, n) => `${label}، ${plural('ar', n, { zero: 'لا توجد دردشات', one: 'دردشة واحدة', two: 'دردشتان', few: '{n} دردشات', many: '{n} دردشة', other: '{n} دردشة' })}`,
+  archivedName: (label, n) =>
+    `${label}، ${plural('ar', n, { zero: 'لا توجد دردشات', one: 'دردشة واحدة', two: 'دردشتان', few: '{n} دردشات', many: '{n} دردشة', other: '{n} دردشة' })}`,
   folderName: (label, n) => `${label}، ${n} غير مقروءة`,
   stories: 'القصص',
   ownStory: 'قصتك',
@@ -202,10 +269,22 @@ const SIDEBAR_MESSAGES: Translations['SIDEBAR_MESSAGES'] = {
   teamMenu: (team) => `قائمة ${team}`,
 };
 
-const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = { byte: 'بايت', kilobyte: 'ك.ب', megabyte: 'م.ب', gigabyte: 'غ.ب' };
+const FILE_SIZE_UNITS: Translations['FILE_SIZE_UNITS'] = {
+  byte: 'بايت',
+  kilobyte: 'ك.ب',
+  megabyte: 'م.ب',
+  gigabyte: 'غ.ب',
+};
 
 const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
-  labels: { number: 'رقم البطاقة', expiry: 'تاريخ الانتهاء', securityCode: 'رمز الأمان', name: 'الاسم على البطاقة', postcode: 'الرمز البريدي', country: 'الدولة' },
+  labels: {
+    number: 'رقم البطاقة',
+    expiry: 'تاريخ الانتهاء',
+    securityCode: 'رمز الأمان',
+    name: 'الاسم على البطاقة',
+    postcode: 'الرمز البريدي',
+    country: 'الدولة',
+  },
   selectCountry: 'اختر دولة',
 };
 
@@ -238,8 +317,20 @@ const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   suggestions: { mention: 'الأشخاص', command: 'الأوامر', emoji: 'رموز تعبيرية' },
   suggestionVerified: 'موثّق',
   searchingSuggestions: 'جارٍ البحث…',
-  noSuggestions: { mention: 'لم يتم العثور على أشخاص', command: 'لم يتم العثور على أوامر', emoji: 'لم يتم العثور على رموز تعبيرية' },
-  attachmentItems: { gallery: 'المعرض', camera: 'الكاميرا', file: 'ملف', location: 'الموقع', contact: 'جهة اتصال', poll: 'استطلاع', music: 'موسيقى' },
+  noSuggestions: {
+    mention: 'لم يتم العثور على أشخاص',
+    command: 'لم يتم العثور على أوامر',
+    emoji: 'لم يتم العثور على رموز تعبيرية',
+  },
+  attachmentItems: {
+    gallery: 'المعرض',
+    camera: 'الكاميرا',
+    file: 'ملف',
+    location: 'الموقع',
+    contact: 'جهة اتصال',
+    poll: 'استطلاع',
+    music: 'موسيقى',
+  },
 };
 
 const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
@@ -279,7 +370,14 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   endOfEpisode: 'نهاية الحلقة',
   oneHour: 'ساعة واحدة',
   minutes: (n) =>
-    plural('ar', n, { zero: '{n} دقيقة', one: 'دقيقة واحدة', two: 'دقيقتان', few: '{n} دقائق', many: '{n} دقيقة', other: '{n} دقيقة' }),
+    plural('ar', n, {
+      zero: '{n} دقيقة',
+      one: 'دقيقة واحدة',
+      two: 'دقيقتان',
+      few: '{n} دقائق',
+      many: '{n} دقيقة',
+      other: '{n} دقيقة',
+    }),
   stopsIn: (r) => `يتوقف بعد ${r}`,
   shuffle: 'ترتيب عشوائي',
   repeat: 'تكرار',
@@ -307,7 +405,10 @@ const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
   showLyrics: 'عرض كلمات الأغنية',
 };
 
-const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = { emptyTitle: 'لا يوجد شيء هنا بعد', addresses: 'العناوين' };
+const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
+  emptyTitle: 'لا يوجد شيء هنا بعد',
+  addresses: 'العناوين',
+};
 
 const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
   releaseTypes: { single: 'أغنية منفردة', ep: 'ألبوم قصير', album: 'ألبوم' },
@@ -370,7 +471,12 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
       other: '{n} مقطع',
     }),
   timeline: {
-    states: { complete: 'مكتمل', current: 'قيد التنفيذ', upcoming: 'لم يبدأ', error: 'يحتاج إلى انتباه' },
+    states: {
+      complete: 'مكتمل',
+      current: 'قيد التنفيذ',
+      upcoming: 'لم يبدأ',
+      error: 'يحتاج إلى انتباه',
+    },
     label: 'تقدّم الإصدار',
   },
   upload: {
@@ -394,7 +500,8 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     role: 'الدور',
     name: 'الاسم',
     add: 'إضافة مساهم',
-    remove: (index, name) => (name ? `إزالة المساهم ${index + 1}، ${name}` : `إزالة المساهم ${index + 1}`),
+    remove: (index, name) =>
+      name ? `إزالة المساهم ${index + 1}، ${name}` : `إزالة المساهم ${index + 1}`,
     empty: 'اذكر كتّاب الأغاني والمنتجين والمؤدين في هذا المقطع.',
     field: (field, n) => `${field}، المساهم ${n}`,
   },
@@ -438,7 +545,11 @@ const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
     pitchPlaceholder: 'ما الذي يميز هذا الإصدار؟ لمن هو، وما القصة وراءه؟',
     submit: 'إرسال العرض',
     tagLimit: (max) => `اختر حتى ${max}`,
-    statuses: { submitted: 'تم إرسال العرض', accepted: 'تم اختياره للمراجعة', declined: 'لم يُختر هذه المرة' },
+    statuses: {
+      submitted: 'تم إرسال العرض',
+      accepted: 'تم اختياره للمراجعة',
+      declined: 'لم يُختر هذه المرة',
+    },
     statusDescriptions: {
       submitted: 'يقرأ المحررون كل عرض. ستتلقى ردًا قبل تاريخ الإصدار.',
       accepted: 'يجري النظر في إصدارك لقوائم التشغيل التحريرية.',
@@ -540,7 +651,12 @@ const LISTING_ACTIONS_MESSAGES: Translations['LISTING_ACTIONS_MESSAGES'] = {
   yourApplication: 'طلبك',
   applicationProgress: 'تقدّم الطلب',
   progressReady: (done, total) => `${done} من ${total} جاهز`,
-  applicationStatus: { missing: 'ناقص', uploaded: 'قيد المراجعة', verified: 'تم التحقق', rejected: 'مرفوض' },
+  applicationStatus: {
+    missing: 'ناقص',
+    uploaded: 'قيد المراجعة',
+    verified: 'تم التحقق',
+    rejected: 'مرفوض',
+  },
   applicationAction: { upload: 'رفع', view: 'عرض', replace: 'استبدال' },
   itemAction: (action, title) => `${action}: ${title}`,
   mortgage: {
@@ -726,7 +842,15 @@ const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
     size: 'الحجم',
     weight: 'الوزن',
     quantity: 'العدد',
-    quantityValue: (n) => plural('ar', n, { zero: 'لا قطع', one: 'قطعة واحدة', two: 'قطعتان', few: '{n} قطع', many: '{n} قطعة', other: '{n} قطعة' }),
+    quantityValue: (n) =>
+      plural('ar', n, {
+        zero: 'لا قطع',
+        one: 'قطعة واحدة',
+        two: 'قطعتان',
+        few: '{n} قطع',
+        many: '{n} قطعة',
+        other: '{n} قطعة',
+      }),
     notes: 'هل هناك ما يجب أن يعرفه الناقل؟',
     notesPlaceholder: 'قابل للكسر، رمز المصعد، مكان التسليم…',
   },
@@ -762,11 +886,31 @@ const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
   unavailable: 'غير متاحة لهذه الحمولة',
   vehicle: 'المركبة',
   vehicles: {
-    bike: { label: 'دراجة شحن', capacity: 'حتى 25 كغ · 60 × 40 × 40 سم', fits: ['مستندات', 'طلب طعام', 'صندوق صغير'] },
-    car: { label: 'سيارة', capacity: 'حتى 150 كغ · 100 × 80 × 60 سم', fits: ['حقيبتا سفر', 'أربعة صناديق', 'دراجة هوائية'] },
-    van: { label: 'فان', capacity: 'حتى 800 كغ · 240 × 150 × 140 سم', fits: ['أريكة', 'نقل أثاث استوديو', 'نصف منصة نقالة'] },
-    boxTruck: { label: 'شاحنة صندوقية', capacity: 'حتى 3500 كغ · 420 × 200 × 210 سم', fits: ['منصتان نقالتان', 'نقل أثاث شقة بغرفتي نوم', 'رافعة خلفية'] },
-    refrigerated: { label: 'فان مبرّد', capacity: 'حتى 700 كغ · بين 2 و8 °م', fits: ['منتجات طازجة', 'تموين مبرّد', 'زهور'] },
+    bike: {
+      label: 'دراجة شحن',
+      capacity: 'حتى 25 كغ · 60 × 40 × 40 سم',
+      fits: ['مستندات', 'طلب طعام', 'صندوق صغير'],
+    },
+    car: {
+      label: 'سيارة',
+      capacity: 'حتى 150 كغ · 100 × 80 × 60 سم',
+      fits: ['حقيبتا سفر', 'أربعة صناديق', 'دراجة هوائية'],
+    },
+    van: {
+      label: 'فان',
+      capacity: 'حتى 800 كغ · 240 × 150 × 140 سم',
+      fits: ['أريكة', 'نقل أثاث استوديو', 'نصف منصة نقالة'],
+    },
+    boxTruck: {
+      label: 'شاحنة صندوقية',
+      capacity: 'حتى 3500 كغ · 420 × 200 × 210 سم',
+      fits: ['منصتان نقالتان', 'نقل أثاث شقة بغرفتي نوم', 'رافعة خلفية'],
+    },
+    refrigerated: {
+      label: 'فان مبرّد',
+      capacity: 'حتى 700 كغ · بين 2 و8 °م',
+      fits: ['منتجات طازجة', 'تموين مبرّد', 'زهور'],
+    },
   },
 };
 
@@ -843,7 +987,13 @@ const MESSAGE_BUBBLE_MESSAGES: Translations['MESSAGE_BUBBLE_MESSAGES'] = {
 };
 
 const PAYMENT_STATUS_MESSAGES: Translations['PAYMENT_STATUS_MESSAGES'] = {
-  states: { authorising: 'جارٍ التفويض', paid: 'مدفوع', failed: 'فشل الدفع', refunded: 'مسترد', pending: 'الدفع قيد الانتظار' },
+  states: {
+    authorising: 'جارٍ التفويض',
+    paid: 'مدفوع',
+    failed: 'فشل الدفع',
+    refunded: 'مسترد',
+    pending: 'الدفع قيد الانتظار',
+  },
   reference: 'المرجع',
 };
 
@@ -862,13 +1012,33 @@ const PLACE_CARD_MESSAGES: Translations['PLACE_CARD_MESSAGES'] = {
   rated: (value, reviews) =>
     placeCard_withReviews(
       `التقييم ${value} من 5`,
-      reviews === undefined ? undefined : placeCard_countOf('ar', reviews, { zero: 'لا توجد مراجعات', one: 'مراجعة واحدة', two: 'مراجعتان', few: '{n} مراجعات', many: '{n} مراجعة', other: '{n} مراجعة' }),
+      reviews === undefined
+        ? undefined
+        : placeCard_countOf('ar', reviews, {
+            zero: 'لا توجد مراجعات',
+            one: 'مراجعة واحدة',
+            two: 'مراجعتان',
+            few: '{n} مراجعات',
+            many: '{n} مراجعة',
+            other: '{n} مراجعة',
+          }),
     ),
 };
 
-const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = { actions: { continue: (b) => `المتابعة باستخدام ${b}`, signIn: (b) => `تسجيل الدخول باستخدام ${b}`, signUp: (b) => `إنشاء حساب باستخدام ${b}` } };
+const SOCIAL_BUTTON_MESSAGES: Translations['SOCIAL_BUTTON_MESSAGES'] = {
+  actions: {
+    continue: (b) => `المتابعة باستخدام ${b}`,
+    signIn: (b) => `تسجيل الدخول باستخدام ${b}`,
+    signUp: (b) => `إنشاء حساب باستخدام ${b}`,
+  },
+};
 
-const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = { other: 'أخرى', otherPlaceholder: 'اكتب إجابتك هنا', steps: 'الخطوات', step: (n) => `الخطوة ${n}` };
+const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
+  other: 'أخرى',
+  otherPlaceholder: 'اكتب إجابتك هنا',
+  steps: 'الخطوات',
+  step: (n) => `الخطوة ${n}`,
+};
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   group: 'عناصر التحكم في الخريطة',
@@ -885,7 +1055,13 @@ const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
   overlays: 'الطبقات المتراكبة',
 };
 
-const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = { states: { expired: 'منتهية الصلاحية', declined: 'مرفوضة' }, default: 'افتراضية', add: 'إضافة طريقة دفع', emptyTitle: 'لا توجد طرق دفع محفوظة', paymentMethods: 'طرق الدفع' };
+const PAYMENT_METHOD_MESSAGES: Translations['PAYMENT_METHOD_MESSAGES'] = {
+  states: { expired: 'منتهية الصلاحية', declined: 'مرفوضة' },
+  default: 'افتراضية',
+  add: 'إضافة طريقة دفع',
+  emptyTitle: 'لا توجد طرق دفع محفوظة',
+  paymentMethods: 'طرق الدفع',
+};
 
 const AVATAR_GROUP_MESSAGES: Translations['AVATAR_GROUP_MESSAGES'] = {
   more: (n) =>
@@ -904,7 +1080,9 @@ const MENUBAR_MESSAGES: Translations['MENUBAR_MESSAGES'] = {
   menuBar: 'شريط القوائم',
 };
 
-const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = { thinking: 'جارٍ التفكير' };
+const AGENT_THINKING_MESSAGES: Translations['AGENT_THINKING_MESSAGES'] = {
+  thinking: 'جارٍ التفكير',
+};
 
 const AI_CHAT_MESSAGES: Translations['AI_CHAT_MESSAGES'] = {
   feedback: { like: 'إجابة جيدة', dislike: 'إجابة سيئة', copy: 'نسخ الإجابة', copied: 'تم النسخ!' },
@@ -1033,8 +1211,7 @@ const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   originally: (p) => `السعر الأصلي ${p}`,
   approximateLocation: 'موقع تقريبي',
   rated: (r) => `التقييم ${r} من 5`,
-  ratedWithReviews: (r, c) =>
-    plural('ar', c, { other: `التقييم ${r} من 5، عدد المراجعات: ${c}` }),
+  ratedWithReviews: (r, c) => plural('ar', c, { other: `التقييم ${r} من 5، عدد المراجعات: ${c}` }),
   newListing: 'جديد',
   previousPhoto: 'الصورة السابقة',
   nextPhoto: 'الصورة التالية',
@@ -1080,7 +1257,10 @@ const CAROUSEL_MESSAGES: Translations['CAROUSEL_MESSAGES'] = {
   slideRole: 'شريحة',
 };
 
-const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = { states: { current: 'قيد التنفيذ', upcoming: 'لم يبدأ بعد', failed: 'فشل' }, status: 'الحالة' };
+const ORDER_STATUS_MESSAGES: Translations['ORDER_STATUS_MESSAGES'] = {
+  states: { current: 'قيد التنفيذ', upcoming: 'لم يبدأ بعد', failed: 'فشل' },
+  status: 'الحالة',
+};
 
 const RATING_MESSAGES: Translations['RATING_MESSAGES'] = {
   newRating: 'جديد',
@@ -1181,7 +1361,8 @@ const LISTING_EDITOR_MESSAGES: Translations['LISTING_EDITOR_MESSAGES'] = {
     },
   },
   addressPrecisionLabel: 'دقة العنوان',
-  addressPrecisionFootnote: 'تتبع الخريطة المنشورة هذا الاختيار. لا يُشارَك عنوانك الدقيق إلا مع من تؤكّدهم.',
+  addressPrecisionFootnote:
+    'تتبع الخريطة المنشورة هذا الاختيار. لا يُشارَك عنوانك الدقيق إلا مع من تؤكّدهم.',
   qualityTitle: 'جودة الإعلان',
   qualityScore: 'درجة جودة الإعلان',
   tips: 'نصائح',
@@ -1236,7 +1417,14 @@ const MEDIA_HEADER_MESSAGES: Translations['MEDIA_HEADER_MESSAGES'] = {
 };
 
 const MENU_ITEM_MESSAGES: Translations['MENU_ITEM_MESSAGES'] = {
-  diets: { vegetarian: 'نباتي', vegan: 'نباتي صرف', 'gluten-free': 'خالٍ من الغلوتين', 'dairy-free': 'خالٍ من الألبان', halal: 'حلال', kosher: 'كوشر' },
+  diets: {
+    vegetarian: 'نباتي',
+    vegan: 'نباتي صرف',
+    'gluten-free': 'خالٍ من الغلوتين',
+    'dairy-free': 'خالٍ من الألبان',
+    halal: 'حلال',
+    kosher: 'كوشر',
+  },
   spicy: 'حار',
   spiceOf: (label, level, max) => `${label} ${level} من ${max}`,
   originally: (price, original) => `${price}، بدلًا من ${original}`,
@@ -1257,7 +1445,11 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `الانتقال إلى الصفحة ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = { title: 'تقييم العميل المحتمل', factors: 'مكوّنات التقييم', bands: { cold: 'بارد', warm: 'دافئ', hot: 'ساخن' } };
+const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
+  title: 'تقييم العميل المحتمل',
+  factors: 'مكوّنات التقييم',
+  bands: { cold: 'بارد', warm: 'دافئ', hot: 'ساخن' },
+};
 
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'القيادة', transit: 'المواصلات العامة', walk: 'المشي', cycle: 'الدراجة' },
@@ -1351,7 +1543,15 @@ const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
     filters: { distance: 'المسافة', pay: 'الأجر', when: 'الموعد', vehicle: 'المركبة' },
     clearFilters: 'مسح عوامل التصفية',
     refresh: 'تحديث القائمة',
-    count: (n) => plural('ar', n, { zero: 'لا مهام', one: 'مهمة واحدة', two: 'مهمتان', few: '{n} مهام', many: '{n} مهمة', other: '{n} مهمة' }),
+    count: (n) =>
+      plural('ar', n, {
+        zero: 'لا مهام',
+        one: 'مهمة واحدة',
+        two: 'مهمتان',
+        few: '{n} مهام',
+        many: '{n} مهمة',
+        other: '{n} مهمة',
+      }),
     loading: 'جارٍ تحميل المهام',
   },
   emptyTitle: 'لا توجد مهام الآن',
@@ -1396,7 +1596,11 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
     markUnread: 'وضع علامة كغير مقروءة',
     deleteChat: 'حذف المحادثة',
   },
-  message: { copy: 'نسخ الرسالة', readAloud: 'القراءة بصوت عالٍ', stopReading: 'إيقاف القراءة بصوت عالٍ' },
+  message: {
+    copy: 'نسخ الرسالة',
+    readAloud: 'القراءة بصوت عالٍ',
+    stopReading: 'إيقاف القراءة بصوت عالٍ',
+  },
   history: {
     region: 'سجل المحادثات',
     recent: 'الأخيرة',
@@ -1441,16 +1645,37 @@ const AGENT_CHAT_MESSAGES: Translations['AGENT_CHAT_MESSAGES'] = {
   ago: {
     justNow: 'الآن',
     minutes: (n) =>
-      plural('ar', n, { one: 'منذ دقيقة', two: 'منذ دقيقتين', few: 'منذ {n} دقائق', many: 'منذ {n} دقيقة', other: 'منذ {n} دقيقة' }),
+      plural('ar', n, {
+        one: 'منذ دقيقة',
+        two: 'منذ دقيقتين',
+        few: 'منذ {n} دقائق',
+        many: 'منذ {n} دقيقة',
+        other: 'منذ {n} دقيقة',
+      }),
     hours: (n) =>
-      plural('ar', n, { one: 'منذ ساعة', two: 'منذ ساعتين', few: 'منذ {n} ساعات', many: 'منذ {n} ساعة', other: 'منذ {n} ساعة' }),
+      plural('ar', n, {
+        one: 'منذ ساعة',
+        two: 'منذ ساعتين',
+        few: 'منذ {n} ساعات',
+        many: 'منذ {n} ساعة',
+        other: 'منذ {n} ساعة',
+      }),
     days: (n) =>
-      plural('ar', n, { one: 'منذ يوم', two: 'منذ يومين', few: 'منذ {n} أيام', many: 'منذ {n} يومًا', other: 'منذ {n} يوم' }),
+      plural('ar', n, {
+        one: 'منذ يوم',
+        two: 'منذ يومين',
+        few: 'منذ {n} أيام',
+        many: 'منذ {n} يومًا',
+        other: 'منذ {n} يوم',
+      }),
   },
   age: { now: 'الآن', minutes: (n) => `${n} د`, hours: (n) => `${n} س`, days: (n) => `${n} ي` },
 };
 
-const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = { sources: 'المصادر', working: 'جارٍ العمل' };
+const WEB_SEARCH_MESSAGES: Translations['WEB_SEARCH_MESSAGES'] = {
+  sources: 'المصادر',
+  working: 'جارٍ العمل',
+};
 
 const MAIL_THREAD_MESSAGES: Translations['MAIL_THREAD_MESSAGES'] = {
   to: 'إلى',
@@ -1561,12 +1786,26 @@ const CHART_CARDS_MESSAGES: Translations['CHART_CARDS_MESSAGES'] = {
   ringItem: (label, value, pct) => `${label} ${value}، ‎${pct}% من الهدف`,
   scoreOf: (score, max) => `${score} من ${max}`,
   activityFor: (name, day) => `النشاط في ${day} ${name}`,
-  contributions: (n, date) => { const on = date ? ` في ${date}` : ''; return n === 0 ? `لا مساهمات${on}` : plural('ar', n, { one: `مساهمة واحدة${on}`, two: `مساهمتان${on}`, few: `{n} مساهمات${on}`, many: `{n} مساهمة${on}`, other: `{n} مساهمة${on}` }); },
+  contributions: (n, date) => {
+    const on = date ? ` في ${date}` : '';
+    return n === 0
+      ? `لا مساهمات${on}`
+      : plural('ar', n, {
+          one: `مساهمة واحدة${on}`,
+          two: `مساهمتان${on}`,
+          few: `{n} مساهمات${on}`,
+          many: `{n} مساهمة${on}`,
+          other: `{n} مساهمة${on}`,
+        });
+  },
 };
 
 const CODE_MESSAGES: Translations['CODE_MESSAGES'] = { copy: 'نسخ الرمز', copied: 'تم نسخ الرمز' };
 
-const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = { outline: 'في هذه الصفحة', progress: (at, of) => `العنوان ${at} من ${of}` };
+const OUTLINE_NAV_MESSAGES: Translations['OUTLINE_NAV_MESSAGES'] = {
+  outline: 'في هذه الصفحة',
+  progress: (at, of) => `العنوان ${at} من ${of}`,
+};
 
 const STEPPER_MESSAGES: Translations['STEPPER_MESSAGES'] = { decrease: 'إنقاص', increase: 'زيادة' };
 
@@ -1625,7 +1864,9 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}، الميكروفون مكتوم`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = { title: 'التعيينات الأخيرة' };
+const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
+  title: 'التعيينات الأخيرة',
+};
 
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'مسودة:',
@@ -1662,9 +1903,15 @@ const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   list: 'البريد',
 };
 
-const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = { title: 'تنبيهات مهمة', thisWeek: 'هذا الأسبوع' };
+const IMPORTANT_ALERTS_CARD_MESSAGES: Translations['IMPORTANT_ALERTS_CARD_MESSAGES'] = {
+  title: 'تنبيهات مهمة',
+  thisWeek: 'هذا الأسبوع',
+};
 
-const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = { about: (label) => `حول ${label}`, fromLastMonth: 'مقارنةً بالشهر الماضي' };
+const STAT_CARDS_MESSAGES: Translations['STAT_CARDS_MESSAGES'] = {
+  about: (label) => `حول ${label}`,
+  fromLastMonth: 'مقارنةً بالشهر الماضي',
+};
 
 const SHAPE_MESSAGES: Translations['SHAPE_MESSAGES'] = {
   shapes: shapes_shapeNames(
@@ -1712,8 +1959,18 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
     heating: 'تدفئة',
     other: 'أخرى',
   },
-  maintenancePriority: { low: 'أولوية منخفضة', medium: 'أولوية متوسطة', high: 'أولوية عالية', urgent: 'عاجل' },
-  maintenanceStage: { reported: 'تم الإبلاغ', acknowledged: 'تم الاستلام', scheduled: 'تمت الجدولة', resolved: 'تم الحل' },
+  maintenancePriority: {
+    low: 'أولوية منخفضة',
+    medium: 'أولوية متوسطة',
+    high: 'أولوية عالية',
+    urgent: 'عاجل',
+  },
+  maintenanceStage: {
+    reported: 'تم الإبلاغ',
+    acknowledged: 'تم الاستلام',
+    scheduled: 'تمت الجدولة',
+    resolved: 'تم الحل',
+  },
   documentStatus: { signed: 'موقَّع', pending: 'بانتظار التوقيع', expired: 'منتهي الصلاحية' },
   timelineState: { complete: 'مكتمل', current: 'قيد التنفيذ', upcoming: 'لم يبدأ بعد' },
   leasePeriod: 'مدة الإيجار',
@@ -1723,7 +1980,13 @@ const TENANCY_MESSAGES: Translations['TENANCY_MESSAGES'] = {
   paidThisYear: 'المدفوع هذا العام',
   outstanding: 'المبلغ المستحق',
   noPayments: 'لا توجد دفعات بعد',
-  columns: { month: 'الشهر', dueDate: 'تاريخ الاستحقاق', method: 'الطريقة', amount: 'المبلغ', status: 'الحالة' },
+  columns: {
+    month: 'الشهر',
+    dueDate: 'تاريخ الاستحقاق',
+    method: 'الطريقة',
+    amount: 'المبلغ',
+    status: 'الحالة',
+  },
   downloadReceipt: (month) => `تنزيل إيصال ${month}`,
   dueOn: (date) => `يُستحق في ${date}`,
   comments: (n) =>
@@ -1751,7 +2014,11 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'عادية', sm: 'مضغوطة' },
 };
 
-const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = { title: 'حدث خطأ ما', message: 'حدث خطأ غير متوقع', retry: 'إعادة المحاولة' };
+const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
+  title: 'حدث خطأ ما',
+  message: 'حدث خطأ غير متوقع',
+  retry: 'إعادة المحاولة',
+};
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
   contributions: 'المساهمات هذا العام',
@@ -1927,7 +2194,15 @@ const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
   unavailable: 'غير متاح',
   tracks: 'الأغاني',
   episodes: 'الحلقات',
-  selected: (n) => plural('ar', n, { zero: 'تم تحديد {n} عنصر', one: 'تم تحديد عنصر واحد', two: 'تم تحديد عنصرين', few: 'تم تحديد {n} عناصر', many: 'تم تحديد {n} عنصرًا', other: 'تم تحديد {n} عنصر' }),
+  selected: (n) =>
+    plural('ar', n, {
+      zero: 'تم تحديد {n} عنصر',
+      one: 'تم تحديد عنصر واحد',
+      two: 'تم تحديد عنصرين',
+      few: 'تم تحديد {n} عناصر',
+      many: 'تم تحديد {n} عنصرًا',
+      other: 'تم تحديد {n} عنصر',
+    }),
   clearSelection: 'مسح التحديد',
   played: 'تم التشغيل',
   listened: 'تم الاستماع',
@@ -1947,7 +2222,14 @@ const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
 };
 
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
-  kinds: { call: 'مكالمة', email: 'بريد إلكتروني', meeting: 'اجتماع', note: 'ملاحظة', 'stage-change': 'تغيير المرحلة', task: 'مهمة مكتملة' },
+  kinds: {
+    call: 'مكالمة',
+    email: 'بريد إلكتروني',
+    meeting: 'اجتماع',
+    note: 'ملاحظة',
+    'stage-change': 'تغيير المرحلة',
+    task: 'مهمة مكتملة',
+  },
   empty: 'لم يُسجَّل أي نشاط بعد',
   loggedBy: (name) => `سجّله ${name}`,
   filterActivity: 'تصفية النشاط',
@@ -1989,8 +2271,23 @@ const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
 
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'خاصة', shared: 'مشتركة', public: 'عامة' },
-  places: (n) => plural('ar', n, { zero: 'لا توجد أماكن', one: 'مكان واحد', two: 'مكانان', few: '{n} أماكن', many: '{n} مكانًا', other: '{n} مكان' }),
-  sharedWith: (n) => plural('ar', n, { one: 'تمت مشاركتها مع شخص واحد', two: 'تمت مشاركتها مع شخصين', few: 'تمت مشاركتها مع {n} أشخاص', many: 'تمت مشاركتها مع {n} شخصًا', other: 'تمت مشاركتها مع {n} شخص' }),
+  places: (n) =>
+    plural('ar', n, {
+      zero: 'لا توجد أماكن',
+      one: 'مكان واحد',
+      two: 'مكانان',
+      few: '{n} أماكن',
+      many: '{n} مكانًا',
+      other: '{n} مكان',
+    }),
+  sharedWith: (n) =>
+    plural('ar', n, {
+      one: 'تمت مشاركتها مع شخص واحد',
+      two: 'تمت مشاركتها مع شخصين',
+      few: 'تمت مشاركتها مع {n} أشخاص',
+      many: 'تمت مشاركتها مع {n} شخصًا',
+      other: 'تمت مشاركتها مع {n} شخص',
+    }),
   labels: {
     moveEarlier: (position) => `نقل إلى الموضع ${position - 1}`,
     moveLater: (position) => `نقل إلى الموضع ${position + 1}`,
@@ -2047,13 +2344,31 @@ const HOME_SEARCH_MESSAGES: Translations['HOME_SEARCH_MESSAGES'] = {
   actionOn: (action, subject) => `${action} ${subject}`,
 };
 
-const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = { offerings: { long_term_rent: 'للإيجار', sale: 'للبيع', short_term_rent: 'إيجار سياحي', exchange: 'مقايضة' } };
+const OFFERING_BADGE_MESSAGES: Translations['OFFERING_BADGE_MESSAGES'] = {
+  offerings: {
+    long_term_rent: 'للإيجار',
+    sale: 'للبيع',
+    short_term_rent: 'إيجار سياحي',
+    exchange: 'مقايضة',
+  },
+};
 
-const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = { scale: 'مقياس الرسم', mapData: 'بيانات الخريطة' };
+const MAP_ATTRIBUTION_MESSAGES: Translations['MAP_ATTRIBUTION_MESSAGES'] = {
+  scale: 'مقياس الرسم',
+  mapData: 'بيانات الخريطة',
+};
 
-const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = { minimum: 'الحد الأدنى', maximum: 'الحد الأقصى', value: (n) => `القيمة ${n}` };
+const SLIDER_MESSAGES: Translations['SLIDER_MESSAGES'] = {
+  minimum: 'الحد الأدنى',
+  maximum: 'الحد الأقصى',
+  value: (n) => `القيمة ${n}`,
+};
 
-const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = { selectOption: 'اختر خيارًا', scrollUp: 'التمرير لأعلى', scrollDown: 'التمرير لأسفل' };
+const SELECT_MESSAGES: Translations['SELECT_MESSAGES'] = {
+  selectOption: 'اختر خيارًا',
+  scrollUp: 'التمرير لأعلى',
+  scrollDown: 'التمرير لأسفل',
+};
 
 const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESSAGES'] = {
   close: 'إغلاق عارض الوسائط',
@@ -2065,10 +2380,18 @@ const ZOOMABLE_MEDIA_GALLERY_MESSAGES: Translations['ZOOMABLE_MEDIA_GALLERY_MESS
 
 const NOTIFICATION_MESSAGES: Translations['NOTIFICATION_MESSAGES'] = { dismiss: 'تجاهل الإشعار' };
 
-const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = { phoneNumber: 'رقم الهاتف', countryCode: 'رمز البلد' };
+const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
+  phoneNumber: 'رقم الهاتف',
+  countryCode: 'رمز البلد',
+};
 
 const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: { deliveryTime: 'وقت التوصيل', deliveryFee: 'التوصيل', distance: 'المسافة', minimumOrder: 'الحد الأدنى للطلب' },
+  facts: {
+    deliveryTime: 'وقت التوصيل',
+    deliveryFee: 'التوصيل',
+    distance: 'المسافة',
+    minimumOrder: 'الحد الأدنى للطلب',
+  },
   availability: { paused: 'متوقف مؤقتًا', closed: 'مغلق' },
   new: 'جديد',
   rated: (value, reviews) =>
@@ -2077,7 +2400,13 @@ const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
 
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'متصل', idle: 'بعيد', offline: 'غير متصل', busy: 'مشغول' },
-  status: { sending: 'جارٍ الإرسال…', sent: 'تم الإرسال', delivered: 'تم التسليم', read: 'تمت القراءة', failed: 'لم يتم الإرسال' },
+  status: {
+    sending: 'جارٍ الإرسال…',
+    sent: 'تم الإرسال',
+    delivered: 'تم التسليم',
+    read: 'تمت القراءة',
+    failed: 'لم يتم الإرسال',
+  },
   unread: 'غير مقروءة',
   unreadCount: (n) =>
     plural('ar', n, {
@@ -2166,7 +2495,11 @@ const ROUTE_STOPS_MESSAGES: Translations['ROUTE_STOPS_MESSAGES'] = {
 
 const SEARCH_MESSAGES: Translations['SEARCH_MESSAGES'] = { clearQuery: 'مسح عبارة البحث' };
 
-const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = { remove: (t) => `إزالة ${t}`, full: (n) => `الحد الأقصى ${n}`, suggestions: 'اقتراحات' };
+const TAG_FIELD_MESSAGES: Translations['TAG_FIELD_MESSAGES'] = {
+  remove: (t) => `إزالة ${t}`,
+  full: (n) => `الحد الأقصى ${n}`,
+  suggestions: 'اقتراحات',
+};
 
 const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
   propertyTypes: {
@@ -2192,7 +2525,12 @@ const STAY_FILTERS_MESSAGES: Translations['STAY_FILTERS_MESSAGES'] = {
     accessible: 'مهيأ لذوي الإعاقة',
     storage: 'غرفة تخزين',
   },
-  floors: { ground: 'الطابق الأرضي', middle: 'طابق متوسط', top: 'الطابق الأخير', elevator: 'مع مصعد' },
+  floors: {
+    ground: 'الطابق الأرضي',
+    middle: 'طابق متوسط',
+    top: 'الطابق الأخير',
+    elevator: 'مع مصعد',
+  },
   minimum: 'الحد الأدنى',
   maximum: 'الحد الأقصى',
   priceRange: 'نطاق السعر',
@@ -2250,7 +2588,11 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
     fileName: 'اسم الملف',
     uploadedOn: 'تاريخ الرفع',
     fileSize: 'حجم الملف',
-    sortBy: { name: 'الترتيب حسب اسم الملف', uploadedAt: 'الترتيب حسب تاريخ الرفع', size: 'الترتيب حسب حجم الملف' },
+    sortBy: {
+      name: 'الترتيب حسب اسم الملف',
+      uploadedAt: 'الترتيب حسب تاريخ الرفع',
+      size: 'الترتيب حسب حجم الملف',
+    },
     selectFile: (name) => `تحديد ${name}`,
     deleteFile: 'حذف الملف',
     deleteNamed: (name) => `حذف ${name}`,
@@ -2319,25 +2661,47 @@ const BOOKING_MESSAGES: Translations['BOOKING_MESSAGES'] = {
   notChargedYet: 'لن يتم تحصيل أي مبلغ منك بعد',
   total: 'الإجمالي',
   tripStatus: { confirmed: 'مؤكد', pending: 'قيد الانتظار', cancelled: 'ملغى', completed: 'مكتمل' },
-  priceName: booking_priceName((p, u) => `${p} لكل ${u}`, (s, o) => `${s}، بدلاً من ${o}`),
+  priceName: booking_priceName(
+    (p, u) => `${p} لكل ${u}`,
+    (s, o) => `${s}، بدلاً من ${o}`,
+  ),
 };
 
-const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = { contextWindow: 'نافذة السياق', freeSpace: 'المساحة الفارغة', planUsageLimits: 'حدود استخدام الخطة', managePlan: 'إدارة الخطة' };
+const AGENT_LIMITS_CARD_MESSAGES: Translations['AGENT_LIMITS_CARD_MESSAGES'] = {
+  contextWindow: 'نافذة السياق',
+  freeSpace: 'المساحة الفارغة',
+  planUsageLimits: 'حدود استخدام الخطة',
+  managePlan: 'إدارة الخطة',
+};
 
 const SWIPE_ROW_MESSAGES: Translations['SWIPE_ROW_MESSAGES'] = {
   closeActions: 'إغلاق الإجراءات',
 };
 
-const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = { addPhoto: 'إضافة صورة الملف الشخصي' };
+const PATIENT_INFO_CARD_MESSAGES: Translations['PATIENT_INFO_CARD_MESSAGES'] = {
+  addPhoto: 'إضافة صورة الملف الشخصي',
+};
 
-const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = { theme: 'المظهر', darkMode: 'الوضع الداكن', lightMode: 'الوضع الفاتح', useDarkMode: 'استخدام الوضع الداكن', useLightMode: 'استخدام الوضع الفاتح' };
+const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
+  theme: 'المظهر',
+  darkMode: 'الوضع الداكن',
+  lightMode: 'الوضع الفاتح',
+  useDarkMode: 'استخدام الوضع الداكن',
+  useLightMode: 'استخدام الوضع الفاتح',
+};
 
 const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
   earned: 'الأرباح',
   period: 'فترة الأرباح',
   breakdown: 'مصدر الأرباح',
   payout: 'الدفعة التالية',
-  payoutState: { scheduled: 'مجدولة', processing: 'في الطريق', paid: 'مدفوعة', held: 'معلّقة', failed: 'فشلت' },
+  payoutState: {
+    scheduled: 'مجدولة',
+    processing: 'في الطريق',
+    paid: 'مدفوعة',
+    held: 'معلّقة',
+    failed: 'فشلت',
+  },
   chart: (label) => `أرباح ${label} حسب الفترة`,
   empty: 'لا أرباح بعد',
   earnings: 'الأرباح',
@@ -2364,7 +2728,14 @@ const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
     required: 'مطلوب',
     missing: 'هذا مطلوب قبل أن تتمكن من التأكيد.',
     missingSummary: (n) =>
-      plural('ar', n, { zero: 'لا ينقص شيء', one: 'ما زال ينقص شيء واحد', two: 'ما زال ينقص شيئان', few: 'ما زالت تنقص {n} أشياء', many: 'ما زال ينقص {n} شيئًا', other: 'ما زال ينقص {n} شيء' }),
+      plural('ar', n, {
+        zero: 'لا ينقص شيء',
+        one: 'ما زال ينقص شيء واحد',
+        two: 'ما زال ينقص شيئان',
+        few: 'ما زالت تنقص {n} أشياء',
+        many: 'ما زال ينقص {n} شيئًا',
+        other: 'ما زال ينقص {n} شيء',
+      }),
   },
   proofOfDelivery: 'إثبات التسليم',
 };
@@ -2431,9 +2802,15 @@ const NOTE_EDITOR_MESSAGES: Translations['NOTE_EDITOR_MESSAGES'] = {
   toolbar: { more: 'تنسيق إضافي', moreMenu: 'تنسيق إضافي' },
 };
 
-const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = { filters: 'عوامل التصفية', showAll: 'عرض الكل' };
+const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
+  filters: 'عوامل التصفية',
+  showAll: 'عرض الكل',
+};
 
-const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = { previous: 'الفئات السابقة', next: 'الفئات التالية' };
+const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
+  previous: 'الفئات السابقة',
+  next: 'الفئات التالية',
+};
 
 const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   labels: {
@@ -2451,7 +2828,15 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
     priceDetails: 'تفاصيل السعر:',
     sort: 'ترتيب العروض',
     sortOptions: { price: 'الأرخص', eta: 'الأسرع', rating: 'الأعلى تقييمًا' },
-    count: (n) => plural('ar', n, { zero: 'لا عروض', one: 'عرض واحد', two: 'عرضان', few: '{n} عروض', many: '{n} عرضًا', other: '{n} عرض' }),
+    count: (n) =>
+      plural('ar', n, {
+        zero: 'لا عروض',
+        one: 'عرض واحد',
+        two: 'عرضان',
+        few: '{n} عروض',
+        many: '{n} عرضًا',
+        other: '{n} عرض',
+      }),
     loading: 'جارٍ تحميل العروض',
   },
   emptyTitle: 'لا توجد عروض بعد',
@@ -2460,7 +2845,11 @@ const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
   priceDetailsFor: (name) => `تفاصيل سعر ${name}`,
 };
 
-const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = { showPassword: 'إظهار كلمة المرور', hidePassword: 'إخفاء كلمة المرور', required: 'مطلوب' };
+const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
+  showPassword: 'إظهار كلمة المرور',
+  hidePassword: 'إخفاء كلمة المرور',
+  required: 'مطلوب',
+};
 
 const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   call: 'اتصال',
@@ -2473,7 +2862,13 @@ const CHAT_SCREEN_MESSAGES: Translations['CHAT_SCREEN_MESSAGES'] = {
   clearSelection: 'مسح التحديد',
   forward: 'إعادة توجيه',
   pin: 'تثبيت',
-  selectedCount: (n) => plural('ar', n, { one: 'تم تحديد عنصر واحد', two: 'تم تحديد عنصرين', few: 'تم تحديد {n} عناصر', other: 'تم تحديد {n} عنصر' }),
+  selectedCount: (n) =>
+    plural('ar', n, {
+      one: 'تم تحديد عنصر واحد',
+      two: 'تم تحديد عنصرين',
+      few: 'تم تحديد {n} عناصر',
+      other: 'تم تحديد {n} عنصر',
+    }),
   pinnedList: 'عرض الرسائل المثبتة',
   pinnedClose: 'إخفاء شريط الرسائل المثبتة',
   pinnedUnpin: 'إلغاء تثبيت هذه الرسالة',
@@ -2578,252 +2973,290 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
 };
 
 const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
-  pickerAction: (editing: boolean, count: number) => editing ? "حفظ التغييرات" : "بدء المحادثة" + (count ? ' · ' + plural('ar', count, {"one": "{n} وكيل", "two": "{n} وكيلان", "few": "{n} وكلاء", "other": "{n} وكيل"}) : ''),
-  you: "أنت",
-  responseFailed: "تعذّر على {0} الرد. يُرجى المحاولة مرة أخرى.",
-  editAgentTitle: "تعديل الوكيل",
-  aLittleHelp: "بعض المساعدة",
-  aFewMindsOneConversation: "قليل من العقول. محادثة واحدة.",
-  aLittleRoomForSomethingNew: "مساحة صغيرة لشيء جديد",
-  accountDetails: "تفاصيل الحساب",
-  add: "إضافة",
-  add2: "أضف {0}",
-  added: "تمت الإضافة",
-  addedToYourWorkspace: "تمت الإضافة إلى مساحة العمل الخاصة بك",
-  agent: "الوكيل العقاري",
-  agentConversation: "محادثة الوكيل",
-  appearance: "المظهر",
-  apps: "التطبيقات · {0}",
-  availability: "التوفر",
-  backToMarketplace: "العودة إلى السوق",
-  billing: "الفواتير",
-  bitbucket: "Bitbucket",
-  bloom: "Bloom",
-  bots: "البوتات",
-  bringYourAgentsIntoOneChat: "قم بإحضار وكلائك في دردشة واحدة.",
-  category: "الفئة",
-  chatActions: "إجراءات الدردشة",
-  chatList: "قائمة الدردشة",
-  chatName: "اسم الدردشة",
-  chatRemoved: "تمت إزالة الدردشة",
-  chatWithYourAgents: "تحدث مع وكلائك",
-  chooseAnAgentOrCreateYourOwn: "اختر وكيلًا أو أنشئ وكيلًا خاصًا بك لبدء محادثة.",
-  chooseWhoSJoiningTheConversation: "اختر من ينضم إلى المحادثة.",
-  chooseYourTeammates: "اختر زملائك في الفريق",
-  closeMarketplace: "إغلاق السوق",
-  closeSearch: "إغلاق البحث",
-  company: "الشركة",
-  companyDetails: "تفاصيل الشركة",
-  completionSound: "صوت الإكمال",
-  connectedAccount: "حساب متصل",
-  connector: "موصل",
-  conversationIDCopied: "تم نسخ معرف المحادثة",
-  conversationCopied: "المحادثة منقولة",
-  conversationOptions: "خيارات المحادثة",
-  conversations: "المحادثات",
-  copied: "تم النسخ",
-  copyConversation: "نسخ المحادثة",
-  copyConversationID: "نسخ معرف المحادثة",
-  copyResponse: "نسخ الإجابة",
-  couldnTCopyPleaseTryAgain: "تعذر النسخ. يرجى المحاولة مرة أخرى.",
-  create: "إنشاء",
-  createANewBot: "إنشاء بوت جديد",
-  createBotOrChat: "إنشاء بوت أو دردشة",
-  criticalRequests: "الطلبات الحرجة",
-  customize: "تخصيص",
-  customizeANewTeammate: "قم بتخصيص زميل جديد في الفريق.",
-  dateOfBirth: "تاريخ الميلاد",
-  demoIntegrationAddingSavesItToThis: "التكامل التجريبي. تؤدي الإضافة إلى حفظه في هذا المتصفح؛ لا يوجد حساب خارجي متصل.",
-  desktopApp: "تطبيق سطح المكتب",
-  details: "التفاصيل",
-  developer: "المطور",
-  deviceID: "معرف الجهاز",
-  discover: "اكتشف",
-  dispatchAlerts: "إرسال التنبيهات",
-  editConversationAgents: "تحرير وكلاء المحادثة",
-  editBot: "تعديل الروبوت",
-  editGroup: "تحرير المجموعة",
-  editAgent: "تعديل {0}",
-  email: "البريد",
-  everydayEssentials: "أساسيات الحياة اليومية",
-  exploreMarketplace: "اكتشف السوق",
-  explorePlugins: "اكتشف المكونات الإضافية",
-  explorePluginsAndBotsToBuildYour: "اكتشف المكونات الإضافية والروبوتات لبناء فريقك.",
-  findYourNextTeammate: "ابحث عن زميلك التالي في الفريق",
-  findYourNextToolOrTeammate: "ابحث عن أداتك أو زميلك التالي في الفريق",
-  firstName: "الاسم الأول",
-  folders: "المجلدات",
-  general: "عام",
-  getNotifiedWhenTheModeNeedsTo: "احصل على إشعار عندما يحتاج الوضع إلى اتخاذ قرار حاسم",
-  git: "Git",
-  github: "GitHub",
-  gitlab: "GitLab",
-  helpfulResponse: "رد مفيد",
-  inTheBrowser: "في المتصفح",
-  inThisConversation: "في هذا الحديث",
-  includes: "يشمل",
-  insideTheApp: "داخل التطبيق",
-  installed: "تم التثبيت",
-  integrations: "التكامل",
-  iLlApproachThisFromThePerspective: "سأتعامل مع هذا من منظور {0}.",
-  lastName: "الاسم الأخير",
-  limits: "الحدود",
-  logOutFromAllDevices: "تسجيل الخروج من جميع الأجهزة",
-  logout: "تسجيل الخروج",
-  manage: "إدارة",
-  manageLimits: "إدارة الحدود",
-  marketplace: "السوق",
-  marketplaceLinkCopied: "تم نسخ رابط السوق",
-  marketplaceListings: "قوائم السوق",
-  meetYourNextTeammate: "تعرف على زميلك التالي في الفريق",
-  messages: "الرسائل",
-  noConversationsFound: "لم يتم العثور على أي محادثات.",
-  noMatchesYet: "لا توجد مباريات حتى الآن",
-  notifications: "الإشعارات",
-  openConversations: "محادثات مفتوحة",
-  openPullRequestLinksInsideYourApp: "افتح روابط طلب السحب داخل تطبيقك",
-  openTheMarketplaceToExplorePluginsAnd: "افتح Marketplace لاستكشاف المكونات الإضافية والروبوتات. استخدم قائمة المحادثة لتعديل مظهر الروبوت الخاص بها وتفاصيله. اختر تعبيرًا من عجلة المشاعر. قم بالتمرير أو سحب قوس الشكل، أو استخدم مفاتيح الأسهم الخاصة به، لاستكشاف الأشكال.",
-  prDestination: "وجهة العلاقات العامة",
-  people: "الأشخاص",
-  personal: "شخصي",
-  pinChat: "تثبيت الدردشة",
-  pinnedChat: "الدردشة المثبتة",
-  plugins: "المكوّنات الإضافية",
-  profile: "الملف الشخصي",
-  public: "عامة",
-  publicProfile: "الملف الشخصي العام",
-  pullRequests: "سحب الطلبات",
-  pushNotificationOnYourPhoneWhenThe: "دفع الإشعارات على هاتفك عندما يرسل لك التطبيق رسالة",
-  remove: "إزالة",
-  removeChat: "إزالة الدردشة",
-  renameChat: "إعادة تسمية المحادثة",
-  responseCopied: "تم نسخ الرد",
-  reviewProvider: "مزود المراجعة",
-  rulesAndWorkflows: "القواعد وسير العمل",
-  saveName: "حفظ الاسم",
-  sayHelloTo: "ألقِ التحية على {0}",
-  searchConversations: "محادثات البحث",
-  searchConversations2: "بحث في المحادثات...",
-  searchMarketplace: "سوق البحث",
-  selectGithubOrOtherProvidersForReviews: "حدد Github أو مقدمي خدمات آخرين للمراجعات",
-  selectedAgents: "الوكلاء المحددون: {0}",
-  sendWithEnterUseShiftEnterFor: "أرسل باستخدام Enter. استخدم Shift + Enter لسطر جديد. تبقى تغييراتك في هذا المتصفح.",
-  settings: "الإعدادات",
-  share: "مشاركة",
-  showFundamentalNotificationsWhenAnAgentCompletes: "إظهار الإشعارات الأساسية عندما يكمل الوكيل مهمة",
-  signOut: "تسجيل الخروج",
-  skills: "المهارات",
-  skills2: "المهارات · {0}",
-  soundEffectATaskIsCompleted: "المؤثرات الصوتية اكتملت المهمة",
-  startAConversation: "ابدأ محادثة",
-  startAGroupChat: "ابدأ محادثة جماعية",
-  startChat: "ابدأ الدردشة",
-  storage: "التخزين",
-  support: "الدعم",
-  systemNotifications: "إشعارات النظام",
-  thinkingTogether: "التفكير معًا...",
-  thinking: "التفكير…",
-  today: "اليوم",
-  tools: "الأدوات",
-  toolsForYourWorkflow: "أدوات لسير عملك",
-  tryAnotherNameCategoryOrKeyword: "جرّب اسمًا أو فئة أو كلمة رئيسية أخرى.",
-  ultra149Mo: "الترا 149 دولارًا شهريًا",
-  unhelpfulResponse: "رد غير مفيد",
-  unpinChat: "إزالة تثبيت الدردشة",
-  upgradeToMax: "الترقية إلى Max",
-  useToCreateABotOrStart: "استخدم + لإنشاء روبوت أو بدء محادثة مع العديد من الوكلاء.",
-  viewAdded: "عرض تمت إضافته {0}",
-  viewAll: "عرض الكل",
-  viewTeamProfile: "عرض ملف تعريف الفريق",
-  viewItem: "عرض {0}",
-  website: "الموقع",
-  whenEnabledYourProfilePageWillBe: "عند التمكين، ستكون صفحة ملفك الشخصي مرئية لأي شخص",
-  youAreOn7xMoreUsageThan: "أنت تستخدم 7 مرات أكثر من Premium",
-  youAreOn7xMoreUsageThan2: "أنت تستخدم 7 مرات أكثر من العادي.",
-  areHereSendAMessageToGet: "{0} هنا. أرسل رسالة للحصول على وجهة نظر الجميع.",
-  itemDetails: "{0} تفاصيل",
-  agentThinking: "{0} يفكر",
-  by: "{0} · بواسطة {1}",
-  results: (count: number) => plural('ar', count, {"one": "{n} نتيجة", "two": "{n} نتيجتان", "few": "{n} نتائج", "other": "{n} نتيجة"}),
-  includedSkills: (apps: number, skills: number) => (apps ? plural('ar', apps, {"one": "{n} تطبيق", "two": "{n} تطبيقان", "few": "{n} تطبيقات", "other": "{n} تطبيق"}) + "، " : '') + plural('ar', skills, {"one": "{n} مهارة", "two": "{n} مهارتان", "few": "{n} مهارات", "other": "{n} مهارة"}),
+  pickerAction: (editing: boolean, count: number) =>
+    editing
+      ? 'حفظ التغييرات'
+      : 'بدء المحادثة' +
+        (count
+          ? ' · ' +
+            plural('ar', count, {
+              one: '{n} وكيل',
+              two: '{n} وكيلان',
+              few: '{n} وكلاء',
+              other: '{n} وكيل',
+            })
+          : ''),
+  you: 'أنت',
+  responseFailed: 'تعذّر على {0} الرد. يُرجى المحاولة مرة أخرى.',
+  editAgentTitle: 'تعديل الوكيل',
+  aLittleHelp: 'بعض المساعدة',
+  aFewMindsOneConversation: 'قليل من العقول. محادثة واحدة.',
+  aLittleRoomForSomethingNew: 'مساحة صغيرة لشيء جديد',
+  accountDetails: 'تفاصيل الحساب',
+  add: 'إضافة',
+  add2: 'أضف {0}',
+  added: 'تمت الإضافة',
+  addedToYourWorkspace: 'تمت الإضافة إلى مساحة العمل الخاصة بك',
+  agent: 'الوكيل العقاري',
+  agentConversation: 'محادثة الوكيل',
+  appearance: 'المظهر',
+  apps: 'التطبيقات · {0}',
+  availability: 'التوفر',
+  backToMarketplace: 'العودة إلى السوق',
+  billing: 'الفواتير',
+  bitbucket: 'Bitbucket',
+  bloom: 'Bloom',
+  bots: 'البوتات',
+  bringYourAgentsIntoOneChat: 'قم بإحضار وكلائك في دردشة واحدة.',
+  category: 'الفئة',
+  chatActions: 'إجراءات الدردشة',
+  chatList: 'قائمة الدردشة',
+  chatName: 'اسم الدردشة',
+  chatRemoved: 'تمت إزالة الدردشة',
+  chatWithYourAgents: 'تحدث مع وكلائك',
+  chooseAnAgentOrCreateYourOwn: 'اختر وكيلًا أو أنشئ وكيلًا خاصًا بك لبدء محادثة.',
+  chooseWhoSJoiningTheConversation: 'اختر من ينضم إلى المحادثة.',
+  chooseYourTeammates: 'اختر زملائك في الفريق',
+  closeMarketplace: 'إغلاق السوق',
+  closeSearch: 'إغلاق البحث',
+  company: 'الشركة',
+  companyDetails: 'تفاصيل الشركة',
+  completionSound: 'صوت الإكمال',
+  connectedAccount: 'حساب متصل',
+  connector: 'موصل',
+  conversationIDCopied: 'تم نسخ معرف المحادثة',
+  conversationCopied: 'المحادثة منقولة',
+  conversationOptions: 'خيارات المحادثة',
+  conversations: 'المحادثات',
+  copied: 'تم النسخ',
+  copyConversation: 'نسخ المحادثة',
+  copyConversationID: 'نسخ معرف المحادثة',
+  copyResponse: 'نسخ الإجابة',
+  couldnTCopyPleaseTryAgain: 'تعذر النسخ. يرجى المحاولة مرة أخرى.',
+  create: 'إنشاء',
+  createANewBot: 'إنشاء بوت جديد',
+  createBotOrChat: 'إنشاء بوت أو دردشة',
+  criticalRequests: 'الطلبات الحرجة',
+  customize: 'تخصيص',
+  customizeANewTeammate: 'قم بتخصيص زميل جديد في الفريق.',
+  dateOfBirth: 'تاريخ الميلاد',
+  demoIntegrationAddingSavesItToThis:
+    'التكامل التجريبي. تؤدي الإضافة إلى حفظه في هذا المتصفح؛ لا يوجد حساب خارجي متصل.',
+  desktopApp: 'تطبيق سطح المكتب',
+  details: 'التفاصيل',
+  developer: 'المطور',
+  deviceID: 'معرف الجهاز',
+  discover: 'اكتشف',
+  dispatchAlerts: 'إرسال التنبيهات',
+  editConversationAgents: 'تحرير وكلاء المحادثة',
+  editBot: 'تعديل الروبوت',
+  editGroup: 'تحرير المجموعة',
+  editAgent: 'تعديل {0}',
+  email: 'البريد',
+  everydayEssentials: 'أساسيات الحياة اليومية',
+  exploreMarketplace: 'اكتشف السوق',
+  explorePlugins: 'اكتشف المكونات الإضافية',
+  explorePluginsAndBotsToBuildYour: 'اكتشف المكونات الإضافية والروبوتات لبناء فريقك.',
+  findYourNextTeammate: 'ابحث عن زميلك التالي في الفريق',
+  findYourNextToolOrTeammate: 'ابحث عن أداتك أو زميلك التالي في الفريق',
+  firstName: 'الاسم الأول',
+  folders: 'المجلدات',
+  general: 'عام',
+  getNotifiedWhenTheModeNeedsTo: 'احصل على إشعار عندما يحتاج الوضع إلى اتخاذ قرار حاسم',
+  git: 'Git',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  helpfulResponse: 'رد مفيد',
+  inTheBrowser: 'في المتصفح',
+  inThisConversation: 'في هذا الحديث',
+  includes: 'يشمل',
+  insideTheApp: 'داخل التطبيق',
+  installed: 'تم التثبيت',
+  integrations: 'التكامل',
+  iLlApproachThisFromThePerspective: 'سأتعامل مع هذا من منظور {0}.',
+  lastName: 'الاسم الأخير',
+  limits: 'الحدود',
+  logOutFromAllDevices: 'تسجيل الخروج من جميع الأجهزة',
+  logout: 'تسجيل الخروج',
+  manage: 'إدارة',
+  manageLimits: 'إدارة الحدود',
+  marketplace: 'السوق',
+  marketplaceLinkCopied: 'تم نسخ رابط السوق',
+  marketplaceListings: 'قوائم السوق',
+  meetYourNextTeammate: 'تعرف على زميلك التالي في الفريق',
+  messages: 'الرسائل',
+  noConversationsFound: 'لم يتم العثور على أي محادثات.',
+  noMatchesYet: 'لا توجد مباريات حتى الآن',
+  notifications: 'الإشعارات',
+  openConversations: 'محادثات مفتوحة',
+  openPullRequestLinksInsideYourApp: 'افتح روابط طلب السحب داخل تطبيقك',
+  openTheMarketplaceToExplorePluginsAnd:
+    'افتح Marketplace لاستكشاف المكونات الإضافية والروبوتات. استخدم قائمة المحادثة لتعديل مظهر الروبوت الخاص بها وتفاصيله. اختر تعبيرًا من عجلة المشاعر. قم بالتمرير أو سحب قوس الشكل، أو استخدم مفاتيح الأسهم الخاصة به، لاستكشاف الأشكال.',
+  prDestination: 'وجهة العلاقات العامة',
+  people: 'الأشخاص',
+  personal: 'شخصي',
+  pinChat: 'تثبيت الدردشة',
+  pinnedChat: 'الدردشة المثبتة',
+  plugins: 'المكوّنات الإضافية',
+  profile: 'الملف الشخصي',
+  public: 'عامة',
+  publicProfile: 'الملف الشخصي العام',
+  pullRequests: 'سحب الطلبات',
+  pushNotificationOnYourPhoneWhenThe: 'دفع الإشعارات على هاتفك عندما يرسل لك التطبيق رسالة',
+  remove: 'إزالة',
+  removeChat: 'إزالة الدردشة',
+  renameChat: 'إعادة تسمية المحادثة',
+  responseCopied: 'تم نسخ الرد',
+  reviewProvider: 'مزود المراجعة',
+  rulesAndWorkflows: 'القواعد وسير العمل',
+  saveName: 'حفظ الاسم',
+  sayHelloTo: 'ألقِ التحية على {0}',
+  searchConversations: 'محادثات البحث',
+  searchConversations2: 'بحث في المحادثات...',
+  searchMarketplace: 'سوق البحث',
+  selectGithubOrOtherProvidersForReviews: 'حدد Github أو مقدمي خدمات آخرين للمراجعات',
+  selectedAgents: 'الوكلاء المحددون: {0}',
+  sendWithEnterUseShiftEnterFor:
+    'أرسل باستخدام Enter. استخدم Shift + Enter لسطر جديد. تبقى تغييراتك في هذا المتصفح.',
+  settings: 'الإعدادات',
+  share: 'مشاركة',
+  showFundamentalNotificationsWhenAnAgentCompletes:
+    'إظهار الإشعارات الأساسية عندما يكمل الوكيل مهمة',
+  signOut: 'تسجيل الخروج',
+  skills: 'المهارات',
+  skills2: 'المهارات · {0}',
+  soundEffectATaskIsCompleted: 'المؤثرات الصوتية اكتملت المهمة',
+  startAConversation: 'ابدأ محادثة',
+  startAGroupChat: 'ابدأ محادثة جماعية',
+  startChat: 'ابدأ الدردشة',
+  storage: 'التخزين',
+  support: 'الدعم',
+  systemNotifications: 'إشعارات النظام',
+  thinkingTogether: 'التفكير معًا...',
+  thinking: 'التفكير…',
+  today: 'اليوم',
+  tools: 'الأدوات',
+  toolsForYourWorkflow: 'أدوات لسير عملك',
+  tryAnotherNameCategoryOrKeyword: 'جرّب اسمًا أو فئة أو كلمة رئيسية أخرى.',
+  ultra149Mo: 'الترا 149 دولارًا شهريًا',
+  unhelpfulResponse: 'رد غير مفيد',
+  unpinChat: 'إزالة تثبيت الدردشة',
+  upgradeToMax: 'الترقية إلى Max',
+  useToCreateABotOrStart: 'استخدم + لإنشاء روبوت أو بدء محادثة مع العديد من الوكلاء.',
+  viewAdded: 'عرض تمت إضافته {0}',
+  viewAll: 'عرض الكل',
+  viewTeamProfile: 'عرض ملف تعريف الفريق',
+  viewItem: 'عرض {0}',
+  website: 'الموقع',
+  whenEnabledYourProfilePageWillBe: 'عند التمكين، ستكون صفحة ملفك الشخصي مرئية لأي شخص',
+  youAreOn7xMoreUsageThan: 'أنت تستخدم 7 مرات أكثر من Premium',
+  youAreOn7xMoreUsageThan2: 'أنت تستخدم 7 مرات أكثر من العادي.',
+  areHereSendAMessageToGet: '{0} هنا. أرسل رسالة للحصول على وجهة نظر الجميع.',
+  itemDetails: '{0} تفاصيل',
+  agentThinking: '{0} يفكر',
+  by: '{0} · بواسطة {1}',
+  results: (count: number) =>
+    plural('ar', count, {
+      one: '{n} نتيجة',
+      two: '{n} نتيجتان',
+      few: '{n} نتائج',
+      other: '{n} نتيجة',
+    }),
+  includedSkills: (apps: number, skills: number) =>
+    (apps
+      ? plural('ar', apps, {
+          one: '{n} تطبيق',
+          two: '{n} تطبيقان',
+          few: '{n} تطبيقات',
+          other: '{n} تطبيق',
+        }) + '، '
+      : '') +
+    plural('ar', skills, {
+      one: '{n} مهارة',
+      two: '{n} مهارتان',
+      few: '{n} مهارات',
+      other: '{n} مهارة',
+    }),
 };
 
 const translations: Translations = {
   MULTI_AGENT_CHAT_MESSAGES,
   PROJECT_BOARD_MESSAGES: {
-    defaultTitle: "مهام تصميم Bloom", defaultTeam: "فريق Bloom",
+    defaultTitle: 'مهام تصميم Bloom',
+    defaultTeam: 'فريق Bloom',
     openTicket: (code, title) => `فتح ${code}: ${title}`,
-    addTicketTo: column => `إضافة مهمة إلى ${column}`,
-    "board": "لوحة المشروع",
-    "controls": "عناصر تحكم اللوحة",
-    "navigation": "فتح التنقل",
-    "inbox": "فتح بريد المشروع",
-    "newTicket": "مهمة جديدة",
-    "columns": "أعمدة لوحة المشروع",
-    "sortTickets": "ترتيب المهام",
-    "filterTickets": "تصفية المهام",
-    "displayOptions": "خيارات العرض",
-    "sort": "ترتيب",
-    "filter": "تصفية",
-    "display": "العرض",
-    "manualOrder": "ترتيب يدوي",
-    "priority": "الأولوية",
-    "title": "العنوان",
-    "project": "المشروع",
-    "allPriorities": "كل الأولويات",
-    "allProjects": "كل المشاريع",
-    "clearFilters": "مسح عوامل التصفية",
-    "showDone": "عرض عمود المكتملة",
-    "fillScreens": "ملء الشاشات العريضة",
-    "createTicket": "إنشاء مهمة",
-    "closeCreate": "إغلاق إنشاء المهمة",
-    "ticketTitle": "عنوان المهمة",
-    "enterTitle": "أدخل عنوان المهمة",
-    "description": "الوصف",
-    "descriptionArea": "منطقة الوصف",
-    "status": "الحالة",
-    "urgency": "الاستعجال",
-    "assignee": "المسؤول",
-    "unassigned": "غير مسندة",
-    "keepCreating": "متابعة الإنشاء",
-    "cancel": "إلغاء",
-    "addTicket": "إضافة مهمة",
-    "sortTitle": "ترتيب حسب العنوان",
-    "noTickets": "لا توجد مشكلات هنا",
-    "favoriteAdd": "إضافة إلى المفضلة",
-    "favoriteRemove": "إزالة من المفضلة",
-    "copyLink": "نسخ رابط المهمة",
-    "actions": "إجراءات المهمة",
-    "editDescription": "تعديل الوصف",
-    "copyId": "نسخ معرّف المهمة",
-    "reopen": "إعادة فتح المهمة",
-    "markDone": "وضع علامة مكتملة",
-    "closeDetails": "إغلاق تفاصيل المهمة",
-    "linkCopied": "تم نسخ رابط المهمة",
-    "idCopied": "تم نسخ معرّف المهمة",
-    "copyFailed": "تعذر النسخ. حاول مرة أخرى.",
-    "createdBy": "أنشأها",
-    "saveDescription": "حفظ الوصف",
-    "ticketDescription": "وصف المهمة",
-    "properties": "الخصائص",
-    "editAssignees": "تعديل المسؤولين",
-    "resources": "الموارد",
-    "tokens": "الرموز المستهلكة",
-    "comments": "التعليقات",
-    "you": "أنت",
-    "justNow": "الآن",
-    "addComment": "إضافة تعليق",
-    "enterComment": "أدخل تعليقك",
-    "postComment": "نشر التعليق",
-    "moveUp": "نقل لأعلى",
-    "moveDown": "نقل لأسفل",
-    "nextColumn": "نقل للعمود التالي",
-    "previousColumn": "نقل للعمود السابق",
-    "keyboardHint": "اضغط إدخال للفتح، ومسافة للاختيار، والأسهم للنقل، ومسافة للإفلات، وهروب للإلغاء."
-},
+    addTicketTo: (column) => `إضافة مهمة إلى ${column}`,
+    board: 'لوحة المشروع',
+    controls: 'عناصر تحكم اللوحة',
+    navigation: 'فتح التنقل',
+    inbox: 'فتح بريد المشروع',
+    newTicket: 'مهمة جديدة',
+    columns: 'أعمدة لوحة المشروع',
+    sortTickets: 'ترتيب المهام',
+    filterTickets: 'تصفية المهام',
+    displayOptions: 'خيارات العرض',
+    sort: 'ترتيب',
+    filter: 'تصفية',
+    display: 'العرض',
+    manualOrder: 'ترتيب يدوي',
+    priority: 'الأولوية',
+    title: 'العنوان',
+    project: 'المشروع',
+    allPriorities: 'كل الأولويات',
+    allProjects: 'كل المشاريع',
+    clearFilters: 'مسح عوامل التصفية',
+    showDone: 'عرض عمود المكتملة',
+    fillScreens: 'ملء الشاشات العريضة',
+    createTicket: 'إنشاء مهمة',
+    closeCreate: 'إغلاق إنشاء المهمة',
+    ticketTitle: 'عنوان المهمة',
+    enterTitle: 'أدخل عنوان المهمة',
+    description: 'الوصف',
+    descriptionArea: 'منطقة الوصف',
+    status: 'الحالة',
+    urgency: 'الاستعجال',
+    assignee: 'المسؤول',
+    unassigned: 'غير مسندة',
+    keepCreating: 'متابعة الإنشاء',
+    cancel: 'إلغاء',
+    addTicket: 'إضافة مهمة',
+    sortTitle: 'ترتيب حسب العنوان',
+    noTickets: 'لا توجد مشكلات هنا',
+    favoriteAdd: 'إضافة إلى المفضلة',
+    favoriteRemove: 'إزالة من المفضلة',
+    copyLink: 'نسخ رابط المهمة',
+    actions: 'إجراءات المهمة',
+    editDescription: 'تعديل الوصف',
+    copyId: 'نسخ معرّف المهمة',
+    reopen: 'إعادة فتح المهمة',
+    markDone: 'وضع علامة مكتملة',
+    closeDetails: 'إغلاق تفاصيل المهمة',
+    linkCopied: 'تم نسخ رابط المهمة',
+    idCopied: 'تم نسخ معرّف المهمة',
+    copyFailed: 'تعذر النسخ. حاول مرة أخرى.',
+    createdBy: 'أنشأها',
+    saveDescription: 'حفظ الوصف',
+    ticketDescription: 'وصف المهمة',
+    properties: 'الخصائص',
+    editAssignees: 'تعديل المسؤولين',
+    resources: 'الموارد',
+    tokens: 'الرموز المستهلكة',
+    comments: 'التعليقات',
+    you: 'أنت',
+    justNow: 'الآن',
+    addComment: 'إضافة تعليق',
+    enterComment: 'أدخل تعليقك',
+    postComment: 'نشر التعليق',
+    moveUp: 'نقل لأعلى',
+    moveDown: 'نقل لأسفل',
+    nextColumn: 'نقل للعمود التالي',
+    previousColumn: 'نقل للعمود السابق',
+    keyboardHint:
+      'اضغط إدخال للفتح، ومسافة للاختيار، والأسهم للنقل، ومسافة للإفلات، وهروب للإلغاء.',
+  },
 
   AGENT_CREATOR_MESSAGES,
-  AGENT_AVATAR_MESSAGES: { label: "صورة الوكيل", unavailable: "الصورة الرمزية غير متاحة", },
+  AGENT_AVATAR_MESSAGES: { label: 'صورة الوكيل', unavailable: 'الصورة الرمزية غير متاحة' },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
   CONTACT_CARD_MESSAGES,

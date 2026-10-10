@@ -97,7 +97,8 @@ function SuggestionPill({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={style}>
+      style={style}
+    >
       <Text variant="body-regular" style={{ color: palette.textSecondary }}>
         {text}
       </Text>
@@ -125,7 +126,8 @@ function EmptyState({
           variant="title-2-medium"
           role="heading"
           aria-level={2}
-          style={{ textAlign: 'center', color: palette.text }}>
+          style={{ textAlign: 'center', color: palette.text }}
+        >
           {title}
         </Text>
         <Text variant="body-regular" style={{ textAlign: 'center', color: palette.textSecondary }}>
@@ -153,7 +155,10 @@ function transcriptOf(
   speakers: { you: string; assistant: string },
 ): string {
   return messages
-    .map((message) => `${message.role === 'user' ? speakers.you : speakers.assistant}: ${message.text}`)
+    .map(
+      (message) =>
+        `${message.role === 'user' ? speakers.you : speakers.assistant}: ${message.text}`,
+    )
     .filter((line) => !line.endsWith(': '))
     .join('\n\n');
 }
@@ -293,7 +298,8 @@ export function AgentChatBase({
       style={[
         { flex: 1, minHeight: 0, minWidth: 0, flexDirection: 'row', gap: 12, overflow: 'hidden' },
         style,
-      ]}>
+      ]}
+    >
       <View
         style={{
           position: 'relative',
@@ -304,8 +310,13 @@ export function AgentChatBase({
           overflow: 'hidden',
           borderRadius: CARD_RADIUS,
           backgroundColor: palette.chatSurface,
-        }}>
-        <View {...dataHook('bloomAgentChatHeader')} testID={testID ? `${testID}-header` : undefined} style={header}>
+        }}
+      >
+        <View
+          {...dataHook('bloomAgentChatHeader')}
+          testID={testID ? `${testID}-header` : undefined}
+          style={header}
+        >
           {headerLeading}
           <View onLayout={onTitleLayout} style={{ minWidth: 0, flexShrink: 1 }}>
             <Text variant="headline-medium" numberOfLines={1} style={{ color: palette.text }}>
@@ -340,7 +351,8 @@ export function AgentChatBase({
               contentContainerStyle={{ flexGrow: 1 }}
               onScroll={onScroll}
               scrollEventThrottle={16}
-              onContentSizeChange={onContentSizeChange}>
+              onContentSizeChange={onContentSizeChange}
+            >
               <View
                 onLayout={onColumnLayout}
                 style={{
@@ -354,7 +366,8 @@ export function AgentChatBase({
                   paddingTop: 72,
                   paddingBottom: 24,
                   ...(empty ? { flexGrow: 1, justifyContent: 'center' } : null),
-                }}>
+                }}
+              >
                 {empty ? (
                   <EmptyState
                     title={l.emptyTitle}
@@ -379,14 +392,19 @@ export function AgentChatBase({
                 )}
 
                 {showThinking ? (
-                  <AgentThinking variant="wave" label={l.thinking} style={{ paddingLeft: 4, paddingRight: 4 }} />
+                  <AgentThinking
+                    variant="wave"
+                    label={l.thinking}
+                    style={{ paddingLeft: 4, paddingRight: 4 }}
+                  />
                 ) : null}
 
                 {showError ? (
                   <Text
                     variant="body-regular"
                     role="alert"
-                    style={{ paddingLeft: 4, paddingRight: 4, color: palette.textTertiary }}>
+                    style={{ paddingLeft: 4, paddingRight: 4, color: palette.textTertiary }}
+                  >
                     {l.error}
                   </Text>
                 ) : null}

@@ -1,17 +1,9 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
-import type {
-  EntryOrExitLayoutType,
-  LayoutAnimation,
-} from 'react-native-reanimated';
+import type { EntryOrExitLayoutType, LayoutAnimation } from 'react-native-reanimated';
 
-import {
-  ScaleAndFadeIn,
-  ScaleAndFadeOut,
-  ScreenTransition,
-  ShrinkAndPop,
-} from '../motion';
+import { ScaleAndFadeIn, ScaleAndFadeOut, ScreenTransition, ShrinkAndPop } from '../motion';
 
 // The reanimated mock resolves `withTiming(v)` -> v, `withDelay(d, v)` -> v and
 // `withSequence(...v)` -> last, so the builder output is deterministic.
@@ -24,14 +16,10 @@ import {
  * class (it carries the `createInstance` static), a custom worklet builder is a
  * plain function.
  */
-const isWorkletBuilder = (
-  preset: EntryOrExitLayoutType,
-): preset is () => LayoutAnimation =>
+const isWorkletBuilder = (preset: EntryOrExitLayoutType): preset is () => LayoutAnimation =>
   // A predefined builder is a class and carries the `createInstance` static; a
   // custom worklet builder is a plain nullary function.
-  typeof preset === 'function' &&
-  !('createInstance' in preset) &&
-  preset.length === 0;
+  typeof preset === 'function' && !('createInstance' in preset) && preset.length === 0;
 
 const runNativeBuilder = (preset: EntryOrExitLayoutType): LayoutAnimation => {
   if (!isWorkletBuilder(preset)) {

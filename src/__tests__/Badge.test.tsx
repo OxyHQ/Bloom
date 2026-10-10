@@ -16,12 +16,7 @@ import { resolveButtonRamps } from '../button/shared';
 import { RiKey2Line } from '../icons/remix/RiKey2Line';
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
-import {
-  findHost,
-  hostNodes,
-  renderedChildren,
-  resolvedStyle,
-} from './support/rendered-style';
+import { findHost, hostNodes, renderedChildren, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -62,7 +57,9 @@ describe('Badge', () => {
     // circle: visually absent, with markup that reads as correct. A standalone
     // dot is the status dot, so the fill is its CENTRE, on a tint halo.
     const core = (variant: 'outline' | 'solid') => {
-      const { toJSON } = renderWithTheme(<Badge dot appearance={variant} tone="success" testID="b" />);
+      const { toJSON } = renderWithTheme(
+        <Badge dot appearance={variant} tone="success" testID="b" />,
+      );
       const halo = findHost(toJSON(), 'b');
       const children = renderedChildren(toJSON(), 'b');
       expect(children).toHaveLength(1);
@@ -176,7 +173,14 @@ describe('Badge', () => {
 
   it('draws the leading icon at the rung size, in the label colour, hidden from assistive tech', () => {
     const { getByTestId, UNSAFE_getByType } = renderWithTheme(
-      <Badge size="label-medium" variant="subtle" color="info" icon={RiKey2Line} content="For rent" testID="b" />,
+      <Badge
+        size="label-medium"
+        variant="subtle"
+        color="info"
+        icon={RiKey2Line}
+        content="For rent"
+        testID="b"
+      />,
     );
     // `includeHiddenElements`, because the slot is hidden from assistive
     // technology — which is the property being asserted.
@@ -189,7 +193,9 @@ describe('Badge', () => {
   });
 
   it('tucks the leading padding in by 2 when it carries an icon', () => {
-    const withIcon = renderWithTheme(<Badge size="label-medium" icon={RiKey2Line} content="x" testID="b" />);
+    const withIcon = renderWithTheme(
+      <Badge size="label-medium" icon={RiKey2Line} content="x" testID="b" />,
+    );
     const style = resolvedStyle(withIcon.getByTestId('b').props.style);
     expect(style.paddingLeft).toBe(8);
     expect(style.paddingRight).toBe(10);
@@ -197,7 +203,9 @@ describe('Badge', () => {
   });
 
   it('never renders an icon slot without an icon', () => {
-    const { queryByTestId } = renderWithTheme(<Badge size="label-small" content="Swap" testID="b" />);
+    const { queryByTestId } = renderWithTheme(
+      <Badge size="label-small" content="Swap" testID="b" />,
+    );
     expect(queryByTestId('b-icon', { includeHiddenElements: true })).toBeNull();
   });
 
@@ -208,7 +216,14 @@ describe('Badge', () => {
     (mode) => {
       const { getByTestId, getByText, UNSAFE_getByType } = render(
         <BloomThemeProvider mode={mode} colorPreset="oxy">
-          <Badge variant="onMedia" color="error" size="label-medium" icon={RiKey2Line} content="Swap" testID="b" />
+          <Badge
+            variant="onMedia"
+            color="error"
+            size="label-medium"
+            icon={RiKey2Line}
+            content="Swap"
+            testID="b"
+          />
         </BloomThemeProvider>,
       );
       const style = resolvedStyle(getByTestId('b').props.style);
@@ -244,7 +259,12 @@ describe('Badge', () => {
     // what must hold is that dark mode does not hand back a dark pill with a
     // light label, which is what a tone-following badge would do over a photo.
     const [light, dark] = [paint('light', 'error'), paint('dark', 'error')];
-    const lum = (c: string) => c.split(/[^0-9.]+/).filter(Boolean).slice(0, 3).reduce((a, b) => a + Number(b), 0);
+    const lum = (c: string) =>
+      c
+        .split(/[^0-9.]+/)
+        .filter(Boolean)
+        .slice(0, 3)
+        .reduce((a, b) => a + Number(b), 0);
     expect(lum(dark.background)).toBeGreaterThan(lum(dark.foreground));
     expect(Math.abs(lum(dark.background) - lum(light.background))).toBeLessThan(10);
   });

@@ -136,8 +136,11 @@ function renderBar(props: {
       </TabBar>
     </BloomThemeProvider>,
   );
-  const host = utils.UNSAFE_root.findAll(node => typeof node.type === 'string' && typeof node.props.onLayout === 'function')[0];
-  if (host) fireEvent(host, 'layout', { nativeEvent: { layout: { width: 375, height: 58, x: 0, y: 0 } } });
+  const host = utils.UNSAFE_root.findAll(
+    (node) => typeof node.type === 'string' && typeof node.props.onLayout === 'function',
+  )[0];
+  if (host)
+    fireEvent(host, 'layout', { nativeEvent: { layout: { width: 375, height: 58, x: 0, y: 0 } } });
   return utils;
 }
 

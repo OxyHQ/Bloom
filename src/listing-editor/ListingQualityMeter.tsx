@@ -123,7 +123,8 @@ function ListingQualityMeterComponent({
   }, []);
   const paint = useMemo(() => resolveQualityPaint(theme), [theme]);
   const score = Math.min(100, Math.max(0, Math.round(scoreProp ?? listingQualityScore(items))));
-  const line = summary ?? (score < 50 ? messages.needsWork : score < 80 ? messages.good : messages.excellent);
+  const line =
+    summary ?? (score < 50 ? messages.needsWork : score < 80 ? messages.good : messages.excellent);
 
   return (
     <View testID={testID} style={[{ gap: 20 }, style]}>
@@ -138,7 +139,10 @@ function ListingQualityMeterComponent({
           valueText={`${formatScore(score)}, ${line}`}
           testID={testID ? `${testID}-ring` : undefined}
         >
-          <Text variant="headline-semibold" style={{ color: paint.text, fontVariant: ['tabular-nums'] }}>
+          <Text
+            variant="headline-semibold"
+            style={{ color: paint.text, fontVariant: ['tabular-nums'] }}
+          >
             {formatScore(score)}
           </Text>
         </MeterRing>

@@ -118,8 +118,7 @@ describe('web-only CSS styles', () => {
   it('is a type-only import everywhere it is used, so nothing is emitted', () => {
     const importers = files.filter(
       (file) =>
-        file !== join(SRC, 'styles/web-view-style.ts') &&
-        codeOf(file).includes('WebCssStyle'),
+        file !== join(SRC, 'styles/web-view-style.ts') && codeOf(file).includes('WebCssStyle'),
     );
     // The seven forks the sweep converted.
     expect(importers.length).toBeGreaterThanOrEqual(7);
@@ -129,8 +128,7 @@ describe('web-only CSS styles', () => {
       expect({
         file: file.replace(`${SRC}/`, ''),
         typeOnly:
-          /import type \{[^}]*\bWebCssStyle\b/.test(source) ||
-          /\btype WebCssStyle\b/.test(source),
+          /import type \{[^}]*\bWebCssStyle\b/.test(source) || /\btype WebCssStyle\b/.test(source),
       }).toEqual({ file: file.replace(`${SRC}/`, ''), typeOnly: true });
     }
   });

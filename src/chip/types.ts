@@ -22,7 +22,16 @@ export type ChipVariant = AccentFill | 'inverted';
  * Data hues: a category, a department, an objective — colours that carry
  * data rather than a status role.
  */
-export type ChipHue = 'lime' | 'rose' | 'yellow' | 'cyan' | 'blue' | 'purple' | 'neutral' | 'gray' | 'soft';
+export type ChipHue =
+  | 'lime'
+  | 'rose'
+  | 'yellow'
+  | 'cyan'
+  | 'blue'
+  | 'purple'
+  | 'neutral'
+  | 'gray'
+  | 'soft';
 
 /**
  * What a pressable chip IS, which decides the state ARIA reads it by:
@@ -39,8 +48,8 @@ export interface ChipProps {
   onCheckedChange?: (checked: boolean) => void;
   leading?: React.ReactNode;
   trailing?: React.ReactNode;
-  leadingIcon?: import("../icons/icon-component").BloomIconComponent;
-  trailingIcon?: import("../icons/icon-component").BloomIconComponent;
+  leadingIcon?: import('../icons/icon-component').BloomIconComponent;
+  trailingIcon?: import('../icons/icon-component').BloomIconComponent;
 
   /** Text content of the chip. */
   children?: React.ReactNode;

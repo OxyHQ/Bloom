@@ -1,9 +1,5 @@
 import { createContext, useContext, useId, useMemo, useRef } from 'react';
-import type {
-  DialogContextProps,
-  DialogControlProps,
-  DialogControlRefProps,
-} from './types';
+import type { DialogContextProps, DialogControlProps, DialogControlRefProps } from './types';
 
 export const Context = createContext<DialogContextProps>({
   close: () => {},

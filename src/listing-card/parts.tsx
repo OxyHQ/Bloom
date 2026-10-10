@@ -24,8 +24,14 @@ import type { ListingFact, ListingPriceLine, Offering } from './types';
 
 export type ListingPartSize = 'medium' | 'small';
 
-const REGULAR: Record<ListingPartSize, TypeScaleVariant> = { medium: 'body-regular', small: 'body-2-regular' };
-const SEMIBOLD: Record<ListingPartSize, TypeScaleVariant> = { medium: 'body-semibold', small: 'body-2-semibold' };
+const REGULAR: Record<ListingPartSize, TypeScaleVariant> = {
+  medium: 'body-regular',
+  small: 'body-2-regular',
+};
+const SEMIBOLD: Record<ListingPartSize, TypeScaleVariant> = {
+  medium: 'body-semibold',
+  small: 'body-2-semibold',
+};
 const ICON: Record<ListingPartSize, number> = { medium: 16, small: 14 };
 
 /** Horizontal room between two facts. */
@@ -47,7 +53,14 @@ export interface ListingPriceLinesProps {
  * One line per price: [original, struck, secondary] price semibold [unit]
  * [· secondary, secondary colour]. Each line is one line, truncated.
  */
-export function ListingPriceLines({ lines, size, color, secondaryColor, style, testID }: ListingPriceLinesProps) {
+export function ListingPriceLines({
+  lines,
+  size,
+  color,
+  secondaryColor,
+  style,
+  testID,
+}: ListingPriceLinesProps) {
   if (lines.length === 0) return null;
   return (
     <View style={style} testID={testID}>
@@ -60,7 +73,10 @@ export function ListingPriceLines({ lines, size, color, secondaryColor, style, t
           testID={testID ? `${testID}-${index}` : undefined}
         >
           {line.originalPrice ? (
-            <Text variant={REGULAR[size]} style={{ color: secondaryColor, textDecorationLine: 'line-through' }}>
+            <Text
+              variant={REGULAR[size]}
+              style={{ color: secondaryColor, textDecorationLine: 'line-through' }}
+            >
               {line.originalPrice}
             </Text>
           ) : null}
@@ -124,7 +140,13 @@ export function ListingFacts({ facts, size, color, style, testID }: ListingFacts
         return (
           <View
             key={`${index}-${fact.label}`}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1, minWidth: 0 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              flexShrink: 1,
+              minWidth: 0,
+            }}
             testID={testID ? `${testID}-${index}` : undefined}
           >
             {Icon ? (
@@ -132,7 +154,11 @@ export function ListingFacts({ facts, size, color, style, testID }: ListingFacts
                 <Icon width={icon} height={icon} fill={color} />
               </View>
             ) : null}
-            <Text variant={FACT_TYPE} numberOfLines={1} style={{ flexShrink: 1, minWidth: 0, color }}>
+            <Text
+              variant={FACT_TYPE}
+              numberOfLines={1}
+              style={{ flexShrink: 1, minWidth: 0, color }}
+            >
               {fact.label}
             </Text>
           </View>
@@ -154,7 +180,10 @@ export interface ListingLocationLineProps {
 /** A pin and the address line, one line, truncated. */
 export function ListingLocationLine({ text, size, color, testID }: ListingLocationLineProps) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 }} testID={testID}>
+    <View
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 }}
+      testID={testID}
+    >
       <View aria-hidden importantForAccessibility="no-hide-descendants">
         <RiMapPinLine width={ICON[size]} height={ICON[size]} fill={color} />
       </View>
@@ -177,7 +206,14 @@ export interface ListingOfferingsProps {
 }
 
 /** The offering badges in a wrapping row, 6 apart. Duplicates are drawn once. */
-export function ListingOfferings({ offerings, labels, size, variant, style, testID }: ListingOfferingsProps) {
+export function ListingOfferings({
+  offerings,
+  labels,
+  size,
+  variant,
+  style,
+  testID,
+}: ListingOfferingsProps) {
   const unique = uniqueOfferings(offerings);
   if (unique.length === 0) return null;
   return (

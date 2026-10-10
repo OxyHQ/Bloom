@@ -41,8 +41,7 @@ import type {
 
 function isLine(child: React.ReactNode): boolean {
   return (
-    isValidElement(child) &&
-    (child.type === AiChatMessageLine || child.type === AiChatBulletList)
+    isValidElement(child) && (child.type === AiChatMessageLine || child.type === AiChatBulletList)
   );
 }
 
@@ -61,7 +60,14 @@ function asBlocks(children: React.ReactNode): React.ReactNode {
   });
 }
 
-export function AiChatUserMessageBase({ children, actions, animate = true, style, bubbleStyle, testID }: AiChatUserMessageProps) {
+export function AiChatUserMessageBase({
+  children,
+  actions,
+  animate = true,
+  style,
+  bubbleStyle,
+  testID,
+}: AiChatUserMessageProps) {
   useAiChatWebCss();
   const palette = useAiChatPalette();
   const [column, setColumn] = useState(0);
@@ -72,22 +78,27 @@ export function AiChatUserMessageBase({ children, actions, animate = true, style
       {...direction}
       testID={testID}
       onLayout={(event: LayoutChangeEvent) => setColumn(event.nativeEvent.layout.width)}
-      style={[{ width: '100%', alignItems: 'flex-end' }, style]}>
+      style={[{ width: '100%', alignItems: 'flex-end' }, style]}
+    >
       <RevealFade
         animate={animate}
         testID={testID ? `${testID}-bubble` : undefined}
-        style={[{
-          marginInlineEnd: -6,
-          maxWidth: column > 0 ? column / 2 + 6 : '50%',
-          flexDirection: 'column',
-          borderRadius: CARD_RADIUS,
-          backgroundColor: palette.primary,
-          paddingLeft: 12,
-          paddingRight: 12,
-          paddingTop: 11,
-          paddingBottom: 11,
-          boxShadow: palette.shadowCard,
-        }, typeof bubbleStyle === 'function' ? bubbleStyle(column) : bubbleStyle]}>
+        style={[
+          {
+            marginInlineEnd: -6,
+            maxWidth: column > 0 ? column / 2 + 6 : '50%',
+            flexDirection: 'column',
+            borderRadius: CARD_RADIUS,
+            backgroundColor: palette.primary,
+            paddingLeft: 12,
+            paddingRight: 12,
+            paddingTop: 11,
+            paddingBottom: 11,
+            boxShadow: palette.shadowCard,
+          },
+          typeof bubbleStyle === 'function' ? bubbleStyle(column) : bubbleStyle,
+        ]}
+      >
         <RevealSequence animate={animate}>{asBlocks(children)}</RevealSequence>
       </RevealFade>
       {actions && actions.length > 0 ? (
@@ -95,7 +106,8 @@ export function AiChatUserMessageBase({ children, actions, animate = true, style
           <View
             {...dataHook('bloomAiChatTurnActions')}
             testID={testID ? `${testID}-actions` : undefined}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+          >
             {actions.map((action) => (
               <TurnActionButton
                 key={action.key}
@@ -121,13 +133,20 @@ export function AiChatAssistantMessageBase({
 }: AiChatAssistantMessageProps) {
   useAiChatWebCss();
   return (
-    <RevealFade animate={animate} testID={testID} style={[{ width: '100%', flexDirection: 'column', gap: 8 }, style]}>
+    <RevealFade
+      animate={animate}
+      testID={testID}
+      style={[{ width: '100%', flexDirection: 'column', gap: 8 }, style]}
+    >
       <RevealSequence animate={animate}>
         {asBlocks(children)}
         {feedback ? (
           <AiChatMessageLine block>
             <View style={{ alignSelf: 'flex-start' }}>
-              <AiChatFeedbackRowBase {...feedbackProps} testID={testID ? `${testID}-feedback` : undefined} />
+              <AiChatFeedbackRowBase
+                {...feedbackProps}
+                testID={testID ? `${testID}-feedback` : undefined}
+              />
             </View>
           </AiChatMessageLine>
         ) : null}
@@ -136,14 +155,24 @@ export function AiChatAssistantMessageBase({
   );
 }
 
-export function AiChatMessageLine({ children, tone = 'primary', block = false, selectable = true, style }: AiChatMessageLineProps) {
+export function AiChatMessageLine({
+  children,
+  tone = 'primary',
+  block = false,
+  selectable = true,
+  style,
+}: AiChatMessageLineProps) {
   const palette = useAiChatPalette();
   return (
     <RevealLine style={style}>
       {block ? (
         children
       ) : (
-        <Text selectable={selectable} variant="body-regular" style={{ color: tone === 'secondary' ? palette.textSecondary : palette.text }}>
+        <Text
+          selectable={selectable}
+          variant="body-regular"
+          style={{ color: tone === 'secondary' ? palette.textSecondary : palette.text }}
+        >
           {children}
         </Text>
       )}
@@ -154,7 +183,11 @@ export function AiChatMessageLine({ children, tone = 'primary', block = false, s
 export function AiChatBulletList({ children, style }: AiChatBulletListProps) {
   const slot = useRevealSlot();
   return (
-    <RevealFade animate={slot.animate} delay={slot.delay} style={[{ flexDirection: 'column', gap: 8, paddingLeft: 21 }, style]}>
+    <RevealFade
+      animate={slot.animate}
+      delay={slot.delay}
+      style={[{ flexDirection: 'column', gap: 8, paddingLeft: 21 }, style]}
+    >
       <RevealSequence animate={slot.animate} delay={slot.delay}>
         {children}
       </RevealSequence>
@@ -171,7 +204,15 @@ export function AiChatBullet({ children }: AiChatBulletProps) {
         <View
           accessibilityElementsHidden
           importantForAccessibility="no"
-          style={{ position: 'absolute', left: -16, top: 8, width: 5, height: 5, borderRadius: 2.5, backgroundColor: palette.text }}
+          style={{
+            position: 'absolute',
+            left: -16,
+            top: 8,
+            width: 5,
+            height: 5,
+            borderRadius: 2.5,
+            backgroundColor: palette.text,
+          }}
         />
         <Text variant="body-regular" style={{ color: palette.text }}>
           {children}
@@ -204,7 +245,8 @@ export function AiChatLinkChip({ children, onPress }: AiChatLinkChipProps) {
         marginTop: -2,
         marginBottom: -2,
         marginRight: 4,
-      }}>
+      }}
+    >
       {IS_WEB ? (
         <RiLinkM width={16} height={16} fill={palette.linkChipText} />
       ) : (

@@ -4,7 +4,7 @@
  *
  * Changed: nothing — byte-for-byte, only its path.
  */
-import type { StyleProp, ViewStyle } from "react-native";
+import type { StyleProp, ViewStyle } from 'react-native';
 
 export type PortalProviderProps = {
   children: React.ReactNode;

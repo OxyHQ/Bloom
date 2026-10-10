@@ -66,7 +66,8 @@ function Fruit({ initial, onChange }: { initial?: string; onChange?: (value: str
       onValueChange={(next) => {
         setValue(next);
         onChange?.(next);
-      }}>
+      }}
+    >
       <SelectTrigger label="Fruit" testID="fruit">
         <SelectValue placeholder="Pick one" />
       </SelectTrigger>
@@ -188,28 +189,34 @@ describe('Select (web) — keyboard', () => {
     expect(focusedLabel()).toBe('Damson');
   });
 
-  it.each(['Enter', ' '])('%j chooses the focused option, closes, and returns focus to the trigger', (key) => {
-    const onChange = jest.fn();
-    mount(<Fruit initial="apple" onChange={onChange} />);
-    openWith('Enter');
-    press('End');
-    press(key);
-    expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith('damson');
-    expect(expanded()).toBe(false);
-    expect(document.activeElement).toBe(trigger());
-  });
+  it.each(['Enter', ' '])(
+    '%j chooses the focused option, closes, and returns focus to the trigger',
+    (key) => {
+      const onChange = jest.fn();
+      mount(<Fruit initial="apple" onChange={onChange} />);
+      openWith('Enter');
+      press('End');
+      press(key);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('damson');
+      expect(expanded()).toBe(false);
+      expect(document.activeElement).toBe(trigger());
+    },
+  );
 
-  it.each(['Escape', 'Tab'])('%s closes without choosing and returns focus to the trigger', (key) => {
-    const onChange = jest.fn();
-    mount(<Fruit initial="apple" onChange={onChange} />);
-    openWith('Enter');
-    press('ArrowDown');
-    press(key);
-    expect(expanded()).toBe(false);
-    expect(onChange).not.toHaveBeenCalled();
-    expect(document.activeElement).toBe(trigger());
-  });
+  it.each(['Escape', 'Tab'])(
+    '%s closes without choosing and returns focus to the trigger',
+    (key) => {
+      const onChange = jest.fn();
+      mount(<Fruit initial="apple" onChange={onChange} />);
+      openWith('Enter');
+      press('ArrowDown');
+      press(key);
+      expect(expanded()).toBe(false);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(trigger());
+    },
+  );
 
   it('Escape inside a Dialog closes the list and NOT the dialog; the next Escape closes the dialog', () => {
     const onClose = jest.fn();
@@ -230,13 +237,24 @@ describe('Select (web) — keyboard', () => {
   });
 });
 
-
 it('owns selection when uncontrolled and publishes changes after keyboard activation', () => {
   const onChange = jest.fn();
-  mount(<Select defaultValue="apple" onValueChange={onChange}>
-    <SelectTrigger label="Fruit" testID="fruit"><SelectValue placeholder="Pick one" /></SelectTrigger>
-    <SelectContent label="Fruit" items={FRUIT} renderItem={item => <SelectItem value={item.value} label={item.label} disabled={item.disabled}><SelectItemText>{item.label}</SelectItemText></SelectItem>} />
-  </Select>);
+  mount(
+    <Select defaultValue="apple" onValueChange={onChange}>
+      <SelectTrigger label="Fruit" testID="fruit">
+        <SelectValue placeholder="Pick one" />
+      </SelectTrigger>
+      <SelectContent
+        label="Fruit"
+        items={FRUIT}
+        renderItem={(item) => (
+          <SelectItem value={item.value} label={item.label} disabled={item.disabled}>
+            <SelectItemText>{item.label}</SelectItemText>
+          </SelectItem>
+        )}
+      />
+    </Select>,
+  );
   openWith('Enter');
   expect(focusedLabel()).toBe('Apple');
   press('ArrowDown');
@@ -246,10 +264,24 @@ it('owns selection when uncontrolled and publishes changes after keyboard activa
   expect(focusedLabel()).toBe('Cherry');
 });
 
-
 it('keeps an explicit empty value controlled and lets its parent clear selection', () => {
   const change = jest.fn();
-  const ui = (value: string | undefined) => <Select value={value} onValueChange={change}><SelectTrigger label="Fruit" testID="fruit"><SelectValue placeholder="Pick one" /></SelectTrigger><SelectContent label="Fruit" items={FRUIT} renderItem={item => <SelectItem value={item.value} label={item.label} disabled={item.disabled}><SelectItemText>{item.label}</SelectItemText></SelectItem>} /></Select>;
+  const ui = (value: string | undefined) => (
+    <Select value={value} onValueChange={change}>
+      <SelectTrigger label="Fruit" testID="fruit">
+        <SelectValue placeholder="Pick one" />
+      </SelectTrigger>
+      <SelectContent
+        label="Fruit"
+        items={FRUIT}
+        renderItem={(item) => (
+          <SelectItem value={item.value} label={item.label} disabled={item.disabled}>
+            <SelectItemText>{item.label}</SelectItemText>
+          </SelectItem>
+        )}
+      />
+    </Select>
+  );
   mount(ui(undefined));
   openWith('Enter');
   press('Enter');

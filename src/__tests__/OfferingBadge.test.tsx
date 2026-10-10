@@ -77,15 +77,18 @@ function normalise(color: string): string {
 const label = (el: HTMLElement) => el.querySelector('[dir="auto"]') as HTMLElement;
 
 describe('OfferingBadge', () => {
-  it.each(OFFERINGS.map((o) => [o, OFFERING_LABELS[o]] as const))('%s reads "%s", with its icon hidden', (offering, text) => {
-    mount(<OfferingBadge offering={offering} testID="b" />);
-    const el = byTestId('b');
-    expect(el.textContent).toBe(text);
-    expect(el.getAttribute('role')).toBeNull();
-    const icon = byTestId('b-icon');
-    expect(icon.getAttribute('aria-hidden')).toBe('true');
-    expect(icon.querySelector('svg')?.getAttribute('width')).toBe('14');
-  });
+  it.each(OFFERINGS.map((o) => [o, OFFERING_LABELS[o]] as const))(
+    '%s reads "%s", with its icon hidden',
+    (offering, text) => {
+      mount(<OfferingBadge offering={offering} testID="b" />);
+      const el = byTestId('b');
+      expect(el.textContent).toBe(text);
+      expect(el.getAttribute('role')).toBeNull();
+      const icon = byTestId('b-icon');
+      expect(icon.getAttribute('aria-hidden')).toBe('true');
+      expect(icon.querySelector('svg')?.getAttribute('width')).toBe('14');
+    },
+  );
 
   it('the four default labels are the housing vocabulary', () => {
     expect(OFFERING_LABELS).toEqual({
@@ -106,11 +109,15 @@ describe('OfferingBadge', () => {
     expect(style.paddingLeft).toBe(padding);
     expect(style.paddingRight).toBe(padding);
     expect(parseFloat(style.borderTopLeftRadius)).toBeGreaterThanOrEqual(height / 2);
-    expect(parseFloat(getComputedStyle(label(byTestId('b'))).fontSize)).toBe(size === 'small' ? 12 : 13);
+    expect(parseFloat(getComputedStyle(label(byTestId('b'))).fontSize)).toBe(
+      size === 'small' ? 12 : 13,
+    );
     mount(<OfferingBadge offering="sale" size={size} testID="b" />);
     expect(byTestId('b-icon').querySelector('svg')?.getAttribute('width')).toBe(icon);
     // An icon tucks the leading padding in by 2.
-    expect(getComputedStyle(byTestId('b')).paddingLeft).toBe(`${OFFERING_BADGE_GEOMETRY[size].paddingHorizontal - 2}px`);
+    expect(getComputedStyle(byTestId('b')).paddingLeft).toBe(
+      `${OFFERING_BADGE_GEOMETRY[size].paddingHorizontal - 2}px`,
+    );
   });
 
   it('label, icon={false} and a custom icon override the defaults', () => {
@@ -131,21 +138,24 @@ describe('OfferingBadge', () => {
     expect(new Set(Object.values(OFFERING_TONES)).size).toBe(4);
   });
 
-  it.each(['light', 'dark'] as const)('tinted paints the tone\'s subtle pair, distinct per offering, on every preset (%s)', (mode) => {
-    for (const preset of APP_COLOR_NAMES) {
-      mount(<></>, mode, preset);
-      const backgrounds = new Set<string>();
-      for (const offering of OFFERINGS) {
-        const pair = resolveAccentColors(theme.colors, OFFERING_TONES[offering], 'subtle');
-        const paint = resolveOfferingBadgePaint(theme, offering, 'tinted');
-        expect(paint.background).toBe(pair.background);
-        expect(paint.foreground).toBe(pair.foreground);
-        expect(paint.shadow).toBeNull();
-        backgrounds.add(paint.background);
+  it.each(['light', 'dark'] as const)(
+    "tinted paints the tone's subtle pair, distinct per offering, on every preset (%s)",
+    (mode) => {
+      for (const preset of APP_COLOR_NAMES) {
+        mount(<></>, mode, preset);
+        const backgrounds = new Set<string>();
+        for (const offering of OFFERINGS) {
+          const pair = resolveAccentColors(theme.colors, OFFERING_TONES[offering], 'subtle');
+          const paint = resolveOfferingBadgePaint(theme, offering, 'tinted');
+          expect(paint.background).toBe(pair.background);
+          expect(paint.foreground).toBe(pair.foreground);
+          expect(paint.shadow).toBeNull();
+          backgrounds.add(paint.background);
+        }
+        expect(backgrounds.size).toBe(4);
       }
-      expect(backgrounds.size).toBe(4);
-    }
-  });
+    },
+  );
 
   it.each(['light', 'dark'] as const)('renders the tint on the pill and the label (%s)', (mode) => {
     mount(<OfferingBadge offering="short_term_rent" testID="b" />, mode);
@@ -155,14 +165,17 @@ describe('OfferingBadge', () => {
     expect(byTestId('b-icon').innerHTML).toContain(paint.icon);
   });
 
-  it.each(['light', 'dark'] as const)('onMedia is the same light pill with shadow in both modes (%s)', (mode) => {
-    mount(<OfferingBadge offering="exchange" variant="onMedia" testID="b" />, mode);
-    const { neutral: n } = resolveButtonRamps(theme);
-    const style = getComputedStyle(byTestId('b'));
-    expect(style.backgroundColor).toBe(normalise(n[50]));
-    expect(getComputedStyle(label(byTestId('b'))).color).toBe(normalise(n[900]));
-    expect(byTestId('b').style.boxShadow || style.boxShadow).not.toBe('');
-  });
+  it.each(['light', 'dark'] as const)(
+    'onMedia is the same light pill with shadow in both modes (%s)',
+    (mode) => {
+      mount(<OfferingBadge offering="exchange" variant="onMedia" testID="b" />, mode);
+      const { neutral: n } = resolveButtonRamps(theme);
+      const style = getComputedStyle(byTestId('b'));
+      expect(style.backgroundColor).toBe(normalise(n[50]));
+      expect(getComputedStyle(label(byTestId('b'))).color).toBe(normalise(n[900]));
+      expect(byTestId('b').style.boxShadow || style.boxShadow).not.toBe('');
+    },
+  );
 
   it('is never a control and never animates', () => {
     const offerings: Offering[] = [...OFFERINGS];

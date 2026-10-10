@@ -15,7 +15,14 @@ import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Circle, G, Line } from 'react-native-svg';
 
 import { Text } from '../typography';
-import { MIN_TICK_GAP, TICK_SIZE, Y_TICK_MARGIN, niceTicks, placeTicks, type PlotBox } from './geometry';
+import {
+  MIN_TICK_GAP,
+  TICK_SIZE,
+  Y_TICK_MARGIN,
+  niceTicks,
+  placeTicks,
+  type PlotBox,
+} from './geometry';
 import { resolveTone } from './palette';
 import { ChartCardSurface } from './primitives/ChartCardSurface';
 import { ChartHeader } from './primitives/ChartHeader';
@@ -120,7 +127,12 @@ const LABEL_SLOT = 160;
 const NO_SERIES: readonly ScatterSeries[] = [];
 
 export function scatterPlotBox(width: number, height: number): PlotBox {
-  return { left: Y_AXIS_WIDTH, top: SCATTER_MARGIN.top, right: width - SCATTER_MARGIN.right, bottom: height - X_AXIS_HEIGHT };
+  return {
+    left: Y_AXIS_WIDTH,
+    top: SCATTER_MARGIN.top,
+    right: width - SCATTER_MARGIN.right,
+    bottom: height - X_AXIS_HEIGHT,
+  };
 }
 
 /** recharts' `[0, 'auto']` number domain: nice ticks from `min(0, dataMin)` to the data max. */
@@ -138,7 +150,8 @@ export function scatterTicks(values: readonly number[], count: number): number[]
 /** A symbol's radius for its area: `ZAxis` maps `[0, zMax]` linearly onto `BUBBLE_RANGE`. */
 export function bubbleRadius(z: number | undefined, zMax: number): number {
   const [lo, hi] = BUBBLE_RANGE;
-  const area = z === undefined || !Number.isFinite(z) ? lo : zMax > 0 ? lo + (z / zMax) * (hi - lo) : lo;
+  const area =
+    z === undefined || !Number.isFinite(z) ? lo : zMax > 0 ? lo + (z / zMax) * (hi - lo) : lo;
   return Math.sqrt(Math.max(area, 0) / Math.PI);
 }
 
@@ -164,7 +177,11 @@ function useScatterAnimation(target: Symbol[][]): Symbol[][] {
   // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised symbols
   useEffect(() => {
     const previous = shownRef.current;
-    if (reducedMotion || typeof requestAnimationFrame !== 'function' || target.every((s) => s.length === 0)) {
+    if (
+      reducedMotion ||
+      typeof requestAnimationFrame !== 'function' ||
+      target.every((s) => s.length === 0)
+    ) {
       shownRef.current = target;
       setFrame(target);
       return;
@@ -181,7 +198,11 @@ function useScatterAnimation(target: Symbol[][]): Symbol[][] {
       const next = target.map((series, s) =>
         series.map((p, i) => {
           const a = from(s, i);
-          return { cx: a.cx + (p.cx - a.cx) * t, cy: a.cy + (p.cy - a.cy) * t, r: a.r + (p.r - a.r) * t };
+          return {
+            cx: a.cx + (p.cx - a.cx) * t,
+            cy: a.cy + (p.cy - a.cy) * t,
+            r: a.r + (p.r - a.r) * t,
+          };
         }),
       );
       shownRef.current = next;
@@ -193,7 +214,9 @@ function useScatterAnimation(target: Symbol[][]): Symbol[][] {
   }, [key, reducedMotion]);
 
   if (reducedMotion) return target;
-  return frame && frame.length === target.length && frame.every((s, i) => s.length === target[i]!.length)
+  return frame &&
+    frame.length === target.length &&
+    frame.every((s, i) => s.length === target[i]!.length)
     ? frame
     : target.map((s) => s.map((p) => ({ ...p, r: 0 })));
 }
@@ -271,15 +294,34 @@ export function ScatterChartCard({
   const averageOf = (list: readonly ScatterPoint[]) =>
     list.length ? list.reduce((sum, p) => sum + p.y, 0) / list.length : 0;
 
-  const xTicks = useMemo(() => scatterTicks(allPoints.map((p) => p.x), X_TICK_COUNT), [allPoints]);
-  const yTicks = useMemo(() => scatterTicks(allPoints.map((p) => p.y), Y_TICK_COUNT), [allPoints]);
-  const zMax = useMemo(() => allPoints.reduce((m, p) => (p.z !== undefined && p.z > m ? p.z : m), 0), [allPoints]);
+  const xTicks = useMemo(
+    () =>
+      scatterTicks(
+        allPoints.map((p) => p.x),
+        X_TICK_COUNT,
+      ),
+    [allPoints],
+  );
+  const yTicks = useMemo(
+    () =>
+      scatterTicks(
+        allPoints.map((p) => p.y),
+        Y_TICK_COUNT,
+      ),
+    [allPoints],
+  );
+  const zMax = useMemo(
+    () => allPoints.reduce((m, p) => (p.z !== undefined && p.z > m ? p.z : m), 0),
+    [allPoints],
+  );
 
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [labelWidths, setLabelWidths] = useState<Record<string, number>>({});
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
+    setSize((prev) =>
+      prev && prev.width === width && prev.height === height ? prev : { width, height },
+    );
   }, []);
 
   const box = size ? scatterPlotBox(size.width, size.height) : null;
@@ -287,12 +329,22 @@ export function ScatterChartCard({
   const xMax = xTicks[xTicks.length - 1] ?? 1;
   const yMin = yTicks[0] ?? 0;
   const yMax = yTicks[yTicks.length - 1] ?? 1;
-  const sx = (v: number) => (box ? box.left + (xMax === xMin ? 0.5 : (v - xMin) / (xMax - xMin)) * (box.right - box.left) : 0);
-  const sy = (v: number) => (box ? box.bottom - (yMax === yMin ? 0 : (v - yMin) / (yMax - yMin)) * (box.bottom - box.top) : 0);
+  const sx = (v: number) =>
+    box
+      ? box.left + (xMax === xMin ? 0.5 : (v - xMin) / (xMax - xMin)) * (box.right - box.left)
+      : 0;
+  const sy = (v: number) =>
+    box
+      ? box.bottom - (yMax === yMin ? 0 : (v - yMin) / (yMax - yMin)) * (box.bottom - box.top)
+      : 0;
 
   const target: Symbol[][] = box
     ? series.map((s) =>
-        s.points.map((p) => ({ cx: sx(p.x), cy: sy(p.y), r: bubble ? bubbleRadius(p.z, zMax) : DEFAULT_RADIUS })),
+        s.points.map((p) => ({
+          cx: sx(p.x),
+          cy: sy(p.y),
+          r: bubble ? bubbleRadius(p.z, zMax) : DEFAULT_RADIUS,
+        })),
       )
     : series.map(() => []);
   const shown = useScatterAnimation(target);
@@ -300,16 +352,21 @@ export function ScatterChartCard({
   const hovering = active !== null;
   const hoveredSeries = active ? series[active.series] : undefined;
   const hoveredPoint = active ? hoveredSeries?.points[active.index] : undefined;
-  const headerLabel = hoveredPoint ? `${hoveredPoint.label ?? hoveredSeries?.label} · ${formatX(hoveredPoint.x)}` : title;
+  const headerLabel = hoveredPoint
+    ? `${hoveredPoint.label ?? hoveredSeries?.label} · ${formatX(hoveredPoint.x)}`
+    : title;
   // The resting figure is an average, so round it — a fractional headline reads as false precision.
-  const headlineValue = hoveredPoint ? hoveredPoint.y : (headline ?? Math.round(averageOf(allPoints)));
+  const headlineValue = hoveredPoint
+    ? hoveredPoint.y
+    : (headline ?? Math.round(averageOf(allPoints)));
 
   const hitTest = (px: number, py: number): ScatterActivePoint | null => {
     for (let s = target.length - 1; s >= 0; s--) {
       const symbols = target[s]!;
       for (let i = symbols.length - 1; i >= 0; i--) {
         const p = symbols[i]!;
-        if ((px - p.cx) ** 2 + (py - p.cy) ** 2 <= (p.r + STROKE_WIDTH / 2) ** 2) return { series: s, index: i };
+        if ((px - p.cx) ** 2 + (py - p.cy) ** 2 <= (p.r + STROKE_WIDTH / 2) ** 2)
+          return { series: s, index: i };
       }
     }
     return null;
@@ -324,8 +381,10 @@ export function ScatterChartCard({
           onStartShouldSetResponder: () => true,
           onMoveShouldSetResponder: () => true,
           onResponderTerminationRequest: () => false,
-          onResponderGrant: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
-          onResponderMove: (e: GestureResponderEvent) => track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderGrant: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
+          onResponderMove: (e: GestureResponderEvent) =>
+            track(e.nativeEvent.locationX, e.nativeEvent.locationY),
           onResponderRelease: () => setActive(null),
           onResponderTerminate: () => setActive(null),
         }),
@@ -351,10 +410,17 @@ export function ScatterChartCard({
         )
       : null;
   // `<text y={bottom + tickSize + tickMargin} dy="0.71em">`.
-  const xLabelTop = box ? textTopForBaseline(box.bottom + TICK_SIZE + X_TICK_MARGIN + 0.71 * 12, TICK_TYPE) : 0;
+  const xLabelTop = box
+    ? textTopForBaseline(box.bottom + TICK_SIZE + X_TICK_MARGIN + 0.71 * 12, TICK_TYPE)
+    : 0;
   const tickColor = { color: palette.textTertiary };
 
-  const label = accessibilityLabel ?? (bubble ? chartText.bubbleChart : chartText.scatterChart)(title, series.map((s) => s.label).join(', '));
+  const label =
+    accessibilityLabel ??
+    (bubble ? chartText.bubbleChart : chartText.scatterChart)(
+      title,
+      series.map((s) => s.label).join(', '),
+    );
 
   return (
     <ChartCardSurface height={tiles ? 'auto' : undefined} style={style} testID={testID}>
@@ -376,15 +442,42 @@ export function ScatterChartCard({
       />
 
       <View style={tiles ? styles.tilesPlot : styles.plot}>
-        <View style={StyleSheet.absoluteFill} onLayout={onLayout} testID={testID ? `${testID}-plot` : undefined}>
+        <View
+          style={StyleSheet.absoluteFill}
+          onLayout={onLayout}
+          testID={testID ? `${testID}-plot` : undefined}
+        >
           {size && box ? (
             <>
-              <Svg width={size.width} height={size.height} style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Svg
+                width={size.width}
+                height={size.height}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              >
                 {yTicks.map((v) => (
-                  <Line key={`gy-${v}`} x1={box.left} y1={sy(v)} x2={box.right} y2={sy(v)} stroke={palette.track} strokeWidth={1} strokeDasharray="4 4" />
+                  <Line
+                    key={`gy-${v}`}
+                    x1={box.left}
+                    y1={sy(v)}
+                    x2={box.right}
+                    y2={sy(v)}
+                    stroke={palette.track}
+                    strokeWidth={1}
+                    strokeDasharray="4 4"
+                  />
                 ))}
                 {xTicks.map((v) => (
-                  <Line key={`gx-${v}`} x1={sx(v)} y1={box.top} x2={sx(v)} y2={box.bottom} stroke={palette.track} strokeWidth={1} strokeDasharray="4 4" />
+                  <Line
+                    key={`gx-${v}`}
+                    x1={sx(v)}
+                    y1={box.top}
+                    x2={sx(v)}
+                    y2={box.bottom}
+                    stroke={palette.track}
+                    strokeWidth={1}
+                    strokeDasharray="4 4"
+                  />
                 ))}
                 {series.map((s, si) => {
                   const dimmed = active !== null && active.series !== si;
@@ -413,10 +506,16 @@ export function ScatterChartCard({
                   pointerEvents="none"
                   style={{
                     position: 'absolute',
-                    ...boundedLabelSlot(size.width, box.left - TICK_SIZE - Y_TICK_MARGIN, 'end', LABEL_SLOT),
+                    ...boundedLabelSlot(
+                      size.width,
+                      box.left - TICK_SIZE - Y_TICK_MARGIN,
+                      'end',
+                      LABEL_SLOT,
+                    ),
                     top: textTopForBaseline(tick.y + 0.355 * 12, TICK_TYPE),
-                        alignItems: 'flex-end',
-                  }}>
+                    alignItems: 'flex-end',
+                  }}
+                >
                   <Text numberOfLines={1} style={[TICK_TYPE, tickColor, { maxWidth: '100%' }]}>
                     {compactNumber(tick.value, chartLocale)}
                   </Text>
@@ -431,18 +530,25 @@ export function ScatterChartCard({
                     pointerEvents="none"
                     style={{
                       position: 'absolute',
-                      ...boundedLabelSlot(size.width, placed?.tickCoord ?? size.width / 2, 'middle', LABEL_SLOT),
+                      ...boundedLabelSlot(
+                        size.width,
+                        placed?.tickCoord ?? size.width / 2,
+                        'middle',
+                        LABEL_SLOT,
+                      ),
                       top: xLabelTop,
-                            alignItems: 'center',
+                      alignItems: 'center',
                       opacity: placed ? 1 : 0,
-                    }}>
+                    }}
+                  >
                     <Text
                       numberOfLines={1}
                       style={[TICK_TYPE, tickColor, { maxWidth: '100%' }]}
                       onLayout={(event) => {
                         const w = event.nativeEvent.layout.width;
                         setLabelWidths((prev) => (prev[key] === w ? prev : { ...prev, [key]: w }));
-                      }}>
+                      }}
+                    >
                       {xLabels[i]}
                     </Text>
                   </View>
@@ -487,7 +593,11 @@ export function ScatterChartCard({
         <ChartLegend
           testID={testID ? `${testID}-legend` : undefined}
           style={{ paddingBottom: 4 }}
-          items={series.map((s, i) => ({ label: s.label, color: tones[i]!.color, value: format(Math.round(averageOf(s.points))) }))}
+          items={series.map((s, i) => ({
+            label: s.label,
+            color: tones[i]!.color,
+            value: format(Math.round(averageOf(s.points))),
+          }))}
         />
       )}
     </ChartCardSurface>

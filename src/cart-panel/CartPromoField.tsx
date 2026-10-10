@@ -99,11 +99,12 @@ function CartPromoFieldComponent({
         />
         <InputGroupAddon divider noPadding>
           <Button
-
             size="sm"
             onPress={onApply}
             disabled={disabled || value.trim() === ''}
-            testID={testID ? `${testID}-apply` : undefined} tone="accent" appearance="subtle"
+            testID={testID ? `${testID}-apply` : undefined}
+            tone="accent"
+            appearance="subtle"
           >
             {applyLabel}
           </Button>

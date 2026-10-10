@@ -41,8 +41,23 @@ import {
   RiShieldUserLine,
   RiUserSmileLine,
 } from '../icons/remix';
-import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher, SidebarPlanCard, SidebarRailItem } from './index';
-import type { SidebarAccount, SidebarLogo, SidebarMode, SidebarNavItem, SidebarPlan, SidebarTeam, SidebarTree } from './types';
+import {
+  Sidebar,
+  SidebarFolder,
+  SidebarItem,
+  SidebarModeSwitcher,
+  SidebarPlanCard,
+  SidebarRailItem,
+} from './index';
+import type {
+  SidebarAccount,
+  SidebarLogo,
+  SidebarMode,
+  SidebarNavItem,
+  SidebarPlan,
+  SidebarTeam,
+  SidebarTree,
+} from './types';
 
 const meta: Meta<typeof Sidebar> = {
   title: 'Blocks/Sidebar',
@@ -124,9 +139,21 @@ export const DEMO_ACCOUNT: SidebarAccount = {
 };
 
 function Frame({ children, height = 820 }: { children: React.ReactNode; height?: number }) {
-  return <View style={{ maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
-    {React.Children.map(children, child => <View style={{ height, maxWidth: '100%' }}>{child}</View>)}
-  </View>;
+  return (
+    <View
+      style={{
+        maxWidth: '100%',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+        gap: 24,
+      }}
+    >
+      {React.Children.map(children, (child) => (
+        <View style={{ height, maxWidth: '100%' }}>{child}</View>
+      ))}
+    </View>
+  );
 }
 
 /** The floating rail, interactive: collapse, search (⌘L), both menus. */
@@ -201,7 +228,12 @@ export const ModeSwitcher: Story = {
     const [three, setThree] = useState('chat');
     return (
       <View testID="mode-switchers" style={{ width: 236, gap: 24, padding: 12 }}>
-        <SidebarModeSwitcher testID="modes-two" modes={DEMO_MODES} value={two} onValueChange={setTwo} />
+        <SidebarModeSwitcher
+          testID="modes-two"
+          modes={DEMO_MODES}
+          value={two}
+          onValueChange={setTwo}
+        />
         <SidebarModeSwitcher
           testID="modes-three"
           modes={[
@@ -221,13 +253,27 @@ export const ModeSwitcher: Story = {
 function DemoMark() {
   const theme = useTheme();
   return (
-    <View style={{ width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.primary }}>
+    <View
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.colors.primary,
+      }}
+    >
       <RiAsterisk width={18} height={18} fill="#ffffff" />
     </View>
   );
 }
 
-const DEMO_LOGO: SidebarLogo = { icon: <DemoMark />, wordmark: 'Oxy', href: '#home', onPress: () => {} };
+const DEMO_LOGO: SidebarLogo = {
+  icon: <DemoMark />,
+  wordmark: 'Oxy',
+  href: '#home',
+  onPress: () => {},
+};
 
 /**
  * `logo`: a mark and a wordmark leading the header. The account switcher moves
@@ -250,8 +296,23 @@ export const WithLogo: Story = {
           account={DEMO_ACCOUNT}
           team={DEMO_TEAM}
         />
-        <Sidebar defaultCollapsed logo={DEMO_LOGO} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
-        <Sidebar mobile onClose={() => {}} logo={DEMO_LOGO} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+        <Sidebar
+          defaultCollapsed
+          logo={DEMO_LOGO}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected="home"
+          team={DEMO_TEAM}
+        />
+        <Sidebar
+          mobile
+          onClose={() => {}}
+          logo={DEMO_LOGO}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected="home"
+          team={DEMO_TEAM}
+        />
         <Sidebar
           variant="rail"
           logo={DEMO_LOGO}
@@ -269,7 +330,13 @@ export const WithWordmarkOnly: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
-      <Sidebar logo={{ wordmark: 'Mention' }} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+      <Sidebar
+        logo={{ wordmark: 'Mention' }}
+        items={DEMO_NAV}
+        secondaryItems={DEMO_SECONDARY}
+        selected="home"
+        team={DEMO_TEAM}
+      />
     </Frame>
   ),
 };
@@ -340,7 +407,14 @@ const CHAT_NAV: SidebarNavItem[] = [
 const REPOSITORIES: SidebarTree = {
   label: 'Repositories',
   folders: [
-    { key: 'web', label: 'web', items: [{ key: 'badge', label: 'pro badge restyle', meta: '2h' }, { key: 'docs', label: 'installation docs page', meta: '1d' }] },
+    {
+      key: 'web',
+      label: 'web',
+      items: [
+        { key: 'badge', label: 'pro badge restyle', meta: '2h' },
+        { key: 'docs', label: 'installation docs page', meta: '1d' },
+      ],
+    },
     {
       key: 'vibl',
       label: 'vibl coding project',
@@ -352,11 +426,19 @@ const REPOSITORIES: SidebarTree = {
         { key: 'mobile', label: 'mobile app for vuejs...', meta: '5h' },
       ],
     },
-    { key: 'studio', label: 'studio landing page work', items: [{ key: 'hero', label: 'hero section animation', meta: '3d' }] },
+    {
+      key: 'studio',
+      label: 'studio landing page work',
+      items: [{ key: 'hero', label: 'hero section animation', meta: '3d' }],
+    },
   ],
 };
 
-const PLAN: SidebarPlan = { name: 'Design team', plan: 'Pro Plan', avatar: { initials: 'B', color: 'blue' } };
+const PLAN: SidebarPlan = {
+  name: 'Design team',
+  plan: 'Pro Plan',
+  avatar: { initials: 'B', color: 'blue' },
+};
 
 /**
  * The AI chat's rail: primary rows, a "Repositories" tree whose folders expand
@@ -379,7 +461,16 @@ export const Tree: Story = {
           onTreeItemPress={(item) => setSelected(item.key)}
           plan={PLAN}
         />
-        <Sidebar mobile surface="plain" items={CHAT_NAV} secondaryItems={DEMO_SECONDARY} account={DEMO_ACCOUNT} tree={REPOSITORIES} selectedTreeItem={selected} plan={PLAN} />
+        <Sidebar
+          mobile
+          surface="plain"
+          items={CHAT_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          account={DEMO_ACCOUNT}
+          tree={REPOSITORIES}
+          selectedTreeItem={selected}
+          plan={PLAN}
+        />
       </Frame>
     );
   },
@@ -401,13 +492,38 @@ export const TreeParts: Story = {
 /** Demo rail destinations: a line glyph at rest, the filled one while selected. */
 export const DEMO_RAIL_NAV: SidebarNavItem[] = [
   { key: 'home', label: 'Home', icon: RiHomeLine, activeIcon: RiHomeFill, href: '#home' },
-  { key: 'favorites', label: 'Favorites', icon: RiHeartLine, activeIcon: RiHeartFill, href: '#favorites' },
-  { key: 'activity', label: 'Activity', icon: RiNotification3Line, activeIcon: RiNotification3Fill, href: '#activity', badge: 4 },
-  { key: 'automations', label: 'Automations', icon: RiRobot2Line, activeIcon: RiRobot2Fill, href: '#automations' },
+  {
+    key: 'favorites',
+    label: 'Favorites',
+    icon: RiHeartLine,
+    activeIcon: RiHeartFill,
+    href: '#favorites',
+  },
+  {
+    key: 'activity',
+    label: 'Activity',
+    icon: RiNotification3Line,
+    activeIcon: RiNotification3Fill,
+    href: '#activity',
+    badge: 4,
+  },
+  {
+    key: 'automations',
+    label: 'Automations',
+    icon: RiRobot2Line,
+    activeIcon: RiRobot2Fill,
+    href: '#automations',
+  },
 ];
 
 export const DEMO_RAIL_SECONDARY: SidebarNavItem[] = [
-  { key: 'settings', label: 'Settings', icon: RiSettings3Line, activeIcon: RiSettings3Fill, href: '#settings' },
+  {
+    key: 'settings',
+    label: 'Settings',
+    icon: RiSettings3Line,
+    activeIcon: RiSettings3Fill,
+    href: '#settings',
+  },
 ];
 
 /** `variant="rail"`: the 80px navigation rail, icon over label, items centred. */
@@ -503,10 +619,22 @@ export const CollapsedModes: Story = {
   render: function Render(args) {
     const [collapsed, setCollapsed] = useState(true);
     const [mode, setMode] = useState('search');
-    return <Frame><Sidebar {...args} testID="compact-sidebar" collapsed={collapsed}
-      onCollapsedChange={setCollapsed} modes={DEMO_MODES} mode={mode}
-      onModeChange={setMode} items={DEMO_NAV.slice(0, 3)}
-      showSearch={false} showThemeToggle /></Frame>;
+    return (
+      <Frame>
+        <Sidebar
+          {...args}
+          testID="compact-sidebar"
+          collapsed={collapsed}
+          onCollapsedChange={setCollapsed}
+          modes={DEMO_MODES}
+          mode={mode}
+          onModeChange={setMode}
+          items={DEMO_NAV.slice(0, 3)}
+          showSearch={false}
+          showThemeToggle
+        />
+      </Frame>
+    );
   },
 };
 
@@ -516,37 +644,131 @@ export const ScrollOverflow: Story = {
   argTypes: { surface: { control: 'select', options: ['card', 'docked', 'plain'] } },
   render: function Render(args) {
     const [selected, setSelected] = useState('home');
-    return <Frame height={320}><Sidebar {...args} testID="overflow-sidebar" style={{ height: 320 }} items={DEMO_NAV}
-      selected={selected} onNavigate={item => setSelected(item.key)} showSearch={false} showThemeToggle={false} />
-      <Sidebar {...args} testID="fitting-sidebar" style={{ height: 320 }} items={DEMO_NAV.slice(0, 2)}
-        showSearch={false} showThemeToggle={false} /></Frame>;
+    return (
+      <Frame height={320}>
+        <Sidebar
+          {...args}
+          testID="overflow-sidebar"
+          style={{ height: 320 }}
+          items={DEMO_NAV}
+          selected={selected}
+          onNavigate={(item) => setSelected(item.key)}
+          showSearch={false}
+          showThemeToggle={false}
+        />
+        <Sidebar
+          {...args}
+          testID="fitting-sidebar"
+          style={{ height: 320 }}
+          items={DEMO_NAV.slice(0, 2)}
+          showSearch={false}
+          showThemeToggle={false}
+        />
+      </Frame>
+    );
   },
 };
 
 export const Playground: Story = {
-  args: { items: DEMO_NAV, selected: 'home', modes: DEMO_MODES, mode: 'search', collapsed: false, size: 'md', surface: 'card', showSearch: true, showThemeToggle: true },
-  parameters: { controls: { disable: false, include: ['selected', 'mode', 'collapsed', 'size', 'surface', 'showSearch', 'showThemeToggle'] } },
-  argTypes: { selected: { control: 'select', options: DEMO_NAV.map(item => item.key) }, mode: { control: 'select', options: ['search', 'computer'] }, collapsed: { control: 'boolean' }, size: { control: 'select', options: ['sm', 'md', 'lg'] }, surface: { control: 'select', options: ['card', 'docked', 'plain'] }, showSearch: { control: 'boolean' }, showThemeToggle: { control: 'boolean' } },
+  args: {
+    items: DEMO_NAV,
+    selected: 'home',
+    modes: DEMO_MODES,
+    mode: 'search',
+    collapsed: false,
+    size: 'md',
+    surface: 'card',
+    showSearch: true,
+    showThemeToggle: true,
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: [
+        'selected',
+        'mode',
+        'collapsed',
+        'size',
+        'surface',
+        'showSearch',
+        'showThemeToggle',
+      ],
+    },
+  },
+  argTypes: {
+    selected: { control: 'select', options: DEMO_NAV.map((item) => item.key) },
+    mode: { control: 'select', options: ['search', 'computer'] },
+    collapsed: { control: 'boolean' },
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
+    surface: { control: 'select', options: ['card', 'docked', 'plain'] },
+    showSearch: { control: 'boolean' },
+    showThemeToggle: { control: 'boolean' },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ height: 700, maxWidth: '100%' }}><Sidebar {...args} style={{ height: '100%', maxWidth: '100%' }} onCollapsedChange={collapsed => updateArgs({ collapsed })} onModeChange={mode => updateArgs({ mode })} onNavigate={item => updateArgs({ selected: item.key })} /></View>;
+    return (
+      <View style={{ height: 700, maxWidth: '100%' }}>
+        <Sidebar
+          {...args}
+          style={{ height: '100%', maxWidth: '100%' }}
+          onCollapsedChange={(collapsed) => updateArgs({ collapsed })}
+          onModeChange={(mode) => updateArgs({ mode })}
+          onNavigate={(item) => updateArgs({ selected: item.key })}
+        />
+      </View>
+    );
   },
 };
 
 /** Every fixed and scrolling control uses the same compact icon lane. */
 export const PrimaryAction: Story = {
-  args: { ...Playground.args, logo: DEMO_LOGO, items: DEMO_NAV.slice(0, 3), secondaryItems: DEMO_SECONDARY, primaryAction: { label: 'New post', icon: RiAddLine, onPress: () => {} } },
+  args: {
+    ...Playground.args,
+    logo: DEMO_LOGO,
+    items: DEMO_NAV.slice(0, 3),
+    secondaryItems: DEMO_SECONDARY,
+    primaryAction: { label: 'New post', icon: RiAddLine, onPress: () => {} },
+  },
   parameters: Playground.parameters,
   argTypes: Playground.argTypes,
   render: function PrimaryAction(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ height: 900, maxWidth: '100%' }}><Sidebar {...args} testID="action-sidebar" style={{ height: '100%', maxWidth: '100%' }} onCollapsedChange={collapsed => updateArgs({ collapsed })} onModeChange={mode => updateArgs({ mode })} onNavigate={item => updateArgs({ selected: item.key })} /></View>;
+    return (
+      <View style={{ height: 900, maxWidth: '100%' }}>
+        <Sidebar
+          {...args}
+          testID="action-sidebar"
+          style={{ height: '100%', maxWidth: '100%' }}
+          onCollapsedChange={(collapsed) => updateArgs({ collapsed })}
+          onModeChange={(mode) => updateArgs({ mode })}
+          onNavigate={(item) => updateArgs({ selected: item.key })}
+        />
+      </View>
+    );
   },
 };
 
 /** Shared material while retaining the current sidebar navigation API. */
 export const GlassPanel: Story = {
-  render: () => <div style={{ padding: 24, height: 760, width: 'fit-content', borderRadius: 28, background: 'url(https://raw.githubusercontent.com/lucasromerodb/liquid-glass-effect-macos/refs/heads/main/assets/flowers.jpg) center / 500px' }}>
-    <Sidebar testID="sidebar-glass" items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} account={DEMO_ACCOUNT} team={DEMO_TEAM} selected="home" />
-  </div>,
+  render: () => (
+    <div
+      style={{
+        padding: 24,
+        height: 760,
+        width: 'fit-content',
+        borderRadius: 28,
+        background:
+          'url(https://raw.githubusercontent.com/lucasromerodb/liquid-glass-effect-macos/refs/heads/main/assets/flowers.jpg) center / 500px',
+      }}
+    >
+      <Sidebar
+        testID="sidebar-glass"
+        items={DEMO_NAV}
+        secondaryItems={DEMO_SECONDARY}
+        account={DEMO_ACCOUNT}
+        team={DEMO_TEAM}
+        selected="home"
+      />
+    </div>
+  ),
 };

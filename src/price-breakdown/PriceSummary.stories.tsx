@@ -23,7 +23,13 @@ type Story = StoryObj;
 
 const SHIPPING: PriceLine[] = [
   { id: 'base', label: 'Collection and delivery', sublabel: '18 km, one helper', amount: '€34.00' },
-  { id: 'stairs', label: 'Stairs', sublabel: 'Third floor, no lift', amount: '€8.00', info: 'Charged per floor above the second when the building has no lift.' },
+  {
+    id: 'stairs',
+    label: 'Stairs',
+    sublabel: 'Third floor, no lift',
+    amount: '€8.00',
+    info: 'Charged per floor above the second when the building has no lift.',
+  },
   { id: 'insurance', label: 'Cover up to €1,000', amount: '€4.50' },
   { id: 'promo', label: 'First trip discount', amount: '−€5.00', tone: 'discount' },
   { id: 'vat', label: 'VAT', amount: '€8.72', tone: 'muted' },
@@ -31,7 +37,14 @@ const SHIPPING: PriceLine[] = [
 
 const KITCHEN: PriceLine[] = [
   { id: 'items', label: 'Four items', amount: '€28.40' },
-  { id: 'delivery', label: 'Delivery', sublabel: '2.4 km', amount: '€2.90', state: 'estimated', info: 'The final delivery charge depends on the route the courier takes.' },
+  {
+    id: 'delivery',
+    label: 'Delivery',
+    sublabel: '2.4 km',
+    amount: '€2.90',
+    state: 'estimated',
+    info: 'The final delivery charge depends on the route the courier takes.',
+  },
   { id: 'service', label: 'Service fee', amount: '€1.70', info: 'Covers payments and support.' },
   { id: 'tip', label: 'Courier tip', amount: undefined, state: 'pending' },
 ];
@@ -71,7 +84,10 @@ export const Quote: Story = {
       <Section title="A service invoice, inside a card">
         <Card>
           <CardBody>
-            <PriceSummary lines={INVOICE} total={{ label: 'Total due', amount: '€202.10', note: 'Payable within 14 days' }} />
+            <PriceSummary
+              lines={INVOICE}
+              total={{ label: 'Total due', amount: '€202.10', note: 'Payable within 14 days' }}
+            />
           </CardBody>
         </Card>
       </Section>
@@ -85,7 +101,12 @@ export const NotFinal: Story = {
       <Section title="An estimate and a line with no number yet">
         <PriceSummary
           lines={KITCHEN}
-          total={{ label: 'Total', amount: '€33.00', state: 'estimated', note: 'The tip is added when the order is delivered.' }}
+          total={{
+            label: 'Total',
+            amount: '€33.00',
+            state: 'estimated',
+            note: 'The tip is added when the order is delivered.',
+          }}
           testID="kitchen"
         />
       </Section>
@@ -114,7 +135,12 @@ export const Collapsible: Story = {
         <CollapsibleDemo />
       </Section>
       <Section title="Uncontrolled, open to begin with">
-        <PriceSummary lines={INVOICE} total={{ label: 'Total', amount: '€202.10' }} collapsible defaultExpanded />
+        <PriceSummary
+          lines={INVOICE}
+          total={{ label: 'Total', amount: '€202.10' }}
+          collapsible
+          defaultExpanded
+        />
       </Section>
     </Page>
   ),
@@ -131,7 +157,11 @@ export const Edges: Story = {
           <PriceSummary
             lines={[
               { label: 'Collection, delivery and one helper for the stairs', amount: '€34.00' },
-              { label: 'Insurance cover up to one thousand euros', amount: '€4.50', info: 'Underwritten per trip.' },
+              {
+                label: 'Insurance cover up to one thousand euros',
+                amount: '€4.50',
+                info: 'Underwritten per trip.',
+              },
             ]}
             total={{ label: 'Total before taxes', amount: '€38.50' }}
           />

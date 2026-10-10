@@ -13,10 +13,7 @@ import {
 } from '../toast/constants';
 import { toast, ToastOutlet } from '../toast';
 import { toastStore } from '../toast/toast-store';
-import {
-  HOVER_LEAVE_GRACE,
-  resetStackHoverForTests,
-} from '../toast/use-stack-hover';
+import { HOVER_LEAVE_GRACE, resetStackHoverForTests } from '../toast/use-stack-hover';
 import type { ToasterProps, ToastPosition } from '../toast/types';
 
 /**
@@ -66,8 +63,7 @@ const viewCountOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
 /** The one row wrapper carrying the measurement `onLayout` (tier 3 of W6). */
 const measuredRowOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
   UNSAFE_root.find(
-    (node) =>
-      hostName(node) === 'Animated.View' && typeof node.props.onLayout === 'function',
+    (node) => hostName(node) === 'Animated.View' && typeof node.props.onLayout === 'function',
   );
 
 type Instance = ReturnType<typeof rowsOf>[number];
@@ -80,9 +76,7 @@ const flattenStyle = (style: unknown): Record<string, unknown> => {
   if (Array.isArray(style)) {
     return Object.assign({}, ...style.map(flattenStyle));
   }
-  return typeof style === 'object' && style !== null
-    ? (style as Record<string, unknown>)
-    : {};
+  return typeof style === 'object' && style !== null ? (style as Record<string, unknown>) : {};
 };
 
 /**
@@ -154,15 +148,13 @@ const anchorOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
  */
 const rowBoxOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
   UNSAFE_root.find(
-    (node) =>
-      hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
+    (node) => hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
   );
 
 /** Every mounted row box — one per rendered toast, whatever its geometry. */
 const rowBoxesOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
   UNSAFE_root.findAll(
-    (node) =>
-      hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
+    (node) => hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
   );
 
 /**
@@ -176,10 +168,7 @@ type MockGesture = {
 };
 
 const isMockGesture = (value: unknown): value is MockGesture =>
-  typeof value === 'object' &&
-  value !== null &&
-  '__handlers' in value &&
-  '__members' in value;
+  typeof value === 'object' && value !== null && '__handlers' in value && '__members' in value;
 
 /**
  * Fires the tap gesture of one row at a ROW-RELATIVE x, in render order (so the
@@ -191,16 +180,15 @@ const tapRow = (
   rendered: ReturnType<typeof renderOutlet>,
   { x, row = 'front' }: { x: number; row?: 'front' | number },
 ) => {
-  const gestures = rendered.UNSAFE_root
-    .findAll((node) => isMockGesture(node.props.gesture))
-    .flatMap((node) => {
-      const gesture: unknown = node.props.gesture;
-      return isMockGesture(gesture) ? [gesture] : [];
-    });
+  const gestures = rendered.UNSAFE_root.findAll((node) =>
+    isMockGesture(node.props.gesture),
+  ).flatMap((node) => {
+    const gesture: unknown = node.props.gesture;
+    return isMockGesture(gesture) ? [gesture] : [];
+  });
   const gesture = row === 'front' ? gestures[gestures.length - 1] : gestures[row];
-  const onEnd = gesture?.__members.find(
-    (member) => typeof member.__handlers.onEnd === 'function',
-  )?.__handlers.onEnd;
+  const onEnd = gesture?.__members.find((member) => typeof member.__handlers.onEnd === 'function')
+    ?.__handlers.onEnd;
   if (!onEnd) {
     throw new Error(`no tap gesture found for row ${String(row)}`);
   }
@@ -349,28 +337,18 @@ describe('ToastOutlet', () => {
         toast('no position given');
       });
 
-      expect(textsInPositioner(rendered, 'top')).toEqual([
-        'explicitly at the top',
-      ]);
-      expect(textsInPositioner(rendered, 'bottom')).toEqual([
-        'no position given',
-      ]);
+      expect(textsInPositioner(rendered, 'top')).toEqual(['explicitly at the top']);
+      expect(textsInPositioner(rendered, 'bottom')).toEqual(['no position given']);
     });
 
     it('does not move an already-placed position-less toast when a top-center one arrives', () => {
       const rendered = renderOutlet();
       show(() => toast('no position given'));
-      expect(textsInPositioner(rendered, 'bottom')).toEqual([
-        'no position given',
-      ]);
+      expect(textsInPositioner(rendered, 'bottom')).toEqual(['no position given']);
 
       show(() => toast('explicitly at the top', { position: 'top-center' }));
-      expect(textsInPositioner(rendered, 'bottom')).toEqual([
-        'no position given',
-      ]);
-      expect(textsInPositioner(rendered, 'top')).toEqual([
-        'explicitly at the top',
-      ]);
+      expect(textsInPositioner(rendered, 'bottom')).toEqual(['no position given']);
+      expect(textsInPositioner(rendered, 'top')).toEqual(['explicitly at the top']);
     });
 
     it('follows the outlet position, not a hardcoded default', () => {
@@ -381,9 +359,7 @@ describe('ToastOutlet', () => {
       });
 
       expect(textsInPositioner(rendered, 'top')).toEqual(['no position given']);
-      expect(textsInPositioner(rendered, 'bottom')).toEqual([
-        'explicitly at the bottom',
-      ]);
+      expect(textsInPositioner(rendered, 'bottom')).toEqual(['explicitly at the bottom']);
     });
 
     /**
@@ -429,10 +405,7 @@ describe('ToastOutlet', () => {
         toast('second at the bottom');
       });
 
-      expect(textsInPositioner(rendered, 'top')).toEqual([
-        'second at the top',
-        'first at the top',
-      ]);
+      expect(textsInPositioner(rendered, 'top')).toEqual(['second at the top', 'first at the top']);
       expect(textsInPositioner(rendered, 'bottom')).toEqual([
         'first at the bottom',
         'second at the bottom',
@@ -462,17 +435,28 @@ describe('ToastOutlet', () => {
       toastStore.setToastHeight('tall', 180);
       toastStore.setToastHeight('short', 54);
     });
-    const measuredRows = rendered.UNSAFE_root.findAll(node =>
-      hostName(node) === 'Animated.View' && typeof node.props.onLayout === 'function');
+    const measuredRows = rendered.UNSAFE_root.findAll(
+      (node) => hostName(node) === 'Animated.View' && typeof node.props.onLayout === 'function',
+    );
     const rear = measuredRows[0]!;
     expect(flattenStyle(rear.props.style).flexShrink).toBe(0);
-    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({ maxHeight: 54, overflow: 'hidden' });
+    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({
+      maxHeight: 54,
+      overflow: 'hidden',
+    });
     expect(toastStore.getSnapshot().toastHeights.tall).toBe(180);
     show(() => toastStore.expand());
     // The Reanimated mock reads styles only during React render, not when the
     // layout effect updates a shared value. Flush that style read explicitly.
-    rendered.rerender(<BloomThemeProvider mode="light" colorPreset="teal"><ToastOutlet enableStacking duration={Infinity} /></BloomThemeProvider>);
-    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({ maxHeight: 180, overflow: 'visible' });
+    rendered.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <ToastOutlet enableStacking duration={Infinity} />
+      </BloomThemeProvider>,
+    );
+    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({
+      maxHeight: 180,
+      overflow: 'visible',
+    });
     expect(toastStore.getSnapshot().toastHeights.tall).toBe(180);
   });
 
@@ -516,9 +500,7 @@ describe('ToastOutlet', () => {
       const rendered = renderOutlet();
       show(() => toast.custom(<Text>Fully custom</Text>));
 
-      expect(flattenStyle(rowBoxOf(rendered).props.style).maxWidth).toBe(
-        TOAST_MAX_ROW_WIDTH,
-      );
+      expect(flattenStyle(rowBoxOf(rendered).props.style).maxWidth).toBe(TOAST_MAX_ROW_WIDTH);
     });
 
     it('leaves the card its gutters inside the cap', () => {
@@ -544,10 +526,8 @@ describe('ToastOutlet', () => {
    * has to keep the documented precedence: per-toast beats outlet-level.
    */
   describe('style precedence', () => {
-    const titleStyleOf = (
-      rendered: ReturnType<typeof renderOutlet>,
-      text: string,
-    ) => rendered.getByText(text).props.style;
+    const titleStyleOf = (rendered: ReturnType<typeof renderOutlet>, text: string) =>
+      rendered.getByText(text).props.style;
 
     it('applies an outlet-level toastOptions style to the row', () => {
       const rendered = renderOutlet({ toastOptions: { titleStyle: { fontSize: 11 } } });
@@ -563,9 +543,7 @@ describe('ToastOutlet', () => {
       show(() => toast('Per-toast wins', { styles: { title: { fontSize: 99 } } }));
 
       const style = titleStyleOf(rendered, 'Per-toast wins');
-      expect(style).toEqual(
-        expect.arrayContaining([expect.objectContaining({ fontSize: 99 })]),
-      );
+      expect(style).toEqual(expect.arrayContaining([expect.objectContaining({ fontSize: 99 })]));
       expect(style).not.toEqual(
         expect.arrayContaining([expect.objectContaining({ fontSize: 11 })]),
       );
@@ -573,14 +551,10 @@ describe('ToastOutlet', () => {
 
     it('merges rather than replaces when the two set different keys', () => {
       const rendered = renderOutlet({ toastOptions: { titleStyle: { fontSize: 11 } } });
-      show(() =>
-        toast('Merged', { styles: { title: { letterSpacing: 2 } } }),
-      );
+      show(() => toast('Merged', { styles: { title: { letterSpacing: 2 } } }));
 
       expect(titleStyleOf(rendered, 'Merged')).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ fontSize: 11, letterSpacing: 2 }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ fontSize: 11, letterSpacing: 2 })]),
       );
     });
 
@@ -590,9 +564,7 @@ describe('ToastOutlet', () => {
       const rendered = renderOutlet({
         toastOptions: { titleStyle: { fontSize: 11 } },
       });
-      show(() =>
-        toast('Other slot', { styles: { toast: { borderWidth: 4 } } }),
-      );
+      show(() => toast('Other slot', { styles: { toast: { borderWidth: 4 } } }));
 
       expect(titleStyleOf(rendered, 'Other slot')).toEqual(
         expect.arrayContaining([expect.objectContaining({ fontSize: 11 })]),
@@ -719,9 +691,7 @@ describe('ToastOutlet', () => {
       act(() => {
         fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
         // Well past both rows' deadlines.
-        jest.advanceTimersByTime(
-          (toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3,
-        );
+        jest.advanceTimersByTime((toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3);
       });
 
       expect(rendered.queryByText('first')).toBeTruthy();
@@ -747,9 +717,7 @@ describe('ToastOutlet', () => {
 
       act(() => {
         fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
-        jest.advanceTimersByTime(
-          (toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3,
-        );
+        jest.advanceTimersByTime((toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3);
       });
 
       expect(rendered.queryByText('first')).toBeTruthy();
@@ -785,9 +753,7 @@ describe('ToastOutlet', () => {
 
       expect(toastStore.getSnapshot().isExpanded).toBe(true);
       act(() => {
-        jest.advanceTimersByTime(
-          (toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3,
-        );
+        jest.advanceTimersByTime((toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3);
       });
       expect(rendered.queryByText('first')).toBeTruthy();
 
@@ -798,9 +764,7 @@ describe('ToastOutlet', () => {
       });
       expect(toastStore.getSnapshot().isExpanded).toBe(false);
       act(() => {
-        jest.advanceTimersByTime(
-          toastDefaults.duration + ENTERING_ANIMATION_DURATION,
-        );
+        jest.advanceTimersByTime(toastDefaults.duration + ENTERING_ANIMATION_DURATION);
       });
       expect(rendered.queryByText('first')).toBeNull();
     });
@@ -851,8 +815,12 @@ describe('ToastOutlet', () => {
       });
       const outside = rendered.UNSAFE_root.findAll((node) => {
         const style = flattenStyle(node.props.style);
-        return hostName(node) === 'Pressable' && style.position === 'absolute' &&
-          style.top === 0 && Number(style.bottom) > 0;
+        return (
+          hostName(node) === 'Pressable' &&
+          style.position === 'absolute' &&
+          style.top === 0 &&
+          Number(style.bottom) > 0
+        );
       });
       expect(outside).toHaveLength(1);
       fireEvent.press(outside[0]!);
@@ -1064,9 +1032,7 @@ describe('ToastOutlet', () => {
         // One tick short of the first row's own deadline (its duration plus the
         // enter animation's head start), measured from ITS fire, not the second's.
         act(() => {
-          jest.advanceTimersByTime(
-            toastDefaults.duration + ENTERING_ANIMATION_DURATION - GAP - 1,
-          );
+          jest.advanceTimersByTime(toastDefaults.duration + ENTERING_ANIMATION_DURATION - GAP - 1);
         });
         expect(rendered.queryByText('first')).toBeTruthy();
         expect(rowBoxesOf(rendered)).toHaveLength(2);
@@ -1089,9 +1055,7 @@ describe('ToastOutlet', () => {
 
         // The second row's own deadline is a full GAP later than the first's.
         act(() => {
-          jest.advanceTimersByTime(
-            toastDefaults.duration + ENTERING_ANIMATION_DURATION - 1,
-          );
+          jest.advanceTimersByTime(toastDefaults.duration + ENTERING_ANIMATION_DURATION - 1);
         });
         expect(rendered.queryByText('first')).toBeNull();
         expect(rendered.queryByText('second')).toBeTruthy();

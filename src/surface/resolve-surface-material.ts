@@ -13,7 +13,13 @@ export interface SurfaceMaterialInput {
 }
 
 /** One decision for the pixels, descendant backing, depth and CSS aliases. */
-export function resolveSurfaceMaterial({ fill, parentFill, parentLevel = 0, paint = true, level }: SurfaceMaterialInput) {
+export function resolveSurfaceMaterial({
+  fill,
+  parentFill,
+  parentLevel = 0,
+  paint = true,
+  level,
+}: SurfaceMaterialInput) {
   const visible = fill.trim().toLowerCase() !== 'transparent' && parseRgba(fill)?.a !== 0;
   const painted = paint && visible;
   const paintFill = painted ? resolveSurfaceTint(fill) : fill;
@@ -22,7 +28,7 @@ export function resolveSurfaceMaterial({ fill, parentFill, parentLevel = 0, pain
     painted,
     paintFill,
     publishedFill,
-    level: level ?? (painted ? Math.min(parentLevel + 1, 3) as SurfaceLevel : parentLevel),
+    level: level ?? (painted ? (Math.min(parentLevel + 1, 3) as SurfaceLevel) : parentLevel),
     vars: surfaceFillVars(visible ? publishedFill : undefined),
   };
 }

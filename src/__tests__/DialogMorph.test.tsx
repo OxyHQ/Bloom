@@ -2,11 +2,7 @@ import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import type { LayoutChangeEvent, ViewStyle } from 'react-native';
 
-import {
-  DialogMorphContent,
-  useDialogFrame,
-  useDialogMorph,
-} from '../dialog/DialogMorph';
+import { DialogMorphContent, useDialogFrame, useDialogMorph } from '../dialog/DialogMorph';
 
 /**
  * Size morphing across an in-place content swap.

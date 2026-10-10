@@ -43,18 +43,127 @@ interface Listing {
 }
 
 const LISTINGS: Listing[] = [
-  { id: 'a', kind: 'price', label: '€120', x: 180, y: 140, title: 'Cabin by the pines', place: 'Valdoria', subtitle: 'Entire cabin · 2 beds', rating: 4.92, reviews: 128, image: photo('#BFD9EA', '#6E8F5E', '#9DB77F') },
-  { id: 'b', kind: 'price', label: '€86', x: 320, y: 220, saved: true, title: 'Studio over the harbour', place: 'Porto Lenza', subtitle: 'Entire studio · 1 bed', rating: 4.81, reviews: 54, image: photo('#F2D7C4', '#A6785E', '#C9A58A') },
-  { id: 'c', kind: 'price', label: '€245', x: 520, y: 120, title: 'Stone farmhouse', place: 'Monteverra', subtitle: 'Entire home · 4 beds', rating: 4.97, reviews: 312, image: photo('#CFE3D8', '#7FA37A', '#B3C98C') },
+  {
+    id: 'a',
+    kind: 'price',
+    label: '€120',
+    x: 180,
+    y: 140,
+    title: 'Cabin by the pines',
+    place: 'Valdoria',
+    subtitle: 'Entire cabin · 2 beds',
+    rating: 4.92,
+    reviews: 128,
+    image: photo('#BFD9EA', '#6E8F5E', '#9DB77F'),
+  },
+  {
+    id: 'b',
+    kind: 'price',
+    label: '€86',
+    x: 320,
+    y: 220,
+    saved: true,
+    title: 'Studio over the harbour',
+    place: 'Porto Lenza',
+    subtitle: 'Entire studio · 1 bed',
+    rating: 4.81,
+    reviews: 54,
+    image: photo('#F2D7C4', '#A6785E', '#C9A58A'),
+  },
+  {
+    id: 'c',
+    kind: 'price',
+    label: '€245',
+    x: 520,
+    y: 120,
+    title: 'Stone farmhouse',
+    place: 'Monteverra',
+    subtitle: 'Entire home · 4 beds',
+    rating: 4.97,
+    reviews: 312,
+    image: photo('#CFE3D8', '#7FA37A', '#B3C98C'),
+  },
   { id: 'd', kind: 'cluster', label: '14', x: 660, y: 260 },
-  { id: 'e', kind: 'price', label: '€64', x: 140, y: 330, title: 'Garden room', place: 'Brisella', subtitle: 'Private room · 1 bed', rating: null, image: photo('#E4E8F0', '#8C9AAE', '#AFBBA0') },
-  { id: 'f', kind: 'price', label: '€310', x: 430, y: 380, saved: true, title: 'Cliffside villa', place: 'Aurelle', subtitle: 'Entire villa · 5 beds', rating: 4.88, reviews: 76, image: photo('#BCD6F0', '#5E7F9E', '#D8C8A8') },
-  { id: 'g', kind: 'price', label: '€98', x: 760, y: 150, title: 'Loft near the old market', place: 'Castellum', subtitle: 'Entire loft · 2 beds', rating: 4.7, reviews: 211, image: photo('#EADFCF', '#9E8C74', '#C2B49A') },
+  {
+    id: 'e',
+    kind: 'price',
+    label: '€64',
+    x: 140,
+    y: 330,
+    title: 'Garden room',
+    place: 'Brisella',
+    subtitle: 'Private room · 1 bed',
+    rating: null,
+    image: photo('#E4E8F0', '#8C9AAE', '#AFBBA0'),
+  },
+  {
+    id: 'f',
+    kind: 'price',
+    label: '€310',
+    x: 430,
+    y: 380,
+    saved: true,
+    title: 'Cliffside villa',
+    place: 'Aurelle',
+    subtitle: 'Entire villa · 5 beds',
+    rating: 4.88,
+    reviews: 76,
+    image: photo('#BCD6F0', '#5E7F9E', '#D8C8A8'),
+  },
+  {
+    id: 'g',
+    kind: 'price',
+    label: '€98',
+    x: 760,
+    y: 150,
+    title: 'Loft near the old market',
+    place: 'Castellum',
+    subtitle: 'Entire loft · 2 beds',
+    rating: 4.7,
+    reviews: 211,
+    image: photo('#EADFCF', '#9E8C74', '#C2B49A'),
+  },
   { id: 'h', kind: 'cluster', label: '6', x: 270, y: 480 },
-  { id: 'i', kind: 'price', label: '€152', x: 600, y: 480, title: 'Lake house', place: 'Serrano Lake', subtitle: 'Entire home · 3 beds', rating: 4.9, reviews: 98, image: photo('#C7E0EC', '#5F8A8B', '#8FB5A5') },
-  { id: 'j', kind: 'price', label: '€75', x: 840, y: 400, title: 'Treehouse', place: 'Bosco Alto', subtitle: 'Treehouse · 1 bed', rating: 4.95, reviews: 402, image: photo('#D6E8C8', '#557A46', '#86A86B') },
+  {
+    id: 'i',
+    kind: 'price',
+    label: '€152',
+    x: 600,
+    y: 480,
+    title: 'Lake house',
+    place: 'Serrano Lake',
+    subtitle: 'Entire home · 3 beds',
+    rating: 4.9,
+    reviews: 98,
+    image: photo('#C7E0EC', '#5F8A8B', '#8FB5A5'),
+  },
+  {
+    id: 'j',
+    kind: 'price',
+    label: '€75',
+    x: 840,
+    y: 400,
+    title: 'Treehouse',
+    place: 'Bosco Alto',
+    subtitle: 'Treehouse · 1 bed',
+    rating: 4.95,
+    reviews: 402,
+    image: photo('#D6E8C8', '#557A46', '#86A86B'),
+  },
   { id: 'k', kind: 'cluster', label: '99+', x: 880, y: 540 },
-  { id: 'l', kind: 'price', label: '€1,040', x: 90, y: 560, title: 'Estate with a vineyard', place: 'Ravenna Hills', subtitle: 'Entire estate · 9 beds', rating: 5, reviews: 23, image: photo('#E8D8C8', '#7A6A4E', '#A89060') },
+  {
+    id: 'l',
+    kind: 'price',
+    label: '€1,040',
+    x: 90,
+    y: 560,
+    title: 'Estate with a vineyard',
+    place: 'Ravenna Hills',
+    subtitle: 'Entire estate · 9 beds',
+    rating: 5,
+    reviews: 23,
+    image: photo('#E8D8C8', '#7A6A4E', '#A89060'),
+  },
 ];
 
 const MAP_WIDTH = 980;
@@ -77,10 +186,16 @@ function MockMap({ children }: { children: React.ReactNode }) {
       }}
     >
       {[110, 250, 410, 560].map((top) => (
-        <View key={`h${top}`} style={{ position: 'absolute', left: 0, right: 0, top, height: 6, backgroundColor: line }} />
+        <View
+          key={`h${top}`}
+          style={{ position: 'absolute', left: 0, right: 0, top, height: 6, backgroundColor: line }}
+        />
       ))}
       {[210, 470, 720].map((left) => (
-        <View key={`v${left}`} style={{ position: 'absolute', top: 0, bottom: 0, left, width: 6, backgroundColor: line }} />
+        <View
+          key={`v${left}`}
+          style={{ position: 'absolute', top: 0, bottom: 0, left, width: 6, backgroundColor: line }}
+        />
       ))}
       {children}
     </View>
@@ -107,7 +222,12 @@ function MapDemo() {
           listing.kind === 'cluster' ? (
             <View
               key={listing.id}
-              style={{ position: 'absolute', left: listing.x, top: listing.y, transform: [{ translateX: '-50%' }, { translateY: '-50%' }] }}
+              style={{
+                position: 'absolute',
+                left: listing.x,
+                top: listing.y,
+                transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+              }}
             >
               <MapClusterMarker
                 count={listing.label}
@@ -129,7 +249,9 @@ function MapDemo() {
               <MapPriceMarker
                 price={listing.label}
                 saved={saved.has(listing.id)}
-                state={active === listing.id ? 'active' : visited.has(listing.id) ? 'visited' : 'default'}
+                state={
+                  active === listing.id ? 'active' : visited.has(listing.id) ? 'visited' : 'default'
+                }
                 onPress={() => open(listing.id)}
                 accessibilityLabel={`${listing.label} per night, ${listing.place}`}
                 testID={`marker-${listing.id}`}
@@ -139,7 +261,12 @@ function MapDemo() {
         )}
 
         <View style={{ position: 'absolute', top: 16, left: 0, right: 0, alignItems: 'center' }}>
-          <MapSearchAreaButton variant="toggle" checked={follow} onCheckedChange={setFollow} testID="follow" />
+          <MapSearchAreaButton
+            variant="toggle"
+            checked={follow}
+            onCheckedChange={setFollow}
+            testID="follow"
+          />
         </View>
 
         {current && current.kind === 'price' ? (
@@ -204,14 +331,34 @@ function StatesBody() {
     );
     return (
       <View style={{ gap: 20, padding: 16, backgroundColor: theme.colors.background }}>
-        {caption('Price marker — default · active · visited · saved · saved active · saved visited')}
+        {caption(
+          'Price marker — default · active · visited · saved · saved active · saved visited',
+        )}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
           <MapPriceMarker price="€120" accessibilityLabel="€120 per night, Valdoria" />
-          <MapPriceMarker price="€86" state="active" accessibilityLabel="€86 per night, Porto Lenza" />
-          <MapPriceMarker price="€245" state="visited" accessibilityLabel="€245 per night, Monteverra" />
+          <MapPriceMarker
+            price="€86"
+            state="active"
+            accessibilityLabel="€86 per night, Porto Lenza"
+          />
+          <MapPriceMarker
+            price="€245"
+            state="visited"
+            accessibilityLabel="€245 per night, Monteverra"
+          />
           <MapPriceMarker price="€64" saved accessibilityLabel="€64 per night, Brisella, saved" />
-          <MapPriceMarker price="€310" saved state="active" accessibilityLabel="€310 per night, Aurelle, saved" />
-          <MapPriceMarker price="€1,040" saved state="visited" accessibilityLabel="€1,040 per night, Ravenna Hills, saved" />
+          <MapPriceMarker
+            price="€310"
+            saved
+            state="active"
+            accessibilityLabel="€310 per night, Aurelle, saved"
+          />
+          <MapPriceMarker
+            price="€1,040"
+            saved
+            state="visited"
+            accessibilityLabel="€1,040 per night, Ravenna Hills, saved"
+          />
         </View>
         {caption('Cluster marker — default · active · wide')}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>

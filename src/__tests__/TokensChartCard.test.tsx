@@ -18,9 +18,8 @@ import {
 
 // The demo tokens series (millions, Jun 14 → Jul 13).
 const VALUES = [
-  34.2, 28.6, 6.1, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 31.4, 4.8, 2.2, 1.1, 5.6, 1.4, 0.8, 42.1,
-  51.8, 48.3, 33.6, 9.2, 3.4, 18.7, 25.3, 37.9, 30.2, 24.6,
+  34.2, 28.6, 6.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31.4, 4.8, 2.2, 1.1, 5.6, 1.4, 0.8, 42.1, 51.8, 48.3,
+  33.6, 9.2, 3.4, 18.7, 25.3, 37.9, 30.2, 24.6,
 ];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DATA: TokensPoint[] = VALUES.map((value, day) => {
@@ -32,7 +31,8 @@ const DATA: TokensPoint[] = VALUES.map((value, day) => {
 // margin top 27, bottom 2).
 const RECHARTS = {
   run0: 'M0,100.53L23.448,116.49L46.897,180.615L70.345,198',
-  idle3: 'M70.345,198L93.793,198L117.241,198L140.69,198L164.138,198L187.586,198L211.034,198L234.483,198L257.931,198',
+  idle3:
+    'M70.345,198L93.793,198L117.241,198L140.69,198L164.138,198L187.586,198L211.034,198L234.483,198L257.931,198',
   run12:
     'M257.931,198L281.379,108.51L304.828,184.32L328.276,191.73L351.724,194.865L375.172,182.04L398.621,194.01L422.069,195.72L445.517,78.015L468.966,50.37L492.414,60.345L515.862,102.24L539.31,171.78L562.759,188.31L586.207,144.705L609.655,125.895L633.103,89.985L656.552,111.93L680,127.89',
 };
@@ -47,7 +47,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 
 function layoutPlot(getByTestId: (id: string) => unknown) {
   act(() => {
-    fireEvent(getByTestId('tokens-plot') as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 680, height: 200 } } });
+    fireEvent(getByTestId('tokens-plot') as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 680, height: 200 } },
+    });
   });
 }
 
@@ -78,13 +80,20 @@ describe('TokensChartCard', () => {
     const priorFrame = global.requestAnimationFrame;
     const priorCancel = global.cancelAnimationFrame;
     const callbacks: FrameRequestCallback[] = [];
-    const request = jest.fn((callback: FrameRequestCallback) => { callbacks.push(callback); return callbacks.length; });
+    const request = jest.fn((callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
     const cancel = jest.fn();
     global.requestAnimationFrame = request;
     global.cancelAnimationFrame = cancel;
     let clock = 0;
     const now = jest.spyOn(Date, 'now').mockImplementation(() => clock);
-    const ui = (animate: boolean) => <BloomThemeProvider mode="light" colorPreset="teal"><TokensChartCard testID="tokens" data={DATA} animate={animate} /></BloomThemeProvider>;
+    const ui = (animate: boolean) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <TokensChartCard testID="tokens" data={DATA} animate={animate} />
+      </BloomThemeProvider>
+    );
     const screen = render(ui(false));
     try {
       layoutPlot(screen.getByTestId);
@@ -110,7 +119,9 @@ describe('TokensChartCard', () => {
     }
   });
   it('keeps the card shell: radius 20, 12 top and bottom only, the header over the plot', () => {
-    const { getByTestId } = renderCard(<TokensChartCard testID="tokens" data={DATA} headline={667.7} delta="+9.4%" />);
+    const { getByTestId } = renderCard(
+      <TokensChartCard testID="tokens" data={DATA} headline={667.7} delta="+9.4%" />,
+    );
     const theme = buildTheme('teal', 'light');
     expect(cardLayout(getByTestId('tokens'))).toMatchObject({
       borderRadius: 20,
@@ -121,15 +132,26 @@ describe('TokensChartCard', () => {
     expect(resolvedStyle(getByTestId('tokens-plot').props.style)).toMatchObject({ height: 200 });
     expect(getByTestId('tokens-headline').props.children).toBe('667.7M tokens');
     const chip = purpleChip(theme, resolveChartCardPalette(theme).surface);
-    expect(resolvedStyle(getByTestId('tokens-delta').props.style).backgroundColor).toBe(chip.background);
-    expect(chip).toEqual({ background: purpleStop(theme, 100), foreground: purpleStop(theme, 600) });
+    expect(resolvedStyle(getByTestId('tokens-delta').props.style).backgroundColor).toBe(
+      chip.background,
+    );
+    expect(chip).toEqual({
+      background: purpleStop(theme, 100),
+      foreground: purpleStop(theme, 600),
+    });
   });
 
   it('draws the area, the purple runs and the grey dashed idle run', () => {
     const theme = buildTheme('teal', 'light');
-    const { getByTestId } = renderCard(<TokensChartCard testID="tokens" data={DATA} headline={667.7} />);
+    const { getByTestId } = renderCard(
+      <TokensChartCard testID="tokens" data={DATA} headline={667.7} />,
+    );
     layoutPlot(getByTestId);
-    expect(getByTestId('tokens-run-0').props).toMatchObject({ d: RECHARTS.run0, stroke: purpleStop(theme, 400), strokeWidth: 2 });
+    expect(getByTestId('tokens-run-0').props).toMatchObject({
+      d: RECHARTS.run0,
+      stroke: purpleStop(theme, 400),
+      strokeWidth: 2,
+    });
     expect(getByTestId('tokens-idle-3').props).toMatchObject({
       d: RECHARTS.idle3,
       stroke: theme.colors.textTertiary,
@@ -143,7 +165,12 @@ describe('TokensChartCard', () => {
     const onActiveIndexChange = jest.fn();
     const theme = buildTheme('teal', 'light');
     const { getByTestId, getByText, queryByTestId } = renderCard(
-      <TokensChartCard testID="tokens" data={DATA} headline={667.7} onActiveIndexChange={onActiveIndexChange} />,
+      <TokensChartCard
+        testID="tokens"
+        data={DATA}
+        headline={667.7}
+        onActiveIndexChange={onActiveIndexChange}
+      />,
     );
     layoutPlot(getByTestId);
     const surface = getByTestId('tokens-plot-surface');
@@ -153,7 +180,12 @@ describe('TokensChartCard', () => {
     });
     expect(onActiveIndexChange).toHaveBeenLastCalledWith(21);
     expect(getByText('Jul 5')).toBeTruthy();
-    expect(getByTestId('tokens-cursor').props).toMatchObject({ y1: 27, y2: 198, strokeDasharray: '4 4', strokeWidth: 1 });
+    expect(getByTestId('tokens-cursor').props).toMatchObject({
+      y1: 27,
+      y2: 198,
+      strokeDasharray: '4 4',
+      strokeWidth: 1,
+    });
     expect(getByTestId('tokens-cursor').props.x1).toBeCloseTo(492.414, 3);
 
     // Above the 27px top margin the day clears, as recharts' inactive tooltip does.
@@ -180,7 +212,11 @@ describe('TokensChartCard', () => {
 
   it('sums the data for the resting headline and takes a custom format', () => {
     const { getByTestId, queryByTestId } = renderCard(
-      <TokensChartCard testID="tokens" data={DATA.slice(0, 3)} format={(v) => `${v.toFixed(1)}K`} />,
+      <TokensChartCard
+        testID="tokens"
+        data={DATA.slice(0, 3)}
+        format={(v) => `${v.toFixed(1)}K`}
+      />,
     );
     expect(getByTestId('tokens-headline').props.children).toBe('68.9K');
     expect(queryByTestId('tokens-delta')).toBeNull();
@@ -188,9 +224,14 @@ describe('TokensChartCard', () => {
 
   it('mixes the dark chip over the card: purple-900 at 50% with purple-300 text', () => {
     const theme = buildTheme('teal', 'dark');
-    const { getByTestId } = renderCard(<TokensChartCard testID="tokens" data={DATA} delta="+9.4%" />, 'dark');
+    const { getByTestId } = renderCard(
+      <TokensChartCard testID="tokens" data={DATA} delta="+9.4%" />,
+      'dark',
+    );
     const chip = purpleChip(theme, resolveChartCardPalette(theme).surface);
     expect(chip.foreground).toBe(purpleStop(theme, 300));
-    expect(resolvedStyle(getByTestId('tokens-delta').props.style).backgroundColor).toBe(chip.background);
+    expect(resolvedStyle(getByTestId('tokens-delta').props.style).backgroundColor).toBe(
+      chip.background,
+    );
   });
 });

@@ -31,7 +31,11 @@ export function useEasedValues(
       shownRef.current = targets;
       setShown(targets);
     };
-    if (reducedMotion || typeof requestAnimationFrame !== 'function' || from.length !== targets.length) {
+    if (
+      reducedMotion ||
+      typeof requestAnimationFrame !== 'function' ||
+      from.length !== targets.length
+    ) {
       snap();
       return;
     }

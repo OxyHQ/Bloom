@@ -66,43 +66,52 @@ export interface AiChatMessages {
 }
 
 // `String(panel)`: the catalog gate calls each entry with sample arguments, a number among them.
-export const AI_CHAT_MESSAGES: MessageCatalog<AiChatMessages> = defineMessages<AiChatMessages>('AI_CHAT_MESSAGES', {
-  feedback: { like: 'Good response', dislike: 'Bad response', copy: 'Copy response', copied: 'Copied!' },
-  imageGeneration: {
-    generated: 'Image generated',
-    generating: 'Generating image',
-    remaining: (n) => plural('en', n, { one: '{n} second remaining', other: '{n} seconds remaining' }),
-    likeToast: 'Thanks for the feedback',
-    dislikeToast: "Thanks — we'll use this to improve",
+export const AI_CHAT_MESSAGES: MessageCatalog<AiChatMessages> = defineMessages<AiChatMessages>(
+  'AI_CHAT_MESSAGES',
+  {
+    feedback: {
+      like: 'Good response',
+      dislike: 'Bad response',
+      copy: 'Copy response',
+      copied: 'Copied!',
+    },
+    imageGeneration: {
+      generated: 'Image generated',
+      generating: 'Generating image',
+      remaining: (n) =>
+        plural('en', n, { one: '{n} second remaining', other: '{n} seconds remaining' }),
+      likeToast: 'Thanks for the feedback',
+      dislikeToast: "Thanks — we'll use this to improve",
+    },
+    generatedImage: (alt) => `Generated image: ${alt}`,
+    codePanel: {
+      changes: 'Changes',
+      browser: 'Browser',
+      // The published English wording, misspelling included (see the labels type).
+      uncommitted: (count) => `${count} Uncomitted changes`,
+      undo: 'Undo changes',
+      browserPreview: 'Browser preview',
+    },
+    galleryPanel: {
+      gallery: 'Gallery',
+      styles: 'Styles',
+      stylePresets: 'Style presets',
+      enlarge: (prompt) => `Enlarge ${prompt}`,
+      minimize: (prompt) => `Minimize ${prompt}`,
+      download: (prompt) => `Download ${prompt}`,
+    },
+    panelView: 'Panel view',
+    openTerminal: 'Open terminal',
+    newGeneration: 'New generation',
+    expandPanel: 'Expand panel',
+    togglePanel: 'Toggle panel',
+    container: { breadcrumb: 'Chat location', share: 'Share chat' },
+    shell: {
+      openNavigation: 'Open navigation',
+      closeNavigation: 'Close navigation',
+      openPanel: (panel) => `Open ${String(panel).toLowerCase()}`,
+      closePanel: (panel) => `Close ${String(panel).toLowerCase()}`,
+    },
+    code: 'Code',
   },
-  generatedImage: (alt) => `Generated image: ${alt}`,
-  codePanel: {
-    changes: 'Changes',
-    browser: 'Browser',
-    // The published English wording, misspelling included (see the labels type).
-    uncommitted: (count) => `${count} Uncomitted changes`,
-    undo: 'Undo changes',
-    browserPreview: 'Browser preview',
-  },
-  galleryPanel: {
-    gallery: 'Gallery',
-    styles: 'Styles',
-    stylePresets: 'Style presets',
-    enlarge: (prompt) => `Enlarge ${prompt}`,
-    minimize: (prompt) => `Minimize ${prompt}`,
-    download: (prompt) => `Download ${prompt}`,
-  },
-  panelView: 'Panel view',
-  openTerminal: 'Open terminal',
-  newGeneration: 'New generation',
-  expandPanel: 'Expand panel',
-  togglePanel: 'Toggle panel',
-  container: { breadcrumb: 'Chat location', share: 'Share chat' },
-  shell: {
-    openNavigation: 'Open navigation',
-    closeNavigation: 'Close navigation',
-    openPanel: (panel) => `Open ${String(panel).toLowerCase()}`,
-    closePanel: (panel) => `Close ${String(panel).toLowerCase()}`,
-  },
-  code: 'Code',
-});
+);

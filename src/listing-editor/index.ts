@@ -1,4 +1,8 @@
-export { AddressPrecisionPicker, DEFAULT_ADDRESS_PRECISION_OPTIONS, PrecisionMapPlaceholder } from './AddressPrecisionPicker';
+export {
+  AddressPrecisionPicker,
+  DEFAULT_ADDRESS_PRECISION_OPTIONS,
+  PrecisionMapPlaceholder,
+} from './AddressPrecisionPicker';
 export { ListingPreviewPane } from './ListingPreviewPane';
 export { ListingQualityMeter, listingQualityScore } from './ListingQualityMeter';
 export { OfferingEditor } from './OfferingEditor';

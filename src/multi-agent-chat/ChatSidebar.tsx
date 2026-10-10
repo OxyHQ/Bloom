@@ -31,21 +31,9 @@ import { ThemeToggle } from '../theme-toggle';
 import { useChatComponents } from './context';
 import type { Agent, Conversation } from './data';
 
-export function AgentStack({
-  agents,
-  size = 40,
-}: {
-  agents: Agent[];
-  size?: number;
-}) {
+export function AgentStack({ agents, size = 40 }: { agents: Agent[]; size?: number }) {
   if (agents.length === 1)
-    return (
-      <AgentAvatar
-        config={agents[0]!.avatar}
-        size={size}
-        label={agents[0]!.name}
-      />
-    );
+    return <AgentAvatar config={agents[0]!.avatar} size={size} label={agents[0]!.name} />;
   return (
     <StyledView
       className="relative shrink-0"
@@ -61,11 +49,7 @@ export function AgentStack({
             top: i === 2 ? size * 0.4 : 0,
           }}
         >
-          <AgentAvatar
-            config={agent.avatar}
-            size={size * 0.65}
-            label={agent.name}
-          />
+          <AgentAvatar config={agent.avatar} size={size * 0.65} label={agent.name} />
         </StyledView>
       ))}
     </StyledView>
@@ -150,10 +134,7 @@ export function ChatSidebar(props: ChatSidebarProps) {
                   className="rounded-[14px] p-2"
                   style={{ borderRadius: 14, padding: 8 }}
                   leading={
-                    <AgentAvatar
-                      config={{ ...FOLD_CONFIG, hue: 254, saturation: 66 }}
-                      size={32}
-                    />
+                    <AgentAvatar config={{ ...FOLD_CONFIG, hue: 254, saturation: 66 }} size={32} />
                   }
                 >
                   <StyledView className="flex min-w-0 flex-1 flex-col">
@@ -170,9 +151,7 @@ export function ChatSidebar(props: ChatSidebarProps) {
                   accessibilityLabel={messages.chatWithYourAgents}
                   className="rounded-[14px] p-2"
                   style={{ borderRadius: 14, padding: 8 }}
-                  leading={
-                    <AgentStack agents={props.agents.slice(0, 3)} size={32} />
-                  }
+                  leading={<AgentStack agents={props.agents.slice(0, 3)} size={32} />}
                 >
                   <StyledView className="flex min-w-0 flex-1 flex-col">
                     <Text className="text-body-medium text-text-primary">
@@ -189,27 +168,14 @@ export function ChatSidebar(props: ChatSidebarProps) {
         />
       }
       content={
-        <StyledView
-          className="flex flex-col gap-2"
-          accessibilityLabel={messages.chatList}
-        >
+        <StyledView className="flex flex-col gap-2" accessibilityLabel={messages.chatList}>
           {props.chats.map((chat) => {
-            const agents = props.agents.filter((a) =>
-                chat.agentIds.includes(a.id),
-              ),
+            const agents = props.agents.filter((a) => chat.agentIds.includes(a.id)),
               last = chat.messages[chat.messages.length - 1];
             const items = [
-              [
-                'pin',
-                chat.pinned ? messages.unpinChat : messages.pinChat,
-                RiPushpinLine,
-              ],
+              ['pin', chat.pinned ? messages.unpinChat : messages.pinChat, RiPushpinLine],
               ['rename', messages.renameChat, RiEditLine],
-              [
-                'edit',
-                agents.length > 1 ? messages.editGroup : messages.editBot,
-                RiGroupLine,
-              ],
+              ['edit', agents.length > 1 ? messages.editGroup : messages.editBot, RiGroupLine],
               ['copy', messages.copyConversation, RiFileCopyLine],
               ['copy-id', messages.copyConversationID, RiHashtag],
               ['remove', messages.removeChat, RiDeleteBinLine],
@@ -219,10 +185,7 @@ export function ChatSidebar(props: ChatSidebarProps) {
                 <C.ContextMenuTrigger asChild style={{ width: '100%' }}>
                   <SidebarItem
                     accessibilityLabel={chat.customTitle || chat.title}
-                    label={
-                      chat.customTitle ||
-                      (agents.length === 1 ? agents[0]!.name : chat.title)
-                    }
+                    label={chat.customTitle || (agents.length === 1 ? agents[0]!.name : chat.title)}
                     leading={<AgentStack agents={agents} />}
                     description={
                       props.pending[chat.id]

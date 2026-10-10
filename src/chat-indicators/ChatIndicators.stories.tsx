@@ -146,12 +146,43 @@ export const ConversationRows: Story = {
       muted?: boolean;
       typing?: boolean;
     }> = [
-      { name: 'Ana Restrepo', status: 'online', preview: 'See you at the studio', time: '12:41', delivery: 'read' },
+      {
+        name: 'Ana Restrepo',
+        status: 'online',
+        preview: 'See you at the studio',
+        time: '12:41',
+        delivery: 'read',
+      },
       { name: 'Marcel Dubé', status: 'idle', preview: '', time: '12:08', typing: true, unread: 3 },
-      { name: 'Roof Garden Crew', status: 'offline', preview: 'Nour: bringing the speakers', time: 'Yesterday', unread: 128 },
-      { name: 'Ines Okafor', status: 'busy', preview: 'Sent the floor plan', time: 'Yesterday', delivery: 'delivered' },
-      { name: 'Building 12', status: 'offline', preview: 'Water is back on', time: 'Mon', unread: 6, muted: true },
-      { name: 'Teodor Vlaicu', status: 'online', preview: 'Could not send', time: 'Mon', delivery: 'failed' },
+      {
+        name: 'Roof Garden Crew',
+        status: 'offline',
+        preview: 'Nour: bringing the speakers',
+        time: 'Yesterday',
+        unread: 128,
+      },
+      {
+        name: 'Ines Okafor',
+        status: 'busy',
+        preview: 'Sent the floor plan',
+        time: 'Yesterday',
+        delivery: 'delivered',
+      },
+      {
+        name: 'Building 12',
+        status: 'offline',
+        preview: 'Water is back on',
+        time: 'Mon',
+        unread: 6,
+        muted: true,
+      },
+      {
+        name: 'Teodor Vlaicu',
+        status: 'online',
+        preview: 'Could not send',
+        time: 'Mon',
+        delivery: 'failed',
+      },
     ];
 
     function Rows() {
@@ -180,14 +211,20 @@ export const ConversationRows: Story = {
                 presenceRingColor={theme.colors.backgroundSecondary}
               />
               <View style={{ flex: 1, gap: 2 }}>
-                <Text variant="body-semibold" numberOfLines={1} style={{ color: theme.colors.text }}>
+                <Text
+                  variant="body-semibold"
+                  numberOfLines={1}
+                  style={{ color: theme.colors.text }}
+                >
                   {row.name}
                 </Text>
                 {row.typing ? (
                   <TypingDots label="typing…" />
                 ) : (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    {row.delivery ? <MessageStatus status={row.delivery} size={14} label="" /> : null}
+                    {row.delivery ? (
+                      <MessageStatus status={row.delivery} size={14} label="" />
+                    ) : null}
                     <Text
                       variant="body-2-regular"
                       numberOfLines={1}
@@ -226,7 +263,12 @@ export const Stories: Story = {
     function Ring({ state, name }: { state: StoryRingState; name: string }) {
       return (
         <View style={{ alignItems: 'center', gap: 6, width: 76 }}>
-          <StoryRing state={state} size={56} onPress={() => {}} accessibilityLabel={`${name}'s story`}>
+          <StoryRing
+            state={state}
+            size={56}
+            onPress={() => {}}
+            accessibilityLabel={`${name}'s story`}
+          >
             <Avatar name={name} size={56} />
           </StoryRing>
           <Text variant="caption-2-regular" numberOfLines={1}>
@@ -241,7 +283,11 @@ export const Stories: Story = {
       return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'flex-start' }}>
           {RINGS.map((state, index) => (
-            <Ring key={state} state={state} name={['Ana Restrepo', 'Marcel Dubé', 'Nour Haddad'][index] ?? 'Ana'} />
+            <Ring
+              key={state}
+              state={state}
+              name={['Ana Restrepo', 'Marcel Dubé', 'Nour Haddad'][index] ?? 'Ana'}
+            />
           ))}
           <View style={{ alignItems: 'center', gap: 6, width: 76 }}>
             <StoryRing

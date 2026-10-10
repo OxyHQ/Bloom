@@ -34,15 +34,22 @@ export function resolveChipHueColors(
   const { accent } = resolveButtonRamps(theme);
   switch (hue) {
     case 'neutral':
-      return { background: theme.colors.backgroundTertiary, foreground: theme.colors.textSecondary };
+      return {
+        background: theme.colors.backgroundTertiary,
+        foreground: theme.colors.textSecondary,
+      };
     case 'gray':
       return { background: theme.colors.backgroundSecondary, foreground: theme.colors.text };
     case 'soft':
-      return { background: theme.colors.backgroundSecondary, foreground: theme.colors.textSecondary };
+      return {
+        background: theme.colors.backgroundSecondary,
+        foreground: theme.colors.textSecondary,
+      };
     case 'purple':
       return purpleChip(theme, surface);
     default: {
-      const stop = (s: 200 | 400 | 500 | 800 | 950) => (hue === 'blue' ? accent[s] : toneColor(theme, HUE_TONE[hue], s));
+      const stop = (s: 200 | 400 | 500 | 800 | 950) =>
+        hue === 'blue' ? accent[s] : toneColor(theme, HUE_TONE[hue], s);
       if (!theme.isDark) return { background: stop(200), foreground: stop(800) };
       const foreground = hue === 'blue' ? accent[300] : hue === 'cyan' ? stop(400) : stop(500);
       return { background: mixColor(surface, stop(950), 0.6), foreground };

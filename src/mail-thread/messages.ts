@@ -10,23 +10,25 @@ import type { MailThreadStrings } from './types';
  */
 export type MailThreadMessages = MailThreadStrings;
 
-export const MAIL_THREAD_MESSAGES: MessageCatalog<MailThreadMessages> = defineMessages<MailThreadMessages>('MAIL_THREAD_MESSAGES', {
-  to: 'To',
-  cc: 'Cc',
-  bcc: 'Bcc',
-  reply: 'Reply',
-  replyAll: 'Reply all',
-  forward: 'Forward',
-  more: COMMON_MESSAGES.en.more,
-  moreAddresses: (n) => `${n} more`,
-  earlierMessages: (n) => plural('en', n, { one: '{n} earlier message', other: '{n} earlier messages' }),
-  showTrimmed: 'Show trimmed content',
-  hideTrimmed: 'Hide trimmed content',
-  unread: 'Unread',
-  starred: 'Starred',
-  star: 'Star',
-  attachments: 'Attachments',
-  attachmentCount: (n) => plural('en', n, { one: '{n} attachment', other: '{n} attachments' }),
-  expand: 'Expand message',
-  collapse: 'Collapse message',
-});
+export const MAIL_THREAD_MESSAGES: MessageCatalog<MailThreadMessages> =
+  defineMessages<MailThreadMessages>('MAIL_THREAD_MESSAGES', {
+    to: 'To',
+    cc: 'Cc',
+    bcc: 'Bcc',
+    reply: 'Reply',
+    replyAll: 'Reply all',
+    forward: 'Forward',
+    more: COMMON_MESSAGES.en.more,
+    moreAddresses: (n) => `${n} more`,
+    earlierMessages: (n) =>
+      plural('en', n, { one: '{n} earlier message', other: '{n} earlier messages' }),
+    showTrimmed: 'Show trimmed content',
+    hideTrimmed: 'Hide trimmed content',
+    unread: 'Unread',
+    starred: 'Starred',
+    star: 'Star',
+    attachments: 'Attachments',
+    attachmentCount: (n) => plural('en', n, { one: '{n} attachment', other: '{n} attachments' }),
+    expand: 'Expand message',
+    collapse: 'Collapse message',
+  });

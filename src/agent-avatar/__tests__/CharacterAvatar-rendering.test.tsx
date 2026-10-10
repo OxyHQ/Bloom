@@ -3,10 +3,7 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { AgentAvatar } from '../AgentAvatar';
 import { AgentAvatarProvider } from '../AgentAvatarProvider';
 import { CharacterAvatar } from '../CharacterAvatar';
-import {
-  CharacterCapabilitiesContext,
-  CharacterRuntimeContext,
-} from '../context';
+import { CharacterCapabilitiesContext, CharacterRuntimeContext } from '../context';
 import * as recipes from '../legacy-recipe';
 import { FOLD_CONFIG } from '../model';
 
@@ -47,12 +44,7 @@ describe('avatar React rendering isolation', () => {
           <EditorCatalog />
           <Profiler id="gallery" onRender={avatarCommits}>
             {Array.from({ length: 8 }, (_, i) => (
-              <AgentAvatar
-                key={i}
-                config={FOLD_CONFIG}
-                paused
-                label={`Agent ${i}`}
-              />
+              <AgentAvatar key={i} config={FOLD_CONFIG} paused label={`Agent ${i}`} />
             ))}
           </Profiler>
         </AgentAvatarProvider>,
@@ -79,12 +71,7 @@ describe('avatar React rendering isolation', () => {
   it('reuses the contour across work, reaction and pause changes, but recalculates for a new recipe', () => {
     const geometry = jest.spyOn(recipes, 'legacyRecipe');
     const config = { ...FOLD_CONFIG, foldShape: 'cloud' as const };
-    const view = (
-      workingKey: number,
-      reactionKey: number,
-      paused = false,
-      avatar = config,
-    ) => (
+    const view = (workingKey: number, reactionKey: number, paused = false, avatar = config) => (
       <AgentAvatarProvider runtimeUrl="/runtime.mjs">
         <CharacterAvatar
           config={avatar}

@@ -35,11 +35,7 @@ import { immersiveDarkTheme } from '../media-player/ImmersiveTheme';
 import { resolveMiniPlayerSurface } from '../media-player/MiniPlayer';
 import { nowPlayingBarLayout, NOW_PLAYING_BAR_HEIGHT } from '../media-player/NowPlayingBar';
 import { PlaybackSpeedRows } from '../media-player/PlaybackSpeedMenu';
-import {
-  formatPlaybackRate,
-  parseSleepTimerKey,
-  sleepTimerKey,
-} from '../media-player/shared';
+import { formatPlaybackRate, parseSleepTimerKey, sleepTimerKey } from '../media-player/shared';
 import { AA_TEXT_CONTRAST, darken } from '../styles/color-contrast';
 import { SleepTimerRows } from '../media-player/SleepTimerMenu';
 import { skipGlyphFor } from '../media-player/TransportControls';
@@ -144,7 +140,15 @@ describe('repeat cycle', () => {
 describe('TransportControls', () => {
   it('shuffle is a toggle painted accent when on', () => {
     const onShuffleChange = jest.fn();
-    mount(<TransportControls playing={false} onPlayPause={noop} shuffle onShuffleChange={onShuffleChange} testID="t" />);
+    mount(
+      <TransportControls
+        playing={false}
+        onPlayPause={noop}
+        shuffle
+        onShuffleChange={onShuffleChange}
+        testID="t"
+      />,
+    );
     const el = byTestId('t-shuffle');
     expect(el.getAttribute('aria-pressed')).toBe('true');
     const accent = resolveMediaControlsPaint(theme).accent;
@@ -152,7 +156,15 @@ describe('TransportControls', () => {
     act(() => el.click());
     expect(onShuffleChange).toHaveBeenCalledWith(false);
 
-    mount(<TransportControls playing={false} onPlayPause={noop} shuffle={false} onShuffleChange={noop} testID="t" />);
+    mount(
+      <TransportControls
+        playing={false}
+        onPlayPause={noop}
+        shuffle={false}
+        onShuffleChange={noop}
+        testID="t"
+      />,
+    );
     expect(byTestId('t-shuffle').getAttribute('aria-pressed')).toBe('false');
     expect(queryTestId('t-shuffle-dot')).toBeNull();
   });
@@ -184,12 +196,24 @@ describe('TransportControls', () => {
   it('disables previous without a handler or with previousDisabled', () => {
     mount(<TransportControls playing={false} onPlayPause={noop} onNext={noop} testID="t" />);
     expect(byTestId('t-previous').getAttribute('aria-disabled')).toBe('true');
-    mount(<TransportControls playing={false} onPlayPause={noop} onPrevious={noop} previousDisabled testID="t" />);
+    mount(
+      <TransportControls
+        playing={false}
+        onPlayPause={noop}
+        onPrevious={noop}
+        previousDisabled
+        testID="t"
+      />,
+    );
     expect(byTestId('t-previous').getAttribute('aria-disabled')).toBe('true');
   });
 
   it('draws the play button at 32 / 48 / 56 for compact / regular / large', () => {
-    for (const [size, px] of [['sm', 32], ['md', 48], ['lg', 56]] as const) {
+    for (const [size, px] of [
+      ['sm', 32],
+      ['md', 48],
+      ['lg', 56],
+    ] as const) {
       mount(<TransportControls size={size} playing={false} onPlayPause={noop} testID="t" />);
       expect(byTestId('t-play').style.width).toBe(`${px}px`);
     }
@@ -230,7 +254,11 @@ describe('TransportControls', () => {
 
 describe('PlaybackSpeedMenu rows', () => {
   function renderRows(ui: React.ReactElement) {
-    mount(<MenuSurfaceProvider value={{ close: jest.fn(), presentation: 'dropdown' }}>{ui}</MenuSurfaceProvider>);
+    mount(
+      <MenuSurfaceProvider value={{ close: jest.fn(), presentation: 'dropdown' }}>
+        {ui}
+      </MenuSurfaceProvider>,
+    );
   }
 
   it('marks the current rate checked and reports a pressed rate as a number', () => {
@@ -253,7 +281,11 @@ describe('PlaybackSpeedMenu rows', () => {
 
 describe('SleepTimerMenu rows', () => {
   function renderRows(ui: React.ReactElement) {
-    mount(<MenuSurfaceProvider value={{ close: jest.fn(), presentation: 'dropdown' }}>{ui}</MenuSurfaceProvider>);
+    mount(
+      <MenuSurfaceProvider value={{ close: jest.fn(), presentation: 'dropdown' }}>
+        {ui}
+      </MenuSurfaceProvider>,
+    );
   }
 
   it('offers Off, the minutes and the end, checks the current value and reports the choice', () => {
@@ -276,14 +308,18 @@ describe('SleepTimerMenu rows', () => {
   });
 
   it('round-trips values through menu keys', () => {
-    for (const v of ['off', 'end', 5, 60] as const) expect(parseSleepTimerKey(sleepTimerKey(v))).toBe(v);
+    for (const v of ['off', 'end', 5, 60] as const)
+      expect(parseSleepTimerKey(sleepTimerKey(v))).toBe(v);
     expect(parseSleepTimerKey('garbage')).toBe('off');
   });
 });
 
 const TRACK = {
   title: 'Glass Harbour Lights',
-  artists: [{ id: 'a', name: 'Marlow Vance' }, { id: 'b', name: 'The Tessel Choir' }],
+  artists: [
+    { id: 'a', name: 'Marlow Vance' },
+    { id: 'b', name: 'The Tessel Choir' },
+  ],
 };
 
 describe('NowPlayingBar', () => {
@@ -330,11 +366,15 @@ describe('NowPlayingBar', () => {
     expect(onQueueChange).toHaveBeenCalledWith(true);
 
     // The device button is lit while casting and says where.
-    expect(byTestId('bar-devices').getAttribute('aria-label')).toBe('Connect to a device, Living Room Speaker');
+    expect(byTestId('bar-devices').getAttribute('aria-label')).toBe(
+      'Connect to a device, Living Room Speaker',
+    );
     expect(queryTestId('bar-devices-dot')).not.toBeNull();
 
     // The compact transport and the play button's subject.
-    expect(byTestId('bar-transport-play').getAttribute('aria-label')).toBe('Play Glass Harbour Lights');
+    expect(byTestId('bar-transport-play').getAttribute('aria-label')).toBe(
+      'Play Glass Harbour Lights',
+    );
     expect(byTestId('bar-progress')).toBeTruthy();
 
     // Artist credits are links reporting the credit and its index.
@@ -365,8 +405,12 @@ describe('artwork tint contrast', () => {
     for (const pale of ['#FFFFFF', '#F4E3A1', '#9FE3C5', '#FF7A59']) {
       const tint = resolveArtworkTint(pale, '#fafafa', '#a3a3a3');
       expect(tint.darkened).toBeGreaterThan(0);
-      expect(contrastRatio(tint.background as string, '#fafafa')).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
-      expect(contrastRatio(tint.background as string, '#a3a3a3')).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+      expect(contrastRatio(tint.background as string, '#fafafa')).toBeGreaterThanOrEqual(
+        AA_TEXT_CONTRAST,
+      );
+      expect(contrastRatio(tint.background as string, '#a3a3a3')).toBeGreaterThanOrEqual(
+        AA_TEXT_CONTRAST,
+      );
       // …and stops at the FIRST step that holds, rather than going to black.
       const lighter = darken(pale, tint.darkened - 0.05) as string;
       expect(
@@ -391,7 +435,10 @@ describe('MiniPlayer', () => {
     );
     const surface = resolveMiniPlayerSurface(theme, 'teal', '#F4E3A1');
     expect(surface.tinted).toBe(true);
-    const materialFill = resolveSurfaceMaterial({ fill: surface.background, parentFill: theme.colors.background }).publishedFill;
+    const materialFill = resolveSurfaceMaterial({
+      fill: surface.background,
+      parentFill: theme.colors.background,
+    }).publishedFill;
     expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(materialFill);
     const dark = immersiveDarkTheme(theme, 'teal');
     const darkText = resolveMediaControlsPaint(dark).text;
@@ -404,9 +451,14 @@ describe('MiniPlayer', () => {
   });
 
   it('falls back to the floating surface under the app theme without a colour', () => {
-    mount(<MiniPlayer track={TRACK} playing onPlayPause={noop} position={0} duration={0} testID="m" />);
+    mount(
+      <MiniPlayer track={TRACK} playing onPlayPause={noop} position={0} duration={0} testID="m" />,
+    );
     const menu = resolveMenuPalette(theme);
-    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background }).publishedFill);
+    expect(byTestId('m').style.getPropertyValue('--bloom-surface')).toBe(
+      resolveSurfaceMaterial({ fill: theme.colors.card, parentFill: theme.colors.background })
+        .publishedFill,
+    );
     expect(byTestId('m-progress-fill').style.width).toBe('0%');
   });
 
@@ -428,7 +480,9 @@ describe('MiniPlayer', () => {
       />,
     );
     const open = byTestId('m-open');
-    expect(open.getAttribute('aria-label')).toBe('Open player: Glass Harbour Lights, Marlow Vance, The Tessel Choir');
+    expect(open.getAttribute('aria-label')).toBe(
+      'Open player: Glass Harbour Lights, Marlow Vance, The Tessel Choir',
+    );
     expect(open.contains(byTestId('m-like'))).toBe(false);
     expect(open.textContent).toContain('Den TV');
     expect(byTestId('m-device')).toBeTruthy();
@@ -482,7 +536,9 @@ describe('FullScreenPlayer', () => {
     const light = buildTheme('teal', 'light');
     const branded = { ...light, colors: { ...light.colors, primary: '#E0457B' } };
     expect(immersiveDarkTheme(branded, 'teal').colors.primary).toBe('#E0457B');
-    expect(immersiveDarkTheme(light, 'teal').colors.primary).toBe(buildTheme('teal', 'dark').colors.primary);
+    expect(immersiveDarkTheme(light, 'teal').colors.primary).toBe(
+      buildTheme('teal', 'dark').colors.primary,
+    );
   });
 });
 
@@ -497,7 +553,15 @@ describe('DevicePicker', () => {
   it('shows the current device as a non-button and every other device as a named button', () => {
     const onSelect = jest.fn();
     const onHelpPress = jest.fn();
-    mount(<DevicePicker current={current} devices={devices} onSelect={onSelect} onHelpPress={onHelpPress} testID="d" />);
+    mount(
+      <DevicePicker
+        current={current}
+        devices={devices}
+        onSelect={onSelect}
+        onHelpPress={onHelpPress}
+        testID="d"
+      />,
+    );
     const cur = byTestId('d-current');
     expect(cur.getAttribute('role')).toBeNull();
     expect(cur.textContent).toContain('Listening on');

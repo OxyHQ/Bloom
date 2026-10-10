@@ -69,33 +69,14 @@ export interface AgentCreatorMessages {
     string
   >;
   shapes: Record<
-    | 'slender'
-    | 'pocket'
-    | 'petal'
-    | 'flower'
-    | 'star'
-    | 'heart'
-    | 'cloud'
-    | 'diamond'
-    | 'shield',
+    'slender' | 'pocket' | 'petal' | 'flower' | 'star' | 'heart' | 'cloud' | 'diamond' | 'shield',
     string
   >;
   colors: Record<
-    | 'Blue'
-    | 'Teal'
-    | 'Violet'
-    | 'Pink'
-    | 'Red'
-    | 'Orange'
-    | 'Cyan'
-    | 'Lime'
-    | 'Green',
+    'Blue' | 'Teal' | 'Violet' | 'Pink' | 'Red' | 'Orange' | 'Cyan' | 'Lime' | 'Green',
     string
   >;
-  languages: Record<
-    'auto' | 'en' | 'tr' | 'es' | 'fr' | 'de' | 'ja' | 'pt',
-    string
-  >;
+  languages: Record<'auto' | 'en' | 'tr' | 'es' | 'fr' | 'de' | 'ja' | 'pt', string>;
   avatarColorLabel: (name: string) => string;
   shapeLabel: (name: string) => string;
   silhouetteLabel: (name: string) => string;
@@ -206,12 +187,8 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     avatarColorLabel: (name) => '{name} avatar'.replace('{name}', name),
     shapeLabel: (name) => '{name} shape'.replace('{name}', name),
     silhouetteLabel: (name) => '{name} silhouette'.replace('{name}', name),
-    livePreview: (name) =>
-      '{name}, live avatar preview'.replace('{name}', name),
+    livePreview: (name) => '{name}, live avatar preview'.replace('{name}', name),
     saturationBrightnessValue: (s, v) =>
-      'saturation {s}%, brightness {v}%'
-        .replace('{s}', String(s))
-        .replace('{v}', String(v)),
-    playbackSpeedLabel: (speed) =>
-      '{speed} times playback speed'.replace('{speed}', String(speed)),
+      'saturation {s}%, brightness {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
+    playbackSpeedLabel: (speed) => '{speed} times playback speed'.replace('{speed}', String(speed)),
   });

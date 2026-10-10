@@ -12,4 +12,8 @@ export interface MediaShelfMessages {
   showAll: string;
 }
 
-export const MEDIA_SHELF_MESSAGES: MessageCatalog<MediaShelfMessages> = defineMessages<MediaShelfMessages>('MEDIA_SHELF_MESSAGES', { filters: 'Filters', showAll: 'Show all' });
+export const MEDIA_SHELF_MESSAGES: MessageCatalog<MediaShelfMessages> =
+  defineMessages<MediaShelfMessages>('MEDIA_SHELF_MESSAGES', {
+    filters: 'Filters',
+    showAll: 'Show all',
+  });

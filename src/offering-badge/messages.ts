@@ -9,4 +9,12 @@ export interface OfferingBadgeMessages {
   offerings: Record<Offering, string>;
 }
 
-export const OFFERING_BADGE_MESSAGES: MessageCatalog<OfferingBadgeMessages> = defineMessages<OfferingBadgeMessages>('OFFERING_BADGE_MESSAGES', { offerings: { long_term_rent: 'For rent', sale: 'For sale', short_term_rent: 'Vacation rental', exchange: 'Swap' } });
+export const OFFERING_BADGE_MESSAGES: MessageCatalog<OfferingBadgeMessages> =
+  defineMessages<OfferingBadgeMessages>('OFFERING_BADGE_MESSAGES', {
+    offerings: {
+      long_term_rent: 'For rent',
+      sale: 'For sale',
+      short_term_rent: 'Vacation rental',
+      exchange: 'Swap',
+    },
+  });

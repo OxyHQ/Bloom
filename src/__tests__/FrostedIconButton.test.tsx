@@ -6,11 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { resolveFrostedSize } from '../frosted-icon-button/shared';
 import { pressHost } from './support/press-host';
-import {
-  classNamesOn,
-  renderedChildren,
-  resolvedStyle,
-} from './support/rendered-style';
+import { classNamesOn, renderedChildren, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -28,7 +24,10 @@ function MockIcon({ fill, testID }: { fill?: string; testID?: string }) {
 describe('FrostedIconButton (native)', () => {
   it('renders its icon content', () => {
     const { getByText } = renderWithTheme(
-      <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <Text {...iconProps}>x</Text>} />,
+      <FrostedIconButton
+        accessibilityLabel="Back"
+        icon={(iconProps) => <Text {...iconProps}>x</Text>}
+      />,
     );
     expect(getByText('x')).toBeTruthy();
   });
@@ -36,7 +35,12 @@ describe('FrostedIconButton (native)', () => {
   it('calls onPress when pressed', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton testID="btn" accessibilityLabel="Back" onPress={onPress} icon={(iconProps) => <Text {...iconProps}>x</Text>} />,
+      <FrostedIconButton
+        testID="btn"
+        accessibilityLabel="Back"
+        onPress={onPress}
+        icon={(iconProps) => <Text {...iconProps}>x</Text>}
+      />,
     );
     // Through `pressHost`: a bare `fireEvent.press` walks up past the button to
     // `<FrostedIconButton onPress={…}>` in this file's own JSX, so the call it
@@ -48,7 +52,13 @@ describe('FrostedIconButton (native)', () => {
   it('marks the disabled a11y state and drops the press handler', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton testID="btn" disabled accessibilityLabel="Back" onPress={onPress} icon={(iconProps) => <Text {...iconProps}>x</Text>} />,
+      <FrostedIconButton
+        testID="btn"
+        disabled
+        accessibilityLabel="Back"
+        onPress={onPress}
+        icon={(iconProps) => <Text {...iconProps}>x</Text>}
+      />,
     );
     const btn = getByTestId('btn');
     expect(btn.props.accessibilityState).toMatchObject({ disabled: true, selected: false });
@@ -57,14 +67,25 @@ describe('FrostedIconButton (native)', () => {
 
   it('reports the selected a11y state when active', () => {
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton testID="btn" checked accessibilityLabel="Mute" icon={(iconProps) => <Text {...iconProps}>x</Text>} />,
+      <FrostedIconButton
+        testID="btn"
+        checked
+        accessibilityLabel="Mute"
+        icon={(iconProps) => <Text {...iconProps}>x</Text>}
+      />,
     );
-    expect(getByTestId('btn').props.accessibilityState).toMatchObject({ disabled: false, selected: true });
+    expect(getByTestId('btn').props.accessibilityState).toMatchObject({
+      disabled: false,
+      selected: true,
+    });
   });
 
   it('injects the theme icon color as a fallback fill on a bare icon', () => {
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <MockIcon {...iconProps} testID="ic" />} />,
+      <FrostedIconButton
+        accessibilityLabel="Back"
+        icon={(iconProps) => <MockIcon {...iconProps} testID="ic" />}
+      />,
     );
     // Frosted (rest) icon color === foreground token.
     expect(getByTestId('ic').props.fill).toMatch(/^rgb/);
@@ -72,19 +93,32 @@ describe('FrostedIconButton (native)', () => {
 
   it('never overrides an explicit fill on the icon', () => {
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <MockIcon {...iconProps} testID="ic" fill="rgb(1, 2, 3)" />} />,
+      <FrostedIconButton
+        accessibilityLabel="Back"
+        icon={(iconProps) => <MockIcon {...iconProps} testID="ic" fill="rgb(1, 2, 3)" />}
+      />,
     );
     expect(getByTestId('ic').props.fill).toBe('rgb(1, 2, 3)');
   });
 
   it('resolves preset sizes to concrete geometry (md=36, sm=32)', () => {
     const { getByTestId, rerender } = renderWithTheme(
-      <FrostedIconButton testID="btn" size="md" accessibilityLabel="Back" icon={(iconProps) => <Text {...iconProps}>x</Text>} />,
+      <FrostedIconButton
+        testID="btn"
+        size="md"
+        accessibilityLabel="Back"
+        icon={(iconProps) => <Text {...iconProps}>x</Text>}
+      />,
     );
     expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(36);
     rerender(
       <BloomThemeProvider mode="dark" colorPreset="blue">
-        <FrostedIconButton testID="btn" size="sm" accessibilityLabel="Back" icon={(iconProps) => <Text {...iconProps}>x</Text>} />
+        <FrostedIconButton
+          testID="btn"
+          size="sm"
+          accessibilityLabel="Back"
+          icon={(iconProps) => <Text {...iconProps}>x</Text>}
+        />
       </BloomThemeProvider>,
     );
     expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(32);
@@ -111,7 +145,11 @@ describe('layout: the button IS the node its parent lays out', () => {
   it('renders the pressable as its outermost node — no wrapper in between', () => {
     const { toJSON } = renderWithTheme(
       <View testID="host">
-        <FrostedIconButton testID="fib" accessibilityLabel="Back" icon={(iconProps) => <Text {...iconProps}>x</Text>} />
+        <FrostedIconButton
+          testID="fib"
+          accessibilityLabel="Back"
+          icon={(iconProps) => <Text {...iconProps}>x</Text>}
+        />
       </View>,
     );
     const rendered = renderedChildren(toJSON(), 'host');

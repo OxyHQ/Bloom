@@ -364,7 +364,8 @@ describe('the move primitive', () => {
         },
       });
       try {
-        const fresh = require('../media-flight/media-node.web') as typeof import('../media-flight/media-node.web');
+        const fresh =
+          require('../media-flight/media-node.web') as typeof import('../media-flight/media-node.web');
         const first = document.createElement('div');
         const second = document.createElement('div');
         document.body.append(first, second);
@@ -399,9 +400,7 @@ describe('a host that paints its own video keeps the same node too', () => {
         'data-detached': props.player == null ? 'yes' : 'no',
       });
 
-    const origin = mount(
-      createElement(MediaFlightHost, { id: 'v5', content: VIDEO, renderVideo }),
-    );
+    const origin = mount(createElement(MediaFlightHost, { id: 'v5', content: VIDEO, renderVideo }));
     const atOrigin = theMediaElement();
     expect(atOrigin.dataset.consumer).toBe('yes');
 
@@ -445,7 +444,17 @@ describe('a slot that forgets Bloom’s sizing style is reported', () => {
       // jsdom lays nothing out, so every rect is zero and the check would exit
       // early on both arms. These are the numbers a browser would report.
       el.getBoundingClientRect = () =>
-        ({ width, height, x: 0, y: 0, top: 0, left: 0, right: width, bottom: height, toJSON: () => ({}) }) as DOMRect;
+        ({
+          width,
+          height,
+          x: 0,
+          y: 0,
+          top: 0,
+          left: 0,
+          right: width,
+          bottom: height,
+          toJSON: () => ({}),
+        }) as DOMRect;
     };
     const paint = (id: string, mediaWidth: number, mediaHeight: number) => {
       const host = mount(

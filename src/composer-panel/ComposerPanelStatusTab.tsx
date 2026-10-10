@@ -7,7 +7,13 @@ import { RiGitMergeLine } from '../icons/remix/RiGitMergeLine';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
-import { resolveComposerPalette, TAB_HEIGHT, TAB_INSET, TAB_RADIUS, type ComposerPalette } from './shared';
+import {
+  resolveComposerPalette,
+  TAB_HEIGHT,
+  TAB_INSET,
+  TAB_RADIUS,
+  type ComposerPalette,
+} from './shared';
 import { COMPOSER_PANEL_MESSAGES } from './messages';
 import type { ComposerPanelStatusTabProps } from './types';
 
@@ -33,11 +39,25 @@ export function ContextRing({ pct, palette }: { pct: number; palette: ComposerPa
   );
 }
 
-function StatusItem({ icon, label, palette }: { icon: React.ReactNode; label: string; palette: ComposerPalette }) {
+function StatusItem({
+  icon,
+  label,
+  palette,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  palette: ComposerPalette;
+}) {
   return (
-    <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+    <View
+      style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}
+    >
       {icon}
-      <Text variant="body-2-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.textSecondary }}>
+      <Text
+        variant="body-2-medium"
+        numberOfLines={1}
+        style={{ flexShrink: 1, color: palette.textSecondary }}
+      >
         {label}
       </Text>
     </View>
@@ -50,7 +70,13 @@ function StatusItem({ icon, label, palette }: { icon: React.ReactNode; label: st
  * px 8 / py 4. Branch (mirrored merge glyph) and project folder on the left, 12
  * apart; the context meter on the right (py 4, pl 6 / pr 8, gap 4).
  */
-function ComposerPanelStatusTabComponent({ branch, project, context, style, testID }: ComposerPanelStatusTabProps) {
+function ComposerPanelStatusTabComponent({
+  branch,
+  project,
+  context,
+  style,
+  testID,
+}: ComposerPanelStatusTabProps) {
   const theme = useTheme();
   const palette = useMemo(() => resolveComposerPalette(theme), [theme]);
   const { messages } = useMessages(COMPOSER_PANEL_MESSAGES);
@@ -75,8 +101,11 @@ function ComposerPanelStatusTabComponent({ branch, project, context, style, test
           paddingBottom: 4,
         },
         style,
-      ]}>
-      <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      ]}
+    >
+      <View
+        style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }}
+      >
         {branch != null ? (
           <StatusItem
             palette={palette}
@@ -109,7 +138,8 @@ function ComposerPanelStatusTabComponent({ branch, project, context, style, test
             paddingBottom: 4,
             paddingLeft: 6,
             paddingRight: 8,
-          }}>
+          }}
+        >
           <ContextRing pct={context} palette={palette} />
           <Text variant="body-2-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
             {`${context}%`}

@@ -83,7 +83,9 @@ describe('pointerEvents style-object form', () => {
       // The value may sit behind a ternary on the next line, so allow a bounded
       // gap — but never one that crosses into a JSX prop (`pointerEvents=`) or
       // the next element (`<`), which is what turns this into a false positive.
-      for (const match of code.matchAll(/pointerEvents:(?:(?!pointerEvents=|<)[\s\S]){0,160}?['"](box-none|box-only)['"]/g)) {
+      for (const match of code.matchAll(
+        /pointerEvents:(?:(?!pointerEvents=|<)[\s\S]){0,160}?['"](box-none|box-only)['"]/g,
+      )) {
         const line = code.slice(0, match.index).split('\n').length;
         offenders.push(`${file.slice(SRC.length + 1)}:~${line}  ${match[0].replace(/\s+/g, ' ')}`);
       }

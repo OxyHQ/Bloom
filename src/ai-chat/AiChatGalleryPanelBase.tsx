@@ -36,7 +36,13 @@ import {
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
-import type { AiChatGalleryPanelLabels, AiChatGalleryPanelProps, AiChatGeneration, AiChatPanelAction, AiChatPanelTab } from './types';
+import type {
+  AiChatGalleryPanelLabels,
+  AiChatGalleryPanelProps,
+  AiChatGeneration,
+  AiChatPanelAction,
+  AiChatPanelTab,
+} from './types';
 
 const EASE_QUINT = Easing.bezier(0.22, 1, 0.36, 1);
 const EASE_QUINT_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -54,7 +60,9 @@ function galleryPanelActions(messages: AiChatMessages): ReadonlyArray<AiChatPane
 }
 
 /** The English actions; the panel's own default follows the locale. */
-export const DEFAULT_GALLERY_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = galleryPanelActions(AI_CHAT_MESSAGES.en);
+export const DEFAULT_GALLERY_PANEL_ACTIONS: ReadonlyArray<AiChatPanelAction> = galleryPanelActions(
+  AI_CHAT_MESSAGES.en,
+);
 
 /**
  * An optical correction: `RiGalleryLine` is a dense filled rectangle, so
@@ -72,7 +80,10 @@ type Placed = AiChatGeneration & { order: number };
  * offset (ties left to right) — a top-left → bottom-right sweep rather than
  * column 1 top to bottom first.
  */
-export function distributeGenerations(items: ReadonlyArray<AiChatGeneration>, columnCount: number): Placed[][] {
+export function distributeGenerations(
+  items: ReadonlyArray<AiChatGeneration>,
+  columnCount: number,
+): Placed[][] {
   const columns: Placed[][] = Array.from({ length: columnCount }, () => []);
   const heights = new Array<number>(columnCount).fill(0);
   const placed: { item: AiChatGeneration; column: number; top: number }[] = [];
@@ -85,7 +96,8 @@ export function distributeGenerations(items: ReadonlyArray<AiChatGeneration>, co
   [...placed]
     .sort((a, b) => a.top - b.top || a.column - b.column)
     .forEach((entry, index) => order.set(entry.item.id, index));
-  for (const entry of placed) columns[entry.column]!.push({ ...entry.item, order: order.get(entry.item.id) ?? 0 });
+  for (const entry of placed)
+    columns[entry.column]!.push({ ...entry.item, order: order.get(entry.item.id) ?? 0 });
   return columns;
 }
 
@@ -104,7 +116,17 @@ function Scrim({ palette, expanded }: { palette: AiChatPalette; expanded: boolea
     return <View pointerEvents="none" style={style} />;
   }
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: expanded ? 1 : 1 }}>
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: expanded ? 1 : 1,
+      }}
+    >
       <Svg width="100%" height="100%">
         <Defs>
           <LinearGradient id="bloom-ai-chat-scrim" x1="0" y1="0" x2="0" y2="1">
@@ -150,7 +172,8 @@ function ScrimAction({
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      style={style}>
+      style={style}
+    >
       <Icon width={14} height={14} fill="#ffffff" />
     </Pressable>
   );
@@ -237,13 +260,22 @@ function GenerationTile({
       {...dataHook('bloomAiChatTile', expanded ? '' : 'lift')}
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
-      style={{ position: 'relative', zIndex: expanded || flying ? 30 : undefined }}>
+      style={{ position: 'relative', zIndex: expanded || flying ? 30 : undefined }}
+    >
       <Animated.View style={[{ overflow: 'hidden', borderRadius: ROW_RADIUS }, entrance]}>
-        <View style={{ position: 'relative', width: '100%', aspectRatio: generation.aspectRatio, backgroundColor: palette.secondary }}>
+        <View
+          style={{
+            position: 'relative',
+            width: '100%',
+            aspectRatio: generation.aspectRatio,
+            backgroundColor: palette.secondary,
+          }}
+        >
           {generation.source ? (
             <View
               {...dataHook('bloomAiChatTileImage')}
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            >
               <Image
                 source={generation.source}
                 accessibilityLabel={generation.prompt}
@@ -280,11 +312,20 @@ function GenerationTile({
               justifyContent: 'space-between',
               padding: expanded ? 10 : 6,
               ...(scrimShown === undefined ? null : { opacity: scrimShown || hovered ? 1 : 0 }),
-            }}>
+            }}
+          >
             <Scrim palette={palette} expanded={expanded} />
-            <View pointerEvents="box-none" style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 4 }}>
+            <View
+              pointerEvents="box-none"
+              style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 4 }}
+            >
               {expanded ? (
-                <ScrimAction label={labels.minimize(generation.prompt)} icon={RiCollapseDiagonalLine} onPress={onToggle} palette={palette} />
+                <ScrimAction
+                  label={labels.minimize(generation.prompt)}
+                  icon={RiCollapseDiagonalLine}
+                  onPress={onToggle}
+                  palette={palette}
+                />
               ) : null}
               {onDownload ? (
                 <ScrimAction
@@ -307,7 +348,8 @@ function GenerationTile({
               variant={expanded ? 'body-medium' : 'body-2-regular'}
               numberOfLines={expanded ? undefined : 2}
               pointerEvents="none"
-              style={{ paddingLeft: 2, paddingRight: 2, color: '#ffffff' }}>
+              style={{ paddingLeft: 2, paddingRight: 2, color: '#ffffff' }}
+            >
               {generation.prompt}
             </Text>
           </View>
@@ -358,12 +400,13 @@ export function AiChatGalleryPanelBase({
   const { messages } = useMessages(AI_CHAT_MESSAGES);
   const common = useCommonMessages();
   const l = useMemo<Labels>(
-    () => ({
-      tabs: messages.panelView,
-      more: (prompt: string) => common.labelFor(common.moreActions, prompt),
-      ...messages.galleryPanel,
-      ...labels,
-    } as Labels),
+    () =>
+      ({
+        tabs: messages.panelView,
+        more: (prompt: string) => common.labelFor(common.moreActions, prompt),
+        ...messages.galleryPanel,
+        ...labels,
+      }) as Labels,
     [messages, common, labels],
   );
   const defaultActions = useMemo(() => galleryPanelActions(messages), [messages]);
@@ -377,7 +420,9 @@ export function AiChatGalleryPanelBase({
   const columns = useMemo(() => {
     const base = distributeGenerations(generations, columnCount);
     if (!generated?.length) return base;
-    return base.map((column, index) => (index === 0 ? [...generated.map((g) => ({ ...g, order: 0 })), ...column] : column));
+    return base.map((column, index) =>
+      index === 0 ? [...generated.map((g) => ({ ...g, order: 0 })), ...column] : column,
+    );
   }, [generations, generated, columnCount]);
   const generatedIds = useMemo(() => new Set((generated ?? []).map((g) => g.id)), [generated]);
 
@@ -387,7 +432,8 @@ export function AiChatGalleryPanelBase({
     [columns, expandedId],
   );
   const visibleColumns = useMemo(
-    () => (expandedId ? columns.map((column) => column.filter((g) => g.id !== expandedId)) : columns),
+    () =>
+      expandedId ? columns.map((column) => column.filter((g) => g.id !== expandedId)) : columns,
     [columns, expandedId],
   );
   const [toggled, setToggled] = useState<ReadonlySet<string>>(new Set());
@@ -454,7 +500,10 @@ export function AiChatGalleryPanelBase({
         timing,
       ).onfinish = settle;
       // Hold the corner at 10px while the box scales.
-      clip?.animate([{ borderRadius: `${ROW_RADIUS / scale}px` }, { borderRadius: `${ROW_RADIUS}px` }], timing);
+      clip?.animate(
+        [{ borderRadius: `${ROW_RADIUS / scale}px` }, { borderRadius: `${ROW_RADIUS}px` }],
+        timing,
+      );
     });
     boxes.current = next;
   }, [layoutKey]);
@@ -470,7 +519,11 @@ export function AiChatGalleryPanelBase({
       const element = node as HTMLElement;
       if (typeof element.getBoundingClientRect !== 'function') return;
       const rect = element.getBoundingClientRect();
-      boxes.current.set(id, { left: rect.left - origin.left, top: rect.top - origin.top, width: rect.width });
+      boxes.current.set(id, {
+        left: rect.left - origin.left,
+        top: rect.top - origin.top,
+        width: rect.width,
+      });
     });
   }, []);
 
@@ -516,8 +569,14 @@ export function AiChatGalleryPanelBase({
           paddingTop: 8,
         },
         style,
-      ]}>
-      <PanelHeader tabs={tabs} value={shown} onValueChange={(next) => setCurrent(next as 'gallery' | 'styles')} label={l.tabs}>
+      ]}
+    >
+      <PanelHeader
+        tabs={tabs}
+        value={shown}
+        onValueChange={(next) => setCurrent(next as 'gallery' | 'styles')}
+        label={l.tabs}
+      >
         {actions.map((action) => (
           <SurfaceAction
             key={action.key}
@@ -537,12 +596,20 @@ export function AiChatGalleryPanelBase({
         <ScrollView
           ref={scrollRef}
           {...dataHook('bloomAiChatScroll', 'thin')}
-          style={{ minHeight: 0, width: '100%', flex: 1 }}>
-          <View ref={contentRef} onLayout={rebaseline} style={{ flexDirection: 'column', gap: GAP }}>
+          style={{ minHeight: 0, width: '100%', flex: 1 }}
+        >
+          <View
+            ref={contentRef}
+            onLayout={rebaseline}
+            style={{ flexDirection: 'column', gap: GAP }}
+          >
             {expanded ? renderTile(expanded, true) : null}
             <View style={{ flexDirection: 'row', gap: GAP }}>
               {visibleColumns.map((column, index) => (
-                <View key={index} style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: GAP }}>
+                <View
+                  key={index}
+                  style={{ minWidth: 0, flex: 1, flexDirection: 'column', gap: GAP }}
+                >
                   {column.map((generation) => renderTile(generation, false))}
                 </View>
               ))}

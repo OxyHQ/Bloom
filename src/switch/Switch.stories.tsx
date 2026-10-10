@@ -24,12 +24,14 @@ export const Basic: Story = {
   parameters: { controls: { disable: true } },
   render: function BasicStory() {
     const [on, setOn] = useState(false);
-    return <Switch
+    return (
+      <Switch
         checked={on}
         onCheckedChange={setOn}
         accessibilityLabel="Airplane mode"
         testID="switch-basic"
-      />;
+      />
+    );
   },
 };
 
@@ -54,7 +56,12 @@ export const Disabled: Story = {
   render: () => (
     <View style={{ gap: 16, alignItems: 'flex-start' }}>
       <Switch checked onCheckedChange={() => {}} disabled accessibilityLabel="On, unavailable" />
-      <Switch checked={false} onCheckedChange={() => {}} disabled accessibilityLabel="Off, unavailable" />
+      <Switch
+        checked={false}
+        onCheckedChange={() => {}}
+        disabled
+        accessibilityLabel="Off, unavailable"
+      />
     </View>
   ),
 };
@@ -77,11 +84,7 @@ export const InARow: Story = {
         }}
       >
         <Text>Sync over cellular</Text>
-        <Switch
-          checked={on}
-          onCheckedChange={setOn}
-          accessibilityLabel="Sync over cellular"
-        />
+        <Switch checked={on} onCheckedChange={setOn} accessibilityLabel="Sync over cellular" />
       </View>
     );
   },
@@ -89,11 +92,35 @@ export const InARow: Story = {
 
 /** A single instance whose controls are applied directly to the rendered component. */
 export const Playground: StoryObj<typeof Switch> = {
-  args: { checked: false, disabled: false, size: 'md', tone: 'accent', accessibilityLabel: 'Airplane mode' },
-  parameters: { controls: { disable: false, include: ['checked', 'disabled', 'size', 'tone', 'accessibilityLabel'] } },
-  argTypes: { checked: { control: 'boolean' }, disabled: { control: 'boolean' }, size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] }, tone: { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] }, accessibilityLabel: { control: 'text' } },
+  args: {
+    checked: false,
+    disabled: false,
+    size: 'md',
+    tone: 'accent',
+    accessibilityLabel: 'Airplane mode',
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['checked', 'disabled', 'size', 'tone', 'accessibilityLabel'],
+    },
+  },
+  argTypes: {
+    checked: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'],
+    },
+    accessibilityLabel: { control: 'text' },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 440, maxWidth: '100%' }}><Switch {...args} onCheckedChange={next => updateArgs({ checked: next })} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <Switch {...args} onCheckedChange={(next) => updateArgs({ checked: next })} />
+      </View>
+    );
   },
 };

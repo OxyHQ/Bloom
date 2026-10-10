@@ -13,7 +13,10 @@ const meta: Meta<typeof OfferingBadge> = {
   component: OfferingBadge,
   args: { offering: 'long_term_rent', size: 'medium', variant: 'tinted' },
   argTypes: {
-    offering: { control: 'select', options: ['long_term_rent', 'sale', 'short_term_rent', 'exchange'] },
+    offering: {
+      control: 'select',
+      options: ['long_term_rent', 'sale', 'short_term_rent', 'exchange'],
+    },
     size: { control: 'inline-radio', options: ['small', 'medium'] },
     variant: { control: 'inline-radio', options: ['tinted', 'onMedia'] },
   },
@@ -45,7 +48,12 @@ function MatrixBody() {
       {(['medium', 'small'] as const).map((size) => (
         <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {OFFERINGS.map((offering) => (
-            <OfferingBadge key={offering} offering={offering} size={size} testID={`tinted-${size}-${offering}`} />
+            <OfferingBadge
+              key={offering}
+              offering={offering}
+              size={size}
+              testID={`tinted-${size}-${offering}`}
+            />
           ))}
         </View>
       ))}
@@ -61,7 +69,9 @@ function MatrixBody() {
         <OfferingBadge offering="short_term_rent" label="Weekly stays" size="small" />
       </View>
       <Caption>On media — medium · small</Caption>
-      <View style={{ width: 360, maxWidth: '100%', height: 200, borderRadius: 16, overflow: 'hidden' }}>
+      <View
+        style={{ width: 360, maxWidth: '100%', height: 200, borderRadius: 16, overflow: 'hidden' }}
+      >
         <Image
           source={{ uri: 'https://picsum.photos/seed/offering-badge/720/400' }}
           style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
@@ -69,7 +79,12 @@ function MatrixBody() {
         <View style={{ padding: 12, gap: 8 }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {OFFERINGS.map((offering) => (
-              <OfferingBadge key={offering} offering={offering} variant="onMedia" testID={`media-${offering}`} />
+              <OfferingBadge
+                key={offering}
+                offering={offering}
+                variant="onMedia"
+                testID={`media-${offering}`}
+              />
             ))}
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>

@@ -189,7 +189,16 @@ export const BesideTheReference: Story = {
   render: () => (
     <Page>
       <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 340, minWidth: 0, maxWidth: 400, gap: 12 }}>
+        <View
+          style={{
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: 340,
+            minWidth: 0,
+            maxWidth: 400,
+            gap: 12,
+          }}
+        >
           <Caption>Bloom reference — chart-cards / SleepScoreCard</Caption>
           <SleepScoreCard
             metrics={[
@@ -200,7 +209,16 @@ export const BesideTheReference: Story = {
             range="29 Jun - 5 Jul"
           />
         </View>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 340, minWidth: 0, maxWidth: 400, gap: 12 }}>
+        <View
+          style={{
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: 340,
+            minWidth: 0,
+            maxWidth: 400,
+            gap: 12,
+          }}
+        >
           <Caption>This family — lead-score / LeadScoreCard</Caption>
           <LeadScoreCard
             score={82}

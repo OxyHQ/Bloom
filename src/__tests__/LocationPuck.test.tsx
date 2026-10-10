@@ -143,7 +143,9 @@ describe('cone geometry', () => {
   });
 
   it('gives the chevron a notch, so it is not a triangle', () => {
-    const points = chevronPoints(34).split(' ').map((p) => p.split(',').map(Number));
+    const points = chevronPoints(34)
+      .split(' ')
+      .map((p) => p.split(',').map(Number));
     expect(points).toHaveLength(4);
     // tip at the top centre, base corners at the bottom, notch between them
     expect(points[0]).toEqual([17, 0]);
@@ -157,14 +159,17 @@ describe('cone geometry', () => {
 // ---------------------------------------------------------------------------
 
 describe('resolveLocationPuckPaint', () => {
-  it.each(['light', 'dark'] as const)('rings the live dot with that fill OWN on-colour (%s)', (mode) => {
-    const theme = buildTheme('teal', mode);
-    const paint = resolveLocationPuckPaint(theme);
-    const accent = resolveAccentColors(theme.colors, 'primary', 'solid');
-    expect(paint.dot).toBe(accent.background);
-    expect(paint.ring).toBe(accent.foreground);
-    expect(paint.ring).not.toBe(paint.dot);
-  });
+  it.each(['light', 'dark'] as const)(
+    'rings the live dot with that fill OWN on-colour (%s)',
+    (mode) => {
+      const theme = buildTheme('teal', mode);
+      const paint = resolveLocationPuckPaint(theme);
+      const accent = resolveAccentColors(theme.colors, 'primary', 'solid');
+      expect(paint.dot).toBe(accent.background);
+      expect(paint.ring).toBe(accent.foreground);
+      expect(paint.ring).not.toBe(paint.dot);
+    },
+  );
 
   it.each(['light', 'dark'] as const)('drops the accent for a stale fix (%s)', (mode) => {
     const paint = resolveLocationPuckPaint(buildTheme('teal', mode));
@@ -272,8 +277,12 @@ describe('the cone gradient', () => {
       expect(color).not.toMatch(/^#[0-9a-f]{8}$/i);
       expect(stop.getAttribute('stop-opacity')).not.toBeNull();
     }
-    expect(all[0]!.getAttribute('stop-opacity')).toBe(String(LOCATION_PUCK_CONE_STOPS.inner.opacity));
-    expect(all[1]!.getAttribute('stop-opacity')).toBe(String(LOCATION_PUCK_CONE_STOPS.outer.opacity));
+    expect(all[0]!.getAttribute('stop-opacity')).toBe(
+      String(LOCATION_PUCK_CONE_STOPS.inner.opacity),
+    );
+    expect(all[1]!.getAttribute('stop-opacity')).toBe(
+      String(LOCATION_PUCK_CONE_STOPS.outer.opacity),
+    );
   });
 
   it('fades to nothing at the far end, from the accent at the dot', () => {
@@ -365,14 +374,17 @@ describe('the dot', () => {
   const paintFor = (mode: 'light' | 'dark'): LocationPuckPaint =>
     resolveLocationPuckPaint(buildTheme('teal', mode));
 
-  it.each(['light', 'dark'] as const)('fills with the accent and rings it with its on-colour (%s)', (mode) => {
-    const style = dotStyle(<LocationPuck testID="p" />, mode);
-    const paint = paintFor(mode);
-    expect(style.backgroundColor).toBe(paint.dot);
-    expect(style.borderColor).toBe(paint.ring);
-    expect(style.borderWidth).toBe(LOCATION_PUCK_GEOMETRY.ring);
-    expect(style.width).toBe(LOCATION_PUCK_GEOMETRY.dot + LOCATION_PUCK_GEOMETRY.ring * 2);
-  });
+  it.each(['light', 'dark'] as const)(
+    'fills with the accent and rings it with its on-colour (%s)',
+    (mode) => {
+      const style = dotStyle(<LocationPuck testID="p" />, mode);
+      const paint = paintFor(mode);
+      expect(style.backgroundColor).toBe(paint.dot);
+      expect(style.borderColor).toBe(paint.ring);
+      expect(style.borderWidth).toBe(LOCATION_PUCK_GEOMETRY.ring);
+      expect(style.width).toBe(LOCATION_PUCK_GEOMETRY.dot + LOCATION_PUCK_GEOMETRY.ring * 2);
+    },
+  );
 
   it.each(['light', 'dark'] as const)('goes quiet when the fix is stale (%s)', (mode) => {
     const style = dotStyle(<LocationPuck state="stale" testID="p" />, mode);

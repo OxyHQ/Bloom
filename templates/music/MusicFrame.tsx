@@ -31,7 +31,13 @@ import { WEB_VIEWPORT_HEIGHT, type WebCssStyle } from '../../src/styles/web-view
 import { TabBar, TabBarButton, useTabBarFootprint } from '../../src/tab-bar';
 import { useTheme } from '../../src/theme/use-theme';
 import { DEVICES, LIBRARY, ME, PLAYLIST_BY_ID } from './data';
-import { FullPlayer, ImmersivePlayer, LiveLyrics, NowPlayingSide, playerTrack } from './NowPlayingPage';
+import {
+  FullPlayer,
+  ImmersivePlayer,
+  LiveLyrics,
+  NowPlayingSide,
+  playerTrack,
+} from './NowPlayingPage';
 import { useMusicLayout } from './parts';
 import { toQueueTrack, usePlayer, usePosition } from './PlayerContext';
 import { useMusicRouter, type MusicRoute } from './router';
@@ -78,7 +84,9 @@ export function MusicFrame(props: MusicFrameProps) {
 function routeForEntry(entry: LibraryEntry): MusicRoute | null {
   switch (entry.kind) {
     case 'playlist':
-      return entry.id === 'liked' || PLAYLIST_BY_ID[entry.id] ? { name: 'playlist', id: entry.id } : null;
+      return entry.id === 'liked' || PLAYLIST_BY_ID[entry.id]
+        ? { name: 'playlist', id: entry.id }
+        : null;
     case 'album':
       return { name: 'album', id: entry.id };
     case 'artist':
@@ -98,7 +106,11 @@ function routeEntryId(route: MusicRoute): string | undefined {
 //  Desktop
 // ---------------------------------------------------------------------------
 
-function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = false }: MusicFrameProps) {
+function DesktopFrame({
+  children,
+  initialSidePane,
+  initialDevicePickerOpen = false,
+}: MusicFrameProps) {
   const theme = useTheme();
   const router = useMusicRouter();
   const player = usePlayer();
@@ -145,36 +157,53 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
     <View testID="music-desktop" style={[FRAME, { backgroundColor: theme.colors.background }]}>
       {/* Top bar */}
       <View
-        style={{ height: 64, flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 16, paddingRight: 16 }}
+        style={{
+          height: 64,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          paddingLeft: 16,
+          paddingRight: 16,
+        }}
       >
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           <Button
-
             size="sm"
             iconOnly
             icon={RiArrowLeftSLine}
             accessibilityLabel="Go back"
             disabled={!router.canGoBack}
-            onPress={router.back} tone="accent" appearance="subtle"
+            onPress={router.back}
+            tone="accent"
+            appearance="subtle"
           />
           <Button
-
             size="sm"
             iconOnly
             icon={RiArrowRightSLine}
             accessibilityLabel="Go forward"
             disabled={!router.canGoForward}
-            onPress={router.forward} tone="accent" appearance="subtle"
+            onPress={router.forward}
+            tone="accent"
+            appearance="subtle"
           />
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, width: Math.min(560, width - 360) }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            width: Math.min(560, width - 360),
+          }}
+        >
           <Button
-
             size="lg"
             iconOnly
             icon={router.route.name === 'home' ? RiHome5Fill : RiHome5Line}
             accessibilityLabel="Home"
-            onPress={() => router.navigate({ name: 'home' })} tone="neutral" appearance="outline"
+            onPress={() => router.navigate({ name: 'home' })}
+            tone="neutral"
+            appearance="outline"
           />
           <SearchField
             testID="music-search-field"
@@ -190,8 +219,23 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
             style={{ flex: 1 }}
           />
         </View>
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <Button  size="sm" iconOnly icon={RiNotification3Line} accessibilityLabel="What’s new" tone="accent" appearance="subtle" />
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 8,
+          }}
+        >
+          <Button
+            size="sm"
+            iconOnly
+            icon={RiNotification3Line}
+            accessibilityLabel="What’s new"
+            tone="accent"
+            appearance="subtle"
+          />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`${ME.name}, profile`}
@@ -204,7 +248,16 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
       </View>
 
       {/* Panes */}
-      <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: 8, paddingLeft: 8, paddingRight: 8 }}>
+      <View
+        style={{
+          flex: 1,
+          minHeight: 0,
+          flexDirection: 'row',
+          gap: 8,
+          paddingLeft: 8,
+          paddingRight: 8,
+        }}
+      >
         <LibraryPanel
           testID="music-library"
           items={LIBRARY}
@@ -220,7 +273,10 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
           }}
           style={{ width: libraryCollapsed ? 72 : width >= 1536 ? 340 : 260, height: '100%' }}
         />
-        <View testID="music-page" style={{ flex: 1, minWidth: 0, minHeight: 0, borderRadius: 8, overflow: 'hidden' }}>
+        <View
+          testID="music-page"
+          style={{ flex: 1, minWidth: 0, minHeight: 0, borderRadius: 8, overflow: 'hidden' }}
+        >
           {children}
         </View>
         {showPane ? (
@@ -232,17 +288,21 @@ function DesktopFrame({ children, initialSidePane, initialDevicePickerOpen = fal
                 <LiveLyrics size="small" />
                 <View style={{ position: 'absolute', top: 8, right: 8 }}>
                   <Button
-
                     size="sm"
                     iconOnly
                     icon={RiCloseLine}
                     accessibilityLabel="Hide lyrics"
-                    onPress={() => closePane(false, 'lyrics')} tone="neutral" appearance="outline"
+                    onPress={() => closePane(false, 'lyrics')}
+                    tone="neutral"
+                    appearance="outline"
                   />
                 </View>
               </View>
             ) : (
-              <NowPlayingSide onClose={() => setPane(null)} onShowLyrics={() => setPane('lyrics')} />
+              <NowPlayingSide
+                onClose={() => setPane(null)}
+                onShowLyrics={() => setPane('lyrics')}
+              />
             )}
           </View>
         ) : null}
@@ -320,7 +380,9 @@ function PlayerBar({
         testID="music-now-playing-bar"
         track={playerTrack(item)}
         onTitlePress={() =>
-          router.navigate(episode ? { name: 'episode', id: item.id } : { name: 'album', id: item.parentId })
+          router.navigate(
+            episode ? { name: 'episode', id: item.id } : { name: 'album', id: item.parentId },
+          )
         }
         onArtistPress={(artist) => artist.id && router.navigate({ name: 'artist', id: artist.id })}
         liked={player.liked.has(item.id)}
@@ -406,7 +468,13 @@ const TABS = [
 ];
 
 function tabIndexOf(route: MusicRoute): number {
-  return route.name === 'home' ? 0 : route.name === 'search' ? 1 : route.name === 'library' ? 2 : -1;
+  return route.name === 'home'
+    ? 0
+    : route.name === 'search'
+      ? 1
+      : route.name === 'library'
+        ? 2
+        : -1;
 }
 
 function MobileFrame({ children }: MusicFrameProps) {
@@ -419,7 +487,10 @@ function MobileFrame({ children }: MusicFrameProps) {
   const queue = useDialogControl();
 
   return (
-    <GestureHandlerRootView testID="music-mobile" style={[FRAME, { backgroundColor: theme.colors.background }]}>
+    <GestureHandlerRootView
+      testID="music-mobile"
+      style={[FRAME, { backgroundColor: theme.colors.background }]}
+    >
       <View style={{ flex: 1, minHeight: 0 }}>{children}</View>
 
       {player.current ? (
@@ -430,7 +501,9 @@ function MobileFrame({ children }: MusicFrameProps) {
 
       <TabBar
         activeIndex={tabIndexOf(router.route)}
-        onIndexChange={(index) => router.navigate({ name: (['home', 'search', 'library'] as const)[index] ?? 'home' })}
+        onIndexChange={(index) =>
+          router.navigate({ name: (['home', 'search', 'library'] as const)[index] ?? 'home' })
+        }
       >
         {TABS.map((item, index) => (
           <TabBarButton key={item.name} item={item} index={index} />
@@ -438,7 +511,10 @@ function MobileFrame({ children }: MusicFrameProps) {
       </TabBar>
 
       {router.fullPlayerOpen && player.current ? (
-        <View testID="music-full-player-overlay" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+        <View
+          testID="music-full-player-overlay"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        >
           <FullPlayer
             onCollapse={() => router.setFullPlayerOpen(false)}
             onQueuePress={() => queue.open()}
@@ -453,12 +529,13 @@ function MobileFrame({ children }: MusicFrameProps) {
           <LiveLyrics size="medium" />
           <View style={{ position: 'absolute', top: 12, right: 12 }}>
             <Button
-
               size="sm"
               iconOnly
               icon={RiCloseLine}
               accessibilityLabel="Close lyrics"
-              onPress={() => setLyricsOpen(false)} tone="neutral" appearance="outline"
+              onPress={() => setLyricsOpen(false)}
+              tone="neutral"
+              appearance="outline"
             />
           </View>
         </View>

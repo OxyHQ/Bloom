@@ -65,14 +65,10 @@ export class DrawingPath {
           number,
         ];
         const angle = (degrees * Math.PI) / 180;
-        const ux =
-          rx * (matrix.a * Math.cos(angle) + matrix.c * Math.sin(angle));
-        const uy =
-          rx * (matrix.b * Math.cos(angle) + matrix.d * Math.sin(angle));
-        const vx =
-          ry * (-matrix.a * Math.sin(angle) + matrix.c * Math.cos(angle));
-        const vy =
-          ry * (-matrix.b * Math.sin(angle) + matrix.d * Math.cos(angle));
+        const ux = rx * (matrix.a * Math.cos(angle) + matrix.c * Math.sin(angle));
+        const uy = rx * (matrix.b * Math.cos(angle) + matrix.d * Math.sin(angle));
+        const vx = ry * (-matrix.a * Math.sin(angle) + matrix.c * Math.cos(angle));
+        const vy = ry * (-matrix.b * Math.sin(angle) + matrix.d * Math.cos(angle));
         const xx = ux * ux + vx * vx,
           yy = uy * uy + vy * vy,
           xy = ux * uy + vx * vy;
@@ -113,12 +109,8 @@ export class DrawingPath {
     if (!segments) return;
     const step = ((reverse ? -1 : 1) * span) / segments;
     const point = (angle: number): Point => [
-      x +
-        rx * Math.cos(angle) * Math.cos(rotation) -
-        ry * Math.sin(angle) * Math.sin(rotation),
-      y +
-        rx * Math.cos(angle) * Math.sin(rotation) +
-        ry * Math.sin(angle) * Math.cos(rotation),
+      x + rx * Math.cos(angle) * Math.cos(rotation) - ry * Math.sin(angle) * Math.sin(rotation),
+      y + rx * Math.cos(angle) * Math.sin(rotation) + ry * Math.sin(angle) * Math.cos(rotation),
     ];
     this.moveTo(...point(start));
     for (let i = 1; i <= segments; i++) {
@@ -265,9 +257,7 @@ export class DrawingContext implements DrawingState {
   createLinearGradient(...coordinates: [number, number, number, number]) {
     return new DrawingGradient('linear', coordinates, this.matrix);
   }
-  createRadialGradient(
-    ...coordinates: [number, number, number, number, number, number]
-  ) {
+  createRadialGradient(...coordinates: [number, number, number, number, number, number]) {
     return new DrawingGradient('radial', coordinates, this.matrix);
   }
   createPattern(_grain: unknown, _repeat: string): DrawingPaint {

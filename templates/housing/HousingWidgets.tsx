@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { Badge } from '../../src/badge';
-import { Button , LinkButton } from '../../src/button';
+import { Button, LinkButton } from '../../src/button';
 import { Card, CardBody, CardHeader, CardTitle } from '../../src/card';
 import { SavedSearchCard } from '../../src/home-search';
 import { RiAlarmWarningLine, RiArrowRightLine, RiMegaphoneLine } from '../../src/icons/remix';
@@ -31,8 +31,15 @@ function Widget({
   testID?: string;
 }) {
   return (
-    <Card  radius="radius-16" testID={testID} appearance="outline">
-      <CardHeader style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+    <Card radius="radius-16" testID={testID} appearance="outline">
+      <CardHeader
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
         <CardTitle numberOfLines={1}>{title}</CardTitle>
         {action}
       </CardHeader>
@@ -60,7 +67,7 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
       <Widget
         title="Saved searches"
         action={
-          <LinkButton  linkTone="secondary" size="sm" onPress={() => go('saved')}>
+          <LinkButton linkTone="secondary" size="sm" onPress={() => go('saved')}>
             See all
           </LinkButton>
         }
@@ -68,13 +75,22 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
       >
         <View style={{ gap: 12 }}>
           {SAVED_SEARCHES.slice(0, 2).map(({ id, ...search }) => (
-            <SavedSearchCard key={id} {...search} onPress={() => go('explore')} onEdit={noop} testID={`housing-widget-search-${id}`} />
+            <SavedSearchCard
+              key={id}
+              {...search}
+              onPress={() => go('explore')}
+              onEdit={noop}
+              testID={`housing-widget-search-${id}`}
+            />
           ))}
         </View>
       </Widget>
 
       <Widget title="What this area costs" testID="housing-widget-prices">
-        <PricePerAreaComparison rows={AREA_PRICES} accessibilityLabel="Price per square metre in Old Halden" />
+        <PricePerAreaComparison
+          rows={AREA_PRICES}
+          accessibilityLabel="Price per square metre in Old Halden"
+        />
       </Widget>
 
       <Widget title="What it is like to live here" testID="housing-widget-area">
@@ -88,19 +104,36 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
       >
         <View style={{ gap: 12 }}>
           {next.map((report) => (
-            <View key={report.id} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+            <View
+              key={report.id}
+              style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}
+            >
               <RiAlarmWarningLine width={18} height={18} fill={theme.colors.warning} />
               <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                <Text variant="body-2-semibold" numberOfLines={1} style={{ color: theme.colors.text }}>
+                <Text
+                  variant="body-2-semibold"
+                  numberOfLines={1}
+                  style={{ color: theme.colors.text }}
+                >
                   {report.area}
                 </Text>
-                <Text variant="body-2-regular" numberOfLines={1} style={{ color: theme.colors.textSecondary }}>
+                <Text
+                  variant="body-2-regular"
+                  numberOfLines={1}
+                  style={{ color: theme.colors.textSecondary }}
+                >
                   {report.date} · {report.relativeLabel}
                 </Text>
               </View>
             </View>
           ))}
-          <Button  size="sm" trailingIcon={RiArrowRightLine} onPress={() => go('evictions')} tone="neutral" appearance="outline">
+          <Button
+            size="sm"
+            trailingIcon={RiArrowRightLine}
+            onPress={() => go('evictions')}
+            tone="neutral"
+            appearance="outline"
+          >
             See the calendar
           </Button>
         </View>
@@ -109,9 +142,16 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
       <Widget title="Own a home?" testID="housing-widget-publish">
         <View style={{ gap: 12 }}>
           <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
-            Rent it, sell it, swap it or offer it for a season. Listing is free and takes about ten minutes.
+            Rent it, sell it, swap it or offer it for a season. Listing is free and takes about ten
+            minutes.
           </Text>
-          <Button  size="sm" leadingIcon={RiMegaphoneLine} onPress={() => go('publish')} tone="accent" appearance="solid">
+          <Button
+            size="sm"
+            leadingIcon={RiMegaphoneLine}
+            onPress={() => go('publish')}
+            tone="accent"
+            appearance="solid"
+          >
             List your home
           </Button>
         </View>

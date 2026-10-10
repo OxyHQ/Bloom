@@ -379,12 +379,11 @@ export interface AppShellNavigationProps {
   testID?: string;
 }
 
-
 /** Additive entry point: legacy layout variants and adaptive navigation share the same chrome. */
-export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> & AppShellNavigationProps & {
-  scroll?: AppShellScroll | 'auto' | 'external';
-};
-
+export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> &
+  AppShellNavigationProps & {
+    scroll?: AppShellScroll | 'auto' | 'external';
+  };
 
 /** A bounded list/detail/info layout, independent of navigation or surfaces. */
 export interface AppShellSplitPanesProps {

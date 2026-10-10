@@ -5,7 +5,12 @@ import { AccessibilityInfo, ScrollView, View } from 'react-native';
 
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { StyleSheet } from 'react-native';
-import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
+import {
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiPlayListAddLine } from '../icons/remix/RiPlayListAddLine';
@@ -120,16 +125,23 @@ function QueuePanelComponent({
   }, []);
 
   const playFromSection = useMemo(
-    () => (onPlay ? (section: 'queue' | 'context', index: number, track: (typeof queue)[number]) => onPlay(section, index, track) : undefined),
+    () =>
+      onPlay
+        ? (section: 'queue' | 'context', index: number, track: (typeof queue)[number]) =>
+            onPlay(section, index, track)
+        : undefined,
     [onPlay],
   );
 
   const parentFill = useSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
   const isPanel = variant === 'panel';
-  const background = StyleSheet.flatten(style)?.backgroundColor ?? (isPanel ? paint.surface : undefined);
-  const publishedFill = typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
-    ? resolveSurfaceMaterial({ fill: background, parentFill, paint: isPanel }).publishedFill : undefined;
+  const background =
+    StyleSheet.flatten(style)?.backgroundColor ?? (isPanel ? paint.surface : undefined);
+  const publishedFill =
+    typeof background === 'string' && background !== 'transparent' && parseRgba(background)?.a !== 0
+      ? resolveSurfaceMaterial({ fill: background, parentFill, paint: isPanel }).publishedFill
+      : undefined;
   const empty = !nowPlaying && queue.length === 0 && context.length === 0;
 
   const content = (
@@ -156,7 +168,12 @@ function QueuePanelComponent({
         isPanel && publishedFill ? { backgroundColor: 'transparent' } : null,
       ]}
     >
-      {isPanel && publishedFill ? <SurfacePaint fill={background as string} radius={StyleSheet.flatten(style)?.borderRadius ?? 8} /> : null}
+      {isPanel && publishedFill ? (
+        <SurfacePaint
+          fill={background as string}
+          radius={StyleSheet.flatten(style)?.borderRadius ?? 8}
+        />
+      ) : null}
       <View
         style={{
           flexDirection: 'row',
@@ -168,7 +185,11 @@ function QueuePanelComponent({
         }}
       >
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tabs value={tab} onValueChange={selectTab} testID={testID ? `${testID}-tabs` : undefined}>
+          <Tabs
+            value={tab}
+            onValueChange={selectTab}
+            testID={testID ? `${testID}-tabs` : undefined}
+          >
             <TabsTrigger value="queue" label={labels.queueTab} />
             <TabsTrigger value="recent" label={labels.recentTab} />
           </Tabs>
@@ -200,12 +221,24 @@ function QueuePanelComponent({
             testID={testID ? `${testID}-recent` : undefined}
           />
         ) : empty ? (
-          <View style={{ alignItems: 'center', paddingTop: 40, paddingBottom: 24, paddingLeft: 16, paddingRight: 16, gap: 8 }}>
+          <View
+            style={{
+              alignItems: 'center',
+              paddingTop: 40,
+              paddingBottom: 24,
+              paddingLeft: 16,
+              paddingRight: 16,
+              gap: 8,
+            }}
+          >
             <RiPlayListAddLine width={32} height={32} fill={paint.textSecondary} />
             <Text variant="headline-semibold" style={{ color: paint.text, textAlign: 'center' }}>
               {labels.emptyQueue}
             </Text>
-            <Text variant="body-regular" style={{ color: paint.textSecondary, textAlign: 'center' }}>
+            <Text
+              variant="body-regular"
+              style={{ color: paint.textSecondary, textAlign: 'center' }}
+            >
               {labels.emptyQueueHint}
             </Text>
           </View>
@@ -231,10 +264,11 @@ function QueuePanelComponent({
                   action={
                     onClearQueue ? (
                       <Button
-
                         size="sm"
                         onPress={onClearQueue}
-                        testID={testID ? `${testID}-clear` : undefined} tone="accent" appearance="plain"
+                        testID={testID ? `${testID}-clear` : undefined}
+                        tone="accent"
+                        appearance="plain"
                       >
                         {labels.clearQueue}
                       </Button>
@@ -299,7 +333,13 @@ function QueuePanelComponent({
       ) : null}
     </View>
   );
-  return publishedFill ? <SurfaceLevelProvider level={isPanel ? 1 : parentLevel} fill={publishedFill}>{content}</SurfaceLevelProvider> : content;
+  return publishedFill ? (
+    <SurfaceLevelProvider level={isPanel ? 1 : parentLevel} fill={publishedFill}>
+      {content}
+    </SurfaceLevelProvider>
+  ) : (
+    content
+  );
 }
 
 export const QueuePanel = memo(QueuePanelComponent);

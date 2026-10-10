@@ -11,7 +11,10 @@ import { buildTheme } from '../theme/build-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 
-jest.mock('../styles/adopt-style-sheet', () => ({ adoptStyleSheet: jest.fn(), dropStyleSheet: jest.fn() }));
+jest.mock('../styles/adopt-style-sheet', () => ({
+  adoptStyleSheet: jest.fn(),
+  dropStyleSheet: jest.fn(),
+}));
 
 const TASKS: TaskListTask[] = [
   {
@@ -19,7 +22,10 @@ const TASKS: TaskListTask[] = [
     runningTitle: 'Finding project files',
     steps: [
       { label: 'Scanning 52 files' },
-      { label: 'Reading', chips: [{ label: 'package.json' }, { label: 'tsconfig.json', icon: <RNText>i</RNText> }] },
+      {
+        label: 'Reading',
+        chips: [{ label: 'package.json' }, { label: 'tsconfig.json', icon: <RNText>i</RNText> }],
+      },
     ],
   },
   { title: 'Checks passed', runningTitle: 'Running checks', steps: [{ label: 'Type checking' }] },
@@ -101,8 +107,12 @@ describe('TaskList', () => {
 
   it('ends the guide on the last REVEALED step, not the last in the data', () => {
     const trunks = (root: ReactTestInstance) =>
-      root.findAll((node) => typeof node.type === 'string' && node.props.testID === 'agent-log-row-trunk').length;
-    const { getByTestId, rerender } = renderList(<TaskList testID="tl" tasks={TASKS} revealed={2} reduce />);
+      root.findAll(
+        (node) => typeof node.type === 'string' && node.props.testID === 'agent-log-row-trunk',
+      ).length;
+    const { getByTestId, rerender } = renderList(
+      <TaskList testID="tl" tasks={TASKS} revealed={2} reduce />,
+    );
     // One step shown: it is the last, so no trunk below its corner.
     expect(trunks(getByTestId('tl-task-0', hidden))).toBe(0);
     rerender(
@@ -116,12 +126,16 @@ describe('TaskList', () => {
   it('collapseOnComplete: true closes each task as it lands, "all" waits for the whole log', () => {
     const expanded = (root: ReturnType<typeof renderList>, index: number) =>
       root.getByTestId(`tl-task-${index}-header`, hidden).props['aria-expanded'];
-    const each = renderList(<TaskList testID="tl" tasks={TASKS} revealed={4} collapseOnComplete reduce />);
+    const each = renderList(
+      <TaskList testID="tl" tasks={TASKS} revealed={4} collapseOnComplete reduce />,
+    );
     expect(expanded(each, 0)).toBe(false);
     expect(expanded(each, 1)).toBe(true);
     each.unmount();
 
-    const all = renderList(<TaskList testID="tl" tasks={TASKS} revealed={4} collapseOnComplete="all" reduce />);
+    const all = renderList(
+      <TaskList testID="tl" tasks={TASKS} revealed={4} collapseOnComplete="all" reduce />,
+    );
     expect(expanded(all, 0)).toBe(true);
     all.rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -184,10 +198,14 @@ describe('TaskList', () => {
   });
 
   it('working={false} drops the indicator; a label replaces it', () => {
-    const quiet = renderList(<TaskList testID="tl" tasks={TASKS} revealed={2} working={false} reduce />);
+    const quiet = renderList(
+      <TaskList testID="tl" tasks={TASKS} revealed={2} working={false} reduce />,
+    );
     expect(quiet.queryByTestId('tl-working')).toBeNull();
     quiet.unmount();
-    const labelled = renderList(<TaskList testID="tl" tasks={TASKS} revealed={2} working="Planning" reduce />);
+    const labelled = renderList(
+      <TaskList testID="tl" tasks={TASKS} revealed={2} working="Planning" reduce />,
+    );
     expect(labelled.getByText('Planning', hidden)).toBeTruthy();
   });
 });

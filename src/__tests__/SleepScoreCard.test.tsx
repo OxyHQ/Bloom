@@ -4,7 +4,11 @@ import { resolvedStyle } from './support/rendered-style';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
-import { SleepScoreCard, defaultSleepScoreLabel, type SleepMetric } from '../chart-cards/SleepScoreCard';
+import {
+  SleepScoreCard,
+  defaultSleepScoreLabel,
+  type SleepMetric,
+} from '../chart-cards/SleepScoreCard';
 import { pieSectorAngles, sectorPath } from '../chart-cards/polar-geometry';
 
 // Demo metrics; paths from recharts 3.10's
@@ -25,7 +29,9 @@ function renderCard(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 
 function layout(getByTestId: (id: string) => unknown) {
   act(() => {
-    fireEvent(getByTestId('sleep-plot') as never, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 460, height: 104 } } });
+    fireEvent(getByTestId('sleep-plot') as never, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 460, height: 104 } },
+    });
   });
 }
 
@@ -55,12 +61,26 @@ describe('sleep ring geometry matches recharts', () => {
 
 describe('SleepScoreCard', () => {
   it('reads the verdict, the total and every sub-score row', () => {
-    const { getByTestId, getByText } = renderCard(<SleepScoreCard testID="sleep" metrics={METRICS} range="29 Jun - 5 Jul" />);
+    const { getByTestId, getByText } = renderCard(
+      <SleepScoreCard testID="sleep" metrics={METRICS} range="29 Jun - 5 Jul" />,
+    );
     expect(getByTestId('sleep-verdict').props.children).toBe('Excellent');
     expect(getByTestId('sleep-score').props.children).toBe(98);
     expect(getByText('29 Jun - 5 Jul')).toBeTruthy();
-    expect(resolvedStyle(getByTestId('sleep-range').props.style)).toMatchObject({ width: 151, height: 32, borderRadius: 10, borderWidth: 1 });
-    for (const text of ['Duration: 7h 50m', 'Bedtime: 20m earlier', 'Interruptions: 5m wake up', '49/50', '29/30', '20/20']) {
+    expect(resolvedStyle(getByTestId('sleep-range').props.style)).toMatchObject({
+      width: 151,
+      height: 32,
+      borderRadius: 10,
+      borderWidth: 1,
+    });
+    for (const text of [
+      'Duration: 7h 50m',
+      'Bedtime: 20m earlier',
+      'Interruptions: 5m wake up',
+      '49/50',
+      '29/30',
+      '20/20',
+    ]) {
       expect(getByText(text)).toBeTruthy();
     }
     expect(defaultSleepScoreLabel(75)).toBe('Good');
@@ -69,9 +89,18 @@ describe('SleepScoreCard', () => {
 
   it('rules every row but the last, inset left and running to the right edge', () => {
     const { getByTestId } = renderCard(<SleepScoreCard testID="sleep" metrics={METRICS} />);
-    expect(resolvedStyle(getByTestId('sleep-metrics').props.style)).toMatchObject({ borderRadius: 10, paddingLeft: 10 });
+    expect(resolvedStyle(getByTestId('sleep-metrics').props.style)).toMatchObject({
+      borderRadius: 10,
+      paddingLeft: 10,
+    });
     const first = resolvedStyle(getByTestId('sleep-metric-0').props.style);
-    expect(first).toMatchObject({ borderBottomWidth: 1, paddingRight: 10, paddingTop: 8, paddingBottom: 8, flex: 1 });
+    expect(first).toMatchObject({
+      borderBottomWidth: 1,
+      paddingRight: 10,
+      paddingTop: 8,
+      paddingBottom: 8,
+      flex: 1,
+    });
     expect(first.borderBottomColor).toBe(buildTheme('teal', 'light').colors.contrast50);
     expect(resolvedStyle(getByTestId('sleep-metric-2').props.style).borderBottomWidth).toBe(0);
   });

@@ -342,7 +342,9 @@ describe('an overlay that paints the page RESETS what the subtree is told', () =
       </ContentPanel>,
     );
     act(() => ref.current?.present());
-    expect(probed(toJSON(), 'fill')).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.background), theme.colors.background));
+    expect(probed(toJSON(), 'fill')).toBe(
+      resolveSurfaceFill(resolveSurfaceTint(theme.colors.background), theme.colors.background),
+    );
     expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
   });
 
@@ -356,7 +358,9 @@ describe('an overlay that paints the page RESETS what the subtree is told', () =
         </Dialog>
       </ContentPanel>,
     );
-    expect(probed(toJSON(), 'fill')).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.background), theme.colors.background));
+    expect(probed(toJSON(), 'fill')).toBe(
+      resolveSurfaceFill(resolveSurfaceTint(theme.colors.background), theme.colors.background),
+    );
     expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
   });
 });
@@ -379,7 +383,9 @@ describe('the web variable rides the element that carries the fill', () => {
     );
     const surface = findHost(toJSON(), 'content-panel-surface');
     expect(surface).not.toBeNull();
-    expect(resolvedStyle(surface?.props.style)[SURFACE_FILL_VAR]).toBe(resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background));
+    expect(resolvedStyle(surface?.props.style)[SURFACE_FILL_VAR]).toBe(
+      resolveSurfaceFill(resolveSurfaceTint(theme.colors.card), theme.colors.background),
+    );
   });
 
   it('is absent on native, where the hook is the answer', () => {

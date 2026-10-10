@@ -3,7 +3,14 @@ import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Platform, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+  type LayoutChangeEvent,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -57,8 +64,7 @@ const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 const WAITLIST_SHADOW = {
   light:
     '0 0 6px 0 rgba(0, 0, 0, 0.06), 0 0 64px 0 rgba(0, 0, 0, 0.16), 0 0 1px 0 rgba(0, 0, 0, 0.32), 0 1px 12px 0 rgba(0, 0, 0, 0.06), 0 1px 0 0 rgba(0, 0, 0, 0.02)',
-  dark:
-    '0 0 6px 0 rgba(0, 0, 0, 0.12), 0 0 64px 0 rgba(0, 0, 0, 0.22), 0 0 1px 0 rgba(0, 0, 0, 0.42), 0 1px 12px 0 rgba(0, 0, 0, 0.14), 0 1px 0 0 rgba(0, 0, 0, 0.08)',
+  dark: '0 0 6px 0 rgba(0, 0, 0, 0.12), 0 0 64px 0 rgba(0, 0, 0, 0.22), 0 0 1px 0 rgba(0, 0, 0, 0.42), 0 1px 12px 0 rgba(0, 0, 0, 0.14), 0 1px 0 0 rgba(0, 0, 0, 0.08)',
 } as const;
 
 let ids = 0;
@@ -81,7 +87,14 @@ function DefaultBackdrop({ from, via }: { from: string; via: string }) {
           <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}-fade)`} />
         </Mask>
       </Defs>
-      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}-fill)`} mask={`url(#${id}-mask)`} />
+      <Rect
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        fill={`url(#${id}-fill)`}
+        mask={`url(#${id}-mask)`}
+      />
     </Svg>
   );
 }
@@ -95,20 +108,38 @@ function Shimmer({ width }: { width: number }) {
     if (reducedMotion || width === 0) return;
     // 0–40% of 2.5s travels, the rest rests.
     travel.value = withRepeat(
-      withSequence(withTiming(1, { duration: 1000, easing: EASE_IN_OUT }), withDelay(1500, withTiming(1, { duration: 0 })), withTiming(0, { duration: 0 })),
+      withSequence(
+        withTiming(1, { duration: 1000, easing: EASE_IN_OUT }),
+        withDelay(1500, withTiming(1, { duration: 0 })),
+        withTiming(0, { duration: 0 }),
+      ),
       -1,
     );
   }, [reducedMotion, width, travel]);
   const barWidth = width * 0.45;
   const style = useAnimatedStyle(
-    () => ({ transform: [{ translateX: dir * travel.value * barWidth * 3.5 }, { skewX: `${dir * -12}deg` }] }),
+    () => ({
+      transform: [
+        { translateX: dir * travel.value * barWidth * 3.5 },
+        { skewX: `${dir * -12}deg` },
+      ],
+    }),
     [travel, barWidth, dir],
   );
   if (reducedMotion || width === 0) return null;
   return (
     <Animated.View
       pointerEvents="none"
-      style={[{ position: 'absolute', top: 0, bottom: 0, insetInlineStart: -width * 0.55, width: barWidth }, style]}
+      style={[
+        {
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          insetInlineStart: -width * 0.55,
+          width: barWidth,
+        },
+        style,
+      ]}
     >
       <Svg width="100%" height="100%">
         <Defs>
@@ -164,11 +195,17 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
 
   const surfaceLayer = useSurfaceLayer();
   const customSurface = StyleSheet.flatten(style);
-  const material = resolveSurfaceMaterial({ fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill), parentFill: surfaceLayer.parentFill, parentLevel: surfaceLayer.parentLevel });
+  const material = resolveSurfaceMaterial({
+    fill: String(customSurface?.backgroundColor ?? surfaceLayer.fill),
+    parentFill: surfaceLayer.parentFill,
+    parentLevel: surfaceLayer.parentLevel,
+  });
   const { paintFill: paintFill, publishedFill: surfaceFill } = material;
   const enter = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
-    enter.value = reducedMotion ? 1 : withDelay(enterDelay, withTiming(1, { duration: 300, easing: EASE_OUT }));
+    enter.value = reducedMotion
+      ? 1
+      : withDelay(enterDelay, withTiming(1, { duration: 300, easing: EASE_OUT }));
   }, [enter, enterDelay, reducedMotion]);
   const enterStyle = useAnimatedStyle(
     () => ({ opacity: enter.value, transform: [{ translateY: (1 - enter.value) * 16 }] }),
@@ -227,40 +264,54 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
     >
       <SurfacePaint fill={paintFill} radius={customSurface?.borderRadius ?? 16} />
       <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-      <View aria-hidden pointerEvents="none" style={backdropStyle}>
-        {backdrop ?? <DefaultBackdrop from={palette.from} via={palette.via} />}
-      </View>
-      {logo ? <View style={{ flexShrink: 0 }}>{logo}</View> : null}
-      <View style={{ minWidth: 0, gap: 4 }}>
-        <Text variant="body-medium" style={{ color: palette.text }}>
-          {title}
-        </Text>
-        <Text variant="body-2-regular" style={{ color: palette.secondary }}>
-          {description}
-        </Text>
-      </View>
-      <View
-        style={{ width: '100%' }}
-        onLayout={(event: LayoutChangeEvent) => setCtaWidth(event.nativeEvent.layout.width)}
-      >
-        <Button size="md" style={{ width: "100%" }} onPress={onCtaPress} appearance="solid" tone="accent">
-          {ctaLabel}
-        </Button>
-        <View
-          aria-hidden
-          pointerEvents="none"
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', borderRadius: 9999 }}
-        >
-          <Shimmer width={ctaWidth} />
+        <View aria-hidden pointerEvents="none" style={backdropStyle}>
+          {backdrop ?? <DefaultBackdrop from={palette.from} via={palette.via} />}
         </View>
-      </View>
-      <CloseButton
-        size="xs"
-        accessibilityLabel={dismissLabel}
-        onPress={onDismiss}
-        style={{ position: 'absolute', top: 12, insetInlineEnd: 12, zIndex: Z_INDEX.raised }}
-        testID={testID ? `${testID}-dismiss` : undefined}
-      />
+        {logo ? <View style={{ flexShrink: 0 }}>{logo}</View> : null}
+        <View style={{ minWidth: 0, gap: 4 }}>
+          <Text variant="body-medium" style={{ color: palette.text }}>
+            {title}
+          </Text>
+          <Text variant="body-2-regular" style={{ color: palette.secondary }}>
+            {description}
+          </Text>
+        </View>
+        <View
+          style={{ width: '100%' }}
+          onLayout={(event: LayoutChangeEvent) => setCtaWidth(event.nativeEvent.layout.width)}
+        >
+          <Button
+            size="md"
+            style={{ width: '100%' }}
+            onPress={onCtaPress}
+            appearance="solid"
+            tone="accent"
+          >
+            {ctaLabel}
+          </Button>
+          <View
+            aria-hidden
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              overflow: 'hidden',
+              borderRadius: 9999,
+            }}
+          >
+            <Shimmer width={ctaWidth} />
+          </View>
+        </View>
+        <CloseButton
+          size="xs"
+          accessibilityLabel={dismissLabel}
+          onPress={onDismiss}
+          style={{ position: 'absolute', top: 12, insetInlineEnd: 12, zIndex: Z_INDEX.raised }}
+          testID={testID ? `${testID}-dismiss` : undefined}
+        />
       </SurfaceLevelProvider>
     </Animated.View>
   );

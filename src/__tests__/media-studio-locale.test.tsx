@@ -27,7 +27,14 @@ import {
 import { CREATOR_STUDIO_MESSAGES } from '../creator-studio/messages';
 import { LocaleProvider } from '../locale';
 import { LyricsPreviewCard, LyricsView } from '../lyrics';
-import { LibraryItem, LibraryPanel, RecentSearches, SearchField, TopResultCard, type LibraryEntry } from '../music-library';
+import {
+  LibraryItem,
+  LibraryPanel,
+  RecentSearches,
+  SearchField,
+  TopResultCard,
+  type LibraryEntry,
+} from '../music-library';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { messagesIn } from './support/messages-in';
 
@@ -70,7 +77,9 @@ const RELEASE: CreatorRelease = {
 
 describe('creator-studio in the app locale', () => {
   it('ReleaseCard: type, status, a plural track count and the menu name in Spanish', () => {
-    const screen = mount(<ReleaseCard release={RELEASE} actions={[{ label: 'Borrar' }]} testID="c" />);
+    const screen = mount(
+      <ReleaseCard release={RELEASE} actions={[{ label: 'Borrar' }]} testID="c" />,
+    );
     expect(screen.getByText('Sencillo · 14 mar 2026 · 1 canción')).toBeTruthy();
     expect(screen.getByText('En revisión')).toBeTruthy();
     expect(screen.getAllByLabelText('Más acciones de Low Tide').length).toBeGreaterThan(0);
@@ -89,18 +98,42 @@ describe('creator-studio in the app locale', () => {
 
   it('ReleaseCard: a labels entry still wins over the catalog', () => {
     const screen = mount(
-      <ReleaseCard release={RELEASE} labels={{ tracks: (n) => `${n} pistas`, statuses: { ...messagesIn(CREATOR_STUDIO_MESSAGES, 'es').releaseStatuses, 'in-review': 'Revisando' } }} />,
+      <ReleaseCard
+        release={RELEASE}
+        labels={{
+          tracks: (n) => `${n} pistas`,
+          statuses: {
+            ...messagesIn(CREATOR_STUDIO_MESSAGES, 'es').releaseStatuses,
+            'in-review': 'Revisando',
+          },
+        }}
+      />,
     );
     expect(screen.getByText('Sencillo · 14 mar 2026 · 1 pistas')).toBeTruthy();
     expect(screen.getByText('Revisando')).toBeTruthy();
   });
 
   it('TrackUploadRow: status words and the common Retry, with a label override winning', () => {
-    let screen = mount(<TrackUploadRow fileName="a.wav" size="1 MB" status="failed" onRetry={() => {}} onRemove={() => {}} />);
+    let screen = mount(
+      <TrackUploadRow
+        fileName="a.wav"
+        size="1 MB"
+        status="failed"
+        onRetry={() => {}}
+        onRemove={() => {}}
+      />,
+    );
     expect(screen.getByText('Error al subir')).toBeTruthy();
     expect(screen.getByText('Reintentar')).toBeTruthy();
     expect(screen.getByLabelText('Quitar a.wav')).toBeTruthy();
-    screen = mount(<TrackUploadRow fileName="a.wav" size="1 MB" status="queued" labels={{ queued: 'Esperando' }} />);
+    screen = mount(
+      <TrackUploadRow
+        fileName="a.wav"
+        size="1 MB"
+        status="queued"
+        labels={{ queued: 'Esperando' }}
+      />,
+    );
     expect(screen.getByText('Esperando')).toBeTruthy();
   });
 
@@ -108,7 +141,9 @@ describe('creator-studio in the app locale', () => {
     let screen = mount(<AudienceOverview metrics={[]} period="7d" onPeriodChange={() => {}} />);
     expect(screen.getByText('Audiencia')).toBeTruthy();
     expect(screen.getByText('28 días')).toBeTruthy();
-    screen = mount(<AudienceOverview metrics={[]} period="7d" onPeriodChange={() => {}} title="Oyentes" />);
+    screen = mount(
+      <AudienceOverview metrics={[]} period="7d" onPeriodChange={() => {}} title="Oyentes" />,
+    );
     expect(screen.getByText('Oyentes')).toBeTruthy();
     expect(screen.queryByText('Audiencia')).toBeNull();
   });
@@ -117,7 +152,12 @@ describe('creator-studio in the app locale', () => {
     let screen = mount(<CreditsEditor credits={[]} onCreditsChange={() => {}} />);
     expect(screen.getByText('Créditos')).toBeTruthy();
     expect(screen.getByText('Añadir crédito')).toBeTruthy();
-    screen = mount(<CreditsEditor credits={[{ id: 'x', role: 'producer', name: 'Ana' }]} onCreditsChange={() => {}} />);
+    screen = mount(
+      <CreditsEditor
+        credits={[{ id: 'x', role: 'producer', name: 'Ana' }]}
+        onCreditsChange={() => {}}
+      />,
+    );
     expect(screen.getByLabelText('Quitar crédito 1, Ana')).toBeTruthy();
     screen = mount(<IsrcField value="" onChangeText={() => {}} />);
     expect(screen.getByText('Formato: CC-XXX-YY-NNNNN')).toBeTruthy();
@@ -138,7 +178,14 @@ describe('creator-studio in the app locale', () => {
 });
 
 const ITEMS: LibraryEntry[] = [
-  { id: 'a', title: 'Night Drive', kind: 'playlist', subtitle: 'Maya', pinned: true, downloaded: true },
+  {
+    id: 'a',
+    title: 'Night Drive',
+    kind: 'playlist',
+    subtitle: 'Maya',
+    pinned: true,
+    downloaded: true,
+  },
 ];
 
 describe('music-library in the app locale', () => {
@@ -171,7 +218,11 @@ describe('music-library in the app locale', () => {
     screen = mount(<TopResultCard title="Lumen Vale" kind="artist" />);
     expect(screen.getByText('Artista')).toBeTruthy();
     screen = mount(
-      <RecentSearches items={[{ id: '1', title: 'Lumen Vale' }]} onRemove={() => {}} onClearAll={() => {}} />,
+      <RecentSearches
+        items={[{ id: '1', title: 'Lumen Vale' }]}
+        onRemove={() => {}}
+        onClearAll={() => {}}
+      />,
     );
     expect(screen.getByText('Búsquedas recientes')).toBeTruthy();
     expect(screen.getByLabelText('Quitar Lumen Vale')).toBeTruthy();
@@ -191,7 +242,9 @@ describe('lyrics in the app locale', () => {
     let screen = mount(<LyricsPreviewCard text={'uno\ndos'} onShowLyrics={() => {}} />);
     expect(screen.getByText('Letra')).toBeTruthy();
     expect(screen.getByText('Mostrar letra')).toBeTruthy();
-    screen = mount(<LyricsPreviewCard text={'uno'} onShowLyrics={() => {}} showLyricsLabel="Ver todo" />);
+    screen = mount(
+      <LyricsPreviewCard text={'uno'} onShowLyrics={() => {}} showLyricsLabel="Ver todo" />,
+    );
     expect(screen.getByText('Ver todo')).toBeTruthy();
   });
 });

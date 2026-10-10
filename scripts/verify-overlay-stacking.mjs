@@ -34,10 +34,7 @@ const require = createRequire(import.meta.url);
 
 // puppeteer-core is not a Bloom dependency — this is a local verification tool,
 // not part of the package. Resolve it from a sibling repo that already has it.
-const PUPPETEER_PATHS = [
-  '/home/nate/Oxy/Homiio/node_modules/puppeteer-core',
-  'puppeteer-core',
-];
+const PUPPETEER_PATHS = ['/home/nate/Oxy/Homiio/node_modules/puppeteer-core', 'puppeteer-core'];
 
 function loadPuppeteer() {
   for (const candidate of PUPPETEER_PATHS) {
@@ -47,9 +44,7 @@ function loadPuppeteer() {
       // try the next candidate
     }
   }
-  throw new Error(
-    `Could not resolve puppeteer-core. Tried: ${PUPPETEER_PATHS.join(', ')}`,
-  );
+  throw new Error(`Could not resolve puppeteer-core. Tried: ${PUPPETEER_PATHS.join(', ')}`);
 }
 
 // The packaged Chrome binary. The `chromium` wrapper on this machine SIGTRAPs,
@@ -169,10 +164,9 @@ async function describeOcclusion(page, testId) {
 }
 
 async function runCase(page, testCase) {
-  await page.goto(
-    `${BASE}/iframe.html?id=${testCase.id}&viewMode=story`,
-    { waitUntil: 'networkidle0' },
-  );
+  await page.goto(`${BASE}/iframe.html?id=${testCase.id}&viewMode=story`, {
+    waitUntil: 'networkidle0',
+  });
   await page.waitForSelector('[data-testid="open-first"]', { timeout: 20000 });
 
   for (const step of testCase.steps ?? DEFAULT_STEPS) {
@@ -239,9 +233,7 @@ async function main() {
     const page = await browser.newPage();
     // Headless/CI Chrome reports `reduce`, which short-circuits the entrance
     // animations under test. Pin the value every real user gets.
-    await page.emulateMediaFeatures([
-      { name: 'prefers-reduced-motion', value: 'no-preference' },
-    ]);
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
 
     const results = [];
     for (const testCase of CASES) {

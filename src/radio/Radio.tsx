@@ -15,7 +15,11 @@ import { TYPE_SCALE } from '../typography/scale';
 import { space, DISABLED_OPACITY } from '../styles/tokens';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { resolveButtonRamps } from '../button/shared';
-import { focusRingShadow, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import {
+  focusRingShadow,
+  interactiveWebCss,
+  useInteractiveWebCss,
+} from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { RadioIndicator } from '../radio-indicator';
 import { useFieldMembership } from '../field/membership';
@@ -125,7 +129,10 @@ const RadioComponent = function Radio<Value extends string = string>({
   });
   const isDisabled = field.disabled;
   const ringOffset = useRingOffsetStyle();
-  const { size: scopedSize, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
+  const { size: scopedSize, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: 'accent' },
+  );
   const size = scopedSize;
   const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, BLOOM_RADIO_CSS);
@@ -160,7 +167,12 @@ const RadioComponent = function Radio<Value extends string = string>({
       className={className}
       {...spaceKey}
       {...(IS_WEB ? ({ dataSet: { bloomRadio: '' } } as Record<string, unknown>) : {})}
-      style={[className ? { '--bloom-radio-ring': rowStyle['--bloom-radio-ring'], ...ringOffset } : rowStyle, style]}
+      style={[
+        className
+          ? { '--bloom-radio-ring': rowStyle['--bloom-radio-ring'], ...ringOffset }
+          : rowStyle,
+        style,
+      ]}
       onPress={handlePress}
       disabled={isDisabled}
       nativeID={field.nativeID}
@@ -181,27 +193,48 @@ const RadioComponent = function Radio<Value extends string = string>({
         style={{
           borderRadius: sizeConfig.indicator / 2,
           // Centre the dot on the label's first line box.
-          marginTop: hasText ? (TYPE_SCALE[sizeConfig.label].lineHeight - sizeConfig.indicator) / 2 : 0,
+          marginTop: hasText
+            ? (TYPE_SCALE[sizeConfig.label].lineHeight - sizeConfig.indicator) / 2
+            : 0,
         }}
       >
-        <RadioIndicator selected={checked} size={sizeConfig.indicator} selectedColor={color} selectedForeground={foreground} />
+        <RadioIndicator
+          selected={checked}
+          size={sizeConfig.indicator}
+          selectedColor={color}
+          selectedForeground={foreground}
+        />
       </View>
 
       {hasText && (
         <View style={{ flex: 1 }}>
           {labelContent != null ? (
-            <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <View
+              pointerEvents="none"
+              aria-hidden
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
               {labelContent}
             </View>
-          ) : label && (
-            <RadioLabel className={labelClassName} variant={sizeConfig.label} style={[!labelClassName && { color: theme.colors.text }, labelStyle]}>
-              {label}
-            </RadioLabel>
+          ) : (
+            label && (
+              <RadioLabel
+                className={labelClassName}
+                variant={sizeConfig.label}
+                style={[!labelClassName && { color: theme.colors.text }, labelStyle]}
+              >
+                {label}
+              </RadioLabel>
+            )
           )}
           {description && (
             <Text
               variant={sizeConfig.description}
-              style={{ color: theme.colors.textSecondary, marginTop: hasLabel ? DESCRIPTION_GAP : 0 }}
+              style={{
+                color: theme.colors.textSecondary,
+                marginTop: hasLabel ? DESCRIPTION_GAP : 0,
+              }}
             >
               {description}
             </Text>
@@ -222,7 +255,9 @@ export const Radio = memo(RadioComponent) as typeof RadioComponent;
  * lets the group carry `role="radiogroup"` and its accessible name — a
  * screen reader announces "2 of 4" only when the options are inside one.
  */
-const RadioGroupComponent = function RadioGroup<Value extends string = string>(props: RadioGroupProps<Value>) {
+const RadioGroupComponent = function RadioGroup<Value extends string = string>(
+  props: RadioGroupProps<Value>,
+) {
   const {
     label,
     value: valueProp,
@@ -243,7 +278,14 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
     variant = 'default',
     testID,
   } = props;
-  const [value, setValue] = useControllableState<Value | undefined>({ value: valueProp, defaultValue, controlled: Object.prototype.hasOwnProperty.call(props, 'value'), onChange: next => { if (next !== undefined) onValueChangeProp?.(next); } });
+  const [value, setValue] = useControllableState<Value | undefined>({
+    value: valueProp,
+    defaultValue,
+    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    onChange: (next) => {
+      if (next !== undefined) onValueChangeProp?.(next);
+    },
+  });
   const onValueChange = (next: Value) => setValue(next);
   // The group is one control made of several, so a `Field` around it names the
   // GROUP and disables every option — `multiple` is the field's side of that
@@ -252,42 +294,74 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
   // own — so it goes in as the caller's name and outranks the field's.
   const field = useFieldMembership({ accessibilityLabel: label, disabled });
   const isDisabled = field.disabled;
-  const { size: scopedSize, tone } = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: variant === 'chip' ? 'neutral' : 'accent'});
+  const { size: scopedSize, tone } = useBloomAppearance(
+    { size: sizeProp, tone: toneProp },
+    { size: 'md', tone: variant === 'chip' ? 'neutral' : 'accent' },
+  );
   const size = scopedSize;
   const rtl = useIsRtl();
   const direction = useDirectionProps();
   const nodes = useRef(new Map<string, React.RefObject<View | null>>());
   const controlRef = useCallback((option: string) => {
     let ref = nodes.current.get(option);
-    if (!ref) { ref = React.createRef<View>(); nodes.current.set(option, ref); }
+    if (!ref) {
+      ref = React.createRef<View>();
+      nodes.current.set(option, ref);
+    }
     return ref;
   }, []);
   React.useEffect(() => {
-    const currentValues = new Set<string>(options.map(option => option.value));
+    const currentValues = new Set<string>(options.map((option) => option.value));
     for (const key of nodes.current.keys()) if (!currentValues.has(key)) nodes.current.delete(key);
   }, [options]);
-  const enabledValues = options.filter(option => !isDisabled && !option.disabled).map(option => option.value);
+  const enabledValues = options
+    .filter((option) => !isDisabled && !option.disabled)
+    .map((option) => option.value);
   const tabValue = value !== undefined && enabledValues.includes(value) ? value : enabledValues[0];
-  const register = useCallback((option: string, node: View | null) => {
-    controlRef(option).current = node;
-  }, [controlRef]);
+  const register = useCallback(
+    (option: string, node: View | null) => {
+      controlRef(option).current = node;
+    },
+    [controlRef],
+  );
   const onKeyDown = (current: string, event: KeyboardEvent<HTMLElement>) => {
-    if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || !enabledValues.length) return;
-    const position = enabledValues.findIndex(option => option === current);
+    if (
+      event.target !== event.currentTarget ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !enabledValues.length
+    )
+      return;
+    const position = enabledValues.findIndex((option) => option === current);
     if (position < 0) return;
     let target: Value | undefined;
     if (event.key === 'Home') target = enabledValues[0];
     else if (event.key === 'End') target = enabledValues[enabledValues.length - 1];
     else {
-      const delta = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1
-        : event.key === 'ArrowRight' ? (rtl ? -1 : 1) : event.key === 'ArrowLeft' ? (rtl ? 1 : -1) : 0;
+      const delta =
+        event.key === 'ArrowDown'
+          ? 1
+          : event.key === 'ArrowUp'
+            ? -1
+            : event.key === 'ArrowRight'
+              ? rtl
+                ? -1
+                : 1
+              : event.key === 'ArrowLeft'
+                ? rtl
+                  ? 1
+                  : -1
+                : 0;
       if (!delta) return;
       target = enabledValues[(position + delta + enabledValues.length) % enabledValues.length];
     }
     if (target === undefined) return;
-    event.preventDefault(); event.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
     const node: unknown = nodes.current.get(target)?.current;
-    if (typeof HTMLElement !== 'undefined' && node instanceof HTMLElement) node.focus({ preventScroll: true });
+    if (typeof HTMLElement !== 'undefined' && node instanceof HTMLElement)
+      node.focus({ preventScroll: true });
     if (target !== value) onValueChange(target);
   };
   return (
@@ -295,7 +369,15 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
       <RadioGroupHost
         {...direction}
         className={className}
-        style={[!className && { gap: space.sm, ...(variant === 'chip' ? { flexDirection: 'row' as const, flexWrap: 'wrap' as const } : {}) }, style]}
+        style={[
+          !className && {
+            gap: space.sm,
+            ...(variant === 'chip'
+              ? { flexDirection: 'row' as const, flexWrap: 'wrap' as const }
+              : {}),
+          },
+          style,
+        ]}
         accessibilityRole="radiogroup"
         accessibilityLabel={field.accessibilityLabel}
         aria-label={field.accessibilityLabel}
@@ -309,57 +391,76 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
           const checked = option.value === value;
           const optionDisabled = isDisabled || option.disabled === true;
           const state = { checked, disabled: optionDisabled, controlRef: controlRef(option.value) };
-          const optionClasses = typeof optionClassName === 'function' ? optionClassName(state) : optionClassName;
-          const labelClasses = typeof optionLabelClassName === 'function' ? optionLabelClassName(state) : optionLabelClassName;
-          const ownedControl = variant === 'chip' ? (
-            <RadioChip
-              key={option.value} value={option.value} checked={checked} onValueChange={onValueChange}
-              label={option.label} labelContent={option.labelContent} accessibilityLabel={option.accessibilityLabel}
-              description={option.description} disabled={optionDisabled} size={size} tone={tone} appearance={appearance}
-              style={optionStyle} labelStyle={labelStyle} className={optionClasses} labelClassName={labelClasses}
-              testID={option.testID}
-            />
-          ) : variant === 'card' ? (
-            <RadioCard
-              key={option.value}
-              value={option.value}
-              checked={checked}
-              onValueChange={onValueChange}
-              title={option.label ?? option.value}
-              labelContent={option.labelContent}
-              accessibilityLabel={option.accessibilityLabel}
-              description={option.description}
-              disabled={optionDisabled}
-              tone={tone}
-              style={optionStyle}
-              labelStyle={labelStyle}
-              className={optionClasses}
-              labelClassName={labelClasses}
-              testID={option.testID}
-            />
-          ) : (
-          <Radio
-            key={option.value}
-            value={option.value}
-            checked={checked}
-            onValueChange={onValueChange}
-            label={option.label}
-            labelContent={option.labelContent}
-            accessibilityLabel={option.accessibilityLabel}
-            description={option.description}
-            size={size}
-            disabled={optionDisabled}
-            tone={tone}
-            labelStyle={labelStyle}
-            style={optionStyle}
-            className={optionClasses}
-            labelClassName={labelClasses}
-            testID={option.testID}
-          />
+          const optionClasses =
+            typeof optionClassName === 'function' ? optionClassName(state) : optionClassName;
+          const labelClasses =
+            typeof optionLabelClassName === 'function'
+              ? optionLabelClassName(state)
+              : optionLabelClassName;
+          const ownedControl =
+            variant === 'chip' ? (
+              <RadioChip
+                key={option.value}
+                value={option.value}
+                checked={checked}
+                onValueChange={onValueChange}
+                label={option.label}
+                labelContent={option.labelContent}
+                accessibilityLabel={option.accessibilityLabel}
+                description={option.description}
+                disabled={optionDisabled}
+                size={size}
+                tone={tone}
+                appearance={appearance}
+                style={optionStyle}
+                labelStyle={labelStyle}
+                className={optionClasses}
+                labelClassName={labelClasses}
+                testID={option.testID}
+              />
+            ) : variant === 'card' ? (
+              <RadioCard
+                key={option.value}
+                value={option.value}
+                checked={checked}
+                onValueChange={onValueChange}
+                title={option.label ?? option.value}
+                labelContent={option.labelContent}
+                accessibilityLabel={option.accessibilityLabel}
+                description={option.description}
+                disabled={optionDisabled}
+                tone={tone}
+                style={optionStyle}
+                labelStyle={labelStyle}
+                className={optionClasses}
+                labelClassName={labelClasses}
+                testID={option.testID}
+              />
+            ) : (
+              <Radio
+                key={option.value}
+                value={option.value}
+                checked={checked}
+                onValueChange={onValueChange}
+                label={option.label}
+                labelContent={option.labelContent}
+                accessibilityLabel={option.accessibilityLabel}
+                description={option.description}
+                size={size}
+                disabled={optionDisabled}
+                tone={tone}
+                labelStyle={labelStyle}
+                style={optionStyle}
+                className={optionClasses}
+                labelClassName={labelClasses}
+                testID={option.testID}
+              />
+            );
+          return (
+            <React.Fragment key={option.value}>
+              {renderOption ? renderOption(option, ownedControl, state) : ownedControl}
+            </React.Fragment>
           );
-          return <React.Fragment key={option.value}>{renderOption
-            ? renderOption(option, ownedControl, state)
-            : ownedControl}</React.Fragment>;
         })}
       </RadioGroupHost>
     </RadioGroupContext.Provider>

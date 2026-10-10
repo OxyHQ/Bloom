@@ -67,7 +67,11 @@ describe('Table', () => {
     expect(style).toMatchObject({ paddingTop: 6, paddingLeft: 10 });
     expect(style.paddingHorizontal).toBeUndefined();
     const text = sm.getByText('Olivia');
-    expect(resolvedStyle(text.props.style)).toMatchObject({ fontSize: 13, lineHeight: 18, fontWeight: '500' });
+    expect(resolvedStyle(text.props.style)).toMatchObject({
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '500',
+    });
   });
 
   it('applies the header column layout to every row, with a per-cell override', () => {
@@ -142,6 +146,8 @@ describe('Table', () => {
       'dark',
     );
     expect(dark.getByTestId('custom')).toBeTruthy();
-    expect(resolvedStyle(dark.getByTestId('header').props.style).backgroundColor).not.toBe(lightHeader);
+    expect(resolvedStyle(dark.getByTestId('header').props.style).backgroundColor).not.toBe(
+      lightHeader,
+    );
   });
 });

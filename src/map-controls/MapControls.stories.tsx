@@ -52,18 +52,52 @@ function MockMap({ children, height = 460 }: { children: React.ReactNode; height
         position: 'relative',
       }}
     >
-      <View style={{ position: 'absolute', left: '8%', top: '12%', width: '38%', height: '34%', borderRadius: 24, backgroundColor: park }} />
-      <View style={{ position: 'absolute', left: '55%', top: '58%', width: '40%', height: '30%', borderRadius: 24, backgroundColor: park }} />
+      <View
+        style={{
+          position: 'absolute',
+          left: '8%',
+          top: '12%',
+          width: '38%',
+          height: '34%',
+          borderRadius: 24,
+          backgroundColor: park,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          left: '55%',
+          top: '58%',
+          width: '40%',
+          height: '30%',
+          borderRadius: 24,
+          backgroundColor: park,
+        }}
+      />
       {[0.12, 0.38, 0.64, 0.88].map((top) => (
         <View
           key={`h${top}`}
-          style={{ position: 'absolute', left: 0, right: 0, top: height * top, height: 8, backgroundColor: line }}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: height * top,
+            height: 8,
+            backgroundColor: line,
+          }}
         />
       ))}
       {[0.2, 0.52, 0.78].map((left) => (
         <View
           key={`v${left}`}
-          style={{ position: 'absolute', top: 0, bottom: 0, left: `${left * 100}%`, width: 8, backgroundColor: line }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `${left * 100}%`,
+            width: 8,
+            backgroundColor: line,
+          }}
         />
       ))}
       {children}
@@ -173,7 +207,11 @@ export const States: Story = {
           {[0, 45, 135, 270].map((heading) => (
             <View key={heading} style={{ alignItems: 'center', gap: 6, width: 72 }}>
               <View style={{ height: 44, justifyContent: 'center' }}>
-                <MapCompass heading={heading} onPress={() => undefined} testID={`compass-${heading}`} />
+                <MapCompass
+                  heading={heading}
+                  onPress={() => undefined}
+                  testID={`compass-${heading}`}
+                />
               </View>
               <Text variant="caption-2-regular" style={{ opacity: 0.6 }}>
                 {heading === 0 ? '0° — hidden' : `${heading}°`}
@@ -192,7 +230,12 @@ export const States: Story = {
       </Section>
       <Section title="The layer picker on its own">
         <View style={{ flexDirection: 'row', gap: 16 }}>
-          <MapLayerPicker layers={LAYERS} layerId="satellite" overlays={OVERLAYS} activeOverlayIds={[]} />
+          <MapLayerPicker
+            layers={LAYERS}
+            layerId="satellite"
+            overlays={OVERLAYS}
+            activeOverlayIds={[]}
+          />
           <MapLayerPicker layers={LAYERS} layerId="standard" disabled />
         </View>
       </Section>

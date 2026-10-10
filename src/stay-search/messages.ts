@@ -31,26 +31,27 @@ export interface StaySearchMessages {
   filters: string;
 }
 
-export const STAY_SEARCH_MESSAGES: MessageCatalog<StaySearchMessages> = defineMessages<StaySearchMessages>('STAY_SEARCH_MESSAGES', {
-  where: 'Where',
-  checkIn: 'Check in',
-  checkOut: 'Check out',
-  when: 'When',
-  who: 'Who',
-  destinationPlaceholder: 'Search destinations',
-  datesPlaceholder: 'Add dates',
-  guestsPlaceholder: 'Add guests',
-  guests: { adults: 'Adults', children: 'Children', infants: 'Infants', pets: 'Pets' },
-  guestDescriptions: {
-    adults: 'Ages 13 or above',
-    children: 'Ages 2 – 12',
-    infants: 'Under 2',
-    pets: 'Bringing a service animal?',
-  },
-  dateFlexibility: 'Date flexibility',
-  exactDates: 'Exact dates',
-  plusMinusDays: (n) => plural('en', n, { one: '± {n} day', other: '± {n} days' }),
-  destinations: 'Destinations',
-  whereTo: 'Where to?',
-  filters: 'Filters',
-});
+export const STAY_SEARCH_MESSAGES: MessageCatalog<StaySearchMessages> =
+  defineMessages<StaySearchMessages>('STAY_SEARCH_MESSAGES', {
+    where: 'Where',
+    checkIn: 'Check in',
+    checkOut: 'Check out',
+    when: 'When',
+    who: 'Who',
+    destinationPlaceholder: 'Search destinations',
+    datesPlaceholder: 'Add dates',
+    guestsPlaceholder: 'Add guests',
+    guests: { adults: 'Adults', children: 'Children', infants: 'Infants', pets: 'Pets' },
+    guestDescriptions: {
+      adults: 'Ages 13 or above',
+      children: 'Ages 2 – 12',
+      infants: 'Under 2',
+      pets: 'Bringing a service animal?',
+    },
+    dateFlexibility: 'Date flexibility',
+    exactDates: 'Exact dates',
+    plusMinusDays: (n) => plural('en', n, { one: '± {n} day', other: '± {n} days' }),
+    destinations: 'Destinations',
+    whereTo: 'Where to?',
+    filters: 'Filters',
+  });

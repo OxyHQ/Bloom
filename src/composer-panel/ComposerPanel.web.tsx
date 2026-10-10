@@ -13,9 +13,9 @@ import type { ComposerPanelProps } from './types';
 export function ComposerPanel(props: ComposerPanelProps) {
   return (
     <ComposerButtonContext.Provider value={Button}>
-    <ComposerPopoverContext.Provider value={ComposerPopover}>
-      <ComposerPanelBase {...props} />
-    </ComposerPopoverContext.Provider>
+      <ComposerPopoverContext.Provider value={ComposerPopover}>
+        <ComposerPanelBase {...props} />
+      </ComposerPopoverContext.Provider>
     </ComposerButtonContext.Provider>
   );
 }

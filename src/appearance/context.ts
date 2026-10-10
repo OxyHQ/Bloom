@@ -9,5 +9,8 @@ export function useBloomAppearance(
   defaults: Required<BloomAppearanceProps>,
 ): Required<BloomAppearanceProps> {
   const scope = useContext(BloomAppearanceContext);
-  return { size: props.size ?? scope.size ?? defaults.size, tone: props.tone ?? scope.tone ?? defaults.tone };
+  return {
+    size: props.size ?? scope.size ?? defaults.size,
+    tone: props.tone ?? scope.tone ?? defaults.tone,
+  };
 }

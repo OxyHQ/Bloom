@@ -78,7 +78,10 @@ export const GROW_MS = 500;
  * frame — so it grows in once the card flips it; a bar that mounts after that
  * starts at its width, as a CSS transition would. Snaps under reduced motion.
  */
-export function useGrowWidth(percent: number, mounted: boolean): Animated.AnimatedInterpolation<string> {
+export function useGrowWidth(
+  percent: number,
+  mounted: boolean,
+): Animated.AnimatedInterpolation<string> {
   const reducedMotion = useReducedMotion();
   const target = mounted ? percent : 0;
   const value = useRef(new Animated.Value(target)).current;
@@ -165,7 +168,13 @@ export function StageStatTiles({
   }
 
   return (
-    <View testID={testID} style={[{ marginLeft: -8, marginRight: -8, marginBottom: -4, flexDirection: 'column', gap: 8 }, style]}>
+    <View
+      testID={testID}
+      style={[
+        { marginLeft: -8, marginRight: -8, marginBottom: -4, flexDirection: 'column', gap: 8 },
+        style,
+      ]}
+    >
       {rows.map((row) => (
         <View key={row[0]} style={{ flexDirection: 'row', gap: 8 }}>
           {row.map((i) => {
@@ -193,8 +202,17 @@ export function StageStatTiles({
                     opacity: hovering && !active ? 0.5 : 1,
                   },
                   fade,
-                ]}>
-                <View style={{ minWidth: 0, maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                ]}
+              >
+                <View
+                  style={{
+                    minWidth: 0,
+                    maxWidth: '100%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
                   {swatches ? (
                     <View
                       style={[
@@ -209,11 +227,19 @@ export function StageStatTiles({
                       ]}
                     />
                   ) : null}
-                  <Text variant="body-regular" numberOfLines={1} style={{ flexShrink: 1, color: palette.textSecondary }}>
+                  <Text
+                    variant="body-regular"
+                    numberOfLines={1}
+                    style={{ flexShrink: 1, color: palette.textSecondary }}
+                  >
                     {item.label}
                   </Text>
                 </View>
-                <Text variant="body-medium" numberOfLines={1} style={[{ color: palette.text }, TABULAR]}>
+                <Text
+                  variant="body-medium"
+                  numberOfLines={1}
+                  style={[{ color: palette.text }, TABULAR]}
+                >
                   {item.value}
                 </Text>
               </View>
@@ -222,7 +248,10 @@ export function StageStatTiles({
           {/* Empty tracks keep a short last row on the grid instead of stretching it; they
               carry the tiles' side padding because flex shares out space after it. */}
           {Array.from({ length: perRow - row.length }, (_, k) => (
-            <View key={`empty-${k}`} style={{ flex: 1, flexBasis: 0, minWidth: 0, paddingLeft: 10, paddingRight: 10 }} />
+            <View
+              key={`empty-${k}`}
+              style={{ flex: 1, flexBasis: 0, minWidth: 0, paddingLeft: 10, paddingRight: 10 }}
+            />
           ))}
         </View>
       ))}

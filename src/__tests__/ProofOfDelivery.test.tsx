@@ -139,7 +139,12 @@ describe('what is missing is the required proofs that were DRAWN and not given',
 
   it('reports them in the DRAWN order, so the summary reads down the form', () => {
     expect(
-      missingProofs(value(), ['note', 'recipient', 'signature'], ['recipient', 'signature', 'note'], 4),
+      missingProofs(
+        value(),
+        ['note', 'recipient', 'signature'],
+        ['recipient', 'signature', 'note'],
+        4,
+      ),
     ).toEqual(['recipient', 'signature', 'note']);
   });
 
@@ -268,9 +273,7 @@ describe('the confirm control is never disabled by something missing', () => {
   });
 
   it('says nothing before the first press — a form red before it is filled in is wrong', () => {
-    mount(
-      <ProofOfDelivery proofs={['recipient']} required={['recipient']} testID="p" />,
-    );
+    mount(<ProofOfDelivery proofs={['recipient']} required={['recipient']} testID="p" />);
     expect(document.body.textContent).not.toContain('This is needed before you can confirm.');
   });
 
@@ -332,7 +335,6 @@ describe('the result is the whole value, whatever was controlled', () => {
   });
 });
 
-
 describe('photo upload completion', () => {
   it.each(['uploading', 'error'] as const)('keeps a %s photo missing', (status) => {
     const pending = value({ photos: [{ id: 'a', uri: 'x', status }] });
@@ -341,26 +343,37 @@ describe('photo upload completion', () => {
   });
 
   it('accepts any completed photo among failed and pending uploads', () => {
-    expect(isProofGiven('photo', value({ photos: [
-      { id: 'a', uri: 'x', status: 'error' },
-      { id: 'b', uri: 'y', status: 'uploading' },
-      { id: 'c', uri: 'z', status: 'uploaded' },
-    ] }), 4)).toBe(true);
+    expect(
+      isProofGiven(
+        'photo',
+        value({
+          photos: [
+            { id: 'a', uri: 'x', status: 'error' },
+            { id: 'b', uri: 'y', status: 'uploading' },
+            { id: 'c', uri: 'z', status: 'uploaded' },
+          ],
+        }),
+        4,
+      ),
+    ).toBe(true);
   });
 });
 
 describe('caller overrides', () => {
   it('announces the instance required label on every required proof', () => {
-    const container = mount(<ProofOfDelivery
-      proofs={['recipient', 'signature', 'code', 'photo', 'note']}
-      required={['recipient', 'signature', 'code', 'photo', 'note']}
-      labels={{ required: 'Mandatory proof' }}
-    />);
+    const container = mount(
+      <ProofOfDelivery
+        proofs={['recipient', 'signature', 'code', 'photo', 'note']}
+        required={['recipient', 'signature', 'code', 'photo', 'note']}
+        labels={{ required: 'Mandatory proof' }}
+      />,
+    );
     expect(container.querySelectorAll('[aria-label="Mandatory proof"]')).toHaveLength(5);
   });
 
   it.each([{ disabled: true }, { submitting: true }])(
-    'makes custom actions inert while %j, then restores them', (state) => {
+    'makes custom actions inert while %j, then restores them',
+    (state) => {
       const actions = <button data-testid="custom">Confirm</button>;
       mount(<ProofOfDelivery proofs={[]} {...state} actions={actions} />);
       expect(byTestId('custom').closest('[inert]')).not.toBeNull();

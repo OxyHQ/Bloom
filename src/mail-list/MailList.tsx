@@ -105,9 +105,7 @@ function MailListComponent({
 
   const toggle = (id: string, next: boolean) => {
     if (onCheckedIdsChange === undefined) return;
-    const keep = allIds.filter((candidate) =>
-      candidate === id ? next : checked.has(candidate),
-    );
+    const keep = allIds.filter((candidate) => (candidate === id ? next : checked.has(candidate)));
     onCheckedIdsChange(keep);
   };
 
@@ -171,13 +169,9 @@ function MailListComponent({
               strings={mail.strings ?? strings}
               selected={selectedId === id}
               checked={checked.has(id)}
-              onCheckedChange={
-                onCheckedIdsChange ? (next: boolean) => toggle(id, next) : undefined
-              }
+              onCheckedChange={onCheckedIdsChange ? (next: boolean) => toggle(id, next) : undefined}
               onStarredChange={
-                onMailStarredChange
-                  ? (next: boolean) => onMailStarredChange(id, next)
-                  : undefined
+                onMailStarredChange ? (next: boolean) => onMailStarredChange(id, next) : undefined
               }
               onPress={onMailPress ? () => onMailPress(id) : undefined}
               onLongPress={onMailLongPress ? () => onMailLongPress(id) : undefined}

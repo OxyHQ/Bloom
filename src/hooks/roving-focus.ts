@@ -46,7 +46,10 @@ export interface RovingKeyOptions {
 }
 
 /** The move a key asks for, or `null` for a key this widget does not own. */
-export function rovingMove(key: string, { orientation, homeEnd = true }: RovingKeyOptions): RovingMove | null {
+export function rovingMove(
+  key: string,
+  { orientation, homeEnd = true }: RovingKeyOptions,
+): RovingMove | null {
   const horizontal = orientation !== 'vertical';
   const vertical = orientation !== 'horizontal';
   switch (key) {

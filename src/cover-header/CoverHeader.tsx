@@ -52,7 +52,8 @@ function CoverHeaderComponent({
             backgroundColor: theme.colors.backgroundTertiary,
           },
           coverStyle,
-        ]}>
+        ]}
+      >
         {cover ??
           (coverSource ? (
             <CoverImage
@@ -64,7 +65,12 @@ function CoverHeaderComponent({
       </View>
       <View
         testID={testID ? `${testID}-content` : undefined}
-        style={[{ position: 'relative', width: '100%' }, contentStyle, { paddingTop: coverHeight - rise }]}>
+        style={[
+          { position: 'relative', width: '100%' },
+          contentStyle,
+          { paddingTop: coverHeight - rise },
+        ]}
+      >
         {children}
       </View>
     </View>

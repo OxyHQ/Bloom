@@ -29,9 +29,27 @@ const PAIR: RouteStop[] = [
 ];
 
 const MULTI: RouteStop[] = [
-  { id: 'a', title: 'Passatge del Vidre 8', subtitle: 'Collect the sofa', state: 'reached', meta: '09:12' },
-  { id: 'b', title: 'Plaça de les Bruixes 2', subtitle: 'Pick up two boxes', state: 'reached', meta: '09:41' },
-  { id: 'c', title: 'Carrer del Roure 33B', subtitle: 'Leave the boxes with the caretaker', state: 'current', meta: '10:05' },
+  {
+    id: 'a',
+    title: 'Passatge del Vidre 8',
+    subtitle: 'Collect the sofa',
+    state: 'reached',
+    meta: '09:12',
+  },
+  {
+    id: 'b',
+    title: 'Plaça de les Bruixes 2',
+    subtitle: 'Pick up two boxes',
+    state: 'reached',
+    meta: '09:41',
+  },
+  {
+    id: 'c',
+    title: 'Carrer del Roure 33B',
+    subtitle: 'Leave the boxes with the caretaker',
+    state: 'current',
+    meta: '10:05',
+  },
   { id: 'd', title: 'Avinguda dels Til·lers 61', subtitle: 'Final drop-off', state: 'pending' },
 ];
 
@@ -47,17 +65,26 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Page({ children }: { children: React.ReactNode }) {
-  return <View style={{ width: '100%', paddingVertical: 16, gap: 32, maxWidth: 560 }}>{children}</View>;
+  return (
+    <View style={{ width: '100%', paddingVertical: 16, gap: 32, maxWidth: 560 }}>{children}</View>
+  );
 }
 
 function Planner() {
   const [stops, setStops] = useState<RouteStop[]>(PAIR);
   const swap = useCallback(() => setStops((s) => [s[1]!, s[0]!]), []);
   const add = useCallback(
-    () => setStops((s) => [...s, { id: `s${s.length}`, title: 'Add a stop', subtitle: 'Tap to choose a place' }]),
+    () =>
+      setStops((s) => [
+        ...s,
+        { id: `s${s.length}`, title: 'Add a stop', subtitle: 'Tap to choose a place' },
+      ]),
     [],
   );
-  const remove = useCallback((id: string) => setStops((s) => (s.length > 2 ? s.filter((x) => x.id !== id) : s)), []);
+  const remove = useCallback(
+    (id: string) => setStops((s) => (s.length > 2 ? s.filter((x) => x.id !== id) : s)),
+    [],
+  );
   return (
     <RouteStops
       stops={stops}
@@ -111,7 +138,12 @@ export const Edges: Story = {
         <RouteStops
           stops={[
             ...MULTI,
-            { id: 'e', title: 'Carrer del Roure 3', subtitle: 'Last one', badge: <Badge content="New" variant="subtle" color="primary" size="label-small" /> },
+            {
+              id: 'e',
+              title: 'Carrer del Roure 3',
+              subtitle: 'Last one',
+              badge: <Badge content="New" variant="subtle" color="primary" size="label-small" />,
+            },
           ]}
           onPressStop={noop}
           onRemoveStop={noop}
@@ -123,8 +155,18 @@ export const Edges: Story = {
         <View style={{ maxWidth: 320 }}>
           <RouteStops
             stops={[
-              { id: 'a', title: 'Avinguda dels Til·lers 61, escala B, planta 4', subtitle: 'Ring the second bell and wait by the gate', state: 'reached' },
-              { id: 'b', title: 'Plaça de les Bruixes 2, behind the old water tower', subtitle: 'Leave it with whoever is at the desk', state: 'current' },
+              {
+                id: 'a',
+                title: 'Avinguda dels Til·lers 61, escala B, planta 4',
+                subtitle: 'Ring the second bell and wait by the gate',
+                state: 'reached',
+              },
+              {
+                id: 'b',
+                title: 'Plaça de les Bruixes 2, behind the old water tower',
+                subtitle: 'Leave it with whoever is at the desk',
+                state: 'current',
+              },
             ]}
             onSwap={noop}
           />

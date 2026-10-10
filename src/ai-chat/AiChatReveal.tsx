@@ -59,7 +59,10 @@ export function RevealSequence({
         const slot = { delay: delay + STAGGER_MS * index, animate };
         index += 1;
         return (
-          <RevealContext.Provider key={isValidElement(child) ? child.key ?? index : index} value={slot}>
+          <RevealContext.Provider
+            key={isValidElement(child) ? (child.key ?? index) : index}
+            value={slot}
+          >
             {child}
           </RevealContext.Provider>
         );
@@ -96,7 +99,9 @@ export function RevealLine({
     () => ({
       opacity: progress.value,
       transform: [{ translateY: 6 * (1 - progress.value) }],
-      ...(IS_WEB ? { filter: progress.value >= 1 ? 'none' : `blur(${6 * (1 - progress.value)}px)` } : null),
+      ...(IS_WEB
+        ? { filter: progress.value >= 1 ? 'none' : `blur(${6 * (1 - progress.value)}px)` }
+        : null),
     }),
     [progress],
   );

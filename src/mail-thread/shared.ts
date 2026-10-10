@@ -53,9 +53,7 @@ export const MAIL_THREAD_GEOMETRY = {
  * than under the avatar. Derived, never written twice.
  */
 export const MAIL_BODY_INSET =
-  MAIL_THREAD_GEOMETRY.paddingHorizontal +
-  MAIL_THREAD_GEOMETRY.avatar +
-  MAIL_THREAD_GEOMETRY.gap;
+  MAIL_THREAD_GEOMETRY.paddingHorizontal + MAIL_THREAD_GEOMETRY.avatar + MAIL_THREAD_GEOMETRY.gap;
 
 // ---------------------------------------------------------------------------
 //  Strings

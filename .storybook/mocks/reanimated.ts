@@ -64,12 +64,12 @@ export function useAnimatedRef<T>() {
   return { current: null as T | null };
 }
 
-export const withSpring = <T,>(v: T): T => v;
-export const withTiming = <T,>(v: T): T => v;
-export const withDecay = <T,>(v: T): T => v;
-export const withDelay = <T,>(_d: number, v: T): T => v;
-export const withSequence = <T,>(...values: T[]): T => values[values.length - 1] as T;
-export const withRepeat = <T,>(v: T): T => v;
+export const withSpring = <T>(v: T): T => v;
+export const withTiming = <T>(v: T): T => v;
+export const withDecay = <T>(v: T): T => v;
+export const withDelay = <T>(_d: number, v: T): T => v;
+export const withSequence = <T>(...values: T[]): T => values[values.length - 1] as T;
+export const withRepeat = <T>(v: T): T => v;
 export const cancelAnimation = noop;
 export const interpolate = (input: number) => input;
 export const interpolateColor = (_input: number, _inputRange: number[], outputRange: string[]) =>

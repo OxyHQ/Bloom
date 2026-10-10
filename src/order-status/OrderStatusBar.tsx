@@ -81,7 +81,11 @@ function OrderStatusBarComponent({
           backgroundColor: accent.background,
         }}
       >
-        <Icon width={ORDER_STATUS_BAR_GLYPH} height={ORDER_STATUS_BAR_GLYPH} fill={accent.foreground} />
+        <Icon
+          width={ORDER_STATUS_BAR_GLYPH}
+          height={ORDER_STATUS_BAR_GLYPH}
+          fill={accent.foreground}
+        />
       </View>
     ) : null);
 

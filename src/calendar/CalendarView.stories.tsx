@@ -18,12 +18,12 @@ import type { CalendarViewEvent, CalendarViewFeedAccount, CalendarViewParticipan
 
 const meta: Meta<typeof CalendarView> = {
   argTypes: {
-    "compact": { control: 'boolean' },
-    "title": { control: 'text' },
-    "newEventLabel": { control: 'text' },
-    "monthSwitcherWidth": { control: 'number' },
-    "locale": { control: 'text' },
-    "gmtLabel": { control: 'text' }
+    compact: { control: 'boolean' },
+    title: { control: 'text' },
+    newEventLabel: { control: 'text' },
+    monthSwitcherWidth: { control: 'number' },
+    locale: { control: 'text' },
+    gmtLabel: { control: 'text' },
   },
   title: 'Blocks/Calendar',
   component: CalendarView,
@@ -201,17 +201,21 @@ function Page({ children }: { children: React.ReactNode }) {
 
 /** The template: breadcrumb, header, and August 2026 with Figma's events. Press a chip, the inbox, or the month title. */
 export const Demo: Story = {
-  args: { gmtLabel: "GMT+2" },
-  parameters: { controls: { include: ["gmtLabel","compact","title","newEventLabel","monthSwitcherWidth","locale"] } },
+  args: { gmtLabel: 'GMT+2' },
+  parameters: {
+    controls: {
+      include: ['gmtLabel', 'compact', 'title', 'newEventLabel', 'monthSwitcherWidth', 'locale'],
+    },
+  },
   render: (args) => (
     <Page>
-      <CalendarView {...args}
+      <CalendarView
+        {...args}
         testID="calendar"
         defaultMonth={AUGUST}
         events={EVENTS}
         breadcrumb={BREADCRUMB}
         inboxAccounts={FEEDS}
-
         onNewEvent={() => {}}
         onMenuPress={() => {}}
       />
@@ -222,10 +226,22 @@ export const Demo: Story = {
 /** No breadcrumb, no inbox — the smallest header. */
 export const Minimal: Story = {
   args: { headingLevel: 2 },
-  parameters: { controls: { include: ["headingLevel","compact","title","newEventLabel","monthSwitcherWidth","locale","gmtLabel"] } },
+  parameters: {
+    controls: {
+      include: [
+        'headingLevel',
+        'compact',
+        'title',
+        'newEventLabel',
+        'monthSwitcherWidth',
+        'locale',
+        'gmtLabel',
+      ],
+    },
+  },
   render: (args) => (
     <Page>
-      <CalendarView {...args} defaultMonth={AUGUST} events={EVENTS}  />
+      <CalendarView {...args} defaultMonth={AUGUST} events={EVENTS} />
     </Page>
   ),
 };
@@ -233,10 +249,22 @@ export const Minimal: Story = {
 /** `compact` pins the day cards to 76px for embedded previews. */
 export const Compact: Story = {
   args: { compact: true, headingLevel: 2 },
-  parameters: { controls: { include: ["compact","headingLevel","title","newEventLabel","monthSwitcherWidth","locale","gmtLabel"] } },
+  parameters: {
+    controls: {
+      include: [
+        'compact',
+        'headingLevel',
+        'title',
+        'newEventLabel',
+        'monthSwitcherWidth',
+        'locale',
+        'gmtLabel',
+      ],
+    },
+  },
   render: (args) => (
     <Page>
-      <CalendarView {...args} defaultMonth={AUGUST} events={EVENTS} inboxAccounts={FEEDS}   />
+      <CalendarView {...args} defaultMonth={AUGUST} events={EVENTS} inboxAccounts={FEEDS} />
     </Page>
   ),
 };
@@ -244,10 +272,22 @@ export const Compact: Story = {
 /** A month with nothing in it. */
 export const EmptyMonth: Story = {
   args: { headingLevel: 2 },
-  parameters: { controls: { include: ["headingLevel","compact","title","newEventLabel","monthSwitcherWidth","locale","gmtLabel"] } },
+  parameters: {
+    controls: {
+      include: [
+        'headingLevel',
+        'compact',
+        'title',
+        'newEventLabel',
+        'monthSwitcherWidth',
+        'locale',
+        'gmtLabel',
+      ],
+    },
+  },
   render: (args) => (
     <Page>
-      <CalendarView {...args} defaultMonth={day(2, 1)} events={[]}  />
+      <CalendarView {...args} defaultMonth={day(2, 1)} events={[]} />
     </Page>
   ),
 };
@@ -261,7 +301,12 @@ export const Highlight: Story = {
       <Page>
         <View style={{ gap: 12 }}>
           <View style={{ alignSelf: 'flex-start' }}>
-            <Button size="sm" onPress={() => setHighlighted(new Date(day(8, 20)))} appearance="outline" tone="neutral">
+            <Button
+              size="sm"
+              onPress={() => setHighlighted(new Date(day(8, 20)))}
+              appearance="outline"
+              tone="neutral"
+            >
               Pulse again
             </Button>
           </View>
@@ -295,7 +340,9 @@ export const MonthSwitcher: Story = {
             onSelectDate={setPicked}
           />
           <View style={{ height: 380 }} />
-          <Text variant="body-medium">{picked ? `Picked ${picked.toDateString()}` : 'Nothing picked'}</Text>
+          <Text variant="body-medium">
+            {picked ? `Picked ${picked.toDateString()}` : 'Nothing picked'}
+          </Text>
         </View>
       </Page>
     );

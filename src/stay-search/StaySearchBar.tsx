@@ -50,16 +50,39 @@ function StaySearchBarComponent({
     dates?.summary ??
     (dates?.checkIn && dates?.checkOut
       ? `${dates.checkIn} – ${dates.checkOut}`
-      : dates?.checkIn ?? dates?.checkOut);
+      : (dates?.checkIn ?? dates?.checkOut));
 
   const [where, checkIn, checkOut, who] = HOME_SEARCH_SEGMENTS.stays;
   const segments: HomeSearchSegment<StaySearchSegment>[] = [
-    { ...where!, label: labels.where, placeholder: labels.destinationPlaceholder, value: destination },
+    {
+      ...where!,
+      label: labels.where,
+      placeholder: labels.destinationPlaceholder,
+      value: destination,
+    },
     ...(datesMode === 'single'
-      ? [{ key: 'dates' as const, label: labels.when, placeholder: labels.datesPlaceholder, value: datesSummary, flex: SINGLE_DATES_FLEX }]
+      ? [
+          {
+            key: 'dates' as const,
+            label: labels.when,
+            placeholder: labels.datesPlaceholder,
+            value: datesSummary,
+            flex: SINGLE_DATES_FLEX,
+          },
+        ]
       : [
-          { ...checkIn!, label: labels.checkIn, placeholder: labels.datesPlaceholder, value: dates?.checkIn },
-          { ...checkOut!, label: labels.checkOut, placeholder: labels.datesPlaceholder, value: dates?.checkOut },
+          {
+            ...checkIn!,
+            label: labels.checkIn,
+            placeholder: labels.datesPlaceholder,
+            value: dates?.checkIn,
+          },
+          {
+            ...checkOut!,
+            label: labels.checkOut,
+            placeholder: labels.datesPlaceholder,
+            value: dates?.checkOut,
+          },
         ]),
     { ...who!, label: labels.who, placeholder: labels.guestsPlaceholder, value: guests },
   ];

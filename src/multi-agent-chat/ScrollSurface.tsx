@@ -43,12 +43,7 @@ export function ScrollSurface({
     offset = useRef(0);
   const update = () => {
     setFade(Math.min(1, Math.max(0, offset.current) / 24));
-    setBottomFade(
-      Math.min(
-        1,
-        Math.max(0, content.current - height.current - offset.current) / 24,
-      ),
-    );
+    setBottomFade(Math.min(1, Math.max(0, content.current - height.current - offset.current) / 24));
   };
   const color =
     surface === 'full'

@@ -27,27 +27,141 @@ const NOW = Date.UTC(2026, 8, 17);
 const cover = (seed: string) => `https://picsum.photos/seed/${seed}/160/160`;
 
 const LIBRARY: LibraryEntry[] = [
-  { id: 'liked', title: 'Liked Songs', kind: 'playlist', meta: 'Playlist · 412 songs', cover: cover('liked-glow'), pinned: true, downloaded: true, addedAt: NOW - 900 * DAY, lastPlayedAt: NOW - 1 * DAY },
-  { id: 'night-drive', title: 'Night Drive', kind: 'playlist', subtitle: 'Maya', cover: cover('night-drive'), pinned: true, addedAt: NOW - 40 * DAY, lastPlayedAt: NOW - 0.1 * DAY },
-  { id: 'lumen-vale', title: 'Lumen Vale', kind: 'artist', cover: cover('lumen-vale'), addedAt: NOW - 200 * DAY, lastPlayedAt: NOW - 2 * DAY },
-  { id: 'tidewater', title: 'Tidewater Hymns', kind: 'album', subtitle: 'The Quiet Orchard', cover: cover('tidewater'), downloaded: true, addedAt: NOW - 12 * DAY, lastPlayedAt: NOW - 3 * DAY },
-  { id: 'slow-mornings', title: 'Slow Mornings', kind: 'playlist', subtitle: 'Maya', cover: cover('slow-mornings'), addedAt: NOW - 5 * DAY, lastPlayedAt: NOW - 6 * DAY },
-  { id: 'field-notes', title: 'Field Notes on Sound', kind: 'podcast', subtitle: 'Ines Marlow', cover: cover('field-notes'), downloaded: true, addedAt: NOW - 70 * DAY, lastPlayedAt: NOW - 4 * DAY },
-  { id: 'kaito', title: 'Kaito Ferran', kind: 'artist', cover: cover('kaito-ferran'), addedAt: NOW - 30 * DAY, lastPlayedAt: NOW - 20 * DAY },
-  { id: 'glass-harbor', title: 'Glass Harbor', kind: 'album', subtitle: 'Velvet Static', cover: cover('glass-harbor'), addedAt: NOW - 2 * DAY },
-  { id: 'the-long-winter', title: 'The Long Winter Road', kind: 'audiobook', subtitle: 'Oona Beckett', cover: cover('long-winter'), addedAt: NOW - 90 * DAY, lastPlayedAt: NOW - 11 * DAY },
-  { id: 'workouts', title: 'Workouts', kind: 'folder', meta: 'Folder · 4 playlists', addedAt: NOW - 300 * DAY, lastPlayedAt: NOW - 30 * DAY },
-  { id: 'amber', title: 'Amber Frequencies', kind: 'playlist', subtitle: 'Soren Achebe', cover: cover('amber-freq'), addedAt: NOW - 15 * DAY, lastPlayedAt: NOW - 8 * DAY },
-  { id: 'nora', title: 'Nora Quillfeather', kind: 'artist', cover: cover('nora-q'), downloaded: true, addedAt: NOW - 60 * DAY, lastPlayedAt: NOW - 9 * DAY },
-  { id: 'deep-current', title: 'Deep Current', kind: 'podcast', subtitle: 'Harbor Talk Collective', cover: cover('deep-current'), addedAt: NOW - 8 * DAY },
-  { id: 'paper-moons', title: 'Paper Moons', kind: 'album', subtitle: 'Lumen Vale', cover: cover('paper-moons'), addedAt: NOW - 100 * DAY, lastPlayedAt: NOW - 50 * DAY },
+  {
+    id: 'liked',
+    title: 'Liked Songs',
+    kind: 'playlist',
+    meta: 'Playlist · 412 songs',
+    cover: cover('liked-glow'),
+    pinned: true,
+    downloaded: true,
+    addedAt: NOW - 900 * DAY,
+    lastPlayedAt: NOW - 1 * DAY,
+  },
+  {
+    id: 'night-drive',
+    title: 'Night Drive',
+    kind: 'playlist',
+    subtitle: 'Maya',
+    cover: cover('night-drive'),
+    pinned: true,
+    addedAt: NOW - 40 * DAY,
+    lastPlayedAt: NOW - 0.1 * DAY,
+  },
+  {
+    id: 'lumen-vale',
+    title: 'Lumen Vale',
+    kind: 'artist',
+    cover: cover('lumen-vale'),
+    addedAt: NOW - 200 * DAY,
+    lastPlayedAt: NOW - 2 * DAY,
+  },
+  {
+    id: 'tidewater',
+    title: 'Tidewater Hymns',
+    kind: 'album',
+    subtitle: 'The Quiet Orchard',
+    cover: cover('tidewater'),
+    downloaded: true,
+    addedAt: NOW - 12 * DAY,
+    lastPlayedAt: NOW - 3 * DAY,
+  },
+  {
+    id: 'slow-mornings',
+    title: 'Slow Mornings',
+    kind: 'playlist',
+    subtitle: 'Maya',
+    cover: cover('slow-mornings'),
+    addedAt: NOW - 5 * DAY,
+    lastPlayedAt: NOW - 6 * DAY,
+  },
+  {
+    id: 'field-notes',
+    title: 'Field Notes on Sound',
+    kind: 'podcast',
+    subtitle: 'Ines Marlow',
+    cover: cover('field-notes'),
+    downloaded: true,
+    addedAt: NOW - 70 * DAY,
+    lastPlayedAt: NOW - 4 * DAY,
+  },
+  {
+    id: 'kaito',
+    title: 'Kaito Ferran',
+    kind: 'artist',
+    cover: cover('kaito-ferran'),
+    addedAt: NOW - 30 * DAY,
+    lastPlayedAt: NOW - 20 * DAY,
+  },
+  {
+    id: 'glass-harbor',
+    title: 'Glass Harbor',
+    kind: 'album',
+    subtitle: 'Velvet Static',
+    cover: cover('glass-harbor'),
+    addedAt: NOW - 2 * DAY,
+  },
+  {
+    id: 'the-long-winter',
+    title: 'The Long Winter Road',
+    kind: 'audiobook',
+    subtitle: 'Oona Beckett',
+    cover: cover('long-winter'),
+    addedAt: NOW - 90 * DAY,
+    lastPlayedAt: NOW - 11 * DAY,
+  },
+  {
+    id: 'workouts',
+    title: 'Workouts',
+    kind: 'folder',
+    meta: 'Folder · 4 playlists',
+    addedAt: NOW - 300 * DAY,
+    lastPlayedAt: NOW - 30 * DAY,
+  },
+  {
+    id: 'amber',
+    title: 'Amber Frequencies',
+    kind: 'playlist',
+    subtitle: 'Soren Achebe',
+    cover: cover('amber-freq'),
+    addedAt: NOW - 15 * DAY,
+    lastPlayedAt: NOW - 8 * DAY,
+  },
+  {
+    id: 'nora',
+    title: 'Nora Quillfeather',
+    kind: 'artist',
+    cover: cover('nora-q'),
+    downloaded: true,
+    addedAt: NOW - 60 * DAY,
+    lastPlayedAt: NOW - 9 * DAY,
+  },
+  {
+    id: 'deep-current',
+    title: 'Deep Current',
+    kind: 'podcast',
+    subtitle: 'Harbor Talk Collective',
+    cover: cover('deep-current'),
+    addedAt: NOW - 8 * DAY,
+  },
+  {
+    id: 'paper-moons',
+    title: 'Paper Moons',
+    kind: 'album',
+    subtitle: 'Lumen Vale',
+    cover: cover('paper-moons'),
+    addedAt: NOW - 100 * DAY,
+    lastPlayedAt: NOW - 50 * DAY,
+  },
 ];
 
 function contextMenu(item: LibraryEntry) {
   return (
     <>
       <ContextMenuItem onPress={() => {}}>{item.pinned ? 'Unpin' : 'Pin'}</ContextMenuItem>
-      <ContextMenuItem onPress={() => {}}>{item.downloaded ? 'Remove download' : 'Download'}</ContextMenuItem>
+      <ContextMenuItem onPress={() => {}}>
+        {item.downloaded ? 'Remove download' : 'Download'}
+      </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem variant="destructive" onPress={() => {}}>
         Remove from Your Library
@@ -84,7 +198,13 @@ function Caption({ children }: { children: string }) {
 }
 
 /** The whole panel, interactive: filters, search, sort and view menu, rail and expand toggles. */
-function InteractivePanel({ height = 720, fullWidth = false }: { height?: number; fullWidth?: boolean }) {
+function InteractivePanel({
+  height = 720,
+  fullWidth = false,
+}: {
+  height?: number;
+  fullWidth?: boolean;
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [selectedId, setSelectedId] = useState('night-drive');
@@ -105,7 +225,11 @@ function InteractivePanel({ height = 720, fullWidth = false }: { height?: number
         setSelectedId(item.id);
       }}
       renderContextMenu={contextMenu}
-      style={{ height, width: collapsed ? undefined : '100%', maxWidth: fullWidth ? undefined : expanded ? 560 : 360 }}
+      style={{
+        height,
+        width: collapsed ? undefined : '100%',
+        maxWidth: fullWidth ? undefined : expanded ? 560 : 360,
+      }}
       testID="library"
     />
   );
@@ -218,7 +342,12 @@ export const Items: Story = {
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {[LIBRARY[1]!, LIBRARY[2]!, LIBRARY[5]!].map((item) => (
           <View key={item.id} style={{ width: 160 }}>
-            <LibraryItem item={item} variant="grid" nowPlaying={item.id === 'night-drive'} onPress={() => {}} />
+            <LibraryItem
+              item={item}
+              variant="grid"
+              nowPlaying={item.id === 'night-drive'}
+              onPress={() => {}}
+            />
           </View>
         ))}
         <LibraryItem item={LIBRARY[2]!} variant="rail" onPress={() => {}} />
@@ -247,7 +376,13 @@ export const Dark: Story = {
           nowPlayingId="night-drive"
           style={{ width: '100%', maxWidth: 360, height: 720 }}
         />
-        <LibraryPanel items={LIBRARY} collapsed onCollapsedChange={() => {}} onCreatePress={() => {}} style={{ height: 720 }} />
+        <LibraryPanel
+          items={LIBRARY}
+          collapsed
+          onCollapsedChange={() => {}}
+          onCreatePress={() => {}}
+          style={{ height: 720 }}
+        />
       </Page>
     </BloomThemeProvider>
   ),

@@ -92,11 +92,26 @@ function scrollTrack(x: number, viewport: number, content: number) {
 
 describe('geometry helpers', () => {
   it('overflow: nothing when it fits, each side only when there is more to scroll', () => {
-    expect(categoryBarOverflow({ x: 0, viewport: 500, content: 500 })).toEqual({ previous: false, next: false });
-    expect(categoryBarOverflow({ x: 0, viewport: 0, content: 900 })).toEqual({ previous: false, next: false });
-    expect(categoryBarOverflow({ x: 0, viewport: 500, content: 900 })).toEqual({ previous: false, next: true });
-    expect(categoryBarOverflow({ x: 200, viewport: 500, content: 900 })).toEqual({ previous: true, next: true });
-    expect(categoryBarOverflow({ x: 399.5, viewport: 500, content: 900 })).toEqual({ previous: true, next: false });
+    expect(categoryBarOverflow({ x: 0, viewport: 500, content: 500 })).toEqual({
+      previous: false,
+      next: false,
+    });
+    expect(categoryBarOverflow({ x: 0, viewport: 0, content: 900 })).toEqual({
+      previous: false,
+      next: false,
+    });
+    expect(categoryBarOverflow({ x: 0, viewport: 500, content: 900 })).toEqual({
+      previous: false,
+      next: true,
+    });
+    expect(categoryBarOverflow({ x: 200, viewport: 500, content: 900 })).toEqual({
+      previous: true,
+      next: true,
+    });
+    expect(categoryBarOverflow({ x: 399.5, viewport: 500, content: 900 })).toEqual({
+      previous: true,
+      next: false,
+    });
   });
 
   it('an arrow scrolls the viewport less both fades, clamped to the ends', () => {
@@ -128,8 +143,16 @@ describe('CategoryBar', () => {
     expect(list.getAttribute('aria-label')).toBe('Categories');
     const tabs = ITEMS.map((item) => byTestId(`bar-item-${item.key}`));
     expect(tabs.map((tab) => tab.getAttribute('role'))).toEqual(['tab', 'tab', 'tab']);
-    expect(tabs.map((tab) => tab.getAttribute('aria-label'))).toEqual(['Trending', 'Beachfront', 'Cabins']);
-    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual(['false', 'true', 'false']);
+    expect(tabs.map((tab) => tab.getAttribute('aria-label'))).toEqual([
+      'Trending',
+      'Beachfront',
+      'Cabins',
+    ]);
+    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'false',
+      'true',
+      'false',
+    ]);
     expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual(['-1', '0', '-1']);
   });
 
@@ -142,14 +165,20 @@ describe('CategoryBar', () => {
   it.each(['light', 'dark'] as const)(
     'rest is text-secondary, selected text-primary with a 2px text-primary bar (%s)',
     (mode) => {
-      mount(<CategoryBar items={ITEMS} value="beach" accessibilityLabel="Categories" testID="bar" />, mode);
-      const label = (key: string) => byTestId(`bar-item-${key}`).querySelector('[dir="auto"]') as HTMLElement;
+      mount(
+        <CategoryBar items={ITEMS} value="beach" accessibilityLabel="Categories" testID="bar" />,
+        mode,
+      );
+      const label = (key: string) =>
+        byTestId(`bar-item-${key}`).querySelector('[dir="auto"]') as HTMLElement;
       expect(getComputedStyle(label('beach')).color).toBe(normalise(colors.text));
       expect(getComputedStyle(label('trending')).color).toBe(normalise(colors.textSecondary));
       const bar = byTestId('bar-item-beach-bar');
       expect(getComputedStyle(bar).height).toBe('2px');
       expect(getComputedStyle(bar).backgroundColor).toBe(normalise(colors.text));
-      expect(getComputedStyle(byTestId('bar-item-trending-bar')).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      expect(getComputedStyle(byTestId('bar-item-trending-bar')).backgroundColor).toBe(
+        'rgba(0, 0, 0, 0)',
+      );
       expect(byTestId('bar-item-beach').querySelector('svg')?.getAttribute('width')).toBe('24');
     },
   );
@@ -157,12 +186,20 @@ describe('CategoryBar', () => {
   it('a press selects; Space selects the focused tab', () => {
     const onValueChange = jest.fn();
     mount(
-      <CategoryBar items={ITEMS} value="trending" onValueChange={onValueChange} accessibilityLabel="Categories" testID="bar" />,
+      <CategoryBar
+        items={ITEMS}
+        value="trending"
+        onValueChange={onValueChange}
+        accessibilityLabel="Categories"
+        testID="bar"
+      />,
     );
     act(() => byTestId('bar-item-cabins').click());
     expect(onValueChange).toHaveBeenLastCalledWith('cabins');
     act(() => {
-      byTestId('bar-item-beach').dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      byTestId('bar-item-beach').dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true }),
+      );
     });
     expect(onValueChange).toHaveBeenLastCalledWith('beach');
   });
@@ -170,7 +207,13 @@ describe('CategoryBar', () => {
   it('ArrowRight / ArrowLeft / Home / End move focus between tabs without selecting', () => {
     const onValueChange = jest.fn();
     mount(
-      <CategoryBar items={ITEMS} value="trending" onValueChange={onValueChange} accessibilityLabel="Categories" testID="bar" />,
+      <CategoryBar
+        items={ITEMS}
+        value="trending"
+        onValueChange={onValueChange}
+        accessibilityLabel="Categories"
+        testID="bar"
+      />,
     );
     const key = (id: string, k: string) =>
       act(() => {
@@ -190,7 +233,9 @@ describe('CategoryBar', () => {
   });
 
   it('arrows appear only on a side with more to scroll, over a fade of the page colour', () => {
-    mount(<CategoryBar items={ITEMS} value="trending" accessibilityLabel="Categories" testID="bar" />);
+    mount(
+      <CategoryBar items={ITEMS} value="trending" accessibilityLabel="Categories" testID="bar" />,
+    );
     expect(container.querySelector('[data-testid="bar-previous"]')).toBeNull();
     expect(container.querySelector('[data-testid="bar-next"]')).toBeNull();
 
@@ -199,12 +244,16 @@ describe('CategoryBar', () => {
     const next = byTestId('bar-next');
     expect(next.getAttribute('aria-label')).toBe('Next categories');
     const edge = next.parentElement as HTMLElement;
-    expect(edge.style.backgroundImage || getComputedStyle(edge).backgroundImage).toContain('linear-gradient');
+    expect(edge.style.backgroundImage || getComputedStyle(edge).backgroundImage).toContain(
+      'linear-gradient',
+    );
     expect(getComputedStyle(edge).width).toBe(`${CATEGORY_BAR_EDGE}px`);
   });
 
   it('both arrows mid-way; the next arrow scrolls by a page', () => {
-    mount(<CategoryBar items={ITEMS} value="trending" accessibilityLabel="Categories" testID="bar" />);
+    mount(
+      <CategoryBar items={ITEMS} value="trending" accessibilityLabel="Categories" testID="bar" />,
+    );
     scrollTrack(100, 400, 1000);
     expect(byTestId('bar-previous').getAttribute('aria-label')).toBe('Previous categories');
     const track = byTestId('bar-track');
@@ -212,7 +261,9 @@ describe('CategoryBar', () => {
     Object.defineProperty(track, 'scroll', { configurable: true, value: scroll });
     act(() => byTestId('bar-next').click());
     expect(scroll).toHaveBeenLastCalledWith(
-      expect.objectContaining({ left: categoryBarPageTarget({ x: 100, viewport: 400, content: 1000 }, 1) }),
+      expect.objectContaining({
+        left: categoryBarPageTarget({ x: 100, viewport: 400, content: 1000 }, 1),
+      }),
     );
   });
 

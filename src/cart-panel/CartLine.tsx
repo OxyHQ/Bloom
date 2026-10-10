@@ -82,7 +82,8 @@ function CartLineComponent(props: CartLineProps) {
   const removeName = removeLabel ?? messages.removeItem(name);
   // The stepper carries removal only when it is live; a disabled stepper
   // (sold out) cannot, and the line still needs its remove control.
-  const stepperRemoves = removeInStepper && onRemove !== undefined && onQuantityChange !== undefined && !unavailable;
+  const stepperRemoves =
+    removeInStepper && onRemove !== undefined && onQuantityChange !== undefined && !unavailable;
 
   return (
     <Item

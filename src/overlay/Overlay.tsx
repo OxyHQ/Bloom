@@ -138,20 +138,35 @@ export function OverlayRoot({
       {children}
     </StackedOverlayRoot>
   ) : (
-    <PinnedOverlayRoot zIndex={zIndex} className={className} style={style} testID={testID} modal={modal}>
+    <PinnedOverlayRoot
+      zIndex={zIndex}
+      className={className}
+      style={style}
+      testID={testID}
+      modal={modal}
+    >
       {children}
     </PinnedOverlayRoot>
   );
 }
 
-type OverlayRootViewProps = Pick<OverlayRootProps, 'children' | 'className' | 'style' | 'testID'> & {
+type OverlayRootViewProps = Pick<
+  OverlayRootProps,
+  'children' | 'className' | 'style' | 'testID'
+> & {
   modal: boolean;
 };
 
 function StackedOverlayRoot({ children, className, style, testID, modal }: OverlayRootViewProps) {
   const layer = useOverlayLayer();
   return (
-    <OverlayRootView layer={layer} className={className} style={style} testID={testID} modal={modal}>
+    <OverlayRootView
+      layer={layer}
+      className={className}
+      style={style}
+      testID={testID}
+      modal={modal}
+    >
       {children}
     </OverlayRootView>
   );
@@ -167,12 +182,15 @@ function PinnedOverlayRoot({
 }: OverlayRootViewProps & { zIndex: number }) {
   // Outside the stack, so descendants must not read stack depths from it
   // either — every slot is the pinned depth.
-  const layer = useMemo(
-    () => ({ root: zIndex, backdrop: zIndex, surface: zIndex }),
-    [zIndex],
-  );
+  const layer = useMemo(() => ({ root: zIndex, backdrop: zIndex, surface: zIndex }), [zIndex]);
   return (
-    <OverlayRootView layer={layer} className={className} style={style} testID={testID} modal={modal}>
+    <OverlayRootView
+      layer={layer}
+      className={className}
+      style={style}
+      testID={testID}
+      modal={modal}
+    >
       {children}
     </OverlayRootView>
   );
@@ -230,8 +248,8 @@ function OverlayRootView({
 
         */}
         <ScreenScope>
-            <SurfaceLevelProvider level={0}>{children}</SurfaceLevelProvider>
-          </ScreenScope>
+          <SurfaceLevelProvider level={0}>{children}</SurfaceLevelProvider>
+        </ScreenScope>
       </StyledView>
     </OverlayLayerContext.Provider>
   );
@@ -292,9 +310,7 @@ function AnimatedBackdropLayers({
           // wrong window it segfaults — so the two props travel together or not
           // at all. `glass/blur-target.tsx` is what guarantees this is
           // `undefined` anywhere it would be unsafe.
-          {...(blurTarget
-            ? { blurMethod: 'dimezisBlurView' as const, blurTarget }
-            : null)}
+          {...(blurTarget ? { blurMethod: 'dimezisBlurView' as const, blurTarget } : null)}
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
         />
@@ -339,9 +355,7 @@ function StaticBackdropLayers({
           intensity={blurIntensity}
           tint={blurTint}
           // Blur method and target travel together — see the animated pair.
-          {...(blurTarget
-            ? { blurMethod: 'dimezisBlurView' as const, blurTarget }
-            : null)}
+          {...(blurTarget ? { blurMethod: 'dimezisBlurView' as const, blurTarget } : null)}
           pointerEvents="none"
           // Opacity last, as in the animated pair: the level this component
           // resolved wins over anything `layerStyle` happens to carry.
@@ -473,4 +487,3 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
 });
-

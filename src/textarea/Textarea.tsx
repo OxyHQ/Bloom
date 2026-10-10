@@ -1,6 +1,13 @@
 import { useBloomAppearance } from '../appearance';
 import React, { useRef, useState } from 'react';
-import { Platform, StyleSheet, TextInput, type TextStyle, type TextInputProps, View } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  TextInput,
+  type TextStyle,
+  type TextInputProps,
+  View,
+} from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -25,7 +32,8 @@ import { useFieldMembership } from '../field/membership';
 import type { TextareaProps } from './types';
 import { styled } from 'react-native-css';
 import { StyledView } from '../styles/styled-primitives';
-const StyledTextInput: React.ComponentType<TextInputProps & {ref?: React.Ref<TextInput>}> = styled(TextInput, {className: 'style'});
+const StyledTextInput: React.ComponentType<TextInputProps & { ref?: React.Ref<TextInput> }> =
+  styled(TextInput, { className: 'style' });
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -91,7 +99,10 @@ export function Textarea({
   // STACKED here, as it is on `TextField`, so the field's label wins — they are
   // two spellings of one thing and rendering both is the mistake `docs/field.mdx`
   // names.
-  const { size: scopedSize } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const { size: scopedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
   const size = scopedSize;
   const field = useFieldMembership({
     accessibilityLabel,
@@ -123,16 +134,18 @@ export function Textarea({
   const controlStyle = StyleSheet.flatten([
     {
       fontFamily: SANS_FONT_FAMILY,
-      ...(inputClassName ? {} : {
-      fontSize: TEXT_FIELD_TEXT.fontSize,
-      lineHeight: line,
-      fontWeight: TEXT_FIELD_TEXT.fontWeight,
-      color: field.disabled ? palette.textDisabled : palette.text,
-      paddingLeft: TEXT_FIELD_INPUT_INSET,
-      paddingRight: TEXT_FIELD_INPUT_INSET,
-      paddingTop: 0,
-      paddingBottom: 0,
-      }),
+      ...(inputClassName
+        ? {}
+        : {
+            fontSize: TEXT_FIELD_TEXT.fontSize,
+            lineHeight: line,
+            fontWeight: TEXT_FIELD_TEXT.fontWeight,
+            color: field.disabled ? palette.textDisabled : palette.text,
+            paddingLeft: TEXT_FIELD_INPUT_INSET,
+            paddingRight: TEXT_FIELD_INPUT_INSET,
+            paddingTop: 0,
+            paddingBottom: 0,
+          }),
       margin: 0,
       minWidth: 0,
       width: '100%',
@@ -167,13 +180,16 @@ export function Textarea({
       <StyledView
         className={fieldClassName}
         style={[
-          fieldClassName ? null : {
-            borderRadius: TEXT_FIELD_RADIUS,
-            borderWidth: TEXT_FIELD_RING_WIDTH,
-            paddingHorizontal: TEXT_FIELD_GEOMETRY[size].paddingHorizontal - TEXT_FIELD_RING_WIDTH,
-            paddingVertical: SHELL_PADDING_VERTICAL - TEXT_FIELD_RING_WIDTH,
-            ...paint,
-          },
+          fieldClassName
+            ? null
+            : {
+                borderRadius: TEXT_FIELD_RADIUS,
+                borderWidth: TEXT_FIELD_RING_WIDTH,
+                paddingHorizontal:
+                  TEXT_FIELD_GEOMETRY[size].paddingHorizontal - TEXT_FIELD_RING_WIDTH,
+                paddingVertical: SHELL_PADDING_VERTICAL - TEXT_FIELD_RING_WIDTH,
+                ...paint,
+              },
           TEXT_FIELD_WEB_TRANSITION,
           fieldStyle,
         ]}
@@ -185,7 +201,8 @@ export function Textarea({
               onMouseEnter: onHoverIn,
               onMouseLeave: onHoverOut,
             } as Record<string, unknown>)
-          : {})}>
+          : {})}
+      >
         <StyledTextInput
           className={inputClassName}
           {...rest}
@@ -229,7 +246,8 @@ export function Textarea({
             justifyContent: 'space-between',
             gap: 12,
             marginTop: TEXT_FIELD_STACK_GAP,
-          }}>
+          }}
+        >
           {hint ? (
             <TextFieldHint invalid={field.invalid} style={{ marginTop: 0 }}>
               {hint}
@@ -244,7 +262,8 @@ export function Textarea({
                 paddingTop: 1,
                 fontVariant: ['tabular-nums'],
                 color: field.invalid ? palette.error : palette.count,
-              }}>
+              }}
+            >
               {maxLength ? `${count}/${maxLength}` : String(count)}
             </Text>
           ) : null}

@@ -5,7 +5,14 @@ import type { StyleProp, TextProps, TextStyle, ViewStyle } from 'react-native';
  * A language hint. `js`, `jsx`, `ts`, `tsx`, `javascript` and `typescript` are
  * highlighted; any other value renders the code as plain text.
  */
-export type CodeLanguage = 'js' | 'jsx' | 'ts' | 'tsx' | 'javascript' | 'typescript' | (string & {});
+export type CodeLanguage =
+  | 'js'
+  | 'jsx'
+  | 'ts'
+  | 'tsx'
+  | 'javascript'
+  | 'typescript'
+  | (string & {});
 
 /** What a highlighted run is. See `tokenizeCode`. */
 export type CodeTokenKind =

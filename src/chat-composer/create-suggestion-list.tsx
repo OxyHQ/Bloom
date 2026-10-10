@@ -32,11 +32,13 @@ import type { ChatComposerSuggestion, SuggestionKind, SuggestionListProps } from
 import { dataHook, IS_WEB } from './web-hooks';
 
 /** Platform dependencies are bound once; shared rendering adds no wrapper. */
-export function createSuggestionList({ Surface, Loading }: {
+export function createSuggestionList({
+  Surface,
+  Loading,
+}: {
   Surface: typeof SurfaceComponent;
   Loading: typeof LoadingComponent;
 }) {
-
   function isUrl(value: string): boolean {
     return /^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('file:');
   }
@@ -81,7 +83,8 @@ export function createSuggestionList({ Surface, Loading }: {
             backgroundColor: palette.inset,
             alignItems: 'center',
             justifyContent: 'center',
-          }}>
+          }}
+        >
           <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
             {suggestion.label.slice(0, 1).toUpperCase()}
           </Text>
@@ -97,7 +100,8 @@ export function createSuggestionList({ Surface, Loading }: {
           backgroundColor: palette.inset,
           alignItems: 'center',
           justifyContent: 'center',
-        }}>
+        }}
+      >
         <RiHashtag width={16} height={16} fill={palette.iconSecondary} />
       </View>
     );
@@ -126,7 +130,9 @@ export function createSuggestionList({ Surface, Loading }: {
 
     // React Native's `Role` union has no `listbox`; react-native-web passes the
     // DOM `role` straight through, so it travels as a web-only prop.
-    const listRole: Record<string, unknown> = IS_WEB ? { role: 'listbox' } : { accessibilityRole: 'list' };
+    const listRole: Record<string, unknown> = IS_WEB
+      ? { role: 'listbox' }
+      : { accessibilityRole: 'list' };
 
     const panel: WebCssStyle = {
       borderRadius: PANEL_RADIUS,
@@ -147,12 +153,20 @@ export function createSuggestionList({ Surface, Loading }: {
               paddingRight: 8,
               paddingTop: 2,
               paddingBottom: 6,
-            }}>
+            }}
+          >
             {header}
           </Text>
         ) : null}
         {loading ? (
-          <View style={{ minHeight: SUGGESTION_ROW_HEIGHT, justifyContent: 'center', paddingLeft: 8, paddingRight: 8 }}>
+          <View
+            style={{
+              minHeight: SUGGESTION_ROW_HEIGHT,
+              justifyContent: 'center',
+              paddingLeft: 8,
+              paddingRight: 8,
+            }}
+          >
             <Loading
               variant="inline"
               size="sm"
@@ -175,94 +189,114 @@ export function createSuggestionList({ Surface, Loading }: {
               paddingTop: 10,
               paddingBottom: 10,
             }}
-            testID={testID ? `${testID}-empty` : undefined}>
+            testID={testID ? `${testID}-empty` : undefined}
+          >
             {emptyLabel ?? messages.noSuggestions[kind]}
           </Text>
         ) : (
-        <ScrollView
-          {...dataHook('bloomChatComposerScroll')}
-          {...listRole}
-          accessibilityLabel={accessibilityLabel ?? messages.suggestions[kind]}
-          style={{ maxHeight }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          {...(IS_WEB ? {
-            // Options belong to the input: mouse selection must not blur it
-            // before the ensuing click can choose a row. Touch scrolling is
-            // unaffected because its pointer default is not cancelled.
-            onMouseDown: (event: React.MouseEvent) => event.preventDefault(),
-          } : {})}>
-          {suggestions.map((suggestion, index) => {
-            const active = index === activeIndex;
-            const row: WebCssStyle = {
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              minHeight: SUGGESTION_ROW_HEIGHT,
-              borderRadius: 10,
-              paddingLeft: 8,
-              paddingRight: 8,
-              paddingTop: 6,
-              paddingBottom: 6,
-              opacity: suggestion.disabled ? 0.5 : 1,
-              backgroundColor: active ? palette.hover : 'transparent',
-              cursor: suggestion.disabled ? 'auto' : 'pointer',
-              '--bloom-chat-composer-ring': palette.focusRing,
-            };
-            const verified = kind === 'mention' && suggestion.verified === true;
-            const name = [
-              suggestion.label,
-              verified ? messages.suggestionVerified : undefined,
-              suggestion.handle,
-            ].filter(Boolean).join(verified ? ', ' : ' ');
-            return (
-              <Pressable
-                key={suggestion.id}
-                {...dataHook('bloomChatComposerRow')}
-                role="option"
-                accessibilityLabel={name}
-                aria-selected={active}
-                accessibilityState={{ selected: active, disabled: suggestion.disabled }}
-                disabled={suggestion.disabled}
-                onPress={() => onSelectSuggestion?.(suggestion, index)}
-                onHoverIn={() => onActiveIndexChange?.(index)}
-                style={row}
-                testID={testID ? `${testID}-row-${suggestion.id}` : undefined}>
-                <Leading kind={kind} suggestion={suggestion} />
-                <View style={{ flexShrink: 1, flexGrow: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, flexShrink: 1 }}>
-                      <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text, flexShrink: 1 }}>
-                        {suggestion.label}
-                      </Text>
-                      {verified ? (
-                        <View testID={testID ? `${testID}-verified-${suggestion.id}` : undefined}>
-                          <RiVerifiedBadgeFill width={14} height={14} fill={palette.accent} />
-                        </View>
+          <ScrollView
+            {...dataHook('bloomChatComposerScroll')}
+            {...listRole}
+            accessibilityLabel={accessibilityLabel ?? messages.suggestions[kind]}
+            style={{ maxHeight }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            {...(IS_WEB
+              ? {
+                  // Options belong to the input: mouse selection must not blur it
+                  // before the ensuing click can choose a row. Touch scrolling is
+                  // unaffected because its pointer default is not cancelled.
+                  onMouseDown: (event: React.MouseEvent) => event.preventDefault(),
+                }
+              : {})}
+          >
+            {suggestions.map((suggestion, index) => {
+              const active = index === activeIndex;
+              const row: WebCssStyle = {
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                minHeight: SUGGESTION_ROW_HEIGHT,
+                borderRadius: 10,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingTop: 6,
+                paddingBottom: 6,
+                opacity: suggestion.disabled ? 0.5 : 1,
+                backgroundColor: active ? palette.hover : 'transparent',
+                cursor: suggestion.disabled ? 'auto' : 'pointer',
+                '--bloom-chat-composer-ring': palette.focusRing,
+              };
+              const verified = kind === 'mention' && suggestion.verified === true;
+              const name = [
+                suggestion.label,
+                verified ? messages.suggestionVerified : undefined,
+                suggestion.handle,
+              ]
+                .filter(Boolean)
+                .join(verified ? ', ' : ' ');
+              return (
+                <Pressable
+                  key={suggestion.id}
+                  {...dataHook('bloomChatComposerRow')}
+                  role="option"
+                  accessibilityLabel={name}
+                  aria-selected={active}
+                  accessibilityState={{ selected: active, disabled: suggestion.disabled }}
+                  disabled={suggestion.disabled}
+                  onPress={() => onSelectSuggestion?.(suggestion, index)}
+                  onHoverIn={() => onActiveIndexChange?.(index)}
+                  style={row}
+                  testID={testID ? `${testID}-row-${suggestion.id}` : undefined}
+                >
+                  <Leading kind={kind} suggestion={suggestion} />
+                  <View style={{ flexShrink: 1, flexGrow: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 3,
+                          flexShrink: 1,
+                        }}
+                      >
+                        <Text
+                          variant="body-medium"
+                          numberOfLines={1}
+                          style={{ color: palette.text, flexShrink: 1 }}
+                        >
+                          {suggestion.label}
+                        </Text>
+                        {verified ? (
+                          <View testID={testID ? `${testID}-verified-${suggestion.id}` : undefined}>
+                            <RiVerifiedBadgeFill width={14} height={14} fill={palette.accent} />
+                          </View>
+                        ) : null}
+                      </View>
+                      {suggestion.handle ? (
+                        <Text
+                          variant="body-2-regular"
+                          numberOfLines={1}
+                          style={{ color: palette.textSecondary, flexShrink: 1 }}
+                        >
+                          {suggestion.handle}
+                        </Text>
                       ) : null}
                     </View>
-                    {suggestion.handle ? (
+                    {suggestion.description ? (
                       <Text
-                        variant="body-2-regular"
+                        variant="caption-1-regular"
                         numberOfLines={1}
-                        style={{ color: palette.textSecondary, flexShrink: 1 }}>
-                        {suggestion.handle}
+                        style={{ color: palette.textPlaceholder }}
+                      >
+                        {suggestion.description}
                       </Text>
                     ) : null}
                   </View>
-                  {suggestion.description ? (
-                    <Text
-                      variant="caption-1-regular"
-                      numberOfLines={1}
-                      style={{ color: palette.textPlaceholder }}>
-                      {suggestion.description}
-                    </Text>
-                  ) : null}
-                </View>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         )}
       </Surface>
     );

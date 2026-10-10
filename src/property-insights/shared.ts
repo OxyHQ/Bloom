@@ -87,7 +87,11 @@ function lerpOklch(a: Oklch, b: Oklch, t: number): Oklch {
   let dh = b.h - a.h;
   if (dh > 180) dh -= 360;
   if (dh < -180) dh += 360;
-  return { l: a.l + (b.l - a.l) * t, c: a.c + (b.c - a.c) * t, h: (((a.h + dh * t) % 360) + 360) % 360 };
+  return {
+    l: a.l + (b.l - a.l) * t,
+    c: a.c + (b.c - a.c) * t,
+    h: (((a.h + dh * t) % 360) + 360) % 360,
+  };
 }
 
 function toOklch(color: string): Oklch | null {
@@ -101,7 +105,8 @@ function fitRgb({ l, c, h }: Oklch): string {
   for (let i = 0; i < 24; i++) {
     const rgb = oklchToSrgb({ l, c: chroma, h });
     const back = srgbToOklch(rgb);
-    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01) return srgbToRgbString(rgb);
+    if (Math.abs(back.l - l) < 0.01 && Math.abs(back.c - chroma) < 0.01)
+      return srgbToRgbString(rgb);
     chroma *= 0.9;
   }
   return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));

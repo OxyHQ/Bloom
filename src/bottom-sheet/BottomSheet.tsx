@@ -19,16 +19,22 @@ import type { BottomSheetProps, BottomSheetRef, BottomSheetShellProps } from './
 // (Metro evaluates the constant); the literal is simply the form the rule can be
 // checked as. See `connection-status/netinfo.ts` for the full rule, including
 // the specifier shape that does NOT work.
-const noopKeyboardHandler = (_handlers: Record<string, (e: { height: number }) => void>, _deps: unknown[]) => {};
-let useKeyboardHandler: (handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void = noopKeyboardHandler;
+const noopKeyboardHandler = (
+  _handlers: Record<string, (e: { height: number }) => void>,
+  _deps: unknown[],
+) => {};
+let useKeyboardHandler: (
+  handlers: Record<string, (e: { height: number }) => void>,
+  deps: unknown[],
+) => void = noopKeyboardHandler;
 
 if (Platform.OS !== 'web' && typeof require !== 'undefined') {
-    try {
-        const keyboardController = require('react-native-keyboard-controller');
-        useKeyboardHandler = keyboardController.useKeyboardHandler ?? noopKeyboardHandler;
-    } catch {
-        // react-native-keyboard-controller not available — keep the no-op handler.
-    }
+  try {
+    const keyboardController = require('react-native-keyboard-controller');
+    useKeyboardHandler = keyboardController.useKeyboardHandler ?? noopKeyboardHandler;
+  } catch {
+    // react-native-keyboard-controller not available — keep the no-op handler.
+  }
 }
 
 /**
@@ -57,17 +63,20 @@ if (Platform.OS !== 'web' && typeof require !== 'undefined') {
  * hook then no-ops (and warns in development) like every other consumer.
  */
 function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<number> }) {
-    useKeyboardHandler({
-        onMove: (e) => {
-            'worklet';
-            keyboardHeight.value = e.height;
-        },
-        onEnd: (e) => {
-            'worklet';
-            keyboardHeight.value = e.height;
-        },
-    }, []);
-    return null;
+  useKeyboardHandler(
+    {
+      onMove: (e) => {
+        'worklet';
+        keyboardHeight.value = e.height;
+      },
+      onEnd: (e) => {
+        'worklet';
+        keyboardHeight.value = e.height;
+      },
+    },
+    [],
+  );
+  return null;
 }
 
 /**
@@ -77,9 +86,15 @@ function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<num
  * here). No `<KeyboardProvider>`: see `SheetKeyboardSync`.
  */
 function NativeShell({ visible, onRequestClose, keyboardHeight, children }: BottomSheetShellProps) {
-    return (
-        <Modal visible={visible} transparent animationType="none" statusBarTranslucent onRequestClose={onRequestClose}>
-            {/*
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={onRequestClose}
+    >
+      {/*
               This <Modal> is its own native window — the same boundary the
               GestureHandlerRootView below is re-established for.
               `GlassBlurWindow` declares it to the glass layer, which is the
@@ -87,24 +102,26 @@ function NativeShell({ visible, onRequestClose, keyboardHeight, children }: Bott
               a BlurView in the app's own window would be a descendant of what it
               blurs, and that segfaults. See `glass/blur-target.tsx`.
             */}
-            <GlassBlurWindow>
-                <SheetKeyboardSync keyboardHeight={keyboardHeight} />
-                <GestureHandlerRootView style={styles.rootView}>{children}</GestureHandlerRootView>
-            </GlassBlurWindow>
-        </Modal>
-    );
+      <GlassBlurWindow>
+        <SheetKeyboardSync keyboardHeight={keyboardHeight} />
+        <GestureHandlerRootView style={styles.rootView}>{children}</GestureHandlerRootView>
+      </GlassBlurWindow>
+    </Modal>
+  );
 }
 
-const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef<BottomSheetRef>) => (
+const BottomSheet = forwardRef(
+  (props: BottomSheetProps, ref: React.ForwardedRef<BottomSheetRef>) => (
     <BottomSheetBase {...props} ref={ref} Shell={NativeShell} />
-));
+  ),
+);
 
 BottomSheet.displayName = 'BottomSheet';
 
 const styles = StyleSheet.create({
-    rootView: {
-        flex: 1,
-    },
+  rootView: {
+    flex: 1,
+  },
 });
 
 export default BottomSheet;

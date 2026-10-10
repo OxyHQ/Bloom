@@ -21,7 +21,16 @@ type Story = StoryObj<typeof WebSearch>;
 function Frame({ children, testID }: { children: React.ReactNode; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ padding: 40, width: 560, maxWidth: '100%', gap: 40, backgroundColor: colors.background }}>
+    <View
+      testID={testID}
+      style={{
+        padding: 40,
+        width: 560,
+        maxWidth: '100%',
+        gap: 40,
+        backgroundColor: colors.background,
+      }}
+    >
       {children}
     </View>
   );
@@ -36,12 +45,38 @@ const STEPS: WebSearchStep[] = [
     icon: RiGlobalLine,
     meta: '10 results',
     sources: [
-      { title: 'The best budget mechanical keyboards in 2025', domain: 'www.pcgamer.com', href: 'https://www.pcgamer.com' },
-      { title: 'The 6 Best Budget Keyboards - Winter 2025', domain: 'www.rtings.com', href: 'https://www.rtings.com' },
-      { title: 'Keychron V1 Max review: the new default', domain: 'www.theverge.com', href: 'https://www.theverge.com' },
-      { title: "What's the best keyboard under $100?", domain: 'www.reddit.com', brand: 'reddit', href: 'https://www.reddit.com' },
-      { title: 'Budget boards compared, sound tests included', domain: 'github.com', brand: 'github', href: 'https://github.com' },
-      { title: 'Best cheap mechanical keyboards', domain: 'www.tomshardware.com', href: 'https://www.tomshardware.com' },
+      {
+        title: 'The best budget mechanical keyboards in 2025',
+        domain: 'www.pcgamer.com',
+        href: 'https://www.pcgamer.com',
+      },
+      {
+        title: 'The 6 Best Budget Keyboards - Winter 2025',
+        domain: 'www.rtings.com',
+        href: 'https://www.rtings.com',
+      },
+      {
+        title: 'Keychron V1 Max review: the new default',
+        domain: 'www.theverge.com',
+        href: 'https://www.theverge.com',
+      },
+      {
+        title: "What's the best keyboard under $100?",
+        domain: 'www.reddit.com',
+        brand: 'reddit',
+        href: 'https://www.reddit.com',
+      },
+      {
+        title: 'Budget boards compared, sound tests included',
+        domain: 'github.com',
+        brand: 'github',
+        href: 'https://github.com',
+      },
+      {
+        title: 'Best cheap mechanical keyboards',
+        domain: 'www.tomshardware.com',
+        href: 'https://www.tomshardware.com',
+      },
       { title: 'Keyboard buying guide', domain: 'www.wired.com' },
     ],
   },
@@ -51,12 +86,27 @@ const STEPS: WebSearchStep[] = [
     query: 'r/mechanicalkeyboards budget',
     meta: '7 posts',
     sources: [
-      { title: 'Keychron V1 Max after six months', domain: 'www.reddit.com', brand: 'reddit', href: 'https://www.reddit.com' },
-      { title: 'Aula F75 vs Keychron V1', domain: 'www.reddit.com', brand: 'reddit', href: 'https://www.reddit.com' },
+      {
+        title: 'Keychron V1 Max after six months',
+        domain: 'www.reddit.com',
+        brand: 'reddit',
+        href: 'https://www.reddit.com',
+      },
+      {
+        title: 'Aula F75 vs Keychron V1',
+        domain: 'www.reddit.com',
+        brand: 'reddit',
+        href: 'https://www.reddit.com',
+      },
     ],
   },
   { label: 'Searched X for', brand: 'x', query: 'aula f75 review', meta: '12 posts' },
-  { label: 'Read', icon: RiFileTextLine, query: 'rtings.com/keyboard/reviews/best/budget', dwell: 1600 },
+  {
+    label: 'Read',
+    icon: RiFileTextLine,
+    query: 'rtings.com/keyboard/reviews/best/budget',
+    dwell: 1600,
+  },
 ];
 
 /** Every unit revealed: heading, trail, both sources rows. Press "Sources" to fly the marks out. */
@@ -79,10 +129,15 @@ export const Streaming: Story = {
       <Frame testID="streaming">
         <WebSearch key={run} testID="ws" steps={STEPS} onComplete={() => setDone(true)} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button size="sm" onPress={() => {
+          <Button
+            size="sm"
+            onPress={() => {
               setDone(false);
               setRun((n) => n + 1);
-            }} appearance="outline" tone="neutral">
+            }}
+            appearance="outline"
+            tone="neutral"
+          >
             {done ? 'Replay' : 'Restart'}
           </Button>
         </View>
@@ -100,10 +155,20 @@ export const Controlled: Story = {
       <Frame testID="controlled">
         <WebSearch testID="ws" steps={STEPS} revealed={revealed} working="Reading sources" />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button size="sm" onPress={() => setRevealed((n) => Math.max(0, n - 1))} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRevealed((n) => Math.max(0, n - 1))}
+            appearance="outline"
+            tone="neutral"
+          >
             Back
           </Button>
-          <Button size="sm" onPress={() => setRevealed((n) => n + 1)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRevealed((n) => n + 1)}
+            appearance="outline"
+            tone="neutral"
+          >
             Next unit
           </Button>
         </View>
@@ -133,16 +198,35 @@ export const Glyphs: Story = {
         revealed={99}
         steps={[
           { label: 'Searched GitHub for', brand: 'github', query: 'bloom tokens', meta: '4 repos' },
-          { label: 'Searched Google for', brand: 'google', query: 'color-mix oklab', meta: '5 results' },
+          {
+            label: 'Searched Google for',
+            brand: 'google',
+            query: 'color-mix oklab',
+            meta: '5 results',
+          },
           { label: 'Watched on Twitch', brand: 'twitch' },
           { label: 'Read the docs', icon: RiBookOpenLine },
           {
             label: 'Opened',
             meta: '3 pages',
             sources: [
-              { title: 'Figma community file', domain: 'figma.com', brand: 'figma', href: 'https://figma.com' },
-              { title: 'Notion spec', domain: 'notion.so', brand: 'notion', href: 'https://notion.so' },
-              { title: 'Internal wiki', domain: 'wiki.internal', icon: <RiBookOpenLine width={12} height={12} fill="#8b5cf6" /> },
+              {
+                title: 'Figma community file',
+                domain: 'figma.com',
+                brand: 'figma',
+                href: 'https://figma.com',
+              },
+              {
+                title: 'Notion spec',
+                domain: 'notion.so',
+                brand: 'notion',
+                href: 'https://notion.so',
+              },
+              {
+                title: 'Internal wiki',
+                domain: 'wiki.internal',
+                icon: <RiBookOpenLine width={12} height={12} fill="#8b5cf6" />,
+              },
             ],
           },
           { label: 'No glyph at all' },
@@ -166,9 +250,15 @@ export const ReducedMotion: Story = {
 export const Playground: StoryObj<typeof WebSearch> = {
   args: { steps: STEPS, run: false, revealed: 8 },
   parameters: { controls: { disable: false, include: ['run', 'revealed'] } },
-  argTypes: { run: { control: 'boolean' }, revealed: { if: { arg: 'run', truthy: false }, control: { type: 'number', min: 0, max: 12 } } },
+  argTypes: {
+    run: { control: 'boolean' },
+    revealed: { if: { arg: 'run', truthy: false }, control: { type: 'number', min: 0, max: 12 } },
+  },
   render: function Playground(args) {
-
-    return <View style={{ width: 440, maxWidth: '100%' }}><WebSearch {...args} revealed={args.run ? undefined : args.revealed} /></View>;
+    return (
+      <View style={{ width: 440, maxWidth: '100%' }}>
+        <WebSearch {...args} revealed={args.run ? undefined : args.revealed} />
+      </View>
+    );
   },
 };

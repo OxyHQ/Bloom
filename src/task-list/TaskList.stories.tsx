@@ -21,7 +21,16 @@ type Story = StoryObj<typeof TaskList>;
 function Frame({ children, testID }: { children: React.ReactNode; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ padding: 40, width: 560, maxWidth: '100%', gap: 40, backgroundColor: colors.background }}>
+    <View
+      testID={testID}
+      style={{
+        padding: 40,
+        width: 560,
+        maxWidth: '100%',
+        gap: 40,
+        backgroundColor: colors.background,
+      }}
+    >
       {children}
     </View>
   );
@@ -41,7 +50,10 @@ const TASKS: TaskListTask[] = [
     icon: RiFolder3Line,
     steps: [
       { label: 'Scanning 52 files' },
-      { label: 'Reading', chips: [{ label: 'package.json' }, { label: 'tsconfig.json', icon: <FileGlyph /> }] },
+      {
+        label: 'Reading',
+        chips: [{ label: 'package.json' }, { label: 'tsconfig.json', icon: <FileGlyph /> }],
+      },
     ],
   },
   {
@@ -50,7 +62,10 @@ const TASKS: TaskListTask[] = [
     icon: RiCodeSLine,
     steps: [
       { label: 'Migrating Button to resolved tokens' },
-      { label: 'Editing', chips: [{ label: 'Button.tsx' }, { label: 'Chip.tsx' }, { label: 'Badge.tsx' }] },
+      {
+        label: 'Editing',
+        chips: [{ label: 'Button.tsx' }, { label: 'Chip.tsx' }, { label: 'Badge.tsx' }],
+      },
       { label: 'Removed 3 legacy theme imports' },
     ],
   },
@@ -81,7 +96,12 @@ export const Streaming: Story = {
       <Frame testID="streaming">
         <TaskList key={run} testID="tl" tasks={TASKS} />
         <View style={{ flexDirection: 'row' }}>
-          <Button size="sm" onPress={() => setRun((n) => n + 1)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRun((n) => n + 1)}
+            appearance="outline"
+            tone="neutral"
+          >
             Replay
           </Button>
         </View>
@@ -99,10 +119,20 @@ export const Controlled: Story = {
       <Frame testID="controlled">
         <TaskList testID="tl" tasks={TASKS} revealed={revealed} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button size="sm" onPress={() => setRevealed((n) => Math.max(0, n - 1))} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRevealed((n) => Math.max(0, n - 1))}
+            appearance="outline"
+            tone="neutral"
+          >
             Back
           </Button>
-          <Button size="sm" onPress={() => setRevealed((n) => n + 1)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRevealed((n) => n + 1)}
+            appearance="outline"
+            tone="neutral"
+          >
             Next unit
           </Button>
         </View>
@@ -118,10 +148,27 @@ export const CollapseOnComplete: Story = {
     const [run, setRun] = useState(0);
     return (
       <Frame testID="collapse">
-        <TaskList key={`each-${run}`} testID="tl-each" tasks={TASKS} stepInterval={450} collapseOnComplete />
-        <TaskList key={`all-${run}`} testID="tl-all" tasks={TASKS} stepInterval={450} collapseOnComplete="all" />
+        <TaskList
+          key={`each-${run}`}
+          testID="tl-each"
+          tasks={TASKS}
+          stepInterval={450}
+          collapseOnComplete
+        />
+        <TaskList
+          key={`all-${run}`}
+          testID="tl-all"
+          tasks={TASKS}
+          stepInterval={450}
+          collapseOnComplete="all"
+        />
         <View style={{ flexDirection: 'row' }}>
-          <Button size="sm" onPress={() => setRun((n) => n + 1)} appearance="outline" tone="neutral">
+          <Button
+            size="sm"
+            onPress={() => setRun((n) => n + 1)}
+            appearance="outline"
+            tone="neutral"
+          >
             Replay
           </Button>
         </View>
@@ -160,8 +207,30 @@ export const ReducedMotion: Story = {
 };
 
 export const Playground: Story = {
-  args: { tasks: TASKS, run: false, revealed: 4, stepInterval: 900, reduce: false, collapseOnComplete: false },
-  parameters: { controls: { disable: false, include: ['run', 'revealed', 'stepInterval', 'reduce', 'collapseOnComplete'] } },
-  argTypes: { run: { control: 'boolean' }, revealed: { if: { arg: 'run', truthy: false }, control: { type: 'number', min: 0, max: 12 } }, stepInterval: { control: { type: 'range', min: 100, max: 2000, step: 100 } }, reduce: { control: 'boolean' }, collapseOnComplete: { control: 'select', options: [false, true, 'all'] } },
-  render: args => <View style={{ width: 520, maxWidth: '100%' }}><TaskList {...args} revealed={args.run ? undefined : args.revealed} /></View>,
+  args: {
+    tasks: TASKS,
+    run: false,
+    revealed: 4,
+    stepInterval: 900,
+    reduce: false,
+    collapseOnComplete: false,
+  },
+  parameters: {
+    controls: {
+      disable: false,
+      include: ['run', 'revealed', 'stepInterval', 'reduce', 'collapseOnComplete'],
+    },
+  },
+  argTypes: {
+    run: { control: 'boolean' },
+    revealed: { if: { arg: 'run', truthy: false }, control: { type: 'number', min: 0, max: 12 } },
+    stepInterval: { control: { type: 'range', min: 100, max: 2000, step: 100 } },
+    reduce: { control: 'boolean' },
+    collapseOnComplete: { control: 'select', options: [false, true, 'all'] },
+  },
+  render: (args) => (
+    <View style={{ width: 520, maxWidth: '100%' }}>
+      <TaskList {...args} revealed={args.run ? undefined : args.revealed} />
+    </View>
+  ),
 };

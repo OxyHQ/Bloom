@@ -75,7 +75,14 @@ describe('every row announces its position and its state before its text', () =>
   });
 
   it('includes the subtitle and the meta, in reading order', () => {
-    mount(<RouteStops stops={[{ id: 'a', title: 'First', subtitle: 'Third floor', meta: '09:12', state: 'reached' }]} testID="r" />);
+    mount(
+      <RouteStops
+        stops={[
+          { id: 'a', title: 'First', subtitle: 'Third floor', meta: '09:12', state: 'reached' },
+        ]}
+        testID="r"
+      />,
+    );
     expect(names(1)).toEqual(['Origin, Reached, First, Third floor, 09:12']);
   });
 
@@ -113,19 +120,26 @@ describe('every row announces its position and its state before its text', () =>
     mount(<RouteStops stops={PAIR} testID="r" />);
     // Read-only: `Item`'s non-pressable branch renders `role="none"`, so a name
     // left there would be on the one element assistive technology ignores.
-    expect(byTestId('r-0-item').getAttribute('aria-label')).toBe('Origin, Not reached, Carrer de l\u2019Om 14, Pick-up');
+    expect(byTestId('r-0-item').getAttribute('aria-label')).toBe(
+      'Origin, Not reached, Carrer de l\u2019Om 14, Pick-up',
+    );
     expect(byTestId('r-0-item').querySelector('[role="button"]')).toBeNull();
     mount(<RouteStops stops={PAIR} onPressStop={noop} testID="r" />);
     // Pressable: the button carries it, and the listitem carries nothing — the
     // stop is announced once, not twice.
     expect(byTestId('r-0-item').getAttribute('aria-label')).toBeNull();
-    expect(
-      byTestId('r-0-item').querySelector('[role="button"]')?.getAttribute('aria-label'),
-    ).toBe('Origin, Not reached, Carrer de l\u2019Om 14, Pick-up');
+    expect(byTestId('r-0-item').querySelector('[role="button"]')?.getAttribute('aria-label')).toBe(
+      'Origin, Not reached, Carrer de l\u2019Om 14, Pick-up',
+    );
   });
 
   it('lets a stop override its own announced name', () => {
-    mount(<RouteStops stops={[{ id: 'a', title: 'First', accessibilityLabel: 'Where it starts' }]} testID="r" />);
+    mount(
+      <RouteStops
+        stops={[{ id: 'a', title: 'First', accessibilityLabel: 'Where it starts' }]}
+        testID="r"
+      />,
+    );
     expect(names(1)).toEqual(['Where it starts']);
   });
 });
@@ -232,7 +246,15 @@ describe('the controls', () => {
     expect(queryTestId('r-add')).toBeNull();
     expect(queryTestId('r-0-remove')).toBeNull();
     const removed: string[] = [];
-    mount(<RouteStops stops={PAIR} onAddStop={noop} onRemoveStop={(id) => removed.push(id)} canAddStop={false} testID="r" />);
+    mount(
+      <RouteStops
+        stops={PAIR}
+        onAddStop={noop}
+        onRemoveStop={(id) => removed.push(id)}
+        canAddStop={false}
+        testID="r"
+      />,
+    );
     expect(byTestId('r-add').getAttribute('disabled')).not.toBeNull();
     click(byTestId('r-1-remove'));
     expect(removed).toEqual(['b']);

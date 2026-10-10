@@ -1,5 +1,12 @@
 import React, { memo, useEffect } from 'react';
-import Animated, { Easing, interpolateColor, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  interpolateColor,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { useBrowserTitle } from '../hooks/use-browser-title';
@@ -51,16 +58,38 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   const SelectedGlyph = ActiveIcon ?? Icon;
   const iconOnly = labelVisibility === 'hidden';
   const tooltipRef = useBrowserTitle<View>(iconOnly ? label : undefined);
-  const selectedFill = selectedAppearance === 'icon' ? (hovered ? palette.rowHover : 'transparent') : palette.selected;
+  const selectedFill =
+    selectedAppearance === 'icon' ? (hovered ? palette.rowHover : 'transparent') : palette.selected;
   const reducedMotion = useReducedMotion();
   const selection = useSharedValue(selected ? 1 : 0);
   useEffect(() => {
-    selection.value = reducedMotion ? (selected ? 1 : 0) : withTiming(selected ? 1 : 0, { duration: SELECTION_DURATION, easing: Easing.bezier(0.2, 0, 0, 1) });
+    selection.value = reducedMotion
+      ? selected
+        ? 1
+        : 0
+      : withTiming(selected ? 1 : 0, {
+          duration: SELECTION_DURATION,
+          easing: Easing.bezier(0.2, 0, 0, 1),
+        });
   }, [selected, reducedMotion, selection]);
-  const indicatorStyle = useAnimatedStyle(() => ({ backgroundColor: interpolateColor(selection.value, [0, 1], [hovered ? palette.rowHover : 'transparent', selectedFill]) }), [selection, hovered, palette.rowHover, selectedFill]);
+  const indicatorStyle = useAnimatedStyle(
+    () => ({
+      backgroundColor: interpolateColor(
+        selection.value,
+        [0, 1],
+        [hovered ? palette.rowHover : 'transparent', selectedFill],
+      ),
+    }),
+    [selection, hovered, palette.rowHover, selectedFill],
+  );
   const inactiveStyle = useAnimatedStyle(() => ({ opacity: 1 - selection.value }), [selection]);
   const activeStyle = useAnimatedStyle(() => ({ opacity: selection.value }), [selection]);
-  const labelStyle = useAnimatedStyle(() => ({ color: interpolateColor(selection.value, [0, 1], [palette.textSecondary, palette.text]) }), [selection, palette.textSecondary, palette.text]);
+  const labelStyle = useAnimatedStyle(
+    () => ({
+      color: interpolateColor(selection.value, [0, 1], [palette.textSecondary, palette.text]),
+    }),
+    [selection, palette.textSecondary, palette.text],
+  );
 
   const webProps: Record<string, unknown> = IS_WEB
     ? {
@@ -102,41 +131,68 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
       testID={testID}
     >
       <Animated.View
-        style={[{
-          width: INDICATOR_WIDTH,
-          height: INDICATOR_HEIGHT,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: borderRadius.full,
-        }, indicatorStyle]}
+        style={[
+          {
+            width: INDICATOR_WIDTH,
+            height: INDICATOR_HEIGHT,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: borderRadius.full,
+          },
+          indicatorStyle,
+        ]}
         testID={testID ? `${testID}-indicator` : undefined}
       >
-        <Animated.View testID={testID ? `${testID}-inactive-glyph` : undefined} pointerEvents="none" aria-hidden accessibilityElementsHidden style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, inactiveStyle]}>
+        <Animated.View
+          testID={testID ? `${testID}-inactive-glyph` : undefined}
+          pointerEvents="none"
+          aria-hidden
+          accessibilityElementsHidden
+          style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, inactiveStyle]}
+        >
           <Icon width={ICON_SIZE} height={ICON_SIZE} fill={palette.textSecondary} />
         </Animated.View>
-        <Animated.View testID={testID ? `${testID}-active-glyph` : undefined} pointerEvents="none" aria-hidden accessibilityElementsHidden style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, activeStyle]}>
-          <SelectedGlyph width={ICON_SIZE} height={ICON_SIZE} fill={selectedAppearance === 'icon' ? palette.text : palette.selectedForeground} />
+        <Animated.View
+          testID={testID ? `${testID}-active-glyph` : undefined}
+          pointerEvents="none"
+          aria-hidden
+          accessibilityElementsHidden
+          style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, activeStyle]}
+        >
+          <SelectedGlyph
+            width={ICON_SIZE}
+            height={ICON_SIZE}
+            fill={selectedAppearance === 'icon' ? palette.text : palette.selectedForeground}
+          />
         </Animated.View>
         {badge != null ? (
-          <View pointerEvents="none" style={{ position: 'absolute', top: -6, insetInlineStart: INDICATOR_WIDTH - 16 }}>
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', top: -6, insetInlineStart: INDICATOR_WIDTH - 16 }}
+          >
             {badge}
           </View>
         ) : null}
       </Animated.View>
-      {!iconOnly ? <AnimatedText
-        variant="caption-2-regular"
-        numberOfLines={1}
-        style={[{
-          maxWidth: '100%',
-          fontSize: 10,
-          lineHeight: 14,
-          letterSpacing: 0,
-          textAlign: 'center',
-          fontWeight: selected ? '500' : '400',
-        }, labelStyle]}
-      >
-        {label}
-      </AnimatedText> : null}
+      {!iconOnly ? (
+        <AnimatedText
+          variant="caption-2-regular"
+          numberOfLines={1}
+          style={[
+            {
+              maxWidth: '100%',
+              fontSize: 10,
+              lineHeight: 14,
+              letterSpacing: 0,
+              textAlign: 'center',
+              fontWeight: selected ? '500' : '400',
+            },
+            labelStyle,
+          ]}
+        >
+          {label}
+        </AnimatedText>
+      ) : null}
     </Pressable>
   );
 };

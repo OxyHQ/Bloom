@@ -125,11 +125,7 @@ export type StackHoverProps = {
   onPointerLeave: (event: HoverEvent) => void;
 };
 
-export function useStackHover({
-  enableStacking,
-}: {
-  enableStacking: boolean;
-}): StackHoverProps {
+export function useStackHover({ enableStacking }: { enableStacking: boolean }): StackHoverProps {
   // Stable per outlet configuration: these land on the row box as props, and every
   // row re-renders on each stack change.
   return useMemo(

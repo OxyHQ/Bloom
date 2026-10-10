@@ -28,12 +28,7 @@ import { SettingsListGroup, SettingsListItem } from '../settings-list';
 import { UserHoverCard } from '../user-hover-card';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { LinkPreviewCard } from '../link-preview';
-import {
-  findHost,
-  resolvedStyle,
-  type HostNode,
-} from './support/rendered-style';
-
+import { findHost, resolvedStyle, type HostNode } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -75,9 +70,14 @@ function roundedNode(node: unknown): HostNode {
 
 describe('Card axes', () => {
   it('keeps the outlined fill on shared glass material while explicit appearance wins', () => {
-    const opaque = renderWithTheme(<Card  testID="c" appearance="outline" />);
-    expect(opaque.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.radius !== undefined).props.fill).toBe(resolveSurfaceTint(buildTheme('oxy', 'light').colors.card));
-    const outline = renderWithTheme(<Card  appearance="outline" testID="c" />);
+    const opaque = renderWithTheme(<Card testID="c" appearance="outline" />);
+    expect(
+      opaque
+        .getByTestId('c')
+        .find((node) => typeof node.props.fill === 'string' && node.props.radius !== undefined)
+        .props.fill,
+    ).toBe(resolveSurfaceTint(buildTheme('oxy', 'light').colors.card));
+    const outline = renderWithTheme(<Card appearance="outline" testID="c" />);
     expect(chromeOf(outline.toJSON(), 'c').backgroundColor).toBe('transparent');
   });
   it('takes its corner from a RADIUS rung, not a free number', () => {
@@ -100,19 +100,16 @@ describe('Card axes', () => {
     ['solid', 0, SHADOW_BOX.s],
     ['outline', 1, 'none'],
     ['subtle', 0, 'none'],
-  ] as const)(
-    'variant %s resolves to border %s / shadow %s',
-    (variant, borderWidth, shadow) => {
-      const { toJSON } = renderWithTheme(
-        <Card appearance={variant} testID="c">
-          {null}
-        </Card>,
-      );
-      const style = chromeOf(toJSON(), 'c');
-      expect(style.borderWidth).toBe(borderWidth);
-      expect(style.boxShadow ?? 'none').toBe(shadow);
-    },
-  );
+  ] as const)('variant %s resolves to border %s / shadow %s', (variant, borderWidth, shadow) => {
+    const { toJSON } = renderWithTheme(
+      <Card appearance={variant} testID="c">
+        {null}
+      </Card>,
+    );
+    const style = chromeOf(toJSON(), 'c');
+    expect(style.borderWidth).toBe(borderWidth);
+    expect(style.boxShadow ?? 'none').toBe(shadow);
+  });
 
   it('lets an explicit axis beat the variant default, in both directions', () => {
     const added = renderWithTheme(
@@ -143,8 +140,14 @@ describe('Card axes', () => {
         {null}
       </Card>,
     );
-    const filledBg = filled.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.radius !== undefined).props.fill;
-    const outlinedBg = outlined.getByTestId('c').find(node => typeof node.props.fill === 'string' && node.props.radius !== undefined).props.fill;
+    const filledBg = filled
+      .getByTestId('c')
+      .find((node) => typeof node.props.fill === 'string' && node.props.radius !== undefined)
+      .props.fill;
+    const outlinedBg = outlined
+      .getByTestId('c')
+      .find((node) => typeof node.props.fill === 'string' && node.props.radius !== undefined)
+      .props.fill;
     expect(typeof filledBg).toBe('string');
     expect(filledBg).toBe(resolveSurfaceTint(buildTheme('oxy', 'light').colors.card));
     expect(filledBg).toBe(outlinedBg);
@@ -156,9 +159,7 @@ describe('Card axes', () => {
         {null}
       </Card>,
     );
-    expect(findHost(button.toJSON(), 'c')?.props.accessibilityRole).toBe(
-      'button',
-    );
+    expect(findHost(button.toJSON(), 'c')?.props.accessibilityRole).toBe('button');
 
     const link = renderWithTheme(
       <Card onPress={() => {}} accessibilityRole="link" testID="c">
@@ -176,7 +177,11 @@ describe('Card axes', () => {
 
 describe('Card content clipping', () => {
   it('clips with inset shape while preserving the outer shadow host', () => {
-    const { toJSON } = renderWithTheme(<Card clipContent border="medium" radius="radius-20" testID="c"><View testID="inside" /></Card>);
+    const { toJSON } = renderWithTheme(
+      <Card clipContent border="medium" radius="radius-20" testID="c">
+        <View testID="inside" />
+      </Card>,
+    );
     expect(chromeOf(toJSON(), 'c')).toMatchObject({ borderRadius: 20, borderWidth: 2 });
     expect(chromeOf(toJSON(), 'c').overflow).toBeUndefined();
     expect(chromeOf(toJSON(), 'c-clip')).toMatchObject({ borderRadius: 18, overflow: 'hidden' });
@@ -211,9 +216,7 @@ describe('the surfaces that compose Card keep their own chrome', () => {
   });
 
   it('link-preview: radius-20 with a real border and background, not classes', () => {
-    const { toJSON } = renderWithTheme(
-      <LinkPreviewCard url="https://oxy.so" onPress={() => {}} />,
-    );
+    const { toJSON } = renderWithTheme(<LinkPreviewCard url="https://oxy.so" onPress={() => {}} />);
     const style = resolvedStyle(roundedNode(toJSON()).props.style);
     expect(style.borderRadius).toBe(RADIUS['radius-20']);
     // The chrome used to be `border border-border bg-card`, which is inert on
@@ -225,26 +228,43 @@ describe('the surfaces that compose Card keep their own chrome', () => {
   });
 });
 
-
-it.each([false, true])('forwards ref and measurement to the card host (interactive=%s)', interactive => {
-  const handle = { measure: jest.fn() };
-  const ref = React.createRef<import('react-native').View>();
-  const onLayout = jest.fn();
-  const screen = render(<BloomThemeProvider mode="light" colorPreset="oxy">
-    <Card ref={ref} testID="measured-card" onLayout={onLayout} onPress={interactive ? () => {} : undefined}>Content</Card>
-  </BloomThemeProvider>, { createNodeMock: element => (element.props as { testID?: string }).testID === 'measured-card' ? handle : null });
-  expect(ref.current).toBe(handle);
-  const event = { nativeEvent: { layout: { x: 0, y: 0, width: 310, height: 96 } } };
-  fireEvent(screen.getByTestId('measured-card'), 'layout', event);
-  expect(onLayout).toHaveBeenCalledWith(event);
-  screen.unmount();
-  expect(ref.current).toBeNull();
-});
+it.each([false, true])(
+  'forwards ref and measurement to the card host (interactive=%s)',
+  (interactive) => {
+    const handle = { measure: jest.fn() };
+    const ref = React.createRef<import('react-native').View>();
+    const onLayout = jest.fn();
+    const screen = render(
+      <BloomThemeProvider mode="light" colorPreset="oxy">
+        <Card
+          ref={ref}
+          testID="measured-card"
+          onLayout={onLayout}
+          onPress={interactive ? () => {} : undefined}
+        >
+          Content
+        </Card>
+      </BloomThemeProvider>,
+      {
+        createNodeMock: (element) =>
+          (element.props as { testID?: string }).testID === 'measured-card' ? handle : null,
+      },
+    );
+    expect(ref.current).toBe(handle);
+    const event = { nativeEvent: { layout: { x: 0, y: 0, width: 310, height: 96 } } };
+    fireEvent(screen.getByTestId('measured-card'), 'layout', event);
+    expect(onLayout).toHaveBeenCalledWith(event);
+    screen.unmount();
+    expect(ref.current).toBeNull();
+  },
+);
 
 it('shares radius precedence with Surface while preserving the actual card host', () => {
   const fallback = renderWithTheme(<Card testID="geometry" style={{ borderRadius: 8 }} />);
   expect(chromeOf(fallback.toJSON(), 'geometry').borderRadius).toBe(8);
   fallback.unmount();
-  const explicit = renderWithTheme(<Card testID="geometry" radius="radius-20" style={{ borderRadius: 8 }} />);
+  const explicit = renderWithTheme(
+    <Card testID="geometry" radius="radius-20" style={{ borderRadius: 8 }} />,
+  );
   expect(chromeOf(explicit.toJSON(), 'geometry').borderRadius).toBe(20);
 });

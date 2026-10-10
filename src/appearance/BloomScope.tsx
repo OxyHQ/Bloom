@@ -8,6 +8,15 @@ export function BloomScope({ children, size, tone, panelRadius }: BloomScopeProp
     throw new RangeError('panelRadius must be a finite, non-negative number.');
   }
   const parent = useContext(BloomAppearanceContext);
-  const value = useMemo(() => ({ size: size ?? parent.size, tone: tone ?? parent.tone, panelRadius: panelRadius ?? parent.panelRadius }), [size, tone, panelRadius, parent]);
-  return <BloomAppearanceContext.Provider value={value}>{children}</BloomAppearanceContext.Provider>;
+  const value = useMemo(
+    () => ({
+      size: size ?? parent.size,
+      tone: tone ?? parent.tone,
+      panelRadius: panelRadius ?? parent.panelRadius,
+    }),
+    [size, tone, panelRadius, parent],
+  );
+  return (
+    <BloomAppearanceContext.Provider value={value}>{children}</BloomAppearanceContext.Provider>
+  );
 }

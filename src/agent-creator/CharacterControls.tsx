@@ -1,8 +1,5 @@
 import { useContext } from 'react';
-import {
-  CharacterRuntimeContext,
-  CharacterCapabilitiesContext,
-} from '../agent-avatar/context';
+import { CharacterRuntimeContext, CharacterCapabilitiesContext } from '../agent-avatar/context';
 import type {
   AvatarCharacterCategory,
   AvatarCharacterConfig,
@@ -24,9 +21,7 @@ export function CharacterControls({
 }) {
   const messages = useAgentCreatorMessages();
   const { runtimeUrl } = useContext(CharacterRuntimeContext);
-  const { capabilities, capabilitiesByKey } = useContext(
-    CharacterCapabilitiesContext,
-  );
+  const { capabilities, capabilitiesByKey } = useContext(CharacterCapabilitiesContext);
   const {
     Select,
     SelectTrigger,
@@ -49,10 +44,7 @@ export function CharacterControls({
     placeholder = label,
   ) => (
     <StyledView key={label} className="flex flex-row items-center gap-3">
-      <Text
-        variant="body-regular"
-        className="w-[96px] text-body-regular text-text-primary"
-      >
+      <Text variant="body-regular" className="w-[96px] text-body-regular text-text-primary">
         {label}
       </Text>
       <StyledView className="min-w-0 flex-1">
@@ -67,11 +59,7 @@ export function CharacterControls({
             width={224}
             valueExtractor={(item) => item.id}
             renderItem={(item) => (
-              <SelectItem
-                value={item.id}
-                label={item.title}
-                disabled={item.disabled}
-              >
+              <SelectItem value={item.id} label={item.title} disabled={item.disabled}>
                 <SelectItemText>{item.title}</SelectItemText>
               </SelectItem>
             )}
@@ -90,11 +78,7 @@ export function CharacterControls({
   if (character && !presets.some((item) => item.id === character.preset))
     presets.push({
       id: character.preset,
-      title: messages.characterOption(
-        'preset',
-        character.preset,
-        character.preset,
-      ),
+      title: messages.characterOption('preset', character.preset, character.preset),
     });
   const labels: Record<AvatarCharacterCategory, string> = {
     shape: messages.shape,
@@ -116,34 +100,26 @@ export function CharacterControls({
         messages.betaPreset,
       )}
       {character &&
-        (['eyewear', 'accessory'] as AvatarCharacterCategory[]).map(
-          (category) =>
-            row(
-              labels[category],
-              resolved?.selected[category] ??
-                character.selections?.[category] ??
-                'none',
-              (category === 'accessory'
-                ? [
-                    ['none', messages.off] as const,
-                    ...CHARACTER_OPTIONS[category],
-                  ]
-                : CHARACTER_OPTIONS[category]
-              ).map(([id, title]) => ({
-                id,
-                title: messages.characterOption(category, id, title),
-                disabled:
-                  !resolved ||
-                  resolved.available[`${category}:${id}`] === false,
-              })),
-              (id) => {
-                onChange({
-                  ...character,
-                  selections: { ...character.selections, [category]: id },
-                });
-              },
-              labels[category],
-            ),
+        (['eyewear', 'accessory'] as AvatarCharacterCategory[]).map((category) =>
+          row(
+            labels[category],
+            resolved?.selected[category] ?? character.selections?.[category] ?? 'none',
+            (category === 'accessory'
+              ? [['none', messages.off] as const, ...CHARACTER_OPTIONS[category]]
+              : CHARACTER_OPTIONS[category]
+            ).map(([id, title]) => ({
+              id,
+              title: messages.characterOption(category, id, title),
+              disabled: !resolved || resolved.available[`${category}:${id}`] === false,
+            })),
+            (id) => {
+              onChange({
+                ...character,
+                selections: { ...character.selections, [category]: id },
+              });
+            },
+            labels[category],
+          ),
         )}
     </StyledView>
   );

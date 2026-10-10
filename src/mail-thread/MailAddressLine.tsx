@@ -84,7 +84,6 @@ export function MailAddressLine({
       </Text>
       {overflow > 0 ? (
         <LinkButton
-
           size="xs"
           linkTone="secondary"
           onPress={() => setOpen(true)}

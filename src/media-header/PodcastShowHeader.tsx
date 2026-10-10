@@ -9,7 +9,14 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { FollowButton } from './MediaActionBar';
-import { ClampedText, Cover, HeaderTitle, InlineLink, MediaHeaderFrame, useMediaHeaderPaint } from './parts';
+import {
+  ClampedText,
+  Cover,
+  HeaderTitle,
+  InlineLink,
+  MediaHeaderFrame,
+  useMediaHeaderPaint,
+} from './parts';
 import { selectTitleVariant, type MediaHeaderPaint } from './shared';
 import type { LatestEpisode, PodcastShowHeaderProps } from './types';
 import { useMessages } from '../locale/messages';
@@ -87,7 +94,9 @@ function LatestEpisodeCard({
         <View style={[card, { paddingRight: episode.onPlayPress ? 80 : 16 }]}>{content}</View>
       )}
       {episode.onPlayPress ? (
-        <View style={{ position: 'absolute', right: 16, top: 0, bottom: 0, justifyContent: 'center' }}>
+        <View
+          style={{ position: 'absolute', right: 16, top: 0, bottom: 0, justifyContent: 'center' }}
+        >
           <PlayButton
             playing={episode.playing ?? false}
             onPress={episode.onPlayPress}
@@ -128,14 +137,19 @@ function PodcastShowHeaderComponent({
   const typeLabel = typeLabelProp ?? messages.podcast;
   const latestEpisodeLabel = latestEpisodeLabelProp ?? messages.latestEpisode;
   const paint = useMediaHeaderPaint(artworkColor);
-  const hasRatingRow = rating !== undefined || (categories && categories.length > 0) || onFollowChange;
+  const hasRatingRow =
+    rating !== undefined || (categories && categories.length > 0) || onFollowChange;
 
   const below = (
     <View style={{ gap: 16 }}>
       {hasRatingRow ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           {rating !== undefined ? (
-            <Rating value={rating} count={ratingCount} testID={testID ? `${testID}-rating` : undefined} />
+            <Rating
+              value={rating}
+              count={ratingCount}
+              testID={testID ? `${testID}-rating` : undefined}
+            />
           ) : null}
           {(categories ?? []).map((category) => (
             <Chip
@@ -192,7 +206,13 @@ function PodcastShowHeaderComponent({
       actions={below}
       coverWidth={(wide) => (wide ? 232 : 200)}
       cover={({ wide }) => (
-        <Cover source={cover} size={wide ? 232 : 200} radius={12} paint={paint} testID={testID ? `${testID}-cover` : undefined} />
+        <Cover
+          source={cover}
+          size={wide ? 232 : 200}
+          radius={12}
+          paint={paint}
+          testID={testID ? `${testID}-cover` : undefined}
+        />
       )}
     >
       {({ textWidth }) => (

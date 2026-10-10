@@ -7,11 +7,7 @@ import {
   resolvedColorToHex,
   type PresetGroup,
 } from '../design-tokens/tokens-json';
-import {
-  APP_COLOR_NAMES,
-  APP_COLOR_PRESETS,
-  COLOR_PRESET_REGISTRY,
-} from '../theme/color-presets';
+import { APP_COLOR_NAMES, APP_COLOR_PRESETS, COLOR_PRESET_REGISTRY } from '../theme/color-presets';
 import { CANONICAL_TOKENS, getResolvedTokens } from '../theme/token-registry';
 
 const TOKENS_PATH = join(__dirname, '..', 'design-tokens', 'tokens.json');
@@ -102,7 +98,10 @@ describe('tokens.json shape contract', () => {
   });
 
   it('exports shape radii as dimensions and adaptive curves as metadata', () => {
-    expect(tokens.shape.card).toEqual({ $extensions: { 'so.oxy.bloom': { curve: 'round' } }, radius: { $type: 'dimension', $value: '20px' } });
+    expect(tokens.shape.card).toEqual({
+      $extensions: { 'so.oxy.bloom': { curve: 'round' } },
+      radius: { $type: 'dimension', $value: '20px' },
+    });
   });
 
   it('emits the numeric scales as px dimensions', () => {

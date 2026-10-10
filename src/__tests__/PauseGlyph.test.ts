@@ -126,7 +126,9 @@ describe('the pause glyph carries the play triangle`s ink', () => {
 
     // Same top and bottom as the triangle (y 4 → 20): equal area alone would
     // also be satisfied by two short fat bars, which would not read as a pause.
-    const ys = flatten(pathOf(BLOOM_PAUSE)).flat().map(([, y]) => y);
+    const ys = flatten(pathOf(BLOOM_PAUSE))
+      .flat()
+      .map(([, y]) => y);
     expect(Math.min(...ys)).toBe(4);
     expect(Math.max(...ys)).toBe(20);
 

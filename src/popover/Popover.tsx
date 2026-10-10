@@ -66,7 +66,8 @@ export function PopoverTrigger({
         accessibilityRole: 'button',
         'aria-haspopup': POPOVER_TRIGGER_POPUP,
         'aria-expanded': popover.open,
-      }}>
+      }}
+    >
       {children}
     </TriggerSlot>
   );
@@ -93,7 +94,8 @@ export function PopoverContent({
       onClose={onSheetClose}
       contentClassName={className}
       contentStyle={[styles.body, style]}
-      contentTestID={testID}>
+      contentTestID={testID}
+    >
       {children}
     </SheetShell>
   );

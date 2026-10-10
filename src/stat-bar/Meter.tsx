@@ -118,5 +118,7 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
   );
 }
 
-export const Meter = memo(styled(MeterComponent, { className: 'style', fillClassName: 'fillStyle' }));
+export const Meter = memo(
+  styled(MeterComponent, { className: 'style', fillClassName: 'fillStyle' }),
+);
 Meter.displayName = 'Meter';

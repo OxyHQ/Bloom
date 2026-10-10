@@ -62,7 +62,14 @@ function StaySearchStepComponent({
 
   if (expanded) {
     return (
-      <View testID={testID} style={[card, { paddingTop: 24, paddingBottom: 24, paddingLeft: 24, paddingRight: 24, gap: 16 }, style]}>
+      <View
+        testID={testID}
+        style={[
+          card,
+          { paddingTop: 24, paddingBottom: 24, paddingLeft: 24, paddingRight: 24, gap: 16 },
+          style,
+        ]}
+      >
         <Text variant="title-2-semibold" role="heading" style={{ color: palette.text }}>
           {title ?? label}
         </Text>

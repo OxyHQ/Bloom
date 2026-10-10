@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { Platform, View } from 'react-native';
 
-import { Button , LinkButton } from '../button';
+import { Button, LinkButton } from '../button';
 
 import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -73,7 +73,6 @@ function WizardFooterComponent({
       {onBack ? (
         <View>
           <LinkButton
-
             linkTone="text"
             underline="rest"
             size="sm"
@@ -100,13 +99,14 @@ function WizardFooterComponent({
         </Text>
       ) : null}
       <Button
-
         size="lg"
         onPress={onNext}
         loading={loading}
         disabled={nextDisabled}
         accessibilityLabel={nextLabel}
-        testID={testID ? `${testID}-next` : undefined} tone="accent" appearance="solid"
+        testID={testID ? `${testID}-next` : undefined}
+        tone="accent"
+        appearance="solid"
       >
         {nextLabel}
       </Button>

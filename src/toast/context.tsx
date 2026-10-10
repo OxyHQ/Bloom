@@ -11,18 +11,12 @@
  * to `toastStore` directly, which is the single authority.
  */
 import * as React from 'react';
-import type {
-  DynamicToastContextType,
-  StableToastContextType,
-} from './types';
+import type { DynamicToastContextType, StableToastContextType } from './types';
 
-export const ToastContext = React.createContext<StableToastContextType | null>(
-  null,
-);
+export const ToastContext = React.createContext<StableToastContextType | null>(null);
 ToastContext.displayName = 'BloomToastContext';
 
-export const DynamicToastContext =
-  React.createContext<DynamicToastContextType | null>(null);
+export const DynamicToastContext = React.createContext<DynamicToastContextType | null>(null);
 DynamicToastContext.displayName = 'BloomDynamicToastContext';
 
 export const useToastContext = (): StableToastContextType => {
@@ -36,9 +30,7 @@ export const useToastContext = (): StableToastContextType => {
 export const useDynamicToastContext = (): DynamicToastContextType => {
   const context = React.useContext(DynamicToastContext);
   if (!context) {
-    throw new Error(
-      'useDynamicToastContext must be used within a <ToastOutlet>',
-    );
+    throw new Error('useDynamicToastContext must be used within a <ToastOutlet>');
   }
   return context;
 };

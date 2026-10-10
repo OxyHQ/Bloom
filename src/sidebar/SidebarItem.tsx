@@ -11,7 +11,13 @@ import { useSidebarGeometry } from './geometry';
 import { useSidebarMetrics } from './metrics';
 import { useSidebarPalette } from './palette';
 import { borderRadius } from '../styles/tokens';
-import { Collapsible, IS_WEB, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss } from './parts';
+import {
+  Collapsible,
+  IS_WEB,
+  useInSidebar,
+  useSidebarCollapseProgress,
+  useSidebarWebCss,
+} from './parts';
 import type { SidebarItemProps } from './types';
 
 /**
@@ -68,14 +74,21 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   const progress = useSidebarCollapseProgress(collapsed);
   const lane = useSidebarGeometry()?.collapsedLane ?? metrics.row.square;
   const horizontalInset = useAnimatedStyle(() => {
-    const margin = (lane - metrics.row.square) / 2 * progress.value;
+    const margin = ((lane - metrics.row.square) / 2) * progress.value;
     return { marginLeft: margin, marginRight: margin };
   }, [progress, lane, metrics.row.square]);
   const itemGap = description != null ? 10 : metrics.row.gap;
-  const contentStyle = useAnimatedStyle(() => ({ gap: itemGap * (1 - progress.value) }), [progress, itemGap]);
+  const contentStyle = useAnimatedStyle(
+    () => ({ gap: itemGap * (1 - progress.value) }),
+    [progress, itemGap],
+  );
   const collapsedBadgeStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
   const neutral = selectedAppearance === 'neutral';
-  const foreground = selected ? neutral ? palette.text : palette.selectedForeground : palette.textSecondary;
+  const foreground = selected
+    ? neutral
+      ? palette.text
+      : palette.selectedForeground
+    : palette.textSecondary;
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
@@ -99,7 +112,13 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     // collapsed is the size's own square.
     alignSelf: collapsed && !inSidebar ? 'flex-start' : 'stretch',
     width: collapsed && !inSidebar ? metrics.row.square : undefined,
-    backgroundColor: selected ? neutral ? palette.tertiary : palette.selected : hovered ? palette.rowHover : 'transparent',
+    backgroundColor: selected
+      ? neutral
+        ? palette.tertiary
+        : palette.selected
+      : hovered
+        ? palette.rowHover
+        : 'transparent',
     '--bloom-sidebar-ring': palette.ring,
   };
 
@@ -136,16 +155,51 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
       style={[rowStyle, horizontalInset, style]}
       testID={testID}
     >
-      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden', ...(description != null ? { flex: 1 } : {}) }, contentStyle]}>
+      <Animated.View
+        style={[
+          {
+            flexDirection: 'row',
+            alignItems: 'center',
+            minWidth: 0,
+            flexShrink: 1,
+            overflow: 'hidden',
+            ...(description != null ? { flex: 1 } : {}),
+          },
+          contentStyle,
+        ]}
+      >
         <View style={{ flexShrink: 0 }}>
-          {leading ?? (Icon ? <Icon width={metrics.row.icon} height={metrics.row.icon} fill={foreground} /> : null)}
+          {leading ??
+            (Icon ? (
+              <Icon width={metrics.row.icon} height={metrics.row.icon} fill={foreground} />
+            ) : null)}
         </View>
         <Collapsible collapsed={collapsed} stretch={description != null}>
-          <View style={{ minWidth: 0, ...(description != null ? { flex: 1 } : {}), gap: description != null ? 2 : 0 }}>
-          <Text variant={metrics.row.label} className={labelClassName} numberOfLines={1} style={labelClassName ? undefined : { color: foreground }}>
-            {label}
-          </Text>
-          {description != null ? <Text variant="body-regular" className={descriptionClassName} numberOfLines={1} style={descriptionClassName ? undefined : { color: palette.textTertiary }}>{description}</Text> : null}
+          <View
+            style={{
+              minWidth: 0,
+              ...(description != null ? { flex: 1 } : {}),
+              gap: description != null ? 2 : 0,
+            }}
+          >
+            <Text
+              variant={metrics.row.label}
+              className={labelClassName}
+              numberOfLines={1}
+              style={labelClassName ? undefined : { color: foreground }}
+            >
+              {label}
+            </Text>
+            {description != null ? (
+              <Text
+                variant="body-regular"
+                className={descriptionClassName}
+                numberOfLines={1}
+                style={descriptionClassName ? undefined : { color: palette.textTertiary }}
+              >
+                {description}
+              </Text>
+            ) : null}
           </View>
         </Collapsible>
       </Animated.View>

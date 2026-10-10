@@ -149,9 +149,7 @@ describe('adoptStyleSheet — <style> fallback', () => {
     adoptStyleSheet('bloom-test', '.x { color: blue; }');
 
     expect(document.querySelectorAll('style#bloom-test')).toHaveLength(1);
-    expect(document.getElementById('bloom-test')?.textContent).toBe(
-      '.x { color: blue; }',
-    );
+    expect(document.getElementById('bloom-test')?.textContent).toBe('.x { color: blue; }');
   });
 
   it('dropStyleSheet removes the element', () => {

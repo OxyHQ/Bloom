@@ -11,7 +11,12 @@ import { useMessages } from '../locale/messages';
 import * as Skeleton from '../skeleton';
 import { DeliverySlotDays } from './DeliverySlotDays';
 import { DeliverySlotOption } from './DeliverySlotOption';
-import { DELIVERY_DOT, DELIVERY_OPTION_GAP, DELIVERY_OPTION_RADIUS, DELIVERY_SECTION_GAP } from './constants';
+import {
+  DELIVERY_DOT,
+  DELIVERY_OPTION_GAP,
+  DELIVERY_OPTION_RADIUS,
+  DELIVERY_SECTION_GAP,
+} from './constants';
 import { DELIVERY_SLOT_MESSAGES } from './messages';
 import { joinDeliveryParts, windowDetail, windowName } from './shared';
 import type { DeliverySlotPickerProps } from './types';
@@ -92,7 +97,12 @@ function DeliverySlotGroups({
   ) : null;
 
   const body = loading ? (
-    <View aria-busy accessibilityLabel={field.accessibilityLabel} testID={id('loading')} style={{ gap: DELIVERY_OPTION_GAP }}>
+    <View
+      aria-busy
+      accessibilityLabel={field.accessibilityLabel}
+      testID={id('loading')}
+      style={{ gap: DELIVERY_OPTION_GAP }}
+    >
       {Array.from({ length: loadingRows }, (_unused, index) => (
         <View
           key={index}

@@ -1,4 +1,12 @@
-import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Image, Platform, Pressable, View } from 'react-native';
 
 import { Button } from '../button';
@@ -64,7 +72,6 @@ import { SORTABLE_MEDIA_MESSAGES } from './messages';
 const IS_WEB = Platform.OS === 'web';
 const RADIUS = 12;
 const DRAG_THRESHOLD = 5;
-
 
 const STYLE_ID = 'bloom-sortable-photo-grid-web-css';
 const GRID = '[data-bloom-sortable-grid]';
@@ -279,7 +286,13 @@ function SortablePhotoGridComponent({
         gap: state.gap,
         count: state.photos.length,
       });
-      setDrag({ id: current.id, from: current.from, over: current.over, x: x - current.offsetX, y: y - current.offsetY });
+      setDrag({
+        id: current.id,
+        from: current.from,
+        over: current.over,
+        x: x - current.offsetX,
+        y: y - current.offsetY,
+      });
     };
     const onUp = () => finish(true);
     const onCancel = () => finish(false);
@@ -524,7 +537,13 @@ const PhotoTile = memo(function PhotoTile({
           ) : null}
 
           {status === 'uploading' ? (
-            <UploadOverlay photo={photo} position={position} paint={paint} labels={labels} testID={testID} />
+            <UploadOverlay
+              photo={photo}
+              position={position}
+              paint={paint}
+              labels={labels}
+              testID={testID}
+            />
           ) : null}
           {status === 'error' ? (
             <ErrorOverlay
@@ -557,7 +576,11 @@ const PhotoTile = memo(function PhotoTile({
                 } satisfies WebCssStyle
               }
             >
-              <Text variant="caption-1-semibold" numberOfLines={1} style={{ color: paint.surfaceText }}>
+              <Text
+                variant="caption-1-semibold"
+                numberOfLines={1}
+                style={{ color: paint.surfaceText }}
+              >
                 {labels.cover}
               </Text>
             </View>
@@ -572,13 +595,14 @@ const PhotoTile = memo(function PhotoTile({
               {onRemove ? (
                 <View style={{ position: 'absolute', top: 6, right: 6 }}>
                   <Button
-
                     size="sm"
                     iconOnly
                     leadingIcon={RiCloseLine}
                     accessibilityLabel={labels.remove(position)}
                     onPress={() => onRemove(photo.id)}
-                    testID={testID ? `${testID}-remove` : undefined} tone="neutral" appearance="outline"
+                    testID={testID ? `${testID}-remove` : undefined}
+                    tone="neutral"
+                    appearance="outline"
                   />
                 </View>
               ) : null}
@@ -589,14 +613,15 @@ const PhotoTile = memo(function PhotoTile({
                     style={{ position: 'absolute', bottom: 6, left: 6 }}
                   >
                     <Button
-
                       size="sm"
                       iconOnly
                       leadingIcon={RiArrowLeftSLine}
                       accessibilityLabel={labels.moveEarlier(position)}
                       disabled={position === 1}
                       onPress={() => onMove(photo.id, 'earlier')}
-                      testID={testID ? `${testID}-earlier` : undefined} tone="neutral" appearance="outline"
+                      testID={testID ? `${testID}-earlier` : undefined}
+                      tone="neutral"
+                      appearance="outline"
                     />
                   </View>
                   <View
@@ -604,14 +629,15 @@ const PhotoTile = memo(function PhotoTile({
                     style={{ position: 'absolute', bottom: 6, right: 6 }}
                   >
                     <Button
-
                       size="sm"
                       iconOnly
                       leadingIcon={RiArrowRightSLine}
                       accessibilityLabel={labels.moveLater(position)}
                       disabled={position === total}
                       onPress={() => onMove(photo.id, 'later')}
-                      testID={testID ? `${testID}-later` : undefined} tone="neutral" appearance="outline"
+                      testID={testID ? `${testID}-later` : undefined}
+                      tone="neutral"
+                      appearance="outline"
                     />
                   </View>
                 </>
@@ -628,7 +654,15 @@ function Scrim({ paint }: { paint: GridPaint }) {
   return (
     <View
       pointerEvents="none"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: paint.scrim, opacity: 0.5 }}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: paint.scrim,
+        opacity: 0.5,
+      }}
     />
   );
 }
@@ -646,11 +680,20 @@ function UploadOverlay({
   labels: SortablePhotoGridLabels;
   testID?: string;
 }) {
-  const progress = photo.progress == null ? undefined : Math.min(100, Math.max(0, Math.round(photo.progress)));
+  const progress =
+    photo.progress == null ? undefined : Math.min(100, Math.max(0, Math.round(photo.progress)));
   return (
     <View
       pointerEvents="none"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
     >
       <Scrim paint={paint} />
       <View
@@ -667,12 +710,23 @@ function UploadOverlay({
           <Loading variant="spinner" size="sm" color={paint.onMedia} />
         ) : (
           <>
-            <Text variant="caption-1-semibold" style={{ color: paint.onMedia, fontVariant: ['tabular-nums'] }}>
+            <Text
+              variant="caption-1-semibold"
+              style={{ color: paint.onMedia, fontVariant: ['tabular-nums'] }}
+            >
               {`${progress}%`}
             </Text>
             <View style={{ alignSelf: 'stretch', height: 4, borderRadius: 2, overflow: 'hidden' }}>
               <View
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: paint.onMedia, opacity: 0.3 }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: paint.onMedia,
+                  opacity: 0.3,
+                }}
               />
               <View style={{ width: `${progress}%`, height: 4, backgroundColor: paint.onMedia }} />
             </View>
@@ -721,17 +775,22 @@ function ErrorOverlay({
       <Scrim paint={paint} />
       <RiErrorWarningLine width={20} height={20} fill={paint.onMedia} />
       {compact ? null : (
-        <Text variant="caption-1-medium" numberOfLines={2} style={{ color: paint.onMedia, textAlign: 'center' }}>
+        <Text
+          variant="caption-1-medium"
+          numberOfLines={2}
+          style={{ color: paint.onMedia, textAlign: 'center' }}
+        >
           {photo.error ?? labels.failed}
         </Text>
       )}
       {onRetry ? (
         <Button
-
           size="xs"
           onPress={onRetry}
           accessibilityLabel={labels.retry(position)}
-          testID={testID ? `${testID}-retry` : undefined} tone="neutral" appearance="outline"
+          testID={testID ? `${testID}-retry` : undefined}
+          tone="neutral"
+          appearance="outline"
         >
           {labels.retryAction}
         </Button>
@@ -797,11 +856,19 @@ function AddTile({
       style={tileStyle}
     >
       <RiImageAddLine width={24} height={24} fill={paint.addIcon} />
-      <Text variant="body-2-medium" numberOfLines={2} style={{ color: paint.text, textAlign: 'center' }}>
+      <Text
+        variant="body-2-medium"
+        numberOfLines={2}
+        style={{ color: paint.text, textAlign: 'center' }}
+      >
         {label}
       </Text>
       {hint && !compact ? (
-        <Text variant="caption-1-regular" numberOfLines={2} style={{ color: paint.textSecondary, textAlign: 'center' }}>
+        <Text
+          variant="caption-1-regular"
+          numberOfLines={2}
+          style={{ color: paint.textSecondary, textAlign: 'center' }}
+        >
           {hint}
         </Text>
       ) : null}

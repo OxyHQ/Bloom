@@ -13,14 +13,19 @@ export interface ScreenContextValue {
   bottomInset: number;
 }
 
-export type ScreenNavigationState = Pick<ScreenContextValue, 'collapseProgress' | 'collapseTarget' | 'activeScrollerId'> & { bottomInset?: number };
+export type ScreenNavigationState = Pick<
+  ScreenContextValue,
+  'collapseProgress' | 'collapseTarget' | 'activeScrollerId'
+> & { bottomInset?: number };
 export const ScreenNavigationContext = createContext<ScreenNavigationState | null>(null);
 
 /** Only the Screen header slot owns chrome positioning; content headers remain independent. */
 export const ScreenHeaderContext = createContext<ScreenContextValue | null>(null);
 
 export const ScreenContext = createContext<ScreenContextValue | null>(null);
-export function useScreenContext() { return useContext(ScreenContext); }
+export function useScreenContext() {
+  return useContext(ScreenContext);
+}
 export function useScreen(): ScreenContextValue {
   const screen = useScreenContext();
   if (!screen) throw new Error('Screen content must be rendered inside <Screen>.');

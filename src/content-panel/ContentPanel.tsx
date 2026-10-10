@@ -38,11 +38,13 @@ import { StyleSheet, useWindowDimensions } from 'react-native';
 import { useOptionalPanelChrome, usePanelShape } from '../styles/panel-chrome';
 import { surfaceStyle as resolveShapeStyle } from '../shapes/surface-style';
 import { StyledView } from '../styles/styled-primitives';
-import { SurfaceLevelProvider, surfaceFillVars, useOptionalSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import {
-  ContentPanelNestingContext,
-  useContentPanelNestingGuard,
-} from './context';
+  SurfaceLevelProvider,
+  surfaceFillVars,
+  useOptionalSurfaceFill,
+  useSurfaceLevelValue,
+} from '../styles/surface-levels';
+import { ContentPanelNestingContext, useContentPanelNestingGuard } from './context';
 import { usePanelSurfaceFill } from './shared';
 import type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
 
@@ -103,11 +105,23 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const parentFill = useOptionalSurfaceFill();
   const parentLevel = useSurfaceLevelValue();
   const isPlain = appearance === 'plain';
-  const paintsSurface = !isPlain && Boolean(defaultFill) && parentFill !== undefined && (framed ?? width >= framedFrom) && chrome !== 'none';
-  const publishedFill = isPlain ? parentFill : rawFill && paintsSurface ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill : rawFill;
+  const paintsSurface =
+    !isPlain &&
+    Boolean(defaultFill) &&
+    parentFill !== undefined &&
+    (framed ?? width >= framedFrom) &&
+    chrome !== 'none';
+  const publishedFill = isPlain
+    ? parentFill
+    : rawFill && paintsSurface
+      ? resolveSurfaceMaterial({ fill: rawFill, parentFill: parentFill! }).publishedFill
+      : rawFill;
   const radius = StyleSheet.flatten(surfaceStyle)?.borderRadius ?? panelShape.radius;
   const isFramed = framed ?? width >= framedFrom;
-  const geometry = { ...resolveShapeStyle({ curve: panelShape.curve }), borderRadius: isFramed ? radius : 0 };
+  const geometry = {
+    ...resolveShapeStyle({ curve: panelShape.curve }),
+    borderRadius: isFramed ? radius : 0,
+  };
 
   // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
   // framed, `false` → never framed (plain full-bleed). Whole literal class
@@ -123,7 +137,13 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         : framed
           ? 'flex-1 border border-border'
           : 'flex-1';
-  const surfaceClass = [surfaceBase, fill ? 'min-h-0' : '', surfaceClassName ?? (isPlain || paintsSurface ? 'bg-transparent' : 'bg-card')].filter(Boolean).join(' ');
+  const surfaceClass = [
+    surfaceBase,
+    fill ? 'min-h-0' : '',
+    surfaceClassName ?? (isPlain || paintsSurface ? 'bg-transparent' : 'bg-card'),
+  ]
+    .filter(Boolean)
+    .join(' ');
   // Native has no overlays: the surface itself carries the edge. `none` drops
   // both, `border` keeps the class-drawn hairline, `elevated` adds the lift.
   const chromeStyle =
@@ -137,7 +157,18 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // bottom and a list inside it scrolls within it. What the prop adds here is
   // `min-h-0`, so a tall child cannot push the panel past the box it was given
   // — the same automatic-minimum-size trap as on web.
-  const contentClass = ['flex-1', framed === true ? 'overflow-hidden' : framed === undefined ? RESPONSIVE_CONTENT[framedFrom] : '', fill ? 'min-h-0' : '', contentClassName].filter(Boolean).join(' ');
+  const contentClass = [
+    'flex-1',
+    framed === true
+      ? 'overflow-hidden'
+      : framed === undefined
+        ? RESPONSIVE_CONTENT[framedFrom]
+        : '',
+    fill ? 'min-h-0' : '',
+    contentClassName,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
@@ -155,12 +186,24 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           isPlain || paintsSurface ? { backgroundColor: 'transparent' } : null,
         ]}
       >
-        {paintsSurface ? <SurfacePaint fill={defaultFill!} radius={radius} shape={{ curve: panelShape.curve }} /> : null}
-        <StyledView testID="content-panel-content" className={contentClass} style={[geometry, contentStyle]}>
+        {paintsSurface ? (
+          <SurfacePaint fill={defaultFill!} radius={radius} shape={{ curve: panelShape.curve }} />
+        ) : null}
+        <StyledView
+          testID="content-panel-content"
+          className={contentClass}
+          style={[geometry, contentStyle]}
+        >
           {/* Solid panels publish their painted surface. Plain panels preserve
               the enclosing surface so descendant scrims follow its real fill. */}
           <SurfaceLevelProvider level={isPlain ? parentLevel : 1} fill={publishedFill}>
-            {errorBoundary === false ? children : <PanelErrorBoundary {...(errorBoundary === true ? {} : errorBoundary)}>{children}</PanelErrorBoundary>}
+            {errorBoundary === false ? (
+              children
+            ) : (
+              <PanelErrorBoundary {...(errorBoundary === true ? {} : errorBoundary)}>
+                {children}
+              </PanelErrorBoundary>
+            )}
           </SurfaceLevelProvider>
         </StyledView>
       </StyledView>

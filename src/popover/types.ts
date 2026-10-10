@@ -1,10 +1,6 @@
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import type {
-  OverlayOpenProps,
-  OverlaySurfaceProps,
-  OverlayTriggerProps,
-} from '../floating/types';
+import type { OverlayOpenProps, OverlaySurfaceProps, OverlayTriggerProps } from '../floating/types';
 
 export type PopoverProps = React.PropsWithChildren<OverlayOpenProps>;
 export type PopoverTriggerProps = OverlayTriggerProps;

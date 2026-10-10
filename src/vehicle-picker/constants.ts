@@ -10,8 +10,14 @@ import type { VehicleKind, VehicleOption, VehiclePickerLabels } from './types';
 const BUILT_IN_ORDER: readonly VehicleKind[] = ['bike', 'car', 'van', 'boxTruck', 'refrigerated'];
 
 /** The five built-in vehicles, smallest first, in one language's words. */
-export function builtInVehicleOptions(messages: VehiclePickerMessages): readonly VehicleOption<VehicleKind>[] {
-  return BUILT_IN_ORDER.map((value) => ({ value, ...messages.vehicles[value], fits: [...messages.vehicles[value].fits] }));
+export function builtInVehicleOptions(
+  messages: VehiclePickerMessages,
+): readonly VehicleOption<VehicleKind>[] {
+  return BUILT_IN_ORDER.map((value) => ({
+    value,
+    ...messages.vehicles[value],
+    fits: [...messages.vehicles[value].fits],
+  }));
 }
 
 /**
@@ -42,7 +48,9 @@ export const VEHICLE_ICON: Record<VehicleKind, BloomIconComponent> = {
  * In English. A picker given no `options` draws these five in the resolved
  * locale's words instead.
  */
-export const VEHICLE_OPTIONS: readonly VehicleOption<VehicleKind>[] = builtInVehicleOptions(VEHICLE_PICKER_MESSAGES.en);
+export const VEHICLE_OPTIONS: readonly VehicleOption<VehicleKind>[] = builtInVehicleOptions(
+  VEHICLE_PICKER_MESSAGES.en,
+);
 
 /** The picker's default copy, in English. The picker speaks `VEHICLE_PICKER_MESSAGES` in the resolved locale. */
 export const VEHICLE_PICKER_LABELS: Required<VehiclePickerLabels> = {

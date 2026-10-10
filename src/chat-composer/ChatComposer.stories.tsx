@@ -46,7 +46,12 @@ type Story = StoryObj;
 
 const PEOPLE: ChatComposerSuggestion[] = [
   { id: '1', label: 'Ana Restrepo', handle: '@ana', avatar: 'https://picsum.photos/seed/ana/80' },
-  { id: '2', label: 'Marcel Dubé', handle: '@marcel', avatar: 'https://picsum.photos/seed/marcel/80' },
+  {
+    id: '2',
+    label: 'Marcel Dubé',
+    handle: '@marcel',
+    avatar: 'https://picsum.photos/seed/marcel/80',
+  },
   { id: '3', label: 'Nour Haddad', handle: '@nour', description: 'Away until Thursday' },
   { id: '4', label: 'Ivo Brenner', handle: '@ivo' },
 ];
@@ -176,8 +181,9 @@ const MENU_ITEMS: MessageMenuItem[] = [
   { id: 'delete', label: 'Delete', icon: RiDeleteBinLine, variant: 'destructive', separated: true },
 ];
 
-const WAVE = Array.from({ length: 64 }, (_, i) =>
-  0.2 + 0.8 * Math.abs(Math.sin(i * 0.7) * Math.cos(i * 0.21)),
+const WAVE = Array.from(
+  { length: 64 },
+  (_, i) => 0.2 + 0.8 * Math.abs(Math.sin(i * 0.7) * Math.cos(i * 0.21)),
 );
 
 // ---------------------------------------------------------------------------
@@ -205,7 +211,8 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
         paddingRight: 16,
         gap: 20,
         backgroundColor: theme.colors.background,
-      }}>
+      }}
+    >
       <View style={{ width, maxWidth: '100%', gap: 20 }}>{children}</View>
     </View>
   );
@@ -254,7 +261,8 @@ function Bubble({ children }: { children: string }) {
         paddingBottom: 8,
         paddingLeft: 12,
         paddingRight: 12,
-      }}>
+      }}
+    >
       <Text variant="body-regular" style={{ color: theme.colors.text }}>
         {children}
       </Text>
@@ -316,7 +324,14 @@ export const States: Story = {
         <Block title="edit banner">
           <ChatComposer
             defaultValue="See you at seven"
-            banner={<ComposerBanner kind="edit" title="Edit message" preview="See you at six" onClose={() => {}} />}
+            banner={
+              <ComposerBanner
+                kind="edit"
+                title="Edit message"
+                preview="See you at six"
+                onClose={() => {}}
+              />
+            }
             onAttachPress={() => {}}
             onEmojiPress={() => {}}
             onSend={() => {}}
@@ -355,7 +370,12 @@ export const States: Story = {
             banner={
               <View style={{ gap: 2 }}>
                 <ComposerBanner kind="note" title="Slow mode: 12s" icon={RiTimerLine} />
-                <ComposerBanner kind="note" title="Scheduled" preview="Tomorrow, 09:00" onClose={() => {}} />
+                <ComposerBanner
+                  kind="note"
+                  title="Scheduled"
+                  preview="Tomorrow, 09:00"
+                  onClose={() => {}}
+                />
               </View>
             }
             defaultValue="Morning all"
@@ -365,7 +385,12 @@ export const States: Story = {
         </Block>
 
         <Block title="disabled">
-          <ChatComposer defaultValue="Draft kept" disabled onAttachPress={() => {}} onSend={() => {}} />
+          <ChatComposer
+            defaultValue="Draft kept"
+            disabled
+            onAttachPress={() => {}}
+            onSend={() => {}}
+          />
         </Block>
 
         <Block title="read-only notices">
@@ -406,7 +431,13 @@ export const Wide: Story = {
           />
         </Block>
         <Block title="900 — recording, locked">
-          <VoiceRecorder state="locked" seconds={38} amplitudes={WAVE} onCancel={() => {}} onSend={() => {}} />
+          <VoiceRecorder
+            state="locked"
+            seconds={38}
+            amplitudes={WAVE}
+            onCancel={() => {}}
+            onSend={() => {}}
+          />
         </Block>
       </BothModes>
     );
@@ -433,7 +464,12 @@ export const Suggestions: Story = {
             />
           </Block>
           <Block title="slash commands">
-            <SuggestionList kind="command" suggestions={COMMANDS} activeIndex={0} header="Commands" />
+            <SuggestionList
+              kind="command"
+              suggestions={COMMANDS}
+              activeIndex={0}
+              header="Commands"
+            />
           </Block>
           <Block title="emoji shortcodes">
             <SuggestionList
@@ -483,7 +519,13 @@ export const Recorder: Story = {
           />
         </Block>
         <Block title="locked — hands free">
-          <VoiceRecorder state="locked" seconds={64} amplitudes={WAVE} onCancel={() => {}} onSend={() => {}} />
+          <VoiceRecorder
+            state="locked"
+            seconds={64}
+            amplitudes={WAVE}
+            onCancel={() => {}}
+            onSend={() => {}}
+          />
         </Block>
         <Block title="preview — play it back, delete or send">
           <VoiceRecorder
@@ -511,7 +553,13 @@ export const Recorder: Story = {
         <Block title="in the composer's `recorder` slot">
           <ChatComposer
             recorder={
-              <VoiceRecorder state="recording" seconds={3} amplitudes={WAVE.slice(0, 8)} onCancel={() => {}} onLock={() => {}} />
+              <VoiceRecorder
+                state="recording"
+                seconds={3}
+                amplitudes={WAVE.slice(0, 8)}
+                onCancel={() => {}}
+                onLock={() => {}}
+              />
             }
           />
         </Block>
@@ -558,7 +606,8 @@ export const Attachments: Story = {
                             height: 56,
                             borderRadius: 12,
                             overflow: 'hidden',
-                          }}>
+                          }}
+                        >
                           <View
                             style={{
                               flexGrow: 1,
@@ -568,7 +617,8 @@ export const Attachments: Story = {
                         </View>
                       ))}
                     </View>
-                  }>
+                  }
+                >
                   <ComposerIconButton icon={RiAddLine} accessibilityLabel="Attach" iconSize={22} />
                 </AttachmentMenu>
               }
@@ -644,14 +694,23 @@ export const Reactions: Story = {
         <View style={{ gap: 24 }}>
           <Block title="quick bar over a message">
             <View style={{ gap: 6 }}>
-              <ReactionPicker selected={reaction} onSelectEmoji={setReaction} onMorePress={() => {}} />
+              <ReactionPicker
+                selected={reaction}
+                onSelectEmoji={setReaction}
+                onMorePress={() => {}}
+              />
               <Bubble>The surveyor can come Tuesday morning — does that work?</Bubble>
             </View>
           </Block>
 
           <Block title="small bar, no surface, with a confirmation glyph">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <ReactionPicker size="sm" surface={false} emojis={['👍', '❤️', '😂']} onSelectEmoji={() => {}} />
+              <ReactionPicker
+                size="sm"
+                surface={false}
+                emojis={['👍', '❤️', '😂']}
+                onSelectEmoji={() => {}}
+              />
               <RiCheckboxCircleLine width={18} height={18} fill="#8a8a8a" />
             </View>
           </Block>
@@ -660,7 +719,8 @@ export const Reactions: Story = {
             <MessageContextMenu
               items={MENU_ITEMS.slice(0, 4)}
               reactions={false}
-              onSelect={() => {}}>
+              onSelect={() => {}}
+            >
               <View>
                 <Bubble>Channels where reactions are off.</Bubble>
               </View>
@@ -675,7 +735,8 @@ export const Reactions: Story = {
               selectedReaction={reaction}
               onSelectReaction={setReaction}
               onMoreReactions={() => {}}
-              onSelect={() => {}}>
+              onSelect={() => {}}
+            >
               <View>
                 <Bubble>Long-press me on a phone, right-click me on a pointer.</Bubble>
               </View>

@@ -25,7 +25,10 @@ function DateFlexibilityChipsComponent({
   testID,
 }: DateFlexibilityChipsProps) {
   const { messages } = useMessages(STAY_SEARCH_MESSAGES);
-  const options = useMemo(() => optionsProp ?? dateFlexibilityOptions(messages), [optionsProp, messages]);
+  const options = useMemo(
+    () => optionsProp ?? dateFlexibilityOptions(messages),
+    [optionsProp, messages],
+  );
   const accessibilityLabel = accessibilityLabelProp ?? messages.dateFlexibility;
   return (
     <View

@@ -79,12 +79,7 @@ describe('AlertDialog (built on Dialog)', () => {
   it('requests close (resolves cancel) when the cancel button is pressed', () => {
     const onClose = jest.fn();
     const { getByText } = renderWithTheme(
-      <AlertDialog
-        visible
-        onClose={onClose}
-        title="Confirm?"
-        cancelLabel="No"
-      />,
+      <AlertDialog visible onClose={onClose} title="Confirm?" cancelLabel="No" />,
     );
     act(() => {
       fireEvent.press(getByText('No'));
@@ -192,6 +187,5 @@ describe('AlertDialog (built on Dialog)', () => {
       );
       expect(captured.props?.dismissOnBackdrop).toBe(false);
     });
-
   });
 });

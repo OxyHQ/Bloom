@@ -109,7 +109,7 @@ export function useTextareaAutosize(
     const node = ref.current as unknown as HTMLTextAreaElement | null;
     if (!node) return;
     let previousWidth: number | undefined;
-    const observer = new ResizeObserver(entries => {
+    const observer = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width;
       // Height changes are our own output. Never feed those back into measurement.
       if (!width || width === previousWidth) return;

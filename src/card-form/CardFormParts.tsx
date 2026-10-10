@@ -101,11 +101,7 @@ function PartShell({
             minWidth: 0,
           }}
         >
-          {label ? (
-            <TextFieldLabel required={member.required}>{label}</TextFieldLabel>
-          ) : (
-            <View />
-          )}
+          {label ? <TextFieldLabel required={member.required}>{label}</TextFieldLabel> : <View />}
           {mark}
         </View>
       ) : null}
@@ -200,7 +196,14 @@ function CardFormNumberComponent({
   }, [onValueChange, value, groups, onBlur]);
 
   return (
-    <PartShell member={member} label={label} error={error} mark={mark} style={style} testID={testID}>
+    <PartShell
+      member={member}
+      label={label}
+      error={error}
+      mark={mark}
+      style={style}
+      testID={testID}
+    >
       <TextField invalid={member.invalid} disabled={member.disabled}>
         <TextFieldInput
           label={member.name}

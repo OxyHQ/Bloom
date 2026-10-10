@@ -35,7 +35,10 @@ function PlaceActionsComponent({
   style,
   testID,
 }: PlaceActionsProps) {
-  const { size: inheritedSize } = useBloomAppearance({ size: sizeProp }, { size: 'sm', tone: 'neutral' });
+  const { size: inheritedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'sm', tone: 'neutral' },
+  );
   const size = inheritedSize;
 
   const { messages } = useMessages(PLACE_CARD_MESSAGES);
@@ -60,14 +63,15 @@ function PlaceActionsComponent({
       {actions.map((action) => (
         <Button
           key={action.id}
-
           size={size}
           leadingIcon={action.icon}
           href={action.href}
           onPress={action.onPress}
           disabled={action.disabled}
           accessibilityLabel={action.accessibilityLabel ?? action.label}
-          testID={testID ? `${testID}-${action.id}` : undefined} tone="neutral" appearance="outline"
+          testID={testID ? `${testID}-${action.id}` : undefined}
+          tone="neutral"
+          appearance="outline"
         >
           {action.label}
         </Button>

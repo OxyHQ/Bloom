@@ -176,11 +176,7 @@ export const NoSelection: Story = {
     const [value, setValue] = useState<string | undefined>(undefined);
     return (
       <View style={{ width: 420, maxWidth: '100%', gap: 12 }}>
-        <Tabs
-          value={value}
-          hasSelection={value != null}
-          onValueChange={setValue}
-        >
+        <Tabs value={value} hasSelection={value != null} onValueChange={setValue}>
           <TabsTrigger value="all" label="All" />
           <TabsTrigger value="unread" label="Unread" />
           <TabsTrigger value="flagged" label="Flagged" />
@@ -210,9 +206,24 @@ export const FullWidth: Story = {
 export const Playground: StoryObj<typeof Tabs> = {
   args: { value: 'posts', variant: 'underline', fullWidth: true },
   parameters: { controls: { disable: false, include: ['value', 'variant', 'fullWidth'] } },
-  argTypes: { value: { control: 'select', options: ['posts','replies','media'] }, variant: { control: 'select', options: ['underline','pill','filled'] }, fullWidth: { control: 'boolean' } },
+  argTypes: {
+    value: { control: 'select', options: ['posts', 'replies', 'media'] },
+    variant: { control: 'select', options: ['underline', 'pill', 'filled'] },
+    fullWidth: { control: 'boolean' },
+  },
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
-    return <View style={{ width: 520, maxWidth: '100%' }}><View style={{ gap: 16 }}><Tabs {...args} onValueChange={value => updateArgs({ value })}>{Object.keys(PANELS).map(value => <TabsTrigger key={value} value={value} label={value} />)}</Tabs><Text>{PANELS[args.value ?? 'posts']}</Text></View></View>;
+    return (
+      <View style={{ width: 520, maxWidth: '100%' }}>
+        <View style={{ gap: 16 }}>
+          <Tabs {...args} onValueChange={(value) => updateArgs({ value })}>
+            {Object.keys(PANELS).map((value) => (
+              <TabsTrigger key={value} value={value} label={value} />
+            ))}
+          </Tabs>
+          <Text>{PANELS[args.value ?? 'posts']}</Text>
+        </View>
+      </View>
+    );
   },
 };

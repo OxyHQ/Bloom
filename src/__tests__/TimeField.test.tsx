@@ -13,7 +13,14 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TimeField } from '../date-picker';
-import { formatTime, fromMinutes, parseTime, snapTime, stepTime, toMinutes } from '../date-picker/time';
+import {
+  formatTime,
+  fromMinutes,
+  parseTime,
+  snapTime,
+  stepTime,
+  toMinutes,
+} from '../date-picker/time';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -135,7 +142,18 @@ describe('parseTime', () => {
   });
 
   it('is null for what is not a time', () => {
-    for (const bad of ['', '   ', 'noon', '9:75', '25:00', '13pm', '0pm', 'half nine', '9:30:15', 'abc']) {
+    for (const bad of [
+      '',
+      '   ',
+      'noon',
+      '9:75',
+      '25:00',
+      '13pm',
+      '0pm',
+      'half nine',
+      '9:30:15',
+      'abc',
+    ]) {
       expect(parseTime(bad)).toBeNull();
     }
   });
@@ -181,7 +199,9 @@ describe('stepTime', () => {
 
 describe('TimeField', () => {
   it('is a named text input showing the value, 24h by default', () => {
-    mount(<TimeField value="18:30" onChange={() => {}} accessibilityLabel="Viewing time" testID="t" />);
+    mount(
+      <TimeField value="18:30" onChange={() => {}} accessibilityLabel="Viewing time" testID="t" />,
+    );
     const el = field('t');
     expect(el.getAttribute('aria-label')).toBe('Viewing time');
     expect(el.value).toBe('18:30');
@@ -190,7 +210,13 @@ describe('TimeField', () => {
   it('draws 12h while the VALUE stays 24h', () => {
     const onChange = jest.fn();
     mount(
-      <TimeField value="18:30" onChange={onChange} hourFormat="12h" accessibilityLabel="Time" testID="t" />,
+      <TimeField
+        value="18:30"
+        onChange={onChange}
+        hourFormat="12h"
+        accessibilityLabel="Time"
+        testID="t"
+      />,
     );
     expect(field('t').value).toBe('6:30 PM');
     type(field('t'), '7:15 pm');
@@ -202,9 +228,25 @@ describe('TimeField', () => {
     mount(<TimeField value={null} onChange={() => {}} accessibilityLabel="Time" testID="t" />);
     expect(field('t').value).toBe('');
     expect(field('t').getAttribute('placeholder')).toBe('--:--');
-    mount(<TimeField value={null} onChange={() => {}} hourFormat="12h" accessibilityLabel="T" testID="t" />);
+    mount(
+      <TimeField
+        value={null}
+        onChange={() => {}}
+        hourFormat="12h"
+        accessibilityLabel="T"
+        testID="t"
+      />,
+    );
     expect(field('t').getAttribute('placeholder')).toBe('--:-- --');
-    mount(<TimeField value={null} onChange={() => {}} placeholder="Any time" accessibilityLabel="T" testID="t" />);
+    mount(
+      <TimeField
+        value={null}
+        onChange={() => {}}
+        placeholder="Any time"
+        accessibilityLabel="T"
+        testID="t"
+      />,
+    );
     expect(field('t').getAttribute('placeholder')).toBe('Any time');
   });
 
@@ -273,7 +315,13 @@ describe('TimeField', () => {
   it('the arrow keys move by step and commit at once', () => {
     const onChange = jest.fn();
     mount(
-      <TimeField value="09:00" onChange={onChange} step={15} accessibilityLabel="Time" testID="t" />,
+      <TimeField
+        value="09:00"
+        onChange={onChange}
+        step={15}
+        accessibilityLabel="Time"
+        testID="t"
+      />,
     );
     key(field('t'), 'ArrowUp');
     expect(onChange).toHaveBeenLastCalledWith('09:15');
@@ -300,7 +348,15 @@ describe('TimeField', () => {
 
   it('disabled: not editable, announced, and the keys do nothing', () => {
     const onChange = jest.fn();
-    mount(<TimeField value="12:00" onChange={onChange} disabled accessibilityLabel="Locked" testID="t" />);
+    mount(
+      <TimeField
+        value="12:00"
+        onChange={onChange}
+        disabled
+        accessibilityLabel="Locked"
+        testID="t"
+      />,
+    );
     const el = field('t');
     expect(el.getAttribute('aria-disabled')).toBe('true');
     expect(el.readOnly || el.disabled).toBe(true);
@@ -317,10 +373,14 @@ describe('TimeField', () => {
     mount(<TimeField value="09:00" onChange={() => {}} accessibilityLabel="T" testID="t" />);
     expect(getComputedStyle(field('t')).width).toBe('104px');
     expect(getComputedStyle(field('t')).height).toBe('38px');
-    mount(<TimeField value="09:00" onChange={() => {}} size="sm" accessibilityLabel="T" testID="t" />);
+    mount(
+      <TimeField value="09:00" onChange={() => {}} size="sm" accessibilityLabel="T" testID="t" />,
+    );
     expect(getComputedStyle(field('t')).width).toBe('96px');
     expect(getComputedStyle(field('t')).height).toBe('32px');
-    mount(<TimeField value="09:00" onChange={() => {}} width={140} accessibilityLabel="T" testID="t" />);
+    mount(
+      <TimeField value="09:00" onChange={() => {}} width={140} accessibilityLabel="T" testID="t" />,
+    );
     expect(getComputedStyle(field('t')).width).toBe('140px');
   });
 });

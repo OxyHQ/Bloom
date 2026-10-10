@@ -45,7 +45,9 @@ const COLUMNS: DataTableColumn<Patient>[] = [
     flex: 1,
     accessor: (p) => p.name,
     cell: ({ row }) => (
-      <NameCell leading={<PersonAvatar name={row.name} avatar={row.avatar} color={row.initialsColor} />}>
+      <NameCell
+        leading={<PersonAvatar name={row.name} avatar={row.avatar} color={row.initialsColor} />}
+      >
         <CellText>{row.name}</CellText>
       </NameCell>
     ),
@@ -78,7 +80,15 @@ const COLUMNS: DataTableColumn<Patient>[] = [
     header: 'Condition',
     flex: 1,
     cell: ({ row }) => (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, minWidth: 0 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 6,
+          minWidth: 0,
+        }}
+      >
         {row.conditions.map((condition) => (
           <Chip key={condition} size="md" hue="gray">
             {condition}
@@ -100,7 +110,9 @@ const COLUMNS: DataTableColumn<Patient>[] = [
     id: 'actions',
     header: 'Actions',
     width: 140,
-    cell: ({ row }) => <DataTableRowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_ACTIONS} />,
+    cell: ({ row }) => (
+      <DataTableRowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_ACTIONS} />
+    ),
   },
 ];
 
@@ -140,13 +152,19 @@ export function PatientsTable({ testID }: { testID?: string }) {
             label="Filter by status"
             value={statusFilter}
             onValueChange={filter(setStatusFilter)}
-            options={[{ value: 'all', label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s.label, label: s.label }))]}
+            options={[
+              { value: 'all', label: 'All statuses' },
+              ...STATUSES.map((s) => ({ value: s.label, label: s.label })),
+            ]}
           />
           <DataTableFilter
             label="Filter by condition"
             value={conditionFilter}
             onValueChange={filter(setConditionFilter)}
-            options={[{ value: 'all', label: 'All conditions' }, ...CONDITIONS.map((c) => ({ value: c, label: c }))]}
+            options={[
+              { value: 'all', label: 'All conditions' },
+              ...CONDITIONS.map((c) => ({ value: c, label: c })),
+            ]}
           />
           <DataTableSearch label="Search patients" value={query} onValueChange={filter(setQuery)} />
         </>

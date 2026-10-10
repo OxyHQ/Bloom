@@ -21,8 +21,10 @@ export const CONTRIBUTION_TIER_THRESHOLDS = [1, 5, 10, 16, 25] as const;
 export const CONTRIBUTION_COLUMNS = 37;
 export const CONTRIBUTION_ROWS = 7;
 
-
-export function contributionTier(cell: ContributionCell, thresholds: readonly number[] = CONTRIBUTION_TIER_THRESHOLDS): ContributionTier {
+export function contributionTier(
+  cell: ContributionCell,
+  thresholds: readonly number[] = CONTRIBUTION_TIER_THRESHOLDS,
+): ContributionTier {
   if (cell.tier !== undefined) return cell.tier;
   let tier = 0;
   for (const t of thresholds) {
@@ -36,7 +38,10 @@ export function contributionTier(cell: ContributionCell, thresholds: readonly nu
  * Tooltip copy: "12 contributions on Apr 26" / "No contributions on Apr 26",
  * in the language of `text` (English unless the grid passes its locale's).
  */
-export function contributionLabel(cell: ContributionCell, text: ChartCardsMessages = CHART_CARDS_MESSAGES.en): string {
+export function contributionLabel(
+  cell: ContributionCell,
+  text: ChartCardsMessages = CHART_CARDS_MESSAGES.en,
+): string {
   return text.contributions(cell.count, cell.date);
 }
 
@@ -80,14 +85,18 @@ export function contributionCellsFromDays(
     // The cell's day the locale's way ("Apr 26", "26 abr"); `d` is a UTC date.
     return {
       count: 0,
-      date: formatGregorian(d, locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }) ?? d.toISOString().slice(0, 10),
+      date:
+        formatGregorian(d, locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }) ??
+        d.toISOString().slice(0, 10),
     };
   });
   const start = Date.UTC(year, 0, 1);
   for (const day of days) {
     const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(day.date);
     if (!match || Number(match[1]) !== year) continue;
-    const dayOfYear = Math.round((Date.UTC(year, Number(match[2]) - 1, Number(match[3])) - start) / 86_400_000);
+    const dayOfYear = Math.round(
+      (Date.UTC(year, Number(match[2]) - 1, Number(match[3])) - start) / 86_400_000,
+    );
     const cell = cells[contributionCellIndex(Math.min(364, dayOfYear), columns)]!;
     cell.count += day.count;
   }

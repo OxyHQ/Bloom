@@ -18,7 +18,14 @@ import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
 import { useSidebarGeometry } from './geometry';
 import { useSidebarMetrics } from './metrics';
-import { Collapsible, IS_WEB, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss, webHook } from './parts';
+import {
+  Collapsible,
+  IS_WEB,
+  useInSidebar,
+  useSidebarCollapseProgress,
+  useSidebarWebCss,
+  webHook,
+} from './parts';
 import type { SidebarMode, SidebarModeSwitcherProps } from './types';
 import { useMessages } from '../locale/messages';
 import { SIDEBAR_MESSAGES } from './messages';
@@ -74,19 +81,25 @@ function ModeRow({
   const Icon = mode.icon;
   const foreground = selected ? palette.text : palette.textSecondary;
 
-  const geometry = useAnimatedStyle(() => ({
-    height: ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value,
-    gap: 4 * (1 - progress.value),
-    marginLeft: (collapsedLane - compactSquare) / 2 * progress.value,
-    marginRight: (collapsedLane - compactSquare) / 2 * progress.value,
-  }), [progress, compactSquare, collapsedLane]);
+  const geometry = useAnimatedStyle(
+    () => ({
+      height: ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value,
+      gap: 4 * (1 - progress.value),
+      marginLeft: ((collapsedLane - compactSquare) / 2) * progress.value,
+      marginRight: ((collapsedLane - compactSquare) / 2) * progress.value,
+    }),
+    [progress, compactSquare, collapsedLane],
+  );
   const iconBox = useAnimatedStyle(() => {
     const side = ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value;
     return { width: expandedLane + (compactSquare - expandedLane) * progress.value, height: side };
   }, [progress, compactSquare, expandedLane, collapsedLane]);
-  const glyphStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + (compactIcon / 18 - 1) * progress.value }],
-  }), [progress, compactIcon]);
+  const glyphStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ scale: 1 + (compactIcon / 18 - 1) * progress.value }],
+    }),
+    [progress, compactIcon],
+  );
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -109,8 +122,12 @@ function ModeRow({
       style={[rowStyle, geometry]}
       testID={testID}
     >
-      <Animated.View style={[{ alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, iconBox]}>
-        <Animated.View style={glyphStyle}><Icon width={18} height={18} fill={foreground} /></Animated.View>
+      <Animated.View
+        style={[{ alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, iconBox]}
+      >
+        <Animated.View style={glyphStyle}>
+          <Icon width={18} height={18} fill={foreground} />
+        </Animated.View>
       </Animated.View>
       <Collapsible collapsed={collapsed} style={{ flex: 1, minWidth: 0 }}>
         <Text variant="body-2-medium" numberOfLines={1} style={{ color: foreground }}>
@@ -155,11 +172,14 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   const compactSquare = metrics.row.square;
   const compactIcon = metrics.row.icon;
   // Grow into the panel inset continuously while its content column narrows.
-  const trackStyle = useAnimatedStyle(() => ({
-    marginLeft: inSidebar ? -PADDING * progress.value : 0,
-    marginRight: inSidebar ? -PADDING * progress.value : 0,
-    borderRadius: (ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value + PADDING * 2) / 2,
-  }), [progress, compactSquare, inSidebar]);
+  const trackStyle = useAnimatedStyle(
+    () => ({
+      marginLeft: inSidebar ? -PADDING * progress.value : 0,
+      marginRight: inSidebar ? -PADDING * progress.value : 0,
+      borderRadius: (ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value + PADDING * 2) / 2,
+    }),
+    [progress, compactSquare, inSidebar],
+  );
 
   // One scan answers both questions: which row the thumb sits on, and whether
   // there is a selected row at all.
@@ -168,11 +188,18 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   const index = Math.max(0, selectedIndex);
   const selectedPosition = useSharedValue(index);
   useEffect(() => {
-    selectedPosition.value = reducedMotion ? index : withTiming(index, { duration: SEGMENTED_THUMB_MS, easing: EASE });
+    selectedPosition.value = reducedMotion
+      ? index
+      : withTiming(index, { duration: SEGMENTED_THUMB_MS, easing: EASE });
   }, [index, reducedMotion, selectedPosition]);
   const thumbStyle = useAnimatedStyle(() => {
     const height = ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value;
-    return { height, left: PADDING + (collapsedLane - compactSquare) / 2 * progress.value, right: PADDING + (collapsedLane - compactSquare) / 2 * progress.value, transform: [{ translateY: selectedPosition.value * (height + ROW_GAP) }] };
+    return {
+      height,
+      left: PADDING + ((collapsedLane - compactSquare) / 2) * progress.value,
+      right: PADDING + ((collapsedLane - compactSquare) / 2) * progress.value,
+      transform: [{ translateY: selectedPosition.value * (height + ROW_GAP) }],
+    };
   }, [progress, compactSquare, selectedPosition, collapsedLane]);
 
   return (

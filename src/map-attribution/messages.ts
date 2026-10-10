@@ -12,4 +12,8 @@ export interface MapAttributionMessages {
   mapData: string;
 }
 
-export const MAP_ATTRIBUTION_MESSAGES: MessageCatalog<MapAttributionMessages> = defineMessages<MapAttributionMessages>('MAP_ATTRIBUTION_MESSAGES', { scale: 'Scale', mapData: 'Map data' });
+export const MAP_ATTRIBUTION_MESSAGES: MessageCatalog<MapAttributionMessages> =
+  defineMessages<MapAttributionMessages>('MAP_ATTRIBUTION_MESSAGES', {
+    scale: 'Scale',
+    mapData: 'Map data',
+  });

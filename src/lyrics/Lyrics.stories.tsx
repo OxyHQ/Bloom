@@ -145,7 +145,12 @@ export const ArtworkColours: Story = {
           {colours.map((colour) => (
             <View key={colour} style={{ flexGrow: 1, flexBasis: 280, maxWidth: 340, gap: 8 }}>
               <Caption>{colour}</Caption>
-              <LyricsPreviewCard lines={LINES} currentTime={20} artworkColor={colour} onShowLyrics={() => {}} />
+              <LyricsPreviewCard
+                lines={LINES}
+                currentTime={20}
+                artworkColor={colour}
+                onShowLyrics={() => {}}
+              />
             </View>
           ))}
         </View>
@@ -159,10 +164,14 @@ export const UnsyncedAndEmpty: Story = {
   render: () => (
     <Page>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-        <View style={{ flexGrow: 1, flexBasis: 300, height: 520, borderRadius: 16, overflow: 'hidden' }}>
+        <View
+          style={{ flexGrow: 1, flexBasis: 300, height: 520, borderRadius: 16, overflow: 'hidden' }}
+        >
           <LyricsView text={PLAIN} artworkColor="#2f6fb5" providerText={PROVIDER} />
         </View>
-        <View style={{ flexGrow: 1, flexBasis: 300, height: 520, borderRadius: 16, overflow: 'hidden' }}>
+        <View
+          style={{ flexGrow: 1, flexBasis: 300, height: 520, borderRadius: 16, overflow: 'hidden' }}
+        >
           <LyricsView lines={[]} />
         </View>
       </View>

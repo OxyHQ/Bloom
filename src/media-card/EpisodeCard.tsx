@@ -16,10 +16,17 @@ import { MEDIA_CARD_MESSAGES } from './messages';
 import { MEDIA_CONTROLS_MESSAGES } from '../media-controls/messages';
 
 /** An episode row's cover side. */
-export const EPISODE_ROW_ARTWORK: Record<MediaCardSize, number> = { large: 112, medium: 96, small: 72 };
+export const EPISODE_ROW_ARTWORK: Record<MediaCardSize, number> = {
+  large: 112,
+  medium: 96,
+  small: 72,
+};
 
 /** What the progress line draws: the check, the bar, or nothing. */
-export function episodeProgressState(played: boolean, progress: number | undefined): 'played' | 'progress' | 'none' {
+export function episodeProgressState(
+  played: boolean,
+  progress: number | undefined,
+): 'played' | 'progress' | 'none' {
   if (played) return 'played';
   return clamp01(progress) > 0 ? 'progress' : 'none';
 }
@@ -70,7 +77,10 @@ function EpisodeCardComponent({
 
   const progressLine =
     state === 'played' ? (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} testID={testID ? `${testID}-played` : undefined}>
+      <View
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+        testID={testID ? `${testID}-played` : undefined}
+      >
         <View aria-hidden>
           <RiCheckboxCircleFill width={16} height={16} fill={paint.accent} />
         </View>
@@ -80,7 +90,13 @@ function EpisodeCardComponent({
       </View>
     ) : state === 'progress' ? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
-        <ListenProgress value={progress ?? 0} paint={paint} width={48} label={messages.progressOf(title)} testID={testID ? `${testID}-progress` : undefined} />
+        <ListenProgress
+          value={progress ?? 0}
+          paint={paint}
+          width={48}
+          label={messages.progressOf(title)}
+          testID={testID ? `${testID}-progress` : undefined}
+        />
         {remaining ? (
           <Text variant="caption-1-medium" numberOfLines={1} style={{ color: paint.textSecondary }}>
             {remaining}
@@ -91,14 +107,27 @@ function EpisodeCardComponent({
 
   const footer =
     row || progressLine || actions ? (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }} pointerEvents="box-none">
+      <View
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+        pointerEvents="box-none"
+      >
         {row && onPlay ? (
-          <PlayButton playing={playing} loading={loading} onPress={onPlay} subject={title} size="sm" testID={testID ? `${testID}-play` : undefined} />
+          <PlayButton
+            playing={playing}
+            loading={loading}
+            onPress={onPlay}
+            subject={title}
+            size="sm"
+            testID={testID ? `${testID}-play` : undefined}
+          />
         ) : null}
         {progressLine}
         <View style={{ flex: 1 }} pointerEvents="none" />
         {actions ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} pointerEvents="box-none">
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            pointerEvents="box-none"
+          >
             {actions}
           </View>
         ) : null}

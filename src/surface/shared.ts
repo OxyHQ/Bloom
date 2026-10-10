@@ -6,15 +6,16 @@ export const SURFACE_SHEEN = [
   { offset: 0.48, color: 'rgb(255, 255, 255)', opacity: 0.035 },
   { offset: 1, color: 'rgb(0, 0, 0)', opacity: 0.045 },
 ] as const;
-export const SURFACE_SHEEN_CSS = `linear-gradient(180deg, ${SURFACE_SHEEN.map(stop => `${withAlpha(stop.color, stop.opacity)} ${stop.offset * 100}%`).join(', ')})`;
-export const SURFACE_RIM = 'inset 2px 2px 1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5)';
+export const SURFACE_SHEEN_CSS = `linear-gradient(180deg, ${SURFACE_SHEEN.map((stop) => `${withAlpha(stop.color, stop.opacity)} ${stop.offset * 100}%`).join(', ')})`;
+export const SURFACE_RIM =
+  'inset 2px 2px 1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5)';
 
 const DARK_SHEEN = [
   { offset: 0, color: 'rgb(255, 255, 255)', opacity: 0.075 },
   { offset: 0.48, color: 'rgb(255, 255, 255)', opacity: 0.012 },
   { offset: 1, color: 'rgb(0, 0, 0)', opacity: 0.06 },
 ] as const;
-const DARK_SHEEN_CSS = `linear-gradient(180deg, ${DARK_SHEEN.map(stop => `${withAlpha(stop.color, stop.opacity)} ${stop.offset * 100}%`).join(', ')})`;
+const DARK_SHEEN_CSS = `linear-gradient(180deg, ${DARK_SHEEN.map((stop) => `${withAlpha(stop.color, stop.opacity)} ${stop.offset * 100}%`).join(', ')})`;
 const LIGHT_OPTICS = { sheen: SURFACE_SHEEN, sheenCss: SURFACE_SHEEN_CSS, rim: SURFACE_RIM };
 const DARK_OPTICS = {
   sheen: DARK_SHEEN,
@@ -34,7 +35,6 @@ export function surfaceSvgStop(color: string): { color: string; opacity: number 
     ? { color: `rgb(${parsed.r}, ${parsed.g}, ${parsed.b})`, opacity: parsed.a }
     : { color, opacity: 1 };
 }
-
 
 /** One subtle material: retain explicit alpha; opaque fills transmit ten percent. */
 export function resolveSurfaceTint(fill: string): string {

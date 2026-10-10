@@ -23,7 +23,10 @@ const MAX_GUTTER = 120;
 /** The gutter state for a set of labels; measurements reset when the labels change. */
 export function useMailGutterState(labels: readonly (string | undefined)[]): MailGutter {
   const key = labels.join('\u0000');
-  const [measured, setMeasured] = useState<{ key: string; widths: Record<string, number> }>({ key, widths: {} });
+  const [measured, setMeasured] = useState<{ key: string; widths: Record<string, number> }>({
+    key,
+    widths: {},
+  });
   const widths = measured.key === key ? measured.widths : {};
 
   const report = useCallback(
@@ -39,7 +42,10 @@ export function useMailGutterState(labels: readonly (string | undefined)[]): Mai
 
   const width = Math.min(
     MAX_GUTTER,
-    Math.max(MAIL_COMPOSE_GEOMETRY.labelWidth, ...Object.values(widths).map((value) => Math.ceil(value))),
+    Math.max(
+      MAIL_COMPOSE_GEOMETRY.labelWidth,
+      ...Object.values(widths).map((value) => Math.ceil(value)),
+    ),
   );
   return useMemo(() => ({ width, report }), [width, report]);
 }

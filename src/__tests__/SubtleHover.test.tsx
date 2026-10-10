@@ -33,8 +33,7 @@ function renderWithTheme(ui: React.ReactElement) {
  */
 function renderWrapper(ui: React.ReactElement): ReactTestRendererJSON {
   const tree = renderWithTheme(ui).toJSON();
-  const roots: ReactTestRendererNode[] =
-    tree === null ? [] : Array.isArray(tree) ? tree : [tree];
+  const roots: ReactTestRendererNode[] = tree === null ? [] : Array.isArray(tree) ? tree : [tree];
 
   const isFlexWrapper = (node: ReactTestRendererJSON) => {
     const style: unknown = node.props.style;

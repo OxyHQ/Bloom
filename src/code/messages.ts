@@ -11,4 +11,7 @@ export interface CodeMessages {
   copied: string;
 }
 
-export const CODE_MESSAGES: MessageCatalog<CodeMessages> = defineMessages<CodeMessages>('CODE_MESSAGES', { copy: 'Copy code', copied: 'Code copied' });
+export const CODE_MESSAGES: MessageCatalog<CodeMessages> = defineMessages<CodeMessages>(
+  'CODE_MESSAGES',
+  { copy: 'Copy code', copied: 'Code copied' },
+);

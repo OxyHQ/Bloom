@@ -21,10 +21,16 @@ export function SplitPane({
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
       {children}
     </ScrollView>
-  ) : <View style={{ flex: 1, minHeight: 0 }}>{children}</View>;
+  ) : (
+    <View style={{ flex: 1, minHeight: 0 }}>{children}</View>
+  );
   return (
     <View testID={testID} style={[{ minWidth: 0, alignSelf: 'stretch' }, style]}>
-      {errorBoundary === false ? content : <PanelErrorBoundary {...errorBoundary}>{content}</PanelErrorBoundary>}
+      {errorBoundary === false ? (
+        content
+      ) : (
+        <PanelErrorBoundary {...errorBoundary}>{content}</PanelErrorBoundary>
+      )}
     </View>
   );
 }

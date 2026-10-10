@@ -85,10 +85,7 @@ export function useAccessibilityFocus<T>(open: boolean): React.RefObject<T | nul
  * steal the cursor on mount, which is what keying on `open` alone would do for
  * every closed menu on the screen.
  */
-export function useRestoreAccessibilityFocus(
-  open: boolean,
-  ref: React.RefObject<unknown>,
-): void {
+export function useRestoreAccessibilityFocus(open: boolean, ref: React.RefObject<unknown>): void {
   const wasOpen = useRef(open);
 
   useEffect(() => {

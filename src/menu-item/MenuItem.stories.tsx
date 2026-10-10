@@ -103,7 +103,9 @@ const GROUPS: MenuItemOptionGroup[] = [
 ];
 
 function Page({ children }: { children: React.ReactNode }) {
-  return <View style={{ width: '100%', paddingVertical: 16, gap: 32, maxWidth: 760 }}>{children}</View>;
+  return (
+    <View style={{ width: '100%', paddingVertical: 16, gap: 32, maxWidth: 760 }}>{children}</View>
+  );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -120,7 +122,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Menu({ density }: { density?: MenuItemRowProps['density'] }) {
   const [basket, setBasket] = useState<Record<string, number>>({ ember: 2 });
   return (
-    <Card  radius="radius-16" elevation="none" appearance="solid">
+    <Card radius="radius-16" elevation="none" appearance="solid">
       <CardBody style={{ padding: 0 }}>
         {DISHES.map((dish, index) => {
           const { id, ...rest } = dish;
@@ -171,7 +173,7 @@ export const RowStates: Story = {
     return (
       <Page>
         <Section title="Nothing in the basket, something in it, sold out, no photo, long text">
-          <Card  radius="radius-16" elevation="none" appearance="solid">
+          <Card radius="radius-16" elevation="none" appearance="solid">
             <CardBody style={{ padding: 0 }}>
               <MenuItemRow
                 name="Ember flatbread"
@@ -267,7 +269,7 @@ export const Options: Story = {
     return (
       <Page>
         <Section title="Inline — what a desktop dialog holds">
-          <Card  radius="radius-16" elevation="none" appearance="solid">
+          <Card radius="radius-16" elevation="none" appearance="solid">
             <CardBody>
               <MenuItemOptions
                 header={<DishHeader />}
@@ -295,13 +297,10 @@ export const OptionsInvalid: Story = {
     return (
       <Page>
         <Section title="Required, unanswered">
-          <Card  radius="radius-16" elevation="none" appearance="solid">
+          <Card radius="radius-16" elevation="none" appearance="solid">
             <CardBody>
               <MenuItemOptions
-                groups={[
-                  { ...GROUPS[0]!, error: 'Choose a size to carry on.' },
-                  GROUPS[1]!,
-                ]}
+                groups={[{ ...GROUPS[0]!, error: 'Choose a size to carry on.' }, GROUPS[1]!]}
                 value={value}
                 onValueChange={(groupId, ids) =>
                   setValue((current) => ({ ...current, [groupId]: ids }))

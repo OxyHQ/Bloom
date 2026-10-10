@@ -39,24 +39,27 @@ export interface CalendarMessages {
   addAccount: string;
 }
 
-export const CALENDAR_MESSAGES: MessageCatalog<CalendarMessages> = defineMessages<CalendarMessages>('CALENDAR_MESSAGES', {
-  newEvent: 'New event',
-  openNavigation: 'Open navigation',
-  month: 'Month',
-  moreEvents: (n) => plural('en', n, { other: '+{n} more' }),
-  eventDetails: 'Event details',
-  join: 'Join',
-  editTimeZone: 'Edit timezone',
-  participants: 'Participants',
-  editParticipants: 'Edit participants',
-  reminders: 'Reminders',
-  editReminders: 'Edit reminders',
-  duration: compactDuration('h', 'm', ''),
-  jumpToDate: 'Jump to date',
-  previousMonth: 'Previous month',
-  nextMonth: 'Next month',
-  chooseDate: (month) => `${month}, choose a date`,
-  inbox: 'Inbox',
-  inboxMenu: 'Inbox menu',
-  addAccount: 'Add new account',
-});
+export const CALENDAR_MESSAGES: MessageCatalog<CalendarMessages> = defineMessages<CalendarMessages>(
+  'CALENDAR_MESSAGES',
+  {
+    newEvent: 'New event',
+    openNavigation: 'Open navigation',
+    month: 'Month',
+    moreEvents: (n) => plural('en', n, { other: '+{n} more' }),
+    eventDetails: 'Event details',
+    join: 'Join',
+    editTimeZone: 'Edit timezone',
+    participants: 'Participants',
+    editParticipants: 'Edit participants',
+    reminders: 'Reminders',
+    editReminders: 'Edit reminders',
+    duration: compactDuration('h', 'm', ''),
+    jumpToDate: 'Jump to date',
+    previousMonth: 'Previous month',
+    nextMonth: 'Next month',
+    chooseDate: (month) => `${month}, choose a date`,
+    inbox: 'Inbox',
+    inboxMenu: 'Inbox menu',
+    addAccount: 'Add new account',
+  },
+);

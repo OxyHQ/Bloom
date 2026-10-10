@@ -1,7 +1,16 @@
 import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
 import type { BloomIconRenderer } from '../icons/render-icon';
 import type { AriaAttributes, ReactNode } from 'react';
-import type { GestureResponderEvent, FocusEvent as NativeFocusEvent, MouseEvent as NativeMouseEvent, LayoutChangeEvent, ViewProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type {
+  GestureResponderEvent,
+  FocusEvent as NativeFocusEvent,
+  MouseEvent as NativeMouseEvent,
+  LayoutChangeEvent,
+  ViewProps,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { TypeScaleVariant } from '../typography/scale';

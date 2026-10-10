@@ -11,13 +11,19 @@ import { OFFERING_BADGE_MESSAGES } from './messages';
 import type { OfferingBadgeSize, OfferingBadgeVariant } from './types';
 
 /** Every offering, in the order a listing lists them. */
-export const OFFERINGS: readonly Offering[] = ['long_term_rent', 'sale', 'short_term_rent', 'exchange'];
+export const OFFERINGS: readonly Offering[] = [
+  'long_term_rent',
+  'sale',
+  'short_term_rent',
+  'exchange',
+];
 
 /**
  * The English labels. `OfferingBadge` speaks `OFFERING_BADGE_MESSAGES` in the
  * resolved locale; a caller's `label` still wins.
  */
-export const OFFERING_LABELS: Readonly<Record<Offering, string>> = OFFERING_BADGE_MESSAGES.en.offerings;
+export const OFFERING_LABELS: Readonly<Record<Offering, string>> =
+  OFFERING_BADGE_MESSAGES.en.offerings;
 
 export const OFFERING_ICONS: Readonly<Record<Offering, BloomIconComponent>> = {
   long_term_rent: RiKey2Line,
@@ -92,6 +98,15 @@ export function resolveOfferingBadgePaint(
   offering: Offering,
   variant: OfferingBadgeVariant,
 ): OfferingBadgePaint {
-  const paint = resolveBadgePaint(theme, OFFERING_TONES[offering], variant === 'onMedia' ? 'onMedia' : 'subtle');
-  return { background: paint.background, foreground: paint.foreground, icon: paint.foreground, shadow: paint.shadow };
+  const paint = resolveBadgePaint(
+    theme,
+    OFFERING_TONES[offering],
+    variant === 'onMedia' ? 'onMedia' : 'subtle',
+  );
+  return {
+    background: paint.background,
+    foreground: paint.foreground,
+    icon: paint.foreground,
+    shadow: paint.shadow,
+  };
 }

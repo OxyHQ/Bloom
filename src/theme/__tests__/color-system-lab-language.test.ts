@@ -5,7 +5,9 @@ const storySource = [
   resolve(__dirname, '..', 'ColorSystemLab.stories.tsx'),
   resolve(__dirname, '../../../templates/social/SocialContent.tsx'),
   resolve(__dirname, '../../../templates/social/SocialTemplate.tsx'),
-].map(file => readFileSync(file, 'utf8')).join('\n');
+]
+  .map((file) => readFileSync(file, 'utf8'))
+  .join('\n');
 
 const SPANISH_UI_WORDS = new Set([
   'accion',
@@ -61,7 +63,10 @@ const SPANISH_UI_WORDS = new Set([
 ]);
 
 function spanishWords(source: string): string[] {
-  const normalized = source.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const normalized = source
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
   return (normalized.match(/[a-z]+/g) ?? []).filter((word) => SPANISH_UI_WORDS.has(word));
 }
 

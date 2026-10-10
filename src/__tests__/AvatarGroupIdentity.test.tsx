@@ -55,9 +55,7 @@ function hostsOfType(tree: unknown, type: string): HostNode[] {
 
 describe('AvatarGroup identity resolution', () => {
   it('takes the display name when there is a real one', () => {
-    const { getByText } = renderGroup([
-      { id: '1', displayName: 'Ada Lovelace', username: 'ada' },
-    ]);
+    const { getByText } = renderGroup([{ id: '1', displayName: 'Ada Lovelace', username: 'ada' }]);
     expect(getByText('A')).toBeTruthy();
   });
 

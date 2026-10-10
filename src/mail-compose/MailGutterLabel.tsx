@@ -28,7 +28,12 @@ export function MailGutterLabel({
   const width = gutter?.width ?? MAIL_COMPOSE_GEOMETRY.labelWidth;
   return (
     <>
-      <Text variant="body-regular" numberOfLines={1} style={{ width, color, paddingTop, flexShrink: 0 }} testID={testID}>
+      <Text
+        variant="body-regular"
+        numberOfLines={1}
+        style={{ width, color, paddingTop, flexShrink: 0 }}
+        testID={testID}
+      >
         {children}
       </Text>
       {gutter ? (

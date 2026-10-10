@@ -13,14 +13,33 @@ function Footprint() {
 }
 function LayoutDemo({ inset = 24 }: { inset?: number }) {
   const [value, setValue] = useState('home');
-  return <SafeAreaInsetsContext.Provider value={{top:0,right:0,bottom:inset,left:0}}>
-    <BottomEdgeProvider><View style={{ maxWidth: '100%',height:480,width:360,justifyContent:'space-between'}}>
-      <Footprint />
-      <BottomBar items={[{name:'home',label:'Home',icon:<RiHomeLine />},{name:'search',label:'Search',icon:<RiSearchLine />}]} value={value} onValueChange={setValue} action={<Fab icon={RiAddLine} accessibilityLabel="Compose" />} />
-    </View></BottomEdgeProvider>
-  </SafeAreaInsetsContext.Provider>;
+  return (
+    <SafeAreaInsetsContext.Provider value={{ top: 0, right: 0, bottom: inset, left: 0 }}>
+      <BottomEdgeProvider>
+        <View
+          style={{ maxWidth: '100%', height: 480, width: 360, justifyContent: 'space-between' }}
+        >
+          <Footprint />
+          <BottomBar
+            items={[
+              { name: 'home', label: 'Home', icon: <RiHomeLine /> },
+              { name: 'search', label: 'Search', icon: <RiSearchLine /> },
+            ]}
+            value={value}
+            onValueChange={setValue}
+            action={<Fab icon={RiAddLine} accessibilityLabel="Compose" />}
+          />
+        </View>
+      </BottomEdgeProvider>
+    </SafeAreaInsetsContext.Provider>
+  );
 }
-const meta = { title: 'Foundations/Layout', component: LayoutDemo, args: {inset:24}, argTypes: {inset:{control:{type:'range',min:0,max:48}}} } satisfies Meta<typeof LayoutDemo>;
+const meta = {
+  title: 'Foundations/Layout',
+  component: LayoutDemo,
+  args: { inset: 24 },
+  argTypes: { inset: { control: { type: 'range', min: 0, max: 48 } } },
+} satisfies Meta<typeof LayoutDemo>;
 export default meta;
 type Story = StoryObj<typeof LayoutDemo>;
 export const BottomEdge: Story = {};

@@ -53,7 +53,11 @@ export interface LocaleProviderProps {
  */
 export function LocaleProvider({ locale, fallback, children }: LocaleProviderProps) {
   const parent = useContext(LocaleContext);
-  const translations = useSyncExternalStore(subscribeBloomTranslations, getBloomTranslations, getBloomTranslations);
+  const translations = useSyncExternalStore(
+    subscribeBloomTranslations,
+    getBloomTranslations,
+    getBloomTranslations,
+  );
   const requested = locale ?? parent?.locale;
   const language = resolveBloomLanguage(requested ?? runtimeLocale());
   const settled = isBloomLanguageSettled(translations, language);
@@ -74,7 +78,10 @@ export function LocaleProvider({ locale, fallback, children }: LocaleProviderPro
   }, [language, settled]);
 
   const published = settled ? requested : shown.locale;
-  const value = useMemo<LocaleScope>(() => ({ locale: published, translations }), [published, translations]);
+  const value = useMemo<LocaleScope>(
+    () => ({ locale: published, translations }),
+    [published, translations],
+  );
 
   if (fallback !== undefined && !settled && !shown.ever) {
     return createElement(LocaleContext.Provider, { value }, fallback);

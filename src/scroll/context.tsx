@@ -10,18 +10,14 @@
 import { createContext, useContext, useEffect, useMemo } from 'react';
 
 import { ScrollOffsetStore } from './store';
-import type {
-  ScrollRestorationProviderProps,
-  ScrollRouterAdapter,
-} from './types';
+import type { ScrollRestorationProviderProps, ScrollRouterAdapter } from './types';
 
 export interface ScrollRestorationContextValue {
   store: ScrollOffsetStore;
   adapter: ScrollRouterAdapter;
 }
 
-const ScrollRestorationContext =
-  createContext<ScrollRestorationContextValue | null>(null);
+const ScrollRestorationContext = createContext<ScrollRestorationContextValue | null>(null);
 ScrollRestorationContext.displayName = 'BloomScrollRestorationContext';
 
 /**
@@ -29,28 +25,21 @@ ScrollRestorationContext.displayName = 'BloomScrollRestorationContext';
  * near the app root is enough; the store lives as long as the provider, so
  * offsets survive navigating away and back (including browser Back/Forward).
  */
-export function ScrollRestorationProvider({
-  children,
-  adapter,
-}: ScrollRestorationProviderProps) {
+export function ScrollRestorationProvider({ children, adapter }: ScrollRestorationProviderProps) {
   const store = useMemo(() => new ScrollOffsetStore(), []);
   const value = useMemo(() => ({ store, adapter }), [store, adapter]);
 
   useManualBrowserScrollRestoration();
 
   return (
-    <ScrollRestorationContext.Provider value={value}>
-      {children}
-    </ScrollRestorationContext.Provider>
+    <ScrollRestorationContext.Provider value={value}>{children}</ScrollRestorationContext.Provider>
   );
 }
 
 export function useScrollRestorationContext(): ScrollRestorationContextValue {
   const value = useContext(ScrollRestorationContext);
   if (value === null) {
-    throw new Error(
-      'useScrollRestoration must be used within a <ScrollRestorationProvider>.',
-    );
+    throw new Error('useScrollRestoration must be used within a <ScrollRestorationProvider>.');
   }
   return value;
 }

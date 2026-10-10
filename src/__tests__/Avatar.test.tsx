@@ -5,10 +5,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar } from '../avatar';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
 
-function renderWithProviders(
-  ui: React.ReactElement,
-  resolver: ImageResolver,
-) {
+function renderWithProviders(ui: React.ReactElement, resolver: ImageResolver) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
       <ImageResolverProvider value={resolver}>{ui}</ImageResolverProvider>
@@ -22,10 +19,7 @@ describe('Avatar variant resolution', () => {
       (id, variant) => `https://cloud.oxy.so/${id}?variant=${variant ?? ''}`,
     );
 
-    renderWithProviders(
-      <Avatar source="file_123" variant="thumb" size={32} />,
-      resolver,
-    );
+    renderWithProviders(<Avatar source="file_123" variant="thumb" size={32} />, resolver);
 
     expect(resolver).toHaveBeenCalledWith('file_123', 'thumb');
   });
@@ -47,10 +41,7 @@ describe('Avatar variant resolution', () => {
       (id, variant) => `https://cloud.oxy.so/${id}?variant=${variant ?? ''}`,
     );
 
-    renderWithProviders(
-      <Avatar source="file_999" variant="w320" size={96} />,
-      resolver,
-    );
+    renderWithProviders(<Avatar source="file_999" variant="w320" size={96} />, resolver);
 
     expect(resolver).toHaveBeenCalledWith('file_999', 'w320');
   });

@@ -47,7 +47,7 @@ describe('Rail', () => {
     expect(getByLabelText('Devices').props['aria-selected']).toBe(false);
   });
 
-  it('renders the active item\'s activeIcon in place of its icon', () => {
+  it("renders the active item's activeIcon in place of its icon", () => {
     const { getByTestId, queryByTestId } = renderRail({ activeId: 'home' });
     expect(getByTestId('home-icon-active')).toBeTruthy();
     expect(queryByTestId('home-icon')).toBeNull();
@@ -58,7 +58,7 @@ describe('Rail', () => {
     expect(getByTestId('devices-icon')).toBeTruthy();
   });
 
-  it('calls onSelect with the pressed item\'s id', () => {
+  it("calls onSelect with the pressed item's id", () => {
     const onSelect = jest.fn();
     const { getByLabelText } = renderRail({ onSelect });
     fireEvent.press(getByLabelText('Devices'));

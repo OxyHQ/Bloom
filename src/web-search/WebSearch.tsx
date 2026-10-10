@@ -50,12 +50,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { WEB_SEARCH_MESSAGES } from './messages';
-import type {
-  WebSearchBrand,
-  WebSearchProps,
-  WebSearchSource,
-  WebSearchStep,
-} from './types';
+import type { WebSearchBrand, WebSearchProps, WebSearchSource, WebSearchStep } from './types';
 
 /**
  * Web Search: what the agent looked at, as it looks.
@@ -110,10 +105,16 @@ export interface WebSearchPalette {
 export function resolveWebSearchPalette(theme: Theme): WebSearchPalette {
   const c = theme.colors;
   return {
-    textPrimary: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
-    iconSecondary: c.textSecondary, iconQuaternary: c.textTertiary,
-    ring: c.primary, accent: c.primary,
-    markBorder: c.borderLight, markSurface: c.card, markDot: c.textTertiary,
+    textPrimary: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    iconSecondary: c.textSecondary,
+    iconQuaternary: c.textTertiary,
+    ring: c.primary,
+    accent: c.primary,
+    markBorder: c.borderLight,
+    markSurface: c.card,
+    markDot: c.textTertiary,
     rowHover: c.backgroundSecondary,
   };
 }
@@ -326,7 +327,10 @@ function measureRelative(node: HostNode, root: HostNode, done: (point: Point | n
   if (Platform.OS === 'web') {
     const el = node as unknown as HTMLElement;
     const base = root as unknown as HTMLElement;
-    if (typeof el.getBoundingClientRect !== 'function' || typeof base.getBoundingClientRect !== 'function') {
+    if (
+      typeof el.getBoundingClientRect !== 'function' ||
+      typeof base.getBoundingClientRect !== 'function'
+    ) {
       done(null);
       return;
     }
@@ -532,7 +536,8 @@ function SourceLinkRow({
           textStyle,
         ]}
       >
-        <Text selectable={false}
+        <Text
+          selectable={false}
           variant="body-regular"
           numberOfLines={1}
           style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}
@@ -540,7 +545,11 @@ function SourceLinkRow({
           {source.title}
         </Text>
         {showDomain ? (
-          <Text selectable={false} variant="caption-1-regular" style={{ flexShrink: 0, color: palette.textTertiary }}>
+          <Text
+            selectable={false}
+            variant="caption-1-regular"
+            style={{ flexShrink: 0, color: palette.textTertiary }}
+          >
             {source.domain}
           </Text>
         ) : null}
@@ -728,7 +737,9 @@ function SourcesRow({
     <AgentLogRow first={false} last reduce={reduce} testID={testID}>
       <View ref={rootRef} style={{ paddingTop: 4, paddingBottom: 4 }}>
         <Pressable
-          {...(IS_WEB ? ({ dataSet: { bloomWebSearchToggle: '' } } as Record<string, unknown>) : {})}
+          {...(IS_WEB
+            ? ({ dataSet: { bloomWebSearchToggle: '' } } as Record<string, unknown>)
+            : {})}
           testID={testID ? `${testID}-toggle` : undefined}
           role="button"
           accessibilityLabel={label}
@@ -738,7 +749,12 @@ function SourcesRow({
           onHoverIn={() => setHovered(true)}
           onHoverOut={() => setHovered(false)}
           style={[
-            { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', borderRadius: 6 },
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              alignSelf: 'flex-start',
+              borderRadius: 6,
+            },
             ringStyle,
           ]}
         >
@@ -754,7 +770,10 @@ function SourcesRow({
                 rowVisible(index) ? null : (
                   <View
                     key={`${source.domain}-${index}`}
-                    style={{ marginLeft: index === 0 ? 0 : -MARK_OVERLAP, zIndex: stacked.length - index }}
+                    style={{
+                      marginLeft: index === 0 ? 0 : -MARK_OVERLAP,
+                      zIndex: stacked.length - index,
+                    }}
                   >
                     <SourceMark
                       source={source}
@@ -785,7 +804,10 @@ function SourcesRow({
               </RNText>
             ) : null}
           </Animated.View>
-          <Animated.View aria-hidden style={[{ marginLeft: 4, width: 16, height: 16 }, chevronStyle]}>
+          <Animated.View
+            aria-hidden
+            style={[{ marginLeft: 4, width: 16, height: 16 }, chevronStyle]}
+          >
             <RiArrowDownSLine
               width={16}
               height={16}
@@ -832,7 +854,11 @@ function StepContent({
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
       <StepGlyph step={step} palette={palette} />
-      <Text selectable={false} variant="body-regular" style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}>
+      <Text
+        selectable={false}
+        variant="body-regular"
+        style={{ flex: 1, minWidth: 0, color: palette.textSecondary }}
+      >
         {active ? <AgentLogShimmerText>{step.label}</AgentLogShimmerText> : step.label}
         {step.query ? (
           <RNText
@@ -848,7 +874,8 @@ function StepContent({
         ) : null}
       </Text>
       {step.meta ? (
-        <Text selectable={false}
+        <Text
+          selectable={false}
           variant="body-regular"
           style={[{ flexShrink: 0, paddingTop: 1, color: palette.textTertiary }, TABULAR]}
         >
@@ -881,7 +908,13 @@ function StepRow({
   testID?: string;
 }) {
   return (
-    <AgentLogRow first={first} last={last} reduce={reduce} style={{ paddingLeft: STEP_INSET }} testID={testID}>
+    <AgentLogRow
+      first={first}
+      last={last}
+      reduce={reduce}
+      style={{ paddingLeft: STEP_INSET }}
+      testID={testID}
+    >
       <View style={{ paddingTop: 4, paddingBottom: 4 }}>
         <StepContent step={step} active={active} palette={palette} />
         {step.sources?.length && showSources ? (
@@ -1020,15 +1053,14 @@ function WebSearchComponent({
 
   // The indicator sits outside the trail, level with the heading (or, with no
   // heading, on the step glyphs' edge): it is not something the search found.
-  const indicator =
-    busy ? (
-      <AgentLogWorkingRow
-        label={working}
-        reduce={reduce}
-        style={head ? undefined : { paddingLeft: STEP_INSET }}
-        testID={testID ? `${testID}-working` : undefined}
-      />
-    ) : null;
+  const indicator = busy ? (
+    <AgentLogWorkingRow
+      label={working}
+      reduce={reduce}
+      style={head ? undefined : { paddingLeft: STEP_INSET }}
+      testID={testID ? `${testID}-working` : undefined}
+    />
+  ) : null;
 
   if (!head) {
     return (

@@ -7,9 +7,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium } = require(
-  process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright',
-);
+const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:6006';
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 try {
@@ -33,8 +31,7 @@ try {
       const measure = () =>
         profile.evaluate((el) => {
           const box = el.getBoundingClientRect();
-          const header =
-            el.parentElement.parentElement.parentElement.getBoundingClientRect();
+          const header = el.parentElement.parentElement.parentElement.getBoundingClientRect();
           return {
             center: box.x + box.width / 2,
             headerCenter: header.x + header.width / 2,
@@ -48,11 +45,7 @@ try {
         Math.abs(first.center - first.headerCenter) < 1,
         'Profile must be centered independently of side actions',
       );
-      assert.equal(
-        first.height,
-        82,
-        '56px artwork overlaps a 28px name pill by 2px',
-      );
+      assert.equal(first.height, 82, '56px artwork overlaps a 28px name pill by 2px');
       await profile.focus();
       await page.keyboard.press('Enter');
       const name = page.getByRole('textbox', {
@@ -65,18 +58,12 @@ try {
         'landing page designer',
         'Profile opens the selected agent',
       );
-      await name.fill(
-        'A very long agent name that must fit the available header width',
-      );
-      await page
-        .getByRole('button', { name: 'Close agent editor', exact: true })
-        .click();
+      await name.fill('A very long agent name that must fit the available header width');
+      await page.getByRole('button', { name: 'Close agent editor', exact: true }).click();
       if (width === 1440) {
         assert.equal(
           await page.evaluate(() => {
-            const field = document.querySelector(
-              'input[aria-label="Agent name"]',
-            );
+            const field = document.querySelector('input[aria-label="Agent name"]');
             return !!field && !!field.closest('[inert]');
           }),
           true,
@@ -90,29 +77,20 @@ try {
         long.width <= long.available + 1,
         'Long names must truncate without colliding with actions',
       );
-      assert.ok(
-        Math.abs(long.center - long.headerCenter) < 1,
-        'Long profile remains centered',
-      );
+      assert.ok(Math.abs(long.center - long.headerCenter) < 1, 'Long profile remains centered');
       if (width === 1440) {
         const toolbar = page.getByTestId('multi-agent-chat-toolbar');
         await toolbar.evaluate((el) => {
           const search = el.querySelector('.transition-\\[width\\]');
           window.searchEvents = [];
-          for (const type of [
-            'transitionrun',
-            'transitioncancel',
-            'transitionend',
-          ]) {
+          for (const type of ['transitionrun', 'transitioncancel', 'transitionend']) {
             search.addEventListener(type, (event) => {
               if (event.target === search && event.propertyName === 'width')
                 window.searchEvents.push(type);
             });
           }
         });
-        await toolbar
-          .getByRole('button', { name: 'Search conversations', exact: true })
-          .click();
+        await toolbar.getByRole('button', { name: 'Search conversations', exact: true }).click();
         const input = toolbar.getByPlaceholder('Search conversations…');
         await input.waitFor();
         await page.waitForTimeout(450);
@@ -165,15 +143,8 @@ try {
             total: el.getBoundingClientRect().width,
           };
         });
-        assert.equal(
-          reduced.property,
-          'none',
-          'Reduced motion disables the CSS transition',
-        );
-        assert.ok(
-          Math.abs(reduced.width - reduced.total) < 1,
-          'Reduced motion opens immediately',
-        );
+        assert.equal(reduced.property, 'none', 'Reduced motion disables the CSS transition');
+        assert.ok(Math.abs(reduced.width - reduced.total) < 1, 'Reduced motion opens immediately');
         await input.press('Escape');
       }
       assert.deepEqual(errors, []);

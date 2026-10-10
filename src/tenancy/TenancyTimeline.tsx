@@ -7,7 +7,11 @@ import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { TENANCY_MESSAGES } from './messages';
 import { IS_WEB, joinName, resolveHousingPalette } from './shared';
-import type { TenancyTimelineDensity, TenancyTimelineEventState, TenancyTimelineProps } from './types';
+import type {
+  TenancyTimelineDensity,
+  TenancyTimelineEventState,
+  TenancyTimelineProps,
+} from './types';
 
 /**
  * A vertical history of tenancy events, oldest first.
@@ -31,10 +35,31 @@ import type { TenancyTimelineDensity, TenancyTimelineEventState, TenancyTimeline
 
 const GEOMETRY: Record<
   TenancyTimelineDensity,
-  { column: number; dot: number; line: number; gap: number; title: 'body-medium' | 'body-2-medium'; meta: 'body-2-regular' | 'caption-1-regular' }
+  {
+    column: number;
+    dot: number;
+    line: number;
+    gap: number;
+    title: 'body-medium' | 'body-2-medium';
+    meta: 'body-2-regular' | 'caption-1-regular';
+  }
 > = {
-  comfortable: { column: 24, dot: 12, line: 20, gap: 20, title: 'body-medium', meta: 'body-2-regular' },
-  compact: { column: 16, dot: 8, line: 18, gap: 12, title: 'body-2-medium', meta: 'caption-1-regular' },
+  comfortable: {
+    column: 24,
+    dot: 12,
+    line: 20,
+    gap: 20,
+    title: 'body-medium',
+    meta: 'body-2-regular',
+  },
+  compact: {
+    column: 16,
+    dot: 8,
+    line: 18,
+    gap: 12,
+    title: 'body-2-medium',
+    meta: 'caption-1-regular',
+  },
 };
 
 function TenancyTimelineComponent({
@@ -49,20 +74,22 @@ function TenancyTimelineComponent({
   const theme = useTheme();
   const palette = useMemo(() => resolveHousingPalette(theme), [theme]);
   const g = GEOMETRY[density];
-  const labels: Record<TenancyTimelineEventState, string> = { ...messages.timelineState, ...stateLabels };
+  const labels: Record<TenancyTimelineEventState, string> = {
+    ...messages.timelineState,
+    ...stateLabels,
+  };
 
   return (
-    <View
-      role="list"
-      accessibilityLabel={accessibilityLabel}
-      style={style}
-      testID={testID}
-    >
+    <View role="list" accessibilityLabel={accessibilityLabel} style={style} testID={testID}>
       {events.map((event, index) => {
         const state = event.state ?? 'complete';
         const last = index === events.length - 1;
         const accent = resolveAccentColors(theme.colors, event.tone ?? 'primary', 'solid');
-        const tint = resolveAccentColors(theme.colors, event.tone ?? 'primary', 'subtle').background;
+        const tint = resolveAccentColors(
+          theme.colors,
+          event.tone ?? 'primary',
+          'subtle',
+        ).background;
         const Icon = density === 'comfortable' ? event.icon : undefined;
         const upcoming = state === 'upcoming';
         const id = (part: string) => (testID ? `${testID}-${index}-${part}` : undefined);
@@ -89,7 +116,11 @@ function TenancyTimelineComponent({
             }}
           >
             {Icon ? (
-              <Icon width={14} height={14} fill={upcoming ? palette.textSecondary : accent.foreground} />
+              <Icon
+                width={14}
+                height={14}
+                fill={upcoming ? palette.textSecondary : accent.foreground}
+              />
             ) : null}
           </View>
         );
@@ -104,7 +135,9 @@ function TenancyTimelineComponent({
             style={{ flexDirection: 'row', gap: 12 }}
           >
             <View style={{ width: g.column, alignItems: 'center' }}>
-              <View style={{ height: markerBox, alignItems: 'center', justifyContent: 'center' }}>{marker}</View>
+              <View style={{ height: markerBox, alignItems: 'center', justifyContent: 'center' }}>
+                {marker}
+              </View>
               {!last ? (
                 <View
                   testID={id('connector')}
@@ -129,7 +162,13 @@ function TenancyTimelineComponent({
               }}
             >
               <Text
-                variant={state === 'current' ? (density === 'compact' ? 'body-2-semibold' : 'body-semibold') : g.title}
+                variant={
+                  state === 'current'
+                    ? density === 'compact'
+                      ? 'body-2-semibold'
+                      : 'body-semibold'
+                    : g.title
+                }
                 style={{ color: upcoming ? palette.textSecondary : palette.text }}
                 testID={id('title')}
               >

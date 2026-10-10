@@ -24,7 +24,10 @@ export function PlaybackSpeedRows({
   formatRate: formatRateProp,
   label: labelProp,
   testID,
-}: Pick<PlaybackSpeedMenuProps, 'rate' | 'onRateChange' | 'rates' | 'formatRate' | 'label' | 'testID'>) {
+}: Pick<
+  PlaybackSpeedMenuProps,
+  'rate' | 'onRateChange' | 'rates' | 'formatRate' | 'label' | 'testID'
+>) {
   const { locale, messages } = useMessages(MEDIA_PLAYER_MESSAGES);
   const formatRate = formatRateProp ?? ((rate: number) => formatPlaybackRate(rate, locale));
   const label = labelProp ?? messages.playbackSpeed;

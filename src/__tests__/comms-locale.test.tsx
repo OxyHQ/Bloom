@@ -72,7 +72,9 @@ function byTestId(id: string): HTMLElement {
 describe('avatar', () => {
   it('draws the live badge in the locale, and liveLabel still wins', () => {
     expect(mountIn('es', <Avatar name="Ana" size={56} live />).getByText('EN VIVO')).toBeTruthy();
-    expect(mountIn('es', <Avatar name="Ana" size={56} live liveLabel="YA" />).getByText('YA')).toBeTruthy();
+    expect(
+      mountIn('es', <Avatar name="Ana" size={56} live liveLabel="YA" />).getByText('YA'),
+    ).toBeTruthy();
     expect(mountIn(undefined, <Avatar name="Ana" size={56} live />).getByText('LIVE')).toBeTruthy();
   });
 
@@ -87,26 +89,47 @@ describe('avatar', () => {
 
 describe('call-ui', () => {
   it('names the controls in the locale, and labels still win', () => {
-    const view = mountIn('es', <CallControls muted={false} onMutedChange={() => undefined} onEndCall={() => undefined} testID="c" />);
+    const view = mountIn(
+      'es',
+      <CallControls
+        muted={false}
+        onMutedChange={() => undefined}
+        onEndCall={() => undefined}
+        testID="c"
+      />,
+    );
     expect(view.getByLabelText('Silenciar micrófono')).toBeTruthy();
     expect(view.getByLabelText('Finalizar llamada')).toBeTruthy();
     act(() => root.render(<div />));
     expect(
-      mountIn('es', <CallControls muted onMutedChange={() => undefined} labels={{ unmute: 'Hablar' }} testID="c" />).getByLabelText(
-        'Hablar',
-      ),
+      mountIn(
+        'es',
+        <CallControls
+          muted
+          onMutedChange={() => undefined}
+          labels={{ unmute: 'Hablar' }}
+          testID="c"
+        />,
+      ).getByLabelText('Hablar'),
     ).toBeTruthy();
   });
 
   it('draws the group bar, the incoming banner and the history row in the locale', () => {
-    expect(mountIn('de', <GroupCallBar title="Team" onJoin={() => undefined} />).getByText('Beitreten')).toBeTruthy();
-    act(() => root.render(<div />));
-    expect(mountIn('fr', <IncomingCallBanner name="Ana" mode="video" />).getByText('Appel vidéo entrant')).toBeTruthy();
+    expect(
+      mountIn('de', <GroupCallBar title="Team" onJoin={() => undefined} />).getByText('Beitreten'),
+    ).toBeTruthy();
     act(() => root.render(<div />));
     expect(
-      mountIn('ja', <CallHistoryRow name="Ana" direction="missed" meta="18:40" onCallBack={() => undefined} />).getByLabelText(
-        'Anaにかけ直す',
+      mountIn('fr', <IncomingCallBanner name="Ana" mode="video" />).getByText(
+        'Appel vidéo entrant',
       ),
+    ).toBeTruthy();
+    act(() => root.render(<div />));
+    expect(
+      mountIn(
+        'ja',
+        <CallHistoryRow name="Ana" direction="missed" meta="18:40" onCallBack={() => undefined} />,
+      ).getByLabelText('Anaにかけ直す'),
     ).toBeTruthy();
   });
 
@@ -117,10 +140,15 @@ describe('call-ui', () => {
 
 describe('mail-compose', () => {
   it('titles the surface in the locale, and strings still win', () => {
-    expect(mountIn('es', <MailComposeSurface variant="docked" testID="s" />).getByText('Mensaje nuevo')).toBeTruthy();
+    expect(
+      mountIn('es', <MailComposeSurface variant="docked" testID="s" />).getByText('Mensaje nuevo'),
+    ).toBeTruthy();
     act(() => root.render(<div />));
     expect(
-      mountIn('es', <MailComposeSurface variant="docked" strings={{ title: 'Borrador' }} testID="s" />).getByText('Borrador'),
+      mountIn(
+        'es',
+        <MailComposeSurface variant="docked" strings={{ title: 'Borrador' }} testID="s" />,
+      ).getByText('Borrador'),
     ).toBeTruthy();
   });
 
@@ -144,12 +172,19 @@ describe('mail-thread', () => {
   it('folds the middle behind a translated, pluralised control', () => {
     mountIn('ru', <MailThread messages={six} testID="t" />);
     expect(byTestId('t-earlier').getAttribute('aria-label')).toBe('3 предыдущих сообщения');
-    expect(messagesIn(MAIL_THREAD_MESSAGES, 'ru').earlierMessages(5)).toBe('5 предыдущих сообщений');
-    expect(messagesIn(MAIL_THREAD_MESSAGES, 'ru').earlierMessages(21)).toBe('21 предыдущее сообщение');
+    expect(messagesIn(MAIL_THREAD_MESSAGES, 'ru').earlierMessages(5)).toBe(
+      '5 предыдущих сообщений',
+    );
+    expect(messagesIn(MAIL_THREAD_MESSAGES, 'ru').earlierMessages(21)).toBe(
+      '21 предыдущее сообщение',
+    );
   });
 
   it('lets strings win over the locale', () => {
-    mountIn('ru', <MailThread messages={six} strings={{ earlierMessages: (n) => `+${n}` }} testID="t" />);
+    mountIn(
+      'ru',
+      <MailThread messages={six} strings={{ earlierMessages: (n) => `+${n}` }} testID="t" />,
+    );
     expect(byTestId('t-earlier').getAttribute('aria-label')).toBe('+3');
   });
 });
@@ -165,10 +200,16 @@ describe('mail-list', () => {
   });
 
   it("counts the selection in the language's plural", () => {
-    mountIn('fr', <MailSelectionBar count={1} total={4} onSelectAll={() => undefined} testID="b" />);
+    mountIn(
+      'fr',
+      <MailSelectionBar count={1} total={4} onSelectAll={() => undefined} testID="b" />,
+    );
     expect(byTestId('b-count').textContent).toBe('1 sélectionné');
     act(() => root.render(<div />));
-    mountIn('fr', <MailSelectionBar count={3} total={4} onSelectAll={() => undefined} testID="b" />);
+    mountIn(
+      'fr',
+      <MailSelectionBar count={3} total={4} onSelectAll={() => undefined} testID="b" />,
+    );
     expect(byTestId('b-count').textContent).toBe('3 sélectionnés');
     expect(messagesIn(MAIL_LIST_MESSAGES, 'ar').threadCount(2)).toBe('رسالتان');
   });
@@ -185,7 +226,10 @@ describe('mail-list', () => {
       { now, locale: 'es' },
     );
     expect(sections.map((section) => section.title)).toEqual(['Hoy', 'Ayer', '18 sept']);
-    expect(groupMailByDay([{ id: 'a', sender: { name: 'A' }, subject: 'a', date: now }], { now })[0]?.title).toBe('Today');
+    expect(
+      groupMailByDay([{ id: 'a', sender: { name: 'A' }, subject: 'a', date: now }], { now })[0]
+        ?.title,
+    ).toBe('Today');
   });
 
   it("hands the date formatter the bucket's LOCAL midnight, so no time zone shifts it a day", () => {
@@ -201,7 +245,9 @@ describe('mail-list', () => {
       ],
       { now, formatDate: (date) => (seen.push(date), 'x') },
     );
-    expect(seen.map((d) => [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()])).toEqual([[2026, 8, 18, 0, 0]]);
+    expect(
+      seen.map((d) => [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()]),
+    ).toEqual([[2026, 8, 18, 0, 0]]);
   });
 });
 
@@ -211,7 +257,16 @@ describe('note-editor', () => {
     expect(byTestId('h-title').getAttribute('placeholder')).toBe('Без названия');
     expect(byTestId('h-words').textContent).toBe('2 слова');
     act(() => root.render(<div />));
-    mountIn('ru', <NoteEditorHeader title="" wordCount={5} labels={{ words: (n) => `${n} w` }} placeholder="Новая" testID="h" />);
+    mountIn(
+      'ru',
+      <NoteEditorHeader
+        title=""
+        wordCount={5}
+        labels={{ words: (n) => `${n} w` }}
+        placeholder="Новая"
+        testID="h"
+      />,
+    );
     expect(byTestId('h-words').textContent).toBe('5 w');
     expect(byTestId('h-title').getAttribute('placeholder')).toBe('Новая');
     expect(messagesIn(NOTE_EDITOR_MESSAGES, 'ru').header.words(11)).toBe('11 слов');
@@ -220,10 +275,28 @@ describe('note-editor', () => {
 
 describe('note-card', () => {
   it('composes its name in the locale, and labels still win', () => {
-    mountIn('pt', <NoteCard title="Porto" pinned meta={{ attachments: 1 }} onPress={() => undefined} testID="n" />);
+    mountIn(
+      'pt',
+      <NoteCard
+        title="Porto"
+        pinned
+        meta={{ attachments: 1 }}
+        onPress={() => undefined}
+        testID="n"
+      />,
+    );
     expect(byTestId('n').getAttribute('aria-label')).toBe('Porto, Fixada, 1 anexo');
     act(() => root.render(<div />));
-    mountIn('pt', <NoteCard title="Porto" pinned labels={{ pinned: 'No topo' }} onPress={() => undefined} testID="n" />);
+    mountIn(
+      'pt',
+      <NoteCard
+        title="Porto"
+        pinned
+        labels={{ pinned: 'No topo' }}
+        onPress={() => undefined}
+        testID="n"
+      />,
+    );
     expect(byTestId('n').getAttribute('aria-label')).toBe('Porto, No topo');
     expect(messagesIn(NOTE_CARD_MESSAGES, 'fr').attachments(0)).toBe('0 pièce jointe');
     expect(messagesIn(NOTE_CARD_MESSAGES, 'ar').attachments(11)).toBe('11 مرفقًا');

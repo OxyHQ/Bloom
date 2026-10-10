@@ -29,17 +29,29 @@ import type { RatingBarProps } from './types';
 
 const BAR_WIDTH = 96;
 
-function RatingBarComponent({ label, value, reveal, max = 5, display, labelWidth, style, testID, labelStyle, displayStyle, trackStyle, fillClassName }: RatingBarProps & {
-  labelStyle?: StyleProp<TextStyle>; displayStyle?: StyleProp<TextStyle>; trackStyle?: StyleProp<ViewStyle>;
+function RatingBarComponent({
+  label,
+  value,
+  reveal,
+  max = 5,
+  display,
+  labelWidth,
+  style,
+  testID,
+  labelStyle,
+  displayStyle,
+  trackStyle,
+  fillClassName,
+}: RatingBarProps & {
+  labelStyle?: StyleProp<TextStyle>;
+  displayStyle?: StyleProp<TextStyle>;
+  trackStyle?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
   const safeMax = max > 0 ? max : 1;
 
   return (
-    <View
-      testID={testID}
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: 12 }, style]}
-    >
+    <View testID={testID} style={[{ flexDirection: 'row', alignItems: 'center', gap: 12 }, style]}>
       <Text
         variant="body-regular"
         numberOfLines={1}
@@ -63,14 +75,25 @@ function RatingBarComponent({ label, value, reveal, max = 5, display, labelWidth
         testID={testID ? `${testID}-bar` : undefined}
         fillTestID={testID ? `${testID}-fill` : undefined}
         fillClassName={fillClassName}
-        style={[labelWidth === undefined ? { width: BAR_WIDTH } : { flex: 1, minWidth: 0 }, trackStyle]}
+        style={[
+          labelWidth === undefined ? { width: BAR_WIDTH } : { flex: 1, minWidth: 0 },
+          trackStyle,
+        ]}
       />
       {display != null && (
         <Text
           variant="body-semibold"
           importantForAccessibility="no"
           accessibilityElementsHidden
-          style={[{ color: theme.colors.text, minWidth: 28, textAlign: 'right', fontVariant: ['tabular-nums'] }, displayStyle]}
+          style={[
+            {
+              color: theme.colors.text,
+              minWidth: 28,
+              textAlign: 'right',
+              fontVariant: ['tabular-nums'],
+            },
+            displayStyle,
+          ]}
         >
           {display}
         </Text>
@@ -79,5 +102,12 @@ function RatingBarComponent({ label, value, reveal, max = 5, display, labelWidth
   );
 }
 
-export const RatingBar = memo(styled(RatingBarComponent, { className: 'style', labelClassName: 'labelStyle', displayClassName: 'displayStyle', trackClassName: 'trackStyle' }));
+export const RatingBar = memo(
+  styled(RatingBarComponent, {
+    className: 'style',
+    labelClassName: 'labelStyle',
+    displayClassName: 'displayStyle',
+    trackClassName: 'trackStyle',
+  }),
+);
 RatingBar.displayName = 'RatingBar';

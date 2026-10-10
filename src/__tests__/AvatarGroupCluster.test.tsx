@@ -4,10 +4,7 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { AvatarGroup } from '../avatar-group';
 import type { AvatarGroupItem } from '../avatar-group';
-import {
-  computeClusterLayout,
-  type ClusterBubble,
-} from '../avatar-group/cluster-layout';
+import { computeClusterLayout, type ClusterBubble } from '../avatar-group/cluster-layout';
 
 /** Returns bubble at `index` or throws — keeps the tests `!`/`as`-free under
  * `noUncheckedIndexedAccess`. */
@@ -198,7 +195,11 @@ const CLUSTER_ITEMS: AvatarGroupItem[] = Array.from({ length: 25 }, (_, i) => ({
 }));
 
 function renderCluster(ui: React.ReactElement) {
-  return render(<BloomThemeProvider mode="light" colorPreset="teal">{ui}</BloomThemeProvider>);
+  return render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      {ui}
+    </BloomThemeProvider>,
+  );
 }
 
 describe('AvatarGroup cluster layout', () => {
@@ -212,12 +213,7 @@ describe('AvatarGroup cluster layout', () => {
 
   it('shows no overflow bubble when members fit under the cap', () => {
     const { queryByText } = renderCluster(
-      <AvatarGroup
-        layout="cluster"
-        items={CLUSTER_ITEMS.slice(0, 4)}
-        size={64}
-        showInitials
-      />,
+      <AvatarGroup layout="cluster" items={CLUSTER_ITEMS.slice(0, 4)} size={64} showInitials />,
     );
     expect(queryByText(/^\+/)).toBeNull();
   });

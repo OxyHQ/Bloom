@@ -30,7 +30,10 @@ describe('progressive media surfaces', () => {
   it('isolates a new source from the previous image and its pending callbacks', () => {
     const view = render(<MediaSurface content={PHOTO} />);
     const previous = view.UNSAFE_getByType(Image);
-    const next = { uri: 'https://images.test/next.jpg', previewUri: 'https://images.test/next-thumb.jpg' };
+    const next = {
+      uri: 'https://images.test/next.jpg',
+      previewUri: 'https://images.test/next-thumb.jpg',
+    };
     view.rerender(<MediaSurface content={next} />);
     const image = view.UNSAFE_getByType(Image);
     expect(image).not.toBe(previous);

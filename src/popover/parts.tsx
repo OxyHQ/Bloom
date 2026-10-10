@@ -112,7 +112,8 @@ export function PopoverTitle({
       numberOfLines={numberOfLines}
       className={className}
       style={[classChromeOverrides(className).has('color') ? null : { color }, style]}
-      testID={testID}>
+      testID={testID}
+    >
       {children}
     </Text>
   );
@@ -132,12 +133,11 @@ export function PopoverDescription({
       numberOfLines={numberOfLines}
       className={className}
       style={[
-        classChromeOverrides(className).has('color')
-          ? null
-          : { color: palette.textSecondary },
+        classChromeOverrides(className).has('color') ? null : { color: palette.textSecondary },
         style,
       ]}
-      testID={testID}>
+      testID={testID}
+    >
       {children}
     </Text>
   );
@@ -160,10 +160,7 @@ export function PopoverSeparator({ className, style, testID }: PopoverSeparatorP
       // Decorative: the sections it divides are announced on their own.
       aria-hidden
       className={className}
-      style={[
-        kept({ ...styles.separator, backgroundColor: palette.border }, owned),
-        style,
-      ]}
+      style={[kept({ ...styles.separator, backgroundColor: palette.border }, owned), style]}
       testID={testID}
     />
   );

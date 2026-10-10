@@ -2,8 +2,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { AvatarConfig } from '../agent-avatar';
 import type { AgentCreatorMessages } from './messages';
 
-export type AgentLanguage =
-  'auto' | 'en' | 'tr' | 'es' | 'fr' | 'de' | 'ja' | 'pt';
+export type AgentLanguage = 'auto' | 'en' | 'tr' | 'es' | 'fr' | 'de' | 'ja' | 'pt';
 export type AgentPreferences = {
   voice: string;
   speed: number;

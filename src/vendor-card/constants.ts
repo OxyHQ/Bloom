@@ -40,8 +40,10 @@ export const VENDOR_FACT_ICON: Record<VendorFactKey, BloomIconComponent> = {
 export const VENDOR_FACT_LABELS: Record<VendorFactKey, string> = VENDOR_CARD_MESSAGES.en.facts;
 
 /** The English status pill labels. `open` draws none. The card speaks the resolved locale's. */
-export const VENDOR_AVAILABILITY_LABELS: Record<Exclude<VendorAvailability, 'open'>, string> =
-  VENDOR_CARD_MESSAGES.en.availability;
+export const VENDOR_AVAILABILITY_LABELS: Record<
+  Exclude<VendorAvailability, 'open'>,
+  string
+> = VENDOR_CARD_MESSAGES.en.availability;
 
 /** The cuisine pills' rung: 24 tall, caption weight — the densest pill Bloom has. */
 export const VENDOR_CUISINE_CHIP_HEIGHT = 24;

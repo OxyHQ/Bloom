@@ -321,7 +321,9 @@ export function ReactionRow({
           <Pressable
             key={reaction.emoji}
             role="button"
-            accessibilityLabel={reaction.label ?? reactionLabel(reaction.emoji, reaction.count, mine, selectedWord)}
+            accessibilityLabel={
+              reaction.label ?? reactionLabel(reaction.emoji, reaction.count, mine, selectedWord)
+            }
             aria-pressed={mine}
             accessibilityState={{ selected: mine }}
             onPress={onToggle === undefined ? undefined : () => onToggle(reaction.emoji)}
@@ -337,7 +339,10 @@ export function ReactionRow({
               backgroundColor: mine ? paint.reactionMineFill : paint.reactionFill,
             }}
           >
-            <Text variant="caption-1-regular" style={{ color: mine ? paint.reactionMineText : paint.reactionText }}>
+            <Text
+              variant="caption-1-regular"
+              style={{ color: mine ? paint.reactionMineText : paint.reactionText }}
+            >
               {reaction.emoji}
             </Text>
             <Text

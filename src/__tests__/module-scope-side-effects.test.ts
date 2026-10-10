@@ -99,7 +99,9 @@ function platformSiblings(file: string): string[] {
 function staticRelativeSpecifiers(text: string): string[] {
   const stripped = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   const out: string[] = [];
-  for (const match of stripped.matchAll(/^\s*(?:import|export)\b[\s\S]*?from\s+['"]([^'"]+)['"]/gm)) {
+  for (const match of stripped.matchAll(
+    /^\s*(?:import|export)\b[\s\S]*?from\s+['"]([^'"]+)['"]/gm,
+  )) {
     if (match[1]?.startsWith('.')) out.push(match[1]);
   }
   for (const match of stripped.matchAll(/^\s*import\s+['"]([^'"]+)['"]/gm)) {
