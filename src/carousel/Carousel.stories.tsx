@@ -14,6 +14,7 @@ const meta: Meta<typeof Carousel> = {
     "showDots": { control: 'boolean' },
     "align": { control: 'select', options: ["start","center"] },
     "gap": { control: 'number' },
+    "slidesPerGroup": { control: 'number' },
     "previousLabel": { control: 'text' },
     "nextLabel": { control: 'text' }
   },
@@ -258,6 +259,33 @@ export const FooterLoop: Story = {
         {[0, 1, 2].map(i => <CarouselItem key={i}><Slide label={`Image ${i + 1}`} /></CarouselItem>)}
       </Carousel>
       <Text testID="loop-index">{index}</Text>
+    </Frame>;
+  },
+};
+
+export const GroupedNavigation: Story = {
+  render: function GroupedNavigationStory() {
+    const [index, setIndex] = useState(0);
+    const [group, setGroup] = useState(3);
+    const [loop, setLoop] = useState(false);
+    const [accept, setAccept] = useState(true);
+    const [count, setCount] = useState(8);
+    const [events, setEvents] = useState<number[]>([]);
+    return <Frame width={575.75}>
+      <Carousel testID="grouped-carousel" accessibilityLabel="Grouped gallery" index={index}
+        slidesPerGroup={group} loop={loop} gap={8.5} arrowsPlacement="overlay"
+        onIndexChange={next => { setEvents(values => [...values, next]); if (accept) setIndex(next); }}>
+        {Array.from({ length: count }, (_, i) => <CarouselItem key={i} width={186.25} testID={`grouped-slide-${i}`}>
+          <Slide label={`Card ${i + 1}`} />
+          <Button accessibilityLabel={`Card action ${i + 1}`}>Details</Button>
+        </CarouselItem>)}
+      </Carousel>
+      <Text testID="grouped-index">{index}</Text>
+      <Text testID="grouped-events">{JSON.stringify(events)}</Text>
+      <Button onPress={() => setGroup(value => value === 3 ? 2 : 3)}>Change group size</Button>
+      <Button onPress={() => setLoop(value => !value)}>Toggle looping</Button>
+      <Button onPress={() => setAccept(value => !value)}>Toggle accepting requests</Button>
+      <Button onPress={() => setCount(value => Math.max(1, value - 1))}>Remove final card</Button>
     </Frame>;
   },
 };

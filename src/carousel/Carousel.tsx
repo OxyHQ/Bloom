@@ -311,9 +311,10 @@ interface Stop {
  * except the end, which stands for the LAST — the far end is where the last
  * slide is, and naming anything else would leave it unreachable.
  */
-function toStops(resting: readonly number[]): Stop[] {
+function toStops(resting: readonly number[], groupSize = 1): Stop[] {
   const stops: Stop[] = [];
   resting.forEach((offset, slide) => {
+    if (slide % groupSize !== 0 && slide !== resting.length - 1) return;
     const last = stops[stops.length - 1];
     if (last && Math.abs(offset - last.offset) <= 1) return;
     stops.push({ offset, slide });
@@ -329,6 +330,7 @@ const CarouselComponent = function Carousel({
   header,
   footer,
   loop = false,
+  slidesPerGroup = 1,
   showArrows = true,
   arrowsPlacement = 'header',
   arrowsInset = 8,
@@ -347,6 +349,8 @@ const CarouselComponent = function Carousel({
   style,
   testID,
 }: CarouselProps) {
+  const groupSize = Number.isFinite(slidesPerGroup) ? Math.max(1, Math.trunc(slidesPerGroup)) : 1;
+  const ownsTrackKeys = loop || groupSize > 1;
   const { messages } = useMessages(CAROUSEL_MESSAGES);
   const previousLabel = previousLabelProp ?? messages.previousSlide;
   const nextLabel = nextLabelProp ?? messages.nextSlide;
@@ -422,14 +426,14 @@ const CarouselComponent = function Carousel({
 
   /**
    * The distinct places the track can rest — or `null` until every slide has
-   * been measured. Arrows, dots, snapping and the active slide all read this
-   * ONE list, so they cannot disagree about where the track can go.
+   * been measured. Dots, snapping and the active slide use individual stops;
+   * grouped controls filter the same measured offsets before deduplicating.
    */
-  const computeStops = useCallback((): Stop[] | null => {
+  const computeStops = useCallback((navigationGroupSize = 1): Stop[] | null => {
     if (trackWidth <= 0 || scroll.current.contentWidth <= 0) return null;
     const all = slideKeys.map(key => offsets.current.get(key));
     if (all.some(item => !item || item.width <= 0)) return null;
-    return toStops((all as SlideOffset[]).map(targetFor));
+    return toStops((all as SlideOffset[]).map(targetFor), navigationGroupSize);
   }, [slideKeys, targetFor, trackWidth]);
 
   const measure = useCallback(() => {
@@ -564,9 +568,9 @@ const CarouselComponent = function Carousel({
     window.addEventListener('pointerup', endDrag);
     window.addEventListener('pointercancel', endDrag);
     const onKeyDown = (event: KeyboardEvent) => {
-      // Owned loop navigation must retain its pending destination so rapid
+      // Owned grouped/loop navigation must retain its pending destination so rapid
       // key presses advance from the requested stop, not an animation frame.
-      if (loop && event.target === node && !event.altKey && !event.ctrlKey && !event.metaKey
+      if (ownsTrackKeys && event.target === node && !event.altKey && !event.ctrlKey && !event.metaKey
         && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) return;
       interruptControlledScroll();
     };
@@ -579,7 +583,7 @@ const CarouselComponent = function Carousel({
       node.removeEventListener('wheel', interruptControlledScroll);
       node.removeEventListener('keydown', onKeyDown);
     };
-  }, [controlledIndex !== undefined, interruptControlledScroll, beginDrag, endDrag, loop]);
+  }, [controlledIndex !== undefined, interruptControlledScroll, beginDrag, endDrag, ownsTrackKeys]);
 
   const scrollToStop = (stop: Stop | undefined) => {
     if (!stop) return;
@@ -593,13 +597,17 @@ const CarouselComponent = function Carousel({
 
   /**
    * The arrows step from where the track IS, to the nearest stop before or after
-   * it (1px of slack, as in `measure`) — never by slide index, which near the
-   * end names a slide whose stop the track already rests at.
+   * it (1px of slack, as in `measure`). Group destinations use every Nth child
+   * plus the physical end; individual snap stops and dot destinations remain
+   * unchanged. After a swipe/dot between groups, choose the adjacent boundary.
    */
   const step = (direction: -1 | 1) => {
-    const all = computeStops();
+    const all = computeStops(groupSize);
     if (!all) return;
-    const x = pendingTarget.current ?? scroll.current.x;
+    // An accepted controlled destination stays authoritative after its animation
+    // settles: browser snapping may round its physical position by a pixel.
+    // Real drag/wheel input clears appliedOffset and resumes physical navigation.
+    const x = pendingTarget.current ?? appliedOffset.current ?? scroll.current.x;
     const target = direction === 1
       ? all.find((stop) => stop.offset > x + 1)
       : [...all].reverse().find((stop) => stop.offset < x - 1);
@@ -696,10 +704,10 @@ const CarouselComponent = function Carousel({
       <ScrollView
         ref={scrollRef}
         {...webDataSet({ bloomCarouselTrack: align })}
-        // The browser scrolls a focused track by default; wrapping opts into
+        // The browser scrolls a focused track by default; groups/wrapping opt into
         // stop-based Left/Right navigation without intercepting slide controls.
         {...(IS_WEB ? { tabIndex: 0, onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
-          if (!loop || event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
+          if (!ownsTrackKeys || event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
           if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
           event.preventDefault(); event.stopPropagation();
           step((event.key === 'ArrowRight') !== rtl ? 1 : -1);
