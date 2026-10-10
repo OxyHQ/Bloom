@@ -1,7 +1,5 @@
-import { useCallback, useContext, useLayoutEffect, useId, useMemo, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
-import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-import { animation } from '../styles/tokens';
+import { useCallback, useContext, useId, useMemo } from 'react';
+import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
 import { AccordionContext } from './context';
 import type { AccordionProps } from './types';
 
@@ -25,23 +23,8 @@ export function useAccordionItem(value: string, disabled: boolean) {
   return useMemo(() => ({ value, disabled, isExpanded, triggerId: `${id}-trigger`, contentId: `${id}-content` }), [value, disabled, isExpanded, id]);
 }
 
-/** One motion policy for both forks, including a live OS preference change. */
+/** Preserve accordion's spring defaults while sharing reveal cancellation. */
 export function useAccordionMotion(expanded: boolean, kind: 'trigger' | 'content', useNativeDriver: boolean) {
   const { transition } = useContext(AccordionContext);
-  const reduced = usePrefersReducedMotion();
-  const progress = useRef(new Animated.Value(expanded ? 1 : 0)).current;
-  const duration = transition === 'spring' ? undefined : transition.duration;
-  const [x1, y1, x2, y2] = transition === 'spring' || !transition.easing ? [.25, .1, .25, 1] : transition.easing;
-  const easing = useMemo(() => Easing.bezier(x1, y1, x2, y2), [x1, y1, x2, y2]);
-  useLayoutEffect(() => {
-    progress.stopAnimation();
-    const toValue = expanded ? 1 : 0;
-    if (reduced || duration === 0) { progress.setValue(toValue); return; }
-    const motion = duration === undefined
-      ? Animated.spring(progress, { toValue, useNativeDriver, ...animation.spring[kind === 'trigger' ? 'snappy' : 'gentle'] })
-      : Animated.timing(progress, { toValue, useNativeDriver, duration: Math.max(0, duration), easing });
-    motion.start();
-    return () => motion.stop();
-  }, [expanded, progress, reduced, duration, easing, kind, useNativeDriver]);
-  return progress;
+  return useCollapsibleMotion(expanded, transition, kind, useNativeDriver).progress;
 }

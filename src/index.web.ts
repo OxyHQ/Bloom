@@ -2149,3 +2149,5 @@ export * from './project-board/index.web';
 export * from './multi-agent-chat/index.web';
 
 export * from './viewport/index.web';
+
+export * from './collapsible/index.web';

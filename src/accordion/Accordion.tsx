@@ -1,15 +1,15 @@
+import { CollapsibleFrame } from '../collapsible/CollapsibleFrame';
+import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
 import React, {
   memo,
   useCallback,
   useContext,
-  useState,
 } from 'react';
 import {
   View,
   Text,
   Pressable,
   Animated,
-  type LayoutChangeEvent,
   StyleSheet,
   type TextStyle,
 } from 'react-native';
@@ -176,65 +176,12 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 
 // ---- Accordion Content ----
 
-const AccordionContentComponent: React.FC<AccordionContentProps & { contentStyle?: AccordionContentProps['style'] }> = ({
-  children,
-  style,
-  contentStyle,
-}) => {
+const AccordionContentComponent: React.FC<AccordionContentProps & { contentStyle?: AccordionContentProps['style'] }> = ({children,style,contentStyle}) => {
   const { isExpanded, contentId, triggerId } = useContext(AccordionItemContext);
-  const heightAnim = useAccordionMotion(isExpanded, 'content', false);
-  // The content's own height, measured. The reveal used to interpolate to a
-  // hardcoded 500 ("reasonable max"), which is not a max at all: `overflow:
-  // hidden` above it meant anything taller was CLIPPED, silently, with no error
-  // and no scrollbar — an accordion holding a form or a paragraph of prose just
-  // lost its bottom. The content still lays out at its natural height inside the
-  // clip, so `onLayout` reports the real one whether the item is open or shut.
-  const [contentHeight, setContentHeight] = useState(0);
-  const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
-    const next = event.nativeEvent.layout.height;
-    // Sub-pixel churn would re-render on every frame of the spring.
-    setContentHeight((prev) => (Math.abs(prev - next) > 0.5 ? next : prev));
-  }, []);
-
-  const opacity = heightAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-
-  const maxHeight = heightAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, contentHeight],
-  });
-
-  return (
-    <Animated.View
-      nativeID={contentId}
-      {...{ 'aria-labelledby': triggerId }}
-      aria-hidden={!isExpanded}
-      pointerEvents={isExpanded ? 'auto' : 'none'}
-      accessibilityElementsHidden={!isExpanded}
-      importantForAccessibility={isExpanded ? 'auto' : 'no-hide-descendants'}
-      style={[
-        {
-          overflow: 'hidden',
-          opacity,
-          // Before the first measurement an OPEN item must not be clipped to
-          // zero, and a SHUT one must not flash open — so the unmeasured frame
-          // takes the answer its state already implies, and every frame after
-          // that is driven by the real height.
-          maxHeight: contentHeight === 0 && isExpanded ? undefined : maxHeight,
-        },
-        style,
-      ]}
-    >
-      <View
-        onLayout={handleContentLayout}
-        style={[{ paddingBottom: space.md, paddingLeft: space.xs, paddingRight: space.xs }, contentStyle]}
-      >
-        {children}
-      </View>
-    </Animated.View>
-  );
+  const { transition } = useContext(AccordionContext);
+  const motion = useCollapsibleMotion(isExpanded, transition);
+  return <CollapsibleFrame open={isExpanded} {...motion} nativeID={contentId} labelledBy={triggerId} returnFocusId={triggerId}
+    style={style} contentStyle={[{paddingBottom:space.md,paddingLeft:space.xs,paddingRight:space.xs},contentStyle]}>{children}</CollapsibleFrame>;
 };
 
 export const Accordion = memo(styled(AccordionComponent, { className: 'style' }));

@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, ReactElement, RefObject } from 'react';
 import type { BloomSize } from '../appearance';
 import type { BloomTone } from '../appearance';
-import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { StyleProp, ViewStyle, TextStyle, View } from 'react-native';
 
 export type RadioSize = BloomSize;
 
@@ -48,9 +48,19 @@ export interface RadioProps<Value extends string = string> {
 export interface RadioOption<Value extends string = string> {
   value: Value;
   label?: string;
+  /** Decorative layout inside the radio; interactive siblings belong in renderOption. */
+  labelContent?: ReactNode;
+  accessibilityLabel?: string;
   description?: string;
   disabled?: boolean;
   testID?: string;
+}
+
+export interface RadioOptionState {
+  checked: boolean;
+  disabled: boolean;
+  /** The group's actual radio host, suitable for Collapsible.returnFocusRef. Do not replace it. */
+  controlRef: RefObject<View | null>;
 }
 
 export interface RadioGroupProps<Value extends string = string> {
@@ -70,6 +80,9 @@ export interface RadioGroupProps<Value extends string = string> {
   onValueChange?: (value: Value) => void;
   /** The options, in order. */
   options: ReadonlyArray<RadioOption<Value>>;
+  /** Wrap the owned control with sibling content. Render it once, unchanged;
+   * selection, accessible radio semantics and roving focus stay group-owned. */
+  renderOption?: (option: Readonly<RadioOption<Value>>, ownedControl: ReactElement, state: Readonly<RadioOptionState>) => ReactNode;
   /** Size preset, applied to every option. */
   size?: RadioSize;
   /** Disables every option. An option may also disable itself. */
@@ -98,6 +111,8 @@ export interface RadioCardProps<Value extends string = string> {
   onValueChange?: (value: Value) => void;
   /** The card's title (one line); also its accessible name. */
   title: string;
+  /** Decorative label layout; title/accessibilityLabel still names the control. */
+  labelContent?: ReactNode;
   /** Optional one-line description under the title. */
   description?: string;
   /** Dims the whole card and stops it selecting. */

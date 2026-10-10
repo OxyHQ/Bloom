@@ -230,6 +230,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
     style,
     labelStyle,
     optionStyle,
+    renderOption,
     variant = 'default',
     testID,
   } = props;
@@ -245,12 +246,21 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
   const { size: scopedSize, tone } = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const size = scopedSize;
   const rtl = useIsRtl();
-  const nodes = useRef(new Map<string, View>());
+  const nodes = useRef(new Map<string, React.RefObject<View | null>>());
+  const controlRef = useCallback((option: string) => {
+    let ref = nodes.current.get(option);
+    if (!ref) { ref = React.createRef<View>(); nodes.current.set(option, ref); }
+    return ref;
+  }, []);
+  React.useEffect(() => {
+    const currentValues = new Set<string>(options.map(option => option.value));
+    for (const key of nodes.current.keys()) if (!currentValues.has(key)) nodes.current.delete(key);
+  }, [options]);
   const enabledValues = options.filter(option => !isDisabled && !option.disabled).map(option => option.value);
   const tabValue = value !== undefined && enabledValues.includes(value) ? value : enabledValues[0];
   const register = useCallback((option: string, node: View | null) => {
-    if (node) nodes.current.set(option, node); else nodes.current.delete(option);
-  }, []);
+    controlRef(option).current = node;
+  }, [controlRef]);
   const onKeyDown = (current: string, event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || !enabledValues.length) return;
     const position = enabledValues.findIndex(option => option === current);
@@ -266,7 +276,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
     }
     if (target === undefined) return;
     event.preventDefault(); event.stopPropagation();
-    const node: unknown = nodes.current.get(target);
+    const node: unknown = nodes.current.get(target)?.current;
     if (typeof HTMLElement !== 'undefined' && node instanceof HTMLElement) node.focus({ preventScroll: true });
     if (target !== value) onValueChange(target);
   };
@@ -281,16 +291,20 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
         aria-invalid={field.invalid || undefined}
         testID={testID}
       >
-        {options.map((option) =>
-          variant === 'card' ? (
+        {options.map((option) => {
+          const checked = option.value === value;
+          const optionDisabled = isDisabled || option.disabled === true;
+          const ownedControl = variant === 'card' ? (
             <RadioCard
               key={option.value}
               value={option.value}
-              checked={option.value === value}
+              checked={checked}
               onValueChange={onValueChange}
               title={option.label ?? option.value}
+              labelContent={option.labelContent}
+              accessibilityLabel={option.accessibilityLabel}
               description={option.description}
-              disabled={isDisabled || option.disabled === true}
+              disabled={optionDisabled}
               tone={tone}
               style={optionStyle}
               testID={option.testID}
@@ -299,19 +313,24 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(p
           <Radio
             key={option.value}
             value={option.value}
-            checked={option.value === value}
+            checked={checked}
             onValueChange={onValueChange}
             label={option.label}
+            labelContent={option.labelContent}
+            accessibilityLabel={option.accessibilityLabel}
             description={option.description}
             size={size}
-            disabled={isDisabled || option.disabled === true}
+            disabled={optionDisabled}
             tone={tone}
             labelStyle={labelStyle}
             style={optionStyle}
             testID={option.testID}
           />
-          ),
-        )}
+          );
+          return <React.Fragment key={option.value}>{renderOption
+            ? renderOption(option, ownedControl, { checked, disabled: optionDisabled, controlRef: controlRef(option.value) })
+            : ownedControl}</React.Fragment>;
+        })}
       </View>
     </RadioGroupContext.Provider>
   );

@@ -104,3 +104,8 @@ measurable. If a controlled collapse hides the focused field, focus returns to
 its trigger. Native uses the corresponding hidden-descendant accessibility
 properties. Input values therefore survive a close/open cycle without leaving
 closed fields in keyboard navigation.
+
+For a body controlled by an existing option rather than a disclosure button, use
+[Collapsible](./collapsible.mdx). It shares the measured frame while avoiding a
+fabricated trigger or missing `aria-labelledby` target. Accordion keeps its
+spring defaults, linked region, trigger semantics and content padding.

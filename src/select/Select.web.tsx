@@ -1,3 +1,4 @@
+import { useCollapsibleVisibility } from '../collapsible/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
@@ -164,7 +165,10 @@ export function Select(props: SelectProps) {
   const [value, onValueChange] = useControllableState<string | undefined>({ value: valueProp, defaultValue, controlled: Object.prototype.hasOwnProperty.call(props, 'value'), onChange: next => { if (next !== undefined) onValueChangeProp?.(next); } });
   const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
-  const [isOpen, setIsOpen] = useState(false);
+  const [requestedOpen, setIsOpen] = useState(false);
+  const visible = useCollapsibleVisibility();
+  const isOpen = visible && requestedOpen;
+  useLayoutEffect(() => { if (!visible) setIsOpen(false); }, [visible]);
   const triggerRef = useRef<View | null>(null);
   const valueStoreState = useState<unknown>(undefined);
   const keyboardIntent = useRef(false);
@@ -177,7 +181,7 @@ export function Select(props: SelectProps) {
       disabled,
       size,
       isOpen,
-      open: () => setIsOpen(true),
+      open: () => { if (visible) setIsOpen(true); },
       close: () => setIsOpen(false),
       triggerRef,
       keyboardIntent,
@@ -187,7 +191,7 @@ export function Select(props: SelectProps) {
         setFocusRequest((count) => count + 1);
       },
     }),
-    [value, onValueChange, disabled, size, isOpen, focusRequest],
+    [value, onValueChange, disabled, size, isOpen, focusRequest, visible],
   );
 
   return (

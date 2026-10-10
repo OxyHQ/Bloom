@@ -67,6 +67,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
   checked: checkedProp,
   onValueChange,
   title,
+  labelContent,
   description,
   disabled: disabledProp = false,
   tone: toneProp,
@@ -154,9 +155,9 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
       testID={testID}
     >
       <View style={{ flexDirection: 'column', gap: 2, minWidth: 0, flexShrink: 1 }}>
-        <Text variant="body-medium" numberOfLines={1} style={{ color: paint.title }}>
+        {labelContent != null ? <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{labelContent}</View> : <Text variant="body-medium" numberOfLines={1} style={{ color: paint.title }}>
           {title}
-        </Text>
+        </Text>}
         {description != null && (
           <Text variant="body-regular" numberOfLines={1} style={{ color: paint.description }}>
             {description}
