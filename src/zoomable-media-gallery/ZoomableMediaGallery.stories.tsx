@@ -199,3 +199,23 @@ function PageGalleryDemo({ mode }: { mode: 'light' | 'dark' }) {
 }
 export const PageLight: Story = { render: () => <PageGalleryDemo mode="light" /> };
 export const PageDark: Story = { render: () => <PageGalleryDemo mode="dark" /> };
+
+function LifecycleDemo({ unmountOnOpen = false }: { unmountOnOpen?: boolean }) {
+  const [mounted, setMounted] = React.useState(true);
+  const [callback, setCallback] = React.useState(0);
+  const [events, setEvents] = React.useState<Array<{ open: boolean; callback: number }>>([]);
+  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
+  return <View>
+    <Text testID="gallery-lifecycle-events">{JSON.stringify(events)}</Text>
+    {mounted && <GalleryDemo items={IMAGES} appearance="page" onOpenChange={open => {
+      setEvents(previous => [...previous, { open, callback }]);
+      if (open) {
+        setCallback(value => value + 1);
+        if (unmountOnOpen) timer.current = setTimeout(() => setMounted(false), 30);
+      }
+    }} />}
+  </View>;
+}
+export const Lifecycle: Story = { render: () => <LifecycleDemo /> };
+export const UnmountDuringOpening: Story = { render: () => <LifecycleDemo unmountOnOpen /> };

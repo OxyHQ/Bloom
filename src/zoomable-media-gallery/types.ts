@@ -93,6 +93,12 @@ export interface ZoomableMediaGalleryProps {
   appearance?: 'overlay' | 'page';
   /** Zero-based media index, emitted on opening and once per actual page change. */
   onIndexChange?: (index: number) => void;
+  /**
+   * Reports an accepted opening and completion of the closing transition.
+   * Also reports false if an open viewer unmounts. No initial false event.
+   * Use this to coordinate consumer-owned video players with inline views.
+   */
+  onOpenChange?: (open: boolean) => void;
   /** Overrides any of the viewer's names. */
   labels?: Partial<ZoomableMediaGalleryLabels>;
   /** Measures any thumbnail by its media subset index, used on dismiss. */

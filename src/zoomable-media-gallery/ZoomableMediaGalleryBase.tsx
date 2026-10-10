@@ -184,7 +184,7 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
  * Without it a video page degrades to its poster, once, with a dev warning.
  */
-const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ appearance = 'overlay', onIndexChange, measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
+const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ appearance = 'overlay', onIndexChange, onOpenChange, measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
   const { messages } = useMessages(ZOOMABLE_MEDIA_GALLERY_MESSAGES);
   const themeContext = React.useContext(BloomThemeContext);
   if (appearance === 'page' && !themeContext) {
@@ -198,6 +198,14 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
   const pageColors = pagePalette ? { background: pagePalette.backgroundSecondary, foreground: pagePalette.text } : undefined;
   const onIndexChangeRef = useRef(onIndexChange);
   onIndexChangeRef.current = onIndexChange;
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+  const openRef = useRef(false);
+  const reportOpen = useCallback((next: boolean) => {
+    if (openRef.current === next) return;
+    openRef.current = next;
+    onOpenChangeRef.current?.(next);
+  }, []);
   const labels = useMemo(() => ({ ...messages, ...labelsProp }), [messages, labelsProp]);
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   // The viewer is full-bleed, so its chrome must clear the status bar, the
@@ -294,16 +302,20 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
     pendingRef.current.add(handle);
   }, []);
   useEffect(
-    () => () => {
-      unmountedRef.current = true;
-      for (const handle of pendingRef.current) clearTimeout(handle);
-      pendingRef.current.clear();
-      if (frameRef.current !== null) {
-        cancelAnimationFrame(frameRef.current);
-        frameRef.current = null;
-      }
+    () => {
+      unmountedRef.current = false;
+      return () => {
+        unmountedRef.current = true;
+        reportOpen(false);
+        for (const handle of pendingRef.current) clearTimeout(handle);
+        pendingRef.current.clear();
+        if (frameRef.current !== null) {
+          cancelAnimationFrame(frameRef.current);
+          frameRef.current = null;
+        }
+      };
     },
-    [],
+    [reportOpen],
   );
 
   // Single writer for the current index: updates state (drives indicator + open
@@ -396,7 +408,8 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
     translateX.value = 0;
     translateY.value = 0;
     opacity.value = 0;
-  }, [opacity, scale, translateX, translateY]);
+    reportOpen(false);
+  }, [opacity, reportOpen, scale, translateX, translateY]);
 
   // Fly the (possibly dragged) media back toward `target` — the rect of the
   // thumbnail currently being viewed — shrinking to its footprint. Uses the
@@ -493,7 +506,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
 
   const open = useCallback(
     (nextItems: GalleryMedia[], index: number, rect?: MeasuredRect) => {
-      if (isOpen || nextItems.length === 0) return;
+      if (openRef.current || unmountedRef.current || nextItems.length === 0) return;
       dismissingRef.current = false;
       const safeIndex = Math.min(Math.max(index, 0), nextItems.length - 1);
       const target = nextItems[safeIndex];
@@ -542,6 +555,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
       }
 
       setIsOpen(true);
+      reportOpen(true);
       translateX.value = originX.value;
       translateY.value = originY.value;
       scale.value = originScale.value;
@@ -569,7 +583,6 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
       }
     },
     [
-      isOpen,
       SCREEN_WIDTH,
       SCREEN_HEIGHT,
       fitForRatio,
@@ -578,6 +591,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
       originX,
       originY,
       revealPager,
+      reportOpen,
       scale,
       schedule,
       setActiveIndexBoth,

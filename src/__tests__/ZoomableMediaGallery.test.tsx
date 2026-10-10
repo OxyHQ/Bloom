@@ -23,6 +23,8 @@ import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import type { ZoomableMediaGalleryProps } from '../zoomable-media-gallery';
 import { hostNodes } from './support/rendered-style';
+import { GestureDetector } from 'react-native-gesture-handler';
+import type { MockGesture } from '../../__mocks__/react-native-gesture-handler';
 
 const BackdropComponent = (Backdrop as unknown as { type: React.ComponentType<React.ComponentProps<typeof Backdrop>> }).type;
 
@@ -35,19 +37,104 @@ function renderGallery(props: ZoomableMediaGalleryProps = {}, mode: 'light' | 'd
   let theme!: Theme;
   function Probe() { theme = useTheme(); return null; }
   const ref = createRef<ZoomableMediaGalleryHandle>();
-  const utils = render(
+  const tree = (nextProps: ZoomableMediaGalleryProps) => (
     <BloomThemeProvider mode={mode} colorPreset="oxy">
       <Probe />
       <PortalProvider>
-        <ZoomableMediaGallery ref={ref} {...props} />
+        <ZoomableMediaGallery ref={ref} {...nextProps} />
         <PortalOutlet />
       </PortalProvider>
-    </BloomThemeProvider>,
+    </BloomThemeProvider>
   );
-  return { ...utils, ref, theme };
+  const utils = render(tree(props));
+  return { ...utils, ref, theme, updateProps: (nextProps: ZoomableMediaGalleryProps) => utils.rerender(tree(nextProps)) };
 }
 
 describe('ZoomableMediaGallery', () => {
+  it('keeps ownership during a cancelled native drag and reports a completed drag dismissal', () => {
+    jest.useFakeTimers();
+    try {
+      const onOpenChange = jest.fn();
+      const api = renderGallery({ onOpenChange });
+      act(() => api.ref.current?.open(IMAGES, 0));
+      act(() => jest.advanceTimersByTime(1000));
+      const gesture = api.UNSAFE_getAllByType(GestureDetector)[0]!.props.gesture as MockGesture;
+      act(() => gesture.__handlers.onEnd?.({ translationX: 0, translationY: 1 } as never));
+      act(() => jest.advanceTimersByTime(1000));
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+      act(() => gesture.__handlers.onEnd?.({ translationX: 0, translationY: Dimensions.get('window').height } as never));
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+      act(() => jest.advanceTimersByTime(1000));
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+    } finally { jest.useRealTimers(); }
+  });
+
+  it('reports accepted opening and completed closing once, including repeated presses', () => {
+    jest.useFakeTimers();
+    try {
+      const onOpenChange = jest.fn();
+      const api = renderGallery({ onOpenChange });
+      expect(onOpenChange).not.toHaveBeenCalled();
+      act(() => api.ref.current?.open([], 0));
+      expect(onOpenChange).not.toHaveBeenCalled();
+      act(() => {
+        api.ref.current?.open(IMAGES, 0);
+        api.ref.current?.open(IMAGES, 1);
+      });
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+      expect(api.getByText('First')).toBeTruthy();
+      act(() => jest.advanceTimersByTime(1000));
+      const dismiss = api.UNSAFE_getByType(BackdropComponent).props.onPress;
+      act(() => { dismiss(); dismiss(); });
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+      act(() => jest.advanceTimersByTime(1000));
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+      expect(hostNodes(api.toJSON()).filter(node => node.type === 'ExpoImage')).toHaveLength(0);
+      api.unmount();
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+    } finally { jest.useRealTimers(); }
+  });
+
+  it('uses the current callback when a deferred close completes, then permits reopening', () => {
+    jest.useFakeTimers();
+    try {
+      const first = jest.fn();
+      const current = jest.fn();
+      const api = renderGallery({ onOpenChange: first });
+      act(() => api.ref.current?.open(IMAGES, 0));
+      act(() => jest.advanceTimersByTime(1000));
+      fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
+      api.updateProps({ onOpenChange: current });
+      expect(current).not.toHaveBeenCalled();
+      act(() => jest.advanceTimersByTime(1000));
+      expect(first.mock.calls).toEqual([[true]]);
+      expect(current.mock.calls).toEqual([[false]]);
+      act(() => api.ref.current?.open(IMAGES, 1));
+      expect(current.mock.calls).toEqual([[false], [true]]);
+      api.unmount();
+      expect(current.mock.calls).toEqual([[false], [true], [false]]);
+    } finally { jest.useRealTimers(); }
+  });
+
+  it.each(['opening', 'closing'] as const)('reports false when unmounted while %s without a delayed duplicate', phase => {
+    jest.useFakeTimers();
+    try {
+      const first = jest.fn();
+      const current = jest.fn();
+      const api = renderGallery({ onOpenChange: first });
+      act(() => api.ref.current?.open(IMAGES, 0));
+      if (phase === 'closing') {
+        act(() => jest.advanceTimersByTime(1000));
+        fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
+      }
+      api.updateProps({ onOpenChange: current });
+      api.unmount();
+      act(() => jest.advanceTimersByTime(2000));
+      expect(first.mock.calls).toEqual([[true]]);
+      expect(current.mock.calls).toEqual([[false]]);
+    } finally { jest.useRealTimers(); }
+  });
+
   it.each(['light', 'dark'] as const)('uses the %s page theme without changing the overlay default', mode => {
     const page = renderGallery({ appearance: 'page' }, mode);
     act(() => page.ref.current?.open(IMAGES, 0));
