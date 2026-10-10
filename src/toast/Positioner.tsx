@@ -82,7 +82,8 @@ export const Positioner: React.FC<
   }, [isExpanded, collapse]);
 
   // Collapsing by pressing outside only makes sense for an anchored stack.
-  const shouldAllowCollapse = resolvedPosition !== 'center' && isExpanded;
+  // Web observes outside presses in ToastHost without intercepting the app.
+  const shouldAllowCollapse = Platform.OS !== 'web' && resolvedPosition !== 'center' && isExpanded;
   const hasChildren = React.Children.count(children) > 0;
 
   return (

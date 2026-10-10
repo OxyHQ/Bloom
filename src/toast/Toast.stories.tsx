@@ -389,3 +389,25 @@ export const MixedHeightStack: Story = {
     </Demo>
   ),
 };
+
+/** A long form must remain usable while a non-modal notification is expanded. */
+export const BackgroundInteraction: Story = {
+  render: function BackgroundInteractionStory() {
+    const [count, setCount] = React.useState(0);
+    return (
+      <View style={{ minHeight: 2200, justifyContent: 'flex-end', gap: 120, paddingBottom: 96 }}>
+        <Button onPress={() => setCount((value) => value + 1)}>Apply change</Button>
+        <Text testID="background-count">{count}</Text>
+        <Button onPress={() => {
+          toast.info('Pending changes', { duration: Infinity });
+          toast.error('Update failed', {
+            duration: Infinity,
+            closeButton: true,
+            action: { label: 'Retry update', onClick: () => setCount((value) => value + 1) },
+          });
+        }}>Show error</Button>
+        <ToastOutlet />
+      </View>
+    );
+  },
+};
