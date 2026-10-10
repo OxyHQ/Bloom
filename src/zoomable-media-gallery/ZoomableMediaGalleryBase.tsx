@@ -184,7 +184,7 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
  * Without it a video page degrades to its poster, once, with a dev warning.
  */
-const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ appearance = 'overlay', onIndexChange, onOpenChange, measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
+const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ appearance = 'overlay', onIndexChange, onOpenChange, renderVideoOverlay, measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false, labels: labelsProp }, ref) => {
   const { messages } = useMessages(ZOOMABLE_MEDIA_GALLERY_MESSAGES);
   const themeContext = React.useContext(BloomThemeContext);
   if (appearance === 'page' && !themeContext) {
@@ -382,6 +382,9 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
   // Alt text (accessibility description) of the item currently on screen, shown
   // as a caption at the bottom of the viewer (Bluesky-style lightbox footer).
   const activeAlt = activeItem?.alt?.trim() || undefined;
+  const videoOverlay = isOpen && activeItem?.kind === 'video'
+    ? renderVideoOverlay?.(activeItem)
+    : null;
 
   // Probe and cache the ratio of the page at `index`. A video with no poster has
   // nothing to probe — it keeps whatever ratio the consumer declared, or the
@@ -1172,6 +1175,15 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
           ) : null}
         </Animated.View>
         </GestureDetector>
+        {videoOverlay != null && (
+          // A sibling of the gesture/dismiss tree: retry controls must neither
+          // bubble a press into the closing page nor compete with its tap/pan.
+          <Animated.View pointerEvents="box-none" style={[StyleSheet.absoluteFill, styles.zoomContainer, backdropStyle]}>
+            <View pointerEvents="box-none" style={{ width: activeFit.width, height: activeFit.height }}>
+              {videoOverlay}
+            </View>
+          </Animated.View>
+        )}
       </GestureHandlerRootView>
     </OverlayRoot>
   );

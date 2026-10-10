@@ -18,10 +18,10 @@ import { PortalProvider, PortalOutlet } from '../portal';
 import { ZoomableMediaGallery } from '../zoomable-media-gallery';
 import type { ZoomableMediaGalleryHandle, GalleryImage } from '../zoomable-media-gallery';
 import { Backdrop } from '../overlay';
-import { ScrollView, Dimensions } from 'react-native';
+import { ScrollView, Dimensions, Pressable, Text, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import type { ZoomableMediaGalleryProps } from '../zoomable-media-gallery';
+import type { GalleryVideo, ZoomableMediaGalleryProps } from '../zoomable-media-gallery';
 import { hostNodes } from './support/rendered-style';
 import { GestureDetector } from 'react-native-gesture-handler';
 import type { MockGesture } from '../../__mocks__/react-native-gesture-handler';
@@ -51,6 +51,60 @@ function renderGallery(props: ZoomableMediaGalleryProps = {}, mode: 'light' | 'd
 }
 
 describe('ZoomableMediaGallery', () => {
+  it('renders current consumer status only over the active video without duplicating its player', () => {
+    jest.useFakeTimers();
+    try {
+      const player = { playing: false, play: jest.fn(), pause: jest.fn() };
+      const video: GalleryVideo = { kind: 'video', id: 'clip', player, aspectRatio: 1.5 };
+      const retry = jest.fn();
+      const first = jest.fn(() => <Text>Loading clip</Text>);
+      const onOpenChange = jest.fn();
+      const api = renderGallery({ renderVideoOverlay: first, onOpenChange });
+      expect(first).not.toHaveBeenCalled();
+      act(() => api.ref.current?.open([IMAGES[0]!, video], 0));
+      act(() => jest.advanceTimersByTime(1000));
+      expect(first).not.toHaveBeenCalled();
+      const pager = api.UNSAFE_getAllByType(ScrollView).find(node => node.props.pagingEnabled)!;
+      const offset = (x: number) => ({ nativeEvent: { contentOffset: { x, y: 0 } } });
+      fireEvent(pager, 'momentumScrollEnd', offset(Dimensions.get('window').width));
+      expect(first).toHaveBeenLastCalledWith(video);
+      expect(api.getByText('Loading clip')).toBeTruthy();
+      const current = jest.fn(() => <View><Text>Clip unavailable</Text><Pressable accessibilityRole="button" onPress={retry}><Text>Retry clip</Text></Pressable></View>);
+      api.updateProps({ renderVideoOverlay: current, onOpenChange });
+      expect(api.queryByText('Loading clip')).toBeNull();
+      fireEvent.press(api.getByText('Retry clip'));
+      act(() => jest.advanceTimersByTime(1000));
+      expect(retry).toHaveBeenCalledTimes(1);
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+      const views = hostNodes(api.toJSON()).filter(node => node.type === 'ExpoVideoView');
+      expect(views).toHaveLength(1);
+      expect(views[0]!.props.player).toBe(player);
+      expect(player.play).not.toHaveBeenCalled();
+      expect(player.pause).not.toHaveBeenCalled();
+      current.mockClear();
+      fireEvent(pager, 'momentumScrollEnd', offset(0));
+      expect(api.queryByText('Clip unavailable')).toBeNull();
+      expect(current).not.toHaveBeenCalled();
+      api.unmount();
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+    } finally { jest.useRealTimers(); }
+  });
+
+  it('keeps overlay actions outside the native dismiss gesture tree', () => {
+    jest.useFakeTimers();
+    try {
+      const video: GalleryVideo = { kind: 'video', id: 'clip', player: { playing: false, play() {}, pause() {} }, aspectRatio: 1 };
+      const api = renderGallery({ renderVideoOverlay: () => <Pressable testID="video-action"><Text>Retry</Text></Pressable> });
+      act(() => api.ref.current?.open([video], 0));
+      const action = api.getByTestId('video-action');
+      for (let parent = action.parent; parent; parent = parent.parent) {
+        expect(parent.type).not.toBe(GestureDetector);
+      }
+      api.updateProps({ renderVideoOverlay: () => null });
+      expect(api.queryByTestId('video-action')).toBeNull();
+    } finally { jest.useRealTimers(); }
+  });
+
   it('keeps ownership during a cancelled native drag and reports a completed drag dismissal', () => {
     jest.useFakeTimers();
     try {
