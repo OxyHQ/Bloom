@@ -70,7 +70,7 @@ describe('InputOtp', () => {
     const root = renderWithTheme(<InputOtp testID="otp" />);
     expect(root.getByLabelText('One-time code')).toBeTruthy();
     const style = resolvedStyle(box(root, 0).props.style);
-    expect(style).toMatchObject({ width: 48, height: 48, borderRadius: 10, borderWidth: 1, fontSize: 18, fontWeight: '500', textAlign: 'center' });
+    expect(style).toMatchObject({ width: 48, height: 48, borderRadius: 12, borderWidth: 1, fontSize: 18, fontWeight: '500', textAlign: 'center' });
     // Narrows, never grows, when the row does not fit (ten boxes on a phone).
     expect(style).toMatchObject({ flexShrink: 1, minWidth: 0 });
     expect(style.flexGrow).toBeUndefined();

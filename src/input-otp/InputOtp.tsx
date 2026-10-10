@@ -27,7 +27,7 @@ import { useFieldMembership } from '../field/membership';
 /**
  * `InputOtp`: one box per digit, side by side, behaving as ONE value.
  *
- *   box     48 × 48, radius 10, 1px border, shadow-xs; narrower (never
+ *   box     48 × 48, radius 12, 1px border, shadow-xs; narrower (never
  *           wider) when the row does not fit its container
  *   digit   mono, title-3-medium 18/26 500, centred, tabular numerals
  *   gap     8 between boxes, +12 before each `groupEvery` group
