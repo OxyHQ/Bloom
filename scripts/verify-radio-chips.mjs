@@ -39,6 +39,11 @@ try {
     if (width === 320) assert(lastBox.y > box.y, 'narrow chips must wrap');
     if (width === 320) await last.tap(); else await last.click();
     await expect(last).toBeChecked();
+    const activation = page.getByRole('radio', { name: 'Activation example', exact: true });
+    await activation.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByTestId('chip-activations')).toHaveText('1');
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('chip-activations')).toHaveText('2');
     const authored = page.getByRole('radiogroup', { name: 'Authored choices' });
     const authoredA = authored.getByRole('radio', { name: 'Authored A' });
     const authoredB = authored.getByRole('radio', { name: 'Authored B' });

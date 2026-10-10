@@ -58,7 +58,14 @@ export const RadioHost = forwardRef<View, HostProps>(function RadioHost(props, r
     onClick={() => { if (!disabled) onPress(); }}
     onPointerDown={() => { if (!disabled) onPressIn?.(); }} onPointerUp={onPressOut} onPointerCancel={onPressOut}
     onMouseEnter={onHoverIn} onMouseLeave={() => { onHoverOut?.(); onPressOut?.(); }}
-    onKeyDown={event => { if (event.key === ' ' || event.key === 'Enter') onPressIn?.(); onKeyDown?.(event); }}
+    onKeyDown={event => {
+      if (event.key === ' ' || event.key === 'Enter') onPressIn?.();
+      onKeyDown?.(event);
+      if (event.key === 'Enter' && !disabled && !event.defaultPrevented) {
+        event.preventDefault();
+        if (!event.repeat) onPress();
+      }
+    }}
     onKeyUp={event => { onPressOut?.(); onKeyUp?.(event); }}
     onBlur={() => { onPressOut?.(); onBlur?.(); }}
   >{children}</button>;

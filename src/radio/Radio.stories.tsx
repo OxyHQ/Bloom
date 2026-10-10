@@ -1,9 +1,9 @@
 import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Radio, RadioCard, RadioGroup } from './index';
+import { Radio, RadioCard, RadioGroup, RadioChip } from './index';
 import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof RadioGroup> = {
@@ -222,11 +222,14 @@ export const KeyboardRows: Story = {
 export const Chips: Story = {
   render: function RadioChipsStory() {
     const [value, setValue] = useState<string | undefined>();
+    const [activations, setActivations] = useState(0);
     return <View style={{ padding: 24, gap: 24, maxWidth: 460 }}>
       <RadioGroup label="Size" variant="chip" size="md" tone="neutral" appearance="outline"
         value={value} onValueChange={setValue}
         options={[{ value: 'small', label: 'Small' }, { value: 'medium', label: 'Medium', disabled: true },
           { value: 'large', label: 'Large' }, { value: 'extra', label: 'Extra large' }]} />
+      <RadioChip value="action" label="Activation example" onValueChange={() => setActivations(count => count + 1)} />
+      <Text testID="chip-activations">{activations}</Text>
       <RadioGroup label="Disabled choices" variant="chip" disabled defaultValue="a"
         options={[{ value: 'a', label: 'Disabled A' }, { value: 'b', label: 'Disabled B' }]} />
       <RadioGroup label="Authored choices" variant="chip" defaultValue="a"
