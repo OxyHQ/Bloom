@@ -29,7 +29,7 @@ try {
       const pixels = await page.evaluate(async (png) => {
         const rect = document.querySelector('[aria-label="New post"]').getBoundingClientRect();
         const image = new Image();
-        image.src = 'data:image/png;base64,' + png;
+        image.src = `data:image/png;base64,${png}`;
         await image.decode();
         const canvas = document.createElement('canvas');
         canvas.width = image.width;

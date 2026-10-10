@@ -2649,7 +2649,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     editing
       ? 'Salva modifiche'
       : 'Avvia chat' +
-        (count ? ' · ' + plural('it', count, { one: '{n} agente', other: '{n} agenti' }) : ''),
+        (count ? ` · ${plural('it', count, { one: '{n} agente', other: '{n} agenti' })}` : ''),
   you: 'Tu',
   responseFailed: '{0} non ha potuto rispondere. Riprova.',
   editAgentTitle: 'Modifica agente',
@@ -2825,7 +2825,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · di {1}',
   results: (count: number) => plural('it', count, { one: '{n} risultato', other: '{n} risultati' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('it', apps, { one: '{n} app', other: '{n} app' }) + ', ' : '') +
+    (apps ? `${plural('it', apps, { one: '{n} app', other: '{n} app' })}, ` : '') +
     plural('it', skills, { one: '{n} competenza', other: '{n} competenze' }),
 };
 

@@ -28,14 +28,14 @@ function unsafeEdges(entry: string, overrides = new Map<string, string>()): stri
       const spec = statement.moduleSpecifier;
       if (!spec || !ts.isStringLiteral(spec) || !spec.text.startsWith('.')) continue;
       const base = resolve(dirname(file), spec.text);
-      const target = [base + '.ts', base + '.tsx', join(base, 'index.ts')].find(existsSync);
+      const target = [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find(existsSync);
       if (!target) continue;
       if (targets.has(spec.text.split('/')[1] ?? '') && /^\.\.\/[^/]+(?:\/index)?$/.test(spec.text))
         bad.push(`${file}: ${spec.text}`);
-      if (target.startsWith(family + '/')) {
+      if (target.startsWith(`${family}/`)) {
         if (
           !/\.web\.tsx?$/.test(target) &&
-          (existsSync(base + '.web.ts') || existsSync(base + '.web.tsx'))
+          (existsSync(`${base}.web.ts`) || existsSync(`${base}.web.tsx`))
         )
           bad.push(`${file}: ${spec.text}`);
         pending.push(target);

@@ -2491,7 +2491,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   pickerAction: (editing: boolean, count: number) =>
     editing
       ? '保存更改'
-      : '开始聊天' + (count ? ' · ' + plural('zh', count, { other: '{n} 个智能体' }) : ''),
+      : `开始聊天${count ? ` · ${plural('zh', count, { other: '{n} 个智能体' })}` : ''}`,
   you: '你',
   responseFailed: '{0} 未能回复。请重试。',
   editAgentTitle: '编辑智能体',
@@ -2661,7 +2661,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · 由 {1}',
   results: (count: number) => plural('zh', count, { other: '{n} 个结果' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('zh', apps, { other: '{n} 个应用' }) + '，' : '') +
+    (apps ? `${plural('zh', apps, { other: '{n} 个应用' })}，` : '') +
     plural('zh', skills, { other: '{n} 个技能' }),
 };
 

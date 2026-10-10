@@ -2660,7 +2660,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     editing
       ? 'Enregistrer les modifications'
       : 'Démarrer le chat' +
-        (count ? ' · ' + plural('fr', count, { one: '{n} agent', other: '{n} agents' }) : ''),
+        (count ? ` · ${plural('fr', count, { one: '{n} agent', other: '{n} agents' })}` : ''),
   you: 'Vous',
   responseFailed: '{0} n’a pas pu répondre. Veuillez réessayer.',
   editAgentTitle: 'Modifier l’agent',
@@ -2840,7 +2840,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · avant {1}',
   results: (count: number) => plural('fr', count, { one: '{n} résultat', other: '{n} résultats' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('fr', apps, { one: '{n} application', other: '{n} applications' }) + ', ' : '') +
+    (apps ? `${plural('fr', apps, { one: '{n} application', other: '{n} applications' })}, ` : '') +
     plural('fr', skills, { one: '{n} compétence', other: '{n} compétences' }),
 };
 

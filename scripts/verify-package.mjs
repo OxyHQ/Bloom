@@ -471,7 +471,7 @@ function main() {
   problems.push(...assertNodeLoadable(NODE_LOADABLE_SUBPATHS, NODE_ESM_UNRESOLVABLE_SUBPATHS));
 
   if (problems.length > 0) {
-    console.error('[verify-package] FAILED\n  ' + problems.join('\n  '));
+    console.error(`[verify-package] FAILED\n  ${problems.join('\n  ')}`);
     process.exit(1);
   }
 

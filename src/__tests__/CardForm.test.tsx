@@ -82,7 +82,7 @@ describe('grouping', () => {
     // digit, because the first would delete a separator the formatter puts
     // straight back.
     expect(groupCardDigits('7000')).toBe('7000');
-    expect(groupCardDigits('70001111')).toBe('70001111'.slice(0, 4) + ' ' + '70001111'.slice(4));
+    expect(groupCardDigits('70001111')).toBe(`${'70001111'.slice(0, 4)} ${'70001111'.slice(4)}`);
     expect(groupCardDigits('7000').endsWith(' ')).toBe(false);
     expect(groupCardDigits('70001111').endsWith(' ')).toBe(false);
   });

@@ -6,7 +6,7 @@ export const MULTI_AGENT_CHAT_MESSAGES = defineMessages('MULTI_AGENT_CHAT_MESSAG
     editing
       ? 'Save changes'
       : 'Start chat' +
-        (count ? ' · ' + plural('en', count, { one: '{n} agent', other: '{n} agents' }) : ''),
+        (count ? ` · ${plural('en', count, { one: '{n} agent', other: '{n} agents' })}` : ''),
   you: 'You',
   responseFailed: '{0} couldn’t respond. Please try again.',
   editAgentTitle: 'Edit agent',
@@ -178,7 +178,7 @@ export const MULTI_AGENT_CHAT_MESSAGES = defineMessages('MULTI_AGENT_CHAT_MESSAG
   by: '{0} · by {1}',
   results: (count: number) => plural('en', count, { one: '{n} result', other: '{n} results' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('en', apps, { one: '{n} app', other: '{n} apps' }) + ', ' : '') +
+    (apps ? `${plural('en', apps, { one: '{n} app', other: '{n} apps' })}, ` : '') +
     plural('en', skills, { one: '{n} skill', other: '{n} skills' }),
 });
 

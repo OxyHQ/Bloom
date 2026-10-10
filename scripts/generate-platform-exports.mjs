@@ -860,7 +860,7 @@ function main() {
   // explicit `index.web` paths so the older Browserify-style remap is
   // unnecessary. Leaving it would just be noise.
   delete pkg.browser;
-  writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + '\n');
+  writeFileSync(PKG_PATH, `${JSON.stringify(pkg, null, 2)}\n`);
   console.log(
     `[generate-platform-exports] wrote ${SUBPATHS.length} subpaths to package.json#exports ` +
       `and ${Object.keys(pkg.typesVersions['*']).length} to package.json#typesVersions`,

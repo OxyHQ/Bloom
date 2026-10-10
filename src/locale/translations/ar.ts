@@ -3164,12 +3164,12 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     }),
   includedSkills: (apps: number, skills: number) =>
     (apps
-      ? plural('ar', apps, {
+      ? `${plural('ar', apps, {
           one: '{n} تطبيق',
           two: '{n} تطبيقان',
           few: '{n} تطبيقات',
           other: '{n} تطبيق',
-        }) + '، '
+        })}، `
       : '') +
     plural('ar', skills, {
       one: '{n} مهارة',

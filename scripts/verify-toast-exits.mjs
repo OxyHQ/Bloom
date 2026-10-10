@@ -22,7 +22,7 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.setViewport({ width: 1000, height: 800 });
     p.on('pageerror', (e) => console.log('pageerror', e.message));
     for (const story of ['close-button', 'sequential-unstacked', 'sequential-stacked']) {
-      await p.goto(baseUrl + '/iframe.html?id=base-toast--' + story + '&viewMode=story', {
+      await p.goto(`${baseUrl}/iframe.html?id=base-toast--${story}&viewMode=story`, {
         waitUntil: 'networkidle0',
       });
       await p.mouse.move(10, 10);
@@ -84,15 +84,15 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
         .flatMap((f) => f.rows)
         .filter((r) => r.text === title && r.opacity > 0 && r.opacity < 0.99);
 
-      assert(baseline && exiting.length > 2, story + ': missing exit frames');
+      assert(baseline && exiting.length > 2, `${story}: missing exit frames`);
 
       for (const row of exiting) {
-        assert(Math.abs(row.y - baseline.y) <= 13, story + ': exit jumped out of its slot');
-        assert(Math.abs(row.w - baseline.w) < 1, story + ': exit lost stack width');
+        assert(Math.abs(row.y - baseline.y) <= 13, `${story}: exit jumped out of its slot`);
+        assert(Math.abs(row.w - baseline.w) < 1, `${story}: exit lost stack width`);
       }
-      assert(!frames.at(-1).rows.some((r) => r.text === title), story + ': dismissed row remains');
+      assert(!frames.at(-1).rows.some((r) => r.text === title), `${story}: dismissed row remains`);
 
-      console.log(story + ': exit position, width and completion passed');
+      console.log(`${story}: exit position, width and completion passed`);
     }
   } finally {
     await b.close();

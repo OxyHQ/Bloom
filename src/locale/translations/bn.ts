@@ -2529,7 +2529,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   pickerAction: (editing: boolean, count: number) =>
     editing
       ? 'পরিবর্তন সংরক্ষণ করুন'
-      : 'চ্যাট শুরু করুন' + (count ? ' · ' + plural('bn', count, { other: '{n} জন এজেন্ট' }) : ''),
+      : `চ্যাট শুরু করুন${count ? ` · ${plural('bn', count, { other: '{n} জন এজেন্ট' })}` : ''}`,
   you: 'আপনি',
   responseFailed: '{0} উত্তর দিতে পারেনি। আবার চেষ্টা করুন।',
   editAgentTitle: 'এজেন্ট সম্পাদনা করুন',
@@ -2701,7 +2701,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · {1} দ্বারা',
   results: (count: number) => plural('bn', count, { other: '{n}টি ফলাফল' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('bn', apps, { other: '{n}টি অ্যাপ' }) + ', ' : '') +
+    (apps ? `${plural('bn', apps, { other: '{n}টি অ্যাপ' })}, ` : '') +
     plural('bn', skills, { other: '{n}টি দক্ষতা' }),
 };
 

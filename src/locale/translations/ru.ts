@@ -3107,11 +3107,11 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     plural('ru', count, { one: '{n} результат', few: '{n} результата', other: '{n} результатов' }),
   includedSkills: (apps: number, skills: number) =>
     (apps
-      ? plural('ru', apps, {
+      ? `${plural('ru', apps, {
           one: '{n} приложение',
           few: '{n} приложения',
           other: '{n} приложений',
-        }) + ', '
+        })}, `
       : '') + plural('ru', skills, { one: '{n} навык', few: '{n} навыка', other: '{n} навыков' }),
 };
 

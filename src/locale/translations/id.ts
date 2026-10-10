@@ -2605,7 +2605,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     editing
       ? 'Simpan perubahan'
       : 'Mulai chat' +
-        (count ? ' · ' + plural('id', count, { one: '{n} agen', other: '{n} agen' }) : ''),
+        (count ? ` · ${plural('id', count, { one: '{n} agen', other: '{n} agen' })}` : ''),
   you: 'Anda',
   responseFailed: '{0} tidak dapat merespons. Silakan coba lagi.',
   editAgentTitle: 'Edit agen',
@@ -2781,7 +2781,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · oleh {1}',
   results: (count: number) => plural('id', count, { other: '{n} hasil' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('id', apps, { one: '{n} aplikasi', other: '{n} aplikasi' }) + ', ' : '') +
+    (apps ? `${plural('id', apps, { one: '{n} aplikasi', other: '{n} aplikasi' })}, ` : '') +
     plural('id', skills, { one: '{n} keterampilan', other: '{n} keterampilan' }),
 };
 

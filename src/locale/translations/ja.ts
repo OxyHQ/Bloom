@@ -2557,7 +2557,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     editing
       ? '変更を保存'
       : 'チャットを開始' +
-        (count ? ' · ' + plural('ja', count, { other: '{n}人のエージェント' }) : ''),
+        (count ? ` · ${plural('ja', count, { other: '{n}人のエージェント' })}` : ''),
   you: 'あなた',
   responseFailed: '{0}は応答できませんでした。もう一度お試しください。',
   editAgentTitle: 'エージェントを編集',
@@ -2734,7 +2734,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · {1} 著',
   results: (count: number) => plural('ja', count, { other: '{n}件の結果' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('ja', apps, { other: '{n}個のアプリ' }) + '、' : '') +
+    (apps ? `${plural('ja', apps, { other: '{n}個のアプリ' })}、` : '') +
     plural('ja', skills, { other: '{n}個のスキル' }),
 };
 

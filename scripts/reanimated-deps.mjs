@@ -230,7 +230,7 @@ if (isMain) {
     } else {
       for (const p of problemsIn(file, text)) {
         console.log(
-          `${file}:${p.line} ${p.hook} ${p.hasArray ? 'missing ' + p.missing.join(', ') : 'has no dependency array'}${!p.hasArray && p.missing.length ? ` (needs [${p.missing.join(', ')}])` : ''}`,
+          `${file}:${p.line} ${p.hook} ${p.hasArray ? `missing ${p.missing.join(', ')}` : 'has no dependency array'}${!p.hasArray && p.missing.length ? ` (needs [${p.missing.join(', ')}])` : ''}`,
         );
         total++;
       }

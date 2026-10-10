@@ -130,7 +130,7 @@ try {
     errors,
   };
   if (process.env.REPORT_PATH)
-    writeFileSync(process.env.REPORT_PATH, JSON.stringify(result, null, 2) + '\n');
+    writeFileSync(process.env.REPORT_PATH, `${JSON.stringify(result, null, 2)}\n`);
   console.log(JSON.stringify(result, null, 2));
 } finally {
   await browser.close();

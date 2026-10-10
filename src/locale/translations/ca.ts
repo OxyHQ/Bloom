@@ -2615,7 +2615,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     editing
       ? 'Desa els canvis'
       : 'Inicia el xat' +
-        (count ? ' · ' + plural('ca', count, { one: '{n} agent', other: '{n} agents' }) : ''),
+        (count ? ` · ${plural('ca', count, { one: '{n} agent', other: '{n} agents' })}` : ''),
   you: 'Tu',
   responseFailed: '{0} no ha pogut respondre. Torna-ho a provar.',
   editAgentTitle: 'Edita l’agent',
@@ -2793,7 +2793,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · per {1}',
   results: (count: number) => plural('ca', count, { one: '{n} resultat', other: '{n} resultats' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('ca', apps, { one: '{n} aplicació', other: '{n} aplicacions' }) + ', ' : '') +
+    (apps ? `${plural('ca', apps, { one: '{n} aplicació', other: '{n} aplicacions' })}, ` : '') +
     plural('ca', skills, { one: '{n} habilitat', other: '{n} habilitats' }),
 };
 

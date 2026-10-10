@@ -2575,7 +2575,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     editing
       ? 'Değişiklikleri kaydet'
       : 'Sohbet başlat' +
-        (count ? ' · ' + plural('tr', count, { one: '{n} ajan', other: '{n} ajan' }) : ''),
+        (count ? ` · ${plural('tr', count, { one: '{n} ajan', other: '{n} ajan' })}` : ''),
   you: 'Sen',
   responseFailed: '{0} yanıt veremedi. Lütfen tekrar deneyin.',
   editAgentTitle: 'Ajanı düzenle',
@@ -2753,7 +2753,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · yazan: {1}',
   results: (count: number) => plural('tr', count, { other: '{n} sonuç' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('tr', apps, { one: '{n} uygulama', other: '{n} uygulama' }) + ', ' : '') +
+    (apps ? `${plural('tr', apps, { one: '{n} uygulama', other: '{n} uygulama' })}, ` : '') +
     plural('tr', skills, { one: '{n} beceri', other: '{n} beceri' }),
 };
 

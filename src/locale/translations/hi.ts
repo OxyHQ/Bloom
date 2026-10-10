@@ -2548,7 +2548,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
     editing
       ? 'बदलाव सहेजें'
       : 'चैट शुरू करें' +
-        (count ? ' · ' + plural('hi', count, { one: '{n} एजेंट', other: '{n} एजेंट' }) : ''),
+        (count ? ` · ${plural('hi', count, { one: '{n} एजेंट', other: '{n} एजेंट' })}` : ''),
   you: 'आप',
   responseFailed: '{0} जवाब नहीं दे सका। कृपया फिर से प्रयास करें।',
   editAgentTitle: 'एजेंट संपादित करें',
@@ -2720,7 +2720,7 @@ const MULTI_AGENT_CHAT_MESSAGES: Translations['MULTI_AGENT_CHAT_MESSAGES'] = {
   by: '{0} · {1} द्वारा',
   results: (count: number) => plural('hi', count, { other: '{n} परिणाम' }),
   includedSkills: (apps: number, skills: number) =>
-    (apps ? plural('hi', apps, { one: '{n} ऐप', other: '{n} ऐप' }) + ', ' : '') +
+    (apps ? `${plural('hi', apps, { one: '{n} ऐप', other: '{n} ऐप' })}, ` : '') +
     plural('hi', skills, { one: '{n} कौशल', other: '{n} कौशल' }),
 };
 

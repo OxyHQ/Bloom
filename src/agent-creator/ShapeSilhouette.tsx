@@ -30,8 +30,7 @@ function silhouette(config: AvatarConfig) {
   // Original catalog PNGs use a flat pink silhouette with a small clear edge.
   const padding = Math.max(width, height) * 0.025;
   const result = {
-    path:
-      points.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(4)} ${y.toFixed(4)}`).join(' ') + 'Z',
+    path: `${points.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(4)} ${y.toFixed(4)}`).join(' ')}Z`,
     viewBox: `${left - padding} ${top - padding} ${width + padding * 2} ${height + padding * 2}`,
   };
   if (silhouettes.size >= 64) silhouettes.delete(silhouettes.keys().next().value!);

@@ -140,12 +140,12 @@ function EnergyLabelComponent({
     accessibilityLabel ??
     (pending
       ? `${messages.energyRating}: ${pendingLabel}`
-      : [
+      : `${[
           messages.energyRating,
           ...columns.map(
             (c) => `${c.label}: ${[c.rating.rating, c.rating.value].filter(Boolean).join(', ')}`,
           ),
-        ].join('. ') + '.');
+        ].join('. ')}.`);
 
   const caption = (text: string, testIDSuffix: string) => (
     <Text
