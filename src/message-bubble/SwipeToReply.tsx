@@ -29,7 +29,11 @@ import type { MessageDirection } from './types';
  * releases animate home, so the row never stays displaced.
  *
  * The pan activates only after `activeOffsetX`, so a vertical flick through the
- * transcript is still a scroll and a tap is still a tap.
+ * transcript is still a scroll and a tap is still a tap. The detector also
+ * passes `touchAction="pan-y"`: RNGH's web default is `touch-action: none`,
+ * which would stop a touch browser scrolling the transcript from any bubble.
+ * The web path above never mounts the detector today, so this is inert until
+ * someone enables it — it is here so enabling it cannot freeze the transcript.
  */
 
 const TRAVEL = 64;
@@ -103,7 +107,7 @@ export function SwipeToReply({
       >
         <RiArrowGoBackLine width={18} height={18} fill={paint.muted} />
       </Animated.View>
-      <GestureDetector gesture={pan}>
+      <GestureDetector gesture={pan} touchAction="pan-y">
         <Animated.View style={rowStyle}>{children}</Animated.View>
       </GestureDetector>
     </View>

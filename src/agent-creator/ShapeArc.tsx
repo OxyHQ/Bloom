@@ -245,7 +245,11 @@ export function ShapeArc({
     (slot) => choices[wrap(slot, choices.length)]?.id === value,
   );
   return (
-    <GestureDetector gesture={drag}>
+    // `touchAction="pan-y"`, not the `touch-pan-y` class below: RNGH writes an
+    // INLINE `touch-action: none` on this view on web, which beats the class,
+    // so a touch that lands on the arc could never scroll the page. The class
+    // stays for the moment before the handler attaches.
+    <GestureDetector gesture={drag} touchAction="pan-y">
       <ListboxView
         ref={ref}
         role="listbox"

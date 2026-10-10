@@ -9,9 +9,17 @@
 // real event payload instead of reaching into the component. That is the only way
 // to test a policy that lives inside a gesture callback — e.g. which region of a
 // toast row a tap landed in, which is measured against the row's CAPPED width.
+//
+// The detector's web-only props (`touchAction`, `userSelect`,
+// `enableContextMenu`) are copied onto `__config` of every gesture it is given,
+// which is exactly what the real `GestureDetector` does (`propagateDetectorConfig`)
+// before the web delegate reads them. So a suite asserts what the HANDLER will
+// see — e.g. that a row in a scrolling list gets `touchAction: 'pan-y'` rather
+// than RNGH's web default of `none` — without depending on JSX shape.
 export type MockGesture = {
   __handlers: Record<string, ((event: never) => void) | undefined>;
   __members: MockGesture[];
+  __config: Record<string, unknown>;
 } & Record<string, (...args: never[]) => unknown>;
 
 const gestureBuilder = (): MockGesture => {
@@ -56,6 +64,7 @@ const gestureBuilder = (): MockGesture => {
     onTouchesCancelled: record('onTouchesCancelled'),
     __handlers: handlers,
     __members: [] as MockGesture[],
+    __config: {} as Record<string, unknown>,
   } as unknown as MockGesture;
   return builder;
 };
@@ -83,7 +92,33 @@ export const Gesture = {
   Simultaneous: compose(),
 };
 
-export const GestureDetector = ({ children }: { children: React.ReactNode }) => children;
+const DETECTOR_CONFIG_KEYS = ['touchAction', 'userSelect', 'enableContextMenu'] as const;
+
+function gestureArray(gesture: MockGesture | undefined): MockGesture[] {
+  if (gesture === undefined || gesture === null) return [];
+  return gesture.__members?.length ? gesture.__members.flatMap(gestureArray) : [gesture];
+}
+
+export const GestureDetector = ({
+  children,
+  gesture,
+  ...props
+}: {
+  children: React.ReactNode;
+  gesture?: MockGesture;
+  touchAction?: string;
+  userSelect?: string;
+  enableContextMenu?: boolean;
+}) => {
+  for (const key of DETECTOR_CONFIG_KEYS) {
+    const value = props[key];
+    if (value === undefined) continue;
+    for (const member of gestureArray(gesture)) {
+      if (member.__config) member.__config[key] = value;
+    }
+  }
+  return children;
+};
 
 // GestureHandlerRootView passthrough — preserves children in render output
 // so testing-library can still find them.

@@ -381,3 +381,24 @@ describe('useSwipeAvailable', () => {
     expect(byTestId('probe').textContent).toBe('false');
   });
 });
+
+// ---------------------------------------------------------------------------
+//  The list stays scrollable on touch web
+// ---------------------------------------------------------------------------
+
+describe('SwipeRow touch-action', () => {
+  // RNGH's web delegate writes `touch-action: <config.touchAction ?? 'none'>`
+  // on the detector's view. `none` tells a touch browser never to pan from that
+  // element, and rows tile the whole list, so the list could not be scrolled by
+  // touch at all while horizontal swipes still worked — the reported bug.
+  // `failOffsetY` cannot rescue it: the browser decides before any JS runs.
+  // The mock copies the detector's props onto the gesture exactly as the real
+  // detector does, so this reads what the web handler will be configured with.
+  it('hands vertical panning to the browser (pan-y), keeping horizontal for the pan', () => {
+    const spy = recordPan();
+    mount(<Row />);
+    const built = spy.mock.results[0]?.value as { __config: Record<string, unknown> } | undefined;
+    expect(built).toBeDefined();
+    expect(built?.__config.touchAction).toBe('pan-y');
+  });
+});
