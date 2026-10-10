@@ -169,11 +169,9 @@ const CheckboxComponent: React.FC<CheckboxProps> = (props) => {
       // react-native-web drops any prop outside its own fixed list — a literal
       // `'data-bloom-checkbox'` prop never reaches the DOM. See the longer note
       // in `chip/Chip.tsx`, where this was measured.
+      // biome-ignore format: keeps `as Record<string, unknown>` on one line for the line-based cast census in classname-interop.test.ts
       {...(IS_WEB
-        ? ({ dataSet: { bloomCheckbox: '', bloomCheckboxFocusable: '' } } as Record<
-            string,
-            unknown
-          >)
+        ? ({ dataSet: { bloomCheckbox: '', bloomCheckboxFocusable: '' } } as Record<string, unknown>)
         : {})}
       style={[rowStyle, style]}
       onPress={handlePress}
