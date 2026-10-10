@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import { View, type GestureResponderEvent } from 'react-native';
 
 import { Text } from '../typography';

@@ -7,7 +7,7 @@
  * web, and cannot see a button that was never built because a precedence rule
  * fired; both are defects this family is exposed to.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

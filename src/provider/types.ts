@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ScrollRouterAdapter } from '../scroll/types';
-import { type ImageResolver } from '../image-resolver';
-import { type BloomThemeProviderProps } from '../theme';
+import type { ImageResolver } from '../image-resolver';
+import type { BloomThemeProviderProps } from '../theme';
 
 export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'children'> {
   children: ReactNode;

@@ -1,4 +1,5 @@
-import React, { createRef } from 'react';
+import type React from 'react';
+import { createRef } from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 

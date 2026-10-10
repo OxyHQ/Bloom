@@ -24,7 +24,7 @@
  * `dir="rtl"` and to a device with `forceRTL`.
  */
 
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';

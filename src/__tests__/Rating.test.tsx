@@ -4,7 +4,7 @@
  * `Rating` and `RatingBar`, rendered through the REAL react-native-web so the
  * assertions read the emitted DOM: text, colours and accessibility attributes.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

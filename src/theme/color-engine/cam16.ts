@@ -29,7 +29,7 @@ export class Cam16 {
     const dA = this.astar - other.astar;
     const dB = this.bstar - other.bstar;
     const dEPrime = Math.sqrt(dJ * dJ + dA * dA + dB * dB);
-    return 1.41 * Math.pow(dEPrime, 0.63);
+    return 1.41 * dEPrime ** 0.63;
   }
 
   static fromInt(argb: number): Cam16 {
@@ -56,9 +56,9 @@ export class Cam16 {
     const rD = vc.rgbD[0] * rC;
     const gD = vc.rgbD[1] * gC;
     const bD = vc.rgbD[2] * bC;
-    const rAF = Math.pow((vc.fl * Math.abs(rD)) / 100.0, 0.42);
-    const gAF = Math.pow((vc.fl * Math.abs(gD)) / 100.0, 0.42);
-    const bAF = Math.pow((vc.fl * Math.abs(bD)) / 100.0, 0.42);
+    const rAF = ((vc.fl * Math.abs(rD)) / 100.0) ** 0.42;
+    const gAF = ((vc.fl * Math.abs(gD)) / 100.0) ** 0.42;
+    const bAF = ((vc.fl * Math.abs(bD)) / 100.0) ** 0.42;
     const rA = (signum(rD) * 400.0 * rAF) / (rAF + 27.13);
     const gA = (signum(gD) * 400.0 * gAF) / (gAF + 27.13);
     const bA = (signum(bD) * 400.0 * bAF) / (bAF + 27.13);
@@ -72,13 +72,13 @@ export class Cam16 {
       atanDegrees < 0 ? atanDegrees + 360.0 : atanDegrees >= 360 ? atanDegrees - 360 : atanDegrees;
     const hueRadians = (hue * Math.PI) / 180.0;
     const ac = p2 * vc.nbb;
-    const J = 100.0 * Math.pow(ac / vc.aw, vc.c * vc.z);
+    const J = 100.0 * (ac / vc.aw) ** (vc.c * vc.z);
     const Q = (4.0 / vc.c) * Math.sqrt(J / 100.0) * (vc.aw + 4.0) * vc.fLRoot;
     const huePrime = hue < 20.14 ? hue + 360 : hue;
     const eHue = (1.0 / 4.0) * (Math.cos((huePrime * Math.PI) / 180.0 + 2.0) + 3.8);
     const p1 = (50000.0 / 13.0) * eHue * vc.nc * vc.ncb;
     const t = (p1 * Math.sqrt(a * a + b * b)) / (u + 0.305);
-    const alpha = Math.pow(t, 0.9) * Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73);
+    const alpha = t ** 0.9 * (1.64 - 0.29 ** vc.n) ** 0.73;
     const C = alpha * Math.sqrt(J / 100.0);
     const M = C * vc.fLRoot;
     const s = 50.0 * Math.sqrt((alpha * vc.c) / (vc.aw + 4.0));
@@ -139,10 +139,10 @@ export class Cam16 {
   xyzInViewingConditions(vc: ViewingConditions): [number, number, number] {
     const alpha =
       this.chroma === 0.0 || this.j === 0.0 ? 0.0 : this.chroma / Math.sqrt(this.j / 100.0);
-    const t = Math.pow(alpha / Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73), 1.0 / 0.9);
+    const t = (alpha / (1.64 - 0.29 ** vc.n) ** 0.73) ** (1.0 / 0.9);
     const hRad = (this.hue * Math.PI) / 180.0;
     const eHue = 0.25 * (Math.cos(hRad + 2.0) + 3.8);
-    const ac = vc.aw * Math.pow(this.j / 100.0, 1.0 / vc.c / vc.z);
+    const ac = vc.aw * (this.j / 100.0) ** (1.0 / vc.c / vc.z);
     const p1 = eHue * (50000.0 / 13.0) * vc.nc * vc.ncb;
     const p2 = ac / vc.nbb;
     const hSin = Math.sin(hRad);
@@ -154,11 +154,11 @@ export class Cam16 {
     const gA = (460.0 * p2 - 891.0 * a - 261.0 * b) / 1403.0;
     const bA = (460.0 * p2 - 220.0 * a - 6300.0 * b) / 1403.0;
     const rCBase = Math.max(0, (27.13 * Math.abs(rA)) / (400.0 - Math.abs(rA)));
-    const rC = signum(rA) * (100.0 / vc.fl) * Math.pow(rCBase, 1.0 / 0.42);
+    const rC = signum(rA) * (100.0 / vc.fl) * rCBase ** (1.0 / 0.42);
     const gCBase = Math.max(0, (27.13 * Math.abs(gA)) / (400.0 - Math.abs(gA)));
-    const gC = signum(gA) * (100.0 / vc.fl) * Math.pow(gCBase, 1.0 / 0.42);
+    const gC = signum(gA) * (100.0 / vc.fl) * gCBase ** (1.0 / 0.42);
     const bCBase = Math.max(0, (27.13 * Math.abs(bA)) / (400.0 - Math.abs(bA)));
-    const bC = signum(bA) * (100.0 / vc.fl) * Math.pow(bCBase, 1.0 / 0.42);
+    const bC = signum(bA) * (100.0 / vc.fl) * bCBase ** (1.0 / 0.42);
     const rF = rC / vc.rgbD[0];
     const gF = gC / vc.rgbD[1];
     const bF = bC / vc.rgbD[2];

@@ -1,5 +1,5 @@
 /** One shared Surface paint per group, with actual plain Buttons flush inside. */
-import React from 'react';
+import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

@@ -22,8 +22,9 @@
  * `alignSelf: 'flex-start'` keeps that wrapper from stretching across its
  * parent, which would anchor the surface to the row rather than to the control.
  */
-import React, { Children, cloneElement, Fragment, isValidElement, useRef } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import type React from 'react';
+import { Children, cloneElement, Fragment, isValidElement, useRef } from 'react';
+import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { mergeRefs } from '../hooks/merge-refs';

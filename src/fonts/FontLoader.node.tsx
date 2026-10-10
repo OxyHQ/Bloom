@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 export interface FontLoaderProps {
   /** Ignored — there is nothing to load. Kept so the API matches every platform. */

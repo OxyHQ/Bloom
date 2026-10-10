@@ -19,7 +19,7 @@
  * handlers go here so a pointer over ANY row counts as a pointer over the stack.
  * The handlers are empty on native.
  */
-import * as React from 'react';
+import type * as React from 'react';
 import { Platform, StyleSheet, useWindowDimensions, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {

@@ -1,5 +1,5 @@
-import React from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import type React from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 /** Opt-in timing for a surface's panel and backdrop. Defaults remain owner-specific when omitted. */
 export interface SurfaceTransition {

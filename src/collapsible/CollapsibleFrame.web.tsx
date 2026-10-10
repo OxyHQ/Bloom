@@ -1,4 +1,5 @@
-import React, { forwardRef, useLayoutEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { forwardRef, useLayoutEffect, useRef, useState } from 'react';
 import { Animated, type StyleProp, type ViewStyle } from 'react-native';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';

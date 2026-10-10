@@ -31,7 +31,8 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * stay literal so a consumer's Tailwind content-scan over `lib/**` (and the
  * native `src/**`) picks them up.
  */
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 

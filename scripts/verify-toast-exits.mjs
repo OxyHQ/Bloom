@@ -46,7 +46,7 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
       await p.evaluate(() => {
         window.exitFrames = [];
         window.exitDone = new Promise((resolve) => {
-          let start = performance.now();
+          const start = performance.now();
           function f(t) {
             const nodes = Array.from(document.querySelectorAll('*')).filter(
               (e) =>

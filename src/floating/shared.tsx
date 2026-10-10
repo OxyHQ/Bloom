@@ -31,7 +31,7 @@
  * same two nodes for the same reason — layout and visuals are one box in the
  * DOM, so a layout class and a visual class cannot land in different places.
  */
-import React from 'react';
+import type React from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
 import {

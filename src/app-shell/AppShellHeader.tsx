@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { Button } from '../button';

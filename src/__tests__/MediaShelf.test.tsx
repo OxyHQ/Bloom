@@ -5,7 +5,7 @@
  * react-native-web so the assertions read the emitted DOM, plus the pure
  * geometry the row and grid are built on.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

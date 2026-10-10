@@ -10,7 +10,8 @@ import { parseRgba } from '../theme/color-utils';
 import { surfaceStyle } from '../shapes/surface-style';
 import { usePanelShape } from '../styles/panel-chrome';
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   StyleSheet,

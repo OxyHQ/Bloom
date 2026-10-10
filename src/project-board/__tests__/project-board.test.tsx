@@ -1,5 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
+import type React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ProjectBoard } from '../ProjectBoard';

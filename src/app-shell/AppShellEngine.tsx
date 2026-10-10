@@ -1,6 +1,7 @@
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,

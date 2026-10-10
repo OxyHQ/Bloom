@@ -2,7 +2,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { resolveSurfaceTint } from '../surface/shared';
 import { cardLayout, cardFill } from './support/card-surface';
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 

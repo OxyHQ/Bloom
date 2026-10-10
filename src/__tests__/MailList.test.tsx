@@ -14,7 +14,7 @@
  * are asserted directly: they are where the arithmetic and the ORDER live, and
  * a rendered list cannot tell a stable bucketing from a lucky one.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

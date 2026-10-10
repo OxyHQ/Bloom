@@ -4,7 +4,8 @@
  * The home-search family, rendered through the REAL react-native-web so the
  * assertions read emitted DOM attributes and inline styles rather than props.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

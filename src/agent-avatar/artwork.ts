@@ -1,4 +1,4 @@
-import { DrawingContext, DrawingPath } from './drawing';
+import { type DrawingContext, DrawingPath } from './drawing';
 import { ENTRANCE_SECONDS, entrancePose } from './entrance';
 import { drawFace, drawSleepMarks, type FaceRig } from './face';
 import { drawFold } from './fold';
@@ -45,10 +45,7 @@ export function avatarSilhouette(c: AvatarConfig, phase: number) {
           7 * Math.sin(a * 3 + 0.7 + (Math.sin(phase) * c.motion) / 350) + 4 * Math.cos(a * 2 - 1);
       if (c.shape === 'flower') radius += 10 * Math.cos(a * 5 + 0.5);
       if (c.shape === 'diamond')
-        radius =
-          83 /
-          (Math.pow(Math.abs(Math.cos(a)), 1.35) + Math.pow(Math.abs(Math.sin(a)), 1.35)) **
-            (1 / 1.35);
+        radius = 83 / (Math.abs(Math.cos(a)) ** 1.35 + Math.abs(Math.sin(a)) ** 1.35) ** (1 / 1.35);
       const x = Math.cos(a) * radius,
         y = Math.sin(a) * radius;
       if (i === 0) path.moveTo(x, y);

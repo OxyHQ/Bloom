@@ -1,4 +1,5 @@
-import React, { useContext, useMemo } from 'react';
+import type React from 'react';
+import { useContext, useMemo } from 'react';
 
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
-import { Platform, ScrollView, Share, useWindowDimensions } from 'react-native';
+import { Platform, type ScrollView, Share, useWindowDimensions } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { AgentAvatar } from '../agent-avatar';
 import { StreamedText } from '../agent-chat/AgentChatMessage';

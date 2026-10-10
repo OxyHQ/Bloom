@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Linking, Platform } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';

@@ -26,7 +26,7 @@
  *   the send control has become a stop control and Enter must not reach past
  *   it.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { BloomAppearanceContext } from '../appearance/context';
-import React, { memo, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useMemo, useState } from 'react';
 import { View, StyleSheet, Pressable, Platform } from 'react-native';
 import type { TextStyle } from 'react-native';
 import { imageSourcesKey } from './source-key';

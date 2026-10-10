@@ -23,7 +23,7 @@
  *    reached a button inside it. Pointer enter/leave do not bubble and do not
  *    fire between descendants.
  */
-import React from 'react';
+import type React from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { FloatingPanel } from '../floating/FloatingPanel';

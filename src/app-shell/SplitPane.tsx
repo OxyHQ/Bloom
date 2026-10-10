@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { ScrollView, View } from 'react-native';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
 import type { PanelErrorBoundaryOptions } from '../error-boundary/types';

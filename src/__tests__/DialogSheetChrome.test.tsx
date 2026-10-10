@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 // The sheet's keyboard tracker, as jest maps it (the package is an optional

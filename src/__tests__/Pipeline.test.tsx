@@ -7,7 +7,7 @@
  * what is behind it, and whether the single-column layout emits a real tablist
  * with a real selected tab.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

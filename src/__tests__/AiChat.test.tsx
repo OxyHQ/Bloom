@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import type React from 'react';
+import { useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';

@@ -1,6 +1,7 @@
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { memo, useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Image, View } from 'react-native';
 import Animated, {
   Easing,

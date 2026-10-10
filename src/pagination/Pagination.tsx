@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Platform, Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';

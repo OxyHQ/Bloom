@@ -11,8 +11,8 @@ import {
   ScrollView,
   Share,
   useWindowDimensions,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
   type ViewStyle,
 } from 'react-native';
 import Animated, {

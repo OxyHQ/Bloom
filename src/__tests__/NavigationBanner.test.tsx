@@ -10,7 +10,7 @@
  * parser drops it (a real browser keeps it), and the glass island's blur is an
  * `expo-blur` mock. Both are browser checks.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

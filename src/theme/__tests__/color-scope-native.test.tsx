@@ -1,4 +1,5 @@
-import React, { useContext, useEffect } from 'react';
+import type React from 'react';
+import { useContext, useEffect } from 'react';
 import { Platform, Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../BloomThemeProvider';

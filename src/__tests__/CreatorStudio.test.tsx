@@ -9,7 +9,8 @@
  * jsdom lays nothing out, so `onLayout` is driven by a stand-in ResizeObserver
  * and fixed `offsetWidth` / `offsetHeight`.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

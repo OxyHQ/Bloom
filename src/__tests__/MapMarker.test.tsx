@@ -4,7 +4,7 @@
  * The map pieces, rendered through the REAL react-native-web so the assertions
  * read the emitted DOM: names, pressed/checked state, geometry and paint.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

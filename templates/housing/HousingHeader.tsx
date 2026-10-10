@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 
 import { AppShell, useAppShell } from '../../src/app-shell';

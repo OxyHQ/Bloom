@@ -1,6 +1,7 @@
 import { CollapsibleFrame } from '../collapsible/CollapsibleFrame';
 import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
-import React, { memo, useCallback, useContext } from 'react';
+import type React from 'react';
+import { memo, useCallback, useContext } from 'react';
 import { View, Text, Pressable, Animated, StyleSheet, type TextStyle } from 'react-native';
 
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';

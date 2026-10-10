@@ -63,7 +63,7 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  * freezes it.
  */
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, type View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,

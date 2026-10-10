@@ -8,7 +8,7 @@
  * exactly that way, focusable and invisible while focused. Rendered through
  * react-native-web, so these are the real DOM attributes and inline styles.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

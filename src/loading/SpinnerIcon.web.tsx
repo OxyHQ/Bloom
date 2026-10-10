@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { StyledView } from '../styles/styled-primitives';

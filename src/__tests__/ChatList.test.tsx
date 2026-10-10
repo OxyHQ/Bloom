@@ -11,7 +11,7 @@
  * `composeChatRowName`) are asserted directly: they are where the ORDER and the
  * offsets live, and a rendered string cannot tell a stable sort from a lucky one.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

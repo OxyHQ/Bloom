@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Linking } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -67,7 +67,7 @@ describe('SocialButton — shared material', () => {
   it('passes brand color pairs into the real Button', () => {
     const { toJSON } = renderWithTheme(<SocialButton brand="figma" />);
     expect(JSON.stringify(toJSON())).toContain('rgb(242, 78, 30)');
-    expect(JSON.stringify(toJSON())).toContain('\"fillOpacity\":0.9');
+    expect(JSON.stringify(toJSON())).toContain('"fillOpacity":0.9');
   });
   it('keeps surface paint and the supplied foreground for branded enabled states', () => {
     const palette = resolveButtonPalette('solid', themeFor('light'), 'accent', {
@@ -145,10 +145,10 @@ describe('SocialButton — render', () => {
         resolveButtonPalette('solid', themeFor('light'), 'accent').rest.background,
       )!;
       expect(JSON.stringify(primary.toJSON())).toContain(`rgb(${fill.r}, ${fill.g}, ${fill.b})`);
-      expect(JSON.stringify(primary.toJSON())).toContain('\"fillOpacity\":0.9');
+      expect(JSON.stringify(primary.toJSON())).toContain('"fillOpacity":0.9');
       primary.unmount();
       const white = renderWithTheme(<SocialButton brand={brand} appearance="white" />);
-      expect(JSON.stringify(white.toJSON())).toContain('\"fillOpacity\":0.9');
+      expect(JSON.stringify(white.toJSON())).toContain('"fillOpacity":0.9');
       white.unmount();
     }
   });

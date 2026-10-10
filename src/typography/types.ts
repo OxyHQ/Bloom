@@ -1,9 +1,4 @@
-import {
-  type StyleProp,
-  type TextProps as RNTextProps,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native';
+import type { StyleProp, TextProps as RNTextProps, TextStyle, ViewStyle } from 'react-native';
 
 import type { TypeScaleVariant } from './scale';
 

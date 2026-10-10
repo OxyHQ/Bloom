@@ -21,7 +21,8 @@
  * Assistive tech reaches the menu through the `longpress` accessibility action
  * (TalkBack's double-tap-and-hold, VoiceOver's actions rotor).
  */
-import React, { useCallback, useEffect, useRef } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { View, type AccessibilityActionEvent, type GestureResponderEvent } from 'react-native';
 
 import type { TriggerHandleProps } from './types';

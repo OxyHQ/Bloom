@@ -8,7 +8,7 @@
  * grid, and the one piece of logic with a wrong answer — the status line's
  * precedence.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

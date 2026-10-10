@@ -26,7 +26,8 @@
  * not, so a full-width FAB wrapper never swallows a tap on the content behind
  * it.
  */
-import React, { memo, useCallback, useContext, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useContext, useRef, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 

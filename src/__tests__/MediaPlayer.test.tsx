@@ -7,7 +7,7 @@
  * tint's contrast guarantee and fallback.
  */
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { useMessages } from '../locale/messages';

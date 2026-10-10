@@ -8,7 +8,7 @@
  * it is written in and does not travel through an import), which is why this
  * module exports the harness and not the mock.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

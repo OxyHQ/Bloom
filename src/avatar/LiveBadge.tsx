@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 import { Z_INDEX } from '../styles/z-index';

@@ -7,7 +7,7 @@
  * family forks. Everything else is shared (`LoadingBase`): the `spinner` and
  * `inline` variants, the size table and the stylesheet.
  */
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 
 import { resolveBloomColors } from '../appearance/colors';

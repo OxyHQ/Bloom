@@ -5,7 +5,7 @@
  * emits: a swipe row's dismiss target (mounted only while a pane is open) and
  * a menu's flyout submenu (the web presentation; native renders inline).
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Gesture } from 'react-native-gesture-handler';

@@ -1,4 +1,5 @@
-import React, { createContext, memo, useContext, useMemo } from 'react';
+import type React from 'react';
+import { createContext, memo, useContext, useMemo } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
 const GridContext = createContext({ gap: 0 });

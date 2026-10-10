@@ -40,7 +40,8 @@
  *    in this file rather than letting an inline `as ViewStyle` cast come back
  *    unnoticed anywhere else.
  */
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { Platform, ScrollView, type ViewStyle } from 'react-native';
 
 import { StyledPressable, StyledView } from '../styles/styled-primitives';

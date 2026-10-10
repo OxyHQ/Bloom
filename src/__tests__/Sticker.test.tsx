@@ -8,7 +8,8 @@
  * Lottie player handed in through `provideLottiePlayer` (the same seam an app
  * with its own player build would use).
  */
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

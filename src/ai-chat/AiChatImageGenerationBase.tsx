@@ -1,4 +1,5 @@
-import React, { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, View } from 'react-native';
 import Animated, {
   Easing,

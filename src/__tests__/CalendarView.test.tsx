@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { fireEvent, render, within } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';

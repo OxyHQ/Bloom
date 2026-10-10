@@ -8,7 +8,8 @@
  * The chrome — width, radius, padding, border, surface, shadow — is the
  * caller's inline `style`, which outranks the surface's own classes.
  */
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import type { View } from 'react-native';
 
 import { FloatingPanel } from '../floating/FloatingPanel';

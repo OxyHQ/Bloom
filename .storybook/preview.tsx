@@ -53,6 +53,7 @@ const withProviders: Decorator = (Story, context) => {
   const viewportHeight = context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh';
   const mode = (context.globals.theme as 'light' | 'dark' | 'system') ?? 'light';
   const requestedPreset = context.globals.colorPreset as AppColorName;
+  // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is ES2022, outside the ES2020 lib this package targets
   const colorPreset = Object.prototype.hasOwnProperty.call(APP_COLOR_PRESETS, requestedPreset)
     ? requestedPreset
     : 'oxy';

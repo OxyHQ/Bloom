@@ -1,6 +1,7 @@
 import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { forwardRef, memo } from 'react';
+import type React from 'react';
+import { forwardRef, memo } from 'react';
 import { styled } from 'react-native-css';
 import { Platform, StyleSheet, type View } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';

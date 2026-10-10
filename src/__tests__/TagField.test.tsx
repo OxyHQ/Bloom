@@ -9,7 +9,8 @@
  * that ignores its `Field` renders a perfectly ordinary input. So the
  * assertions read the emitted attributes and the emitted text, never the props.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

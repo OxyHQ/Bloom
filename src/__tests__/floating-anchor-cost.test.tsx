@@ -29,7 +29,8 @@
  * `top` tracks the trigger as the page scrolls, which is the behaviour the
  * cheapness must not buy.
  */
-import React, { Profiler, useRef } from 'react';
+import type React from 'react';
+import { Profiler, useRef } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

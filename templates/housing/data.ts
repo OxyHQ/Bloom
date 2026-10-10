@@ -923,7 +923,7 @@ export function appliedFilterCount(mode: HomeSearchMode, f: Filters): number {
 /** A stand-in for the result count an app would fetch. */
 export function filterResultsLabel(mode: HomeSearchMode, f: Filters): string {
   const base = { rent: 1240, buy: 586, stays: 1000, swap: 214 }[mode];
-  const n = Math.max(0, Math.round(base * Math.pow(0.72, appliedFilterCount(mode, f))));
+  const n = Math.max(0, Math.round(base * 0.72 ** appliedFilterCount(mode, f)));
   const noun = mode === 'stays' ? 'places' : 'homes';
   if (mode === 'stays' && n >= 1000) return 'Show 1,000+ places';
   return `Show ${n.toLocaleString('en-US')} ${noun}`;

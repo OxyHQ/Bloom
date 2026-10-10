@@ -1,4 +1,5 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';

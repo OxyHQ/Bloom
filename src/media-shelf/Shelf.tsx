@@ -1,4 +1,5 @@
-import React, { Children, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { Children, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,

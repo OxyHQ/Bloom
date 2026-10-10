@@ -1,6 +1,7 @@
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 
 import { withAlpha } from '../theme/color-utils';

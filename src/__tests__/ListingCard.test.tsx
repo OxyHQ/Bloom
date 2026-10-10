@@ -9,7 +9,7 @@
  * and a fixed `offsetWidth`; the paging itself (scroll-snap, smooth scroll) is
  * verified in a real browser.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

@@ -5,7 +5,8 @@
  * `BookingBar`, `TripCard` — rendered through the REAL react-native-web, so the
  * assertions read emitted DOM attributes and computed styles rather than props.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { getByText } from '@testing-library/dom';

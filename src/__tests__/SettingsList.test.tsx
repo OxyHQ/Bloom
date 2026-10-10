@@ -9,7 +9,7 @@ jest.mock('react-native-svg', () => ({
   Rect: 'Rect',
 }));
 
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 

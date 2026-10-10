@@ -16,7 +16,7 @@
 // `files: ["src", "lib"]`).
 import { rootVariables } from 'react-native-css/native-internal';
 
-import { type AppColorName } from './color-presets';
+import type { AppColorName } from './color-presets';
 import type { ExplicitAccents } from './preset-vars';
 import { getResolvedTokens } from './token-registry';
 

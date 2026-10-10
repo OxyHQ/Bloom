@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Admonition } from '../admonition';

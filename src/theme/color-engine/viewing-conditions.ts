@@ -58,12 +58,12 @@ export class ViewingConditions {
     const fl = k4 * adaptingLuminance + 0.1 * k4F * k4F * Math.cbrt(5.0 * adaptingLuminance);
     const n = yFromLstar(backgroundLstar) / whitePoint[1];
     const z = 1.48 + Math.sqrt(n);
-    const nbb = 0.725 / Math.pow(n, 0.2);
+    const nbb = 0.725 / n ** 0.2;
     const ncb = nbb;
     const rgbAFactors: [number, number, number] = [
-      Math.pow((fl * rgbD[0] * rW) / 100.0, 0.42),
-      Math.pow((fl * rgbD[1] * gW) / 100.0, 0.42),
-      Math.pow((fl * rgbD[2] * bW) / 100.0, 0.42),
+      ((fl * rgbD[0] * rW) / 100.0) ** 0.42,
+      ((fl * rgbD[1] * gW) / 100.0) ** 0.42,
+      ((fl * rgbD[2] * bW) / 100.0) ** 0.42,
     ];
     const rgbA: [number, number, number] = [
       (400.0 * rgbAFactors[0]) / (rgbAFactors[0] + 27.13),
@@ -71,6 +71,6 @@ export class ViewingConditions {
       (400.0 * rgbAFactors[2]) / (rgbAFactors[2] + 27.13),
     ];
     const aw = (2.0 * rgbA[0] + rgbA[1] + 0.05 * rgbA[2]) * nbb;
-    return new ViewingConditions(n, aw, nbb, ncb, c, nc, rgbD, fl, Math.pow(fl, 0.25), z);
+    return new ViewingConditions(n, aw, nbb, ncb, c, nc, rgbD, fl, fl ** 0.25, z);
   }
 }

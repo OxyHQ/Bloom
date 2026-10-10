@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AlertDialog } from '../alert-dialog';

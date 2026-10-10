@@ -5,7 +5,7 @@
  * colours and the rendered accessibility attributes. Width-driven halves
  * (`onLayout`) are in `PropertyInsightsLayout.test.tsx`.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

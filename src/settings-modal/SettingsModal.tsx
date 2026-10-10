@@ -1,12 +1,6 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React, {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions, type ScrollView } from 'react-native';
 import Animated, {
   Easing,

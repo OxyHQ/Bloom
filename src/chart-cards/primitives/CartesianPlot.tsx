@@ -1,5 +1,6 @@
 import { boundedLabelSlot } from '../svg-text';
-import React, { useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
   StyleSheet,

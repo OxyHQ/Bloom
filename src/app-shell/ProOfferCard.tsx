@@ -2,7 +2,8 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -200,7 +201,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
     parentFill: surfaceLayer.parentFill,
     parentLevel: surfaceLayer.parentLevel,
   });
-  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
+  const { paintFill, publishedFill: surfaceFill } = material;
   const enter = useSharedValue(reducedMotion ? 1 : 0);
   useEffect(() => {
     enter.value = reducedMotion

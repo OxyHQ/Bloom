@@ -13,7 +13,8 @@
  * The barrels export them from here directly, so each part still has exactly one
  * owner and neither fork re-exports the other's work.
  */
-import React, { createContext, useContext } from 'react';
+import type React from 'react';
+import { createContext, useContext } from 'react';
 import Svg, { Path } from 'react-native-svg';
 
 import {

@@ -2,14 +2,8 @@ import { useCollapsibleVisibility } from '../collapsible/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -99,6 +93,7 @@ export function Select(props: SelectProps) {
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
+    // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is ES2022, outside the ES2020 lib this package targets
     controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);

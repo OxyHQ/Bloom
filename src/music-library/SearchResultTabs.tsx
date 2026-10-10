@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, type View } from 'react-native';
 
 import { Chip, ChipRow } from '../chip';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';

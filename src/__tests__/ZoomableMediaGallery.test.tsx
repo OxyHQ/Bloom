@@ -10,7 +10,8 @@
  * The gestures (pinch, pan-to-dismiss, the shared-element transition from the
  * measured thumb rect) are not testable here and belong to a device build.
  */
-import React, { createRef } from 'react';
+import type React from 'react';
+import { createRef } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

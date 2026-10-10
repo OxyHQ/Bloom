@@ -13,6 +13,7 @@ export function resolve(shape: Shape = 'circle'): Required<Path> | null {
     return { d: shape.d, viewBox };
   }
   if (shape === 'squircle') return { d: SQUIRCLE_PATH, viewBox: 1 };
+  // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is ES2022, outside the ES2020 lib this package targets
   const d = Object.prototype.hasOwnProperty.call(PATHS, shape)
     ? PATHS[shape as keyof typeof PATHS]
     : undefined;

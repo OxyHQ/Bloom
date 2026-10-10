@@ -4,7 +4,8 @@
 // first time Bloom toggles the dark class on <html>. See ./init-css-interop.
 import './init-css-interop';
 
-import React, {
+import type React from 'react';
+import {
   createContext,
   useCallback,
   useContext,
@@ -31,7 +32,7 @@ import { buildTheme } from './build-theme';
 import { ThemeScopeContext, type ScopeState } from './color-scope/context';
 import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
-import { type AppColorName } from './color-presets';
+import type { AppColorName } from './color-presets';
 import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
 import { applyVarsToRootVariables } from './native-root-vars';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';

@@ -59,6 +59,7 @@ import { SharedTabBarSurface } from './surface-paint';
  * component because `createAnimatedComponent` runs on import (hazard 2 above).
  */
 const AnimatedGlassView =
+  // biome-ignore lint/complexity/noExtraBooleanCast: GlassView is typed as always defined but the optional peer can deliver undefined; tsc rejects a bare truthiness test (TS2774)
   Boolean(GlassView) && typeof isLiquidGlassAvailable === 'function'
     ? Animated.createAnimatedComponent(GlassView)
     : null;

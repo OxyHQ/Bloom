@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 import type * as ExpoHaptics from 'expo-haptics';

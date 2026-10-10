@@ -15,7 +15,7 @@
  * is exactly wrong for one — a descendant would be able to re-enable itself.
  * The gate on that is structural: the visual scope carries size and tone only; Field owns constraints.
  */
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

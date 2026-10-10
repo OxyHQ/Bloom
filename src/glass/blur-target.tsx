@@ -1,4 +1,5 @@
-import React, { createContext, memo, useContext, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { createContext, memo, useContext, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, type View } from 'react-native';
 import { BlurTargetView } from 'expo-blur';
 

@@ -7,7 +7,8 @@ import {
   surfaceTextOn,
   hairlineOn,
 } from '../styles/surface-levels';
-import React, {
+import type React from 'react';
+import {
   memo,
   useCallback,
   useEffect,
@@ -856,7 +857,7 @@ function QuestionnaireComponent({
     parentFill: surfaceLayer.parentFill,
     parentLevel: surfaceLayer.parentLevel,
   });
-  const { paintFill: paintFill, publishedFill: surfaceFill } = material;
+  const { paintFill, publishedFill: surfaceFill } = material;
   const palette = useMemo(
     () => resolveQuestionnairePalette(theme, surfaceFill),
     [theme, surfaceFill],

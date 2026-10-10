@@ -1,5 +1,6 @@
 import { webDataSet } from '../styles/web-data';
-import React, {
+import type React from 'react';
+import {
   createContext,
   forwardRef,
   memo,

@@ -16,7 +16,7 @@
  * the three real components rather than calling the builder with a fixture — a
  * fixture would keep passing after a family stopped using the builder at all.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

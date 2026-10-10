@@ -5,7 +5,7 @@
  * pluralises per language, and still lets a caller's `labels`/`*Label` win.
  */
 
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { BookingBar, BookingCard, PriceBreakdown, TripCard } from '../booking';

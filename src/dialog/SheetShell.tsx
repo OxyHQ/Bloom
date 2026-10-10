@@ -12,7 +12,8 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  * Consumers needing the same behaviour for app code should use the public
  * `BottomSheet` primitive directly.
  */
-import React, { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';

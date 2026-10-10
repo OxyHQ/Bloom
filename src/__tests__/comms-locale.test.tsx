@@ -9,7 +9,7 @@
  * Rendered through the REAL react-native-web, as each family's own suite is,
  * so the assertions read the emitted names and text.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { within } from '@testing-library/dom';

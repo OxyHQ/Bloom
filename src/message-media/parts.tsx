@@ -1,4 +1,5 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,

@@ -5,7 +5,7 @@
  * assertions read the emitted DOM — plus the pure colour and title-size maths
  * walked over every preset, mode and a sweep of artwork colours.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

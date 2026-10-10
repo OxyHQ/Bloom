@@ -1,4 +1,4 @@
-import { type DrawingContext } from './drawing';
+import type { DrawingContext } from './drawing';
 import type { AvatarConfig } from './model';
 
 /** Optical sizing is based on CSS pixels, never the canvas's Retina resolution.

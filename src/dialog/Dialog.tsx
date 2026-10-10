@@ -4,7 +4,8 @@ import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React, {
+import type React from 'react';
+import {
   useCallback,
   useEffect,
   useId,

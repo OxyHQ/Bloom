@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
  * Viewport width (px) at which a RESPONSIVE `ContentPanel` (`framed` undefined)

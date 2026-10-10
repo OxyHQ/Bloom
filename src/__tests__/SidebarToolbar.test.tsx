@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Text, Pressable } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Sidebar, SidebarItem, SidebarToolbar } from '../sidebar';

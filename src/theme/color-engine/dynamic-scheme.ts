@@ -12,7 +12,7 @@ import type { ColorRole } from './color-role';
 import { Hct } from './hct';
 import { sanitizeDegreesDouble } from './math-utils';
 import { TonalPalette } from './tonal-palette';
-import { Variant } from './variant';
+import type { Variant } from './variant';
 
 export interface DynamicSchemeArgs {
   sourceColorArgb: number;

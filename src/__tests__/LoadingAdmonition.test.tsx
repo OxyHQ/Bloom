@@ -11,7 +11,7 @@
  * up with a warning icon: nothing enforces that the maps agree, so the test
  * reads both for every type.
  */
-import React from 'react';
+import type React from 'react';
 import { Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 

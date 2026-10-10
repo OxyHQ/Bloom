@@ -1,4 +1,5 @@
-import React, { Children, isValidElement, useState } from 'react';
+import type React from 'react';
+import { Children, isValidElement, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 
 import { RiLinkM } from '../icons/remix/RiLinkM';

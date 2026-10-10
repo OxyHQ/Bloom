@@ -1,5 +1,6 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';

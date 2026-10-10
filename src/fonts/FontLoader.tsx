@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import type React from 'react';
+import { useRef } from 'react';
 // Reach for the web variant explicitly. The default `./apply-font-faces`
 // is a no-op stub on native — native loads its fonts via
 // `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx` and has no use for

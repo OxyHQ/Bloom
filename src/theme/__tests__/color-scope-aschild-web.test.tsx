@@ -16,7 +16,7 @@
 // Asserting on the cloned PROP would pass either way round, so this renders
 // through React DOM into jsdom and reads the committed element back.
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { BloomThemeProvider } from '../BloomThemeProvider';

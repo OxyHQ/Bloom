@@ -281,6 +281,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
   const [value, setValue] = useControllableState<Value | undefined>({
     value: valueProp,
     defaultValue,
+    // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is ES2022, outside the ES2020 lib this package targets
     controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);

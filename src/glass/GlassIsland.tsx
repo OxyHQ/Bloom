@@ -1,7 +1,8 @@
 import { resolveSurfaceGeometry } from '../surface/resolve-surface-geometry';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
@@ -36,7 +37,7 @@ const GlassIslandComponent: React.FC<GlassIslandProps> = ({
     parentFill: layer.parentFill,
     parentLevel: layer.parentLevel,
   });
-  const { paintFill: fill, publishedFill: publishedFill } = material;
+  const { paintFill: fill, publishedFill } = material;
   const geometry = resolveSurfaceGeometry(radius, style, borderRadius.full, cornerCurve);
   const shape = geometry.shape;
 

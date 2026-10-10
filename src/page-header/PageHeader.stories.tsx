@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { ContentPanel } from '../content-panel/index.web';
 import { HeaderDockProvider, StickySection } from '../layout';
 import { Tabs, TabsTrigger } from '../tabs';

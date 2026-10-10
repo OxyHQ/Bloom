@@ -17,7 +17,8 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * the generated web barrel carries one line its native sibling cannot
  * (`WEB_BARREL_EXTRAS` in `scripts/generate-platform-exports.mjs`).
  */
-import React, {
+import type React from 'react';
+import {
   createContext,
   useCallback,
   useEffect,

@@ -13,7 +13,7 @@
  * directly — they are the arithmetic, and a rendered stack cannot tell which
  * three messages survived on purpose.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

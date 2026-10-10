@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { Chip } from '../../chip';

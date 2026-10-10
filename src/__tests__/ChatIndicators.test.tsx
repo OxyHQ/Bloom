@@ -7,7 +7,7 @@
  * being dropped on web, which is the defect class these components are most
  * exposed to).
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

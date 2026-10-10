@@ -1,5 +1,6 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import * as ReactNative from 'react-native';
 import { Text as RNText } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';

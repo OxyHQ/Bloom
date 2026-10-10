@@ -14,7 +14,7 @@
  * under the finger) belongs to a browser and is verified by
  * `scripts/verify-swipe-row.mjs`.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Gesture } from 'react-native-gesture-handler';

@@ -1,6 +1,6 @@
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import { resolveSurfaceFill } from '../surface/shared';
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 

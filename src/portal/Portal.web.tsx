@@ -13,7 +13,8 @@
  * `PortalOutlet` are still exported on web — they just become harmless no-op
  * fragments so consumers that *do* mount them keep compiling.
  */
-import React, { Fragment, memo, useContext, useLayoutEffect, useState } from 'react';
+import type React from 'react';
+import { Fragment, memo, useContext, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Z_INDEX } from '../styles/z-index';
 import { ThemeScopeContext } from '../theme/color-scope/context';

@@ -64,6 +64,7 @@ const outlines: Record<'heart' | 'cloud' | 'diamond' | 'shield', Outline> = {
 
 export type PaperSymbol = keyof typeof outlines;
 export const isPaperSymbol = (shape: string): shape is PaperSymbol =>
+  // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is ES2022, outside the ES2020 lib this package targets
   Object.prototype.hasOwnProperty.call(outlines, shape);
 
 /** Same contour drives the front, tucked sheet, and connecting turn surfaces. */

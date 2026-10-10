@@ -1,6 +1,7 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { parseRgba } from '../theme/color-utils';
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { AccessibilityInfo, ScrollView, View } from 'react-native';
 
 import { SurfacePaint } from '../surface/SurfacePaint';

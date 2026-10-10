@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { BackHandler, Platform } from 'react-native';
 
 import { useDialogControl } from '../dialog/context';

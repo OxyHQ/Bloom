@@ -12,7 +12,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, type View } from 'react-native';
 
 import {
   MENU_WIDTH,
@@ -187,6 +187,7 @@ export function Select(props: SelectProps) {
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
+    // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is ES2022, outside the ES2020 lib this package targets
     controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);

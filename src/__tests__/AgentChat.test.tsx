@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 

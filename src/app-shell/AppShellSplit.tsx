@@ -14,7 +14,8 @@
  * nudges when `onNudge` is given. Writing a second one would have meant a second
  * set of the same three bugs.
  */
-import React, { memo, useCallback, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { AiChatResizeHandle } from '../ai-chat/AiChatResizeHandle';

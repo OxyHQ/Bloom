@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';

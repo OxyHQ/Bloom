@@ -1,4 +1,5 @@
-import React, { Children, Fragment, isValidElement, memo, useMemo } from 'react';
+import type React from 'react';
+import { Children, Fragment, isValidElement, memo, useMemo } from 'react';
 import {
   Linking,
   Platform,

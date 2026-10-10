@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { atoms as a, tokens } from '../styles';

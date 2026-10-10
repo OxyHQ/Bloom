@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import type React from 'react';
+import { useRef } from 'react';
 import { Text, type TextProps, type TextStyle, type StyleProp } from 'react-native';
 import { useFonts } from 'expo-font';
 import { FONT_ASSETS } from './font-assets.native';

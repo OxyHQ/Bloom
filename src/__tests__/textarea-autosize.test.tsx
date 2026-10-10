@@ -23,7 +23,7 @@
  * - The pill used to take react-native-web's `onContentSizeChange`, which
  *   reads `scrollHeight` without collapsing and so never shrank at all.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

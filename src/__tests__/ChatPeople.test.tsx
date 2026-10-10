@@ -7,7 +7,7 @@
  * pure functions that carry the arithmetic — `storyProgressFill` and
  * `nameCounterTone`.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

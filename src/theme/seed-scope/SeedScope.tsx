@@ -1,4 +1,5 @@
-import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import type React from 'react';
+import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';

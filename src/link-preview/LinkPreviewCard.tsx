@@ -29,7 +29,8 @@
  * is rendered directly with the RN `Image` primitive — NOT through
  * `ImageResolver` / `Avatar`, which resolve bare Oxy file IDs.
  */
-import React, { memo, useCallback, useMemo } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../card';

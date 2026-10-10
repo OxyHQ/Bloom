@@ -37,7 +37,7 @@
  * native regression that forbids the imperative driver on native.
  */
 import * as React from 'react';
-import { StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, type View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

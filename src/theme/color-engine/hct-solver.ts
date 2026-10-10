@@ -39,12 +39,12 @@ function sanitizeRadians(angle: number): number {
 function trueDelinearized(rgbComponent: number): number {
   const normalized = rgbComponent / 100.0;
   const delin =
-    normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * Math.pow(normalized, 1.0 / 2.4) - 0.055;
+    normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * normalized ** (1.0 / 2.4) - 0.055;
   return delin * 255.0;
 }
 
 function chromaticAdaptation(component: number): number {
-  const af = Math.pow(Math.abs(component), 0.42);
+  const af = Math.abs(component) ** 0.42;
   return (signum(component) * 400.0 * af) / (af + 27.13);
 }
 
@@ -203,14 +203,14 @@ function bisectToLimit(y: number, targetHue: number): Vec3 {
 function inverseChromaticAdaptation(adapted: number): number {
   const adaptedAbs = Math.abs(adapted);
   const base = Math.max(0, (27.13 * adaptedAbs) / (400.0 - adaptedAbs));
-  return signum(adapted) * Math.pow(base, 1.0 / 0.42);
+  return signum(adapted) * base ** (1.0 / 0.42);
 }
 
 function findResultByJ(hueRadians: number, chroma: number, y: number): number {
   let j = Math.sqrt(y) * 11.0;
   // Read the CAM16 default viewing conditions directly (no magic constants).
   const vc = ViewingConditions.DEFAULT;
-  const tInnerCoeff = 1 / Math.pow(1.64 - Math.pow(0.29, vc.n), 0.73);
+  const tInnerCoeff = 1 / (1.64 - 0.29 ** vc.n) ** 0.73;
   const eHue = 0.25 * (Math.cos(hueRadians + 2.0) + 3.8);
   const p1 = eHue * (50000.0 / 13.0) * vc.nc * vc.ncb;
   const hSin = Math.sin(hueRadians);
@@ -218,8 +218,8 @@ function findResultByJ(hueRadians: number, chroma: number, y: number): number {
   for (let iterationRound = 0; iterationRound < 5; iterationRound++) {
     const jNormalized = j / 100.0;
     const alpha = chroma === 0.0 || j === 0.0 ? 0.0 : chroma / Math.sqrt(jNormalized);
-    const t = Math.pow(alpha * tInnerCoeff, 1.0 / 0.9);
-    const ac = vc.aw * Math.pow(jNormalized, 1.0 / vc.c / vc.z);
+    const t = (alpha * tInnerCoeff) ** (1.0 / 0.9);
+    const ac = vc.aw * jNormalized ** (1.0 / vc.c / vc.z);
     const p2 = ac / vc.nbb;
     const gamma = (23.0 * (p2 + 0.305) * t) / (23.0 * p1 + 11 * t * hCos + 108.0 * t * hSin);
     const a = gamma * hCos;

@@ -40,7 +40,8 @@
  * the target has one row inset (6px) plus a 32px minimum height, so a row is
  * the same density at every window width.
  */
-import React, { useCallback, useMemo } from 'react';
+import type React from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { StyledText, StyledView } from '../styles/styled-primitives';

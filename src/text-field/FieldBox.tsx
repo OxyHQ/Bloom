@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import { styled } from 'react-native-css';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';

@@ -1,5 +1,6 @@
 import { useSurfaceFill } from '../styles/surface-levels';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '../context-menu';

@@ -1,5 +1,5 @@
 import { resolveSurfaceTint } from '../surface/shared';
-import React from 'react';
+import type React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import * as Reanimated from 'react-native-reanimated';

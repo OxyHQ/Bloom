@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, View, useWindowDimensions } from 'react-native';
 
 import { AppShell } from '../../src/app-shell';

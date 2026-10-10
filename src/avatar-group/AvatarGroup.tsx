@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 
 import { AvatarGroupBase } from './AvatarGroupBase';
 import type { AvatarGroupProps } from './types';

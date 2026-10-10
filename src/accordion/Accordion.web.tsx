@@ -1,6 +1,7 @@
 import { CollapsibleFrame } from '../collapsible/CollapsibleFrame.web';
 import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
-import React, { memo, useContext } from 'react';
+import type React from 'react';
+import { memo, useContext } from 'react';
 import { Animated } from 'react-native';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';

@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import type React from 'react';
+import { useContext } from 'react';
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { ThemeScopeContext, type ScopeState } from './context';
 import { getVariableContextProvider } from './style-builder';

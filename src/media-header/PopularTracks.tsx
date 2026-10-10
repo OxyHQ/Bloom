@@ -9,7 +9,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { useImageUri, useMediaHeaderPaint } from './parts';
-import { type MediaHeaderPaint } from './shared';
+import type { MediaHeaderPaint } from './shared';
 import type { PopularTrack, PopularTracksProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';

@@ -1,4 +1,4 @@
-import { type ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 
 /**
  * Elevation / shadow tokens for the Oxy Unified Design Language.

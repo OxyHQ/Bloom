@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { type View } from 'react-native';
+import type { View } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,

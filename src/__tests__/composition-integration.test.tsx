@@ -19,7 +19,8 @@
  * react-native-web). Nothing here should be read as a visual or device
  * verification; where a property needs one, the assertion says so.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

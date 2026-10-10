@@ -11,7 +11,8 @@
  * group at its cap disables what you cannot add rather than evicting what you
  * already chose, which is a property of the emitted `aria-disabled`.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

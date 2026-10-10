@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Image, View, useWindowDimensions, type ViewStyle } from 'react-native';
 
 import { AppShell, AppShellMenuButton, NotificationBell } from '../../src/app-shell';

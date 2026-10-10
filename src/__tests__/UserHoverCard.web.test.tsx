@@ -34,7 +34,7 @@
  *    fire when the cursor moves between descendants.
  */
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { getByRole, getByText, queryByText } from '@testing-library/dom';

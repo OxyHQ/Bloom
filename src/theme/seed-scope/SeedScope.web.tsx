@@ -1,4 +1,5 @@
-import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import type React from 'react';
+import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildSeedScopeVars } from '../color-scope/seed-scope';

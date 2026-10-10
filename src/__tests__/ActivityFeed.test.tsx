@@ -9,7 +9,7 @@
  * `accessibilityState` entirely, so a pill that merely looks selected is
  * indistinguishable from one that is.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

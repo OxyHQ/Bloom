@@ -1,5 +1,6 @@
-import React, { Children, createContext, isValidElement, useContext, useEffect } from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import type React from 'react';
+import { Children, createContext, isValidElement, useContext, useEffect } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,

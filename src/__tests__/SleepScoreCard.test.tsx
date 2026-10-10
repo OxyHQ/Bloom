@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
 

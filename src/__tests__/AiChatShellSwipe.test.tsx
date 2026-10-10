@@ -17,7 +17,7 @@
  * whether the shell ATTACHED the gesture at all is readable off the root node:
  * arming is two properties (attached, and claiming), and each is asserted.
  */
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import * as ReactNative from 'react-native';
 import * as Reanimated from 'react-native-reanimated';

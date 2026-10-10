@@ -36,7 +36,7 @@
  */
 import * as React from 'react';
 import { useScreenWindowScroll } from '../screen/use-screen-window-scroll';
-import { type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 

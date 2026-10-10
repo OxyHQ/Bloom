@@ -136,14 +136,14 @@ export function linearized(rgbComponent: number): number {
   const normalized = rgbComponent / 255.0;
   return normalized <= 0.040449936
     ? (normalized / 12.92) * 100.0
-    : Math.pow((normalized + 0.055) / 1.055, 2.4) * 100.0;
+    : ((normalized + 0.055) / 1.055) ** 2.4 * 100.0;
 }
 
 /** Linear component (0–100) → sRGB (0–255). */
 export function delinearized(rgbComponent: number): number {
   const normalized = rgbComponent / 100.0;
   const delin =
-    normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * Math.pow(normalized, 1.0 / 2.4) - 0.055;
+    normalized <= 0.0031308 ? normalized * 12.92 : 1.055 * normalized ** (1.0 / 2.4) - 0.055;
   return clampInt(0, 255, Math.round(delin * 255.0));
 }
 
@@ -155,7 +155,7 @@ export function whitePointD65(): [number, number, number] {
 function labF(t: number): number {
   const e = 216.0 / 24389.0;
   const kappa = 24389.0 / 27.0;
-  return t > e ? Math.pow(t, 1.0 / 3.0) : (kappa * t + 16) / 116;
+  return t > e ? t ** (1.0 / 3.0) : (kappa * t + 16) / 116;
 }
 
 function labInvf(ft: number): number {

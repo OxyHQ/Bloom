@@ -1,5 +1,5 @@
-import React from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import type React from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { borderRadius } from '../styles/tokens';
 
 export interface MediaInsetBorderProps {

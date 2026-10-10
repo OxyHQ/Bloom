@@ -1,4 +1,4 @@
-import { type ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 
 /**
  * NATIVE variant of the shadow tokens (see `shadows.ts` for the rationale and

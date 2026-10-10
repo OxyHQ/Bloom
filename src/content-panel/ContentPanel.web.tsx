@@ -87,7 +87,8 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * (no dynamic concatenation of the arbitrary `web:[…]` / `rounded-[var(--bloom-panel-radius)]` /
  * `md:` parts — whole class strings are selected per mode instead).
  */
-import React, { memo, useInsertionEffect } from 'react';
+import type React from 'react';
+import { memo, useInsertionEffect } from 'react';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { StyleSheet, useWindowDimensions, type ViewStyle } from 'react-native';
 

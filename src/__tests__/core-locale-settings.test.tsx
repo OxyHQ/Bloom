@@ -4,7 +4,8 @@
  * own `labels` / `*Label` prop still wins. The web-only strings are in
  * `core-locale.web.test.tsx`.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import * as ReactNative from 'react-native';
 import { Text as RNText } from 'react-native';
 import { render } from '@testing-library/react-native';

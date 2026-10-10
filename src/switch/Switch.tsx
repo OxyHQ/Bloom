@@ -39,6 +39,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
     } = props;
     const [checked, setChecked] = useControllableState({
       value: checkedProp ?? false,
+      // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is ES2022, outside the ES2020 lib this package targets
       controlled: Object.prototype.hasOwnProperty.call(props, 'checked'),
       defaultValue: defaultChecked,
       onChange: onCheckedChange,

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { contrastRatio } from '../styles/color-contrast';
 import {
   AA_TEXT,

@@ -1,12 +1,6 @@
 import { useBloomAppearance } from '../appearance';
-import React, {
-  Children,
-  createContext,
-  isValidElement,
-  useContext,
-  useEffect,
-  useMemo,
-} from 'react';
+import type React from 'react';
+import { Children, createContext, isValidElement, useContext, useEffect, useMemo } from 'react';
 import {
   Platform,
   Pressable,

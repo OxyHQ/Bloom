@@ -200,7 +200,6 @@ function declaredRoots(sf: ts.SourceFile): Set<string> {
     } else if (ts.isImportDeclaration(stmt) && stmt.importClause) {
       // Deliberately NOT added: writing to an imported binding's property is a
       // reach into another module, which is the thing being forbidden.
-      continue;
     }
   }
   return names;

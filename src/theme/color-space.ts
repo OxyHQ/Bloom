@@ -10,8 +10,7 @@ export interface Rgb {
   b: number;
 } // 0..255 integers
 
-const srgbGamma = (x: number) =>
-  x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+const srgbGamma = (x: number) => (x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055);
 
 /** OKLCH → linear OKLab → linear sRGB → gamma sRGB → 0..255. Pure. */
 export function oklchToSrgb({ l, c, h }: Oklch): Rgb {
@@ -34,7 +33,7 @@ export function oklchToSrgb({ l, c, h }: Oklch): Rgb {
   };
 }
 
-const srgbLinear = (x: number) => (x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+const srgbLinear = (x: number) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4);
 
 /** 0..255 sRGB → OKLCH. The inverse of {@link oklchToSrgb}. Pure. */
 export function srgbToOklch({ r, g, b }: Rgb): Oklch {

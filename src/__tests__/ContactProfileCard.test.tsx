@@ -8,7 +8,7 @@
  * quiet line resolved to on the surface it landed on, and in what ORDER the
  * card states the record — the numbers before the labels, not after them.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

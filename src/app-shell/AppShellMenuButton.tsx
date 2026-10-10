@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';

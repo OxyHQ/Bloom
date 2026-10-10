@@ -11,7 +11,7 @@ import type { Loading as LoadingComponent } from '../loading';
  * the arrow keys are handled on the input, never here. A list that kept its own
  * highlight would fight the field for it the first time a pointer moved.
  */
-import React from 'react';
+import type React from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
 import { RiHashtag } from '../icons/remix/RiHashtag';

@@ -1,6 +1,7 @@
 import { Card } from '../card/Card';
 import { useCardFill } from '../card/use-card-fill';
-import React, { memo, useEffect, useMemo } from 'react';
+import type React from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';

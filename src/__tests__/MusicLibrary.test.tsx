@@ -6,7 +6,7 @@
  * the assertions read the emitted DOM — names, roles, state attributes and the
  * callbacks each control reports.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

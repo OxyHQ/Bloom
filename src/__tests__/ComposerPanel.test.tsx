@@ -6,7 +6,7 @@ import {
   useSurfaceFill,
   useSurfaceLevelValue,
 } from '../styles/surface-levels';
-import React from 'react';
+import type React from 'react';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

@@ -1,4 +1,5 @@
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
 
 import { AvatarGroup } from '../avatar-group';

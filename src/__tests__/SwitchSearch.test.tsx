@@ -11,7 +11,7 @@
  * clear button on an empty field is a dead target, and one missing on a full
  * field strands the user with no way back to the unfiltered list.
  */
-import React from 'react';
+import type React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

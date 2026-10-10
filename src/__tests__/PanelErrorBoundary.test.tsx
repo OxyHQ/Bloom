@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { ScrollView, Text } from 'react-native';
 import * as ReactNative from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';

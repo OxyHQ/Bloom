@@ -1,6 +1,6 @@
 import { Stop } from 'react-native-svg';
 import { contrastRatio, mixColors } from '../styles/color-contrast';
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { fireEvent, render, within } from '@testing-library/react-native';
 

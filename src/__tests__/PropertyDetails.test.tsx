@@ -5,7 +5,7 @@
  * (and `HostCard` as its host preset) and `FloorPlan` — through the REAL
  * react-native-web. Width-driven layouts are in `PropertyInsightsLayout.test.tsx`.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

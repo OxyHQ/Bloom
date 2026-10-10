@@ -11,7 +11,7 @@
  * still wins over the catalog, and that English is still what an app with no
  * locale gets (the runtime here is English).
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

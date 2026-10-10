@@ -1,6 +1,7 @@
 import { useBloomAppearance } from '../appearance';
 import { normalizeTagTone } from './shared';
-import React, { memo, useMemo } from 'react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import { View, type ViewStyle, type TextStyle } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';

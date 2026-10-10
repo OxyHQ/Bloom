@@ -6,7 +6,7 @@
  * or `COMMON_MESSAGES`, plurals follow the language's rules, and a caller's
  * `labels` / `*Label` prop still wins over the catalog.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

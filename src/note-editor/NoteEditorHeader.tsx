@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import { Platform, TextInput, View, type TextStyle } from 'react-native';
 
 import { RiAlertLine } from '../icons/remix/RiAlertLine';

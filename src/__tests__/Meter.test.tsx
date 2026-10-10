@@ -7,7 +7,7 @@
  * distinction is the whole point for the accessibility half: a prop-level test
  * cannot see that react-native-web drops `accessibilityValue` on the floor.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

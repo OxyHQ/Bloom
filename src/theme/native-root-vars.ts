@@ -1,4 +1,4 @@
-import { type AppColorName } from './color-presets';
+import type { AppColorName } from './color-presets';
 import type { ExplicitAccents } from './preset-vars';
 
 /**

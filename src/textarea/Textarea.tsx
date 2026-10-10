@@ -1,5 +1,6 @@
 import { useBloomAppearance } from '../appearance';
-import React, { useRef, useState } from 'react';
+import type React from 'react';
+import { useRef, useState } from 'react';
 import {
   Platform,
   StyleSheet,

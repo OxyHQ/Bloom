@@ -8,7 +8,7 @@
  * measured against the composite.
  */
 import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

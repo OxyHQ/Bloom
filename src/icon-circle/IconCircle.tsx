@@ -1,9 +1,10 @@
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
-import { type Props as IconProps } from '../icons/shared';
+import type { Props as IconProps } from '../icons/shared';
 
 const IconCircleComponent = function IconCircle({
   icon: Icon,

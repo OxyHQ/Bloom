@@ -11,7 +11,7 @@
  * contract that replaces it. The prop is gone, a press-driven focus selects
  * once in `onFocus`, and a programmatic focus selects nothing.
  */
-import React from 'react';
+import type React from 'react';
 import { Platform } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

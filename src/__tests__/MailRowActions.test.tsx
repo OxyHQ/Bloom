@@ -15,7 +15,7 @@
  * It renders through the `react-native` MOCK (`Platform.OS === 'ios'`), so the
  * assertions are on the element TREE rather than on DOM attributes.
  */
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 import type { AccessibilityActionEvent } from 'react-native';
 

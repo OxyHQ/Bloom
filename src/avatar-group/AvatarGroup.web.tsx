@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 
 import type { FloatingAnchor } from '../floating/types';

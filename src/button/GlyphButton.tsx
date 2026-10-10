@@ -1,4 +1,5 @@
-import React, { forwardRef, useMemo } from 'react';
+import type React from 'react';
+import { forwardRef, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';

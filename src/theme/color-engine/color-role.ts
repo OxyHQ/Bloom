@@ -11,7 +11,7 @@
 import { darker, darkerUnsafe, lighter, lighterUnsafe, ratioOfTones } from './contrast';
 import type { ContrastCurve } from './contrast-curve';
 import type { DynamicScheme } from './dynamic-scheme';
-import { Hct } from './hct';
+import type { Hct } from './hct';
 import { clampDouble } from './math-utils';
 import type { TonalPalette } from './tonal-palette';
 import type { ToneDeltaPair } from './tone-delta-pair';

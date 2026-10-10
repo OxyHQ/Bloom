@@ -5,7 +5,8 @@
  * only what forks, and binds it. The `spinner` and `inline` variants, the size
  * table and the stylesheet are identical on both platforms.
  */
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import Animated, {
   Easing,
   useAnimatedStyle,
