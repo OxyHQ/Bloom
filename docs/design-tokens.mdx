@@ -326,20 +326,22 @@ nine pairs on `Theme.chartColors`.
 | `headerBold` | 28 / 34 | 700 | display |
 | `buttonLarge` | 17 / 22 | 600 | sans |
 
-**Bloom's line-height tokens remain unitless ratios.** `theme.css` ships
-`--text-body--line-height: calc(22 / 15)`, the form Tailwind uses for its own
-scale (`--text-sm--line-height: calc(1.25 / 0.875)`). Consumers may also author
-pixel line-heights, custom-property values and arbitrary `leading-[20px]`
-utilities. All retain their CSS meaning on native; an 18px font with a 20px
-line-height occupies a 20px line.
+**Define type-scale line-height tokens as standard unitless CSS ratios.**
+`theme.css` ships `--text-body--line-height: calc(22 / 15)`, the same form
+Tailwind uses for its scale. The size and ratio yield the intended line box on
+both platforms; for example, an 18px font with a 1.1111111111 ratio has a 20px
+line. Keep independently measured size/line-height pairs as the source of truth.
 
 Bloom 7.28 uses the official `react-native-css@3.1.0-rc.0` release. NativeWind
-consumers should use its matching official `nativewind@5.0.0-rc.0` release,
-which requires that same CSS runtime. This fixes the 3.0.7 compiler's accidental
-pixel-value multiplication: an 18px font with a 20px line-height previously
-produced 360px on Android. No metric conversion or inline-style override is
-needed. Preserve one CSS runtime across the app and Bloom; do not override a
-peer range to keep the older NativeWind preview alongside the new compiler.
+consumers should use its matching official `nativewind@5.0.0-rc.0` release.
+The compiler fixes literal pixel declarations, direct static custom-property
+lengths and arbitrary `leading-[20px]` utilities. An upstream limitation remains:
+a pixel-valued `var(--tw-leading, 20px)` fallback is still interpreted as a
+multiplier on native. Tailwind emits that form for pixel-valued type-scale tokens,
+so those tokens must use the standard ratio form above. This is ordinary CSS
+line-height semantics, not a platform-specific metric or inline-style override.
+Preserve one CSS runtime across the app and Bloom; do not override a peer range
+to retain an older NativeWind preview alongside the new compiler.
 
 `typography-native-line-height.test.tsx` runs the real Tailwind →
 react-native-css pipeline and native runtime for every role, absolute and

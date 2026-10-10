@@ -152,3 +152,27 @@ Paging arrows and sharing use Bloom `Button` with neutral outline appearance, tr
   onIndexChange={setSelectedIndex}
 />
 ```
+
+## Viewer lifecycle and consumer-owned players
+
+`onOpenChange(open)` reports `true` once when a nonempty opening is accepted.
+It reports `false` once after the closing transition completes, or immediately
+if the component unmounts while open. It does not emit an initial `false`,
+repeat an event for duplicate dismiss requests, or capture an outdated callback.
+The closing animation retains viewer ownership until that final `false`.
+
+Combine it with `onIndexChange` to pause inactive players and transfer a stable
+player between an inline view and this viewer. Bloom never creates, pauses, or
+releases the consumer's player. The `items` array is captured by `open()`; keep
+player instances stable for that opening rather than replacing them afterward.
+
+```tsx
+<ZoomableMediaGallery
+  ref={gallery}
+  onOpenChange={setViewerOpen}
+  onIndexChange={setSelectedIndex}
+/>
+```
+
+A callback may run during component cleanup. Keep cleanup actions such as
+pausing a player independent from the lifetime of the component that owns it.
