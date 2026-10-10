@@ -2,6 +2,7 @@ import React from 'react';
 import { Image, Pressable, View, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ZoomableMediaGallery } from './ZoomableMediaGallery';
 import type {
@@ -219,3 +220,30 @@ function LifecycleDemo({ unmountOnOpen = false }: { unmountOnOpen?: boolean }) {
 }
 export const Lifecycle: Story = { render: () => <LifecycleDemo /> };
 export const UnmountDuringOpening: Story = { render: () => <LifecycleDemo unmountOnOpen /> };
+
+
+function VideoStatusDemo() {
+  const [status, setStatus] = React.useState('loading');
+  const [attempts, setAttempts] = React.useState(0);
+  const [mounted, setMounted] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(() => setStatus('error'), 1500);
+    return () => clearTimeout(timer);
+  }, [open]);
+  return <View>
+    <Text testID="video-viewer-open">{String(open)}</Text>
+    <Text testID="video-retry-count">{attempts}</Text>
+    {mounted && <GalleryDemo items={MIXED} onOpenChange={setOpen} renderVideoOverlay={media => (
+      <View testID="video-status-overlay" style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} pointerEvents="box-none">
+        <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, gap: 12 }}>
+          <Text>{media.id}: {status}</Text>
+          <Button onPress={() => { setAttempts(count => count + 1); setStatus('retrying'); }}>Retry video</Button>
+          <Button onPress={() => setMounted(false)}>Return to inline video</Button>
+        </View>
+      </View>
+    )} />}
+  </View>;
+}
+export const VideoStatus: Story = { render: () => <VideoStatusDemo /> };

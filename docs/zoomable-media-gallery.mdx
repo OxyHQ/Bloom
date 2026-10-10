@@ -176,3 +176,30 @@ player instances stable for that opening rather than replacing them afterward.
 
 A callback may run during component cleanup. Keep cleanup actions such as
 pausing a player independent from the lifetime of the component that owns it.
+
+
+## Video status and retry actions
+
+`renderVideoOverlay(media)` renders consumer-owned status above the active video's
+fitted rectangle. Return `null` when no overlay is needed. The callback is read on
+every render, so player errors or retry state can change after the viewer opens;
+images, inactive video pages and the closed viewer never render this slot.
+
+The slot lives inside Bloom's portal but outside its dismiss/zoom gesture tree.
+Its wrapper uses `pointerEvents="box-none"`: content can contain ordinary Bloom
+buttons, while empty space retains the viewer's existing controls. The overlay
+fades with dismissal. Bloom neither retries nor replaces/releases the player.
+
+```tsx
+<ZoomableMediaGallery
+  ref={gallery}
+  onOpenChange={setViewerOpen}
+  renderVideoOverlay={media => errorById[media.id] ? (
+    <VideoError onRetry={() => retry(media.id)} />
+  ) : null}
+/>
+```
+
+If retry creates a new player session, dismiss/unmount the old viewer before
+releasing its player, then open the replacement session. `open()` captures its
+media list; changing external items does not replace the active player snapshot.
