@@ -1,4 +1,2 @@
-# Biome formatting (style: format with Biome)
-c7271ee8bea72fe5467658fb564315d567cc1f20
-# Web barrels regenerated from the formatted native barrels
-358a92733594681fa5bd1bccf3618a07cc99b223
+# Biome adoption and formatting (squash of #313: chore: adopt Biome for formatting and linting)
+b50a8c3ae9ba15365b7c26a678b1b1dd7d44c79c
