@@ -118,6 +118,8 @@ The bar remains one named progressbar; its visual labels are not announced twice
 
 ## `RatingInput`
 
+Hover previews are decorative: the radio owns pointer and touch interaction, so the first press selects even while its star changes from outline to filled. Preview alone never changes the chosen value.
+
 The picker for a review form. Fully controlled: `value` is `1..max` or `null`
 while nothing is chosen, and `onChange` fires with the star that was chosen.
 

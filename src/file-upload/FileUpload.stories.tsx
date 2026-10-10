@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
+import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { FileUpload } from './index';
 import type { FileUploadFile } from './types';
@@ -141,4 +142,17 @@ export const Controlled: Story = {
 export const Playground: Story = {
   args: { disabled: false },
   render: (args) => <View style={{ width: 420, maxWidth: '100%' }}><FileUpload {...args} /></View>,
+};
+
+/** Controlled phase changes expose only the current status to assistive technology. */
+export const AccessibleStatus: Story = {
+  render: function AccessibleStatusStory() {
+    const [progress, setProgress] = useState<number | null>(null);
+    return <Frame>
+      <Button onPress={() => setProgress(0)}>Start upload</Button>
+      <Button onPress={() => setProgress(100)}>Complete upload</Button>
+      <Button onPress={() => setProgress(null)}>Reset upload</Button>
+      <FileUpload testID="status-upload" file={progress === null ? null : REPORT} progress={progress ?? 0} />
+    </Frame>;
+  },
 };

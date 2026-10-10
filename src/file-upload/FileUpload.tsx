@@ -381,6 +381,7 @@ function StaggerLine({
             : { bloomFileUploadSub: state },
         )}
         pointerEvents="none"
+        aria-hidden={state !== 'shown'}
         style={style}
       >
         {children}
@@ -388,7 +389,13 @@ function StaggerLine({
     );
   }
   return (
-    <Animated.View pointerEvents="none" style={[style, { opacity, transform: [{ translateY }] }]}>
+    <Animated.View
+      pointerEvents="none"
+      aria-hidden={state !== 'shown'}
+      accessibilityElementsHidden={state !== 'shown'}
+      importantForAccessibility={state !== 'shown' ? 'no-hide-descendants' : 'auto'}
+      style={[style, { opacity, transform: [{ translateY }] }]}
+    >
       {children}
     </Animated.View>
   );
