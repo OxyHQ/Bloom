@@ -16,6 +16,12 @@ jest.mock('react-native', () => {
   return jest.requireActual('react-native-web');
 });
 
+// Exercise a real RNW host for Animated.View as well as plain View.
+jest.mock('react-native-reanimated', () => {
+  const animation = jest.requireActual('../../__mocks__/react-native-reanimated');
+  return { __esModule: true, ...animation, default: { ...animation.default, View: jest.requireActual('react-native-web').View } };
+});
+
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { AiChatShell } from '../ai-chat';
@@ -149,5 +155,41 @@ describe('AiChatShell nav drawer keyboard (web)', () => {
     render(false, change);
     press('Escape');
     expect(change).not.toHaveBeenCalled();
+  });
+});
+
+describe('focusable shell panel owners', () => {
+  it('focuses empty navigation and retains both Tab directions until it closes', () => {
+    const opener = document.createElement('button'); document.body.append(opener); opener.focus();
+    function EmptyNavigation() {
+      const [open, setOpen] = React.useState(true);
+      return <BloomThemeProvider mode="light"><AiChatShell sidebar={null}
+        mobileSidebar={<Text testID="empty-nav">Loading</Text>} navOpen={open} onNavOpenChange={setOpen}>
+        <View />
+      </AiChatShell></BloomThemeProvider>;
+    }
+    act(() => root.render(<EmptyNavigation />));
+    const content = container.querySelector('[data-testid="empty-nav"]')!;
+    const panel = content.closest<HTMLElement>('[tabindex="-1"]')!;
+    expect(panel).not.toBeNull();
+    expect(document.activeElement).toBe(panel);
+    for (const shiftKey of [false, true]) {
+      const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
+      act(() => panel.dispatchEvent(event));
+      expect(event.defaultPrevented).toBe(true); expect(document.activeElement).toBe(panel);
+    }
+    act(() => panel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
+
+  it('makes the detail drawer a programmatic focus destination without a new Tab stop', () => {
+    act(() => root.render(<BloomThemeProvider mode="light"><AiChatShell sidebar={null}
+      panel={() => <Text>Details</Text>} panelLabel="Details" panelOpen onPanelOpenChange={() => {}}><View />
+    </AiChatShell></BloomThemeProvider>));
+    const panel = container.querySelector<HTMLElement>('[role="dialog"][aria-label="Details"]')!;
+    expect(panel.tabIndex).toBe(-1);
+    act(() => panel.focus());
+    expect(document.activeElement).toBe(panel);
   });
 });

@@ -13,6 +13,7 @@ import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
+  AiChatShell,
   AiChatAssistantMessage,
   AiChatBullet,
   AiChatBulletList,
@@ -422,5 +423,19 @@ export const FloatingChrome: Story = {
         </View>
       </View>
     );
+  },
+};
+
+/** Empty navigation still needs a keyboard destination while its rows load. */
+export const EmptyNavigationFocus: Story = {
+  render: function EmptyNavigationFocusStory() {
+    const [open, setOpen] = useState(false);
+    return <View style={{ height: 600 }}>
+      <Button style={{ flexShrink: 0 }} onPress={() => setOpen(true)}>Open empty navigation</Button>
+      <AiChatShell sidebar={null} mobileSidebar={<Text testID="empty-navigation-content">Loading navigation</Text>}
+        navOpen={open} onNavOpenChange={setOpen}>
+        <Text>Workspace</Text>
+      </AiChatShell>
+    </View>;
   },
 };

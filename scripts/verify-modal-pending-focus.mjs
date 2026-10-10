@@ -37,4 +37,17 @@ try {
     console.log({ placement, reducedMotion, passed: true });
     await page.close();
   }
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto(`${base}/iframe.html?id=blocks-ai-chat--empty-navigation-focus&viewMode=story`);
+  const opener = page.getByRole('button', { name: 'Open empty navigation' });
+  await opener.waitFor({ timeout: 120000 });
+  await opener.focus(); await page.keyboard.press('Enter');
+  const panel = page.getByTestId('empty-navigation-content').locator('xpath=ancestor::*[@tabindex="-1"][1]');
+  await expect(panel).toBeFocused();
+  for (const key of ['Tab', 'Shift+Tab']) {
+    await page.keyboard.press(key); await expect(panel).toBeFocused();
+  }
+  await page.keyboard.press('Escape'); await expect(opener).toBeFocused();
+  console.log({ emptyNavigation: true, passed: true });
+  await page.close();
 } finally { await browser.close(); }

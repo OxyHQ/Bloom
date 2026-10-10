@@ -497,6 +497,7 @@ export function AiChatShell({
         {!navInFlow && mobileSidebar ? (
           <View
             ref={navRef}
+            tabIndex={Platform.OS === 'web' ? -1 : undefined}
             {...(navOpen ? null : CLOSED_LAYER)}
             pointerEvents={navOpen ? 'box-none' : 'none'}
             style={{ position: overlayPosition, top: 0, bottom: 0, left: safeInsets.left, zIndex: 10, width: 272, paddingTop: 12 + safeInsets.top, paddingBottom: 12 + safeInsets.bottom, paddingLeft: 6 }}>
@@ -606,6 +607,7 @@ export function AiChatShell({
             <SurfaceLevelProvider level={backing.level} fill={palette.full}>
             <Animated.View
               ref={panelRef}
+              tabIndex={Platform.OS === 'web' ? -1 : undefined}
               role="dialog"
               aria-modal={panelOpen}
               accessibilityLabel={panelLabel}
