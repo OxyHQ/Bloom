@@ -1,5 +1,6 @@
 import React from 'react';
 import { OverlayRoot } from '../overlay';
+import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { BloomScope, useBloomAppearance } from '../appearance';
 import { Keyboard, Platform, View } from 'react-native';
@@ -130,4 +131,15 @@ it('isolates overlay screen motion from its trigger screen without losing the vi
   expect(states.overlay!.collapseProgress).not.toBe(states.background!.collapseProgress);
   act(() => { states.overlay!.collapseProgress.value = 1; });
   expect(states.background!.collapseProgress.value).toBe(0);
+});
+
+
+it.each(['light', 'dark'] as const)('paints the inherited surface on %s screens, with caller overrides preserved', mode => {
+  let inherited: string | undefined;
+  function Probe() { inherited = useSurfaceFill(); return null; }
+  const tree = render(<BloomThemeProvider fonts={false} mode={mode}><SurfaceLevelProvider level={1} fill="#334455"><Screen testID="screen"><Probe /></Screen><Screen testID="override" style={{ backgroundColor: '#123456' }} /></SurfaceLevelProvider><Screen testID="standalone" /></BloomThemeProvider>);
+  expect(resolvedStyle(tree.getByTestId('screen').props.style).backgroundColor).toBe(inherited);
+  expect(inherited).toBe('#334455');
+  expect(resolvedStyle(tree.getByTestId('override').props.style).backgroundColor).toBe('#123456');
+  expect(resolvedStyle(tree.getByTestId('standalone').props.style).backgroundColor).toBeTruthy();
 });

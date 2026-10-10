@@ -18,7 +18,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { useHeaderDockContext } from '../layout/header-dock';
 import { useSurfaceFill } from '../styles/surface-levels';
-import { useScreenContext } from '../screen/context';
+import { ScreenHeaderContext, useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
 import { BloomScope } from "../appearance";
@@ -192,6 +192,8 @@ function PageHeaderComponent({
   // it a header inside a scrolling panel followed `window.scrollY`, which on a
   // desktop shell never moves, so the header looked deliberately inert.
   const screen = useScreenContext();
+  const headerScreen = useContext(ScreenHeaderContext);
+  const positionedByScreen = screen != null && headerScreen === screen;
   const contextScrollY = useScrollOffset();
   const metrics = useScrollMetricsValue();
   const internalScrollY = useSharedValue(0);
@@ -353,7 +355,7 @@ function PageHeaderComponent({
   ) : null;
 
   const containerWeb: WebCssStyle | null =
-    isWeb && sticky && !overlay
+    isWeb && sticky && !overlay && !positionedByScreen
       ? { position: WEB_POSITION_STICKY, top: WEB_SURFACE_STICKY_TOP, zIndex: Z_INDEX.floating,
           transitionProperty: 'top', transitionDuration: 'var(--bloom-panel-inset-duration, 0ms)', transitionTimingFunction: 'ease-in-out' }
       : null;

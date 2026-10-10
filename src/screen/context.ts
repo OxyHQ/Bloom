@@ -16,6 +16,9 @@ export interface ScreenContextValue {
 export type ScreenNavigationState = Pick<ScreenContextValue, 'collapseProgress' | 'collapseTarget' | 'activeScrollerId'> & { bottomInset?: number };
 export const ScreenNavigationContext = createContext<ScreenNavigationState | null>(null);
 
+/** Only the Screen header slot owns chrome positioning; content headers remain independent. */
+export const ScreenHeaderContext = createContext<ScreenContextValue | null>(null);
+
 export const ScreenContext = createContext<ScreenContextValue | null>(null);
 export function useScreenContext() { return useContext(ScreenContext); }
 export function useScreen(): ScreenContextValue {

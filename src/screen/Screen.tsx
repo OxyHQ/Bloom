@@ -3,16 +3,16 @@ import { Keyboard, Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { windowEdgeGap } from '../layout/edge';
 import { useSharedValue } from 'react-native-reanimated';
-import { useTheme } from '../theme/use-theme';
-import { WEB_POSITION_STICKY, WEB_VIEWPORT_HEIGHT } from '../styles/web-view-style';
+import { useSurfaceFill } from '../styles/surface-levels';
+import { WEB_POSITION_STICKY, WEB_SURFACE_STICKY_TOP, WEB_VIEWPORT_HEIGHT, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
-import { ScreenContext, ScreenNavigationContext } from './context';
+import { ScreenContext, ScreenHeaderContext, ScreenNavigationContext } from './context';
 import { useScreenWindowBinding } from './use-screen-window-scroll';
 import type { ScreenProps } from './types';
 
 /** One continuous canvas; chrome overlays it and content reserves its measured footprint. */
 export function Screen({ header, bottomBar, primaryAction, active: requestedActive = true, navigationScope = 'inherit', documentScroll = false, headerHeight, bottomBarHeight, contentClearance = 16, children, style, testID, ...props }: ScreenProps) {
-  const { colors } = useTheme();
+  const surfaceFill = useSurfaceFill();
   const parentScreen = useContext(ScreenContext);
   const active = requestedActive && (navigationScope === 'isolated' ? true : parentScreen?.active ?? true);
   const scrollY = useSharedValue(0);
@@ -40,12 +40,13 @@ export function Screen({ header, bottomBar, primaryAction, active: requestedActi
     contentInsetsHandled: document, topInset: header ? top : 0, bottomInset: keyboardVisible ? contentClearance : hasBottom ? bottom + contentClearance : navigationScope === 'inherit' ? inheritedNavigation?.bottomInset ?? contentClearance : contentClearance,
   }), [active, scrollY, collapseProgress, collapseTarget, activeScrollerId, header, hasBottom, top, bottom, contentClearance, navigationScope, inheritedNavigation?.bottomInset, document, keyboardVisible]);
   useScreenWindowBinding(value, { active: document });
-  const headerNode = header ? <View testID={testID ? `${testID}-header` : undefined} pointerEvents="box-none" onLayout={event => setTop(event.nativeEvent.layout.height)} style={document ? { position: WEB_POSITION_STICKY, top: 0, zIndex: Z_INDEX.floating, marginBottom: -top } : { position: 'absolute', top: 0, left: 0, right: 0 }}>{header}</View> : null;
+  const documentHeaderStyle: WebCssStyle = { position: WEB_POSITION_STICKY, top: WEB_SURFACE_STICKY_TOP, zIndex: Z_INDEX.floating, marginBottom: -top, transitionProperty: 'top', transitionDuration: 'var(--bloom-panel-inset-duration, 0ms)', transitionTimingFunction: 'ease-in-out' };
+  const headerNode = header ? <View testID={testID ? `${testID}-header` : undefined} pointerEvents="box-none" onLayout={event => setTop(event.nativeEvent.layout.height)} style={document ? documentHeaderStyle : { position: 'absolute', top: 0, left: 0, right: 0 }}><ScreenHeaderContext.Provider value={value}>{header}</ScreenHeaderContext.Provider></View> : null;
   const bottomNode = hasBottom ? <View testID={testID ? `${testID}-bottom` : undefined} pointerEvents="box-none" onLayout={event => setBottom(event.nativeEvent.layout.height)} style={document ? { position: WEB_POSITION_STICKY, bottom: 0, zIndex: Z_INDEX.floating, marginTop: -bottom } : { position: 'absolute', bottom: 0, left: 0, right: 0 }}>{bottomBar ?? <View pointerEvents="box-none" style={{ alignItems: 'flex-end', paddingHorizontal: 16, paddingBottom: windowEdgeGap(insets?.bottom ?? 0), minHeight: bottom }}>{primaryAction}</View>}</View> : null;
   return (
     <ScreenNavigationContext.Provider value={navigationScope === 'inherit' ? inheritedNavigation : { ...navigation, bottomInset: value.bottomInset }}>
     <ScreenContext.Provider value={value}>
-      <View {...props} testID={testID} style={[document ? { minHeight: WEB_VIEWPORT_HEIGHT, width: '100%', position: 'relative', backgroundColor: colors.background } : { flex: 1, minHeight: 0, position: 'relative', backgroundColor: colors.background }, style]}>
+      <View {...props} testID={testID} style={[document ? { minHeight: WEB_VIEWPORT_HEIGHT, width: '100%', position: 'relative', backgroundColor: surfaceFill } : { flex: 1, minHeight: 0, position: 'relative', backgroundColor: surfaceFill }, style]}>
         {document ? headerNode : null}
         {document ? <View testID={testID ? `${testID}-content` : undefined} style={{
           flexGrow: 1, flexShrink: 0,
