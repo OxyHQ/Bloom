@@ -7,13 +7,11 @@
  * react-native-css's compiler turns that into a native style descriptor, and
  * react-native-css's own `Text` resolves it at render time.
  *
- * The runtime `lineHeight` resolver multiplies ANY number by the font-size (it
- * cannot tell a px number from a unitless ratio once `var()` has inlined it).
- * With the old px tokens `text-body` rendered `{ fontSize: 15, lineHeight: 330 }`
- * on Android — 22 × 15 — which blew every text row in a className-styled screen
- * up to ~15× its height. Tailwind's own scale (`text-sm`) was never affected
- * because its token is a unitless `calc(1.25 / 0.875)`; Bloom's now takes the
- * same form.
+ * Absolute lengths and unitless ratios must both preserve their CSS meaning.
+ * The 3.0.x compiler wrapped even a literal 20px in the runtime multiplier,
+ * producing 360px at font-size18. The official 3.1 compiler fixes the owner;
+ * custom metrics must not need an app-side style override or ratio conversion.
+ * Bloom's existing ratio tokens and Tailwind's own scale remain controls.
  *
  * lightningcss is pinned to 1.30.1 in `package.json#overrides` for the same
  * reason every Oxy app pins it: react-native-css 3.0.x cannot deserialize
@@ -60,6 +58,7 @@ jest.mock('react-native', () => ({
 }));
 
 const ROLES =Object.keys(TYPOGRAPHY) as TypeRoleName[];
+const CUSTOM_METRICS = ['native-line-px', 'native-line-variable', 'native-line-ratio'];
 
 async function buildTailwindCss(candidates: string[]): Promise<string> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -74,7 +73,12 @@ async function buildTailwindCss(candidates: string[]): Promise<string> {
     base: join(__dirname, '..', '..'),
     onDependency: () => {},
   });
-  return compiler.build(candidates);
+  return `${compiler.build(candidates)}
+    :root { --native-line-height: 20px; }
+    .native-line-px { font-size: 18px; line-height: 20px; }
+    .native-line-variable { font-size: 18px; line-height: var(--native-line-height); }
+    .native-line-ratio { font-size: 18px; line-height: 1.1111111111; }
+  `;
 }
 
 function flattenStyle(style: unknown): Record<string, unknown> {
@@ -88,7 +92,7 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
   let resolved: Record<string, Record<string, unknown>>;
 
   beforeAll(async () => {
-    const candidates = [...ROLES.map((role) => `text-${role}`), 'text-sm'];
+    const candidates = [...ROLES.map((role) => `text-${role}`), 'text-sm', 'leading-[20px]', ...CUSTOM_METRICS];
     const css = await buildTailwindCss(candidates);
 
     /* eslint-disable @typescript-eslint/no-require-imports */
@@ -132,4 +136,27 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
     // Tailwind's text-sm is 1.25 / 0.875 of its font-size.
     expect(style.lineHeight).toBeCloseTo(((style.fontSize as number) * 1.25) / 0.875, 1);
   });
+
+  it.each(CUSTOM_METRICS)('%s resolves an authored 20px line, not a 360px row', (className) => {
+    expect(resolved[className]).toEqual(expect.objectContaining({ fontSize: 18, lineHeight: 20 }));
+  });
+
+  it('honors an arbitrary pixel line-height utility', () => {
+    expect(resolved['leading-[20px]']?.lineHeight).toBe(20);
+  });
+});
+
+// Third-party native components still need the public explicit mapping. The
+// compiler upgrade must preserve authored image dimensions through that adapter.
+it('preserves NativeWind styled image dimensions on the native runtime', async () => {
+  const { styled } = require('nativewind') as typeof import('nativewind');
+  const { Image } = require('expo-image') as typeof import('expo-image');
+  const { compile } = require('react-native-css/compiler') as typeof import('react-native-css/compiler');
+  const { StyleCollection } = require('react-native-css/native');
+  const StyledImage = styled(Image, { className: 'style' });
+  StyleCollection.inject(compile(await buildTailwindCss(['w-24', 'h-20']), {}).stylesheet());
+  const screen = render(<StyledImage testID="styled-image" className="w-24 h-20" source={{ uri: 'https://example.test/image.png' }} />);
+  expect(flattenStyle(screen.getByTestId('styled-image').props.style)).toEqual(
+    expect.objectContaining({ width: 96, height: 80 }),
+  );
 });

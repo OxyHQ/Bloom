@@ -10,10 +10,8 @@ export interface ScrollAreaProps extends ScrollViewProps {
   contentContainerClassName?: string;
 }
 
-// Narrow only the styled mapping input to avoid ScrollViewProps' recursive
-// dot-path union. The public component retains the complete ScrollView contract.
-const ScrollAreaBase: ComponentType<Pick<ScrollViewProps, 'style' | 'contentContainerStyle'>> = ScrollView;
-const StyledScrollView: ComponentType<ScrollAreaProps & { ref?: Ref<ScrollView> }> = styled(ScrollAreaBase, {
+// Preserve the native instance type so styled forwards the imperative ref.
+const StyledScrollView: ComponentType<ScrollAreaProps & { ref?: Ref<ScrollView> }> = styled(ScrollView, {
   className: 'style',
   contentContainerClassName: 'contentContainerStyle',
 });
