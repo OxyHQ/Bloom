@@ -12,6 +12,9 @@ import React, {
 } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Z_INDEX } from '../styles/z-index';
+import { BloomThemeContext } from '../theme/BloomThemeProvider';
+import { ThemeScopeContext } from '../theme/color-scope/context';
+import { ThemeScopeBridge } from '../theme/color-scope/ThemeScopeBridge';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 
 type Component = React.ReactElement;
@@ -48,22 +51,19 @@ function createPortalGroup() {
       setOutlet(<>{Object.values(map.current)}</>);
     }, []);
 
-    const contextValue = useMemo(
-      () => ({ outlet, append, remove }),
-      [outlet, append, remove],
-    );
+    const contextValue = useMemo(() => ({ outlet, append, remove }), [outlet, append, remove]);
 
-    return (
-      <Context.Provider value={contextValue}>
-        {props.children}
-      </Context.Provider>
-    );
+    return <Context.Provider value={contextValue}>{props.children}</Context.Provider>;
   }
 
   function Outlet() {
     const ctx = useContext(Context);
     if (Platform.OS === 'web') {
-      return <View pointerEvents="box-none" style={styles.portalOutlet}>{ctx.outlet}</View>;
+      return (
+        <View pointerEvents="box-none" style={styles.portalOutlet}>
+          {ctx.outlet}
+        </View>
+      );
     }
     return ctx.outlet;
   }
@@ -71,11 +71,18 @@ function createPortalGroup() {
   function Portal({ children }: React.PropsWithChildren<object>) {
     const { append, remove } = useContext(Context);
     const id = useId();
+    const theme = useContext(BloomThemeContext);
+    const scope = useContext(ThemeScopeContext);
 
     useEffect(() => {
-      append(id, children as Component);
+      append(
+        id,
+        <ThemeScopeBridge theme={theme} scope={scope}>
+          {children}
+        </ThemeScopeBridge>,
+      );
       return () => remove(id);
-    }, [id, children, append, remove]);
+    }, [id, children, append, remove, theme, scope]);
 
     return null;
   }

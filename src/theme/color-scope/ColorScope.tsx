@@ -1,10 +1,16 @@
 import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
-import { buildTheme } from '../build-theme';
+import { BloomThemeContext } from '../BloomThemeProvider';
+import { ThemeScopeContext } from './context';
+import { useScope } from './use-scope';
+import type { BloomColorScopeTokens } from './types';
 import type { AppColorName } from '../color-presets';
-import { buildNativePresetStyle, buildScopeVars, getVariableContextProvider } from './style-builder';
+import {
+  buildNativePresetStyle,
+  buildScopeVars,
+  getVariableContextProvider,
+} from './style-builder';
 
 /**
  * The variables a scope publishes when it carries no preset of its own.
@@ -26,7 +32,11 @@ export interface BloomColorScopeProps {
    * or not a preset is set, because a preset that arrives late must not remount
    * the subtree.
    */
-  colorPreset: AppColorName | undefined;
+  colorPreset?: AppColorName;
+  /** Local resolved mode; does not change the app mode, storage or document. */
+  mode?: 'light' | 'dark';
+  /** Exact canonical colors. Unspecified roles inherit the selected preset or parent scope. */
+  tokens?: BloomColorScopeTokens;
   /**
    * When `true`, do not render a wrapping `<View>`. The single child is cloned
    * with the scope's CSS vars merged into its `style` prop (Radix-style).
@@ -72,36 +82,13 @@ interface StyleableProps {
  */
 export function BloomColorScope({
   colorPreset,
+  mode,
+  tokens,
   asChild = false,
   style,
   children,
 }: BloomColorScopeProps) {
-  // All hooks are called UNCONDITIONALLY, in the same order on every render —
-  // never gate a hook behind an early return (rules of hooks). The throw below
-  // happens AFTER every hook has run. `resolvedMode` falls back harmlessly when
-  // the provider is absent (that render path throws anyway).
-  const parent = useContext(BloomThemeContext);
-  const resolvedMode = parent?.theme.mode ?? 'light';
-
-  const contextValue = useMemo<BloomThemeContextValue | null>(() => {
-    if (!parent || !colorPreset) return null;
-    const theme = buildTheme(colorPreset, resolvedMode);
-    return { ...parent, theme, colorPreset };
-  }, [colorPreset, resolvedMode, parent]);
-
-  // Preset vars flow to the subtree through react-native-css's real
-  // VariableContext (`VariableContextProvider`), NOT via an inline `vars()`
-  // style — under react-native-css@3 inline vars applied to a plain `<View>`
-  // (no matched className rules) are dropped silently. See `style-builder.ts`.
-  const nativeVars = useMemo<Record<string, string> | null>(
-    () => (colorPreset ? buildScopeVars(colorPreset, resolvedMode) : null),
-    [colorPreset, resolvedMode],
-  );
-
-  if (!parent) {
-    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
-  }
-
+  const { context, state, vars: nativeVars } = useScope(colorPreset, mode, tokens);
   const VariableProvider = getVariableContextProvider();
 
   let content: React.ReactNode;
@@ -130,7 +117,9 @@ export function BloomColorScope({
   );
 
   return (
-    <BloomThemeContext.Provider value={contextValue ?? parent}>{scoped}</BloomThemeContext.Provider>
+    <BloomThemeContext.Provider value={context}>
+      <ThemeScopeContext.Provider value={state}>{scoped}</ThemeScopeContext.Provider>
+    </BloomThemeContext.Provider>
   );
 }
 
