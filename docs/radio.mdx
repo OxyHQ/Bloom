@@ -156,3 +156,18 @@ Home/End reach the first/last enabled option. Disabled options are skipped, and
 a disabled group has no tab stop. Controlled values remain caller-owned.
 Space and Enter activate the focused option once. Native retains its platform
 accessibility focus behavior rather than applying DOM keyboard semantics.
+
+## Composing option bodies
+
+Options accept `labelContent` for decorative layout, with `label` or
+`accessibilityLabel` supplying the control's name. `renderOption(option, control,
+state)` can wrap the owned radio with sibling content. Render `control` exactly
+once, unchanged; `state.checked` and `state.disabled` report group-owned state,
+and `state.controlRef` references the actual focusable host on web and native.
+The group retains selection, disabled behavior and its one keyboard tab stop.
+Interactive siblings keep their own keyboard behavior and do not select a radio.
+
+Use [Collapsible](./collapsible.mdx) with `open={state.checked}` and
+`returnFocusRef={state.controlRef}` for a revealed form. Never place inputs,
+selects or buttons inside `labelContent`. `optionStyle` still styles each owned
+radio, including logical row composition such as `flexDirection: 'row-reverse'`.

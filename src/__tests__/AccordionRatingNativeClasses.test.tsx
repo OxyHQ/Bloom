@@ -53,3 +53,10 @@ it('keeps direct Meter defaults and semantic values while its classes customize 
   expect(api.getByTestId('meter').props['aria-valuenow']).toBe(2);
   expect(resolvedStyle(api.getByTestId('meter-fill').props.style)).toMatchObject({ width:'50%', backgroundColor:'#121212' });
 });
+it('resolves Collapsible wrapper and content classes on their native owning nodes', () => {
+  const { Collapsible } = require('../collapsible/Collapsible');
+  const api = render(<Collapsible open testID="collapse" className="root panel" contentClassName="body"><View /></Collapsible>);
+  expect(resolvedStyle(api.getByTestId('collapse').props.style)).toMatchObject({ gap:8, width:360, backgroundColor:'#eef0f1' });
+  const body = api.UNSAFE_getAllByType(View).find(node => typeof node.props.onLayout === 'function');
+  expect(resolvedStyle(body?.props.style)).toMatchObject({paddingBottom:16,paddingLeft:0,paddingRight:0});
+});

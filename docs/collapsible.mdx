@@ -1,0 +1,72 @@
+---
+title: Collapsible
+description: A controlled measured reveal with no fabricated disclosure trigger.
+order: 29
+---
+
+# Collapsible
+
+Use `Collapsible` when an existing control owns whether a body is shown, such as
+an option in a radio group. Use `Accordion` for labelled disclosure sections with
+their own toggle buttons. Both share the same measured frame and motion owner.
+
+```tsx
+import { RadioGroup } from '@oxy.so/bloom/radio';
+import { Collapsible } from '@oxy.so/bloom/collapsible';
+
+<RadioGroup
+  label="Delivery plan"
+  value={plan}
+  onValueChange={setPlan}
+  options={[
+    { value: 'once', label: 'One delivery' },
+    { value: 'repeat', label: 'Repeat delivery' },
+  ]}
+  renderOption={(option, control, { checked, controlRef }) => (
+    <View>
+      {control}
+      {option.value === 'repeat' && (
+        <Collapsible open={checked} returnFocusRef={controlRef}>
+          <FrequencySelect />
+          <TextInput accessibilityLabel="Delivery note" />
+        </Collapsible>
+      )}
+    </View>
+  )}
+/>
+```
+
+Render the owned radio once, unchanged. The body and its interactive controls are
+siblings of the radio, never children of its decorative label.
+
+| Prop | Ownership |
+| --- | --- |
+| `open` | Required controlled visibility; no internal toggle or default state. |
+| `transition` | `{ duration, easing? }`, milliseconds and cubic-bezier coordinates. Defaults to 300ms and `[.42, 0, .58, 1]`. Duration is clamped non-negative; invalid values use the standard motion defaults. |
+| `returnFocusRef` | DOM or native focusable host to receive focus only when closing content owned it. Accepts `RadioOptionState.controlRef` directly. |
+| `className`, `style` | Outer frame, the node its parent lays out. Height clipping and opacity are animated by Bloom. |
+| `contentClassName`, `contentStyle` | Measured body; place padding/gaps and content decoration here. |
+| `nativeID`, `testID` | Outer host identity. No role or labelled-by relationship is invented. |
+
+The inner body's natural height is measured again when content or width changes;
+there is no fixed maximum height. Children stay mounted so edits and selections
+survive closure. Web uses `inert` and `aria-hidden` immediately. Native disables
+pointer interaction and removes descendants from accessibility immediately, then
+removes the body from layout when the exit finishes. Live reduced motion cancels
+active animation and settles the body immediately. No global `LayoutAnimation`
+configuration is changed.
+
+Focus return never overrides deliberate focus outside. On web it includes
+logical descendants through React portals and can fall back to the outside
+focus captured when opening. Native observes hardware/control focus and the
+public currently focused TextInput API; supply `returnFocusRef` there. React
+Native does not expose the current VoiceOver/TalkBack cursor, so cursor-only
+focus cannot be detected without stealing unrelated accessibility focus.
+
+A nested Bloom `Select` closes its portaled popup when its body becomes hidden;
+its selected value survives and its popup stays closed on reopening. A custom
+portaled control must likewise coordinate its own open state with visibility.
+
+The old pre-1.0 `Collapsible` implementation was removed for a module-scope
+Android layout-animation side effect. The controlled API introduced in 7.22 is
+a new implementation and does not restore that behavior or the old props.

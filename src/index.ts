@@ -2144,3 +2144,5 @@ export * from './project-board';
 export * from './multi-agent-chat';
 
 export * from './viewport';
+
+export * from './collapsible';

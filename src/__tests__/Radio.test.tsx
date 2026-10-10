@@ -246,3 +246,21 @@ it('keeps an explicitly undefined selection controlled until the parent updates 
   screen.rerender(ui(undefined));
   expect(screen.getByLabelText('Weekly').props['aria-checked']).toBe(false);
 });
+it('publishes each actual native radio host to renderOption without moving selection ownership', () => {
+  const refs = new Map<string, import('../radio').RadioOptionState['controlRef']>();
+  const hosts = new Map<string, { focus: jest.Mock }>();
+  const change = jest.fn();
+  const api = render(<BloomThemeProvider><RadioGroup label="Delivery" options={OPTIONS} defaultValue="daily" onValueChange={change}
+    renderOption={(option, control, state) => { refs.set(option.value,state.controlRef); return control; }} /></BloomThemeProvider>, {
+    createNodeMock: element => {
+      const props = element.props as { accessibilityRole?: string; accessibilityLabel?: string };
+      if (props.accessibilityRole !== 'radio') return null;
+      const label=props.accessibilityLabel as string;
+      const host=hosts.get(label) ?? {focus:jest.fn()}; hosts.set(label,host); return host;
+    },
+  });
+  expect(refs.get('daily')?.current).toBe(hosts.get('Daily'));
+  expect(refs.get('weekly')?.current).toBe(hosts.get('Weekly'));
+  fireEvent.press(api.getByLabelText('Weekly'));expect(change).toHaveBeenCalledWith('weekly');
+  fireEvent.press(api.getByLabelText('Never'));expect(change).toHaveBeenCalledTimes(1);
+});

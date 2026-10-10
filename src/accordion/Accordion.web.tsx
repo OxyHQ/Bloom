@@ -1,5 +1,7 @@
-import React, { forwardRef, memo, useContext, useLayoutEffect, useRef, useState } from 'react';
-import { Animated, type StyleProp, type ViewStyle } from 'react-native';
+import { CollapsibleFrame } from '../collapsible/CollapsibleFrame.web';
+import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
+import React, { memo, useContext } from 'react';
+import { Animated } from 'react-native';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -19,12 +21,6 @@ const CSS = `@layer base {
 .bloom-accordion-body { padding:0 4px 12px; }
 }`;
 function useStyles() { useInteractiveWebCss('bloom-accordion', CSS); }
-
-/** RN Animated resolves numeric layout/opacity before this DOM host receives them. */
-const PanelHost = forwardRef<HTMLDivElement, Omit<React.HTMLAttributes<HTMLDivElement>, 'style'> & { style?: StyleProp<ViewStyle>; collapsable?: boolean }>(function PanelHost({ style, collapsable: _collapsable, ...props }, ref) {
-  return <div {...props} ref={ref} style={resolveNativeWebStyle(style)} />;
-});
-const AnimatedPanel = Animated.createAnimatedComponent(PanelHost);
 
 export const Accordion = memo(function Accordion(props: AccordionProps) {
   useStyles();
@@ -64,28 +60,8 @@ export const AccordionTrigger = memo(function AccordionTrigger({ children, icon,
 export const AccordionContent = memo(function AccordionContent({ children, style, className, contentClassName }: AccordionContentProps) {
   useStyles();
   const { isExpanded, triggerId, contentId } = useContext(AccordionItemContext);
-  const progress = useAccordionMotion(isExpanded, 'content', false);
-  const body = useRef<HTMLDivElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(0);
-  useLayoutEffect(() => {
-    const node = body.current;
-    if (!node) return;
-    const measure = () => {
-      const next = node.getBoundingClientRect().height;
-      setHeight(previous => Math.abs(previous - next) > .5 ? next : previous);
-    };
-    measure();
-    const observer = new ResizeObserver(measure); observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  useLayoutEffect(() => {
-    if (!isExpanded && panel.current?.contains(document.activeElement)) document.getElementById(triggerId)?.focus();
-  }, [isExpanded, triggerId]);
-  const maxHeight = progress.interpolate({ inputRange: [0, 1], outputRange: [0, height] });
-  return <AnimatedPanel ref={panel} id={contentId} role="region" aria-labelledby={triggerId} aria-hidden={!isExpanded} inert={!isExpanded}
-    className={['bloom-accordion-panel', className].filter(Boolean).join(' ')}
-    style={[{ opacity: progress, maxHeight: height === 0 && isExpanded ? undefined : maxHeight }, style]}>
-    <div ref={body} className={['bloom-accordion-body', contentClassName].filter(Boolean).join(' ')}>{children}</div>
-  </AnimatedPanel>;
+  const { transition } = useContext(AccordionContext);
+  const motion = useCollapsibleMotion(isExpanded, transition);
+  return <CollapsibleFrame open={isExpanded} {...motion} nativeID={contentId} region labelledBy={triggerId} returnFocusId={triggerId}
+    className={['bloom-accordion-panel',className].filter(Boolean).join(' ')} contentClassName={['bloom-accordion-body',contentClassName].filter(Boolean).join(' ')} style={style}>{children}</CollapsibleFrame>;
 });

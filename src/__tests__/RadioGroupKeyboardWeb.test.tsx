@@ -44,3 +44,27 @@ it('retains controlled ownership, fallback tab stop and disabled group constrain
   change.mockClear(); draw('a', true); key(radios[0]!, 'ArrowDown'); key(radios[0]!, ' '); key(radios[0]!, ' ', 'keyup');
   expect(change).not.toHaveBeenCalled(); expect(radios.map(el => el.tabIndex)).toEqual([-1, -1]);
 });
+
+for (const variant of ['default', 'card'] as const) it(`${variant} composes decorative labels with independent sibling controls and stable host refs`, () => {
+  const change = jest.fn();
+  const refs = new Map<string, import('../radio').RadioOptionState['controlRef']>();
+  const choices = options.map(option => ({ ...option, labelContent: <span>Decorative {option.value}</span>, accessibilityLabel: `Choice ${option.value}` }));
+  const draw = () => act(() => root.render(<BloomThemeProvider><RadioGroup label="Composed" variant={variant} options={choices} defaultValue="a" onValueChange={change}
+    optionStyle={{ flexDirection: 'row-reverse' }} renderOption={(option, control, state) => {
+      refs.set(option.value, state.controlRef);
+      return <section>{control}<input aria-label={`Edit ${option.value}`} disabled={state.disabled} /><button disabled={state.disabled}>Action {option.value}</button></section>;
+    }} /></BloomThemeProvider>));
+  draw();
+  const radios = Array.from(container.querySelectorAll<HTMLElement>('[role=radio]'));
+  expect(radios.map(node => node.getAttribute('aria-label'))).toEqual(['Choice a', 'Choice b', 'Choice c']);
+  expect(radios.every(node => !node.querySelector('input,button'))).toBe(true);
+  expect(getComputedStyle(radios[0]!).flexDirection).toBe('row-reverse');
+  const firstRef = refs.get('a');
+  expect(firstRef?.current).toBe(radios[0]);
+  const input = container.querySelector<HTMLInputElement>('input')!;
+  act(() => input.focus()); key(input, 'ArrowDown'); key(input, ' ');
+  expect(document.activeElement).toBe(input); expect(change).not.toHaveBeenCalled();
+  act(() => radios[0]!.focus()); key(radios[0]!, 'ArrowDown');
+  expect(document.activeElement).toBe(radios[2]); expect(change).toHaveBeenLastCalledWith('c');
+  draw(); expect(refs.get('a')).toBe(firstRef); expect(firstRef?.current).toBe(radios[0]);
+});

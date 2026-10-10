@@ -80,6 +80,7 @@ const SUBPATHS = /** @type {const} */ ([
   // that keeps them off each other. Platform-neutral, no native deps.
   ['./layout', 'layout/index.ts'],
   ['./viewport', 'viewport/index.ts'],
+  ['./collapsible', 'collapsible/index.ts'],
   ['./fab', 'fab/index.ts'],
   ['./frosted-icon-button', 'frosted-icon-button/index.ts'],
   ['./divider', 'divider/index.ts'],
@@ -346,6 +347,7 @@ const SUBPATHS = /** @type {const} */ ([
  */
 const WEB_FORKED_SUBPATHS = new Set([
   './viewport',
+  './collapsible',
   './accordion',
   './rating',
   './stat-bar',

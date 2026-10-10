@@ -1,3 +1,4 @@
+import { useCollapsibleVisibility } from '../collapsible/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useRequiredDescription } from './use-required-description';
 import { useBloomAppearance } from '../appearance';
@@ -79,11 +80,13 @@ export function Select(props: SelectProps) {
   const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const control = useDialogControl();
+  const visible = useCollapsibleVisibility();
+  useLayoutEffect(() => { if (!visible) control.close(); }, [visible, control]);
   const valueStoreState = useState<unknown>(undefined);
 
   const ctx = useMemo<SelectContextValue>(
-    () => ({ control, value, onValueChange, disabled, size }),
-    [control, value, onValueChange, disabled, size],
+    () => ({ control, value, onValueChange, disabled: disabled || !visible, size }),
+    [control, value, onValueChange, disabled, size, visible],
   );
 
   return (
