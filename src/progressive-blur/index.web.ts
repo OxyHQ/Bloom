@@ -4,6 +4,4 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export type { ProgressiveBlurProps } from './types';
-export {
-  ProgressiveBlur,
-} from './ProgressiveBlur.web';
+export { ProgressiveBlur } from './ProgressiveBlur.web';

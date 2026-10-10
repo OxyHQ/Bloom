@@ -3,8 +3,6 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
-export {
-  BottomSheet,
-} from './BottomSheet.web';
+export { BottomSheet } from './BottomSheet.web';
 export { default } from './BottomSheet.web';
 export type { BottomSheetProps, BottomSheetRef } from './types';

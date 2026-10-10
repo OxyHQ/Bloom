@@ -10,7 +10,5 @@ export type {
   VirtualListRenderItemInfo,
   VirtualListSlot,
 } from './types';
-export {
-  VirtualList,
-} from './VirtualList.web';
+export { VirtualList } from './VirtualList.web';
 export { default } from './VirtualList.web';
