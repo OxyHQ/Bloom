@@ -12,7 +12,6 @@ export interface ScopeState extends ScopePalette {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_scope_context__: React.Context<ScopeState | null> | undefined;
 }
 

@@ -130,7 +130,6 @@ interface NodeRegistry {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_media_nodes__: NodeRegistry | undefined;
 }
 

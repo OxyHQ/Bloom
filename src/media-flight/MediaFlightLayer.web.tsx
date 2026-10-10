@@ -142,7 +142,6 @@ function warnIfNotFilling(wrapper: HTMLElement): void {
     Math.abs(painted.height - box.height) > SLOT_FILL_TOLERANCE_PX;
   if (!off) return;
   hasWarnedAboutFill = true;
-  // eslint-disable-next-line no-console
   console.warn(
     `[Bloom] A \`renderVideo\` element is ${Math.round(painted.width)}x${Math.round(painted.height)} ` +
       `inside a ${Math.round(box.width)}x${Math.round(box.height)} box. A DOM \`<video>\` is a ` +

@@ -59,6 +59,7 @@ export function useCardMotion({
   const onExitedRef = useRef(onExited);
   onExitedRef.current = onExited;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animateIntro) return;
     const animation = Animated.timing(enter, {
@@ -71,7 +72,6 @@ export function useCardMotion({
     animation.start();
     return () => animation.stop();
     // Mount-only, like `initial`/`animate`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const dismiss = useCallback(() => {

@@ -176,18 +176,15 @@ async function runCase(page, testCase) {
   await page.waitForSelector('[data-testid="open-first"]', { timeout: 20000 });
 
   for (const step of testCase.steps ?? DEFAULT_STEPS) {
-    // eslint-disable-next-line no-await-in-loop
     if (!(await clickTestId(page, step.click))) {
       return {
         ...testCase,
         pass: false,
         reason: step.why,
-        // eslint-disable-next-line no-await-in-loop
         occlusion: await describeOcclusion(page, step.click),
       };
     }
     // Entrance animation + mount of the surface this step opened.
-    // eslint-disable-next-line no-await-in-loop
     await sleep(700);
   }
 
@@ -248,7 +245,6 @@ async function main() {
 
     const results = [];
     for (const testCase of CASES) {
-      // eslint-disable-next-line no-await-in-loop
       results.push(await runCase(page, testCase));
     }
 

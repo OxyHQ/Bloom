@@ -244,7 +244,7 @@ export function Table({
   const palette = useMemo(() => resolveTablePalette(theme), [theme]);
   const columns = readColumns(children);
   const columnsKey = JSON.stringify(columns);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the serialised layouts, not the array identity
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised layouts, not the array identity
   const stableColumns = useMemo(() => columns, [columnsKey]);
   const context = useMemo(
     () => ({ size, palette, columns: stableColumns }),

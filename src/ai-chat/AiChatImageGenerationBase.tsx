@@ -191,6 +191,7 @@ function FlapHalf({ digit, half, palette }: { digit: string; half: 'top' | 'bott
 function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React.ReactNode }) {
   const reducedMotion = useReducedMotion();
   const angle = useSharedValue(kind === 'fall' ? 0 : 90);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (reducedMotion) {
       angle.value = kind === 'fall' ? -90 : 0;
@@ -200,7 +201,6 @@ function NativeLeaf({ kind, children }: { kind: 'fall' | 'rise'; children: React
       kind === 'fall'
         ? withTiming(-90, { duration: 150, easing: Easing.bezier(0.55, 0, 0.9, 0.35) })
         : withDelay(150, withTiming(0, { duration: 230, easing: Easing.bezier(0.25, 0.7, 0.35, 1) }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const style = useAnimatedStyle(
     () => ({
@@ -452,11 +452,11 @@ export function AiChatImageGenerationBase({
   // Unfold.
   const unfold = useSharedValue(reducedMotion ? 1 : 0);
   const unfoldFade = useSharedValue(reducedMotion ? 1 : 0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (reducedMotion) return;
     unfold.value = withTiming(1, { duration: 550, easing: EASE_QUINT });
     unfoldFade.value = withTiming(1, { duration: 350, easing: EASE_OUT });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const frameStyle = useAnimatedStyle(
     () => ({

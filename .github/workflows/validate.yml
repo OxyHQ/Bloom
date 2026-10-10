@@ -32,6 +32,9 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile --ignore-scripts
+      # Biome formatting + lint (config: biome.json). Runs before the build so
+      # a format or lint failure is reported before the slower build steps.
+      - run: bunx biome ci .
       # Includes prebuild generation and postbuild tarball/freshness checks.
       - run: bun run build
       - run: bun run typescript

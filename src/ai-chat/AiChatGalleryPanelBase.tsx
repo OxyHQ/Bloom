@@ -202,13 +202,13 @@ function GenerationTile({
   const grow = useSharedValue(run && !isNew ? 0 : 1);
   const [hovered, setHovered] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!run) return;
     const delay = isNew ? 0 : generation.order * 130;
     fade.value = withDelay(delay, withTiming(1, { duration: 400, easing: EASE_QUINT }));
     if (!isNew) grow.value = withDelay(delay, withTiming(1, { duration: 550, easing: EASE_QUINT }));
     // Mount-only entrance.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const entrance = useAnimatedStyle(
@@ -457,7 +457,6 @@ export function AiChatGalleryPanelBase({
       clip?.animate([{ borderRadius: `${ROW_RADIUS / scale}px` }, { borderRadius: `${ROW_RADIUS}px` }], timing);
     });
     boxes.current = next;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layoutKey]);
 
   // The panel's own width changing (a resize drag) moves every tile without

@@ -8,7 +8,7 @@ import { Avatar, AVATAR_SIZES, resolveAvatarTint } from '../avatar';
 import { avatarInitialsType, avatarTintForName } from '../avatar/initials';
 
 /** Deep-merge a style prop (jest's react-native mock does not flatten). */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: test helper reads arbitrary style shapes (carried over from the former eslint-disable)
 function flat(style: any): Record<string, any> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flat));
   return style ?? {};

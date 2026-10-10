@@ -160,6 +160,7 @@ function TitleSwapLayer({
   // 0 = hidden below/above, 1 = settled.
   const progress = useSharedValue(phase === 'enter' && animate ? 0 : 1);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) {
       if (phase === 'exit') onExited?.(layer.id);
@@ -175,7 +176,6 @@ function TitleSwapLayer({
       done,
     );
     // Mount-only: each layer plays its one transition.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle((): WebCssStyle => {

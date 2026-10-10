@@ -78,7 +78,6 @@ const isCatalog = (value: unknown): value is MessageCatalog<unknown> =>
 
 const catalogs: { name: string; exportName: string; source: MessageCatalog<unknown>; catalog: Record<string, unknown> }[] = [];
 for (const file of catalogFiles()) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const module = require(file) as Record<string, unknown>;
   for (const [name, value] of Object.entries(module)) {
     if (isCatalog(value)) {
@@ -125,7 +124,6 @@ describe('message catalogs', () => {
     it('is translated in every language module', () => {
       for (const language of BLOOM_LANGUAGES) {
         if (language === 'en') continue;
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const module = require(`../locale/translations/${language}`) as { default: Translations };
         expect({ language, present: found.source.id in module.default }).toEqual({ language, present: true });
       }

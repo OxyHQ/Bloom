@@ -35,18 +35,12 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-// eslint-disable-next-line import/first
 import { Text, type View } from 'react-native';
 
-// eslint-disable-next-line import/first
 import { useAnchorRect } from '../floating/use-anchor-rect';
-// eslint-disable-next-line import/first
 import type { FloatingAnchor } from '../floating/types';
-// eslint-disable-next-line import/first
 import { PortalOutlet, PortalProvider } from '../portal';
-// eslint-disable-next-line import/first
 import { Popover, PopoverContent, PopoverTrigger } from '../popover/index.web';
-// eslint-disable-next-line import/first
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

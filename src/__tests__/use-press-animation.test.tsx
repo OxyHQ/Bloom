@@ -54,7 +54,6 @@ function loadHook(os: 'ios' | 'web', coarsePointer: boolean): Hook['usePressAnim
     jest.isolateModules(() => {
       jest.doMock('react-native', () => ReactNative);
       jest.doMock('react', () => React);
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       mod = require('../hooks/use-press-animation') as Hook;
     });
   } finally {

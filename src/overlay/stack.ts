@@ -102,7 +102,6 @@ interface Registry {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_overlay_stack__: Registry | undefined;
 }
 

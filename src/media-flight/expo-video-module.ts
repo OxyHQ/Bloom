@@ -198,7 +198,6 @@ export function warnExpoVideoUnavailable(): void {
   hasWarned = true;
   // Internal Bloom diagnostic: only the consumer's package.json can fix this,
   // so it names the package, the install command and what is lost.
-  // eslint-disable-next-line no-console
   console.warn(
     '[Bloom] A video view rendered nothing: the optional peer `expo-video` ' +
       'could not be loaded, so a media surface shows its poster and the shared ' +

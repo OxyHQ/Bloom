@@ -61,7 +61,6 @@ const ROLES =Object.keys(TYPOGRAPHY) as TypeRoleName[];
 const CUSTOM_METRICS = ['native-line-px', 'native-line-variable', 'native-line-ratio'];
 
 async function buildTailwindCss(candidates: string[]): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { compile } = require('@tailwindcss/node') as typeof import('@tailwindcss/node');
   const themeCss = readFileSync(join(__dirname, '..', 'design-tokens', 'theme.css'), 'utf8');
   const input = [
@@ -95,7 +94,6 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
     const candidates = [...ROLES.map((role) => `text-${role}`), 'text-sm', 'leading-[20px]', ...CUSTOM_METRICS];
     const css = await buildTailwindCss(candidates);
 
-    /* eslint-disable @typescript-eslint/no-require-imports */
     const { compile } = require('react-native-css/compiler') as typeof import('react-native-css/compiler');
     const { StyleCollection } = require('react-native-css/native') as {
       StyleCollection: { inject(stylesheet: unknown): void };
@@ -103,7 +101,6 @@ describe('type-scale line-height on native (Tailwind v4 → react-native-css)', 
     const { Text } = require('react-native-css/components/Text') as {
       Text: React.ComponentType<{ className: string; testID: string; children: string }>;
     };
-    /* eslint-enable @typescript-eslint/no-require-imports */
 
     StyleCollection.inject(compile(css, {}).stylesheet());
 

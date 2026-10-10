@@ -161,6 +161,7 @@ function useScatterAnimation(target: Symbol[][]): Symbol[][] {
   const shownRef = useRef<Symbol[][] | null>(null);
   const [frame, setFrame] = useState<Symbol[][] | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised symbols
   useEffect(() => {
     const previous = shownRef.current;
     if (reducedMotion || typeof requestAnimationFrame !== 'function' || target.every((s) => s.length === 0)) {
@@ -189,7 +190,6 @@ function useScatterAnimation(target: Symbol[][]): Symbol[][] {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the serialised symbols
   }, [key, reducedMotion]);
 
   if (reducedMotion) return target;

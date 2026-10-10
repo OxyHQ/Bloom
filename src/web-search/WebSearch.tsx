@@ -378,6 +378,7 @@ function SourceMark({
   const ty = useSharedValue(0);
   const [faviconFailed, setFaviconFailed] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useLayoutEffect(() => {
     const node = ref.current;
     if (flightKey == null || !node) return undefined;
@@ -413,7 +414,6 @@ function SourceMark({
       if (registry.nodes.get(flightKey) === node) registry.nodes.delete(flightKey);
     };
     // Mount-only: a mark flies once per arrival.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const flightStyle = useAnimatedStyle(

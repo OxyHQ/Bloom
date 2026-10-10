@@ -83,6 +83,7 @@ export function RevealLine({
   const animate = slot.animate && !reducedMotion;
   const delay = delayOverride ?? slot.delay;
   const progress = useSharedValue(animate ? 0 : 1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) {
       progress.value = 1;
@@ -90,7 +91,6 @@ export function RevealLine({
     }
     progress.value = withDelay(delay, withTiming(1, { duration: 500, easing: LINE_EASE }));
     // Mount-only: a block reveals once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const animated = useAnimatedStyle(
     () => ({
@@ -120,13 +120,13 @@ export function RevealFade({
   const reducedMotion = useReducedMotion();
   const run = animate && !reducedMotion;
   const progress = useSharedValue(run ? 0 : 1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!run) {
       progress.value = 1;
       return;
     }
     progress.value = withDelay(delay, withTiming(1, { duration: 400, easing: FADE_EASE }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const animated = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
   return (

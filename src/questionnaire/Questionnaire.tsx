@@ -738,6 +738,7 @@ function SlidingPanel({
   children: React.ReactNode;
 }) {
   const progress = useSharedValue(animate ? 0 : 1);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) {
       progress.value = 1;
@@ -749,7 +750,6 @@ function SlidingPanel({
       if (finished && role === 'exit' && onExited) runOnJS(onExited)();
     });
     // Runs once per mount: a panel animates exactly one transition.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => {

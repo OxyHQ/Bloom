@@ -120,6 +120,7 @@ function useEntrance(enabled: boolean) {
   // not left on a `blur(0px)` filter layer (FloatingPanel rests on `none` too).
   const [settled, setSettled] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (!animate) return;
     const animation = Animated.timing(progress, {
@@ -135,7 +136,6 @@ function useEntrance(enabled: boolean) {
     });
     return () => animation.stop();
     // Mount-only, like the panel's own enter.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return useMemo(() => {

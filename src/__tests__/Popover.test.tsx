@@ -41,7 +41,6 @@ jest.mock('../floating/FloatingPanel', () => ({
   },
 }));
 
-// eslint-disable-next-line import/first
 import {
   Popover,
   PopoverContent,
@@ -51,7 +50,6 @@ import {
   PopoverSeparator,
   PopoverTitle,
 } from '../popover/index.web';
-// eslint-disable-next-line import/first
 import { useTheme } from '../theme/use-theme';
 
 function Themed({ mode = 'light', children }: { mode?: 'light' | 'dark'; children: React.ReactNode }) {

@@ -44,6 +44,7 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   const opacity = useSharedValue(showLoading ? 1 : 0);
   const translateY = useSharedValue(showLoading ? 0 : -targetHeight);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     const timingConfig = { duration: animation.duration.slow, easing: Easing.out(Easing.cubic) };
     height.value = withTiming(showLoading ? targetHeight : 0, timingConfig);
@@ -51,7 +52,6 @@ const TopLoading: React.FC<TopLoadingProps> = ({
     translateY.value = withTiming(showLoading ? 0 : -targetHeight, timingConfig);
     // Easing, withTiming: module-level constants from a static import, stable.
     // height/opacity/translateY: shared value objects, stable references.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLoading, targetHeight]);
 
   // Shared values MUST be in the deps arrays: on web without the worklets Babel

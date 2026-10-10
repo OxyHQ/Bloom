@@ -364,7 +364,6 @@ describe('the move primitive', () => {
         },
       });
       try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const fresh = require('../media-flight/media-node.web') as typeof import('../media-flight/media-node.web');
         const first = document.createElement('div');
         const second = document.createElement('div');

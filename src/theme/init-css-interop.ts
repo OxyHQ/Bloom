@@ -56,7 +56,6 @@ function warnOnce(message: string, error?: unknown): void {
   warned = true;
   // Internal Bloom diagnostic. Consumers cannot react to this — it signals
   // a possible compatibility issue between Bloom and the host's css-interop.
-  // eslint-disable-next-line no-console
   console.warn(`[Bloom] ${message}`, error ?? '');
 }
 
@@ -93,7 +92,6 @@ function tryCallSetFlag(): void {
     // thrower, which is how `lazyRequire` silently killed four subsystems. See
     // `connection-status/netinfo.ts` for the shape a real peer must use.
     const moduleName = 'react-native-css-interop';
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     mod = require(moduleName) as CssInteropModule;
   } catch {
     return;

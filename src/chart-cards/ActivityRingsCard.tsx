@@ -67,6 +67,7 @@ function useTween(target: readonly number[], ms: number): readonly number[] {
   const shownRef = useRef(shown);
   shownRef.current = shown;
   const key = target.join(',');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the serialised values
   useEffect(() => {
     const from = shownRef.current;
     if (reducedMotion || typeof requestAnimationFrame !== 'function' || from.length !== target.length) {
@@ -85,7 +86,6 @@ function useTween(target: readonly number[], ms: number): readonly number[] {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the serialised values
   }, [key, ms, reducedMotion]);
   return shown.length === target.length ? shown : target;
 }

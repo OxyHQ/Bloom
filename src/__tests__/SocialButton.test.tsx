@@ -10,7 +10,7 @@ import { SocialButton, SOCIAL_PROVIDERS, type SocialProvider } from '../social-b
 import { SOCIAL_COLOR_LOGOS } from '../social-button/color-logos';
 import { parseRgba } from '../theme/color-utils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: test helper reads arbitrary style shapes (carried over from the former eslint-disable)
 function flat(style: any): Record<string, any> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flat));
   return style ?? {};

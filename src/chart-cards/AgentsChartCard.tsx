@@ -191,6 +191,7 @@ export function AgentsChartCard({
   const riseKey = `${range ?? ''}|${values.join(',')}`;
   const total = Math.max(0, data.length - 1) * RISE_STAGGER_MS + RISE_MS;
   const rise = useRef(new Animated.Value(reducedMotion ? total : 0)).current;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: replays on the data / range only
   useEffect(() => {
     if (reducedMotion) {
       rise.setValue(total);
@@ -205,7 +206,6 @@ export function AgentsChartCard({
     });
     animation.start();
     return () => animation.stop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- replays on the data / range only
   }, [riseKey, reducedMotion]);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {

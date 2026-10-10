@@ -193,9 +193,9 @@ function FiltersDialogDemo({ openOnMount = false }: { openOnMount?: boolean }) {
     return () => clearTimeout(t);
   }, [key]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (openOnMount) control.open();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -601,9 +601,9 @@ function HousingFiltersDialogDemo({ kind, openOnMount = false }: { kind: 'buy' |
   const [applied, setApplied] = useState(() => housingInitial(kind));
   const set = (patch: Partial<HousingFilterState>) => setState((s) => ({ ...s, ...patch }));
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (openOnMount) control.open();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const n = Math.max(0, 2400 - housingCount(kind, state) * 310);

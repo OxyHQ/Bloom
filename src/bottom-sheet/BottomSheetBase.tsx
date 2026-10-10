@@ -313,6 +313,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     //     RNGH 2.x pattern that does not steal vertical events from the
     //     inner scroller on Android. Required for FileManagement /
     //     PhotoPicker style sheets.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
     const panGesture = useMemo(() => {
         if (manualActivation) {
             return Gesture.Pan()
@@ -423,13 +424,13 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         // Shared values are stable refs; the listed deps are the only JS-side
         // values that change the gesture's behavior. `finishClose` is stable
         // (useCallback with stable deps).
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [enablePanDownToClose, detached, manualActivation, nativeGesture, requestPanDismiss]);
 
     // Dedicated handle pan — only built in `manualActivation` mode. Always
     // active so users can drag the handle even while content is mid-scroll.
     // In legacy mode the body pan already wraps the whole sheet (handle
     // included), so no separate gesture is needed.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
     const handlePanGesture = useMemo(() => {
         if (!manualActivation) return undefined;
         return Gesture.Pan()
@@ -468,7 +469,6 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                     translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
                 }
             });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [manualActivation, enablePanDownToClose, enableHandlePanningGesture, detached, requestPanDismiss]);
 
     // CRITICAL — the shared values each `useAnimatedStyle` READS (translateY,

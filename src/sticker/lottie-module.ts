@@ -99,7 +99,6 @@ export function loadLottiePlayer(): ComponentType<LottiePlayerProps> | null {
 export function warnLottieUnavailable(): void {
   if (process.env.NODE_ENV === 'production' || hasWarned) return;
   hasWarned = true;
-  // eslint-disable-next-line no-console
   console.warn(
     '[Bloom] An animated Sticker fell back to its still image: the optional peer ' +
       '`lottie-react-native` could not be loaded. Install it (`npx expo install ' +

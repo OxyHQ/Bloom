@@ -87,7 +87,6 @@ function loadWithHaptics(factory?: () => unknown): Harness {
     // A plain `require`, NOT `jest.requireActual`: the latter bypasses the mock
     // registry for the whole dependency subtree, so the doMocks above would be
     // ignored and the suite would silently exercise the real expo-haptics.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require('../hooks/use-haptics') as typeof import('../hooks/use-haptics');
 
     harness = {

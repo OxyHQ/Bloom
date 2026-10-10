@@ -1,0 +1,119 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "main" },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!.worktrees",
+      "!**/dist",
+      "!**/coverage",
+      "!**/.expo",
+      "!**/.next",
+      "!**/drizzle/meta",
+      "!**/*.generated.*",
+      "!docs/audits",
+      "!assets/character-runtime",
+      "!src/**/index.web.ts",
+      "!src/design-tokens/theme.css",
+      "!src/design-tokens/tokens.json",
+      "!src/phone-input/countries.ts",
+      "!src/phone-input/flags.ts",
+      "!src/icons/remix",
+      "!src/theme/__tests__/fixtures",
+      "!src/theme/__tests__/__fixtures__",
+      "!src/agent-avatar/__tests__/artwork-golden.json"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always",
+      "bracketSpacing": true
+    }
+  },
+  "json": { "formatter": { "trailingCommas": "none" } },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "assist": { "enabled": true, "actions": { "source": { "organizeImports": "off" } } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        "noAmbiguousAnchorText": "warn",
+        "noAutofocus": "warn",
+        "noStaticElementInteractions": "warn",
+        "noSvgWithoutTitle": "warn",
+        "useAnchorContent": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "useButtonType": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useKeyWithMouseEvents": "warn",
+        "useSemanticElements": "warn",
+        "useValidAnchor": "warn",
+        "useValidAriaRole": "warn",
+        "useValidAriaValues": "warn"
+      },
+      "complexity": {
+        "noBannedTypes": "warn",
+        "noCommaOperator": "warn",
+        "noExtraBooleanCast": "warn",
+        "noUselessConstructor": "warn",
+        "noUselessContinue": "warn",
+        "noUselessFragments": "warn",
+        "noUselessRename": "warn",
+        "noUselessSwitchCase": "warn",
+        "noUselessTernary": "warn",
+        "useIndexOf": "warn",
+        "useLiteralKeys": "warn",
+        "useOptionalChain": "warn"
+      },
+      "correctness": {
+        "noChildrenProp": "warn",
+        "noUnsafeOptionalChaining": "warn",
+        "noUnusedFunctionParameters": "warn",
+        "noUnusedImports": "warn",
+        "noUnusedVariables": "warn",
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "warn",
+        "useJsxKeyInIterable": "warn"
+      },
+      "performance": {
+        "noAccumulatingSpread": "warn"
+      },
+      "style": {
+        "noNonNullAssertion": "warn",
+        "useConst": "warn",
+        "useExponentiationOperator": "warn",
+        "useImportType": "warn",
+        "useNodejsImportProtocol": "warn",
+        "useTemplate": "warn"
+      },
+      "suspicious": {
+        "noApproximativeNumericConstant": "warn",
+        "noArrayIndexKey": "warn",
+        "noAssignInExpressions": "warn",
+        "noConfusingVoidType": "warn",
+        "noExplicitAny": "warn",
+        "noFocusedTests": "warn",
+        "noPrototypeBuiltins": "warn",
+        "noShadowRestrictedNames": "warn",
+        "noTemplateCurlyInString": "warn",
+        "noThenProperty": "warn",
+        "noUselessEscapeInString": "warn",
+        "useIterableCallbackReturn": "warn"
+      }
+    }
+  }
+}

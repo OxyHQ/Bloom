@@ -332,7 +332,6 @@ export const Pressable_: Story = {
         cover={SAMPLE_COVER}
         action={<DemoFollowButton />}
         onPressProfile={() => {
-          // eslint-disable-next-line no-alert
           if (typeof window !== 'undefined') window.alert('open profile');
         }}
       />

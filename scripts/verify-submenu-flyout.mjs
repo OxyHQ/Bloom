@@ -175,12 +175,10 @@ async function main() {
       await sleep(120);
       const steps = 12;
       for (let i = 1; i <= steps; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
         await page.mouse.move(
           from.x + ((to.x - from.x) * i) / steps,
           from.y + ((to.y - from.y) * i) / steps,
         );
-        // eslint-disable-next-line no-await-in-loop
         await sleep(18);
       }
       await sleep(150);
@@ -354,12 +352,10 @@ async function main() {
     const secondCentre = centre(secondTrigger);
     const steps = 6;
     for (let i = 1; i <= steps; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
       await page.mouse.move(
         firstCentre.x + ((secondCentre.x - firstCentre.x) * i) / steps,
         firstCentre.y + ((secondCentre.y - firstCentre.y) * i) / steps,
       );
-      // eslint-disable-next-line no-await-in-loop
       await sleep(12);
     }
     await sleep(120);

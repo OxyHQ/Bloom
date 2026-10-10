@@ -67,7 +67,6 @@ export interface BloomThemeContextValue {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __oxy_so_bloom_theme_context__:
     | React.Context<BloomThemeContextValue | null>
     | undefined;
@@ -236,6 +235,7 @@ function useThemeState({
 
   // Async hydration for adapters that can't be read synchronously
   // (AsyncStorage, MMKV via JSI fallback, etc).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (hydrated) return;
     if (!persistKey || !storage) {
@@ -263,7 +263,6 @@ function useThemeState({
     // Hydration runs once per storage instance. controlledMode/Preset are
     // captured by closure intentionally — switching controlled-ness mid-flight
     // is unsupported and would invalidate the in-flight hydration anyway.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistKey, storage]);
 
   const setMode = useCallback(

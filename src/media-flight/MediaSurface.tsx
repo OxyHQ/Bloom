@@ -296,7 +296,6 @@ let hasWarnedAboutSlotChurn = false;
 function warnSlotNotMemoised(): void {
   if (process.env.NODE_ENV === 'production' || hasWarnedAboutSlotChurn) return;
   hasWarnedAboutSlotChurn = true;
-  // eslint-disable-next-line no-console
   console.warn(
     `[Bloom] A \`renderVideo\` slot was a NEW function on ${SLOT_IDENTITY_CHURN_LIMIT} ` +
       'consecutive renders, including ones where nothing it reads changed. The slot is ' +

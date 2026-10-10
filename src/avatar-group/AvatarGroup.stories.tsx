@@ -86,7 +86,6 @@ export const Pressable: Story = {
         size={40}
         max={5}
         onPressItem={(item) => {
-          // eslint-disable-next-line no-alert
           if (typeof window !== 'undefined') window.alert(`@${item.username}`);
         }}
       />

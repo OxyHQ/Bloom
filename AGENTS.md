@@ -4,7 +4,7 @@
 
 ```bash
 bun run build       # bob build → lib/ (commonjs + module + typescript)
-bun run test / typescript / clean / release / verify:package
+bun run test / typescript / lint / format / clean / release / verify:package
 ```
 
 RN + Web library. Families: `src/<name>/`, published subpaths and root exports.

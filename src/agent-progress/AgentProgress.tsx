@@ -244,6 +244,7 @@ function Presence({
     [opacity, y, blur, scale, rotate, reducedMotion],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     const isFirst = firstRender.current;
     firstRender.current = false;
@@ -267,7 +268,6 @@ function Presence({
       return;
     }
     drive({ ...REST, ...exit }, leave ?? enter, () => setMounted(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -897,12 +897,12 @@ function AgentProgressComponent({
     reducedMotion ? (minimized ? MINIMIZED_HEIGHT : expandedHeight) : 0,
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     if (reducedMotion) return;
     cardOpacity.value = withTiming(1, { duration: 350, easing: EASE });
     cardY.value = withTiming(0, { duration: 500, easing: EASE });
     cardBlur.value = withTiming(0, { duration: 400, easing: EASE });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const endReopen = useCallback(() => {

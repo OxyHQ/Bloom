@@ -160,7 +160,6 @@ export function warnNetInfoUnavailable(): void {
   hasWarned = true;
   // Internal Bloom diagnostic: only the consumer's package.json can fix this,
   // so it names the package, the install command and the alternative.
-  // eslint-disable-next-line no-console
   console.warn(
     '[Bloom] ConnectionStatusToasts is inert: the optional peer ' +
       '`@react-native-community/netinfo` could not be loaded, so connection changes ' +

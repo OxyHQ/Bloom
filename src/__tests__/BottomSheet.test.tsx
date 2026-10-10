@@ -265,7 +265,6 @@ describe('BottomSheet', () => {
       // events itself, so the sheet uses that one.
       // The same module instance the sheet `require`s (moduleNameMapper'd to
       // `__mocks__/`); `jest.requireMock` would hand back a separate automock.
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { KeyboardProvider, useKeyboardHandler } = require('react-native-keyboard-controller') as {
         KeyboardProvider: React.ComponentType<{ children?: React.ReactNode }>;
         useKeyboardHandler: jest.Mock;

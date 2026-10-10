@@ -45,6 +45,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
 }) => {
   const rotation = useSharedValue(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
   useEffect(() => {
     rotation.value = withRepeat(
       withTiming(360, { duration: 400, easing: Easing.linear }),
@@ -53,7 +54,6 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
     );
     // rotation is a stable shared value reference; withRepeat/withTiming/Easing
     // are module-level constants from a static import and are stable too.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // `rotation` MUST be in the deps array: on web without the worklets Babel
