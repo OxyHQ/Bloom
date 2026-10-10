@@ -30,8 +30,32 @@ import { OverlayRoot, TOAST_LAYER_Z } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import type { ToastHostProps } from './types';
+import { toastStore } from './toast-store';
 
 export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    // A toast stack is non-modal. Observe outside presses rather than covering
+    // the app with a dismissal target: its first click must reach the control.
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 || !toastStore.getSnapshot().isExpanded) return;
+      const insideToast = event
+        .composedPath()
+        .some(
+          (node) =>
+            node instanceof Element &&
+            node.hasAttribute('data-bloom-toast-host'),
+        );
+      if (!insideToast) toastStore.collapse();
+    };
+    document.addEventListener('pointerdown', onPointerDown, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      document.removeEventListener('pointerdown', onPointerDown, true);
+  }, []);
+
   const content = (
     // `OverlayRoot` carries the pointer-events opt-in as a PROP; as a style
     // entry it never reached the DOM, so the rows inherited the portal root's
@@ -40,7 +64,11 @@ export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
       {/* Also `box-none`: as the direct child of a box-none root it would
           otherwise be handed `pointer-events: auto` and, spanning the whole
           viewport, block the app underneath while a toast is up. */}
-      <GestureHandlerRootView pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+      <GestureHandlerRootView
+        pointerEvents="box-none"
+        style={StyleSheet.absoluteFill}
+        {...{ dataSet: { bloomToastHost: '' } }}
+      >
         {children}
       </GestureHandlerRootView>
     </OverlayRoot>

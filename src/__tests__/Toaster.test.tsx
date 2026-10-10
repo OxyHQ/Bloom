@@ -841,6 +841,26 @@ describe('ToastOutlet', () => {
    * `measures the strip from the row, not the window` below is the guard on that.
    */
   describe('stacked row taps', () => {
+    it.each(['ios', 'android'] as const)('preserves outside-tap collapse on %s', (platform) => {
+      jest.replaceProperty(ReactNative.Platform, 'OS', platform);
+      const rendered = renderOutlet();
+      show(() => {
+        toast('first', { duration: Infinity });
+        toast('second', { duration: Infinity });
+        toastStore.expand();
+      });
+      const outside = rendered.UNSAFE_root.findAll((node) => {
+        const style = flattenStyle(node.props.style);
+        return hostName(node) === 'Pressable' && style.position === 'absolute' &&
+          style.top === 0 && Number(style.bottom) > 0;
+      });
+      expect(outside).toHaveLength(1);
+      fireEvent.press(outside[0]!);
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+      expect(rendered.queryByText('first')).toBeTruthy();
+      expect(rendered.queryByText('second')).toBeTruthy();
+    });
+
     it('expands a collapsed stack from the close strip instead of doing nothing', () => {
       const rendered = renderOutlet({ enableStacking: true });
       show(() => {
