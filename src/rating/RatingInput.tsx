@@ -213,11 +213,15 @@ function RatingInputComponent({
             testID={testID ? `${testID}-star-${star}` : undefined}
             style={starStyle}
           >
-            <Glyph
-              width={config.star}
-              height={config.star}
-              fill={filled ? theme.colors.primary : emptyColor}
-            />
+            {/* Hover swaps the glyph. Keep the press target on the radio so
+                replacing a decorative SVG between down/up cannot lose a click. */}
+            <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <Glyph
+                width={config.star}
+                height={config.star}
+                fill={filled ? theme.colors.primary : emptyColor}
+              />
+            </View>
           </Pressable>
         );
       })}

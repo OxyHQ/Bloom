@@ -141,6 +141,23 @@ describe('FileUpload', () => {
     expect(queryByText('That file is larger than 8 MB')).toBeNull();
   });
 
+  it('exposes only the active status during upload, completion and reset', () => {
+    jest.useFakeTimers();
+    const ui = (file: FileUploadFile | null, progress: number) =>
+      <BloomThemeProvider mode="light"><FileUpload file={file} progress={progress} /></BloomThemeProvider>;
+    const api = render(ui(REPORT, 0));
+    expect(api.getByText('Uploading 2.4 MB...')).toBeTruthy();
+    expect(api.queryByText('Uploaded successfully!')).toBeNull();
+    expect(api.getByText('Uploaded successfully!', { includeHiddenElements: true })).toBeTruthy();
+    api.rerender(ui(REPORT, 100));
+    expect(api.queryByText('Uploading 2.4 MB...')).toBeNull();
+    expect(api.getByText('Uploaded successfully!')).toBeTruthy();
+    api.rerender(ui(null, 0));
+    expect(api.queryByText('Uploaded successfully!')).toBeNull();
+    expect(api.queryByText('Uploading 2.4 MB...')).toBeNull();
+    expect(api.getByText('PDF, JPG, PNG, XLSX (max 8 MB)')).toBeTruthy();
+  });
+
   it('is fully controlled by file + progress', () => {
     jest.useFakeTimers();
     const onUploadComplete = jest.fn();
